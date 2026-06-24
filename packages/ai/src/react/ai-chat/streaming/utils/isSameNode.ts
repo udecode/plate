@@ -1,13 +1,15 @@
 import type { PlateEditor } from 'platejs/react';
 
-import { type TElement, type TText, isDefined, KEYS } from 'platejs';
+import type { Element, Text } from '@platejs/plite';
+
+import { isDefined, KEYS } from 'platejs';
 
 const LIST_STYLE_TYPE = 'listStyleType';
 
 export const isSameNode = (
   editor: PlateEditor,
-  node1: TElement | TText,
-  node2: TElement | TText
+  node1: Element | Text,
+  node2: Element | Text
 ) => {
   if (
     node1.type !== editor.getType(KEYS.p) ||

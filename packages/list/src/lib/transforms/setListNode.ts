@@ -1,11 +1,17 @@
-import type { Editor, Path } from 'platejs';
+import type { EditorUpdateTransaction, Path } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
+import { normalizeListSequence } from '../normalizers/normalizeListSequence';
 import { ListStyleType } from '../types';
 
-export const setListNode = (
-  editor: Editor,
+type ListNodeTx = {
+  nodes: Pick<EditorUpdateTransaction['nodes'], 'set'>;
+};
+
+export const setListNodeTx = (
+  tx: ListNodeTx,
   {
     at,
     indent = 0,
@@ -18,7 +24,7 @@ export const setListNode = (
 ) => {
   const newIndent = indent || indent + 1;
 
-  editor.tf.setNodes(
+  tx.nodes.set(
     {
       [KEYS.indent]: newIndent,
       [KEYS.listType]: listStyleType,
@@ -27,8 +33,26 @@ export const setListNode = (
   );
 };
 
-export const setIndentTodoNode = (
-  editor: Editor,
+export const setListNode = (
+  editor: BasePlateEditor,
+  {
+    at,
+    indent = 0,
+    listStyleType = ListStyleType.Disc,
+  }: {
+    at: Path;
+    indent?: number;
+    listStyleType?: string;
+  }
+) => {
+  editor.update((tx) => {
+    setListNodeTx(tx, { at, indent, listStyleType });
+  });
+  normalizeListSequence(editor, at);
+};
+
+export const setIndentTodoNodeTx = (
+  tx: ListNodeTx,
   {
     at,
     indent = 0,
@@ -41,7 +65,7 @@ export const setIndentTodoNode = (
 ) => {
   const newIndent = indent || indent + 1;
 
-  editor.tf.setNodes(
+  tx.nodes.set(
     {
       [KEYS.indent]: newIndent,
       [KEYS.listChecked]: false,
@@ -49,4 +73,22 @@ export const setIndentTodoNode = (
     },
     { at }
   );
+};
+
+export const setIndentTodoNode = (
+  editor: BasePlateEditor,
+  {
+    at,
+    indent = 0,
+    listStyleType = KEYS.listTodo,
+  }: {
+    at: Path;
+    indent?: number;
+    listStyleType?: string;
+  }
+) => {
+  editor.update((tx) => {
+    setIndentTodoNodeTx(tx, { at, indent, listStyleType });
+  });
+  normalizeListSequence(editor, at);
 };

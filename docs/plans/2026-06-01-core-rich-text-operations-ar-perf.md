@@ -1,7 +1,7 @@
 # Core rich text operations AR perf
 
 Objective:
-Optimize `core-rich-text-operations-compare` under Slate AR until target
+Optimize `core-rich-text-operations-compare` under Plite AR until target
 evidence is green, plateaued, or blocked by correctness/architecture proof.
 
 Goal plan:
@@ -20,7 +20,7 @@ Applied packs:
 Task source:
 - type: user request
 - id / link: local chat request, 2026-06-01
-- title: Run Slate AR perf on `core-rich-text-operations-compare`
+- title: Run Plite AR perf on `core-rich-text-operations-compare`
 - acceptance criteria: initialize or resume the target-backed AR loop, run the
   rich-text compare benchmark, inspect the primary metric and correctness
   gate, optimize if a clear safe owner appears, and stop only when the metric
@@ -44,7 +44,7 @@ Verification surface:
   and `pnpm slate:ar:setup-target -- core-rich-text-operations-compare`.
 - Benchmark: `RICH_TEXT_OPS_COMPARE_ITERATIONS=51 bun run bench:core:rich-text-operations:compare:local`
   through the target or AR runner.
-- Correctness: `bun check` in `.tmp/slate-v2` when a packet is considered keep.
+- Correctness: `bun check` in `Plate repo root` when a packet is considered keep.
 - Completion: autogoal completion check for this plan.
 
 Constraints:
@@ -55,9 +55,9 @@ Constraints:
 - Do not add broad ceremony when the task is trivial or docs-only.
 
 Boundaries:
-- Source of truth: `benchmarks/targets/slate-v2.json` target
-  `core-rich-text-operations-compare` plus `.tmp/slate-v2/autoresearch.*`.
-- Allowed edit scope: `.tmp/slate-v2` core/runtime files if profiling points to
+- Source of truth: `benchmarks/targets/plite.json` target
+  `core-rich-text-operations-compare` plus `Plate repo root/autoresearch.*`.
+- Allowed edit scope: `Plate repo root` core/runtime files if profiling points to
   a safe owner, benchmark target/session artifacts, and this plan.
 - Browser surface: N/A unless the target reveals a React/browser regression.
 - Tracker sync: N/A, no issue/PR/tracker item requested.
@@ -101,9 +101,9 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Skill analysis before edits | yes | Loaded `autogoal`, `slate-ar-perf`, and `slate-ar`. |
+| Skill analysis before edits | yes | Loaded `autogoal`, `plite-ar-perf`, and `plite-ar`. |
 | Active goal checked or created | yes | `get_goal` returned none; created this goal. |
-| Source of truth read before edits | yes | Read target `core-rich-text-operations-compare` from `benchmarks/targets/slate-v2.json`. |
+| Source of truth read before edits | yes | Read target `core-rich-text-operations-compare` from `benchmarks/targets/plite.json`. |
 | Tracker comments and attachments read | no | N/A: no tracker item or attachment. |
 | Video transcript evidence required | no | N/A: no video evidence in this task. |
 | `docs/solutions` checked for non-trivial existing-code work | no | N/A: no code owner was changed; target was already green. |
@@ -115,10 +115,10 @@ Start Gates:
 | Tracker sync expectation decision | yes | No tracker sync requested. |
 | Output budget strategy recorded | yes | Recorded above. |
 | Agent-native pack selected | yes | Target/AR package scripts are agent-facing workflow surfaces. |
-| Agent-facing action surface identified | yes | `bench:targets:*`, `slate:ar:*`, and `.tmp/slate-v2` benchmark scripts. |
+| Agent-facing action surface identified | yes | `bench:targets:*`, `slate:ar:*`, and `Plate repo root` benchmark scripts. |
 | Source rule versus generated mirror boundary identified | yes | Target registry/session files are source for this loop; no generated skill mirror touched. |
 | `agent-native-reviewer` loaded or waiver recorded | no | N/A: no agent rule/skill/tool source changed; only existing AR session files were pointed at the selected target. |
-| Package/API pack selected | yes | Possible package runtime perf changes in `.tmp/slate-v2/packages/**`. |
+| Package/API pack selected | yes | Possible package runtime perf changes in `packages/**`. |
 | Public surface or package boundary identified | yes | Potential package runtime only; no public API planned. |
 | Release artifact path selected | yes | N/A: no published user-visible delta. |
 | `changeset` skill loaded when `.changeset` is required | no | N/A: no changeset required. |
@@ -178,7 +178,7 @@ Completion Gates:
 | Package exports or file layout changed | no | Record N/A with reason. | N/A: no exports or file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | Record N/A with reason. | N/A: no manifest, lockfile, or install graph changed. |
 | Agent rules or skills changed | no | Record N/A with reason. | N/A: no agent source changed. |
-| Workspace authority proof | yes | Run proof in the owning workspace. | `plate-2` ran target commands; `.tmp/slate-v2` ran benchmark/check wrappers. |
+| Workspace authority proof | yes | Run proof in the owning workspace. | `plate-2` ran target commands; `Plate repo root` ran benchmark/check wrappers. |
 | Browser surface changed | no | Record N/A with reason. | N/A: no browser behavior changed. |
 | Browser final proof | no | Record N/A with reason. | N/A: no browser proof required. |
 | CI-controlled template output changed | no | Record N/A with reason. | N/A: no `templates/**` touched. |
@@ -198,7 +198,7 @@ Completion Gates:
 | Output budget discipline | yes | Verify output stayed bounded. | Long benchmark output was summarized by AR tails and metrics; tool output was capped. |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-01-core-rich-text-operations-ar-perf.md`. | Run after this plan is filled. |
 | Agent source / generated sync | no | Record N/A with reason. | N/A: no `.agents/rules/**` changed. |
-| Agent action discoverability | yes | Source-audit action surface. | `bench:targets:*`, `slate:ar:*`, `.tmp/slate-v2/autoresearch.sh`, and `.tmp/slate-v2/autoresearch.checks.sh` identify the target loop. |
+| Agent action discoverability | yes | Source-audit action surface. | `bench:targets:*`, `slate:ar:*`, `Plate repo root/autoresearch.sh`, and `Plate repo root/autoresearch.checks.sh` identify the target loop. |
 | Agent-native review | no | Record N/A with reason. | N/A: no agent source changed. |
 | Public API / package boundary proof | yes | Source-audit boundary. | No public package API/export changed; no code patch kept. |
 | Release artifact classification | yes | Record classification. | Internal AR/session/plan evidence only. |
@@ -233,10 +233,10 @@ Decisions and tradeoffs:
   ratio threshold; further tuning would chase noise.
 
 Implementation notes:
-- Updated `.tmp/slate-v2/autoresearch.sh` to run
+- Updated `Plate repo root/autoresearch.sh` to run
   `RICH_TEXT_OPS_COMPARE_ITERATIONS=51 bun run bench:core:rich-text-operations:compare:local`.
-- Updated `.tmp/slate-v2/autoresearch.checks.sh` to run `bun check`.
-- Updated `.tmp/slate-v2/autoresearch.md` so the session text matches the core
+- Updated `Plate repo root/autoresearch.checks.sh` to run `bun check`.
+- Updated `Plate repo root/autoresearch.md` so the session text matches the core
   rich-text target.
 
 Review fixes:
@@ -257,14 +257,14 @@ Verification evidence:
   rich-text config.
 - First `pnpm slate:ar:benchmark-lint`: failed because stale wrapper emitted
   pagination metrics; fixed wrapper/session files.
-- `node ... autoresearch.mjs new-segment --cwd .tmp/slate-v2 --reason "Switch active target from pagination to core-rich-text-operations-compare" --yes`: segment 2 created.
+- `node ... autoresearch.mjs new-segment --cwd Plate repo root --reason "Switch active target from pagination to core-rich-text-operations-compare" --yes`: segment 2 created.
 - Second `pnpm slate:ar:benchmark-lint`: OK,
   `rich_text_structural_ops_p95_ms=0.98`, worst p95 ratio `2.46`, worst mean
   ratio `2.27`.
 - `pnpm slate:ar:next` packet 4: `1.03ms`, worst p95 ratio `2.35`, worst mean
   ratio `3.17`, `bun check` passed.
 - Logged packet 4 as accepted `measure`; no commit created.
-- `node ... promote-gate --cwd .tmp/slate-v2 --reason "Core rich-text baseline is below the <3x legacy p95 promotion target" --gate-name "rich-text promotion repeat" --query-count 2 --yes`: promotion segment 3 created.
+- `node ... promote-gate --cwd Plate repo root --reason "Core rich-text baseline is below the <3x legacy p95 promotion target" --gate-name "rich-text promotion repeat" --query-count 2 --yes`: promotion segment 3 created.
 - Promotion packet 5: `1.6ms`, worst p95 ratio `2.36`, worst mean ratio
   `3.75`, `bun check` passed; logged accepted `measure`.
 - Promotion packet 6: `0.94ms`, worst p95 ratio `1.85`, worst mean ratio
@@ -333,7 +333,7 @@ Reboot status:
 |----------|--------|
 | Where am I? | Closeout |
 | Where am I going? | Final response after completion check |
-| What is the goal? | Optimize or prove green `core-rich-text-operations-compare` under Slate AR |
+| What is the goal? | Optimize or prove green `core-rich-text-operations-compare` under Plite AR |
 | What have I learned? | It is already green under p95 target; stale AR wrappers were the only setup bug |
 | What have I done? | Fixed target wrappers, ran baseline and promotion repeats, logged accepted measurements |
 

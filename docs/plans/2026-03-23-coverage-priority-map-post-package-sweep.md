@@ -52,11 +52,11 @@ This order is the final value ranking, not a blind sort on raw package score. I 
 
 - Score: `66`
 - Best files:
-  - [packages/slate/src/internal/transforms/setNodes.ts](packages/slate/src/internal/transforms/setNodes.ts) `9`
-  - [packages/slate/src/internal/transforms/insertNodes.ts](packages/slate/src/internal/transforms/insertNodes.ts) `9`
-  - [packages/slate/src/utils/assignLegacyTransforms.ts](packages/slate/src/utils/assignLegacyTransforms.ts) `8`
-  - [packages/slate/src/internal/transforms/deleteText.ts](packages/slate/src/internal/transforms/deleteText.ts) `8`
-  - [packages/slate/src/utils/deleteMerge.ts](packages/slate/src/utils/deleteMerge.ts) `8`
+  - [packages/plite/src/internal/transforms/setNodes.ts](packages/plite/src/internal/transforms/setNodes.ts) `9`
+  - [packages/plite/src/internal/transforms/insertNodes.ts](packages/plite/src/internal/transforms/insertNodes.ts) `9`
+  - [packages/plite/src/utils/assignLegacyTransforms.ts](packages/plite/src/utils/assignLegacyTransforms.ts) `8`
+  - [packages/plite/src/internal/transforms/deleteText.ts](packages/plite/src/internal/transforms/deleteText.ts) `8`
+  - [packages/plite/src/utils/deleteMerge.ts](packages/plite/src/utils/deleteMerge.ts) `8`
 
 ### 2. `diff`
 

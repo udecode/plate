@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: V2 fragment proofs should preserve a nested block wrapper before chasing arbitrary tree support
 tags:
-  - slate-v2
+  - plite
   - clipboard
   - fragment
   - nested-blocks
@@ -67,5 +67,5 @@ to “arbitrary trees” is just marketing.
 
 ## Related issues
 
-- [2026-04-03-slate-v2-clipboard-boundary-proof-must-split-fragment-semantics-and-dom-transport.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-03-slate-v2-clipboard-boundary-proof-must-split-fragment-semantics-and-dom-transport.md)
+- [2026-04-03-plite-clipboard-boundary-proof-must-split-fragment-semantics-and-dom-transport.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-03-plite-clipboard-boundary-proof-must-split-fragment-semantics-and-dom-transport.md)
 - [2026-04-04-v2-mixed-inline-clipboard-proofs-should-span-top-level-blocks-before-broader-tree-shapes.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-04-v2-mixed-inline-clipboard-proofs-should-span-top-level-blocks-before-broader-tree-shapes.md)

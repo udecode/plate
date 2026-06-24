@@ -2,11 +2,11 @@
 
 import * as React from 'react';
 
+import type { Element } from '@platejs/plite';
 import { cva } from 'class-variance-authority';
 import { CornerDownLeftIcon } from 'lucide-react';
 import type {
   AnyPluginConfig,
-  TElement,
   TSuggestionData,
   TSuggestionText,
   WithRequiredKey,
@@ -77,10 +77,10 @@ export function getBlockSuggestionWrapperClassName({
   );
 }
 
-export function isVoidRemoveSuggestion(editor: PlateEditor, element: TElement) {
+export function isVoidRemoveSuggestion(editor: PlateEditor, element: Element) {
   return (
-    editor.getApi(SuggestionPlugin).suggestion.suggestionData(element)?.type ===
-    'remove'
+    editor.getPluginApi(SuggestionPlugin).suggestion.suggestionData(element)
+      ?.type === 'remove'
   );
 }
 
@@ -89,7 +89,7 @@ export function VoidRemoveSuggestionOverlay({
   element,
 }: {
   editor: PlateEditor;
-  element: TElement;
+  element: Element;
 }) {
   const active =
     editor.api.isVoid(element) &&

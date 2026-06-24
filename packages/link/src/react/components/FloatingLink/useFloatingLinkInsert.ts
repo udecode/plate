@@ -15,12 +15,26 @@ import {
 } from 'platejs/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
+import { focusEditorAtSelection } from '../../utils';
 import { triggerFloatingLinkInsert } from '../../utils/triggerFloatingLinkInsert';
 import { useFloatingLinkEscape } from './useFloatingLinkEscape';
 import { useVirtualFloatingLink } from './useVirtualFloatingLink';
 
 export type LinkFloatingToolbarState = {
   floatingOptions?: UseVirtualFloatingOptions;
+};
+
+export type FloatingLinkInsertProps = {
+  hidden: boolean;
+  props: {
+    style: React.CSSProperties;
+  };
+  ref: React.RefCallback<HTMLDivElement>;
+  textInputProps: {
+    defaultValue: string;
+    ref: (el: HTMLInputElement) => void;
+    onChange: React.ChangeEventHandler<HTMLInputElement>;
+  };
 };
 
 export const useFloatingLinkInsertState = ({
@@ -57,7 +71,7 @@ export const useFloatingLinkInsert = ({
   isOpen,
   readOnly,
   triggerFloatingLinkHotkeys,
-}: ReturnType<typeof useFloatingLinkInsertState>): any => {
+}: ReturnType<typeof useFloatingLinkInsertState>): FloatingLinkInsertProps => {
   const { api, editor, getOptions, setOption } = useEditorPlugin(LinkPlugin);
 
   const onChange: React.ChangeEventHandler<HTMLInputElement> =
@@ -72,7 +86,7 @@ export const useFloatingLinkInsert = ({
     () => {
       if (getOptions().mode === 'insert') {
         api.floatingLink.hide();
-        editor.tf.focus({ at: editor.selection! });
+        focusEditorAtSelection(editor);
       }
     },
     {

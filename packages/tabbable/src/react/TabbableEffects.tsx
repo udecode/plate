@@ -30,7 +30,7 @@ export function TabbableEffects() {
     const { globalEventListener, insertTabbableEntries, isTabbable, query } =
       editor.getOptions(BaseTabbablePlugin);
 
-    const editorDOMNode = editor.api.toDOMNode(editor);
+    const editorDOMNode = editor.api.dom.resolveDOMNode(editor);
 
     if (!editorDOMNode) return;
 
@@ -68,18 +68,18 @@ export function TabbableEffects() {
       const tabbableDOMNodes = tabbable(editorDOMNode) as HTMLElement[];
 
       /**
-       * Construct a tabbable entry for each tabbable Slate node, filtered by
+       * Construct a tabbable entry for each tabbable Plite node, filtered by
        * the `isTabbable` option (defaulting to only void nodes).
        */
       const defaultTabbableEntries = tabbableDOMNodes
         .map((domNode) => {
-          const slateNode = editor.api.toSlateNode(domNode);
+          const slateNode = editor.api.dom.resolvePliteNode(domNode);
 
           if (!slateNode) return null;
 
           return {
             domNode,
-            path: editor.api.findPath(slateNode),
+            path: editor.api.dom.resolvePath(slateNode),
             slateNode,
           } as TabbableEntry;
         })
@@ -106,7 +106,7 @@ export function TabbableEffects() {
           tabbableEntries.find((entry) => entry.domNode === activeElement)) ??
         null;
 
-      // Find the next Slate node or DOM node to focus
+      // Find the next Plite node or DOM node to focus
       const tabDestination = findTabDestination(editor, {
         activeTabbableEntry,
         direction: event.shiftKey ? 'backward' : 'forward',
@@ -123,12 +123,13 @@ export function TabbableEffects() {
             break;
           }
           case 'path': {
-            editor.tf.focus({
-              at: {
+            editor.update((tx) => {
+              tx.selection.set({
                 anchor: { offset: 0, path: tabDestination.path },
                 focus: { offset: 0, path: tabDestination.path },
-              },
+              });
             });
+            editor.api.dom.focus();
 
             break;
           }

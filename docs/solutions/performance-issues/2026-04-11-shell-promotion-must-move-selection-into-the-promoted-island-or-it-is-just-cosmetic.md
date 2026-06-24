@@ -2,7 +2,7 @@
 title: Shell promotion must move selection into the promoted island or it is just cosmetic
 date: 2026-04-11
 category: docs/solutions/performance-issues
-module: Slate v2 React runtime
+module: Plite React runtime
 problem_type: performance_issue
 component: frontend_stimulus
 symptoms:
@@ -13,7 +13,7 @@ root_cause: logic_error
 resolution_type: code_fix
 severity: high
 tags:
-  - slate-v2
+  - plite
   - slate-react
   - performance
   - huge-document
@@ -57,8 +57,8 @@ On shell mouse down:
 
 Kept files:
 
-- [island-shell.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react/src/large-document/island-shell.tsx)
-- [editable-text-blocks.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx)
+- [island-shell.tsx](/Users/zbeyens/git/plite/packages/plite-react/src/large-document/island-shell.tsx)
+- [editable-text-blocks.tsx](/Users/zbeyens/git/plite/packages/plite-react/src/components/editable-text-blocks.tsx)
 
 Then prove it in both places:
 
@@ -83,5 +83,5 @@ Once shell promotion also moves selection:
 
 ## Related Issues
 
-- [2026-04-11-slate-v2-active-corridor-promotion-batch.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-slate-v2-active-corridor-promotion-batch.md)
-- [2026-04-11-slate-v2-proof-first-large-document-layer-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-slate-v2-proof-first-large-document-layer-plan.md)
+- [2026-04-11-plite-active-corridor-promotion-batch.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-plite-active-corridor-promotion-batch.md)
+- [2026-04-11-plite-proof-first-large-document-layer-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-plite-proof-first-large-document-layer-plan.md)

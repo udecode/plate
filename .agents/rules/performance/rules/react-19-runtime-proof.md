@@ -7,7 +7,7 @@ Use this when React 19.2 primitives are proposed as part of a perf lane.
 Use `Activity` for hidden/background UI panels, inspectors, preview panes, or
 likely-next views where hidden mode can unmount effects and defer updates.
 
-Do not treat `Activity hidden` as a Slate hidden editable content primitive. It
+Do not treat `Activity hidden` as a Plite hidden editable content primitive. It
 does not solve browser find, native selection, IME, copy/paste, screen-reader,
 or DOM point mapping.
 

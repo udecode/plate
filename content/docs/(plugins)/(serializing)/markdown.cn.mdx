@@ -151,7 +151,7 @@ const editor = createPlateEditor({
   ],
   // 初始内容通过反序列化生成
   value: (editor) =>
-    editor.getApi(MarkdownPlugin).markdown.deserialize(markdownString),
+    editor.getPluginApi(MarkdownPlugin).markdown.deserialize(markdownString),
 });
 ```
 
@@ -751,7 +751,7 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
     - `mdast-to-slate` 利用 `rules` 转化为 Plate 节点
     - Plate 组件系统渲染节点
 2.  **序列化：**
-    - Plate 节点 → `slate-to-mdast`（用 `rules`）→ mdast
+    - Plate 节点 → `plite-to-mdast`（用 `rules`）→ mdast
     - `remarkPlugins` 变换 mdast
     - `remark-stringify` 输出为 Markdown 字符串
 
@@ -1027,7 +1027,7 @@ export function PlateMarkdown({
   useEffect(() => {
     editor.tf.reset(); // 清空先前内容
     editor.tf.setValue(
-      editor.getApi(MarkdownPlugin).markdown.deserialize(children)
+      editor.getPluginApi(MarkdownPlugin).markdown.deserialize(children)
     );
   }, [children, editor, remarkPlugins]); // 当 Markdown 内容或插件更改时重新反序列化
 

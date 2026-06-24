@@ -1,17 +1,23 @@
-import type { ReplaceNodesOptions, SlateEditor, TElement } from 'platejs';
+import type { EditorUpdateTransaction } from '@platejs/plite';
+import type { TColumnGroupElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
 import { columnsToWidths } from '../utils/columnsToWidths';
+import { type ColumnEditor, createColumnBlock } from './ColumnEditor';
 import { setColumns } from './setColumns';
 
+export type ToggleColumnGroupNodeOptions = NonNullable<
+  Parameters<EditorUpdateTransaction['nodes']['insert']>[1]
+>;
+
 export const toggleColumnGroup = (
-  editor: SlateEditor,
+  editor: ColumnEditor,
   {
     at,
     columns = 2,
     widths,
-  }: Partial<ReplaceNodesOptions> & {
+  }: Partial<ToggleColumnGroupNodeOptions> & {
     columns?: number;
     widths?: string[];
   } = {}
@@ -20,7 +26,11 @@ export const toggleColumnGroup = (
   const columnGroupEntry = editor.api.block({
     above: true,
     at,
-    match: { type: editor.getType(KEYS.columnGroup) },
+    match: (node: unknown) =>
+      typeof node === 'object' &&
+      node !== null &&
+      'type' in node &&
+      node.type === editor.getType(KEYS.columnGroup),
   });
 
   if (!entry) return;
@@ -37,17 +47,21 @@ export const toggleColumnGroup = (
 
     const nodes = {
       children: new Array(columns).fill(null).map((_, index) => ({
-        children: [index === 0 ? node : editor.api.create.block()],
+        children: [index === 0 ? node : createColumnBlock(editor)],
         type: editor.getType(KEYS.column) as any,
         width: columnWidths[index],
       })),
       type: editor.getType(KEYS.columnGroup) as any,
-    } as TElement;
+    } as TColumnGroupElement;
 
-    editor.tf.replaceNodes(nodes, {
-      at: path,
+    editor.update((tx) => {
+      tx.withoutNormalizing(() => {
+        tx.nodes.remove({ at: path });
+        tx.nodes.insert(nodes, {
+          at: path,
+        });
+        tx.selection.set(editor.api.start(path.concat([0]))!);
+      });
     });
-
-    editor.tf.select(editor.api.start(path.concat([0]))!);
   }
 };

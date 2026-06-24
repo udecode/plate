@@ -1,11 +1,11 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { removeNodesSuggestion } from './removeNodesSuggestion';
 
 describe('removeNodesSuggestion', () => {
   it('does nothing for an empty node list', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseSuggestionPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 0] },
@@ -20,7 +20,7 @@ describe('removeNodesSuggestion', () => {
   });
 
   it('reuses one removal id and timestamp across every marked node', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseSuggestionPlugin.configure({
           options: {

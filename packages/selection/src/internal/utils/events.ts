@@ -6,11 +6,11 @@ export type EventBindingArgs = [
     | NodeList
   ),
   string[] | string,
-  AnyFunction,
+  EventCallback,
   Record<string, unknown>?,
 ];
 
-type AnyFunction = (...args: any[]) => any;
+type EventCallback = (...args: any[]) => any;
 
 type Method = 'addEventListener' | 'removeEventListener';
 
@@ -23,7 +23,7 @@ const eventListener =
       | HTMLCollection
       | NodeList,
     events: string[] | string,
-    fn: AnyFunction,
+    fn: EventCallback,
     options = {}
   ): EventBindingArgs => {
     // Normalize array
@@ -80,14 +80,28 @@ export const off = eventListener('removeEventListener');
  *
  * @param evt
  */
+type SimplePointerEvent = {
+  clientX: number;
+  clientY: number;
+  target: EventTarget | null;
+};
+
+type SimpleTouchEvent = {
+  touches: ArrayLike<SimplePointerEvent>;
+};
+
 export const simplifyEvent = (
-  evt: any
+  evt: SimplePointerEvent | SimpleTouchEvent
 ): {
   target: HTMLElement;
   x: number;
   y: number;
 } => {
-  const { clientX, clientY, target } = evt.touches?.[0] ?? evt;
+  const pointer = 'touches' in evt ? evt.touches?.[0] : evt;
 
-  return { target, x: clientX, y: clientY };
+  return {
+    target: pointer?.target as HTMLElement,
+    x: pointer?.clientX ?? 0,
+    y: pointer?.clientY ?? 0,
+  };
 };

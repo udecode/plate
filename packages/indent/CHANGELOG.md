@@ -1,5 +1,7 @@
 # @platejs/indent
 
+## 54.0.0-beta.0
+
 ## 53.0.0
 
 ## 52.3.10
@@ -307,7 +309,7 @@
   - fix: tab / untab when composing with IME
   - update peerDeps:
     - `"slate": ">=0.78.0"`
-    - `"slate-react": ">=0.79.0"`
+    - `"plite-react": ">=0.79.0"`
 
 ## 11.1.0
 
@@ -412,17 +414,17 @@
   // before
   {
     classNames: [
-      'slate-indent-1',
-      'slate-indent-2',
-      'slate-indent-3',
+      'plite-indent-1',
+      'plite-indent-2',
+      'plite-indent-3',
     ],
   }
   // after
   {
     classNames: {
-      1: 'slate-indent-1',
-      2: 'slate-indent-2',
-      3: 'slate-indent-3',
+      1: 'plite-indent-1',
+      2: 'plite-indent-2',
+      3: 'plite-indent-3',
     },
   }
   ```

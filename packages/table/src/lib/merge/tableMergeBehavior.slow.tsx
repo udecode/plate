@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, KEYS, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, KEYS, createBasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -13,17 +13,17 @@ import { splitTableCell } from './splitTableCell';
 jsxt;
 
 const createTableEditor = (
-  input: SlateEditor,
+  input: BasePlateEditor,
   { disableMerge = false }: { disableMerge?: boolean } = {}
 ) =>
-  createSlateEditor({
+  createBasePlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins({ disableMerge }),
     selection: input.selection,
     value: input.children,
   });
 
-const getTableEntry = (editor: SlateEditor) =>
+const getTableEntry = (editor: BasePlateEditor) =>
   editor.api.above({ match: { type: editor.getType(KEYS.table) } })!;
 
 describe('table merge behavior', () => {
@@ -56,7 +56,7 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTableEditor(input);
 
@@ -96,7 +96,7 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -128,7 +128,7 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTableEditor(input);
 
@@ -160,7 +160,7 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTableEditor(input);
 
@@ -208,7 +208,7 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -226,7 +226,7 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTableEditor(input, { disableMerge: true });
 
@@ -264,7 +264,7 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTableEditor(input, { disableMerge: true });
 
@@ -304,7 +304,7 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -327,7 +327,7 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTableEditor(input, { disableMerge: true });
 
@@ -365,7 +365,7 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTableEditor(input, { disableMerge: true });
 

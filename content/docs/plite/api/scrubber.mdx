@@ -1,0 +1,38 @@
+---
+title: "Debug Value Scrubbing"
+description: "Debug scrubber API for redacting values in thrown Plite errors."
+---
+
+Plite formats some thrown error details with document values and nodes. Text
+fields are redacted by default. Apps that need stricter diagnostics can install
+a scrubber for additional fields.
+
+## Install A Scrubber
+
+```typescript
+import { setDebugValueScrubber } from "@platejs/plite";
+
+setDebugValueScrubber((key, value) => {
+  if (key === "text" || key === "src") return "[redacted]";
+  return value;
+});
+```
+
+Pass `null` or `undefined` to restore the default scrubber.
+
+```typescript
+setDebugValueScrubber(null);
+```
+
+## API
+
+#### `setDebugValueScrubber(scrubber?: DebugValueScrubber | null): void`
+
+Set the function used before Plite formats debug values.
+
+```typescript
+type DebugValueScrubber = (key: string, value: unknown) => unknown;
+```
+
+The custom scrubber runs before Plite's default text redaction. Return the
+original value to let the default scrubber handle it.

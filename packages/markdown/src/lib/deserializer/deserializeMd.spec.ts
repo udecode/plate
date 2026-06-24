@@ -2,7 +2,7 @@ import { createTestEditor } from '../__tests__/createTestEditor';
 import {
   deserializeMd,
   markdownToAstProcessor,
-  markdownToSlateNodes,
+  markdownToPliteNodes,
 } from './deserializeMd';
 
 describe('deserializeMd', () => {
@@ -224,12 +224,12 @@ describe('markdownToAstProcessor', () => {
   });
 });
 
-describe('markdownToSlateNodes', () => {
+describe('markdownToPliteNodes', () => {
   it('preserves explicit space tokens when memoization keeps them', () => {
     const editor = createTestEditor();
 
     expect(
-      markdownToSlateNodes(editor, 'one\n\n\n\ntwo', {
+      markdownToPliteNodes(editor, 'one\n\n\n\ntwo', {
         memoize: true,
         parser: { exclude: [], trim: false },
       })
@@ -256,7 +256,7 @@ describe('markdownToSlateNodes', () => {
     const editor = createTestEditor();
 
     expect(
-      markdownToSlateNodes(editor, 'one\n\n\ntwo', { memoize: true })
+      markdownToPliteNodes(editor, 'one\n\n\ntwo', { memoize: true })
     ).toEqual([
       {
         _memo: 'one',

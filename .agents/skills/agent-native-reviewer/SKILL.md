@@ -1,195 +1,236 @@
 ---
 name: agent-native-reviewer
-description: Reviews code to ensure agent-native parity -- any action a user can take, an agent can also take. Use after adding UI features, agent tools, or system prompts.
-model: inherit
-color: cyan
-tools: Read, Grep, Glob, Bash
-metadata:
-  skiller:
-    source: plugins/compound-engineering/agents/review/agent-native-reviewer.md
+description: Review agent-native parity for skills, prompts, tools, commands, generated mirrors, repo workflows, and user-facing actions.
 ---
 
-<examples>
-<example>
-Context: The user added a new UI action to an app that has agent integration.
-user: "I just added a publish-to-feed button in the reading view"
-assistant: "I'll use the agent-native-reviewer to check whether the new publish action is agent-accessible"
-<commentary>New UI action needs a parity check -- does a corresponding agent tool exist, and is it documented in the system prompt?</commentary>
-</example>
-<example>
-Context: The user built a multi-step UI workflow.
-user: "I added a report builder wizard with template selection, data source config, and scheduling"
-assistant: "Let me run the agent-native-reviewer -- multi-step wizards often introduce actions agents can't replicate"
-<commentary>Each wizard step may need an equivalent tool, or the workflow must decompose into primitives the agent can call independently.</commentary>
-</example>
-</examples>
+# Agent-Native Reviewer
 
-# Agent-Native Architecture Reviewer
+Review whether an agent can perform, verify, and discover the same meaningful
+action a user can.
 
-You review code to ensure agents are first-class citizens with the same capabilities as users -- not bolt-on features. Your job is to find gaps where a user can do something the agent cannot, or where the agent lacks the context to act effectively.
+The standard is simple:
+
+```txt
+user action -> agent route -> source owner -> proof command/artifact -> handoff
+```
+
+If one link is missing, the workflow is not agent-native.
+
+## Use When
+
+- `.agents/**`, `.claude/**`, `.codex/**`, skills, prompts, hooks, commands, or
+  workflow docs changed.
+- A feature adds or changes a user-facing action and the repo has agent
+  integration.
+- A reviewer asks whether Codex can reproduce, operate, verify, or maintain the
+  same surface a human can.
+- A repo is becoming mostly agent-maintained and needs fewer hidden human-only
+  paths.
+
+## Do Not Use When
+
+- The task is a normal code review with no agent/tooling/workflow surface.
+- The action is intentionally human-only: MFA, OAuth consent, billing payment
+  entry, CAPTCHA, legal acceptance, biometric unlock, or OS permission prompts.
+- The change is cosmetic and has no meaningful operation to reproduce.
 
 ## Core Principles
 
-1. **Action Parity**: Every UI action has an equivalent agent tool
-2. **Context Parity**: Agents see the same data users see
-3. **Shared Workspace**: Agents and users operate in the same data space
-4. **Primitives over Workflows**: Tools should be composable primitives, not encoded business logic (see step 4 for exceptions)
-5. **Dynamic Context Injection**: System prompts include runtime app state, not just static instructions
+1. **Action parity.** Every important user action has an agent route.
+2. **Context parity.** Agents can see the inputs, state, and constraints needed
+   to act well.
+3. **Source ownership.** Agents edit the durable source, not generated mirrors
+   or copied output.
+4. **Proof parity.** Agents can verify the outcome with the same authority a
+   maintainer would trust.
+5. **Discoverability.** The route is visible from the skill, AGENTS file,
+   command docs, tool schema, or public API docs an agent is expected to read.
+6. **Shared workspace.** Agent-created artifacts live where humans can inspect,
+   edit, and commit them.
+
+## Codex Capability Ladder
+
+Assume Codex is the agent runtime unless the repo says otherwise. Prefer the
+most repeatable proof and interaction layer that can cover the action:
+
+1. **Tests and scripts first.** Unit, integration, browser-test, benchmark,
+   typecheck, lint, import smoke, generated-mirror audit, and source audit are
+   the default proof layer. If a behavior can be proved there, do that before
+   driving an app by hand.
+2. **Browser next.** Use the Browser plugin for app/browser interaction proof
+   when tests cannot fully prove rendered behavior, native selection, focus,
+   navigation, screenshots, console/network state, or real route behavior.
+3. **Chrome after Browser.** Use Chrome when the task depends on the user's
+   existing Chrome state, profile, tabs, extensions, cookies, or a site state
+   that Browser cannot access.
+4. **Computer Use last.** Use Computer Use for OS-level or native-app actions
+   that tests, Browser, and Chrome cannot reach. Treat it as powerful but
+   brittle; record exact manual proof and any limits.
+
+Do not jump straight to UI automation when a focused test, command, or source
+audit gives stronger evidence. Do not claim a behavior is agent-native unless
+the selected layer can be rerun or described precisely enough for another agent
+to repeat.
+
+## Dotai Integrations
+
+- Use `autogoal` for durable or measurable work. The first checkpoint must copy
+  agent-native requirements into the plan before implementation.
+- Use `sync-skills` when a skill, rule, template, or generated mirror crosses
+  repo boundaries. Shared behavior belongs in dotai; repo policy stays local.
+- Use `sync-vision` when the missing parity is reusable taste or doctrine, not
+  just one task's mechanics.
+- Use `resolve-pr-feedback` for PR review feedback. It must end with
+  `autoreview` in the destination repo when that repo owns an autoreview gate.
+- Use `hard-cut` when stale compatibility, fake aliases, dead commands, or
+  duplicate agent routes should be deleted rather than wrapped.
+- Use `tdd` or `diagnosing-bugs` when the parity gap is a real behavior bug,
+  flaky proof, or unclear failure path.
 
 ## Review Process
 
-### 0. Triage
+### 1. Identify the Changed Surface
 
-Before diving in, answer three questions:
+Classify the action surface:
 
-1. **Does this codebase have agent integration?** Search for tool definitions, system prompt construction, or LLM API calls. If none exists, that is itself the top finding -- every user-facing action is an orphan feature. Report the gap and recommend where agent integration should be introduced.
-2. **What stack?** Identify where UI actions and agent tools are defined (see search strategies below).
-3. **Incremental or full audit?** If reviewing recent changes (a PR or feature branch), focus on new/modified code and check whether it maintains existing parity. For a full audit, scan systematically.
+| Surface | Examples |
+|---|---|
+| Skill/workflow | `SKILL.md`, `.mdc`, plan template, generated mirror, lockfile |
+| Command/tool | CLI command, script, MCP tool, GitHub workflow, package script |
+| Public API | exported package API, docs example, release artifact |
+| Product action | button, form, keyboard shortcut, browser route, OS/device path |
+| Maintainer action | issue triage, PR feedback, security advisory, release lane |
 
-**Stack-specific search strategies:**
+For incremental reviews, start from the changed files and expand only to the
+source owner, generated mirror, lockfile, command, or docs that prove parity.
 
-| Stack | UI actions | Agent tools |
-|---|---|---|
-| Vercel AI SDK (Next.js) | `onClick`, `onSubmit`, form actions in React components | `tool()` in route handlers, `tools` param in `streamText`/`generateText` |
-| LangChain / LangGraph | Frontend framework varies | `@tool` decorators, `StructuredTool` subclasses, `tools` arrays |
-| OpenAI Assistants | Frontend framework varies | `tools` array in assistant config, function definitions |
-| Claude Code plugins | N/A (CLI) | `agents/*.md`, `skills/*/SKILL.md`, tool lists in frontmatter |
-| Rails + MCP | `button_to`, `form_with`, Turbo/Stimulus actions | `tool()` in MCP server definitions, `.mcp.json` |
-| Generic | Grep for `onClick`, `onSubmit`, `onTap`, `Button`, `onPressed`, form actions | Grep for `tool(`, `function_call`, `tools:`, tool registration patterns |
+### 2. Build the Parity Map
 
-### 1. Map the Landscape
+Use this map for every meaningful action:
 
-Identify:
-- All UI actions (buttons, forms, navigation, gestures)
-- All agent tools and where they are defined
-- How the system prompt is constructed -- static string or dynamically injected with runtime state?
-- Where the agent gets context about available resources
+| User action | Agent route | Source owner | Mirror/lock/doc | Proof | Status |
+|---|---|---|---|---|---|
+| action | skill/tool/command | file/path | generated/config/doc | command/artifact | pass/gap/N/A |
 
-For **incremental reviews**, focus on new/changed files. Search outward from the diff only when a change touches shared infrastructure (tool registry, system prompt construction, shared data layer).
+Status rules:
 
-### 2. Check Action Parity
+- `pass`: source owner, route, proof, and discoverability are present.
+- `gap`: agent cannot safely perform or verify the action.
+- `N/A`: intentionally human-only or outside the current repo authority, with a
+  concrete reason.
 
-Cross-reference UI actions against agent tools. Build a capability map:
+### 3. Check Source Ownership
 
-| UI Action | Location | Agent Tool | In Prompt? | Priority | Status |
-|-----------|----------|------------|------------|----------|--------|
+Flag any workflow that asks agents to edit output instead of source.
 
-**Prioritize findings by impact:**
-- **Must have parity:** Core domain CRUD, primary user workflows, actions that modify user data
-- **Should have parity:** Secondary features, read-only views with filtering/sorting
-- **Low priority:** Settings/preferences UI, onboarding wizards, admin panels, purely cosmetic actions
+Common source boundaries:
 
-Only flag missing parity as Critical or Warning for must-have and should-have actions. Low-priority gaps are Observations at most.
+| Output | Source owner |
+|---|---|
+| `.agents/skills/**/SKILL.md` installed mirror | external skill package or `.agents/rules/**` source |
+| `.claude/skills/**/SKILL.md` installed mirror | external skill package or `.agents/rules/**` source |
+| root `AGENTS.md` generated block | `.agents/AGENTS.md` or repo generator input |
+| generated barrel/export file | package source plus barrel generator command |
+| generated docs/template output | registry/package/docs source named by repo policy |
+| copied skill in many repos | dotai source plus Skills CLI install/update |
 
-### 3. Check Context Parity
+Finding severity is high when the wrong owner would make future agents lose the
+fix during sync.
 
-Verify the system prompt includes:
-- Available resources (files, data, entities the user can see)
-- Recent activity (what the user has done)
-- Capabilities mapping (what tool does what)
-- Domain vocabulary (app-specific terms explained)
+### 4. Check Agent Route
 
-Red flags: static system prompts with no runtime context, agent unaware of what resources exist, agent does not understand app-specific terms.
+The route must be usable without hidden human context:
 
-### 4. Check Tool Design
+- skill name or tool is discoverable from the available skill list, `AGENTS.md`,
+  README, or command docs;
+- arguments are explicit enough for an agent to call correctly;
+- required credentials, browser state, local env, or external access are named;
+- authority boundaries are clear: read-only, patch, commit, push, comment,
+  merge, publish, delete.
 
-For each tool, verify it is a primitive (read, write, store) whose inputs are data, not decisions. Tools should return rich output that helps the agent verify success.
+Do not demand a wrapper skill for every small action. Prefer patching the owner
+skill, AGENTS routing, or command docs when an existing route fits.
 
-**Anti-pattern -- workflow tool:**
-```typescript
-tool("process_feedback", async ({ message }) => {
-  const category = categorize(message);       // logic in tool
-  const priority = calculatePriority(message); // logic in tool
-  if (priority > 3) await notify();            // decision in tool
-});
-```
+### 5. Check Proof
 
-**Correct -- primitive tool:**
-```typescript
-tool("store_item", async ({ key, value }) => {
-  await db.set(key, value);
-  return { text: `Stored ${key}` };
-});
-```
+Every important agent action needs a verification path:
 
-**Exception:** Workflow tools are acceptable when they wrap safety-critical atomic sequences (e.g., a payment charge that must create a record + charge + send receipt as one unit) or external system orchestration the agent should not control step-by-step (e.g., a deploy tool). Flag these for review but do not treat them as defects if the encapsulation is justified.
+- exact command, cwd, and expected result;
+- generated mirror or lockfile audit;
+- browser route/screenshot/console caveat when UI behavior changed;
+- issue/PR/security fetch when public maintainer state changed;
+- source audit when the claim is structural;
+- `N/A` reason when no automated proof fits.
 
-### 5. Check Shared Workspace
+Proof must run in the owning workspace. A downstream install is not proved by a
+source-package validation alone, and a source-package change is not proved by a
+downstream command alone.
 
-Verify:
-- Agents and users operate in the same data space
-- Agent file operations use the same paths as the UI
-- UI observes changes the agent makes (file watching or shared store)
-- No separate "agent sandbox" isolated from user data
+### 6. Check Context
 
-Red flags: agent writes to `agent_output/` instead of user's documents, a sync layer bridges agent and user spaces, users cannot inspect or edit agent-created artifacts.
+Agents need the same operational context a human maintainer uses:
 
-### 6. The Noun Test
+- the relevant vision/doctrine file is linked or routed;
+- project-specific commands live in the project, not in dotai;
+- final handoff tells the user what changed, what needs attention, and what was
+  not verified;
+- recurring misses are written into the durable owner, not left in chat.
 
-After building the capability map, run a second pass organized by domain objects rather than actions. For every noun in the app (feed, library, profile, report, task -- whatever the domain entities are), the agent should:
-1. Know what it is (context injection)
-2. Have a tool to interact with it (action parity)
-3. See it documented in the system prompt (discoverability)
+If the missing context is reusable taste, route to `sync-vision`. If it is
+workflow mechanics, patch the skill/template. If it is one-off, record it in the
+active plan or final handoff.
 
-Severity follows the priority tiers from step 2: a must-have noun that fails all three is Critical; a should-have noun is a Warning; a low-priority noun is an Observation at most.
+## Findings
 
-## What You Don't Flag
+Use severity by consequence:
 
-- **Intentionally human-only flows:** CAPTCHA, 2FA confirmation, OAuth consent screens, terms-of-service acceptance -- these require human presence by design
-- **Auth/security ceremony:** Password entry, biometric prompts, session re-authentication -- agents authenticate differently and should not replicate these
-- **Purely cosmetic UI:** Animations, transitions, theme toggling, layout preferences -- these have no functional equivalent for agents
-- **Platform-imposed gates:** App Store review prompts, OS permission dialogs, push notification opt-in -- controlled by the platform, not the app
+- `P0`: agent can perform a destructive/public action without authority or
+  proof.
+- `P1`: important user or maintainer action has no safe agent route, or the
+  source/generated boundary is wrong.
+- `P2`: route exists but is hard to discover, lacks proof, or will rot during
+  sync.
+- `P3`: wording or docs polish that would improve agent success but is not a
+  blocker.
 
-If an action looks like it belongs on this list but you are not sure, flag it as an Observation with a note that it may be intentionally human-only.
+Suppress low-confidence guesses. If runtime observation is required, ask for or
+run the proof instead of inventing a finding.
 
-## Anti-Patterns Reference
+## What Not To Flag
 
-| Anti-Pattern | Signal | Fix |
-|---|---|---|
-| **Orphan Feature** | UI action with no agent tool equivalent | Add a corresponding tool and document it in the system prompt |
-| **Context Starvation** | Agent does not know what resources exist or what app-specific terms mean | Inject available resources and domain vocabulary into the system prompt |
-| **Sandbox Isolation** | Agent reads/writes a separate data space from the user | Use shared workspace architecture |
-| **Silent Action** | Agent mutates state but UI does not update | Use a shared data store with reactive binding, or file-system watching |
-| **Capability Hiding** | Users cannot discover what the agent can do | Surface capabilities in agent responses or onboarding |
-| **Workflow Tool** | Tool encodes business logic instead of being a composable primitive | Extract primitives; move orchestration logic to the system prompt (unless justified -- see step 4) |
-| **Decision Input** | Tool accepts a decision enum instead of raw data the agent should choose | Accept data; let the agent decide |
-
-## Confidence Calibration
-
-**High (0.80+):** The gap is directly visible -- a UI action exists with no corresponding tool, or a tool embeds clear business logic. Traceable from the code alone.
-
-**Moderate (0.60-0.79):** The gap is likely but depends on context not fully visible in the diff -- e.g., whether a system prompt is assembled dynamically elsewhere.
-
-**Low (below 0.60):** The gap requires runtime observation or user intent you cannot confirm from code. Suppress these.
+- Human-only security/legal/payment ceremonies.
+- Cosmetic UI actions without operational meaning.
+- Missing automation for rare admin tasks when the repo has no safe authority
+  model for agents.
+- A repo-local fork that intentionally keeps product policy out of dotai.
+- A generated mirror that is stale only because the required sync command has
+  not run yet; request the sync/proof instead.
 
 ## Output Format
 
-```markdown
-## Agent-Native Architecture Review
+```md
+## Agent-Native Review
 
-### Summary
-[One paragraph: what kind of app, what agent integration exists, overall parity assessment]
+### Verdict
+PASS | NEEDS WORK
 
 ### Capability Map
-
-| UI Action | Location | Agent Tool | In Prompt? | Priority | Status |
-|-----------|----------|------------|------------|----------|--------|
+| User action | Agent route | Source owner | Mirror/lock/doc | Proof | Status |
+|---|---|---|---|---|---|
 
 ### Findings
+1. [P1] Title -- `file:line`
+   Impact: ...
+   Fix: ...
+   Proof: ...
 
-#### Critical (Must Fix)
-1. **[Issue]** -- `file:line` -- [Description]. Fix: [How]
+### Accepted / Rejected
+- Accepted: ...
+- Rejected: ... because ...
 
-#### Warnings (Should Fix)
-1. **[Issue]** -- `file:line` -- [Description]. Recommendation: [How]
+### Verification
+- command or source audit -> result
 
-#### Observations
-1. **[Observation]** -- [Description and suggestion]
-
-### What's Working Well
-- [Positive observations about agent-native patterns in use]
-
-### Score
-- **X/Y high-priority capabilities are agent-accessible**
-- **Verdict:** PASS | NEEDS WORK
+### Needs Attention
+- ...
 ```

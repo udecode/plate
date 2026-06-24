@@ -110,7 +110,7 @@ You can use the `extendEditor` option to override editor methods and add logging
 const LoggingPlugin = createPlatePlugin({
   key: 'logging',
 }).overrideEditor(({ editor, tf: { apply } }) => ({
-  transforms: {
+  tf: {
     apply(operation) {
       console.debug('Operation:', operation);
       apply(operation);
@@ -202,7 +202,7 @@ Indicates an attempt to use a plugin that hasn't been registered. This happens w
 
 ### USE_CREATE_PLUGIN
 
-Thrown when a plugin wasn't created using `createSlatePlugin` or `createPlatePlugin` function. This error occurs when a plugin is added to the editor without being properly created using the designated function.
+Thrown when a plugin wasn't created using `createEditorPlugin` or `createPlatePlugin` function. This error occurs when a plugin is added to the editor without being properly created using the designated function.
 
 ### USE_ELEMENT_CONTEXT
 

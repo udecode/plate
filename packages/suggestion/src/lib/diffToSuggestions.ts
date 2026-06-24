@@ -1,18 +1,23 @@
 import { type ComputeDiffOptions, computeDiff } from '@platejs/diff';
 import {
   type Descendant,
-  type SlateEditor,
+  type BasePlateEditor,
   type ValueOf,
   ElementApi,
   KEYS,
   TextApi,
 } from 'platejs';
 
-import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
+import type { BaseSuggestionConfig } from './BaseSuggestionPlugin';
 import { getSuggestionProps } from './transforms';
 import { getSuggestionKey } from './utils';
+import { getSuggestionApi } from './utils/getSuggestionApi';
 
-export function diffToSuggestions<E extends SlateEditor>(
+type SuggestionDataNode = Parameters<
+  BaseSuggestionConfig['api']['suggestion']['suggestionData']
+>[0];
+
+export function diffToSuggestions<E extends BasePlateEditor>(
   editor: E,
   doc0: Descendant[],
   doc1: Descendant[],
@@ -65,21 +70,25 @@ export function diffToSuggestions<E extends SlateEditor>(
  * and creation time from the remove suggestion. This allows the UI to treat
  * them as a single suggestion for display and interaction purposes.
  */
-function unifyAdjacentSuggestionIds<E extends SlateEditor>(
+function unifyAdjacentSuggestionIds<E extends BasePlateEditor>(
   node: Descendant,
   index: number,
   nodes: Descendant[],
   editor: E
 ): Descendant {
-  const api = editor.getApi(BaseSuggestionPlugin);
-  const currentNodeData = api.suggestion.suggestionData(node as any);
+  const suggestionApi = getSuggestionApi(editor);
+  const currentNodeData = suggestionApi.suggestionData(
+    node as SuggestionDataNode
+  );
 
   if (currentNodeData?.type === 'insert') {
     // Get the previous node if it exists
     const previousNode = index > 0 ? nodes[index - 1] : null;
 
     if (previousNode?.[KEYS.suggestion]) {
-      const previousData = api.suggestion.suggestionData(previousNode as any);
+      const previousData = suggestionApi.suggestionData(
+        previousNode as SuggestionDataNode
+      );
 
       if (previousData?.type === 'remove') {
         // Create a new node with the updated suggestion data

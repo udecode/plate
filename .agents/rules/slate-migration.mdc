@@ -1,0 +1,268 @@
+---
+description: 'Slate v2 migration supervisor. Use for autonomous Slate/Plate migration work: Plate to Slate v2 migrations, API maps, stale Slate API removal, docs migration-guide repair, changeset repair, migration tests, examples, package DX proof, and self-repair of the migration workflow when gaps are found.'
+argument-hint: <migration surface/objective> [full-loop | timed 1h|2h|overnight | batch-loop | repair <gap>]
+disable-model-invocation: true
+---
+
+# Slate Migration
+
+Handle $ARGUMENTS.
+
+Use this when the user wants a full autonomous migration loop for Slate v2,
+especially when migrating Plate code, examples, docs, tests, public APIs, or
+changesets to the current Slate v2 shape.
+
+This is the migration lane. `auto` supervises broad quality/perf loops;
+`slate-migration` owns migration closure: API mapping, stale symbol removal,
+guide updates, changeset truth, package proof, examples, docs, and missed
+migration workflow repair.
+
+## Core Take
+
+A migration is not done when code compiles.
+
+A migration is done when:
+
+```txt
+inventory -> API map -> migrate one owner -> prove behavior/types/docs
+-> repair guide/changesets -> stale-symbol audit -> packet decision -> repeat
+```
+
+Every discovered migration gap updates the durable owner:
+
+- runtime/package source when behavior is wrong;
+- tests/oracles when proof is missing;
+- migration guide when users need a documented step;
+- changesets when package users need release-facing migration info;
+- `vision` when the gap is reusable taste;
+- `.agents/rules/slate-migration.mdc` or its template when the loop missed a
+  recurring expectation.
+
+## Use When
+
+- The user invokes `slate-migration`.
+- The user asks to migrate Plate to Slate v2.
+- Slate v2 migration docs or changesets are missing, stale, incomplete, or too
+  vague.
+- Public API removals, alias cuts, package moves, root/value shape changes,
+  hook renames, transforms, history, DOM/React APIs, or examples need a
+  source-backed migration path.
+- The work needs many loops with queued stop checkpoints and a final changed
+  list/review-attention handoff.
+- A prior migration pass found a missing guide row, missing changeset, weak
+  stale-symbol audit, or fake compile-only proof.
+
+## Do Not Use When
+
+- The user asks one local Slate v2 bug fix: use `slate-patch`.
+- The user asks one architecture/API decision before migration: use
+  `slate-plan`.
+- The user asks broad behavior/perf automation unrelated to migration closure:
+  use `auto`.
+- The task is only writing a package changeset for an already-understood diff:
+  use `changeset`.
+- The work is only a docs page unrelated to migration: use `docs-creator`.
+
+## Invocation Modes
+
+Use the same mode semantics as `auto`.
+
+- **Full-loop mode:** default when no duration is given. Run one complete
+  migration loop until a real stopping checkpoint or completion threshold.
+- **Timed mode:** when the user says `1h`, `2h`, `overnight`, or similar. Treat
+  the duration as minimum active runtime. Do not stop early because the first
+  migration packet closed; switch to the next migration owner or supervision
+  mode.
+- **Batch-loop mode:** stack soft stopping checkpoints and continue through
+  safe migration owners.
+- **Repair mode:** when arguments start with `repair <gap>`. Patch the
+  migration workflow source owner so future runs catch the gap.
+
+## Goal Contract
+
+Use `autogoal` for non-trivial migration work.
+
+Goal handle:
+
+```txt
+Migrate <surface> to Slate v2; done when API map, source/docs/changesets/tests,
+stale-symbol audit, and review gates pass; plan docs/plans/<path>.md.
+```
+
+Create the plan with the dedicated template:
+
+```bash
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template slate-migration \
+  --title "<surface>"
+```
+
+Add packs only when the touched surface needs them:
+
+- `--with docs` for docs-heavy migration authoring;
+- `--with package-api` for public exports/package boundary changes;
+- `--with browser` for examples or editor behavior routes;
+- `--with agent-native` when the migration workflow skill/template changes.
+
+The first checkpoint must copy every explicit prompt requirement into the plan:
+scope, owners, non-goals, timing, stop rules, deliverables, verification,
+changeset expectations, migration-guide expectations, and final handoff shape.
+
+## Read-First Sources
+
+For every migration run, read the smallest set that owns the current decision:
+
+- latest user request and active goal plan;
+- `vision`;
+- `docs/migration/slate-v2.md`;
+- current Slate public source under `packages/slate*`, `packages/browser`, and
+  `packages/yjs`;
+- target Plate package/example/docs owners under `packages/**`, `apps/**`,
+  `docs/**`, or the named surface;
+- `.agents/rules/changeset.mdc` before writing or repairing changesets;
+- `.agents/rules/docs-creator.mdc` before repairing user-facing docs;
+- relevant previous plans/research only when they are named or directly
+  connected to the surface.
+
+Current source beats memory, stale plans, generated docs, and old migration
+notes.
+
+## Migration Checkpoints
+
+Each loop has one owner and one packet decision.
+
+1. **Inventory:** list packages, imports, docs, examples, tests, and changesets
+   in scope.
+2. **API map:** map old symbols and public behavior to current Slate v2 source.
+3. **Stale-symbol audit:** scan target owners for old Slate API, alias,
+   package, value-shape, root, hook, history, transform, and DOM/React patterns.
+4. **Patch packet:** migrate one owner or prove it already matches v2.
+5. **Behavior/type proof:** run the narrow package, typecheck, test, Browser, or
+   example proof that owns the migrated surface.
+6. **Guide repair:** update the migration guide when a user-facing migration step
+   was missing, ambiguous, or contradicted by source.
+7. **Changeset repair:** update `.changeset` files when package users need
+   release-facing migration info. Use the `changeset` skill. Do not write
+   changesets for docs-only, skill-only, or internal-only work.
+8. **Docs/API sync:** make current docs describe only the latest supported API,
+   while migration docs may use before/after examples.
+9. **Workflow repair:** patch this skill/template or another owning skill when
+   the migration loop missed a recurring checkpoint.
+10. **Review handoff:** update changed list, review-attention list, queued stop
+    checkpoints, commands, and residual risks.
+
+## Packet Ledger
+
+Every migration packet records:
+
+- owner package/docs/example/test;
+- old API or gap signature;
+- current Slate v2 target API;
+- files changed or intentionally not changed;
+- guide row decision: `not-needed`, `updated`, `deferred-with-owner`;
+- changeset decision: `not-needed`, `created`, `updated`, `deferred-with-owner`;
+- proof command and result;
+- decision: `keep`, `revert`, or `quarantine`;
+- next owner.
+
+Do not call a migration packet done with compile-only proof when the surface is
+browser-visible or user-facing.
+
+## Migration Guide Repair
+
+Repair `docs/migration/slate-v2.md` whenever a migration packet
+reveals:
+
+- a missing old-to-v2 API map;
+- a value/roots/state shape that users must understand;
+- a hook/render/event/DOM/history/hyperscript migration step;
+- a stale target API or fake alias;
+- a docs example that would not compile against current public exports;
+- a repeated Plate migration question that belongs in the guide.
+
+Migration docs can use before/after language. Normal latest-state docs should
+not use changelog voice.
+
+## Changeset Repair
+
+Changesets are migration truth for package consumers.
+
+Before editing `.changeset/**`, read `.agents/rules/changeset.mdc` and inspect
+the actual diff against the relevant baseline. Then:
+
+- write only user-visible package deltas;
+- include migration steps only when users must change code;
+- use concise imperative release-note style;
+- split by package according to the active changeset rules;
+- do not describe internals, tests, or implementation diary;
+- do not write a changeset for docs-only, skill-only, template-only, or
+  internal-only migration packets;
+- if a package changed but has no user-visible delta, record `not-needed` with
+  reason in the packet ledger.
+
+If a changeset is incomplete, repair it before final handoff. If the right
+changeset depends on a user-only release decision, queue a stopping checkpoint.
+
+## Plate To Slate v2 Migration
+
+For Plate migration runs:
+
+- treat Plate packages, examples, docs, and tests as the target surface;
+- treat the transplanted Slate packages in this checkout as the current Slate
+  authority;
+- migrate package/runtime owners before app/example glue;
+- remove stale compat aliases instead of preserving bad API shape;
+- keep Plate docs latest-state except for explicit migration docs;
+- run focused package type/tests first, then broader checks only when required;
+- add or repair tests for every migrated behavior contract that could regress;
+- update migration guide and changesets during the loop, not as afterthoughts.
+
+## Self-Repair
+
+If the migration loop misses a recurring expectation, patch the owner:
+
+- missing migration guide checkpoint -> `.agents/rules/slate-migration.mdc` or
+  `docs/plans/templates/slate-migration.md`;
+- missing changeset audit -> this skill/template plus `changeset` only if the
+  changeset rules were actually wrong;
+- wrong source of truth -> this skill;
+- weak proof command -> this skill or the owning package script;
+- stale taste rule -> `vision`;
+- generic goal lifecycle miss -> `autogoal repair`.
+
+After changing `.agents/rules/**`, run `pnpm install`, verify generated
+`.agents/skills/**/SKILL.md`, and record the repair in the active plan.
+
+## Stop Rules
+
+Stop when:
+
+- the migration completion threshold passes;
+- the active packet is verified, reverted, or quarantined and the timed minimum
+  runtime has elapsed;
+- a public API/runtime fork needs `slate-plan`;
+- a required user taste decision is missing from `vision` and no safe
+  alternate migration work remains;
+- commit, PR, external credential, or destructive cleanup authority is needed.
+
+Do not stop because one package compiles while docs, changesets, stale-symbol
+audits, or user-visible examples remain unchecked.
+
+## Final Handoff
+
+Report:
+
+- goal plan path;
+- migration surface and mode;
+- packages/docs/examples/tests checked;
+- API map summary;
+- stale symbols removed or remaining;
+- migration guide updates;
+- changesets created/updated/not-needed;
+- tests/typechecks/browser proof run;
+- workflow repairs;
+- changed list grouped by code, tests, docs, changesets, skills/workflow, and
+  reverted/quarantined packets;
+- `Needs your attention` ranked list;
+- queued stopping checkpoints;
+- residual risks and next owner.

@@ -44,7 +44,7 @@ const items = [
 ];
 
 export function AlignToolbarButton(props: DropdownMenuProps) {
-  const { editor, tf } = useEditorPlugin(TextAlignPlugin);
+  const { editor } = useEditorPlugin(TextAlignPlugin);
   const value =
     useSelectionFragmentProp({
       defaultValue: 'start',
@@ -67,7 +67,9 @@ export function AlignToolbarButton(props: DropdownMenuProps) {
         <DropdownMenuRadioGroup
           value={value}
           onValueChange={(value) => {
-            tf.textAlign.setNodes(value as Alignment);
+            editor
+              .getTransforms(TextAlignPlugin)
+              .textAlign.set(value as Alignment);
             editor.tf.focus();
           }}
         >

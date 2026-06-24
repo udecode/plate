@@ -1,12 +1,13 @@
 import {
-  createTSlatePlugin,
+  createEditorPlugin,
   type PluginConfig,
-  type SlateEditor,
+  type QueryNodeOptions,
+  type BasePlateEditor,
+  type EditorPlugin,
 } from '@platejs/core';
-import type { Path, QueryNodeOptions } from '@platejs/slate';
+import type { Path } from '@platejs/plite';
 
 import { KEYS } from '../../plate-keys';
-import { withTrailingBlock } from './withTrailingBlock';
 
 export type TrailingBlockInsertOptions = {
   at: Path;
@@ -23,7 +24,10 @@ export type TrailingBlockConfig = PluginConfig<
      * Useful when another plugin needs to wrap the insertion, such as
      * disabling suggestions during normalization-generated inserts.
      */
-    insert?: (editor: SlateEditor, options: TrailingBlockInsertOptions) => void;
+    insert?: (
+      editor: BasePlateEditor,
+      options: TrailingBlockInsertOptions
+    ) => void;
     /** Level where the trailing node should be, the first level being 0. */
     level?: number;
     /** Type of the trailing block */
@@ -31,16 +35,16 @@ export type TrailingBlockConfig = PluginConfig<
   } & QueryNodeOptions
 >;
 
-/** @see {@link withTrailingBlock} */
-export const TrailingBlockPlugin = createTSlatePlugin<TrailingBlockConfig>({
+const trailingBlockPlugin = createEditorPlugin<TrailingBlockConfig>({
   key: KEYS.trailingBlock,
   options: {
     level: 0,
   },
-})
-  .overrideEditor(withTrailingBlock)
-  .extend(({ editor }) => ({
-    options: {
-      type: editor.getType(KEYS.p),
-    },
-  }));
+}).extend(({ editor }) => ({
+  options: {
+    type: editor.getType(KEYS.p),
+  },
+})) as EditorPlugin<TrailingBlockConfig>;
+
+export const TrailingBlockPlugin: EditorPlugin<TrailingBlockConfig> =
+  Object.assign(trailingBlockPlugin, { runtimeTrailingBlock: true });

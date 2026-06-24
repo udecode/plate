@@ -1,13 +1,18 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import type { Emoji } from '@emoji-mart/data';
+
+import { createBasePlateEditor, KEYS } from 'platejs';
+
+import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
+import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
 
 import { BaseEmojiInputPlugin, BaseEmojiPlugin } from './BaseEmojiPlugin';
 import { DEFAULT_EMOJI_LIBRARY } from './constants';
 
 describe('BaseEmojiPlugin', () => {
   it('configures the emoji input plugin as an inline void edit-only node', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseEmojiPlugin],
-    } as any);
+    });
 
     const inputPlugin = editor.getPlugin(BaseEmojiInputPlugin);
 
@@ -18,9 +23,9 @@ describe('BaseEmojiPlugin', () => {
   });
 
   it('ships the default trigger, library, and node builders', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseEmojiPlugin],
-    } as any);
+    });
 
     const plugin = editor.getPlugin(BaseEmojiPlugin);
     const triggerPreviousCharPattern =
@@ -46,20 +51,48 @@ describe('BaseEmojiPlugin', () => {
       children: [{ text: '' }],
       type: KEYS.emojiInput,
     });
-    expect(createEmojiNode({ skins: [{ native: '🔥' }] } as any)).toEqual({
+    expect(createEmojiNode({ skins: [{ native: '🔥' }] } as Emoji)).toEqual({
       text: '🔥',
     });
   });
 
   it('includes the nested emoji input plugin', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseEmojiPlugin],
-    } as any);
+    });
 
-    const plugin = editor.getPlugin(BaseEmojiPlugin);
+    expect(editor.getPlugin(BaseEmojiInputPlugin).key).toBe(KEYS.emojiInput);
+  });
 
-    expect(
-      plugin.plugins.some((child: any) => child.key === KEYS.emojiInput)
-    ).toBe(true);
+  it('routes the emoji trigger through the Plite runtime combobox path', () => {
+    const editor = createPlateRuntimeEditor({
+      initialSelection: {
+        anchor: { offset: 6, path: [0, 0] },
+        focus: { offset: 6, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'hello ' }], type: 'p' }],
+      plugins: [BaseEmojiPlugin],
+      userId: 'user-1',
+    });
+
+    const handled = getCurrentRuntimeTransforms(editor).insertText(
+      ':'
+    ) as unknown;
+
+    expect(handled).toBe(true);
+    expect(editor.read((state) => state.value.root()) as unknown).toEqual([
+      {
+        children: [
+          { text: 'hello ' },
+          {
+            children: [{ text: '' }],
+            type: KEYS.emojiInput,
+            userId: 'user-1',
+          },
+          { text: '' },
+        ],
+        type: 'p',
+      },
+    ]);
   });
 });

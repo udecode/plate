@@ -38,7 +38,7 @@ Route formatted code through a shared code-block content transform that replaces
 
 ```ts
 export const setCodeBlockContent = (
-  editor: SlateEditor,
+  editor: PliteEditor,
   { code, element }: { code: string; element: TCodeBlockElement }
 ) => {
   editor.tf.replaceNodes(

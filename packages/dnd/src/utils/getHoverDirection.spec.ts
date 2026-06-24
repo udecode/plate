@@ -1,4 +1,4 @@
-import type { TElement } from 'platejs';
+import type { Element } from '@platejs/plite';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import type { DragItemNode } from '../types';
@@ -16,14 +16,14 @@ describe('getHoverDirection', () => {
     getClientOffset: mock(),
   } as unknown as DropTargetMonitor;
 
-  const dragElement = { id: 'drag' } as unknown as TElement;
+  const dragElement = { id: 'drag' } as unknown as Element;
   const dragItem: DragItemNode = {
     id: 'drag',
     editorId: 'editor',
     element: dragElement,
   };
 
-  const hoverElement = { id: 'hover' } as unknown as TElement;
+  const hoverElement = { id: 'hover' } as unknown as Element;
 
   beforeEach(() => {
     // Mocks cleared in afterEach

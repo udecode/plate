@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 import { DocxPlugin } from '@platejs/docx';
 import {
-  createSlateEditor,
+  createBasePlateEditor,
   ExitBreakPlugin,
   TrailingBlockPlugin,
 } from 'platejs';
@@ -50,7 +50,7 @@ export default function RSCPage() {
     // ... other necessary properties
   };
 
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins: [
       ...BaseEditorKit,
 
@@ -77,8 +77,8 @@ export default function RSCPage() {
       <H3>Creating a Server-Side Editor</H3>
       <P>
         To use Plate on the server, you can leverage the{' '}
-        <Code>createSlateEditor</Code>
-        function. This allows you to create and manipulate Slate documents
+        <Code>createBasePlateEditor</Code>
+        function. This allows you to create and manipulate Plite documents
         without a DOM environment.
       </P>
 
@@ -86,7 +86,7 @@ export default function RSCPage() {
       <P className="mb-8">
         Here's the output of Plate{' '}
         <Link href="/docs/markdown">
-          generating Markdown from a Slate value
+          generating Markdown from a Plite value
         </Link>{' '}
         within a React Server Component:
       </P>

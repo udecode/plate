@@ -3,6 +3,7 @@ import * as actualPlatejs from 'platejs';
 import * as actualPlatejsReact from 'platejs/react';
 
 const useEditorRefMock = mock();
+const useNodePathMock = mock();
 const useEditorSelectorMock = mock();
 const useReadOnlyMock = mock();
 
@@ -15,6 +16,7 @@ mock.module('platejs/react', () => ({
   ...actualPlatejsReact,
   useEditorRef: useEditorRefMock,
   useEditorSelector: useEditorSelectorMock,
+  useNodePath: useNodePathMock,
   useReadOnly: useReadOnlyMock,
 }));
 
@@ -25,6 +27,7 @@ mock.module('../ListPlugin', () => ({
 describe('list-classic hooks', () => {
   beforeEach(() => {
     useEditorRefMock.mockReset();
+    useNodePathMock.mockReset();
     useEditorSelectorMock.mockReset();
     useReadOnlyMock.mockReset();
   });
@@ -49,9 +52,7 @@ describe('list-classic hooks', () => {
       })
     );
     useEditorRefMock.mockReturnValue({
-      getTransforms: () => ({
-        toggle: { list: listToggle },
-      }),
+      update: (fn: any) => fn({ toggle: { list: listToggle } }),
     });
 
     const { result } = renderHook(() => {
@@ -74,8 +75,9 @@ describe('list-classic hooks', () => {
     const element = { checked: false, id: 'todo-1' };
 
     useEditorRefMock.mockReturnValue({
-      tf: { setNodes },
+      update: (fn: any) => fn({ nodes: { set: setNodes } }),
     });
+    useNodePathMock.mockReturnValue([0]);
     useReadOnlyMock.mockReturnValue(false);
 
     const { result } = renderHook(() => {
@@ -86,6 +88,6 @@ describe('list-classic hooks', () => {
 
     result.current.checkboxProps.onCheckedChange(true);
 
-    expect(setNodes).toHaveBeenCalledWith({ checked: true }, { at: element });
+    expect(setNodes).toHaveBeenCalledWith({ checked: true }, { at: [0] });
   });
 });

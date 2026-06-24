@@ -1,11 +1,11 @@
-import type { LeafPosition, Path, TText } from '@platejs/slate';
+import type { LeafPosition, Path, Text } from '@platejs/plite';
 
 export type RenderLeafFn = (props: RenderLeafProps) => React.ReactElement<any>;
 
-export type RenderLeafProps<N extends TText = TText> = {
+export type RenderLeafProps<N extends Text = Text> = {
   attributes: {
     className?: string;
-    'data-slate-leaf'?: true;
+    'data-plite-leaf'?: true;
     style?: React.CSSProperties;
   };
   children: any;

@@ -10,9 +10,11 @@ body:
         Thanks for filing this report. Keep every answer concise, reproducible, and grounded in observed evidence.
         Do not speculate or infer beyond the evidence. If a narrative section cannot be answered from the available evidence, respond with exactly `NOT_ENOUGH_INFO`.
 
-        If the same issue reproduces in plain Slate without Plate-specific code, open it in Slate instead: https://github.com/ianstormtaylor/slate/issues
+        If the same issue reproduces in upstream Slate 0.x without Plate or Plite code, include that upstream link as comparison evidence.
 
-        This form is tuned for maintainer Codex intake through `task`. Public repros, affected packages, browser surface, and concrete acceptance criteria save a debugging round-trip.
+        Please only report one issue per submission. Break multiple issues into separate reports.
+
+        This form is tuned for local maintainer Codex intake through `task`. Public repros, affected packages, browser surface, and concrete acceptance criteria save a debugging round-trip. Do not assume a hosted bot or private context can fill gaps after filing.
   - type: dropdown
     id: bug_type
     attributes:
@@ -34,6 +36,18 @@ body:
       options:
         - "No"
         - "Yes"
+    validations:
+      required: true
+  - type: dropdown
+    id: owner_surface
+    attributes:
+      label: Owner surface
+      description: Choose the layer that best matches the bug.
+      options:
+        - Plite substrate
+        - Plate framework or plugin
+        - Docs, examples, templates, or registry
+        - Unsure
     validations:
       required: true
   - type: textarea
@@ -90,14 +104,38 @@ body:
     validations:
       required: true
   - type: textarea
+    id: regression_range
+    attributes:
+      label: Regression range
+      description: If this worked before, include last-known-good and first-known-bad versions, commits, package versions, or dates. If unknown, respond with exactly `NOT_ENOUGH_INFO`.
+      placeholder: |
+        last-known-good:
+        first-known-bad:
+        evidence:
+      render: yaml
+    validations:
+      required: true
+  - type: dropdown
+    id: reproducibility
+    attributes:
+      label: Reproducibility
+      description: How often did the exact repro happen?
+      options:
+        - Always
+        - Intermittent
+        - Once
+        - NOT_ENOUGH_INFO
+    validations:
+      required: true
+  - type: textarea
     id: versions
     attributes:
-      label: Plate / Slate / React versions
+      label: Plate / Plite / React versions
       description: Exact versions tested. Use `NOT_ENOUGH_INFO` for unknown values.
       placeholder: |
         plate:
-        slate:
-        slate-react:
+        plite:
+        plite-react:
         react:
       render: yaml
     validations:
@@ -148,8 +186,18 @@ body:
     id: logs
     attributes:
       label: Logs, screenshots, and evidence
-      description: Include the redacted logs, screenshots, recordings, docs, or version comparisons that support the grounded answers above.
+      description: Include the redacted logs, screenshots, recordings, before/after evidence, docs, or version comparisons that support the grounded answers above.
       render: shell
+  - type: textarea
+    id: codex_ready_context
+    attributes:
+      label: Maintainer Codex context
+      description: Add anything a local maintainer Codex run needs to take over without private context. If nothing else is needed, write `N/A`.
+      placeholder: |
+        route:
+        local command:
+        fixture/data:
+        known blocker:
   - type: textarea
     id: impact
     attributes:

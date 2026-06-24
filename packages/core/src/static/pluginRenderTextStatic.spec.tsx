@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { createSlatePlugin } from '../lib';
+import { createEditorPlugin } from '../lib';
 import { createStaticEditor } from './editor/withStatic';
 import {
   pipeRenderTextStatic,
@@ -8,7 +8,7 @@ import {
 } from './pluginRenderTextStatic';
 
 describe('pluginRenderTextStatic', () => {
-  const CommentPlugin = createSlatePlugin({
+  const CommentPlugin = createEditorPlugin({
     key: 'comment',
     node: {
       isDecoration: false,

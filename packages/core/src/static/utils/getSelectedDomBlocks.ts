@@ -9,7 +9,7 @@ export const getSelectedDomBlocks = () => {
   const fragment = range.cloneContents();
 
   const domBlocks = fragment.querySelectorAll(
-    '[data-slate-node="element"][data-slate-id]'
+    '[data-plite-node="element"][data-plite-id]'
   );
 
   return Array.from(domBlocks);

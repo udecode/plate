@@ -1,8 +1,11 @@
 import merge from 'lodash/merge.js';
 
-import type { SlateEditor } from '../../lib/editor';
+import type { BasePlateEditor } from '../../lib/editor';
 import type { PluginConfig } from '../../lib/plugin/BasePlugin';
-import type { AnySlatePlugin, SlatePlugin } from '../../lib/plugin/SlatePlugin';
+import type {
+  AnyEditorPlugin,
+  EditorPlugin,
+} from '../../lib/plugin/EditorPlugin';
 
 import { getEditorPlugin } from '../../lib/plugin/getEditorPlugin';
 import { mergePlugins } from '../utils/mergePlugins';
@@ -28,11 +31,11 @@ const normalizeConfiguredInputRules = (config: unknown) => {
  * 3. Clearing the extensions array after application
  *
  * @example
- *   const plugin = createSlatePlugin({ key: 'myPlugin', ...otherOptions }).extend(...);
+ *   const plugin = createEditorPlugin({ key: 'myPlugin', ...otherOptions }).extend(...);
  *   const resolvedPlugin = resolvePlugin(editor, plugin);
  */
-export const resolvePlugin = <P extends AnySlatePlugin>(
-  editor: SlateEditor,
+export const resolvePlugin = <P extends AnyEditorPlugin>(
+  editor: BasePlateEditor,
   _plugin: P
 ): P => {
   // Create a deep clone of the plugin
@@ -116,12 +119,12 @@ export const validatePlugin = <
   T = {},
   S = {},
 >(
-  editor: SlateEditor,
-  plugin: SlatePlugin<PluginConfig<K, O, A, T, S>>
+  editor: BasePlateEditor,
+  plugin: EditorPlugin<PluginConfig<K, O, A, T, S>>
 ) => {
   if (!plugin.__extensions) {
     editor.api.debug.error(
-      `Invalid plugin '${plugin.key}', you should use createSlatePlugin.`,
+      `Invalid plugin '${plugin.key}', you should use createEditorPlugin.`,
       'USE_CREATE_PLUGIN'
     );
   }

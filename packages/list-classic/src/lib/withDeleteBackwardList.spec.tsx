@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from '@platejs/core';
+import { createListClassicRuntimeTestEditor as createBasePlateEditor } from './__tests__/createListClassicRuntimeTestEditor';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
 
 import { BaseListPlugin } from './BaseListPlugin';
 
@@ -23,7 +23,7 @@ describe('li > lic * 2 with selection at second child start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const expected = (
       <editor>
@@ -33,15 +33,15 @@ describe('li > lic * 2 with selection at second child start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    editor.tf.deleteBackward();
+    editor.update((tx) => tx.text.deleteBackward());
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -63,7 +63,7 @@ describe('li with selection at start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const expected = (
       <editor>
@@ -74,15 +74,15 @@ describe('li with selection at start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    editor.tf.deleteBackward();
+    editor.update((tx) => tx.text.deleteBackward());
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -114,7 +114,7 @@ describe('list + sublist where second item has multiple children', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const expected = (
       <editor>
@@ -135,15 +135,15 @@ describe('list + sublist where second item has multiple children', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    editor.tf.deleteBackward();
+    editor.update((tx) => tx.text.deleteBackward());
 
     expect(editor.children).toEqual(expected.children);
   });

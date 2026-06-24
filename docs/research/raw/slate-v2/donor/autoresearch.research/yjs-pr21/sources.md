@@ -1,0 +1,16 @@
+# Research Sources: Perfect @slate/yjs collaboration API, DX, correctness, offline/reconnect, undo/redo, awareness, selection, examples, and test coverage; route each accepted gap to slate-patch, slate-plan, slate-ar-gate, slate-ar-perf, or slate-ar.
+
+| Source | Date Checked | Claim Supported | Confidence |
+| --- | --- | --- | --- |
+| `packages/slate-yjs/package.json` | 2026-06-02 | `@slate/yjs` publishes root, `./core`, `./internal`, and `./react` entrypoints; it depends on Yjs 13.6.30 and peer-depends on Slate/React/Yjs. | high |
+| `packages/slate-yjs/src/core/types.ts` | 2026-06-02 | Public options accept `doc`, `awareness`, selection/data field names, `clientId`, `rootName`, and `autoSendSelection`; state/tx APIs expose cursors, awareness revision, connect/disconnect, pause/resume, reconcile, undo/redo, and selection sending. | high |
+| `packages/slate-yjs/src/core/controller.ts` | 2026-06-02 | The runtime owns seed/import, local-operation export, Yjs UndoManager wiring, awareness subscription, local connected/paused flags, remote cursor reads, split-history replay, and selection sanitization. `connect`/`disconnect` currently flip local state only. | high |
+| `packages/slate-yjs/src/core/operations.ts` | 2026-06-02 | The encoder handles current Slate operation kinds, including traceable fallbacks for virtual move/merge/unwrap/replace cases, but lacks an explicit exhaustive `never` guard for future Slate operation additions. | high |
+| `packages/slate-yjs/src/react/index.ts` | 2026-06-02 | React support exposes awareness revision and remote cursor hooks, but no first-party decorate/render/overlay helpers. | high |
+| `packages/slate-yjs/test/*contract.spec.ts` | 2026-06-02 | Package contracts cover awareness, selection, basic operations, set/remove/move/merge/split/wrap/unwrap/lift/fragments, reconnect, undo/redo, and fallback traces. | high |
+| `playwright/integration/examples/yjs-collaboration.test.ts` | 2026-06-02 | Browser proof covers the operation matrix, awareness selection, disconnect/reconnect, undo/redo, stale undo, offline mark/replace, and selection/focus behavior, but the proof is not named as one release gate. | high |
+| `site/examples/ts/yjs-collaboration.tsx` | 2026-06-02 | The public example is a deterministic four-peer proof harness with a hand-rolled `ExampleNetwork` and fake awareness, not a minimal provider-backed copy-paste example. | high |
+| `scripts/benchmarks/core/current/yjs-collaboration.mjs` | 2026-06-02 | A Yjs collaboration benchmark exists for multi-editor sync, awareness, reconnect, and large-doc sync, but this round found no source-backed perf regression requiring `slate-ar-perf`. | medium |
+| `../lexical/packages/lexical-yjs/src/index.ts` | 2026-06-02 | Lexical's Yjs binding models provider lifecycle/status/reload/sync events explicitly in its provider contract. | medium |
+| `../slate-yjs/packages/react/src/hooks/useDecorateRemoteCursors.ts` and `useRemoteCursorOverlayPositions.tsx` | 2026-06-02 | The older `slate-yjs` React layer includes remote cursor decoration and overlay helpers, which are missing from current `@slate/yjs/react`. | medium |
+| `../y-prosemirror/src/cursor-plugin.js` | 2026-06-02 | y-prosemirror ships a first-party cursor plugin with awareness filtering, cursor/selection builders, focus cleanup, and rendered decorations. | medium |

@@ -1,5 +1,5 @@
 import type { JSHandle, Page } from '@playwright/test';
-import type { Path, TNode } from 'platejs';
+import type { Path } from '@platejs/plite';
 import { getAdapter } from './internal/getAdapter';
 import type { EditorHandle } from './types';
 
@@ -7,7 +7,7 @@ export const getNodeByPath = async (
   page: Page,
   editorHandle: EditorHandle,
   path: Path
-): Promise<JSHandle<TNode>> => {
+): Promise<JSHandle<unknown>> => {
   const adapterHandle = await getAdapter(page);
 
   return page.evaluateHandle(

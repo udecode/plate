@@ -1,4 +1,5 @@
-import type { Path, SlateEditor, TElement, TTableCellElement } from 'platejs';
+import type { Element } from '@platejs/plite';
+import type { Path, BasePlateEditor, TTableCellElement } from 'platejs';
 
 import {
   type BorderDirection,
@@ -13,11 +14,12 @@ import {
   isSelectedCellBorder,
   setBorderSize,
 } from '../../../lib';
-import { TablePlugin } from '../../TablePlugin';
+import type { TableConfig } from '../../../lib/BaseTablePlugin';
+import { findTableNodePath } from '../../../lib/utils/findTableNodePath';
 
 /** Helper: sets one cell's specific border(s) to `size`. */
 function setCellBorderSize(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   at: Path | null,
   directions: BorderDirection[] | 'all',
   size: number
@@ -43,11 +45,11 @@ type SelectedCellBorderTarget = {
 };
 
 const getSelectedCellBorderTargets = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   cells: TTableCellElement[]
 ): SelectedCellBorderTarget[] =>
   cells.map((cell) => {
-    const path = editor.api.findPath(cell) ?? null;
+    const path = findTableNodePath(editor, cell) ?? null;
     const { col, row } = getCellIndices(editor, cell);
 
     return {
@@ -72,7 +74,7 @@ const getSelectedCellBorderTargets = (
  * that side of the bounding rect.
  */
 export function setSelectedCellsBorder(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     border,
     cells,
@@ -197,12 +199,12 @@ export function setSelectedCellsBorder(
  * rectangle, then decide which edges to flip on/off.
  */
 export const getOnSelectTableBorderFactory =
-  (editor: SlateEditor) =>
+  (editor: BasePlateEditor) =>
   (border: BorderDirection | 'none' | 'outer') =>
   () => {
-    let cells = editor.getApi(TablePlugin).table.getSelectedCells() as
-      | TElement[]
-      | null;
+    let cells = (
+      editor.api as unknown as TableConfig['api']
+    ).table.getSelectedCells() as Element[] | null;
 
     if (!cells || cells.length === 0) {
       const cell = editor.api.block({ match: { type: getCellTypes(editor) } });

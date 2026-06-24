@@ -146,10 +146,17 @@ implementation fix.
      useful as executable coverage; do not use standalone Playwright,
      Puppeteer, or raw DevTools as a substitute for the repo Browser policy
   3. `[@Browser](plugin://browser@openai-bundled)` against the real route or
-     local app when tests or Playwright cannot reproduce or cannot model the
-     user-visible surface honestly
-  4. Browser screenshot or explicit visual-proof waiver when layout, rendering,
-     selection, clipboard prompts, native dialogs, or visual state matters
+     local app for normal app-surface behavior when tests or Playwright cannot
+     reproduce or cannot model the user-visible surface honestly
+  4. `[@Chrome](plugin://chrome@openai-bundled)` directly for native
+     browser/profile/OS behavior such as downloads, print/print-preview, file
+     picker/uploads, clipboard, browser dialogs/permissions,
+     extension/profile state, or exact Chrome rendering
+  5. `[@Computer](plugin://computer-use@openai-bundled)` when native Chrome/OS
+     UI must be visually confirmed
+  6. screenshot or explicit visual-proof waiver only after the applicable
+     Browser/Chrome/Computer path cannot inspect layout, rendering, selection,
+     clipboard prompts, native dialogs, visual state, or native browser state
 - Mark a ladder level `N/A` only when that level cannot observe the reported
   behavior; record why. Do not call a bug `not reproduced` until every
   applicable lower-to-higher repro level has either failed to reproduce or is
@@ -178,6 +185,58 @@ implementation fix.
 - Be blunt in tracker and final handoff language. If the premise is wrong, say
   so. If only half the issue is real, say which half. Nice ambiguity is how bad
   patches land.
+
+## Bug Diagnosis Loop
+
+For hard bugs, flaky failures, and perf regressions, build the feedback loop
+before falling in love with a theory. The loop must be:
+
+- red-capable: it drives the user's exact symptom, not just a nearby path;
+- deterministic, or intentionally stress-looped until the failure rate is high
+  enough to debug;
+- fast enough to run repeatedly during the fix;
+- agent-runnable without hidden human clicks unless a HITL script is the only
+  honest path.
+
+Then minimize the repro until every remaining step is load-bearing. Generate
+three to five falsifiable hypotheses before patching, instrument only the
+boundaries that distinguish those hypotheses, tag temporary logs with a unique
+prefix, and remove them before handoff. If no correct regression surface
+exists, record that as architecture/testability debt and route the follow-up to
+`architecture-cleanup`.
+
+## Browser Proof
+
+1. Use the fastest honest browser surface:
+   - `[@Browser](plugin://browser@openai-bundled)` first for ordinary
+     browser-rendered app QA: route navigation, DOM checks, forms,
+     screenshots, responsive checks, and UI visual proof.
+   - `[@Chrome](plugin://chrome@openai-bundled)` directly when native
+     browser/profile/OS behavior is in scope: downloads, print or print
+     preview, file picker/uploads, clipboard, browser permissions/dialogs,
+     extension/profile state, or exact Chrome rendering.
+   - `[@Computer](plugin://computer-use@openai-bundled)` only when native
+     Chrome/OS UI must be visually inspected or interacted with and Chrome
+     automation cannot read it, such as print preview, save/open dialogs, or
+     permission sheets.
+2. Any task with visual output requires direct proof on the real affected
+   surface. Browser-rendered output requires Browser proof; native
+   download/print/file/browser-profile output requires Chrome proof, with
+   Computer Use when the proof is in native UI. Visual output includes UI
+   screens, generated PDFs, emails, screenshots, rendered docs, tables,
+   formatting changes, previews, downloads, print previews, and user-visible
+   browser states.
+3. If Browser hits a known limitation and native proof matters, switch to
+   Chrome/Computer instead of lowering confidence or asking the user to confirm
+   something the agent can inspect.
+4. Direct visual proof is part of the confidence score. Do not claim `95-100%`
+   confidence for visual-output work unless the required visual cases were
+   directly inspected in the real affected browser, inbox, or external surface,
+   or the user explicitly waived that proof.
+5. Do not claim the browser tool is blocked until the Browser->Chrome->Computer
+   escalation has been tried when it applies.
+6. Do not substitute Puppeteer, standalone Playwright, or raw Chrome DevTools
+   for Browser/Chrome usage.
 
 ## Security Advisory Hotfixes
 
@@ -259,16 +318,18 @@ lock.
 - `testing`: tasks primarily about tests, coverage, regression gaps, or suite
   phases.
 - `tdd`: bugs and feature work where behavior-level automated coverage is sane.
-- `learnings-researcher`: non-trivial repeated domains with documented
-  solutions.
-- `debug`: fuzzy failures after the first repro pass or failing test.
+  Use vertical tracer bullets: one public-behavior test, minimal implementation,
+  repeat. Do not write a horizontal batch of imagined tests before code.
+- Prior decisions: for non-trivial repeated domains, search `docs/solutions/**`,
+  `docs/research/**`, and nearby plans before inventing a new pattern.
 - `video-transcripts`: tracker evidence contains a video or screen recording.
 - If requirements remain ambiguous after source and local context, ask the
   smallest clarifying question or switch to a planning goal when the user wants
   planning.
-- `framework-docs-researcher`: unfamiliar, version-sensitive, or unstable
-  third-party APIs after local clones/docs are checked.
-- `browser-use`: real browser/UI surface needs verification.
+- Third-party APIs: inspect local clones/source first, then official docs or
+  Context7 when version-sensitive behavior is still unclear.
+- Browser/Chrome/Computer plugins: real browser/UI/native browser surface needs
+  verification; follow Browser Proof for Browser vs Chrome vs Computer.
 - `agent-browser-issue`: browser automation is blocked by a reusable tool-side
   issue.
 - `changeset`: published package work under `packages/` needs release notes.
@@ -284,7 +345,8 @@ lock.
   claims. Use `--template docs` when docs dominate. Use `--with docs` and still
   load `docs-creator` when docs are a supporting touched surface under a normal
   or major task. Tiny typo/link-only edits may skip it with an explicit reason.
-- `git-commit-push-pr`: verified code should ship as a PR.
+- Git/PR shipping: when verified code should ship and repo policy permits it,
+  use normal `git`/`gh` commands directly. The `task` skill owns the PR body.
 - Review skills: load only for risky, large, user-facing, or
   architecture-sensitive changes.
 - `agent-native-reviewer`: changes touch `.agents/**`, `.claude/**`,
@@ -386,7 +448,11 @@ Keep verification mandatory and proportional.
 - Run targeted tests for changed behavior.
 - Run package/app build and typecheck when relevant.
 - Run lint when code changed and repo policy expects it.
-- Run browser verification only for browser or UI tasks.
+- Run Browser verification only for normal browser-rendered app/UI tasks. Use
+  Chrome directly for native downloads, print/print-preview, file
+  picker/uploads, clipboard, browser dialogs/permissions, extension/profile
+  state, or exact Chrome rendering. Use Computer Use when native Chrome/OS UI
+  must be visually confirmed.
 - Run broader repo-wide gates only when repo instructions or change scope
   justify them.
 - Run verification in the workspace, package, app, route, or external system
@@ -433,9 +499,9 @@ Keep verification mandatory and proportional.
 ## Task-Style PR Body
 
 When a `task` run creates or updates a PR, the PR description must mirror the
-task final handoff. Do not use a generic `Summary` / `Verification` PR body, an
-adaptive prose body from `git-commit-push-pr`, or a generated badge footer
-unless the caller or repo template explicitly asks for it.
+task final handoff. Do not use a generic `Summary` / `Verification` PR body,
+generic git-helper prose, or a generated badge footer unless the caller or repo
+template explicitly asks for it.
 
 Use the accepted task PR format from kitcn PR #270. The shape is not optional:
 

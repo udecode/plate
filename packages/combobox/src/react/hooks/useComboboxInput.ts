@@ -7,7 +7,12 @@ import {
 } from 'react';
 
 import { Hotkeys, isHotkey } from 'platejs';
-import { useEditorRef, useElement, useSelected } from 'platejs/react';
+import {
+  useEditorRef,
+  useElement,
+  useNodePath,
+  useSelected,
+} from 'platejs/react';
 
 import type {
   CancelComboboxInputCause,
@@ -50,6 +55,7 @@ export const useComboboxInput = ({
 }: UseComboboxInputOptions): UseComboboxInputResult => {
   const editor = useEditorRef();
   const element = useElement();
+  const path = useNodePath(element);
   const selected = useSelected();
 
   const cursorAtStart = cursorState?.atStart ?? false;
@@ -57,17 +63,17 @@ export const useComboboxInput = ({
 
   const removeInput = useCallback(
     (shouldFocusEditor = false) => {
-      const path = editor.api.findPath(element);
-
       if (!path) return;
 
-      editor.tf.removeNodes({ at: path });
+      editor.update((tx) => {
+        tx.nodes.remove({ at: path });
+      });
 
       if (shouldFocusEditor) {
-        editor.tf.focus();
+        editor.api.dom.focus();
       }
     },
-    [editor, element]
+    [editor, path]
   );
 
   const cancelInput = useCallback(
@@ -80,7 +86,7 @@ export const useComboboxInput = ({
 
   /**
    * Using autoFocus on the input element causes an error: Cannot resolve a
-   * Slate node from DOM node: [object HTMLSpanElement]
+   * Plite node from DOM node: [object HTMLSpanElement]
    */
   useEffect(() => {
     if (autoFocus) {
@@ -138,13 +144,17 @@ export const useComboboxInput = ({
           cancelInput('arrowRight', true);
         }
 
-        const isUndo = Hotkeys.isUndo(event) && editor.history.undos.length > 0;
-        const isRedo = Hotkeys.isRedo(event) && editor.history.redos.length > 0;
+        const history = editor.history as {
+          redos: unknown[];
+          undos: unknown[];
+        };
+        const isUndo = Hotkeys.isUndo(event) && history.undos.length > 0;
+        const isRedo = Hotkeys.isRedo(event) && history.redos.length > 0;
 
         if (forwardUndoRedoToEditor && (isUndo || isRedo)) {
           event.preventDefault();
           editor[isUndo ? 'undo' : 'redo']();
-          editor.tf.focus();
+          editor.api.dom.focus();
         }
       },
     },

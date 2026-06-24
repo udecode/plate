@@ -5,7 +5,7 @@ import { renderHook } from '@testing-library/react';
 
 import { useRemoveNodeButton } from './useRemoveNodeButton';
 
-const createWrapper = (editor: ReturnType<typeof createPlateEditor>) =>
+const createWrapper = (editor: any) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <Plate editor={editor} suppressInstanceWarning>
@@ -15,14 +15,14 @@ const createWrapper = (editor: ReturnType<typeof createPlateEditor>) =>
   };
 
 describe('useRemoveNodeButton', () => {
-  it('removes the node at the path returned by findPath', () => {
-    const element = { children: [{ text: 'one' }], type: 'p' } as any;
+  it('removes the node at the current node path', () => {
     const editor = createPlateEditor({
-      value: [element],
+      value: [
+        { children: [{ text: 'one' }], type: 'p' },
+        { children: [{ text: 'two' }], type: 'p' },
+      ],
     });
-    const findPathSpy = spyOn(editor.api, 'findPath');
-    (findPathSpy as any).mockReturnValue([0]);
-    const removeNodesSpy = spyOn(editor.tf, 'removeNodes');
+    const element = editor.children[0] as any;
 
     const { result } = renderHook(() => useRemoveNodeButton({ element }), {
       wrapper: createWrapper(editor),
@@ -30,8 +30,12 @@ describe('useRemoveNodeButton', () => {
 
     result.current.props.onClick();
 
-    expect(findPathSpy).toHaveBeenCalledWith(element);
-    expect(removeNodesSpy).toHaveBeenCalledWith({ at: [0] });
+    expect(editor.children).toEqual([
+      expect.objectContaining({
+        children: [{ text: 'two' }],
+        type: 'p',
+      }),
+    ]);
   });
 
   it('prevents the default mouse down behavior', () => {

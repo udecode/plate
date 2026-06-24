@@ -1,7 +1,11 @@
-import { type TIdElement, PathApi } from 'platejs';
+import { ElementApi } from '@platejs/plite';
+import { type NodeEntry, type Path, type TIdElement, PathApi } from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
+
+const isBlockSelectionElement = (node: unknown): node is TIdElement =>
+  ElementApi.isElement(node) && typeof node.id === 'string';
 
 /**
  * SHIFT-based expand-or-shrink selection.
@@ -63,10 +67,11 @@ export const shiftSelection = (
       const belowEntry = editor.api.next({
         at: bottomPath,
         mode: 'highest',
-        match: (n, p) =>
-          api.blockSelection.isSelectable(n as any, p) &&
+        match: (n: unknown, p: Path) =>
+          isBlockSelectionElement(n) &&
+          api.blockSelection.isSelectable(n, p) &&
           !PathApi.isAncestor(p, bottomPath),
-      });
+      }) as NodeEntry<TIdElement> | undefined;
 
       if (!belowEntry) return;
 
@@ -81,11 +86,11 @@ export const shiftSelection = (
   } else if (anchorIsBottom) {
     // SHIFT+UP
     // Expand up => add block above the top-most
-    const aboveEntry = editor.api.previous<TIdElement>({
+    const aboveEntry = editor.api.previous({
       at: topPath,
       from: 'parent',
       match: api.blockSelection.isSelectable,
-    });
+    }) as NodeEntry<TIdElement> | undefined;
 
     if (!aboveEntry) return;
 
@@ -93,7 +98,10 @@ export const shiftSelection = (
 
     if (PathApi.isAncestor(abovePath, topPath)) {
       newSelected.forEach((id) => {
-        const entry = editor.api.node({ id, at: abovePath });
+        const entry = editor.api.node({
+          at: abovePath,
+          id,
+        }) as NodeEntry<TIdElement> | undefined;
 
         if (!entry) return;
         if (PathApi.isDescendant(entry[1], abovePath)) {

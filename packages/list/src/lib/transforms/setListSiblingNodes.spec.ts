@@ -1,7 +1,6 @@
-import { KEYS } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import * as getListSiblingsModule from '../queries/getListSiblings';
-import * as setListNodeModule from './setListNode';
 import { setListSiblingNodes } from './setListSiblingNodes';
 
 describe('setListSiblingNodes', () => {
@@ -10,28 +9,19 @@ describe('setListSiblingNodes', () => {
   });
 
   it('retypes sibling list items and clears todo metadata', () => {
+    const editor = createBasePlateEditor({
+      value: [
+        { [KEYS.indent]: 2, children: [{ text: 'One' }], type: KEYS.p },
+        { [KEYS.indent]: 3, children: [{ text: 'Two' }], type: KEYS.p },
+      ],
+    });
     const getListSiblingsSpy = spyOn(
       getListSiblingsModule,
       'getListSiblings'
     ).mockReturnValue([
-      [{ [KEYS.indent]: 2 }, [0]],
-      [{ [KEYS.indent]: 3 }, [1]],
+      [editor.children[0], [0]],
+      [editor.children[1], [1]],
     ] as any);
-    const setListNodeSpy = spyOn(
-      setListNodeModule,
-      'setListNode'
-    ).mockImplementation(() => {});
-    const setIndentTodoNodeSpy = spyOn(
-      setListNodeModule,
-      'setIndentTodoNode'
-    ).mockImplementation(() => {});
-    const unsetNodes = mock();
-    const editor = {
-      tf: {
-        unsetNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
-    } as any;
 
     setListSiblingNodes(editor, [{ type: KEYS.p }, [0]] as any, {
       getSiblingListOptions: { breakOnEqIndentNeqListStyleType: false } as any,
@@ -39,55 +29,28 @@ describe('setListSiblingNodes', () => {
     });
 
     expect(getListSiblingsSpy).toHaveBeenCalled();
-    expect(unsetNodes).toHaveBeenNthCalledWith(1, KEYS.listChecked, {
-      at: [0],
-    });
-    expect(unsetNodes).toHaveBeenNthCalledWith(2, KEYS.listChecked, {
-      at: [1],
-    });
-    expect(setListNodeSpy).toHaveBeenNthCalledWith(1, editor, {
-      at: [0],
-      indent: 2,
-      listStyleType: 'decimal',
-    });
-    expect(setListNodeSpy).toHaveBeenNthCalledWith(2, editor, {
-      at: [1],
-      indent: 3,
-      listStyleType: 'decimal',
-    });
-    expect(setIndentTodoNodeSpy).not.toHaveBeenCalled();
+    expect(editor.children).toMatchObject([
+      { [KEYS.indent]: 2, [KEYS.listType]: 'decimal' },
+      { [KEYS.indent]: 3, [KEYS.listType]: 'decimal' },
+    ]);
   });
 
   it('uses todo helpers when retyping sibling todo items', () => {
+    const editor = createBasePlateEditor({
+      value: [{ [KEYS.indent]: 4, children: [{ text: 'Todo' }], type: KEYS.p }],
+    });
     spyOn(getListSiblingsModule, 'getListSiblings').mockReturnValue([
-      [{ [KEYS.indent]: 4 }, [3]],
+      [editor.children[0], [0]],
     ] as any);
-    const setListNodeSpy = spyOn(
-      setListNodeModule,
-      'setListNode'
-    ).mockImplementation(() => {});
-    const setIndentTodoNodeSpy = spyOn(
-      setListNodeModule,
-      'setIndentTodoNode'
-    ).mockImplementation(() => {});
-    const unsetNodes = mock();
-    const editor = {
-      tf: {
-        unsetNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
-    } as any;
 
-    setListSiblingNodes(editor, [{ type: KEYS.p }, [3]] as any, {
+    setListSiblingNodes(editor, [{ type: KEYS.p }, [0]] as any, {
       listStyleType: KEYS.listTodo,
     });
 
-    expect(unsetNodes).toHaveBeenCalledWith(KEYS.listType, { at: [3] });
-    expect(setIndentTodoNodeSpy).toHaveBeenCalledWith(editor, {
-      at: [3],
-      indent: 4,
-      listStyleType: KEYS.listTodo,
+    expect(editor.children[0]).toMatchObject({
+      [KEYS.indent]: 4,
+      [KEYS.listChecked]: false,
+      [KEYS.listType]: KEYS.listTodo,
     });
-    expect(setListNodeSpy).not.toHaveBeenCalled();
   });
 });

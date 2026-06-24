@@ -46,9 +46,9 @@ npm install @platejs/combobox
 First, create an input plugin that will be inserted when the trigger is activated:
 
 ```tsx
-import { createSlatePlugin } from 'platejs';
+import { createEditorPlugin } from 'platejs';
 
-const TagInputPlugin = createSlatePlugin({
+const TagInputPlugin = createEditorPlugin({
   key: 'tag_input',
   editOnly: true,
   node: {
@@ -61,18 +61,15 @@ const TagInputPlugin = createSlatePlugin({
 
 ### Create Main Plugin
 
-Create your main plugin using `withTriggerCombobox`:
+Create your main plugin with trigger metadata:
 
 ```tsx
-import { createTSlatePlugin, type PluginConfig } from 'platejs';
-import { 
-  type TriggerComboboxPluginOptions, 
-  withTriggerCombobox 
-} from '@platejs/combobox';
+import { createEditorPlugin, type PluginConfig } from 'platejs';
+import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 
 type TagConfig = PluginConfig<'tag', TriggerComboboxPluginOptions>;
 
-export const TagPlugin = createTSlatePlugin<TagConfig>({
+export const TagPlugin = createEditorPlugin<TagConfig>({
   key: 'tag',
   node: { isElement: true, isInline: true, isVoid: true },
   options: {
@@ -84,7 +81,7 @@ export const TagPlugin = createTSlatePlugin<TagConfig>({
     }),
   },
   plugins: [TagInputPlugin],
-}).overrideEditor(withTriggerCombobox);
+});
 ```
 
 - `node.isElement`: Defines this as an element node (not text)
@@ -130,11 +127,12 @@ export function TagInputElement({ element, ...props }) {
               key={tag.id}
               value={tag.name}
               onClick={() => {
-                // Insert actual tag element
-                editor.tf.insertNodes({
-                  type: 'tag',
-                  tagId: tag.id,
-                  children: [{ text: tag.name }],
+                editor.update((tx) => {
+                  tx.nodes.insert({
+                    children: [{ text: tag.name }],
+                    tagId: tag.id,
+                    type: 'tag',
+                  });
                 });
               }}
             >
@@ -168,7 +166,7 @@ export function TagElement({ element, ...props }) {
       attributes={{
         ...props.attributes,
         contentEditable: false,
-        'data-slate-value': element.value,
+        'data-plite-value': element.value,
       }}
     >
       #{element.value}
@@ -219,7 +217,7 @@ Configuration options for trigger-based combobox plugins.
 
 <API name="TriggerComboboxPluginOptions">
 <APIOptions>
-  <APIItem name="createComboboxInput" type="(trigger: string) => TElement">
+  <APIItem name="createComboboxInput" type="(trigger: string) => Element">
     Function to create the input node when trigger is activated.
   </APIItem>
   <APIItem name="trigger" type="RegExp | string[] | string">
@@ -232,7 +230,7 @@ Configuration options for trigger-based combobox plugins.
     Pattern to match the character before trigger.
     - **Example:** `/^\s?$/` matches start of line or space
   </APIItem>
-  <APIItem name="triggerQuery" type="(editor: SlateEditor) => boolean" optional>
+  <APIItem name="triggerQuery" type="(editor: BasePlateEditor) => boolean" optional>
     Custom query function to control when trigger is active.
   </APIItem>
 </APIOptions>

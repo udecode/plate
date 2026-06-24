@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -12,10 +12,10 @@ import { deleteRow } from './deleteRow';
 jsxt;
 
 const createTableEditor = (
-  input: SlateEditor,
+  input: BasePlateEditor,
   { disableMerge = true }: { disableMerge?: boolean } = {}
 ) =>
-  createSlateEditor({
+  createBasePlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins({ disableMerge }),
     selection: input.selection,
@@ -37,7 +37,7 @@ describe('deleteRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input, { disableMerge: false });
     const spy = spyOn(
@@ -79,7 +79,7 @@ describe('deleteRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
     const spy = spyOn(mergeModule, 'deleteRowWhenExpanded').mockReturnValue(
@@ -113,7 +113,7 @@ describe('deleteRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
 
@@ -137,7 +137,7 @@ describe('deleteRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
 

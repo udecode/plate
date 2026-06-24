@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plite-concepts-05-operations-docs",
+  "title": "Operations",
+  "description": "Use operations as the low-level document change layer shared by history and replay.",
+  "files": [
+    {
+      "path": "../../content/docs/plite/concepts/05-operations.mdx",
+      "content": "---\ntitle: \"Operations\"\ndescription: \"Use operations as the low-level document change layer shared by history and replay.\"\n---\n\nOperations are the granular actions Plite records while an update changes the\ndocument, selection, or persistent state. One command can produce many\noperations.\n\n## Replay Operations\n\n```javascript\neditor.update((tx) => {\n  tx.operations.replay([\n    {\n      type: \"insert_text\",\n      path: [0, 0],\n      offset: 15,\n      text: \"A new string of text to be inserted.\",\n    },\n    {\n      type: \"remove_node\",\n      path: [0, 0],\n      node: {\n        text: \"A line of text!\",\n      },\n    },\n    {\n      type: \"set_selection\",\n      properties: {\n        anchor: { path: [0, 0], offset: 0 },\n      },\n      newProperties: {\n        anchor: { path: [0, 0], offset: 15 },\n      },\n    },\n  ]);\n});\n```\n\nPlite converts editor method calls into low-level operations and applies those\noperations during the transaction. You usually think about operations when\nimplementing operation replay, history, or import/export tooling.\n\nBulk edits can still be one operation. For example, paste can produce a\n`replace_fragment` operation that replaces a child slice and moves the model\nselection to the end of the inserted fragment. Sync adapters can replay that\noperation directly, or translate it into their own representation at the\nadapter boundary.\n\nOperations are the replay boundary. They make changes portable enough for\nhistory, sync adapters, tests, and persistence tools to inspect or replay.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plite/concepts/05-operations.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

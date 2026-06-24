@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -16,7 +16,7 @@ const createEditorInstance = ({
   children?: any;
   selection?: any;
 }) =>
-  createSlateEditor({
+  createBasePlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection,
@@ -54,7 +54,7 @@ describe('isTableBorderHidden', () => {
         </htr>
       </htable>
     </editor>
-  ) as any as SlateEditor;
+  ) as any as BasePlateEditor;
 
   it('returns true if left border is hidden', () => {
     const editor = createEditorInstance(input);

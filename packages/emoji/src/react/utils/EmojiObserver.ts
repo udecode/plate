@@ -1,8 +1,8 @@
 import type React from 'react';
 
-import type { EmojiCategoryList } from '../../lib';
-import type { IEmojiFloatingLibrary } from './EmojiLibrary';
 import type { MapEmojiCategoryList } from '../hooks/useEmojiPickerState';
+import type { EmojiCategoryList } from '../../lib/types';
+import type { IEmojiFloatingLibrary } from './EmojiLibrary/EmojiFloatingLibrary.types';
 
 const setVisibleSections = (
   entries: IntersectionObserverEntry[],

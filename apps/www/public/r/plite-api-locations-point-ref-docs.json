@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plite-api-locations-point-ref-docs",
+  "title": "PointRef API",
+  "description": "Mutable point references that track a point as operations change text and nodes.",
+  "files": [
+    {
+      "path": "../../content/docs/plite/api/locations/point-ref.mdx",
+      "content": "---\ntitle: \"PointRef API\"\ndescription: \"Mutable point references that track a point as operations change text and nodes.\"\n---\n\n`PointRef` objects keep a specific point synced over time as operations are\napplied. They are low-level location values used by Plite internals and\nadvanced runtime code.\n\n## Shape\n\nRead `current` for the up-to-date `Point` value. Call `unref()` when you no\nlonger need to track the point. `affinity` controls which side the point follows\nwhen content is inserted at the current position.\n\n```typescript\ninterface PointRef {\n  current: Point | null;\n  affinity: \"forward\" | \"backward\" | null;\n  unref(): Point | null;\n}\n```\n\n- [Instance methods](point-ref#instance-methods)\n- [Static methods](point-ref#static-methods)\n  - [Transform methods](point-ref#transform-methods)\n\n## Instance Methods\n\n#### `unref() => Point | null`\n\nCall this when you no longer need to sync this point.\nIt also returns the current value.\n\n## Static Methods\n\n### Transform Methods\n\n#### `PointRefApi.transform(ref: PointRef, op: Operation)`\n\nTransform the point ref's current value by an `op`.\nThe editor calls this as needed, so normally you won't need to.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plite/api/locations/point-ref.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

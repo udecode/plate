@@ -1,0 +1,83 @@
+{
+  "name": "@platejs/browser",
+  "version": "54.0.0-beta.0",
+  "description": "Browser proof harness for Plite editors.",
+  "keywords": [
+    "browser",
+    "editor",
+    "playwright",
+    "@platejs/plite",
+    "testing"
+  ],
+  "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/browser"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js",
+      "default": "./dist/core/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser/index.d.ts",
+      "import": "./dist/browser/index.js",
+      "default": "./dist/browser/index.js"
+    },
+    "./playwright": {
+      "types": "./dist/playwright/index.d.ts",
+      "import": "./dist/playwright/index.js",
+      "default": "./dist/playwright/index.js"
+    },
+    "./transports": {
+      "types": "./dist/transports/index.d.ts",
+      "import": "./dist/transports/index.js",
+      "default": "./dist/transports/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "brl": "echo 'No barrels to generate'",
+    "build": "tsdown --config ./tsdown.config.mts --log-level warn",
+    "clean": "rimraf dist lib",
+    "lint": "plate-pkg p:lint",
+    "lint:fix": "plate-pkg p:lint:fix",
+    "test": "bun run test:core && bun run test:dom",
+    "typecheck": "tsc --project tsconfig.json --noEmit",
+    "test:core": "bun test --preload ../../config/plite-source-test-setup.ts test/core",
+    "test:dom": "vitest run --config ./vitest.config.ts --project browser",
+    "test:proof": "bun test --preload ../../config/plite-source-test-setup.ts test/core/release-proof.test.ts test/core/scenario.test.ts",
+    "test:selection": "vitest run --config ./vitest.config.ts --project browser test/browser/selection.browser.test.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.53.0",
+    "@types/node": "24.12.0",
+    "@vitest/browser-playwright": "^4.1.0",
+    "playwright": "^1.58.2",
+    "vite": "^7.1.12",
+    "vitest": "^4.1.0",
+    "@plate/scripts": "workspace:*"
+  },
+  "peerDependencies": {
+    "@playwright/test": ">=1.52.0"
+  },
+  "peerDependenciesMeta": {
+    "@playwright/test": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

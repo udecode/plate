@@ -1,12 +1,12 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { BaseSlashInputPlugin, BaseSlashPlugin } from './BaseSlashPlugin';
 
 describe('BaseSlashPlugin', () => {
   it('ships the slash trigger defaults and nested input plugin', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseSlashPlugin],
-    } as any);
+    });
     const plugin = editor.getPlugin(BaseSlashPlugin);
     const inputPlugin = editor.getPlugin(BaseSlashInputPlugin);
 
@@ -24,5 +24,9 @@ describe('BaseSlashPlugin', () => {
       isInline: true,
       isVoid: true,
     });
+  });
+
+  it('marks the plugin for runtime combobox support', () => {
+    expect(BaseSlashPlugin.runtimeTriggerCombobox).toBe(true);
   });
 });

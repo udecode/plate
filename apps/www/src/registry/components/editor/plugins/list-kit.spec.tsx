@@ -1,6 +1,6 @@
 import ReactDOMServer from 'react-dom/server';
 
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 import { BlockList } from '@/registry/ui/block-list';
@@ -47,7 +47,7 @@ describe('ListKit unordered list rendering', () => {
     const interactiveNodeProps = createPlateEditor({
       plugins: ListKit,
     }).getPlugin({ key: KEYS.list }).inject.nodeProps!;
-    const staticNodeProps = createSlateEditor({
+    const staticNodeProps = createBasePlateEditor({
       plugins: BaseListKit,
     }).getPlugin({ key: KEYS.list }).inject.nodeProps!;
 

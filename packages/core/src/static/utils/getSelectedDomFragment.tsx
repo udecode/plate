@@ -1,8 +1,10 @@
-import { type Descendant, ElementApi, NodeApi } from '@platejs/slate';
+import { type Descendant, ElementApi, NodeApi } from '@platejs/plite';
 
-import type { SlateEditor } from '../../lib';
+import type { BasePlateEditor } from '../../lib';
 
-export const getSelectedDomFragment = (editor: SlateEditor): Descendant[] => {
+export const getSelectedDomFragment = (
+  editor: BasePlateEditor
+): Descendant[] => {
   const selection = window.getSelection();
 
   if (!selection || selection.rangeCount === 0) return [];
@@ -11,7 +13,7 @@ export const getSelectedDomFragment = (editor: SlateEditor): Descendant[] => {
   const fragment = range.cloneContents();
 
   const _domBlocks = fragment.querySelectorAll(
-    '[data-slate-node="element"][data-slate-id]'
+    '[data-plite-node="element"][data-plite-id]'
   );
 
   const domBlocks = Array.from(_domBlocks);
@@ -21,7 +23,7 @@ export const getSelectedDomFragment = (editor: SlateEditor): Descendant[] => {
   const nodes: Descendant[] = [];
 
   domBlocks.forEach((node, index) => {
-    const blockId = (node as HTMLElement).dataset.slateId;
+    const blockId = (node as HTMLElement).dataset.pliteId;
     const block = editor.api.node({ id: blockId, at: [] });
 
     // prevent inline elements like link and table cells.

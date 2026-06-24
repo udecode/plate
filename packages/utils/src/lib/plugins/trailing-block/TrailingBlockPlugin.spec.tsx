@@ -2,7 +2,7 @@
 
 import { jsxt } from '@platejs/test-utils';
 import { ParagraphPlugin } from 'platejs/react';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { normalizeRoot } from '../__tests__/normalizeRoot';
 import { TrailingBlockPlugin } from './TrailingBlockPlugin';
@@ -11,7 +11,7 @@ jsxt;
 
 describe('TrailingBlockPlugin', () => {
   it('uses the editor paragraph type as the default trailing block type', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [TrailingBlockPlugin],
       value: [{ type: 'h1', children: [{ text: 'x' }] }] as any,
     });

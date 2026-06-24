@@ -145,7 +145,7 @@ describe('AIMenu', () => {
       api: {
         marks: () => ({}),
       },
-      getApi: () => ({
+      getPluginApi: () => ({
         aiChat: {
           hide: () => {},
           reload: () => {},

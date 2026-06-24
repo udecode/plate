@@ -1,15 +1,20 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { isCodeBlockEmpty } from './isCodeBlockEmpty';
 
 jsxt;
 
 describe('isCodeBlockEmpty', () => {
-  const run = (input: any) =>
-    isCodeBlockEmpty(createSlateEditor({ editor: createEditor(input) }));
+  const run = (input: BasePlateEditor) =>
+    isCodeBlockEmpty(
+      createBasePlateEditor({
+        selection: input.selection,
+        value: input.children,
+      })
+    );
 
   it.each([
     {
@@ -26,7 +31,7 @@ describe('isCodeBlockEmpty', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ),
+      ) as any as BasePlateEditor,
       title: 'returns false outside a code block',
     },
     {
@@ -43,7 +48,7 @@ describe('isCodeBlockEmpty', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ),
+      ) as any as BasePlateEditor,
       title: 'returns false for a multi-line code block',
     },
     {
@@ -57,7 +62,7 @@ describe('isCodeBlockEmpty', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ),
+      ) as any as BasePlateEditor,
       title: 'returns false for a non-empty code line',
     },
     {
@@ -71,7 +76,7 @@ describe('isCodeBlockEmpty', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ),
+      ) as any as BasePlateEditor,
       title: 'returns true for a single empty code line',
     },
   ])('$title', ({ input, expected }) => {

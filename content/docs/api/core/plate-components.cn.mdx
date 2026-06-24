@@ -17,13 +17,13 @@ description: Plate 组件的 API 参考。
 <APIItem name="editor" type="PlateEditor">
 受控的 `editor` 实例。此属性是必需的。
 </APIItem>
-<APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => TRange[]" optional>
-参见 [Slate 文档](https://docs.slatejs.org/concepts/09-rendering#decorations)。
+<APIItem name="decorate" type="(ctx: EditorPluginContext<C>) => Range[]" optional>
+参见 [Plite 文档](https://docs.slatejs.org/concepts/09-rendering#decorations)。
 </APIItem>
 <APIItem name="onChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
 编辑器状态变化时调用的受控回调。
 </APIItem>
-<APIItem name="onSelectionChange" type="(selection: TRange | null) => void" optional>
+<APIItem name="onSelectionChange" type="(selection: Range | null) => void" optional>
 编辑器选区变化时调用的回调。
 </APIItem>
 <APIItem name="onValueChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
@@ -84,7 +84,7 @@ description: Plate 组件的 API 参考。
 </APIItem>
 <APIItem name="as" type="React.ElementType" optional />
 <APIItem name="autoFocus" type="boolean" optional />
-<APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => TRange[]" optional />
+<APIItem name="decorate" type="(ctx: EditorPluginContext<C>) => Range[]" optional />
 <APIItem name="disableDefaultStyles" type="boolean" optional />
 <APIItem name="onDOMBeforeInput" type="(event: Event) => void" optional />
 <APIItem name="onKeyDown" type="(event: KeyboardEvent) => void" optional />

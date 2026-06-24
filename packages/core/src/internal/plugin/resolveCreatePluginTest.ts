@@ -1,11 +1,13 @@
 import type { AnyPluginConfig } from '../../lib/plugin/BasePlugin';
 
-import { createSlateEditor } from '../../lib/editor';
-import { createSlatePlugin } from '../../lib/plugin/createSlatePlugin';
+import { createBasePlateEditor } from '../../lib/editor';
+import { createEditorPlugin } from '../../lib/plugin/createEditorPlugin';
 import { resolvePlugin } from './resolvePlugin';
 
+type CreateEditorPluginInput = Parameters<typeof createEditorPlugin>[0];
+
 export const resolvePluginTest = <P extends AnyPluginConfig>(p: P) => {
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins: [p],
   }) as any;
 
@@ -18,10 +20,10 @@ export const resolvePluginTest = <P extends AnyPluginConfig>(p: P) => {
   return editor.getPlugin({ key });
 };
 
-export const resolveCreatePluginTest = ((plugin: AnyPluginConfig) => {
-  const p = createSlatePlugin(plugin);
+export const resolveCreatePluginTest = ((plugin: CreateEditorPluginInput) => {
+  const p = createEditorPlugin(plugin);
 
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins: [p],
   }) as any;
 
@@ -32,4 +34,4 @@ export const resolveCreatePluginTest = ((plugin: AnyPluginConfig) => {
   }
 
   return editor.getPlugin({ key });
-}) as typeof createSlatePlugin;
+}) as typeof createEditorPlugin;

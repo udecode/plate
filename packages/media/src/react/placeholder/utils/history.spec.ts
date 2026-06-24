@@ -1,24 +1,8 @@
 import { KEYS } from 'platejs';
 
-import {
-  isHistoryMarking,
-  updateUploadHistory,
-  withHistoryMark,
-} from './history';
+import { updateUploadHistory } from './history';
 
 describe('placeholder upload history', () => {
-  it('marks history only for the wrapped callback lifetime', () => {
-    const editor = {} as any;
-
-    expect(isHistoryMarking(editor)).toBe(false);
-
-    withHistoryMark(editor, () => {
-      expect(isHistoryMarking(editor)).toBe(true);
-    });
-
-    expect(isHistoryMarking(editor)).toBe(false);
-  });
-
   it('rewrites placeholder insert history with the uploaded node payload', () => {
     const editor = {
       history: {

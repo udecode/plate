@@ -1,6 +1,14 @@
 const unitify = (val: number | string, unit = 'px'): string =>
   typeof val === 'number' ? val + unit : val;
 
+const setStyleValue = (
+  style: CSSStyleDeclaration,
+  key: string,
+  value: number | string
+) => {
+  (style as unknown as Record<string, string>)[key] = unitify(value);
+};
+
 /**
  * Add css to a DOM-Element or returns the current value of a property.
  *
@@ -17,10 +25,10 @@ export function css(
   if (typeof attr === 'object') {
     for (const [key, value] of Object.entries(attr)) {
       if (value !== undefined) {
-        style[key as any] = unitify(value);
+        setStyleValue(style, key, value);
       }
     }
   } else if (val !== undefined) {
-    style[attr as any] = unitify(val);
+    setStyleValue(style, attr, val);
   }
 }

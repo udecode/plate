@@ -65,6 +65,24 @@ the caller explicitly asks for a goal-backed docs task.
 closeout contract: lane classification, source-backed claims, ownership map,
 link/demo checks, content build, and anti-slop audit.
 
+When a docs goal uses `--template docs`, the instantiated plan must resolve the
+selected lane's `Lane-Specific Shape Proof` row before writing or closeout. Do
+not let a broad "docs lane shape satisfied" line stand in for the real lane
+contract.
+
+For install/get-started pages, the plan must explicitly prove:
+
+- only the short lead sits above the first `##`;
+- the page has `## Installation`, `## Usage` or an equivalent first working
+  path, and exact next-step links;
+- real procedures use `<Steps>` when they are more than one step;
+- installed packages have an ownership table when more than one package/layer is
+  involved;
+- app-file snippets use titled code fences when file context matters.
+
+If any selected lane row does not fit the page, record why in the plan and name
+the stronger page shape. Do not mark the lane row complete by vibe.
+
 ## Source Of Truth
 
 This file is the source. Generated skill copies are output.
@@ -130,14 +148,14 @@ pile of possible pages.
 
 Classify each gap:
 
-| Gap | Fix |
-| --- | --- |
-| Missing mental model across several APIs or packages | Add a guide/system concept page. |
-| Missing exact options, signatures, or return values | Improve the API/reference section. |
-| Missing setup path for one capability | Improve the plugin/feature page. |
-| Same concept split across two small pages | Merge into the stronger page and redirect links. |
-| A page only repeats an existing reference | Delete or shrink it into a link from the canonical page. |
-| A behavior is source-real but hard to discover | Add a concept guide plus cross-links from the owning references. |
+| Gap                                                  | Fix                                                              |
+| ---------------------------------------------------- | ---------------------------------------------------------------- |
+| Missing mental model across several APIs or packages | Add a guide/system concept page.                                 |
+| Missing exact options, signatures, or return values  | Improve the API/reference section.                               |
+| Missing setup path for one capability                | Improve the plugin/feature page.                                 |
+| Same concept split across two small pages            | Merge into the stronger page and redirect links.                 |
+| A page only repeats an existing reference            | Delete or shrink it into a link from the canonical page.         |
+| A behavior is source-real but hard to discover       | Add a concept guide plus cross-links from the owning references. |
 
 Strong default: **concept page over primitive pages** when a behavior is a
 pipeline. For example, do not create separate "Delete" and "Merge" pages when
@@ -377,16 +395,16 @@ Silence in the source code is a gap, not an agreement.
 
 Use the page shape that matches the job, not the one you wrote last time.
 
-| Lane | Job | What readers need first |
-| --- | --- | --- |
-| Install / get-started | help someone adopt Plate | choose a path, install, next step |
-| Component / registry item | teach a copied UI component or registry item | preview, install, usage |
-| Guide / system | teach a runtime or concept | mental model, ownership, quick start |
-| Plugin / feature | teach one capability | what it does, quickest setup, manual path |
-| Serialization / conversion | explain import/export or round-trip | direction split, environment constraints |
-| Workflow / AI | explain multi-surface flows | setup path, runtime flow, optional UI |
-| API reference | explain an exact surface | short purpose, exact contract, caveats |
-| Spec / law / behavior | lock a contract | model, ownership, evidence, explicit gaps |
+| Lane                       | Job                                          | What readers need first                   |
+| -------------------------- | -------------------------------------------- | ----------------------------------------- |
+| Install / get-started      | help someone adopt Plate                     | choose a path, install, next step         |
+| Component / registry item  | teach a copied UI component or registry item | preview, install, usage                   |
+| Guide / system             | teach a runtime or concept                   | mental model, ownership, quick start      |
+| Plugin / feature           | teach one capability                         | what it does, quickest setup, manual path |
+| Serialization / conversion | explain import/export or round-trip          | direction split, environment constraints  |
+| Workflow / AI              | explain multi-surface flows                  | setup path, runtime flow, optional UI     |
+| API reference              | explain an exact surface                     | short purpose, exact contract, caveats    |
+| Spec / law / behavior      | lock a contract                              | model, ownership, evidence, explicit gaps |
 
 ## Lane Templates
 
@@ -644,7 +662,9 @@ Concept when the runtime already exists and the reader needs to understand it.
 > Here is an example of configuring the plugin:
 >
 > ```tsx
-> Plugin.configure({ /* options */ });
+> Plugin.configure({
+>   /* options */
+> });
 > ```
 
 **Config example — good:**
@@ -652,7 +672,7 @@ Concept when the runtime already exists and the reader needs to understand it.
 > Reach for `.configure()` when you need more than the default behavior. Let's add a keyboard shortcut:
 >
 > ```tsx
-> Plugin.configure({ shortcuts: { toggle: 'mod+alt+s' } });
+> Plugin.configure({ shortcuts: { toggle: "mod+alt+s" } });
 > ```
 
 ---

@@ -1,0 +1,54 @@
+---
+title: "History Extension Setup"
+description: "Install or disable the history extension in core and React-owned editors."
+---
+
+Install history with the `history()` extension.
+
+## Core Editor Setup
+
+```typescript
+import { createEditor } from "@platejs/plite";
+import { history } from "@platejs/plite-history";
+
+const editor = createEditor({
+  extensions: [history()],
+  initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
+});
+```
+
+`usePliteEditor` installs history by default. Disable it explicitly when a
+React-owned editor should not expose history state or transaction helpers.
+
+## React Editor Setup
+
+```typescript
+import { history } from "@platejs/plite-history";
+import { usePliteEditor } from "@platejs/plite-react";
+
+const editor = usePliteEditor({
+  extensions: [history({ enabled: false })],
+  initialValue,
+});
+```
+
+Read history through `state.history`, write through `tx.history`, and control
+batching through `editor.api.history`.
+
+## Runtime API
+
+```typescript
+const undoCount = editor.read((state) => state.history.undos().length);
+
+editor.update((tx) => {
+  tx.history.undo();
+});
+
+editor.api.history.withoutSaving(() => {
+  editor.update((tx) => {
+    tx.text.insert("draft");
+  });
+});
+```
+
+See [History Editor API](./history-editor) for the full API surface.

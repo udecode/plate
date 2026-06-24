@@ -1,6 +1,5 @@
 import { KEYS } from 'platejs';
 
-import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { deleteSuggestion } from './deleteSuggestion';
 
 const createSuggestionNode = ({
@@ -44,15 +43,13 @@ describe('deleteSuggestion', () => {
           anchor: { offset: 0, path },
           focus: { offset: 1, path },
         }),
+        suggestion: {
+          node: () => [suggestionNode, [0, 0]],
+        },
         some: () => false,
         string: () => 'x',
         unhangRange: (range: unknown) => range,
       },
-      getApi: () => ({
-        suggestion: {
-          node: () => [suggestionNode, [0, 0]],
-        },
-      }),
       getOptions: () => ({
         currentUserId: 'alice',
       }),
@@ -60,9 +57,14 @@ describe('deleteSuggestion', () => {
         anchor: pointCurrent,
         focus: pointCurrent,
       },
-      tf: {
-        removeNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
+      update: (fn: (tx: any) => void) => {
+        fn({
+          nodes: {
+            remove: removeNodes,
+          },
+          selection: {},
+          text: {},
+        });
       },
     } as any;
 
@@ -102,19 +104,13 @@ describe('deleteSuggestion', () => {
           anchor: { offset: 0, path },
           focus: { offset: 2, path },
         }),
+        suggestion: {
+          node: ({ match }: any = {}) =>
+            match?.(suggestionNode) ? [suggestionNode, [0, 0]] : undefined,
+        },
         some: () => false,
         string: () => 'x',
         unhangRange: (range: unknown) => range,
-      },
-      getApi: (plugin: unknown) => {
-        expect(plugin).toBe(BaseSuggestionPlugin);
-
-        return {
-          suggestion: {
-            node: ({ match }: any = {}) =>
-              match?.(suggestionNode) ? [suggestionNode, [0, 0]] : undefined,
-          },
-        };
       },
       getOptions: () => ({
         currentUserId: 'alice',
@@ -123,10 +119,16 @@ describe('deleteSuggestion', () => {
         anchor: pointCurrent,
         focus: pointCurrent,
       },
-      tf: {
-        delete: deleteChar,
-        move,
-        withoutNormalizing: (fn: () => void) => fn(),
+      update: (fn: (tx: any) => void) => {
+        fn({
+          nodes: {},
+          selection: {
+            move,
+          },
+          text: {
+            delete: deleteChar,
+          },
+        });
       },
     } as any;
 
@@ -166,14 +168,12 @@ describe('deleteSuggestion', () => {
           anchor: { offset: 0, path },
           focus: { offset: 1, path },
         }),
-        string: () => '\n',
-        unhangRange: (range: unknown) => range,
-      },
-      getApi: () => ({
         suggestion: {
           node: () => {},
         },
-      }),
+        string: () => '\n',
+        unhangRange: (range: unknown) => range,
+      },
       getOptions: () => ({
         currentUserId: 'alice',
       }),
@@ -181,9 +181,14 @@ describe('deleteSuggestion', () => {
         anchor: pointCurrent,
         focus: pointCurrent,
       },
-      tf: {
-        move,
-        withoutNormalizing: (fn: () => void) => fn(),
+      update: (fn: (tx: any) => void) => {
+        fn({
+          nodes: {},
+          selection: {
+            move,
+          },
+          text: {},
+        });
       },
     } as any;
 

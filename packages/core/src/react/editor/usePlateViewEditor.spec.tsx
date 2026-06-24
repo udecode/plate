@@ -2,7 +2,7 @@ import { jsx } from '@platejs/test-utils';
 /** @jsx jsx */
 import { renderHook } from '@testing-library/react';
 
-import { createSlatePlugin } from '../../lib/plugin/createSlatePlugin';
+import { createEditorPlugin } from '../../lib/plugin/createEditorPlugin';
 import * as withStaticModule from '../../static/editor/withStatic';
 import { usePlateViewEditor } from './usePlateViewEditor';
 
@@ -43,7 +43,7 @@ describe('usePlateViewEditor', () => {
     it('pass options to createStaticEditor', () => {
       const options = {
         id: 'custom-id',
-        plugins: [createSlatePlugin({ key: 'test' })],
+        plugins: [createEditorPlugin({ key: 'test' })],
         value: [{ children: [{ text: 'Hello' }], type: 'p' }],
       };
 
@@ -275,8 +275,8 @@ describe('usePlateViewEditor', () => {
         id: 'complex-editor',
         enabled: true,
         plugins: [
-          createSlatePlugin({ key: 'plugin1' }),
-          createSlatePlugin({ key: 'plugin2' }),
+          createEditorPlugin({ key: 'plugin1' }),
+          createEditorPlugin({ key: 'plugin2' }),
         ],
         selection: {
           anchor: { offset: 0, path: [0, 0] },

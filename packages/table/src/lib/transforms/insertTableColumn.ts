@@ -1,13 +1,15 @@
-import type { Path, SlateEditor, TElement, TTableElement } from 'platejs';
+import type { Element } from '@platejs/plite';
+import { PathApi, type Path } from '@platejs/plite';
+import type { BasePlateEditor, TTableElement } from 'platejs';
 
-import { getEditorPlugin, KEYS, NodeApi, PathApi } from 'platejs';
+import { getEditorPlugin, KEYS } from 'platejs';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { insertTableMergeColumn } from '../merge/insertTableColumn';
 import { getCellTypes } from '../utils/index';
 
 export const insertTableColumn = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options: {
     /** Exact path of the cell to insert the column at. Will overrule `fromCell`. */
     at?: Path;
@@ -31,10 +33,14 @@ export const insertTableColumn = (
   let { at, fromCell } = options;
 
   if (at && !fromCell) {
-    const table = NodeApi.get<TTableElement>(editor, at);
+    const table = editor.api.node<TTableElement>(at)?.[0];
 
     if (table?.type === editor.getType(KEYS.table)) {
-      fromCell = NodeApi.lastChild(editor, at.concat([0]))![1];
+      const firstRow = table.children[0] as Element | undefined;
+
+      if (!firstRow) return;
+
+      fromCell = at.concat([0, firstRow.children.length - 1]);
       at = undefined;
     }
   }
@@ -71,7 +77,7 @@ export const insertTableColumn = (
 
   const currentRowIndex = cellPath.at(-2);
 
-  editor.tf.withoutNormalizing(() => {
+  editor.update((tx) => {
     // for each row, insert a new cell
     tableNode.children.forEach((row, rowIndex) => {
       const insertCellPath = [...nextCellPath];
@@ -84,12 +90,12 @@ export const insertTableColumn = (
 
       const isHeaderRow =
         header === undefined
-          ? (row as TElement).children.every(
+          ? (row as Element).children.every(
               (c) => c.type === editor.getType(KEYS.th)
             )
           : header;
 
-      editor.tf.insertNodes(
+      tx.nodes.insert(
         api.create.tableCell({
           header: isHeaderRow,
         }),
@@ -127,14 +133,9 @@ export const insertTableColumn = (
         }
       }
 
-      editor.tf.setNodes<TTableElement>(
-        {
-          colSizes: newColSizes,
-        },
-        {
-          at: tablePath,
-        }
-      );
+      tx.nodes.set({ colSizes: newColSizes } satisfies Partial<TTableElement>, {
+        at: tablePath,
+      });
     }
   });
 };

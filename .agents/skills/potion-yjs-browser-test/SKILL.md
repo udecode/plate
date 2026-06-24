@@ -1,0 +1,108 @@
+---
+description: Use when a Slate Yjs collaboration behavior is suspicious and Potion should be used as a live reference implementation through Browser or Chrome, especially for offline/reconnect, selection, or history scenarios.
+name: potion-yjs-browser-test
+metadata:
+  skiller:
+    source: .agents/rules/potion-yjs-browser-test.mdc
+---
+
+# Potion Yjs Browser Test
+
+## Purpose
+
+Use Potion as a live behavioral oracle, not as the product under test. The
+skill records how to isolate one Potion tab offline with the repo-approved
+Browser/Chrome/Computer ladder and then replay the current bug's repro steps.
+Do not bake one historical repro into the workflow.
+
+## Tool Choice
+
+1. Use `[@Browser](plugin://browser@openai-bundled)` first when Potion can be
+   opened and operated in the in-app Browser session.
+2. Use `[@Chrome](plugin://chrome@openai-bundled)` when the repro needs an
+   existing signed-in Chrome profile, extension/profile state, exact Chrome
+   rendering, or a native browser state Browser cannot access.
+3. Use `[@Computer](plugin://computer-use@openai-bundled)` only when native
+   Chrome/OS UI must be visually inspected and Chrome automation cannot read it.
+
+Do not use a repo-local browser wrapper, Puppeteer, standalone Playwright, or
+raw Chrome DevTools as the default proof lane. If Browser/Chrome cannot isolate
+one tab's network state or inspect the required collaboration state, record the
+tool limitation and route it to `agent-browser-issue` instead of falling back to
+legacy tooling.
+
+## Workflow
+
+1. Confirm Potion access in the selected Browser or Chrome session.
+2. Use a disposable or agreed Potion document. Only reset or overwrite content
+   when the current repro requires it.
+3. Open two named tabs/pages, usually `potion-yjs-reference-a` and
+   `potion-yjs-reference-b`, pointing at the same Potion URL.
+4. Isolate only B offline. Do not make the whole browser context offline if
+   that also disconnects A.
+5. Execute the current repro steps exactly:
+   - B-only local edits while B is offline
+   - A-side online edits while A remains connected
+   - B reconnect
+   - observe final convergence, selection, history, or presence state
+6. Compare the observed Potion result with the local Slate Yjs result. Treat
+   Potion as reference evidence, not automatic proof; confirm the local schema
+   and operation shape are equivalent.
+
+## No Bundled Script
+
+Do not keep a reusable script in this skill. Each collaboration bug has
+different setup, operations, waits, and assertions. A fixed script becomes
+stale fast and tempts agents to rerun yesterday's bug.
+
+For each new case, write the smallest one-off Browser/Chrome interaction plan
+from the current repro steps. Keep scratch code in the terminal or `.tmp/` only
+if it needs iteration; do not promote it into the skill unless the user
+explicitly asks for a durable tool.
+
+## Per-Page Offline Pattern
+
+The selected browser tool must prove page-level network isolation before the
+collaboration repro counts:
+
+- A fetch succeeds while B is isolated offline.
+- B fetch fails while offline.
+- B can reconnect without forcing A offline.
+
+If the current tool exposes a per-page network/CDP primitive, use that. If it
+only exposes whole-context offline state, do not use it for this proof; it is
+the wrong oracle for split-brain Yjs behavior.
+
+## One-Off Repro Checklist
+
+For each new case:
+
+1. Open both Potion pages and wait for the editor.
+2. Prepare only the starting document state required by this repro.
+3. Put only B offline.
+4. Perform the B-side offline operation.
+5. Perform the A-side online operation.
+6. Reconnect B.
+7. Read the document state from both pages and log the result.
+8. Restore B online and clean up temporary network isolation before exiting.
+
+## Interpretation
+
+- If Potion preserves content or history that local Slate Yjs loses, treat the
+  local behavior as suspicious.
+- If Potion produces the same result as local Slate Yjs, treat that conflict
+  behavior as plausible, then verify the local operation sequence really
+  matches Potion.
+- If Potion and local differ, do not jump straight to a fix. First compare
+  editor schema, normalization, command path, selection shape, and operation
+  ordering.
+
+## Failure Handling
+
+- If no editor is found, stop and ask for Potion access or a valid shared
+  document URL.
+- If the Potion page says the document does not exist, stop and ask for a valid
+  shared document URL.
+- If navigation is interrupted, restore both pages online and retry once.
+- If a live observed run times out, keep the current tab state and resume from
+  the printed step instead of restarting blindly.

@@ -1,9 +1,5 @@
-import type {
-  Descendant,
-  NodeEntry,
-  SlateEditor,
-  TTableCellElement,
-} from 'platejs';
+import type { Descendant } from '@platejs/plite';
+import type { NodeEntry, BasePlateEditor, TTableCellElement } from 'platejs';
 
 import cloneDeep from 'lodash/cloneDeep.js';
 import { getEditorPlugin, KEYS } from 'platejs';
@@ -13,14 +9,14 @@ import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getTableGridAbove } from '../queries';
 
 /** Merges multiple selected cells into one. */
-export const mergeTableCells = (editor: SlateEditor) => {
+export const mergeTableCells = (editor: BasePlateEditor) => {
   const { api } = getEditorPlugin(editor, BaseTablePlugin);
 
   const cellEntries = getTableGridAbove(editor, {
     format: 'cell',
   }) as NodeEntry<TTableCellElement>[];
 
-  editor.tf.withoutNormalizing(() => {
+  editor.update((tx) => {
     // calculate the colSpan which is the number of horizontal cells that a cell should span.
     let colSpan = 0;
 
@@ -56,10 +52,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
 
       const cellChildren = api.table.getCellChildren!(el);
 
-      if (
-        cellChildren.length !== 1 ||
-        !editor.api.isEmpty(cellChildren[0] as any)
-      ) {
+      if (cellChildren.length !== 1 || !editor.api.isEmpty(cellChildren[0])) {
         mergingCellChildren.push(...cloneDeep(cellChildren));
       }
     }
@@ -82,7 +75,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
     // once cell removed, next cell in the row will settle down on that path
     Object.values(cols).forEach((paths) => {
       paths?.forEach(() => {
-        editor.tf.removeNodes({ at: paths[0] });
+        tx.nodes.remove({ at: paths[0] });
       });
     });
 
@@ -98,8 +91,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
     };
 
     // insert the new merged cell in place of the first cell in the selection
-    editor.tf.insertNodes(mergedCell, { at: cellEntries[0][1] });
+    tx.nodes.insert(mergedCell, { at: cellEntries[0][1] });
+    tx.selection.set(editor.api.end(cellEntries[0][1])!);
   });
-
-  editor.tf.select(editor.api.end(cellEntries[0][1])!);
 };

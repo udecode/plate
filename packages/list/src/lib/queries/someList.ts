@@ -1,8 +1,8 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
-export const someList = (editor: SlateEditor, type: string[] | string) =>
+export const someList = (editor: BasePlateEditor, type: string[] | string) =>
   !!editor.selection &&
   editor.api.some({
     match: (n: any) => {

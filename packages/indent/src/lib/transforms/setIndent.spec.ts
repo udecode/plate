@@ -1,4 +1,4 @@
-import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, createBasePlateEditor } from 'platejs';
 
 import { BaseIndentPlugin } from '../BaseIndentPlugin';
 import { indent } from './indent';
@@ -6,7 +6,7 @@ import { outdent } from './outdent';
 import { setIndent } from './setIndent';
 
 const createIndentEditor = (value: any[]) =>
-  createSlateEditor({
+  createBasePlateEditor({
     plugins: [BaseParagraphPlugin, BaseIndentPlugin],
     value,
   });

@@ -448,7 +448,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"https://docs.slatejs.org/libraries/slate-history","title":"Slate History"}],"examples":["basic-nodes-demo"]},
+    meta: {"docs":[{"route":"https://docs.slatejs.org/libraries/slate-history","title":"Plite History"}],"examples":["basic-nodes-demo"]},
   },
   "list-toolbar-button": {
     name: "list-toolbar-button",
@@ -796,7 +796,7 @@ export const Index: Record<string, any> = {
   },
   "remote-cursor-overlay": {
     name: "remote-cursor-overlay",
-    description: "A cursor overlay to display multiplayer cursors in the yjs plugin.",
+    description: "A cursor overlay slot for app-owned collaboration wiring.",
     type: "registry:ui",
     registryDependencies: [],
     files: [{
@@ -3029,8 +3029,8 @@ export const Index: Record<string, any> = {
     }),
     meta: undefined,
   },
-  "slate-to-html": {
-    name: "slate-to-html",
+  "plite-to-html": {
+    name: "plite-to-html",
     description: "",
     type: "registry:block",
     registryDependencies: ["https://platejs.org/r/plate-ui.json","https://platejs.org/r/editor-base-kit.json","button"],
@@ -3419,18 +3419,18 @@ export const Index: Record<string, any> = {
     }),
     meta: undefined,
   },
-  "markdown-to-slate-demo": {
-    name: "markdown-to-slate-demo",
+  "markdown-to-plite-demo": {
+    name: "markdown-to-plite-demo",
     description: "",
     type: "registry:example",
     registryDependencies: ["https://platejs.org/r/editor-kit.json","https://platejs.org/r/use-debounce.json"],
     files: [{
-      path: "src/registry/examples/markdown-to-slate-demo.tsx",
+      path: "src/registry/examples/markdown-to-plite-demo.tsx",
       type: "registry:example",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/markdown-to-slate-demo.tsx")
+      const mod = await import("@/registry/examples/markdown-to-plite-demo.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -3455,7 +3455,7 @@ export const Index: Record<string, any> = {
   },
   "collaboration-demo": {
     name: "collaboration-demo",
-    description: "Real-time collaboration with cursors and selections.",
+    description: "Editor shell for app-owned collaboration wiring.",
     type: "registry:example",
     registryDependencies: ["https://platejs.org/r/use-mounted.json","https://platejs.org/r/remote-cursor-overlay.json","button","input"],
     files: [{
@@ -4249,7 +4249,7 @@ export const Index: Record<string, any> = {
   },
   "csv-demo": {
     name: "csv-demo",
-    description: "Copy paste from CSV to Slate.",
+    description: "Copy paste from CSV to Plite.",
     type: "registry:example",
     registryDependencies: ["https://platejs.org/r/editor-kit.json"],
     files: [{
@@ -4270,7 +4270,7 @@ export const Index: Record<string, any> = {
   },
   "docx-demo": {
     name: "docx-demo",
-    description: "Copy paste from DOCX to Slate.",
+    description: "Copy paste from DOCX to Plite.",
     type: "registry:example",
     registryDependencies: ["https://platejs.org/r/editor-kit.json"],
     files: [{
@@ -4291,7 +4291,7 @@ export const Index: Record<string, any> = {
   },
   "html-demo": {
     name: "html-demo",
-    description: "Copy paste from HTML to Slate.",
+    description: "Copy paste from HTML to Plite.",
     type: "registry:example",
     registryDependencies: ["https://platejs.org/r/editor-kit.json"],
     files: [{
@@ -4312,7 +4312,7 @@ export const Index: Record<string, any> = {
   },
   "markdown-demo": {
     name: "markdown-demo",
-    description: "Copy paste from Markdown to Slate.",
+    description: "Copy paste from Markdown to Plite.",
     type: "registry:example",
     registryDependencies: ["https://platejs.org/r/markdown-kit.json","https://platejs.org/r/editor-kit.json"],
     files: [{

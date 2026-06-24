@@ -398,7 +398,7 @@
         "media-video-node",
         "editor-ai",
         "editor-basic",
-        "slate-to-html"
+        "plite-to-html"
       ],
       "entries": 2,
       "diagnostics": []
@@ -930,7 +930,7 @@
         "markdown-streaming-demo",
         "preview-markdown-demo",
         "pro-iframe-demo",
-        "slate-to-html",
+        "plite-to-html",
         "version-history-demo",
         "fumadocs-mdx-components",
         "mdx-plate-components"
@@ -1051,7 +1051,7 @@
         "media-video-node",
         "mention-node",
         "paragraph-node",
-        "slate-to-html",
+        "plite-to-html",
         "suggestion-kit",
         "suggestion-node",
         "table-node",

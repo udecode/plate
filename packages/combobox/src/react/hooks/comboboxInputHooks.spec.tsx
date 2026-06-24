@@ -44,6 +44,7 @@ mock.module('platejs/react', () => ({
   useEditorRef: useEditorRefMock,
   useEditorSelector: useEditorSelectorMock,
   useElement: useElementMock,
+  useNodePath: () => [0],
   usePluginOption: usePluginOptionMock,
   useReadOnly: useReadOnlyMock,
   useSelected: useSelectedMock,
@@ -74,16 +75,19 @@ describe('combobox input hooks', () => {
     useSelectedMock.mockReturnValue(true);
     useEditorRefMock.mockReturnValue({
       api: {
-        findPath: () => [0],
+        dom: { focus },
       },
       history: {
         redos: [{}],
         undos: [{}],
       },
       redo,
-      tf: {
-        focus,
-        removeNodes,
+      update: (fn: any) => {
+        fn({
+          nodes: {
+            remove: removeNodes,
+          },
+        });
       },
       undo,
     });

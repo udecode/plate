@@ -171,9 +171,9 @@ const ParagraphPlugin = createPlatePlugin({
 }).withComponent(ParagraphElement);
 ```
 
-## API和转换方法
+## API 和事务命令
 
-插件可以定义自己的API方法和转换方法，这些方法将被合并到编辑器的API和转换中。这是通过`extendApi`、`extendEditorApi`、`extendTransforms`和`extendEditorTransforms`方法实现的。
+插件可以定义自己的 API 方法和事务命令。API 合并到 `editor.api`；事务命令在 `editor.update((tx) => ...)` 内使用。
 
 ### .extendApi
 
@@ -205,41 +205,36 @@ const MyPlugin = createPlatePlugin({
 editor.api.editorMethod();
 ```
 
-### .extendTransforms
+### .extendTx
 
-使用`extendTransforms`添加插件特定的转换方法：
+使用 `extendTx` 添加插件自己的事务命令：
 
 ```ts
 const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
-}).extendTransforms(() => ({
-  pluginTransform: () => {
-    // 自定义转换逻辑
+}).extendTx(() => (tx) => ({
+  pluginCommand: () => {
+    tx.text.insert('text');
   },
 }));
 
-// 访问插件的转换方法
-editor.tf.myPlugin.pluginTransform();
-
-// 注意：`editor.tf`是`editor.transforms`的简写
-editor.transforms.myPlugin.pluginTransform();
+editor.update((tx) => tx.myPlugin.pluginCommand());
 ```
 
-### .extendEditorTransforms
+### .extendTxGroup
 
-使用`extendEditorTransforms`添加根级转换方法：
+使用 `extendTxGroup` 给指定命名空间添加事务命令：
 
 ```ts
 const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
-}).extendEditorTransforms(({ editor }) => ({
-  editorTransform: () => {
-    // 自定义编辑器转换逻辑
+}).extendTxGroup('insert', () => (tx) => ({
+  mention: () => {
+    tx.text.insert('@');
   },
 }));
 
-// 访问插件的转换方法
-editor.tf.editorTransform();
+editor.update((tx) => tx.insert.mention());
 ```
 
 ### .overrideEditor
@@ -250,7 +245,7 @@ editor.tf.editorTransform();
 const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
 }).overrideEditor(({ editor, tf: { insertText }, api: { isInline } }) => ({
-  transforms: {
+  tf: {
     insertText(text, options) {
       // 覆盖insertText行为
       insertText(text, options);
@@ -266,18 +261,18 @@ const MyPlugin = createPlatePlugin({
 ```
 
 - 专门用于覆盖现有的编辑器方法
-- 返回包装在`transforms`或`api`对象中的重写方法
-- 不能添加新方法（使用`extendEditorTransforms`或`extendEditorApi`替代）
+- 返回包装在 `tf` 或 `api` 对象中的重写方法
+- 不能添加新方法（使用 `extendApi`、`extendEditorApi`、`extendTx` 或 `extendTxGroup`）
 - 通过上下文提供对原始方法的访问
 
-### API与转换方法的区别
+### API 与事务命令的区别
 
-虽然目前Plate中API和转换方法在核心上没有区别，但它们服务于不同的目的，并为未来的可扩展性而设计：
+API 和事务命令服务于不同目的：
 
-- **转换方法：**
-  - 存储所有Slate转换和编辑器操作。结构设计为未来可能支持中间件，允许更复杂的转换管道和开发工具。
-  - 通常用于修改编辑器状态的操作，如插入、删除或转换内容。
-  - 示例：`editor.tf.toggleBlock()`、`editor.tf.toggleMark('bold')`
+- **事务命令：**
+  - 用于修改编辑器状态。
+  - 在 `editor.update((tx) => ...)` 内运行。
+  - 示例：`editor.update((tx) => tx.insert.tableRow())`
 
 - **API方法：**
   - 存储所有查询、实用函数和其他不直接修改编辑器状态的方法。
@@ -300,29 +295,29 @@ const MyPlugin = createPlatePlugin({
   .extendEditorApi(({ getOptions }) => ({
     multiply: (factor: number) => getOptions().baseValue * factor,
   }))
-  .extendTransforms(() => ({
-    pluginTransform: () => {
-      // 插件特定的转换
+  .extendTx(() => (tx) => ({
+    pluginCommand: () => {
+      tx.text.insert('text');
     },
   }))
-  .extendEditorTransforms(({ editor }) => ({
-    editorTransform: () => {
-      // 编辑器特定的转换
+  .extendTxGroup('insert', () => (tx) => ({
+    mention: () => {
+      tx.text.insert('@');
     },
   }));
 
 editor.api.myPlugin.api.pluginMethod();
 editor.api.multiply(3);
-editor.tf.myPlugin.pluginTransform();
-editor.tf.editorTransform();
+editor.update((tx) => tx.myPlugin.pluginCommand());
+editor.update((tx) => tx.insert.mention());
 ```
 
-## 将Slate插件转换为Plate插件
+## 将Plite插件转换为Plate插件
 
-要将类型化的Slate插件转换为Plate插件，可以使用`toPlatePlugin`：
+要将类型化的Plite插件转换为Plate插件，可以使用`toPlatePlugin`：
 
 ```ts
-const CodeBlockPlugin = toPlatePlugin(createSlatePlugin({ key: 'code_block' }), {
+const CodeBlockPlugin = toPlatePlugin(createEditorPlugin({ key: 'code_block' }), {
   handlers: {},
   options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
 });

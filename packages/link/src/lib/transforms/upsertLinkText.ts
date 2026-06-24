@@ -1,6 +1,11 @@
-import type { SlateEditor, TLinkElement, TText } from 'platejs';
+import type { NodeEntry, Text } from '@platejs/plite';
 
-import { KEYS } from 'platejs';
+import {
+  type BasePlateEditor,
+  type TLinkElement,
+  ElementApi,
+  KEYS,
+} from 'platejs';
 
 import type { UpsertLinkOptions } from './upsertLink';
 
@@ -9,12 +14,14 @@ import type { UpsertLinkOptions } from './upsertLink';
  * new text. The new text has the same marks than the first text replaced.
  */
 export const upsertLinkText = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { text }: UpsertLinkOptions
 ) => {
-  const newLink = editor.api.above<TLinkElement>({
-    match: { type: editor.getType(KEYS.link) },
-  });
+  const linkType = editor.getType(KEYS.link);
+  const newLink = editor.api.above({
+    match: (node: unknown) =>
+      ElementApi.isElement(node) && node.type === linkType,
+  }) as NodeEntry<TLinkElement> | undefined;
 
   if (newLink) {
     const [newLinkNode, newLinkPath] = newLink;
@@ -22,15 +29,20 @@ export const upsertLinkText = (
     if (text?.length && text !== editor.api.string(newLinkPath)) {
       const firstText = newLinkNode.children[0];
 
-      // remove link children
-      editor.tf.replaceNodes<TText>(
-        { ...firstText, text },
-        {
-          at: newLinkPath,
-          children: true,
-          select: true,
-        }
-      );
+      const firstChildPath = newLinkPath.concat([0]);
+
+      editor.update((tx) => {
+        newLinkNode.children.forEach(() => {
+          tx.nodes.remove({ at: firstChildPath });
+        });
+        tx.nodes.insert<Text>(
+          { ...firstText, text },
+          {
+            at: firstChildPath,
+            select: true,
+          }
+        );
+      });
     }
   }
 };

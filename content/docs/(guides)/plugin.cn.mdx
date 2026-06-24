@@ -191,8 +191,8 @@ const TextAlignPlugin = createPlatePlugin({
 const CustomPlugin = createPlatePlugin({
   key: 'custom',
 }).overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
-  // 重写转换
-  transforms: {
+  // 重写已有编辑器 transform 方法
+  tf: {
     deleteForward(options) {
       // 删除前的自定义逻辑
       console.info('向前删除中...');
@@ -219,9 +219,9 @@ const CustomPlugin = createPlatePlugin({
 }));
 ```
 
-- 通过解构的`tf`（转换）和`api`参数访问原始方法
+- 通过解构的 `tf` 和 `api` 参数访问原始方法
 - 现有方法的类型安全重写
-- 转换和API方法的清晰分离
+- `tf` 重写和 API 方法保持分离
 - 插件上下文和选项访问
 
 带类型选项的示例：
@@ -236,7 +236,7 @@ const CustomPlugin = createTPlatePlugin<CustomConfig>({
   key: 'custom',
   options: { allowDelete: true },
 }).overrideEditor(({ editor, tf: { deleteForward }, getOptions }) => ({
-  transforms: {
+  tf: {
     deleteForward(options) {
       // 使用类型化选项控制行为
       if (!getOptions().allowDelete) {
@@ -265,7 +265,7 @@ const CustomNormalizerPlugin = createPlatePlugin({
 ```
 
 <Callout type="info" title="extendEditor与overrideEditor的区别">
-- 当集成需要直接编辑器变异的传统Slate插件（如`withYjs`）时使用`extendEditor`。每个插件只有一个`extendEditor`。
+- 当集成需要直接编辑器变异的传统Plite插件（如`withYjs`）时使用`extendEditor`。每个插件只有一个`extendEditor`。
 - 修改编辑器行为时优先使用`overrideEditor`，因为它具有单一职责和更好的类型安全性。可以多次调用以分层不同的重写。
 </Callout>
 
@@ -413,11 +413,15 @@ type CodeBlockConfig = PluginConfig<
     };
     toggleSyntax: () => void;
   },
-  // transforms
+  // legacy transform slot
+  {},
+  // selectors
+  {},
+  // tx
   {
     insert: {
-      codeBlock: (options: { language: string }) => void;
-    }
+      codeBlock: () => void;
+    };
   }
 >;
 
@@ -429,11 +433,13 @@ const CodeBlockPlugin = createTPlatePlugin<CodeBlockConfig>({
     getSyntaxState: () => true,
   },
   toggleSyntax: () => {},
-})).extendEditorTransforms<CodeBlockConfig['transforms']>(() => ({
-  insert: {
-    codeBlock: ({ editor, getOptions }) => {
-      editor.tf.insertBlock({ type: 'code_block', language: getOptions().language });
-    },
+})).extendTxGroup('insert', ({ getOptions }) => (tx) => ({
+  codeBlock: () => {
+    tx.nodes.insert({
+      type: 'code_block',
+      language: getOptions().language,
+      children: [{ text: '' }],
+    });
   },
 }));
 ```
@@ -459,8 +465,8 @@ editor.api.plugin.getSyntaxState();
 editor.api.plugin2.setLanguage('python');
 editor.api.plugin.getLanguage();
 
-// 类型安全的转换
-editor.tf.insert.codeBlock({ language: 'typescript' });
+// 类型安全的事务
+editor.update((tx) => tx.insert.codeBlock());
 ```
 
 ## 另请参阅

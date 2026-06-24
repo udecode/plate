@@ -56,7 +56,7 @@ Extend the shared input-rule context with lazy cached getters computed from the
 input-event snapshot:
 
 ```ts
-type SelectionInputRuleContext<TEditor extends SlateEditor = SlateEditor> = {
+type SelectionInputRuleContext<TEditor extends PliteEditor = PliteEditor> = {
   editor: TEditor;
   isCollapsed: boolean;
   getBlockEntry: () => NodeEntry | undefined;

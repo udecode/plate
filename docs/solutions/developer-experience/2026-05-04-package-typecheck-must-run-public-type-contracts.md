@@ -2,7 +2,7 @@
 title: Package typecheck must run public type contracts
 date: 2026-05-04
 category: docs/solutions/developer-experience
-module: slate-v2 public api
+module: plite public api
 problem_type: developer_experience
 component: tooling
 symptoms:
@@ -12,7 +12,7 @@ symptoms:
 root_cause: missing_workflow_step
 resolution_type: workflow_improvement
 severity: medium
-tags: [slate-v2, typecheck, public-api, typescript, react-runtime]
+tags: [plite, typecheck, public-api, typescript, react-runtime]
 ---
 
 # Package typecheck must run public type contracts
@@ -20,13 +20,13 @@ tags: [slate-v2, typecheck, public-api, typescript, react-runtime]
 ## Problem
 A public TypeScript contract can exist in the repo and still be dead if the
 package typecheck script never runs its tsconfig. That is especially dangerous
-for Slate v2 public API work because type-only drift does not show up in runtime
+for Plite public API work because type-only drift does not show up in runtime
 tests.
 
 ## Symptoms
-- `bun --filter slate-react typecheck` passed.
-- `bunx tsc --project packages/slate-react/test/tsconfig.generic-types.json --noEmit`
-  failed because `EditorSelectorOptions` was not exported from `slate-react`.
+- `bun --filter plite-react typecheck` passed.
+- `bunx tsc --project packages/plite-react/test/tsconfig.generic-types.json --noEmit`
+  failed because `EditorSelectorOptions` was not exported from `plite-react`.
 - The same contract also exposed that selector option callbacks were not tied
   to `useEditorSelector<T, TEditor>`'s editor value type.
 
@@ -65,7 +65,7 @@ export interface EditorSelectorOptions<
 Then keep a public contract file that imports from the package root:
 
 ```ts
-import { type EditorSelectorOptions, useEditorSelector } from 'slate-react'
+import { type EditorSelectorOptions, useEditorSelector } from 'plite-react'
 
 const selectorOptions: EditorSelectorOptions<typeof reactEditor> = {
   shouldUpdate: (operations, change) => {
@@ -80,7 +80,7 @@ const selectorOptions: EditorSelectorOptions<typeof reactEditor> = {
 
 ## Why This Works
 The package typecheck becomes a real public API gate, not just an implementation
-gate. Importing from `slate-react` catches missing root exports, while the
+gate. Importing from `plite-react` catches missing root exports, while the
 generic option type catches drift between callback facts and the editor value
 type.
 

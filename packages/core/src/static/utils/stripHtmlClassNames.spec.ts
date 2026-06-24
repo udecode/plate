@@ -1,15 +1,15 @@
 import { stripHtmlClassNames } from './stripHtmlClassNames';
 
 describe('stripHtmlClassNames', () => {
-  it('keeps only slate classes by default', () => {
+  it('keeps only plite classes by default', () => {
     expect(
-      stripHtmlClassNames('<p class="foo slate-p bar slate-bold">Hello</p>', {})
-    ).toBe('<p class="slate-p slate-bold">Hello</p>');
+      stripHtmlClassNames('<p class="foo plite-p bar plite-bold">Hello</p>', {})
+    ).toBe('<p class="plite-p plite-bold">Hello</p>');
   });
 
   it('removes all class names when preserveClassNames is empty', () => {
     expect(
-      stripHtmlClassNames('<p class="foo slate-p bar">Hello</p>', {
+      stripHtmlClassNames('<p class="foo plite-p bar">Hello</p>', {
         preserveClassNames: [],
       })
     ).toBe('<p>Hello</p>');
@@ -18,7 +18,7 @@ describe('stripHtmlClassNames', () => {
   it('keeps configured class prefixes', () => {
     expect(
       stripHtmlClassNames(
-        '<p class="keep-me prose-p slate-p drop-me">Hello</p>',
+        '<p class="keep-me prose-p plite-p drop-me">Hello</p>',
         {
           preserveClassNames: ['keep-', 'prose-'],
         }

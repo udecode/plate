@@ -155,14 +155,14 @@ title: 主要版本更新
     if (!mounted) return;
 
     // 初始化 Yjs 连接和同步
-    editor.getApi(YjsPlugin).yjs.init({
+    editor.getPluginApi(YjsPlugin).yjs.init({
       id: roomName, // 或你的文档标识符
       value: INITIAL_VALUE, // 编辑器初始内容
     });
 
     // 组件卸载时销毁连接
     return () => {
-      editor.getApi(YjsPlugin).yjs.destroy();
+      editor.getPluginApi(YjsPlugin).yjs.destroy();
     };
   }, [editor, mounted, roomName]); // 添加相关依赖
   ```
@@ -177,7 +177,7 @@ title: 主要版本更新
   - 默认下划线标记序列化为 `<u>underline</u>`
   - 改进序列化流程：
     - 现采用两步流程：`slate nodes => MDAST nodes => markdown string`
-    - 之前：直接从 Slate 节点转换为 markdown 字符串
+    - 之前：直接从 Plite 节点转换为 markdown 字符串
     - 结果更可靠且健壮
   - 新增节点过滤选项：
     - `allowedNodes`：白名单特定节点
@@ -263,7 +263,7 @@ title: 主要版本更新
           mark: true,
           serialize: (slateNode: TSuggestionText, options): mdast.Text => {
             const suggestionData = options.editor
-              .getApi(SuggestionPlugin)
+              .getPluginApi(SuggestionPlugin)
               .suggestion.suggestionData(node);
 
             return suggestionData?.type === 'insert'

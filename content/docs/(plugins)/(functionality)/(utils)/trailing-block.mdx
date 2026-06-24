@@ -45,7 +45,7 @@ export const editor = createPlateEditor({
 | `TrailingBlockPlugin` | `platejs` / `@platejs/utils` | Stores trailing block options and overrides normalization. |
 | `withTrailingBlock` | `@platejs/utils` | Checks the last node and inserts the trailing block when needed. |
 | `editor.api.last([], { level })` | Core editor API | Finds the last node at the configured depth. |
-| `queryNode(lastChild, query)` | `@platejs/slate` | Applies `allow`, `exclude`, `filter`, and `maxLevel`. |
+| `queryNode(lastChild, query)` | `@platejs/plite` | Applies `allow`, `exclude`, `filter`, and `maxLevel`. |
 | `EditorKit` | Registry | Adds `TrailingBlockPlugin` after editing plugins. |
 | `SuggestionKit` | Registry | Wraps trailing block insertion in `suggestion.withoutSuggestions`. |
 
@@ -115,7 +115,7 @@ import { TrailingBlockPlugin } from 'platejs';
 TrailingBlockPlugin.configure({
   options: {
     insert: (editor, { insert }) => {
-      editor.getApi(SuggestionPlugin).suggestion.withoutSuggestions(insert);
+      editor.getPluginApi(SuggestionPlugin).suggestion.withoutSuggestions(insert);
     },
   },
 });
@@ -142,7 +142,7 @@ The inserted node comes from `editor.api.create.block({ type: trailingType }, at
 | `TrailingBlockConfig.options.type` | `@platejs/utils` | Block type to insert. Defaults to the editor paragraph type. |
 | `TrailingBlockConfig.options.level` | `@platejs/utils` | Depth used by `editor.api.last`. Defaults to `0`. |
 | `TrailingBlockConfig.options.insert` | `@platejs/utils` | Custom wrapper around the generated insertion. |
-| `TrailingBlockConfig.options.allow` | `@platejs/slate` query | Only insert after matching types. |
-| `TrailingBlockConfig.options.exclude` | `@platejs/slate` query | Skip insertion after matching types. |
-| `TrailingBlockConfig.options.filter` | `@platejs/slate` query | Custom predicate for the last node entry. |
-| `TrailingBlockConfig.options.maxLevel` | `@platejs/slate` query | Skip entries deeper than this path length. |
+| `TrailingBlockConfig.options.allow` | `@platejs/plite` query | Only insert after matching types. |
+| `TrailingBlockConfig.options.exclude` | `@platejs/plite` query | Skip insertion after matching types. |
+| `TrailingBlockConfig.options.filter` | `@platejs/plite` query | Custom predicate for the last node entry. |
+| `TrailingBlockConfig.options.maxLevel` | `@platejs/plite` query | Skip entries deeper than this path length. |

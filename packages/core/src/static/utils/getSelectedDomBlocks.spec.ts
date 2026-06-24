@@ -30,18 +30,18 @@ describe('getSelectedDomBlocks', () => {
   });
 
   describe('when selection exists', () => {
-    it('returns array of slate blocks with data attributes', () => {
+    it('returns array of plite blocks with data attributes', () => {
       const mockFragment = document.createDocumentFragment();
 
-      // Create slate blocks
+      // Create plite blocks
       const block1 = document.createElement('div');
-      block1.dataset.slateNode = 'element';
-      block1.dataset.slateId = 'block-1';
+      block1.dataset.pliteNode = 'element';
+      block1.dataset.pliteId = 'block-1';
       block1.textContent = 'First block';
 
       const block2 = document.createElement('div');
-      block2.dataset.slateNode = 'element';
-      block2.dataset.slateId = 'block-2';
+      block2.dataset.pliteNode = 'element';
+      block2.dataset.pliteId = 'block-2';
       block2.textContent = 'Second block';
 
       mockFragment.append(block1);
@@ -55,11 +55,11 @@ describe('getSelectedDomBlocks', () => {
       expect(result).toHaveLength(2);
       expect(result?.[0]).toBe(block1);
       expect(result?.[1]).toBe(block2);
-      expect((result?.[0] as HTMLElement).dataset.slateId).toBe('block-1');
-      expect((result?.[1] as HTMLElement).dataset.slateId).toBe('block-2');
+      expect((result?.[0] as HTMLElement).dataset.pliteId).toBe('block-1');
+      expect((result?.[1] as HTMLElement).dataset.pliteId).toBe('block-2');
     });
 
-    it('filter out non-slate elements', () => {
+    it('filter out non-plite elements', () => {
       const mockFragment = document.createDocumentFragment();
 
       // Create mixed elements
@@ -67,8 +67,8 @@ describe('getSelectedDomBlocks', () => {
       regularDiv.textContent = 'Regular div';
 
       const slateBlock = document.createElement('div');
-      slateBlock.dataset.slateNode = 'element';
-      slateBlock.dataset.slateId = 'block-1';
+      slateBlock.dataset.pliteNode = 'element';
+      slateBlock.dataset.pliteId = 'block-1';
 
       const paragraph = document.createElement('p');
       paragraph.textContent = 'Regular paragraph';
@@ -86,16 +86,16 @@ describe('getSelectedDomBlocks', () => {
       expect(result?.[0]).toBe(slateBlock);
     });
 
-    it('handle nested slate blocks', () => {
+    it('handle nested plite blocks', () => {
       const mockFragment = document.createDocumentFragment();
 
       const parentBlock = document.createElement('div');
-      parentBlock.dataset.slateNode = 'element';
-      parentBlock.dataset.slateId = 'parent-1';
+      parentBlock.dataset.pliteNode = 'element';
+      parentBlock.dataset.pliteId = 'parent-1';
 
       const childBlock = document.createElement('div');
-      childBlock.dataset.slateNode = 'element';
-      childBlock.dataset.slateId = 'child-1';
+      childBlock.dataset.pliteNode = 'element';
+      childBlock.dataset.pliteId = 'child-1';
 
       parentBlock.append(childBlock);
       mockFragment.append(parentBlock);
@@ -110,11 +110,11 @@ describe('getSelectedDomBlocks', () => {
       expect(result?.[1]).toBe(childBlock);
     });
 
-    it('returns empty array when no slate blocks found', () => {
+    it('returns empty array when no plite blocks found', () => {
       const mockFragment = document.createDocumentFragment();
 
       const regularDiv = document.createElement('div');
-      regularDiv.textContent = 'No slate attributes';
+      regularDiv.textContent = 'No plite attributes';
 
       mockFragment.append(regularDiv);
 
@@ -126,12 +126,12 @@ describe('getSelectedDomBlocks', () => {
       expect(result).toHaveLength(0);
     });
 
-    it('handle blocks with only data-slate-node attribute', () => {
+    it('handle blocks with only data-plite-node attribute', () => {
       const mockFragment = document.createDocumentFragment();
 
       const block = document.createElement('div');
-      block.dataset.slateNode = 'element';
-      // Missing data-slate-id
+      block.dataset.pliteNode = 'element';
+      // Missing data-plite-id
 
       mockFragment.append(block);
 
@@ -139,17 +139,17 @@ describe('getSelectedDomBlocks', () => {
 
       const result = getSelectedDomBlocks();
 
-      // Should not include blocks without data-slate-id
+      // Should not include blocks without data-plite-id
       expect(result).toBeDefined();
       expect(result).toHaveLength(0);
     });
 
-    it('handle blocks with only data-slate-id attribute', () => {
+    it('handle blocks with only data-plite-id attribute', () => {
       const mockFragment = document.createDocumentFragment();
 
       const block = document.createElement('div');
-      block.dataset.slateId = 'block-1';
-      // Missing data-slate-node="element"
+      block.dataset.pliteId = 'block-1';
+      // Missing data-plite-node="element"
 
       mockFragment.append(block);
 
@@ -157,7 +157,7 @@ describe('getSelectedDomBlocks', () => {
 
       const result = getSelectedDomBlocks();
 
-      // Should not include blocks without data-slate-node="element"
+      // Should not include blocks without data-plite-node="element"
       expect(result).toBeDefined();
       expect(result).toHaveLength(0);
     });
@@ -207,16 +207,16 @@ describe('getSelectedDomBlocks', () => {
   });
 
   describe('edge cases', () => {
-    it('handle slate blocks with different node types', () => {
+    it('handle plite blocks with different node types', () => {
       const mockFragment = document.createDocumentFragment();
 
       const textNode = document.createElement('span');
-      textNode.dataset.slateNode = 'text';
-      textNode.dataset.slateId = 'text-1';
+      textNode.dataset.pliteNode = 'text';
+      textNode.dataset.pliteId = 'text-1';
 
       const elementNode = document.createElement('div');
-      elementNode.dataset.slateNode = 'element';
-      elementNode.dataset.slateId = 'element-1';
+      elementNode.dataset.pliteNode = 'element';
+      elementNode.dataset.pliteId = 'element-1';
 
       mockFragment.append(textNode);
       mockFragment.append(elementNode);
@@ -225,7 +225,7 @@ describe('getSelectedDomBlocks', () => {
 
       const result = getSelectedDomBlocks();
 
-      // Should only return elements with data-slate-node="element"
+      // Should only return elements with data-plite-node="element"
       expect(result).toBeDefined();
       expect(result).toHaveLength(1);
       expect(result?.[0]).toBe(elementNode);
@@ -254,13 +254,13 @@ describe('getSelectedDomBlocks', () => {
 
       const wrapper = document.createElement('div');
       wrapper.innerHTML = `
-        <div data-slate-node="element" data-slate-id="1">
+        <div data-plite-node="element" data-plite-id="1">
           <p>Content</p>
-          <div data-slate-node="element" data-slate-id="2">
+          <div data-plite-node="element" data-plite-id="2">
             <span>Nested</span>
           </div>
         </div>
-        <div data-slate-node="element" data-slate-id="3">
+        <div data-plite-node="element" data-plite-id="3">
           Another block
         </div>
       `;
@@ -276,9 +276,9 @@ describe('getSelectedDomBlocks', () => {
 
       expect(result).toBeDefined();
       expect(result).toHaveLength(3);
-      expect((result?.[0] as HTMLElement).dataset.slateId).toBe('1');
-      expect((result?.[1] as HTMLElement).dataset.slateId).toBe('2');
-      expect((result?.[2] as HTMLElement).dataset.slateId).toBe('3');
+      expect((result?.[0] as HTMLElement).dataset.pliteId).toBe('1');
+      expect((result?.[1] as HTMLElement).dataset.pliteId).toBe('2');
+      expect((result?.[2] as HTMLElement).dataset.pliteId).toBe('3');
     });
 
     it('preserve order of blocks', () => {
@@ -286,8 +286,8 @@ describe('getSelectedDomBlocks', () => {
 
       for (let i = 1; i <= 5; i++) {
         const block = document.createElement('div');
-        block.dataset.slateNode = 'element';
-        block.dataset.slateId = `block-${i}`;
+        block.dataset.pliteNode = 'element';
+        block.dataset.pliteId = `block-${i}`;
         mockFragment.append(block);
       }
 
@@ -297,7 +297,7 @@ describe('getSelectedDomBlocks', () => {
 
       expect(result).toHaveLength(5);
       for (let i = 0; i < 5; i++) {
-        expect((result?.[i] as HTMLElement).dataset.slateId).toBe(
+        expect((result?.[i] as HTMLElement).dataset.pliteId).toBe(
           `block-${i + 1}`
         );
       }

@@ -1,5 +1,5 @@
 import type { AnyPluginConfig, PluginConfig } from '../plugin/BasePlugin';
-import type { SlatePlugin } from '../plugin/SlatePlugin';
+import type { AnyEditorPlugin, EditorPlugin } from '../plugin/EditorPlugin';
 
 import { AstPlugin } from './AstPlugin';
 import { HistoryPlugin } from './HistoryPlugin';
@@ -18,17 +18,17 @@ import { AffinityPlugin } from './affinity';
 import { type NodeIdConfig, NodeIdPlugin } from './node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from './paragraph';
 import {
-  type SlateExtensionConfig,
-  SlateExtensionPlugin,
-} from './slate-extension';
+  type PliteExtensionConfig,
+  PliteExtensionPlugin,
+} from './plite-extension';
 import { type ChunkingConfig, ChunkingPlugin } from './chunking/ChunkingPlugin';
 
-export type CorePlugin = ReturnType<typeof getCorePlugins>[number];
+export type CorePlugin = AnyEditorPlugin;
 
 export type GetCorePluginsOptions = {
   /** Enable mark/element affinity. */
   affinity?: boolean;
-  /** Configure Slate's chunking optimization. */
+  /** Configure Plite's chunking optimization. */
   chunking?: ChunkingConfig['options'] | boolean;
   /** Specifies the maximum number of characters allowed in the editor. */
   maxLength?: number;
@@ -47,7 +47,7 @@ export const getCorePlugins = ({
   navigationFeedback,
   nodeId,
   plugins = [],
-}: GetCorePluginsOptions) => {
+}: GetCorePluginsOptions): CorePlugin[] => {
   // Disable nodeId by default in test environment for deterministic tests
   let resolvedNodeId: any = nodeId;
   if (process.env.NODE_ENV === 'test' && nodeId === undefined) {
@@ -55,8 +55,8 @@ export const getCorePlugins = ({
   }
 
   let corePlugins = [
-    DebugPlugin as SlatePlugin<DebugConfig>,
-    SlateExtensionPlugin,
+    DebugPlugin as EditorPlugin<DebugConfig>,
+    PliteExtensionPlugin,
     DOMPlugin,
     NavigationFeedbackPlugin.configure({
       enabled: navigationFeedback !== false,
@@ -84,7 +84,7 @@ export const getCorePlugins = ({
       enabled: chunking !== false,
       options: typeof chunking === 'boolean' ? undefined : chunking,
     }),
-  ];
+  ] as CorePlugin[];
 
   // Create a map for quick lookup of custom plugins
   const customPluginsMap = new Map(
@@ -103,7 +103,7 @@ export const getCorePlugins = ({
         plugins.splice(index, 1);
       }
 
-      return customPlugin;
+      return customPlugin as CorePlugin;
     }
 
     return corePlugin as any;
@@ -112,9 +112,7 @@ export const getCorePlugins = ({
   return corePlugins;
 };
 
-export type CorePluginTransforms = SlateExtensionConfig['transforms'] &
-  NavigationFeedbackConfig['transforms'];
-export type CorePluginApi = SlateExtensionConfig['api'] &
+export type CorePluginApi = PliteExtensionConfig['api'] &
   NavigationFeedbackConfig['api'];
 
 export type DebugConfig = PluginConfig<

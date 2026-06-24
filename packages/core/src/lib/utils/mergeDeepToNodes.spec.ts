@@ -1,4 +1,4 @@
-import { ElementApi, NodeApi, createEditor } from '@platejs/slate';
+import { ElementApi, TextApi } from '@platejs/plite';
 
 import { mergeDeepToNodes } from './mergeDeepToNodes';
 
@@ -14,13 +14,21 @@ const withNestedElement = () => ({
   type: 'li',
 });
 
-const withEditorRoot = () => {
-  const editor = createEditor();
+const withEditorRoot = () => ({ children: [withNestedElement()] });
 
-  editor.children = [withNestedElement() as any];
+const isStructuralDescendant = ([node, path]: [unknown, number[]]) =>
+  !(
+    path.length === 0 &&
+    typeof node === 'object' &&
+    node !== null &&
+    'children' in node &&
+    Array.isArray(node.children) &&
+    !('type' in node)
+  ) &&
+  (ElementApi.isElement(node) || TextApi.isText(node));
 
-  return editor;
-};
+const isStructuralElement = (entry: [unknown, number[]]) =>
+  isStructuralDescendant(entry) && ElementApi.isElement(entry[0]);
 
 describe('mergeDeepToNodes', () => {
   it('merges props into the root node and all descendants by default', () => {
@@ -57,7 +65,7 @@ describe('mergeDeepToNodes', () => {
       mergeDeepToNodes({
         node: node as any,
         query: {
-          filter: ([entry]) => NodeApi.isDescendant(entry),
+          filter: isStructuralDescendant,
         },
         source: { a: 1 },
       });
@@ -106,7 +114,7 @@ describe('mergeDeepToNodes', () => {
       mergeDeepToNodes({
         node: node as any,
         query: {
-          filter: ([entry]) => NodeApi.isDescendant(entry),
+          filter: isStructuralDescendant,
         },
         source: { a: 1 },
       });
@@ -130,7 +138,7 @@ describe('mergeDeepToNodes', () => {
       mergeDeepToNodes({
         node: node as any,
         query: {
-          filter: ([entry]) => NodeApi.isDescendant(entry),
+          filter: isStructuralDescendant,
         },
         source: () => ({ order: ++calls }),
       });
@@ -159,7 +167,7 @@ describe('mergeDeepToNodes', () => {
       mergeDeepToNodes({
         node: node as any,
         query: {
-          filter: ([entry]) => ElementApi.isElement(entry),
+          filter: isStructuralElement,
         },
         source: { a: 1 },
       });
@@ -211,7 +219,7 @@ describe('mergeDeepToNodes', () => {
       mergeDeepToNodes({
         node: node as any,
         query: {
-          filter: ([entry]) => ElementApi.isElement(entry),
+          filter: isStructuralElement,
         },
         source: { a: 1 },
       });

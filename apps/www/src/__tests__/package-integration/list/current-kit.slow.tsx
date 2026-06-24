@@ -8,7 +8,7 @@ describe('ListKit current contract', () => {
     const editor = createPlateEditor({
       plugins: [BaseParagraphPlugin, ...ListKit],
       value: [{ children: [{ text: '-' }], type: 'p' }],
-    } as any);
+    });
 
     editor.tf.select({
       anchor: { offset: 1, path: [0, 0] },
@@ -17,15 +17,15 @@ describe('ListKit current contract', () => {
 
     editor.tf.insertText(' ');
 
-    expect(editor.children).toEqual([
+    expect(editor.children).toMatchObject([
       {
         children: [{ text: '' }],
-        id: editor.children[0].id,
         indent: 1,
         listStyleType: 'disc',
         type: 'p',
       },
     ]);
+    expect(editor.children[0]).toHaveProperty('id');
     expect(editor.selection).toEqual({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },

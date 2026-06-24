@@ -1,9 +1,17 @@
-import { type SlateEditor, KEYS, PathApi } from 'platejs';
+import { PathApi } from '@platejs/plite';
+import type { BasePlateEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
+import {
+  isEditorPointEnd,
+  isEditorPointStart,
+} from '../internal/editorQueries';
+import { runWithoutNormalizing } from '../internal/runWithoutNormalizing';
+import { getEditorMarks } from '../internal/getEditorMarks';
 
 import { BaseTodoListPlugin } from '../BaseTodoListPlugin';
 
 /** Insert todo list item if selection in li>p. TODO: test */
-export const insertTodoListItem = (editor: SlateEditor): boolean => {
+export const insertTodoListItem = (editor: BasePlateEditor): boolean => {
   const { inheritCheckStateOnLineEndBreak, inheritCheckStateOnLineStartBreak } =
     editor.getOptions(BaseTodoListPlugin);
   const todoType = editor.getType(KEYS.listTodoClassic);
@@ -12,7 +20,9 @@ export const insertTodoListItem = (editor: SlateEditor): boolean => {
     return false;
   }
 
-  const todoEntry = editor.api.above({ match: { type: todoType } });
+  const todoEntry = editor.api.above({
+    match: (node) => node.type === todoType,
+  });
 
   if (!todoEntry) return false;
 
@@ -20,51 +30,59 @@ export const insertTodoListItem = (editor: SlateEditor): boolean => {
 
   let success = false;
 
-  editor.tf.withoutNormalizing(() => {
-    if (!editor.api.isCollapsed()) {
-      editor.tf.delete();
-    }
+  editor.update((tx) => {
+    runWithoutNormalizing(tx, () => {
+      if (!editor.api.isCollapsed()) {
+        tx.text.delete();
+      }
 
-    const isStart = editor.api.isStart(editor.selection!.focus, paragraphPath);
-    const isEnd = editor.api.isEmpty(editor.selection, { after: true });
-
-    const nextParagraphPath = PathApi.next(paragraphPath);
-
-    /** If start, insert a list item before */
-    if (isStart) {
-      editor.tf.insertNodes(
-        {
-          checked: inheritCheckStateOnLineStartBreak ? todo.checked : false,
-          children: [{ text: '' }],
-          type: todoType,
-        },
-        { at: paragraphPath }
+      const isStart = isEditorPointStart(
+        editor,
+        editor.selection!.focus,
+        paragraphPath
       );
+      const isEnd =
+        isEditorPointEnd(editor, editor.selection!.focus, paragraphPath) ||
+        editor.api.isEmpty?.(editor.selection!, { after: true });
+
+      const nextParagraphPath = PathApi.next(paragraphPath);
+
+      /** If start, insert a list item before */
+      if (isStart) {
+        tx.nodes.insert(
+          {
+            checked: inheritCheckStateOnLineStartBreak ? todo.checked : false,
+            children: [{ text: '' }],
+            type: todoType,
+          },
+          { at: paragraphPath }
+        );
+
+        success = true;
+
+        return;
+      }
+      /** If not end, split the nodes */
+      if (isEnd) {
+        /** If end, insert a list item after and select it */
+        const marks = getEditorMarks(editor);
+        tx.nodes.insert(
+          {
+            checked: inheritCheckStateOnLineEndBreak ? todo.checked : false,
+            children: [{ text: '', ...marks }],
+            type: todoType,
+          },
+          { at: nextParagraphPath }
+        );
+        tx.selection.set(nextParagraphPath);
+      } else {
+        runWithoutNormalizing(tx, () => {
+          tx.nodes.split();
+        });
+      }
 
       success = true;
-
-      return;
-    }
-    /** If not end, split the nodes */
-    if (isEnd) {
-      /** If end, insert a list item after and select it */
-      const marks = editor.api.marks() || {};
-      editor.tf.insertNodes(
-        {
-          checked: inheritCheckStateOnLineEndBreak ? todo.checked : false,
-          children: [{ text: '', ...marks }],
-          type: todoType,
-        },
-        { at: nextParagraphPath }
-      );
-      editor.tf.select(nextParagraphPath);
-    } else {
-      editor.tf.withoutNormalizing(() => {
-        editor.tf.splitNodes();
-      });
-    }
-
-    success = true;
+    });
   });
 
   return success;

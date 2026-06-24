@@ -1,5 +1,6 @@
-import { type Path, type SlateEditor, PathApi } from 'platejs';
-import { KEYS } from 'platejs';
+import { ElementApi, type Path, PathApi } from '@platejs/plite';
+import type { BasePlateEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { getListTypes } from './getListTypes';
 
@@ -12,7 +13,7 @@ import { getListTypes } from './getListTypes';
  * - Its path is not equals to diffListPath.
  */
 export const getHighestEmptyList = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     diffListPath,
     liPath,
@@ -23,7 +24,8 @@ export const getHighestEmptyList = (
 ): Path | undefined => {
   const list = editor.api.above({
     at: liPath,
-    match: { type: getListTypes(editor) },
+    match: (node) =>
+      ElementApi.isElement(node) && getListTypes(editor).includes(node.type),
   });
 
   if (!list) return;
@@ -34,7 +36,7 @@ export const getHighestEmptyList = (
     if (listNode.children.length < 2) {
       const liParent = editor.api.above({
         at: listPath,
-        match: { type: editor.getType(KEYS.li) },
+        match: (node) => node.type === editor.getType(KEYS.li),
       });
 
       if (liParent) {

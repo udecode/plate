@@ -129,7 +129,8 @@ describe('applyAISuggestions utils', () => {
     const { applyAISuggestions } = await loadModule();
     const setOption = mock();
     const setBlockSelection = mock();
-    const replaceNodes = mock();
+    const insertNodes = mock();
+    const removeNodes = mock();
 
     deserializeMdMock.mockReturnValue([
       { children: [{ text: 'next' }], type: 'p' },
@@ -146,18 +147,9 @@ describe('applyAISuggestions utils', () => {
 
     const editor = {
       api: {
+        blockSelection: { set: setBlockSelection },
+        cursorOverlay: { removeCursor: mock() },
         nodes: () => replaceNodeEntries,
-      },
-      getApi: ({ key }: any) => {
-        if (key === KEYS.cursorOverlay) {
-          return {
-            cursorOverlay: { removeCursor: mock() },
-          };
-        }
-
-        return {
-          blockSelection: { set: setBlockSelection },
-        };
       },
       getOption: (_plugin: any, key: string) => {
         if (key === '_replaceIds') return [];
@@ -177,14 +169,20 @@ describe('applyAISuggestions utils', () => {
         ],
       }),
       setOption,
-      tf: {
-        replaceNodes,
-      },
+      update: mock((fn: (tx: any) => void) => {
+        fn({
+          nodes: {
+            insert: insertNodes,
+            remove: removeNodes,
+          },
+        });
+      }),
     } as any;
 
     applyAISuggestions(editor, 'next');
 
-    expect(replaceNodes).toHaveBeenCalledTimes(2);
+    expect(removeNodes).toHaveBeenCalledTimes(2);
+    expect(insertNodes).toHaveBeenCalledTimes(2);
     expect(setBlockSelection).toHaveBeenCalledWith(['id-1', 'id-2']);
     expect(setOption).toHaveBeenCalledWith({ key: 'aiChat' }, '_replaceIds', [
       'id-1',
@@ -204,19 +202,10 @@ describe('applyAISuggestions utils', () => {
     const transientEntry = [{ __transient: true, text: 'done' }, [0, 0]];
     const editor = {
       api: {
+        blockSelection: { set: mock() },
+        cursorOverlay: { removeCursor: mock() },
         nodes: () => [transientEntry],
         nodesRange,
-      },
-      getApi: ({ key }: any) => {
-        if (key === KEYS.cursorOverlay) {
-          return {
-            cursorOverlay: { removeCursor: mock() },
-          };
-        }
-
-        return {
-          blockSelection: { set: mock() },
-        };
       },
       getOptions: () => ({
         chatNodes: [{ id: 'id-1', children: [{ text: 'old' }], type: 'p' }],
@@ -228,10 +217,16 @@ describe('applyAISuggestions utils', () => {
 
         return;
       },
-      tf: {
-        insertFragment,
-        setSelection,
-      },
+      update: mock((fn: (tx: any) => void) => {
+        fn({
+          fragment: {
+            insert: insertFragment,
+          },
+          selection: {
+            set: setSelection,
+          },
+        });
+      }),
     } as any;
 
     applyAISuggestions(editor, 'done');

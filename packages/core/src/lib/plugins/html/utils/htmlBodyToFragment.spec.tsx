@@ -2,7 +2,7 @@
 
 import { jsxt } from '@platejs/test-utils';
 
-import { createSlateEditor } from '../../../editor';
+import { createBasePlateEditor } from '../../../editor';
 import { BaseParagraphPlugin } from '../../paragraph';
 import { htmlBodyToFragment } from './htmlBodyToFragment';
 import { parseHtmlElement } from './parseHtmlElement';
@@ -24,7 +24,7 @@ describe('when element is a body', () => {
 
     expect(
       htmlBodyToFragment(
-        createSlateEditor({ plugins: [BaseParagraphPlugin] }),
+        createBasePlateEditor({ plugins: [BaseParagraphPlugin] }),
         body
       )
     ).toEqual(output);
@@ -37,7 +37,7 @@ describe('when element is not a body', () => {
   it('returns undefined', () => {
     expect(
       htmlBodyToFragment(
-        createSlateEditor(),
+        createBasePlateEditor(),
         parseHtmlElement('<div>test</div>')
       )
     ).toEqual(output);

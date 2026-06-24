@@ -1,0 +1,38 @@
+---
+title: "FAQ"
+description: "Common questions about paste behavior, browser support, package scope, and proof expectations."
+---
+
+These answers describe the Plite package set.
+
+## Why Is Pasted Content Plain Text?
+
+Plite does not know your product schema. It cannot safely turn arbitrary HTML into your nodes without an app-owned policy.
+
+By default, pasted content becomes text. Add a `clipboard.insertData` extension handler when the app wants to consume `DataTransfer` HTML, files, or custom MIME data. Return `true` after the handler owns the paste.
+
+Use [Plite DOM](../libraries/plite-dom), [Event Handling](../libraries/plite-react/event-handling), and the [Paste HTML example](/examples/plite/paste-html) as the starting points.
+
+## What Browsers And Devices Does Plite Support?
+
+Desktop browser behavior is claimed only where tests and browser proof cover it.
+
+The main local lanes target current Chromium, Firefox, Safari/WebKit, and mobile viewport rows through Playwright. Raw mobile-device behavior is a separate proof lane and should not be inferred from a desktop browser run.
+
+If a behavior depends on native selection, IME, clipboard, drag/drop, hidden DOM, or huge documents, verify it through browser proof before treating it as supported.
+
+## Is This The Official %%UPSTREAM_PLITE_CAP%% Release?
+
+No. This is Plite package set. It keeps the Plite document model and operation idea, but the runtime, package names, proof harness, and public API are maintained in the Plate repository.
+
+Read [Why This Fork](../why-this-fork) for the maintenance philosophy and boundaries.
+
+## Should Apps Use `@platejs/browser`?
+
+Use `@platejs/browser` for tests and proof harnesses. Do not build product editor features on it.
+
+Apps should build editors with `@platejs/plite`, `@platejs/plite-dom`, `@platejs/plite-react`, and the extensions they need.
+
+## Where Should I Start?
+
+Start with [Installing Plite](../walkthroughs/01-installing-plite). Then read [Why This Fork](../why-this-fork) if you need the project boundary, or [Migration](../migration) if you are moving from upstream Slate 0.x.

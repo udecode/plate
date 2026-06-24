@@ -53,7 +53,7 @@ const editable = getEditable(page.getByTestId('my-editor-container'));
 const editorHandle = await getEditorHandle(page, editable);
 ```
 
-The locator must match exactly one `[data-slate-editor]` element.
+The locator must match exactly one `[data-plite-editor]` element.
 
 ### Start Writing Tests
 
@@ -165,7 +165,7 @@ Gets a handle to the Plate editor instance.
     Playwright page object.
   </APIItem>
   <APIItem name="editable" type="Locator" optional>
-    Locator for editable element. Defaults to first [data-slate-editor].
+    Locator for editable element. Defaults to first [data-plite-editor].
   </APIItem>
 </APIParameters>
 
@@ -191,7 +191,7 @@ Retrieves a node at the specified path.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="JSHandle<TNode>">
+<APIReturns type="JSHandle<Node>">
   Handle to node at path.
 </APIReturns>
 </API>

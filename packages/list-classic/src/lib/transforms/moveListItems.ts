@@ -1,36 +1,39 @@
+import type { BasePlateEditor } from '@platejs/core';
 import {
-  type EditorNodesOptions,
+  type Element,
+  type ElementEntry,
+  type Location,
   type Path,
   type PathRef,
-  type SlateEditor,
-  KEYS,
+  type Span,
   PathApi,
-} from 'platejs';
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
+import { runWithoutNormalizing } from '../internal/runWithoutNormalizing';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemDown } from './moveListItemDown';
 import { moveListItemUp } from './moveListItemUp';
 import { removeFirstListItem } from './removeFirstListItem';
 
 export type MoveListItemsOptions = {
-  at?: EditorNodesOptions['at'];
+  at?: Location | Span;
   enableResetOnShiftTab?: boolean;
   increase?: boolean;
 };
 
 export const moveListItems = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     at = editor.selection ?? undefined,
     enableResetOnShiftTab,
     increase = true,
   }: MoveListItemsOptions = {}
 ) => {
+  const queryAt = at as Location | undefined;
   const _nodes = editor.api.nodes({
-    at,
-    match: {
-      type: editor.getType(KEYS.lic),
-    },
+    at: queryAt,
+    match: (node: Element) => node.type === editor.getType(KEYS.lic),
   });
 
   // Get the selected lic
@@ -62,46 +65,51 @@ export const moveListItems = (
     ? highestLicPathRefs
     : highestLicPathRefs.reverse();
 
-  return editor.tf.withoutNormalizing(() => {
-    let moved = false;
+  let moved = false;
 
-    licPathRefsToMove.forEach((licPathRef) => {
-      const licPath = licPathRef.unref();
+  editor.update((tx) => {
+    runWithoutNormalizing(tx, () => {
+      const getParentElementEntry = (path: Path): ElementEntry | undefined =>
+        editor.api.parent(path) as ElementEntry | undefined;
 
-      if (!licPath) return;
+      licPathRefsToMove.forEach((licPathRef) => {
+        const licPath = licPathRef.unref();
 
-      const listItem = editor.api.parent(licPath);
+        if (!licPath) return;
 
-      if (!listItem) return;
+        const listItem = getParentElementEntry(licPath);
 
-      const parentList = editor.api.parent(listItem[1]);
+        if (!listItem) return;
 
-      if (!parentList) return;
+        const parentList = getParentElementEntry(listItem[1]);
 
-      let _moved: any;
+        if (!parentList) return;
 
-      if (increase) {
-        _moved = moveListItemDown(editor, {
-          list: parentList as any,
-          listItem: listItem as any,
-        });
-      } else if (isListNested(editor, parentList[1])) {
-        // un-indent a sub-list item
-        _moved = moveListItemUp(editor, {
-          list: parentList as any,
-          listItem: listItem as any,
-        });
-      } else if (enableResetOnShiftTab) {
-        // unindenting a top level list item, effectively breaking apart the list.
-        _moved = removeFirstListItem(editor, {
-          list: parentList as any,
-          listItem: listItem as any,
-        });
-      }
+        let didMove: boolean | undefined;
 
-      moved = _moved || moved;
+        if (increase) {
+          didMove = moveListItemDown(editor, {
+            list: parentList,
+            listItem,
+          });
+        } else if (isListNested(editor, parentList[1])) {
+          // un-indent a sub-list item
+          didMove = moveListItemUp(editor, {
+            list: parentList,
+            listItem,
+          });
+        } else if (enableResetOnShiftTab) {
+          // unindenting a top level list item, effectively breaking apart the list.
+          didMove = removeFirstListItem(editor, {
+            list: parentList,
+            listItem,
+          });
+        }
+
+        moved = didMove || moved;
+      });
     });
-
-    return moved;
   });
+
+  return moved;
 };

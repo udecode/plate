@@ -1,14 +1,20 @@
 import {
-  type SetNodesOptions,
-  type SlateEditor,
-  createSlatePlugin,
+  type BasePlateEditor,
+  createEditorPlugin,
+  getInjectMatch,
   KEYS,
 } from 'platejs';
 
-import { type Alignment, setAlign } from './transforms';
+export type Alignment =
+  | 'center'
+  | 'end'
+  | 'justify'
+  | 'left'
+  | 'right'
+  | 'start';
 
 /** Creates a plugin that adds alignment functionality to the editor. */
-export const BaseTextAlignPlugin = createSlatePlugin({
+export const BaseTextAlignPlugin = createEditorPlugin({
   key: KEYS.textAlign,
   inject: {
     isBlock: true,
@@ -18,7 +24,7 @@ export const BaseTextAlignPlugin = createSlatePlugin({
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     },
     targetPlugins: [KEYS.p],
-    targetPluginToInject: ({ editor }: { editor: SlateEditor }) => ({
+    targetPluginToInject: ({ editor }: { editor: BasePlateEditor }) => ({
       parsers: {
         html: {
           deserializer: {
@@ -39,7 +45,23 @@ export const BaseTextAlignPlugin = createSlatePlugin({
     }),
   },
   node: { type: 'align' },
-}).extendTransforms(({ editor }: { editor: SlateEditor }) => ({
-  setNodes: (value: Alignment, options?: SetNodesOptions) =>
-    setAlign(editor, value, options),
+}).extendTx(({ plugin, type }) => (tx, editor) => ({
+  set: (value: Alignment, options?: unknown) => {
+    const defaultValue =
+      (plugin.inject.nodeProps?.defaultNodeValue as Alignment | undefined) ??
+      'start';
+    const nodeKey = plugin.inject.nodeProps?.nodeKey ?? type;
+    const nextOptions = {
+      match: getInjectMatch(editor, plugin),
+      ...((options ?? {}) as Record<string, unknown>),
+    };
+
+    if (Object.is(value, defaultValue)) {
+      tx.nodes.unset(nodeKey, nextOptions);
+
+      return;
+    }
+
+    tx.nodes.set({ [nodeKey]: value }, nextOptions);
+  },
 }));

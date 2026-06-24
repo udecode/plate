@@ -1,14 +1,16 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import {
   BaseFootnoteDefinitionPlugin,
   BaseFootnoteReferencePlugin,
 } from '../index';
-import { insertFootnote } from '../transforms/insertFootnote';
+import type { FootnoteConfig } from '../BaseFootnoteReferencePlugin';
+
+type FootnoteTransaction = FootnoteConfig['tx'];
 
 describe('footnote registry', () => {
   it('reuses one scan across repeated lookups and survives text edits inside a definition', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
       selection: {
         anchor: { offset: 4, path: [1, 0, 0] },
@@ -22,6 +24,7 @@ describe('footnote registry', () => {
               identifier: '1',
               type: 'footnoteReference',
             },
+            { text: '' },
           ],
           type: KEYS.p,
         },
@@ -59,25 +62,30 @@ describe('footnote registry', () => {
     expect((editor.api as any).footnote.nextId()).toBe('2');
     expect(nodesSpy).toHaveBeenCalledTimes(1);
 
-    editor.tf.insertText('!');
+    editor.update((tx) => tx.text.insert('!'));
 
     expect(
       (editor.api as any).footnote.definitionText({ identifier: '1' })
     ).toBe('body!');
     expect(nodesSpy).toHaveBeenCalledTimes(1);
 
-    editor.tf.select({
-      anchor: { offset: 5, path: [0, 0] },
-      focus: { offset: 5, path: [0, 0] },
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: { offset: 0, path: [0, 1] },
+        focus: { offset: 0, path: [0, 1] },
+      });
+      (tx as typeof tx & FootnoteTransaction).insert.footnote({
+        focusDefinition: false,
+        identifier: '2',
+      });
     });
-    insertFootnote(editor, { identifier: '2' });
 
     expect((editor.api as any).footnote.nextId()).toBe('3');
-    expect(nodesSpy).toHaveBeenCalledTimes(3);
+    expect(nodesSpy).toHaveBeenCalledTimes(2);
   });
 
   it('detects duplicate definitions without scanning on every lookup', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
       value: [
         {
@@ -115,7 +123,7 @@ describe('footnote registry', () => {
   });
 
   it('can renumber a later duplicate definition without touching the canonical first definition', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
       value: [
         {
@@ -131,9 +139,15 @@ describe('footnote registry', () => {
       ],
     } as any);
 
-    expect(
-      (editor.tf as any).footnote.normalizeDuplicateDefinition({ path: [1] })
-    ).toBe('2');
+    let normalizedIdentifier: false | string = false;
+
+    editor.update((tx) => {
+      normalizedIdentifier = (
+        tx as typeof tx & FootnoteTransaction
+      ).footnote.normalizeDuplicateDefinition({ path: [1] });
+    });
+
+    expect(String(normalizedIdentifier)).toBe('2');
     expect(
       (editor.api as any).footnote.hasDuplicateDefinitions({ identifier: '1' })
     ).toBe(false);

@@ -1,14 +1,14 @@
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/plite';
 
-import type { SlateEditor } from '../../lib/editor';
+import type { BasePlateEditor } from '../../lib/editor';
 import type { ParserOptions } from '../../lib/plugin/BasePlugin';
-import type { AnyEditorPlugin } from '../../lib/plugin/SlatePlugin';
+import type { AnyEditorPlugin } from '../../lib/plugin/EditorPlugin';
 
 import { getEditorPlugin } from '../../lib/plugin';
 
-/** Pipe editor.tf.insertData.transformFragment */
+/** Pipe insert-data transformFragment hooks. */
 export const pipeTransformFragment = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   plugins: Partial<AnyEditorPlugin>[],
   { fragment, ...options }: ParserOptions & { fragment: Descendant[] }
 ) => {

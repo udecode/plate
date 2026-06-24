@@ -19,13 +19,16 @@ Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration
 - Prefer the smallest heavy stack that can answer the decision.
 - Usually load 3 to 5 helpers, not every possible helper.
 - Separate facts, inference, and recommendation.
-- Do not default to ce-review, browser proof, PR work, or compounding.
+- Do not default to extra review panels, browser proof, PR work, or
+  compounding.
 - Use external docs only when repo evidence and local clones are not enough or the task explicitly depends on third-party behavior.
 - If the task turns into code-changing execution, prefer the best durable ownership fix over a local patch.
 
 ## Use This For
 
 - Architecture or public API redesign.
+- Repo-wide architecture cleanup after `architecture-cleanup` ranks
+  source-backed cleanup candidates.
 - Breaking changes or major cross-package refactors.
 - Framework comparison, migration, or tradeoff analysis.
 - Benchmarking, profiling strategy, scalability work, or performance-at-scale decisions.
@@ -79,7 +82,10 @@ Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration
 8. When the work needs a real implementation plan, phased rollout, or plan
    artifact, make the active `major-task` goal plan the durable planning
    surface.
-9. Load `learnings-researcher` early when the domain smells repeated or the repo has prior decisions worth mining.
+9. Search prior repo decisions directly when the domain smells repeated:
+   `docs/solutions/**`, `docs/research/**`, `docs/plans/**`, and relevant git
+   history before inventing a new pattern. Use `research-wiki` when the answer
+   belongs in the compiled research layer.
 10. If the work is editor-framework-facing, start from `@docs/analysis/editor-architecture-candidates.md` as the candidate map instead of widening the field randomly.
 11. For library or framework questions, inspect the local clone in `..` first per AGENTS. If missing, clone it. Only then reach for official docs.
 12. Pick the smallest justified helper stack for the lane.
@@ -139,54 +145,54 @@ Apply this section only when the task source is a tracker item.
   the durable working state in one `docs/plans` goal plan. Use
   `--template major-task`, then add touched-surface packs for docs, browser,
   package/API, or agent-native surfaces.
-- `learnings-researcher`
-  Use early when prior repo decisions, solutions, or repeated failures may matter.
-- `repo-research-analyst`
-  Default repo-grounding helper for major work.
-- `architecture-strategist`
-  Use for public API design, layering, ownership boundaries, abstraction cleanup, and major cross-package refactors.
-- `pattern-recognition-specialist`
-  Use when the question needs repo-wide pattern extraction, repeated smell detection, or design consistency analysis across packages.
-- `framework-docs-researcher`
-  Use only after local clone/source/docs work per AGENTS is not enough, or when competing framework behavior must be grounded in official docs.
-- `best-practices-researcher`
-  Use only when official docs leave gaps or the task genuinely needs broader field patterns beyond official sources.
-- `performance-oracle`
-  Use for benchmark design, scalability analysis, hot-path tradeoffs, or performance validation strategy.
-- `spec-flow-analyzer`
-  Use for RFCs, proposals, acceptance criteria, rollout plans, and completeness pressure-testing.
-- `issue-intelligence-analyst` or `git-history-analyzer`
-  Use only when issue churn, historical regressions, or design history matter to the decision.
-- `coherence-reviewer` and `feasibility-reviewer`
-  Default pair for explicit document review.
-- `scope-guardian-reviewer`
-  Use when scope, abstraction count, or rollout shape may be inflated.
-- `product-lens-reviewer`
-  Use when the document is making product framing, value, or roadmap claims.
-- `adversarial-document-reviewer`
-  Use for larger, riskier, or more assumption-heavy docs where premise stress-testing is worth the cost.
-- `ce-review`, `correctness-reviewer`, `maintainability-reviewer`, `project-standards-reviewer`, `code-simplicity-reviewer`
-  Use only when major work actually turns into risky code-changing execution or architecture-sensitive diffs.
+- `architecture-cleanup`
+  Use as the source-backed cleanup pass when the user asks to improve
+  architecture, deslop code, find refactoring opportunities, consolidate
+  modules, simplify wrappers, or make the repo more testable and
+  agent-navigable. It ranks delete/merge/inline/simplify/split/keep/defer
+  decisions and may apply only safe behavior-neutral cleanup packets;
+  `major-task` owns broader accepted decisions, tradeoffs, and rollout plans.
+- `slate-research`
+  Use for Slate/editor substrate research, OSS discovery, source-mining, and
+  issue-corpus evidence.
+- `research-wiki`
+  Use when prior decisions or reusable research need to be found, maintained,
+  or promoted into the compiled research layer.
+- `performance`
+  Use for benchmark design, scalability analysis, hot-path tradeoffs,
+  repeated-unit budgets, and performance validation strategy.
+- `grill-with-docs`
+  Use for explicit plan/RFC/spec pressure when a decision artifact needs
+  adversarial questions grounded in current docs.
+- `autoreview`
+  Use when major work turns into risky code-changing execution or
+  architecture-sensitive diffs.
+- `tdd`
+  Use when behavior changes, bug fixes, or regression classes need test-first
+  proof.
 - `agent-native-reviewer`
   Use only when the change touches `.agents/**`, `.claude/**`, AI/tooling surfaces, commands, or user actions that an agent should also be able to perform.
-- `browser-use`
-  Use only when there is a real browser surface to verify.
+- Browser/Chrome/Computer plugins
+  Use Browser for ordinary app QA, Chrome directly for native
+  browser/profile/OS behavior, and Computer Use only when native Chrome/OS UI
+  must be visually inspected and Chrome automation cannot read it.
 - `agent-browser-issue`
   Use when browser automation is blocked by a likely reusable tool-side issue that deserves a separate GitHub follow-up.
 - `changeset`
   Use when verified work changes a published package under `packages/` and the repo expects release notes before completion.
-- `git-commit-push-pr`
-  Use when verified code-changing work should ship as a PR.
 ## Execution Paths
 
 ### Architecture Or Public API
 
 1. Map the current boundaries, ownership, public surface, and package boundaries first.
-2. Find what already exists before proposing new structure.
-3. Prefer changing the ownership boundary over papering around it at each call site.
-4. Call out blast radius explicitly when the recommendation changes public API or package contracts.
-5. If recommending a migration path, include staged rollout, compatibility strategy, and rollback shape.
-6. If a smaller boundary change and a broader architecture reset are both viable, say why one wins now.
+2. If the prompt is broad architecture cleanup rather than one named API or
+   spec, run `architecture-cleanup` first as the ranked cleanup pass. Do not
+   jump straight to a refactor.
+3. Find what already exists before proposing new structure.
+4. Prefer changing the ownership boundary over papering around it at each call site.
+5. Call out blast radius explicitly when the recommendation changes public API or package contracts.
+6. If recommending a migration path, include staged rollout, compatibility strategy, and rollback shape.
+7. If a smaller boundary change and a broader architecture reset are both viable, say why one wins now.
 
 ### Performance And Optimization
 
@@ -232,22 +238,26 @@ Apply this section only when the task source is a tracker item.
 
 ### Spec Or Proposal
 
-1. Use `spec-flow-analyzer` to pressure-test completeness.
-2. Define constraints, acceptance criteria, rollout, verification, and open questions before implementation.
+1. Use the active `major-task` plan to pressure-test completeness: constraints,
+   acceptance criteria, rollout, verification, rejected alternatives, and open
+   questions must be explicit before implementation.
+2. Use `grill-with-docs` when the proposal needs a focused adversarial question
+   pass grounded in existing docs.
 3. If the task is still mushy product framing rather than implementation
    strategy, stop for focused clarification or switch to collaborative planning.
-4. If the spec will be a real decision artifact, run the conditional document-review pass before calling it done.
+4. If the spec will be a real decision artifact, run the document-review pass
+   below before calling it done.
 
 ### Document Review
 
 1. Use this path only for explicit plan, RFC, proposal, or spec review.
-2. Default review pair:
-   - `coherence-reviewer`
-   - `feasibility-reviewer`
-3. Add `scope-guardian-reviewer` when the document introduces multiple new abstractions, broad rollout shape, or scope that may have drifted past the stated goal.
-4. Add `product-lens-reviewer` when the document is making product framing, roadmap, UX-value, or "are we solving the right thing?" claims.
-5. Add `adversarial-document-reviewer` when the document has more than 5 requirements or implementation units, makes significant architectural decisions, proposes new abstractions, or feels high-stakes enough that premise stress-testing is worth the cost.
-6. Keep this pass selective. Most docs should not load every reviewer.
+2. Use `grill-with-docs` for the review loop when the document needs external
+   pressure.
+3. Otherwise record the review directly in the active plan:
+   coherence, feasibility, scope, product fit, strongest objection, and proof
+   gaps.
+4. Keep this pass selective. Most docs do not need a second-model or
+   multi-reviewer ceremony.
 
 ### Mixed Major Work
 

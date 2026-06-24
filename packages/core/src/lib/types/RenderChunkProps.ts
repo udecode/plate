@@ -6,7 +6,7 @@ export type RenderChunkFn = (
 
 export type RenderChunkProps = {
   attributes: {
-    'data-slate-chunk': true;
+    'data-plite-chunk': true;
   };
   children: any;
   highest: boolean;

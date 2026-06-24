@@ -2,7 +2,7 @@
 
 import { BaseParagraphPlugin, KEYS } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseBlockquotePlugin } from './BaseBlockquotePlugin';
 import { BlockquoteRules } from './BasicBlockRules';
@@ -23,7 +23,7 @@ describe('basic block input rules', () => {
       </fragment>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseParagraphPlugin,
         BaseBlockquotePlugin.configure({
@@ -33,7 +33,7 @@ describe('basic block input rules', () => {
       value: input,
     } as any);
 
-    editor.tf.insertText(' ');
+    editor.update((tx) => tx.text.insert(' '));
 
     expect(input.children).toEqual(
       (
@@ -47,7 +47,7 @@ describe('basic block input rules', () => {
   });
 
   it('wraps a paragraph in a nested blockquote when already inside a quote', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseParagraphPlugin,
         BaseBlockquotePlugin.configure({
@@ -66,7 +66,7 @@ describe('basic block input rules', () => {
       ],
     } as any);
 
-    editor.tf.insertText(' ');
+    editor.update((tx) => tx.text.insert(' '));
 
     expect(editor.children).toMatchObject([
       {
@@ -86,7 +86,7 @@ describe('basic block input rules', () => {
   });
 
   it('inserts an hr and trailing paragraph from --- shorthand', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseParagraphPlugin,
         BaseHorizontalRulePlugin.configure({
@@ -100,7 +100,7 @@ describe('basic block input rules', () => {
       value: [{ children: [{ text: '--' }], type: KEYS.p }],
     } as any);
 
-    editor.tf.insertText('-');
+    editor.update((tx) => tx.text.insert('-'));
 
     expect(editor.children).toMatchObject([
       {

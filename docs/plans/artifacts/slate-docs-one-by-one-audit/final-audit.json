@@ -1,0 +1,20 @@
+{
+  "result": {
+    "docs": 70,
+    "ledgerRows": 70,
+    "fixed": 25,
+    "clean": 45,
+    "missingLedger": 0,
+    "missingFrontmatter": 0,
+    "staleMatches": 0,
+    "antiSlopMatches": 0,
+    "linkAudit": "ok",
+    "routeRows": 25,
+    "routeBad": 0
+  },
+  "missingLedger": [],
+  "missingFrontmatter": [],
+  "stale": [],
+  "bad": [],
+  "routesBad": []
+}

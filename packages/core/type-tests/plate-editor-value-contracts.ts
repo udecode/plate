@@ -29,11 +29,14 @@ type LayoutConfig = PluginConfig<
   {
     getVariant: () => LayoutVariant;
   },
-  {
-    setDensity: (density: 1 | 2) => void;
-  },
+  {},
   {
     isDense: () => boolean;
+  },
+  {
+    layout: {
+      setDensity: (density: 1 | 2) => void;
+    };
   }
 >;
 
@@ -50,7 +53,7 @@ const LayoutPlugin = createTPlatePlugin<LayoutConfig>({
   .extendEditorApi(({ getOptions }) => ({
     getVariant: () => getOptions().variant,
   }))
-  .extendEditorTransforms(({ plugin }) => ({
+  .extendTx(({ plugin }) => () => ({
     setDensity: (density) => {
       plugin.options.density = density;
     },
@@ -80,11 +83,11 @@ const ToolbarPlugin = createPlatePlugin({
 })
   .extendEditorApi(({ editor }) => ({
     describeEditor: () =>
-      `${editor.getApi(LayoutPlugin).getVariant()}:${editor.getApi(MentionPlugin).getTrigger()}` as EditorSummary,
+      `${editor.api.getVariant()}:${editor.api.getTrigger()}` as EditorSummary,
   }))
-  .extendEditorTransforms(({ editor }) => ({
+  .extendTx(({ editor }) => () => ({
     setCompact: () => {
-      editor.getPlugin(LayoutPlugin).transforms.setDensity(1);
+      editor.update((tx) => tx.layout.setDensity(1));
     },
   }));
 
@@ -116,9 +119,11 @@ const isDense: boolean = plateEditor.getOption(
   'isDense'
 );
 
-plateEditor.transforms.setDensity(1);
-plateEditor.transforms.setDensity(2);
-plateEditor.transforms.setCompact();
+plateEditor.update((tx) => {
+  tx.layout.setDensity(1);
+  tx.layout.setDensity(2);
+  tx.toolbar.setCompact();
+});
 
 expectBodyValue(bodyValue);
 
@@ -134,11 +139,15 @@ ConfiguredLayoutPlugin.configure({
   },
 });
 
-// @ts-expect-error invalid merged transform argument
-plateEditor.transforms.setDensity(3);
+plateEditor.update((tx) => {
+  // @ts-expect-error invalid merged tx argument
+  tx.layout.setDensity(3);
+});
 
-// @ts-expect-error invalid merged toolbar transform argument
-plateEditor.transforms.setCompact(true);
+plateEditor.update((tx) => {
+  // @ts-expect-error invalid merged toolbar tx argument
+  tx.toolbar.setCompact(true);
+});
 
 // @ts-expect-error invalid selector arguments
 plateEditor.getOption(ConfiguredLayoutPlugin, 'isDense', true);

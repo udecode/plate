@@ -1,12 +1,12 @@
 ---
 date: 2026-04-12
-topic: slate-v2-restore-dom-family-closure-matrix
+topic: plite-restore-dom-family-closure-matrix
 ---
 
 # Restore DOM Family Closure Matrix
 
 > Historical batch note. The live closure read is now folded into
-> [release-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/release-file-review-ledger.md).
+> [release-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/release-file-review-ledger.md).
 
 ## Purpose
 
@@ -15,15 +15,15 @@ proved, cut, or left tooling-blocked explicitly.
 
 Legacy source:
 
-- [restore-dom.tsx](/Users/zbeyens/git/slate/packages/slate-react/src/components/restore-dom/restore-dom.tsx)
-- [restore-dom-manager.ts](/Users/zbeyens/git/slate/packages/slate-react/src/components/restore-dom/restore-dom-manager.ts)
+- [restore-dom.tsx](/Users/zbeyens/git/slate/packages/plite-react/src/components/restore-dom/restore-dom.tsx)
+- [restore-dom-manager.ts](/Users/zbeyens/git/slate/packages/plite-react/src/components/restore-dom/restore-dom-manager.ts)
 
 Current owners:
 
-- [editable.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable.tsx)
-- [react-editor.ts](/Users/zbeyens/git/slate-v2/packages/slate-react/src/plugin/react-editor.ts)
-- [bridge.ts](/Users/zbeyens/git/slate-v2/packages/slate-dom/src/bridge.ts)
-- [surface-contract.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react/test/surface-contract.tsx)
+- [editable.tsx](/Users/zbeyens/git/plite/packages/plite-react/src/components/editable.tsx)
+- [react-editor.ts](/Users/zbeyens/git/plite/packages/plite-react/src/plugin/react-editor.ts)
+- [bridge.ts](/Users/zbeyens/git/plite/packages/plite-dom/src/bridge.ts)
+- [surface-contract.tsx](/Users/zbeyens/git/plite/packages/plite-react/test/surface-contract.tsx)
 
 ## Behavior Matrix
 

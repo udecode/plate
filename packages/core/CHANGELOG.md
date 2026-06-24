@@ -1,5 +1,17 @@
 # @platejs/core
 
+## 54.0.0-beta.1
+
+### Patch Changes
+
+- Synced latest changes from `main` into the beta lane.
+
+## 54.0.0-beta.0
+
+### Major Changes
+
+- [#5031](https://github.com/udecode/plate/pull/5031) by [@felixfeng33](https://github.com/felixfeng33) – Prepare v54 beta prerelease versioning.
+
 ## 53.2.1
 
 ### Patch Changes
@@ -25,8 +37,8 @@
   - Cut mixed-document `nodeId` overhead over core from `+50.06 ms` to `+9.46 ms` (`81.1%` smaller)
   - Cut duplicate-id paste cost from `20.06 ms` to `13.79 ms` (`31.2%`, `1.45x` faster)
   - Cut `10k` code-only mount time from `1500.30 ms` to `496.47 ms` (`66.9%`, `3.02x` faster) and shrink the code-only tax over core from `+280.75 ms` to `+27.89 ms` (`90.1%` smaller)
-  - Bring the current `10k` core and basic large-document mount lanes to Slate parity or better (`core -3.5%`, `core + nodeId -1.6%`, `basic -1.2%`)
-  - Preserve Slate children for void `render.as` tags and Slate attributes on simple leaf/text render paths
+  - Bring the current `10k` core and basic large-document mount lanes to Plite parity or better (`core -3.5%`, `core + nodeId -1.6%`, `basic -1.2%`)
+  - Preserve Plite children for void `render.as` tags and Plite attributes on simple leaf/text render paths
 
 ## 53.0.6
 
@@ -99,7 +111,7 @@
 
 - [#4857](https://github.com/udecode/plate/pull/4857) by [@zbeyens](https://github.com/zbeyens) –
 
-  - Fix `PlateSlate` so it passes the Slate remount key directly instead of spreading `key` through JSX props.
+  - Fix `Plite` so it passes the Plite remount key directly instead of spreading `key` through JSX props.
 
 - [#4857](https://github.com/udecode/plate/pull/4857) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -117,7 +129,7 @@
 ### Patch Changes
 
 - [#4853](https://github.com/udecode/plate/pull/4853) by [@zbeyens](https://github.com/zbeyens) –
-  - Update Slate dependencies to `0.123.0`
+  - Update Plite dependencies to `0.123.0`
 
 ## 52.0.17
 
@@ -131,7 +143,7 @@
 
 - [#4792](https://github.com/udecode/plate/pull/4792) by [@felixfeng33](https://github.com/felixfeng33) – Add `userId` option to editor for collaborative features
 
-  - Add `userId` option to `usePlateEditor`/`createSlateEditor` options
+  - Add `userId` option to `usePlateEditor`/`createPliteEditor` options
   - Add `editor.meta.userId` for accessing the current user ID
   - **Breaking**: Remove `getUserId` option from `TriggerComboboxPluginOptions`. Use `editor.meta.userId` instead.
 
@@ -169,7 +181,7 @@
 
 ### Patch Changes
 
-- [#4768](https://github.com/udecode/plate/pull/4768) by [@felixfeng33](https://github.com/felixfeng33) – Export `useSlateStatic` from `slate-react`
+- [#4768](https://github.com/udecode/plate/pull/4768) by [@felixfeng33](https://github.com/felixfeng33) – Export `usePliteStatic` from `plite-react`
 
 ## 52.0.1
 
@@ -203,9 +215,9 @@
   - `createStaticEditor`, `CreateStaticEditorOptions` - Create static editor instance
   - `serializeHtml`, `SerializeHtmlOptions` - Serialize editor content to HTML string
   - `PlateStatic`, `PlateStaticProps` - Main static editor component
-  - `SlateElement`, `SlateElementProps` - Static element component
-  - `SlateText`, `SlateTextProps` - Static text component
-  - `SlateLeaf`, `SlateLeafProps` - Static leaf component
+  - `PliteElement`, `PliteElementProps` - Static element component
+  - `PliteText`, `PliteTextProps` - Static text component
+  - `PliteLeaf`, `PliteLeafProps` - Static leaf component
   - `getEditorDOMFromHtmlString`
 
 ## 50.3.9
@@ -225,7 +237,7 @@
 
 ### Patch Changes
 
-- [#4689](https://github.com/udecode/plate/pull/4689) by [@felixfeng33](https://github.com/felixfeng33) – Decouple `createSlateEditor` from React:
+- [#4689](https://github.com/udecode/plate/pull/4689) by [@felixfeng33](https://github.com/felixfeng33) – Decouple `createPliteEditor` from React:
 
   - `createZustandStore` from `@platejs/core` (or `platejs`) is now a vanilla store without React-specific functionality (hooks).
   - The previous behavior of `createZustandStore` is now available in `@platejs/core/react` (or `platejs/react`). This is not part of our public API so it won't be a breaking change, but if you're using it, you'll need to import it from `@platejs/core/react` (or `platejs/react`) instead.
@@ -335,11 +347,11 @@
 
 - [#4454](https://github.com/udecode/plate/pull/4454) by [@felixfeng33](https://github.com/felixfeng33) –
 
-  - Added `editor.tf.nodeId.normalize()` API to manually normalize node IDs in the document.
+  - Added `editor.transforms.nodeId.normalize()` API to manually normalize node IDs in the document.
 
     ```ts
     // Normalize all nodes in the document to ensure they have IDs
-    editor.tf.nodeId.normalize();
+    editor.transforms.nodeId.normalize();
     ```
 
   - Added `normalizeNodeId` pure function to normalize node IDs in a value without using editor operations.
@@ -387,7 +399,7 @@
 ### Patch Changes
 
 - [#4447](https://github.com/udecode/plate/pull/4447) by [@felixfeng33](https://github.com/felixfeng33) –
-  - Added `getSelectedDomFragment` utility function that returns Slate nodes from DOM selection.
+  - Added `getSelectedDomFragment` utility function that returns Plite nodes from DOM selection.
   - Deprecated `getSelectedDomBlocks`. Use `getSelectedDomFragment` instead.
 
 ## 49.0.16
@@ -412,19 +424,19 @@
 
   **New Utilities:**
 
-  - Added `getSelectedDomBlocks` to extract selected DOM elements with Slate metadata
+  - Added `getSelectedDomBlocks` to extract selected DOM elements with Plite metadata
   - Added `getSelectedDomNode` to get DOM nodes from browser selection
   - Added `isSelectOutside` to check if selection is outside editor bounds
   - Added `getPlainText` to recursively extract plain text from DOM nodes
 
-  This enables seamless copy operations from static Plate editors, allowing content to be pasted into other Slate editors while preserving rich formatting and structure.
+  This enables seamless copy operations from static Plate editors, allowing content to be pasted into other Plite editors while preserving rich formatting and structure.
 
 ## 49.0.15
 
 ### Patch Changes
 
 - [#4428](https://github.com/udecode/plate/pull/4428) by [@zbeyens](https://github.com/zbeyens) –
-  - Updated `SlateElementProps`, `SlateTextProps`, `SlateLeafProps`, `PlateElementProps`, `PlateTextProps`, and `PlateLeafProps` to properly type the `attributes` property to unknown object.
+  - Updated `PliteElementProps`, `PliteTextProps`, `PliteLeafProps`, `PlateElementProps`, `PlateTextProps`, and `PlateLeafProps` to properly type the `attributes` property to unknown object.
 
 ## 49.0.14
 
@@ -530,7 +542,7 @@
       });
       ```
   - The `components` prop has been removed from `serializeHtml` and `PlateStatic`.
-    - Migration: Pass the `components` to `createSlateEditor({ components })` or the individual plugins instead.
+    - Migration: Pass the `components` to `createPliteEditor({ components })` or the individual plugins instead.
   - Plugin Shortcuts System Changes:
     - Shortcut keys defined in `editor.shortcuts` are now namespaced by the plugin key (e.g., `code.toggle` for `CodePlugin`).
     - The `priority` property for shortcuts is used to resolve conflicts when multiple shortcuts share the exact same key combination, not for overriding shortcuts by name.
@@ -574,7 +586,7 @@
     - When `true`, indicates that the plugin's elements are primarily containers for other content.
   - New plugin field: `node.isStrictSiblings` (boolean).
     - When `true`, indicates that the element enforces strict sibling type constraints and only allows specific siblings (e.g., `td` can only have `td` siblings, `column` can only have `column` siblings).
-    - Used by `editor.tf.insertExitBreak` functionality to determine appropriate exit points in nested structures.
+    - Used by `editor.transforms.insertExitBreak` functionality to determine appropriate exit points in nested structures.
   - New plugin field: `rules` (object).
     - Configures common editing behaviors declaratively instead of overriding editor methods. See documentation for more details.
     - `rules.break`: Controls Enter key behavior (`empty`, `default`, `emptyLineEnd`, `splitReset`)
@@ -585,15 +597,15 @@
     - `rules.match`: Conditional rule application based on node properties
   - Plugin shortcuts can now automatically leverage existing plugin transforms by specifying the transform name, in addition to custom handlers.
   - New editor transform methods for keyboard handling:
-    - `editor.tf.escape`: Handle Escape key events. Returns `true` if the event is handled.
-    - `editor.tf.moveLine`: Handle ArrowDown and ArrowUp key events with `reverse` option for direction. Returns `true` if the event is handled.
-    - `editor.tf.selectAll`: Handle Ctrl/Cmd+A key events for selecting all content. Returns `true` if the event is handled.
-    - `editor.tf.tab`: Handle Tab and Shift+Tab key events with `reverse` option for Shift+Tab. Returns `true` if the event is handled.
+    - `editor.transforms.escape`: Handle Escape key events. Returns `true` if the event is handled.
+    - `editor.transforms.moveLine`: Handle ArrowDown and ArrowUp key events with `reverse` option for direction. Returns `true` if the event is handled.
+    - `editor.transforms.selectAll`: Handle Ctrl/Cmd+A key events for selecting all content. Returns `true` if the event is handled.
+    - `editor.transforms.tab`: Handle Tab and Shift+Tab key events with `reverse` option for Shift+Tab. Returns `true` if the event is handled.
 
 ### Patch Changes
 
 - [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
-  - Fixed an issue where `editor.api` and `editor.tf` (transforms) were not consistently available in the props passed to default element components when no custom component was provided for a plugin.
+  - Fixed an issue where `editor.api` and `editor.transforms` (transforms) were not consistently available in the props passed to default element components when no custom component was provided for a plugin.
 
 # @udecode/plate-core
 
@@ -677,7 +689,7 @@
     - new `components` option, alias to `override.components`
     - new `skipInitialization` option, skip the initialization logic (`editor.children`, `editor.selection`, normalizing the initial value)
   - New api `editor.api.shouldNormalizeNode`: use case is to prevent normalizeNode from being called when the editor is not ready
-  - New transform `editor.tf.init`: initialize `editor.children`, `editor.selection`, normalizing the initial value. Use it when `skipInitialization` is `true`.
+  - New transform `editor.transforms.init`: initialize `editor.children`, `editor.selection`, normalizing the initial value. Use it when `skipInitialization` is `true`.
 
 ## 47.3.1
 
@@ -686,9 +698,9 @@
 - [#4267](https://github.com/udecode/plate/pull/4267) by [@zbeyens](https://github.com/zbeyens) –
   - Upgrade `slate` to `0.114.0`
   - Fix: plugin `node.props.className` merging
-  - Fix: remove redundant `data-slate-leaf` attribute from leaf components
-  - Add `node.leafProps` to override `data-slate-leaf` element attributes
-  - Add `node.textProps` to override `data-slate-node="text"` element attributes
+  - Fix: remove redundant `data-plite-leaf` attribute from leaf components
+  - Add `node.leafProps` to override `data-plite-leaf` element attributes
+  - Add `node.textProps` to override `data-plite-node="text"` element attributes
   - Add `render.leaf` to render a component below leaf nodes when `isLeaf: true` and `isDecoration: false`
   - Add `node.isDecoration` to control if a plugin's nodes can be rendered as decorated leaf
 
@@ -698,7 +710,7 @@
 
 ### Patch Changes
 
-- [`f4996e3`](https://github.com/udecode/plate/commit/f4996e3c3e606cb1dc0f6f66dc54364330a1655a) by [@felixfeng33](https://github.com/felixfeng33) – Extend `DomPlugin` to support `editor.tf.withScrolling`.
+- [`f4996e3`](https://github.com/udecode/plate/commit/f4996e3c3e606cb1dc0f6f66dc54364330a1655a) by [@felixfeng33](https://github.com/felixfeng33) – Extend `DomPlugin` to support `editor.transforms.withScrolling`.
 
 ## 47.1.1
 
@@ -713,7 +725,7 @@
 
 ### Patch Changes
 
-- [#4182](https://github.com/udecode/plate/pull/4182) by [@mattiaz9](https://github.com/mattiaz9) – Fix: `PlatePlugin.render.beforeEditable` and `afterEditable` should be siblings to `aboveEditable` instead of children. `aboveSlate` should be used for that scenario.
+- [#4182](https://github.com/udecode/plate/pull/4182) by [@mattiaz9](https://github.com/mattiaz9) – Fix: `PlatePlugin.render.beforeEditable` and `afterEditable` should be siblings to `aboveEditable` instead of children. `abovePlite` should be used for that scenario.
 
 ## 46.0.9
 
@@ -775,7 +787,7 @@
 
 ### Patch Changes
 
-- [`8b06248`](https://github.com/udecode/plate/commit/8b06248ede9d006f1b421ec0bf820be8a536e79c) by [@felixfeng33](https://github.com/felixfeng33) – Add `isSlateEditor` to check if the HTML element is a plate editor
+- [`8b06248`](https://github.com/udecode/plate/commit/8b06248ede9d006f1b421ec0bf820be8a536e79c) by [@felixfeng33](https://github.com/felixfeng33) – Add `isPliteEditor` to check if the HTML element is a plate editor
 
 ## 44.0.7
 
@@ -888,18 +900,18 @@
 
 - [#3943](https://github.com/udecode/plate/pull/3943) by [@felixfeng33](https://github.com/felixfeng33) – `editor.api.html.deserialize`: Support deserialization from PlateStatic.
 
-  New: `getEditorDOMFromHtmlString` returns the editor element in html string (the one with `data-slate-editor="true"`).
+  New: `getEditorDOMFromHtmlString` returns the editor element in html string (the one with `data-plite-editor="true"`).
 
-  New utilities for checking Slate nodes in HTML:
+  New utilities for checking Plite nodes in HTML:
 
-  - `isSlateVoid`: Check if an HTML element is a Slate void node
-  - `isSlateElement`: Check if an HTML element is a Slate element node
-  - `isSlateString`: Check if an HTML element is a Slate string node
-  - `isSlateLeaf`: Check if an HTML element is a Slate leaf node
-  - `isSlateNode`: Check if an HTML element is any type of Slate node
-  - `isSlatePluginElement`: Check if an HTML element is a Slate element node with a specific plugin key
-  - `isSlatePluginNode`: Check if an HTML element has a specific plugin key class
-  - `getSlateElements`: Get all Slate element nodes in an HTML element
+  - `isPliteVoid`: Check if an HTML element is a Plite void node
+  - `isPliteElement`: Check if an HTML element is a Plite element node
+  - `isPliteString`: Check if an HTML element is a Plite string node
+  - `isPliteLeaf`: Check if an HTML element is a Plite leaf node
+  - `isPliteNode`: Check if an HTML element is any type of Plite node
+  - `isPlitePluginElement`: Check if an HTML element is a Plite element node with a specific plugin key
+  - `isPlitePluginNode`: Check if an HTML element has a specific plugin key class
+  - `getPliteElements`: Get all Plite element nodes in an HTML element
 
 ## 42.0.4
 
@@ -928,11 +940,11 @@
 - [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
 
   - **Plugin `normalizeInitialValue`** now returns `void` instead of `Value`. When mutating nodes, keep their references (e.g., use `Object.assign` instead of spread).
-  - **Editor methods have moved** to `editor.tf` and `editor.api`. They still exist at the top level for **slate backward compatibility**, but are no longer redundantly typed. If you truly need the top-level method types, extend your editor type with `LegacyEditorMethods` (e.g. `editor as Editor & LegacyEditorMethods`). Since these methods can be overridden by `extendEditor`, `with...`, or slate plugins, consider migrating to the following approaches:
+  - **Editor methods have moved** to `editor.transforms` and `editor.api`. They still exist at the top level for **slate backward compatibility**, but are no longer redundantly typed. If you truly need the top-level method types, extend your editor type with `LegacyEditorMethods` (e.g. `editor as Editor & LegacyEditorMethods`). Since these methods can be overridden by `extendEditor`, `with...`, or slate plugins, consider migrating to the following approaches:
 
     ```tsx
     // For overriding existing methods only:
-    overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
+    overrideEditor(({ editor, transforms: { deleteForward }, api: { isInline } }) => ({
       transforms: {
         deleteForward(options) {
           // ...conditional override
@@ -948,9 +960,9 @@
     }));
     ```
 
-  This was previously done in `extendEditor` using top-level methods, which still works but now throws a type error due to the move to `editor.tf/editor.api`. A workaround is to extend your editor with `LegacyEditorMethods`.
+  This was previously done in `extendEditor` using top-level methods, which still works but now throws a type error due to the move to `editor.transforms/editor.api`. A workaround is to extend your editor with `LegacyEditorMethods`.
 
-  **Why?** Having all methods at the top-level (next to `children`, `marks`, etc.) would clutter the editor interface. Slate splits transforms in three places (`editor`, `Editor`, and `Transforms`), which is also confusing. We've reorganized them into `tf` and `api` for better DX, but also to support transform-only middlewares in the future. This also lets us leverage `extendEditorTransforms`, `extendEditorApi`, and `overrideEditor` to modify those methods.
+  **Why?** Having all methods at the top-level (next to `children`, `marks`, etc.) would clutter the editor interface. Plite splits transforms in three places (`editor`, `Editor`, and `Transforms`), which is also confusing. We've reorganized them into `tf` and `api` for better DX, but also to support transform-only middlewares in the future. This also lets us leverage `extendEditorTransforms`, `extendEditorApi`, and `overrideEditor` to modify those methods.
 
   Migration example:
 
@@ -984,7 +996,7 @@
     return editor;
   };
 
-  export const InlineVoidPlugin = createSlatePlugin({
+  export const InlineVoidPlugin = createPlitePlugin({
     key: "inlineVoid",
     extendEditor: withInlineVoid,
   });
@@ -1022,7 +1034,7 @@
     };
   };
 
-  export const InlineVoidPlugin = createSlatePlugin({
+  export const InlineVoidPlugin = createPlitePlugin({
     key: "inlineVoid",
   }).overrideEditor(withInlineVoid);
   ```
@@ -1039,7 +1051,7 @@
 
 - [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
 
-  - Import the following from `@udecode/plate-core/react` (or `@udecode/plate/react`) instead of `slate-react`: `RenderPlaceholderProps`, `DefaultElement`, `DefaultPlaceholder`, `Editable`, `Slate`, `useComposing`, `useFocused`, `useReadOnly`, `useSelected`, `withReact`.
+  - Import the following from `@udecode/plate-core/react` (or `@udecode/plate/react`) instead of `plite-react`: `RenderPlaceholderProps`, `DefaultElement`, `DefaultPlaceholder`, `Editable`, `Plite`, `useComposing`, `useFocused`, `useReadOnly`, `useSelected`, `withReact`.
   - `useNodePath` is now memoized: it will re-render only when the actual path changes (`PathApi.equals`). This includes `usePath` and `path` element prop.
   - **New hook** `useElementSelector(([node, path]) => selector(node, path), deps, { equalityFn, key })`: re-render only when the selector result changes. **We highly recommend using this hook over useElement(key)** when subscribing to an ancestor element (e.g. table element from a cell element). For example, subscribe to the row size from a cell element without affecting the re-rendering of all row cells:
 
@@ -1056,7 +1068,7 @@
 
 ### Patch Changes
 
-- [#3932](https://github.com/udecode/plate/pull/3932) by [@felixfeng33](https://github.com/felixfeng33) – Each `PlateElement` and `SlateElement` comes with a default `position: relative` style.
+- [#3932](https://github.com/udecode/plate/pull/3932) by [@felixfeng33](https://github.com/felixfeng33) – Each `PlateElement` and `PliteElement` comes with a default `position: relative` style.
   Remove `relative` className from all components
 
 ## 41.0.2
@@ -1077,9 +1089,9 @@
   ### Minor Changes
 
   - [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
-    - Add `PlateStatic`, `SlateElement`, `SlateLeaf` components for static rendering and server-side HTML serialization
+    - Add `PlateStatic`, `PliteElement`, `PliteLeaf` components for static rendering and server-side HTML serialization
     - Add `serializeHtml` function to serialize editor content to HTML. Deprecating `@udecode/plate-html` in favor of core serialization.
-    - Move from `PlatePlugin` (`/react`) to `BasePlugin` (`/`): `node.component`, `render.aboveEditable`, `render.aboveSlate`, `render.node`
+    - Move from `PlatePlugin` (`/react`) to `BasePlugin` (`/`): `node.component`, `render.aboveEditable`, `render.abovePlite`, `render.node`
     - Add to `SlatePlugin`: `node.props`, `render.aboveNodes`, `render.belowNodes`, `render.afterEditable`, `render.beforeEditable`, `render.node`
 
 ## 40.3.1
@@ -1184,7 +1196,7 @@
 
   - When `disabled=true`, `readOnly` should be `true`
   - Add prop `aria-disabled=true` and `data-readonly=true` when `readOnly=true`
-  - Add class `slate-editor`, `ignore-click-outside/toolbar` (used by floating toolbar)
+  - Add class `plite-editor`, `ignore-click-outside/toolbar` (used by floating toolbar)
 
 ## 39.1.3
 
@@ -1259,7 +1271,7 @@
   Before:
 
   ```ts
-  const plugin = createSlatePlugin({
+  const plugin = createPlitePlugin({
     key: "test",
     options: { nested: { a: 1 } },
   }).extend({
@@ -1272,7 +1284,7 @@
   After:
 
   ```ts
-  const plugin = createSlatePlugin({
+  const plugin = createPlitePlugin({
     key: "test",
     options: { nested: { a: 1 } },
   }).extend(({ getOptions }) => ({
@@ -1295,8 +1307,8 @@
 ### Patch Changes
 
 - [#3512](https://github.com/udecode/plate/pull/3512) by [@zbeyens](https://github.com/zbeyens) –
-  - Add `editor.tf.setValue` to replace the editor value
-  - Fix: move `editor.api.reset` to `editor.tf.reset`
+  - Add `editor.transforms.setValue` to replace the editor value
+  - Fix: move `editor.api.reset` to `editor.transforms.reset`
 
 ## 37.0.7
 
@@ -1314,7 +1326,7 @@
 
 ### Patch Changes
 
-- [#3495](https://github.com/udecode/plate/pull/3495) by [@zbeyens](https://github.com/zbeyens) – Add string value support for `createSlateEditor`, `createPlateEditor`, `usePlateEditor`
+- [#3495](https://github.com/udecode/plate/pull/3495) by [@zbeyens](https://github.com/zbeyens) – Add string value support for `createPliteEditor`, `createPlateEditor`, `usePlateEditor`
 
 ## 37.0.3
 
@@ -1337,7 +1349,7 @@
   **Plugin Creation**:
 
   - Remove `createPluginFactory`
-  - NEW `createSlatePlugin`: vanilla
+  - NEW `createPlitePlugin`: vanilla
   - NEW `createTSlatePlugin`: vanilla explicitly typed
   - NEW `createPlatePlugin`: React
   - NEW `createTPlatePlugin`: React explicitly typed
@@ -1359,7 +1371,7 @@
   After:
 
   ```typescript
-  const plugin = createSlatePlugin({
+  const plugin = createPlitePlugin({
     key: "myPlugin",
     node: {
       isElement: true,
@@ -1397,7 +1409,7 @@
     shortcuts: {
       toggleParagraph: {
         handler: () => {
-          editor.tf.toggle.block({ type });
+          editor.transforms.toggle.block({ type });
         },
         keys: [
           [Key.Mod, Key.Alt, '0'],
@@ -1409,7 +1421,7 @@
   })
   ```
 
-  - `toggleParagraph` is now a shortcut for `editor.tf.toggle.block({ type: 'p' })` for the given keys
+  - `toggleParagraph` is now a shortcut for `editor.transforms.toggle.block({ type: 'p' })` for the given keys
   - Multiple shortcuts can be defined per plugin, and any shortcut can be disabled by setting `shortcuts.toggleParagraph = null`
   - Note the typing support using `Key`
 
@@ -1427,7 +1439,7 @@
   - `props` -> `node.props`
   - `overrideByKey` -> `override.plugins`
   - `renderAboveEditable` -> `render.aboveEditable`
-  - `renderAboveSlate` -> `render.aboveSlate`
+  - `renderAboveSlate` -> `render.abovePlite`
   - `renderAfterEditable` -> `render.afterEditable`
   - `renderBeforeEditable` -> `render.beforeEditable`
   - `inject.props` -> `inject.nodeProps`
@@ -1497,7 +1509,7 @@
   After:
 
   ```typescript
-  export const AlignPlugin = createSlatePlugin({
+  export const AlignPlugin = createPlitePlugin({
     inject: {
       nodeProps: {
         defaultNodeValue: "start",
@@ -1629,8 +1641,8 @@
     - `eventEditorStore` -> `EventEditorStore`
   - `createDeserializeAstPlugin` -> `AstPlugin`
   - `createEditorProtocolPlugin` -> `SlateNextPlugin`
-    - NEW `editor.tf.toggle.block`
-    - NEW `editor.tf.toggle.mark`
+    - NEW `editor.transforms.toggle.block`
+    - NEW `editor.transforms.toggle.mark`
     - Remove `createNodeFactoryPlugin`, included in `SlateNextPlugin`.
     - Remove `createPrevSelectionPlugin`, included in `SlateNextPlugin`.
   - `createHistoryPlugin` -> `HistoryPlugin`
@@ -1641,7 +1653,7 @@
 
   **Editor Creation**:
 
-  NEW `withSlate`:
+  NEW `withPlite`:
 
   - Extends an editor into a vanilla Plate editor
   - NEW `rootPlugin` option for configuring the root plugin
@@ -1649,10 +1661,10 @@
   NEW `withPlate`:
 
   - Extends an editor into a React Plate editor
-  - Now extends `withSlate` with React-specific enhancements
+  - Now extends `withPlite` with React-specific enhancements
   - NEW `useOptions` and `useOption` methods to the editor
 
-  NEW `createSlateEditor`:
+  NEW `createPliteEditor`:
 
   - Create a vanilla Plate editor with server-side support
 
@@ -1689,7 +1701,7 @@
   `editor: PlateEditor`:
 
   - Move `redecorate` to `editor.api.redecorate`
-  - Move `reset` to `editor.tf.reset`
+  - Move `reset` to `editor.transforms.reset`
   - Move `plate.set` to `editor.setPlateState`
   - Move `blockFactory` to `editor.api.create.block`
   - Move `childrenFactory` to `editor.api.create.value`
@@ -1726,7 +1738,7 @@
   ```ts
   const editor = createPlateEditor({ plugins: [TablePlugin] });
   editor.api.htmlReact.serialize(); // core plugin is automatically inferred
-  editor.tf.insert.tableRow(); // table plugin is automatically inferred
+  editor.transforms.insert.tableRow(); // table plugin is automatically inferred
   ```
 
   **Plate Component**
@@ -1757,7 +1769,7 @@
   **Miscellaneous Changes**
 
   - `slate >=0.103.0` peer dependency
-  - `slate-react >=0.108.0` peer dependency
+  - `plite-react >=0.108.0` peer dependency
   - New dependency `@udecode/react-hotkeys`
   - Remove `ELEMENT_`, `MARK_` and `KEY_` constants. Use `NamePlugin.key` instead.
   - Replace `ELEMENT_DEFAULT` with `ParagraphPlugin.key`.
@@ -1796,7 +1808,7 @@
 
 ### Patch Changes
 
-- [#3346](https://github.com/udecode/plate/pull/3346) by [@yf-yang](https://github.com/yf-yang) – feat: expose onValueChange and onSelectionChange from Slate component, following https://github.com/ianstormtaylor/slate/pull/5526
+- [#3346](https://github.com/udecode/plate/pull/3346) by [@yf-yang](https://github.com/yf-yang) – feat: expose onValueChange and onSelectionChange from Plite component, following https://github.com/ianstormtaylor/slate/pull/5526
 
 ## 34.0.1
 
@@ -1821,7 +1833,7 @@
 ### Minor Changes
 
 - [#3125](https://github.com/udecode/plate/pull/3125) by [@zbeyens](https://github.com/zbeyens) –
-  - Use `editor.reset` instead of `resetEditor` to focus the editor after reset so it's decoupled from `slate-react`.
+  - Use `editor.reset` instead of `resetEditor` to focus the editor after reset so it's decoupled from `plite-react`.
   - Add a server bundle including `createPlateEditor`. It can be imported using `import { createPlateEditor } from '@udecode/plate-core/server'`.
 
 ## 32.0.0
@@ -2045,7 +2057,7 @@
 
 ### Patch Changes
 
-- [#2415](https://github.com/udecode/plate/pull/2415) by [@santialbo](https://github.com/santialbo) – support new prop name initialValue on Slate after 0.94.1
+- [#2415](https://github.com/udecode/plate/pull/2415) by [@santialbo](https://github.com/santialbo) – support new prop name initialValue on Plite after 0.94.1
 
 ## 21.1.5
 
@@ -2081,7 +2093,7 @@
   - This package has been split into multiple packages for separation of concerns and decoupled versioning:
     - `@udecode/utils` is a collection of miscellaneous utilities. Can be used by any project.
     - `@udecode/slate` is a collection of `slate` experimental features and bug fixes that may be moved into `slate` one day. It's essentially composed of the generic types. Can be used by vanilla `slate` consumers without plate.
-    - `@udecode/slate-react` is a collection of `slate-react` experimental features and bug fixes that that may be moved into `slate-react` one day. It's essentially composed of the generic types. Can be used by vanilla `slate-react` consumers without plate.
+    - `@udecode/slate-react` is a collection of `plite-react` experimental features and bug fixes that that may be moved into `plite-react` one day. It's essentially composed of the generic types. Can be used by vanilla `plite-react` consumers without plate.
     - `@udecode/plate-core` is the minimalistic core of plate. It essentially includes `Plate`, `PlateProvider` and their dependencies. Note this package is not dependent on the `*-utils` packages.
     - `@udecode/slate-utils` is a collection of utils depending on `@udecode/slate`. Can be used by vanilla `slate` consumers without plate.
     - `@udecode/plate-utils` is a collection of utils depending on `@udecode/slate-react` and `@udecode/plate-core`
@@ -2115,7 +2127,7 @@
 ### Patch Changes
 
 - [#2211](https://github.com/udecode/plate/pull/2211) by [@zbeyens](https://github.com/zbeyens) –
-  - support `slate/slate-react@0.90.0`
+  - support `plite/slate-react@0.90.0`
   - add `isElement(n)` to `isBlock` as it has been removed by slate
   - Fixes #2203
   - Fixes #2197
@@ -2151,7 +2163,7 @@
 - [#2142](https://github.com/udecode/plate/pull/2142) by [@zbeyens](https://github.com/zbeyens) –
   - New core plugin: `editorProtocol` following https://github.com/udecode/editor-protocol core specs
     - Fixes https://github.com/udecode/editor-protocol/issues/81
-  - Slate types: replaced editor mark types by `string`. Derived types from `EMarks<V>` are often unusable.
+  - Plite types: replaced editor mark types by `string`. Derived types from `EMarks<V>` are often unusable.
 
 ## 19.0.3
 
@@ -2174,12 +2186,12 @@
   ```json
   // from
   "slate": "0.78.0",
-  "slate-history": "0.66.0",
-  "slate-react": "0.79.0"
+  "plite-history": "0.66.0",
+  "plite-react": "0.79.0"
   // to
   "slate": "0.87.0",
-  "slate-history": "0.86.0",
-  "slate-react": "0.88.0"
+  "plite-history": "0.86.0",
+  "plite-react": "0.88.0"
   ```
 
 ## 18.15.0
@@ -2254,7 +2266,7 @@
 
 - [#1888](https://github.com/udecode/plate/pull/1888) by [@zbeyens](https://github.com/zbeyens) –
   - new `PlatePlugin` property:
-    - `renderAboveSlate` – Render a component above `Slate`
+    - `renderAboveSlate` – Render a component above `Plite`
   - `id` is no longer required in plate hooks:
     - `usePlateId()` is getting the closest editor id
     - it's used in all store hooks if no store is found with the omitted id
@@ -2308,8 +2320,8 @@
     - `useEventPlateId` is still used to get the last focused editor id.
     - Functions are stored in an object `{ fn: <here> }` - `const setOnChange = usePlateActions(id).onChange()` - `setOnChange({ fn: newOnChange })`
   - `Plate`
-    - if rendered below `PlateProvider`, it will render `PlateSlate > PlateEditable`
-    - if rendered without `PlateProvider`, it will render `PlateProvider > PlateSlate > PlateEditable`
+    - if rendered below `PlateProvider`, it will render `Plite > PlateEditable`
+    - if rendered without `PlateProvider`, it will render `PlateProvider > Plite > PlateEditable`
     - default `id` is no longer `main`, it's now `PLATE_SCOPE`
   - `PlateProvider`
     - Each provider has an optional `scope`, so you can have multiple providers in the same React tree and use the plate hooks with the corresponding `scope`.
@@ -2410,21 +2422,21 @@
   ```
 
   - `PlateProviderEffects`
-  - `PlateSlate`
+  - `Plite`
   - `PlateEditable`
 
   ```tsx
   export interface PlateEditableExtendedProps {
     id?: PlateId;
 
-    /** The children rendered inside `Slate`, after `Editable`. */
+    /** The children rendered inside `Plite`, after `Editable`. */
     children?: ReactNode;
 
     /** Ref to the `Editable` component. */
     editableRef?: Ref<HTMLDivElement>;
 
     /**
-     * The first children rendered inside `Slate`, before `Editable`. Slate DOM is
+     * The first children rendered inside `Plite`, before `Editable`. Plite DOM is
      * not yet resolvable on first render, for that case use `children` instead.
      */
     firstChildren?: ReactNode;
@@ -2505,7 +2517,7 @@
   - `ElementProvider` now has `SCOPE_ELEMENT='element'` scope in addition to the plugin key, so `useElement()` can be called without parameter (default = `SCOPE_ELEMENT`). You'll need to use the plugin key scope only to get an ancestor element.
   - upgrade peerDeps:
     - `"slate": ">=0.78.0"`
-    - `"slate-react": ">=0.79.0"`
+    - `"plite-react": ">=0.79.0"`
 
 ## 15.0.3
 
@@ -2601,14 +2613,14 @@
 
 ### Major Changes
 
-- `Plate` children are now rendered as last children of `Slate` (previously first children). To reproduce the previous behavior, move `children` to `firstChildren`
+- `Plate` children are now rendered as last children of `Plite` (previously first children). To reproduce the previous behavior, move `children` to `firstChildren`
 
 ### Minor Changes
 
 - [#1592](https://github.com/udecode/plate/pull/1592) by [@zbeyens](https://github.com/zbeyens) –
-  - fix: `Plate` children were rendered before `Editable`, making slate DOM not resolvable on first render. Fixed by moving `Editable` as the first child of `Slate` and `children` as the last children of `Slate`.
+  - fix: `Plate` children were rendered before `Editable`, making slate DOM not resolvable on first render. Fixed by moving `Editable` as the first child of `Plite` and `children` as the last children of `Plite`.
   - `Plate` new props:
-    - `firstChildren`: replaces the previous behavior of `children`, rendered as the first children of `Slate`
+    - `firstChildren`: replaces the previous behavior of `children`, rendered as the first children of `Plite`
     - `editableRef`: Ref to the `Editable` component.
   - Plate store - new field:
     - `isRendered`: Whether `Editable` is rendered so slate DOM is resolvable. Subscribe to this value when you query the slate DOM outside `Plate`.
@@ -2694,7 +2706,7 @@
 
   This release includes major changes to plate and slate types:
 
-  - Changing the `TEditor` type to be `TEditor<V>` where `V` represents the "value" being edited by Slate. In the most generic editor, `V` would be equivalent to `TElement[]` (since that is what is accepted as children of the editor). But in a custom editor, you might have `TEditor<Array<Paragraph | Quote>>`.
+  - Changing the `TEditor` type to be `TEditor<V>` where `V` represents the "value" being edited by Plite. In the most generic editor, `V` would be equivalent to `TElement[]` (since that is what is accepted as children of the editor). But in a custom editor, you might have `TEditor<Array<Paragraph | Quote>>`.
   - Other `TEditor`-and-`TNode`-related methods have been also made generic, so for example if you use `getLeafNode(editor, path)` it knows that the return value is a `TText` node. But more specifically, it knows that it is the text node of the type you've defined in your custom elements (with any marks you've defined).
   - This replaces the declaration merging approach, and provides some benefits. One of the drawbacks to declaration merging was that it was impossible to know whether you were dealing with an "unknown" or "known" element, since the underlying type was changed. Similarly, having two editors on the page with different schemas wasn't possible to represent. Hopefully this approach with generics will be able to smoothly replace the declaration merging approach. (While being easy to migrate to, since you can pass those same custom element definitions into `TEditor` still.)
 
@@ -2702,9 +2714,9 @@
 
 - Follow https://platejs.org/docs/typescript example.
 
-**Slate types**
+**Plite types**
 
-Those Slate types should be replaced by the new types:
+Those Plite types should be replaced by the new types:
 
 - `Editor` -> `TEditor<V extends Value>`
   - Note that `TEditor` methods are not typed based on `Value` as it would introduce a circular dependency. You can use `getTEditor(editor)` to get the editor with typed methods.
@@ -2715,9 +2727,9 @@ Those Slate types should be replaced by the new types:
 - `Element` -> `TElement`
 - `Text` -> `TText`
 
-**Slate functions**
+**Plite functions**
 
-Those Slate functions should be replaced by the new typed ones:
+Those Plite functions should be replaced by the new typed ones:
 
 - As the new editor type is not matching the slate ones, all `Transforms`, `Editor`, `Node`, `Element`, `Text`, `HistoryEditor`, `ReactEditor` functions should be replaced: The whole API has been typed into Plate core. See https://github.com/udecode/plate/packages/core/src/slate
 - `createEditor` -> `createTEditor`
@@ -3025,7 +3037,7 @@ Removing node props types in favor of element types (same props + extends `TElem
       - subscribes to the store `editableProps`, `decorate`, `renderLeaf`, `renderElement`
       - `decorate`, `renderLeaf`, `renderElement` are now separately memoized
       - `useDeepCompareMemo` instead of `useMemo` for performance
-    - `useSlateProps`
+    - `usePliteProps`
       - subscribes to the store `onChange`, `value`
     - `usePlateEffects`
       - update the plate store on props change:
@@ -3693,11 +3705,11 @@ Removing node props types in favor of element types (same props + extends `TElem
 
 ### Major Changes
 
-🎉 The **Slate Plugins** project has evolved to **Plate** 🎉
+🎉 The **Plite Plugins** project has evolved to **Plate** 🎉
 
 To migrate, find and replace all occurrences of:
 
-- `slate-plugins` to `plate`
+- `plite-plugins` to `plate`
 - `SlatePlugins` to `Plate`
 - `SlatePlugin` to `PlatePlugin`
 
@@ -3773,8 +3785,8 @@ To migrate, find and replace all occurrences of:
   - removed:
     - `useEditorId` in favor of `useEditorRef().id`
     - `useEditorOptions` in favor of `useEditorRef().options`
-    - `useSlatePluginOptions` in favor of `getSlatePluginOptions(useEditorRef(), pluginKey)`
-    - `useSlatePluginType` in favor of `getSlatePluginType(useEditorRef(), pluginKey)`
+    - `usePlitePluginOptions` in favor of `getSlatePluginOptions(useEditorRef(), pluginKey)`
+    - `usePlitePluginType` in favor of `getSlatePluginType(useEditorRef(), pluginKey)`
     - `pipeOnDOMBeforeInput` in favor of `pipeHandler`
     - `pipeOnKeyDown` in favor of `pipeHandler`
   - types:
@@ -3799,11 +3811,11 @@ To migrate, find and replace all occurrences of:
   - `eventEditorStore`, `useEventEditorStore`: a new store. Store where the keys are event names and the values are editor ids.
   - `usePlateEventId`: a new selector. Get the editor id by `event` key.
   - `useStoreEditorSelection`: a new selector. Get the editor selection which is updated on editor change.
-  - `useStoreEditorState`: a new selector. Get editor state which is updated on editor change. Similar to `useSlate`.
+  - `useStoreEditorState`: a new selector. Get editor state which is updated on editor change. Similar to `usePlite`.
   - `SlatePlugin`: the previous plugin could implement the following handlers: `onChange`, `onDOMBeforeInput` and `onKeyDown`. The plugins now implement all DOM handlers: clipboard, composition, focus, form, image, keyboard, media, mouse, selection, touch, pointer, ui, wheel animation and transition events.
   - `SlatePluginsState` (store interface):
-    - a new field `keyChange` incremented by `SlatePlugins` on `useSlate` update.
-    - a new field `selection = editor.selection` updated on `useSlate` update.
+    - a new field `keyChange` incremented by `SlatePlugins` on `usePlite` update.
+    - a new field `selection = editor.selection` updated on `usePlite` update.
   - `pipeHandler`: a new function. Generic pipe for handlers.
 
 ## 1.0.0-next.26

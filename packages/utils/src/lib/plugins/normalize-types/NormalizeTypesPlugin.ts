@@ -1,8 +1,11 @@
-import { createTSlatePlugin, type PluginConfig } from '@platejs/core';
-import type { Path } from '@platejs/slate';
+import {
+  createEditorPlugin,
+  type PluginConfig,
+  type EditorPlugin,
+} from '@platejs/core';
+import type { Path } from '@platejs/plite';
 
 import { KEYS } from '../../plate-keys';
-import { withNormalizeTypes } from './withNormalizeTypes';
 
 export type NormalizeTypesConfig = PluginConfig<
   'normalizeTypes',
@@ -15,7 +18,7 @@ export type NormalizeTypesConfig = PluginConfig<
      * `type`.
      */
     rules?: Rule[];
-    onError?: (err: any) => void;
+    onError?: (err: unknown) => void;
   }
 >;
 
@@ -28,10 +31,13 @@ type Rule = {
   type?: string;
 };
 
-/** @see {@link withNormalizeTypes} */
-export const NormalizeTypesPlugin = createTSlatePlugin<NormalizeTypesConfig>({
-  key: KEYS.normalizeTypes,
-  options: {
-    rules: [],
-  },
-}).overrideEditor(withNormalizeTypes);
+export const NormalizeTypesPlugin: EditorPlugin<NormalizeTypesConfig> =
+  Object.assign(
+    createEditorPlugin<NormalizeTypesConfig>({
+      key: KEYS.normalizeTypes,
+      options: {
+        rules: [],
+      },
+    }),
+    { runtimeNormalizeTypes: true }
+  );

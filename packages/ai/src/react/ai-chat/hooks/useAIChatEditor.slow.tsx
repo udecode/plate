@@ -53,12 +53,12 @@ describe('useAIChatEditor', () => {
     useEditorPluginMock.mockReturnValue({ setOption });
 
     const editor = {
-      children: [],
-      getApi: () => ({
+      api: {
         markdown: {
           deserialize,
         },
-      }),
+      },
+      children: [],
     } as any;
 
     const { useAIChatEditor } = await loadModule();

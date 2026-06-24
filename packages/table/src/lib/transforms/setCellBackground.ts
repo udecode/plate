@@ -1,12 +1,14 @@
-import type { SlateEditor, TElement, TTableCellElement } from 'platejs';
+import type { Element } from '@platejs/plite';
+import type { BasePlateEditor, TTableCellElement } from 'platejs';
 
 import { getCellTypes } from '../utils/getCellType';
+import { findTableNodePath } from '../utils/findTableNodePath';
 
 export const setCellBackground = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options: {
     color: string | null;
-    selectedCells?: TElement[];
+    selectedCells?: Element[];
   }
 ) => {
   const { color, selectedCells } = options;
@@ -14,36 +16,48 @@ export const setCellBackground = (
   const hasSelectedCells = selectedCells && selectedCells.length > 0;
 
   if (hasSelectedCells) {
-    selectedCells.forEach((cell) => {
-      const cellPath = editor.api.findPath(cell);
+    const cellPaths = selectedCells
+      .map((cell) => findTableNodePath(editor, cell))
+      .filter((cellPath): cellPath is NonNullable<typeof cellPath> =>
+        Boolean(cellPath)
+      );
 
-      if (cellPath) {
-        editor.tf.setNodes<TTableCellElement>(
-          { background: color },
+    editor.update((tx) => {
+      cellPaths.forEach((cellPath) => {
+        if (color === null) {
+          tx.nodes.unset('background', { at: cellPath });
+        } else {
+          tx.nodes.set(
+            { background: color } satisfies Partial<TTableCellElement>,
+            {
+              at: cellPath,
+            }
+          );
+        }
+      });
+    });
+
+    return;
+  }
+
+  const currentCellEntry = editor.api.node<TTableCellElement>({
+    match: { type: getCellTypes(editor) },
+  });
+
+  if (currentCellEntry) {
+    const [, cellPath] = currentCellEntry;
+
+    editor.update((tx) => {
+      if (color === null) {
+        tx.nodes.unset('background', { at: cellPath });
+      } else {
+        tx.nodes.set(
+          { background: color } satisfies Partial<TTableCellElement>,
           {
             at: cellPath,
           }
         );
       }
     });
-
-    return;
-  }
-
-  const currentCell = editor.api.node<TTableCellElement>({
-    match: { type: getCellTypes(editor) },
-  })?.[0];
-
-  if (currentCell) {
-    const cellPath = editor.api.findPath(currentCell);
-
-    if (cellPath) {
-      editor.tf.setNodes<TTableCellElement>(
-        { background: color },
-        {
-          at: cellPath,
-        }
-      );
-    }
   }
 };

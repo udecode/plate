@@ -1,4 +1,4 @@
-import { createSlateEditor, type SlateEditor } from 'platejs';
+import { createBasePlateEditor, type BasePlateEditor } from 'platejs';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { pasteSelectedBlocks } from './pasteSelectedBlocks';
@@ -11,10 +11,10 @@ describe('selection block utils', () => {
 
   describe('selectInsertedBlocks', () => {
     it('selects inserted block operations only', async () => {
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [BlockSelectionPlugin],
         value: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
-      }) as SlateEditor;
+      }) as BasePlateEditor;
 
       const platejs = await import('platejs');
       const setOption = mock();
@@ -23,24 +23,27 @@ describe('selection block utils', () => {
         setOption,
       } as any);
 
-      editor.operations = [
-        {
-          node: { children: [{ text: 'a' }], id: 'a', type: 'p' },
-          path: [0],
-          type: 'insert_node',
-        },
-        {
-          node: { text: 'x' },
-          offset: 0,
-          path: [0, 0],
-          type: 'insert_text',
-        },
-        {
-          node: { children: [{ text: 'b' }], id: 'b', type: 'p' },
-          path: [1],
-          type: 'insert_node',
-        },
-      ] as any;
+      Object.defineProperty(editor, 'operations', {
+        configurable: true,
+        value: [
+          {
+            node: { children: [{ text: 'a' }], id: 'a', type: 'p' },
+            path: [0],
+            type: 'insert_node',
+          },
+          {
+            node: { text: 'x' },
+            offset: 0,
+            path: [0, 0],
+            type: 'insert_text',
+          },
+          {
+            node: { children: [{ text: 'b' }], id: 'b', type: 'p' },
+            path: [1],
+            type: 'insert_node',
+          },
+        ],
+      });
 
       selectInsertedBlocks(editor);
 
@@ -53,10 +56,10 @@ describe('selection block utils', () => {
 
   describe('pasteSelectedBlocks', () => {
     it('inserts a spacer block after the last non-empty selected block and reselects inserted blocks', async () => {
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [BlockSelectionPlugin],
         value: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
-      }) as SlateEditor;
+      }) as BasePlateEditor;
 
       const selectedEntry = [
         { children: [{ text: 'one' }], id: 'p1', type: 'p' },
@@ -67,17 +70,19 @@ describe('selection block utils', () => {
       const getEditorPluginSpy = spyOn(platejs, 'getEditorPlugin');
       const setOption = mock();
 
-      const insertNodesSpy = spyOn(editor.tf, 'insertNodes').mockImplementation(
-        (() => {}) as any
-      );
-      const insertDataSpy = spyOn(editor.tf, 'insertData').mockImplementation(
-        (() => {}) as any
-      );
-      const createBlockSpy = spyOn(editor.api.create, 'block').mockReturnValue({
-        children: [{ text: '' }],
-        type: 'p',
-      } as any);
+      const insertNodes = mock();
+      const setSelection = mock();
+      const insertData = mock();
+      const targetPoint = { offset: 0, path: [1, 0] };
 
+      editor.update = mock((fn) =>
+        fn({
+          nodes: { insert: insertNodes },
+          selection: { set: setSelection },
+        } as any)
+      ) as any;
+      (editor.api as any).clipboard = { insertData };
+      editor.api.end = mock(() => targetPoint) as any;
       getEditorPluginSpy.mockReturnValue({
         api: {
           blockSelection: {
@@ -93,15 +98,12 @@ describe('selection block utils', () => {
 
       pasteSelectedBlocks(editor, event);
 
-      expect(createBlockSpy).toHaveBeenCalledWith({}, [1]);
-      expect(insertNodesSpy).toHaveBeenCalledWith(
+      expect(insertNodes).toHaveBeenCalledWith(
         { children: [{ text: '' }], type: 'p' },
-        {
-          at: [1],
-          select: true,
-        }
+        { at: [1] }
       );
-      expect(insertDataSpy).toHaveBeenCalledWith(event.clipboardData);
+      expect(setSelection).toHaveBeenCalledWith(targetPoint);
+      expect(insertData).toHaveBeenCalledWith(event.clipboardData);
       expect(setOption).toHaveBeenCalledWith('selectedIds', new Set());
     });
   });

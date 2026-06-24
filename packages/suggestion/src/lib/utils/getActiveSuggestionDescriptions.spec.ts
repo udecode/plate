@@ -1,11 +1,11 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getActiveSuggestionDescriptions } from './getActiveSuggestionDescriptions';
 
 describe('getActiveSuggestionDescriptions', () => {
   it('builds replacement and insertion descriptions from real editor data', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseSuggestionPlugin.configure({
           options: {
@@ -70,7 +70,7 @@ describe('getActiveSuggestionDescriptions', () => {
   });
 
   it('returns an empty array when there is no active suggestion node', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseSuggestionPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 0] },
@@ -83,7 +83,7 @@ describe('getActiveSuggestionDescriptions', () => {
   });
 
   it('builds deletion descriptions when a suggestion only removes text', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseSuggestionPlugin],
       selection: {
         anchor: { offset: 1, path: [0, 0] },

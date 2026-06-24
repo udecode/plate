@@ -25,4 +25,4 @@ system. Runtime subscriptions should be selector-based and scoped by id/range.
 - `rerender-move-effect-to-event`
 - `advanced-effect-event-deps`
 
-This rule owns the repeated-unit budget and Slate runtime subscription proof.
+This rule owns the repeated-unit budget and Plite runtime subscription proof.

@@ -1,11 +1,10 @@
 import {
   type Path,
   type PluginConfig,
-  createTSlatePlugin,
+  type EditorPlugin,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
-
-import { withCaption } from './withCaption';
 
 export type CaptionConfig = PluginConfig<
   'caption',
@@ -29,16 +28,21 @@ export type CaptionConfig = PluginConfig<
 >;
 
 /** Enables support for caption. */
-export const BaseCaptionPlugin = createTSlatePlugin<CaptionConfig>({
-  key: KEYS.caption,
-  options: {
-    focusEndPath: null,
-    focusStartPath: null,
-    query: { allow: [] },
-    visibleId: null,
-  },
-})
-  .extendSelectors<CaptionConfig['selectors']>(({ getOptions }) => ({
+const BaseCaptionPluginBase: EditorPlugin<CaptionConfig> =
+  createEditorPlugin<CaptionConfig>({
+    key: KEYS.caption,
+    options: {
+      focusEndPath: null,
+      focusStartPath: null,
+      query: { allow: [] },
+      visibleId: null,
+    },
+  }).extendSelectors<CaptionConfig['selectors']>(({ getOptions }) => ({
     isVisible: (elementId) => getOptions().visibleId === elementId,
-  }))
-  .overrideEditor(withCaption);
+  }));
+
+export const BaseCaptionPlugin: EditorPlugin<CaptionConfig> & {
+  runtimeCaption: boolean;
+} = Object.assign(BaseCaptionPluginBase, {
+  runtimeCaption: true,
+});

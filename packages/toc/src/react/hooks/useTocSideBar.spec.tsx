@@ -44,10 +44,13 @@ describe('useTocSideBar', () => {
     const onContentScroll = mock();
     const setIsObserve = mock();
     const setMouseInToc = mock();
-    const toDOMNode = mock(() => document.createElement('h2'));
+    const resolveDOMNode = mock(() => document.createElement('h2'));
 
     useEditorRefMock.mockReturnValue({
-      api: { toDOMNode },
+      api: {
+        dom: { resolveDOMNode },
+        node: () => [{ id: 'node' }, [0]],
+      },
     });
     useEditorSelectorMock.mockReturnValue([{ id: 'h1', path: [0] }]);
     useScrollRefMock.mockReturnValue({

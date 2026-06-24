@@ -1,11 +1,5 @@
-import { createEditor } from '@platejs/slate';
-
 import type { PluginConfig } from '@platejs/core';
-import {
-  createSlatePlugin,
-  createTSlatePlugin,
-  withSlate,
-} from '@platejs/core';
+import { createBasePlateEditor, createEditorPlugin } from '@platejs/core';
 import { createPlateEditor, createTPlatePlugin } from '@platejs/core/react';
 
 type ChildConfig = PluginConfig<
@@ -21,7 +15,7 @@ type ChildConfig = PluginConfig<
   }
 >;
 
-const ChildPlugin = createTSlatePlugin<ChildConfig>({
+const ChildPlugin = createEditorPlugin<ChildConfig>({
   key: 'child',
   options: {
     level: 1,
@@ -35,7 +29,7 @@ const ChildPlugin = createTSlatePlugin<ChildConfig>({
   },
 }));
 
-const ParentPlugin = createSlatePlugin({
+const ParentPlugin = createEditorPlugin({
   key: 'parent',
   plugins: [ChildPlugin],
 }).configurePlugin(ChildPlugin, {
@@ -44,7 +38,7 @@ const ParentPlugin = createSlatePlugin({
   },
 });
 
-const slateEditor = withSlate(createEditor(), {
+const basePlateEditor = createBasePlateEditor({
   plugins: [ParentPlugin],
 });
 
@@ -75,14 +69,14 @@ const plateEditor = createPlateEditor<
   value: [{ children: [{ text: 'hello' }], type: 'p' }],
 });
 
-const nestedLevel: 1 | 2 = slateEditor.getOptions(ChildPlugin).level;
-const nestedApiLevel: 1 | 2 = slateEditor.getApi(ChildPlugin).plugin.getLevel();
+const nestedLevel: 1 | 2 = basePlateEditor.getOptions(ChildPlugin).level;
+const nestedApiLevel: 1 | 2 = basePlateEditor.api.plugin.getLevel();
 const plateValue: [{ children: [{ text: string }]; type: 'p' }] =
   plateEditor.children;
 const plateLabel: 'body' | 'title' = plateEditor.api.getLabel();
 
-slateEditor.getApi(ChildPlugin).setLevel(1);
-slateEditor.getApi(ChildPlugin).setLevel(2);
+basePlateEditor.api.setLevel(1);
+basePlateEditor.api.setLevel(2);
 
 void nestedApiLevel;
 void nestedLevel;
@@ -97,7 +91,7 @@ ParentPlugin.configurePlugin(ChildPlugin, {
 });
 
 // @ts-expect-error invalid nested editor api argument
-slateEditor.getApi(ChildPlugin).setLevel(3);
+basePlateEditor.api.setLevel(3);
 
 DisplayPlugin.configure({
   options: {

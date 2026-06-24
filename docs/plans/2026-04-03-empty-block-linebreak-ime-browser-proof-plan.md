@@ -14,8 +14,8 @@ proof for the empty-block line-break placeholder path.
 ## What We Learned
 
 - jsdom contenteditable composition is not a trustworthy proof seam here
-- Slate already has Playwright integration under:
-  - `/Users/zbeyens/git/slate-v2/playwright/integration/examples`
+- Plite already has Playwright integration under:
+  - `/Users/zbeyens/git/plite/playwright/integration/examples`
 - Lexical already has the exact kind of IME coverage we need:
   - real browser tests in
     `/Users/zbeyens/git/lexical/packages/lexical-playground/__tests__/e2e/Composition.spec.mjs`
@@ -23,7 +23,7 @@ proof for the empty-block line-break placeholder path.
 
 ## Chosen Next Cut
 
-Build a Slate Playwright test for the placeholder example that:
+Build a Plite Playwright test for the placeholder example that:
 
 1. starts from an empty editor with the placeholder visible
 2. focuses the editor
@@ -42,9 +42,9 @@ can drop FEFF in legacy code.
 
 ## First Test Target
 
-Use the existing Slate placeholder example:
+Use the existing Plite placeholder example:
 
-- `/Users/zbeyens/git/slate-v2/playwright/integration/examples/placeholder.test.ts`
+- `/Users/zbeyens/git/plite/playwright/integration/examples/placeholder.test.ts`
 
 Add a new IME-focused case or a sibling test file that:
 

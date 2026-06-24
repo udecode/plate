@@ -1,18 +1,18 @@
 import * as React from 'react';
 
 import type { TCaptionElement, TResizableProps, TVideoElement } from 'platejs';
-import type { SlateElementProps } from 'platejs/static';
+import type { PliteElementProps } from 'platejs/static';
 
 import { NodeApi } from 'platejs';
-import { SlateElement } from 'platejs/static';
+import { PliteElement } from 'platejs/static';
 
 export function VideoElementStatic(
-  props: SlateElementProps<TVideoElement & TCaptionElement & TResizableProps>
+  props: PliteElementProps<TVideoElement & TCaptionElement & TResizableProps>
 ) {
   const { align = 'center', caption, url, width } = props.element;
 
   return (
-    <SlateElement className="py-2.5" {...props}>
+    <PliteElement className="py-2.5" {...props}>
       <div style={{ textAlign: align }}>
         <figure
           className="group relative m-0 inline-block cursor-default"
@@ -29,6 +29,6 @@ export function VideoElementStatic(
         </figure>
       </div>
       {props.children}
-    </SlateElement>
+    </PliteElement>
   );
 }

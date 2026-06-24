@@ -1,7 +1,8 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import type { BasePlateEditor } from '@platejs/core';
+import { createListClassicTestEditor as createBasePlateEditor } from '../__tests__/createListClassicTestEditor';
 
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
@@ -35,7 +36,7 @@ describe('when there is toListItem sublist', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as SlateEditor;
+  ) as any as BasePlateEditor;
 
   const output = (
     <editor>
@@ -62,10 +63,10 @@ describe('when there is toListItem sublist', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as SlateEditor;
+  ) as any as BasePlateEditor;
 
   it('moves sublist items into the existing destination sublist', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       selection: input.selection,
       value: input.children,
     });
@@ -84,7 +85,7 @@ describe('when there is toListItem sublist', () => {
   });
 
   it('can prepend the moved items when start is true', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       selection: input.selection,
       value: input.children,
     });
@@ -151,7 +152,7 @@ describe('when there is no list in toListItem', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as SlateEditor;
+  ) as any as BasePlateEditor;
 
   const output = (
     <editor>
@@ -172,10 +173,10 @@ describe('when there is no list in toListItem', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as SlateEditor;
+  ) as any as BasePlateEditor;
 
   it('creates a destination sublist before moving the items', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       selection: input.selection,
       value: input.children,
     });

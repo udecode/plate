@@ -1,4 +1,4 @@
-import { PathApi, type SlateEditor } from 'platejs';
+import { PathApi, type BasePlateEditor } from 'platejs';
 
 import { getCellTypes } from '../utils/getCellType';
 
@@ -16,7 +16,7 @@ const getRangeClientRects = (domRange?: Pick<Range, 'getClientRects'> | null) =>
   );
 
 export const getTableMoveSelectionContext = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   point = editor.selection?.anchor
 ): TableMoveSelectionContext | undefined => {
   if (
@@ -41,7 +41,7 @@ export const getTableMoveSelectionContext = (
 };
 
 export const hasAdjacentBlockInCell = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     blockPath,
     cellPath,
@@ -58,7 +58,7 @@ export const hasAdjacentBlockInCell = (
 };
 
 export const shouldMoveSelectionFromCell = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     blockPath,
     point,
@@ -76,10 +76,11 @@ export const shouldMoveSelectionFromCell = (
 
   if (!blockRange) return isAtBlockEdge;
 
+  const resolveDOMRange = editor.api.dom?.resolveDOMRange;
   const caretRects = getRangeClientRects(
-    editor.api.toDOMRange({ anchor: point, focus: point })
+    resolveDOMRange?.({ anchor: point, focus: point })
   );
-  const blockRects = getRangeClientRects(editor.api.toDOMRange(blockRange));
+  const blockRects = getRangeClientRects(resolveDOMRange?.(blockRange));
 
   if (caretRects.length === 0 || blockRects.length === 0) return isAtBlockEdge;
 

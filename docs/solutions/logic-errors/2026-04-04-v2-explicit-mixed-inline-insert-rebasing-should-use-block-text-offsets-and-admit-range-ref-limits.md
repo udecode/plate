@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: V2 explicit mixed-inline insert rebasing should use block text offsets and admit range-ref limits
 tags:
-  - slate-v2
+  - plite
   - selection
   - range-ref
   - mixed-inline

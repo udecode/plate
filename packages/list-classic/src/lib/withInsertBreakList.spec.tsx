@@ -1,22 +1,22 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from '@platejs/core';
+import { createListClassicRuntimeTestEditor as createBasePlateEditor } from './__tests__/createListClassicRuntimeTestEditor';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
 
 import { BaseListPlugin } from './BaseListPlugin';
 
 jsxt;
 
-const createListEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createListEditor = (input: BasePlateEditor) =>
+  createBasePlateEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-describe('withInsertBreakList', () => {
+describe('ListClassicExtension insertBreak', () => {
   it('moves an empty list item up and exits the list', () => {
     const input = (
       <editor>
@@ -28,18 +28,18 @@ describe('withInsertBreakList', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
     const expected = (
       <editor>
         <hp>
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createListEditor(input);
 
-    editor.tf.insertBreak();
+    editor.update((tx) => tx.break.insert());
 
     expect(editor.children).toEqual(expected.children);
     expect(editor.selection).toEqual(expected.selection);
@@ -54,18 +54,18 @@ describe('withInsertBreakList', () => {
           </hlic>
         </hli>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
     const expected = (
       <editor>
         <hp>
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createListEditor(input);
 
-    editor.tf.insertBreak();
+    editor.update((tx) => tx.break.insert());
 
     expect(editor.children).toEqual(expected.children);
     expect(editor.selection).toEqual(expected.selection);
@@ -83,7 +83,7 @@ describe('withInsertBreakList', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
     const expected = (
       <editor>
         <hul>
@@ -97,11 +97,11 @@ describe('withInsertBreakList', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createListEditor(input);
 
-    editor.tf.insertBreak();
+    editor.update((tx) => tx.break.insert());
 
     expect(editor.children).toEqual(expected.children);
     expect(editor.selection).toEqual(expected.selection);
@@ -115,7 +115,7 @@ describe('withInsertBreakList', () => {
           ne
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
     const expected = (
       <editor>
         <hp>o</hp>
@@ -124,11 +124,11 @@ describe('withInsertBreakList', () => {
           ne
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createListEditor(input);
 
-    editor.tf.insertBreak();
+    editor.update((tx) => tx.break.insert());
 
     expect(editor.children).toEqual(expected.children);
     expect(editor.selection).toEqual(expected.selection);

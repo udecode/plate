@@ -1,30 +1,55 @@
-import type { SlateEditor } from 'platejs';
+import {
+  type EditorUpdateTransaction,
+  type Range,
+  type BasePlateEditor,
+  RangeApi,
+} from 'platejs';
 
-import { deleteSuggestion } from './deleteSuggestion';
+import { findSuggestionProps } from '../queries';
+import { setSuggestionNodes } from './setSuggestionNodes';
 
 export const deleteFragmentSuggestion = (
-  editor: SlateEditor,
-  { reverse }: { reverse?: boolean } = {}
+  editor: BasePlateEditor,
+  {
+    at,
+    reverse,
+    tx: activeTx,
+  }: { at?: Range; reverse?: boolean; tx?: EditorUpdateTransaction } = {}
 ) => {
   let resId: string | undefined;
 
-  editor.tf.withoutNormalizing(() => {
-    const selection = editor.selection!;
+  const applyDeleteFragmentSuggestion = (tx: EditorUpdateTransaction) => {
+    const selection = at ?? editor.selection!;
+    const { createdAt, id } = findSuggestionProps(editor, {
+      at: selection,
+      type: 'remove',
+    });
 
-    const [start, end] = editor.api.edges(selection)!;
+    resId = id;
 
-    if (reverse) {
-      editor.tf.collapse({ edge: 'end' });
-      resId = deleteSuggestion(
-        editor,
-        { anchor: end, focus: start },
-        { reverse: true }
-      );
+    setSuggestionNodes(editor, {
+      at: selection,
+      createdAt,
+      includeInlineElements: true,
+      suggestionDeletion: true,
+      suggestionId: id,
+      tx,
+    });
+
+    if (at) {
+      const [start, end] = RangeApi.edges(selection);
+
+      tx.selection.set(reverse ? start : end);
     } else {
-      editor.tf.collapse({ edge: 'start' });
-      resId = deleteSuggestion(editor, { anchor: start, focus: end });
+      tx.selection.collapse({ edge: reverse ? 'start' : 'end' });
     }
-  });
+  };
+
+  if (activeTx) {
+    applyDeleteFragmentSuggestion(activeTx);
+  } else {
+    editor.update(applyDeleteFragmentSuggestion);
+  }
 
   return resId;
 };

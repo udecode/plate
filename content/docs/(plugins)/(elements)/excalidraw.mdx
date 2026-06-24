@@ -18,7 +18,7 @@ Excalidraw adds a void `excalidraw` element that embeds the Excalidraw canvas in
 - Direct `insertExcalidraw(editor, props, options)` helper.
 - Excalidraw `elements` and app `state` stored on the node.
 - Dynamic Excalidraw component loading in the React hook.
-- Change deduplication before writing canvas data back to Slate.
+- Change deduplication before writing canvas data back to Plite.
 - Read-only mode through Excalidraw `viewModeEnabled`.
 
 </PackageInfo>
@@ -154,7 +154,7 @@ const value = [
 | Field | Type | Notes |
 |-------|------|-------|
 | `type` | `'excalidraw'` | Plugin key and node type from `KEYS.excalidraw`. |
-| `children` | `[{ text: '' }]` | Required Slate child for the void element. |
+| `children` | `[{ text: '' }]` | Required Plite child for the void element. |
 | `data.elements` | Excalidraw elements | Stored as partial Excalidraw elements. |
 | `data.state` | Excalidraw app state | Stored as imported Excalidraw app state. |
 

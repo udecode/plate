@@ -5,7 +5,7 @@ component: testing_framework
 root_cause: config_error
 title: Vitest browser workspace packages under Yarn PnP may need packageExtensions for vite
 tags:
-  - slate-browser
+  - plite-browser
   - vitest
   - yarn-pnp
   - vite
@@ -17,7 +17,7 @@ severity: medium
 
 ## What happened
 
-After moving `slate-browser` from a nested npm island into a real workspace
+After moving `plite-browser` from a nested npm island into a real workspace
 package, the Bun lane still passed and the Playwright lanes still passed.
 
 The Vitest browser lane broke under Yarn PnP with:
@@ -30,7 +30,7 @@ undeclared.
 
 ## What fixed it
 
-The minimal fix was a Yarn package extension in [`.tmp/slate-v2/.yarnrc.yml`](/Users/zbeyens/git/slate-v2/.yarnrc.yml):
+The minimal fix was a Yarn package extension in [`Plate repo root/.yarnrc.yml`](/Users/zbeyens/git/plite/.yarnrc.yml):
 
 ```yml
 packageExtensions:
@@ -41,7 +41,7 @@ packageExtensions:
 
 After that:
 
-- `yarn workspace slate-browser test` worked as a real workspace command
+- `yarn workspace plite-browser test` worked as a real workspace command
 - the browser contract lane stopped needing the old nested npm escape hatch
 
 ## Reusable rule

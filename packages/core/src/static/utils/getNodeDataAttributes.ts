@@ -1,15 +1,15 @@
-import type { TElement, TText } from '@platejs/slate';
+import type { Element, Text } from '@platejs/plite';
 
 import {
   type AnyEditorPlugin,
-  type SlateEditor,
+  type BasePlateEditor,
   getEditorPlugin,
   keyToDataAttribute,
 } from '../../lib';
 
 export const getNodeDataAttributes = (
-  editor: SlateEditor,
-  node: TElement | TText,
+  editor: BasePlateEditor,
+  node: Element | Text,
   {
     isElement,
     isLeaf,
@@ -48,9 +48,9 @@ export const getNodeDataAttributes = (
 };
 
 export const getPluginDataAttributes = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   plugin: AnyEditorPlugin,
-  node: TElement | TText
+  node: Element | Text
 ) => {
   const isElement = plugin.node.isElement;
   const isLeaf = plugin.node.isLeaf && plugin.node.isDecoration === true;

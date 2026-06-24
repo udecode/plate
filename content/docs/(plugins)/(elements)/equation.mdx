@@ -20,7 +20,7 @@ Equation adds block and inline void nodes for LaTeX expressions. Both nodes stor
 
 - Block `equation` element.
 - Inline void `inline_equation` element.
-- Bound `editor.tf.insert.equation` and `editor.tf.insert.inlineEquation` transforms.
+- `equation.insert` and `inlineEquation.insert` transaction commands.
 - Direct `insertEquation` and `insertInlineEquation` helpers.
 - KaTeX rendering in editable and static UI.
 - `$...$` inline input rule and `$$` block input rule.
@@ -125,11 +125,13 @@ Use the base kit when rendering read-only output with `platejs/static`.
 
 ### Insert Equations
 
-Use plugin-bound transforms when you already have a configured editor.
+Use transaction commands when you already have a configured editor.
 
 ```tsx
-editor.tf.insert.equation({ select: true });
-editor.tf.insert.inlineEquation('E = mc^2', { select: true });
+editor.update((tx) => tx.equation.insert({ select: true }));
+editor.update((tx) =>
+  tx.inlineEquation.insert('E = mc^2', { select: true })
+);
 ```
 
 Use package helpers directly from toolbar, slash-command, or app-local action code.
@@ -145,7 +147,7 @@ insertInlineEquation(editor, 'E = mc^2', { select: true });
 
 ## Value Shape
 
-Both equation nodes store source in `texExpression`. The child text is only the Slate-required child for a void element.
+Both equation nodes store source in `texExpression`. The child text is only the Plite-required child for a void element.
 
 ```tsx
 const value = [
@@ -233,8 +235,8 @@ Inline math deserializes to `inline_equation`. Block math deserializes to `equat
 | `InlineEquationPlugin` | `@platejs/math/react` | React inline equation plugin. |
 | `insertEquation(editor, options)` | `@platejs/math` | Inserts a blank block equation. |
 | `insertInlineEquation(editor, texExpression?, options?)` | `@platejs/math` | Inserts an inline equation. Defaults to the selected string when no expression is passed. |
-| `editor.tf.insert.equation(options)` | plugin-bound transform | Bound block equation insert transform. |
-| `editor.tf.insert.inlineEquation(texExpression?, options?)` | plugin-bound transform | Bound inline equation insert transform. |
+| `editor.update((tx) => tx.equation.insert(options))` | `BaseEquationPlugin` transaction | Inserts a block equation. |
+| `editor.update((tx) => tx.inlineEquation.insert(texExpression, options))` | `BaseInlineEquationPlugin` transaction | Inserts an inline equation. |
 | `MathRules.markdown(options)` | `@platejs/math` | Creates inline or block math input rules. |
 | `useEquationElement(options)` | `@platejs/math/react` | Renders an equation into a KaTeX DOM target. |
 | `useEquationInput(options)` | `@platejs/math/react` | Wires the equation textarea and keyboard behavior. |

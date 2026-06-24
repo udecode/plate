@@ -1,17 +1,21 @@
-import { PathApi } from '@platejs/slate';
+import { PathApi } from '@platejs/plite';
 
-import { createTSlatePlugin } from '../../plugin';
+import { createEditorPlugin } from '../../plugin';
 import {
   clearNavigationFeedbackTarget,
   flashTarget,
   navigate,
   resolveNavigationFeedbackTarget,
 } from './transforms';
-import type { NavigationFeedbackConfig } from './types';
+import type {
+  NavigationFeedbackConfig,
+  NavigationFlashTargetOptions,
+  NavigationNavigateOptions,
+} from './types';
 import { NAVIGATION_FEEDBACK_KEY, NavigationFeedbackPluginKey } from './types';
 
-export const NavigationFeedbackPlugin =
-  createTSlatePlugin<NavigationFeedbackConfig>({
+export const NavigationFeedbackPlugin = Object.assign(
+  createEditorPlugin<NavigationFeedbackConfig>({
     key: NAVIGATION_FEEDBACK_KEY,
     options: {
       activeTarget: null,
@@ -47,12 +51,14 @@ export const NavigationFeedbackPlugin =
         },
       };
     })
-    .extendEditorTransforms<NavigationFeedbackConfig['transforms']>(
-      ({ editor }) => ({
-        navigation: {
-          clear: () => clearNavigationFeedbackTarget(editor),
-          flashTarget: (options) => flashTarget(editor, options),
-          navigate: (options) => navigate(editor, options),
-        },
-      })
-    );
+    .extendTxGroup('navigation', ({ editor }) => (tx) => ({
+      clear: () => clearNavigationFeedbackTarget(editor),
+      flashTarget: (options: NavigationFlashTargetOptions) =>
+        flashTarget(editor, options),
+      navigate: (options: NavigationNavigateOptions) =>
+        navigate(editor, tx, options),
+    })),
+  {
+    runtimeNavigationFeedback: true,
+  }
+);

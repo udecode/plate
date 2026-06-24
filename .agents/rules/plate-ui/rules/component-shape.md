@@ -23,7 +23,7 @@ For node renderers already inside Plate element context:
 
 ## Preserve props passthrough
 
-If a renderer forwards to `PlateElement` or `SlateElement`, keep the full
+If a renderer forwards to `PlateElement` or `PliteElement`, keep the full
 incoming `props` object intact and destructure from it locally:
 
 **Correct:**

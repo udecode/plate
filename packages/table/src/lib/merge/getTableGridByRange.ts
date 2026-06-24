@@ -1,8 +1,7 @@
+import type { Element, Range } from '@platejs/plite';
 import {
   type ElementEntry,
-  type SlateEditor,
-  type TElement,
-  type TRange,
+  type BasePlateEditor,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
@@ -11,6 +10,7 @@ import {
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getCellTypes } from '../utils';
+import { findTableNodePath } from '../utils/findTableNodePath';
 import { getCellIndices } from '../utils/getCellIndices';
 import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';
@@ -18,7 +18,7 @@ import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';
 type FormatType = 'all' | 'cell' | 'table';
 
 type GetTableGridByRangeOptions<T extends FormatType> = {
-  at: TRange;
+  at: Range;
 
   /**
    * Format of the output:
@@ -43,7 +43,7 @@ type TableGridEntries = {
  * valid table grid.
  */
 export const getTableMergeGridByRange = <T extends FormatType>(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { at, format }: GetTableGridByRangeOptions<T>
 ): GetTableGridReturnType<T> => {
   const { api, type } = getEditorPlugin(editor, BaseTablePlugin);
@@ -146,10 +146,10 @@ export const getTableMergeGridByRange = <T extends FormatType>(
       cellsSet.add(cell);
 
       const rows = table.children[rowIndex - startRowIndex]
-        .children as TElement[];
+        .children as Element[];
       rows[colIndex - startColIndex] = cell;
 
-      const cellPath = editor.api.findPath(cell)!;
+      const cellPath = findTableNodePath(editor, cell)!;
 
       cellEntries.push([cell, cellPath]);
     }

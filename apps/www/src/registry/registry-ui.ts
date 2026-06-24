@@ -542,7 +542,7 @@ export const uiComponents: Registry['items'] = [
       docs: [
         {
           route: 'https://docs.slatejs.org/libraries/slate-history',
-          title: 'Slate History',
+          title: 'Plite History',
         },
       ],
       examples: ['basic-nodes-demo'],
@@ -876,9 +876,8 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@slate-yjs/react'],
-    description:
-      'A cursor overlay to display multiplayer cursors in the yjs plugin.',
+    dependencies: [],
+    description: 'A cursor overlay slot for app-owned collaboration wiring.',
     files: [{ path: 'ui/remote-cursor-overlay.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/yjs' }],

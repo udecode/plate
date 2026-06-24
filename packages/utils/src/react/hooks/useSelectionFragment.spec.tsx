@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { getContainerTypes } from '@platejs/core';
 import { createPlateEditor, Plate } from '@platejs/core/react';
 import { renderHook } from '@testing-library/react';
 
@@ -9,7 +8,7 @@ import {
   useSelectionFragmentProp,
 } from './useSelectionFragment';
 
-const createWrapper = (editor: ReturnType<typeof createPlateEditor>) =>
+const createWrapper = (editor: any) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <Plate editor={editor} suppressInstanceWarning>
@@ -28,17 +27,12 @@ describe('useSelectionFragment', () => {
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
     const fragment = [{ children: [{ text: 'one' }], type: 'p' }];
-    const fragmentSpy = spyOn(editor.api, 'fragment');
-    (fragmentSpy as any).mockReturnValue(fragment as any);
 
     const { result } = renderHook(() => useSelectionFragment(), {
       wrapper: createWrapper(editor),
     });
 
     expect(result.current).toEqual(fragment);
-    expect(fragmentSpy).toHaveBeenCalledWith(editor.selection, {
-      unwrap: getContainerTypes(editor),
-    });
   });
 
   it('derives a shared property from the selected fragment', () => {
@@ -49,11 +43,6 @@ describe('useSelectionFragment', () => {
       },
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
-    const fragment = [{ children: [{ text: 'one' }], type: 'p' }];
-    const fragmentSpy = spyOn(editor.api, 'fragment');
-    (fragmentSpy as any).mockReturnValue(fragment as any);
-    const propSpy = spyOn(editor.api, 'prop');
-    (propSpy as any).mockReturnValue('p');
 
     const { result } = renderHook(
       () => useSelectionFragmentProp({ key: 'type' }),
@@ -63,12 +52,5 @@ describe('useSelectionFragment', () => {
     );
 
     expect(result.current).toBe('p');
-    expect(fragmentSpy).toHaveBeenCalledWith(editor.selection, {
-      unwrap: getContainerTypes(editor),
-    });
-    expect(propSpy).toHaveBeenCalledWith({
-      key: 'type',
-      nodes: fragment,
-    });
   });
 });

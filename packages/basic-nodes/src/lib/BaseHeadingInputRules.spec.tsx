@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseH1Plugin, BaseH2Plugin, BaseH3Plugin } from './BaseHeadingPlugin';
 import { HeadingRules } from './BasicBlockRules';
@@ -10,7 +10,7 @@ jsxt;
 
 describe('heading input rules', () => {
   it('registers only the configured heading shorthand rules', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseH1Plugin.configure({
           inputRules: [HeadingRules.markdown()],
@@ -70,7 +70,7 @@ describe('heading input rules', () => {
       plugin: BaseH2Plugin,
     },
   ])('$title', ({ input, output, plugin }) => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         plugin.configure({
           inputRules: [HeadingRules.markdown()],
@@ -79,7 +79,7 @@ describe('heading input rules', () => {
       value: input,
     } as any);
 
-    editor.tf.insertText(' ');
+    editor.update((tx) => tx.text.insert(' '));
 
     expect(input.children).toEqual(output.children);
   });

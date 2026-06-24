@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -15,7 +15,7 @@ jsxt;
 // and then checks if the output matches the expected output.
 describe('setBorderSize', () => {
   const createEditorInstance = (input: any) =>
-    createSlateEditor({
+    createBasePlateEditor({
       nodeId: true,
       plugins: getTestTablePlugins(),
       selection: input.selection,
@@ -48,7 +48,7 @@ describe('setBorderSize', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -74,7 +74,7 @@ describe('setBorderSize', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createEditorInstance(input);
       setBorderSize(editor, 2, { border: 'top' });
@@ -96,7 +96,7 @@ describe('setBorderSize', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createEditorInstance(input);
       setBorderSize(editor, 2, { border: 'all' });
@@ -151,7 +151,7 @@ describe('setBorderSize', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -177,7 +177,7 @@ describe('setBorderSize', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createEditorInstance(input);
       setBorderSize(editor, 2, { border: 'left' });
@@ -211,7 +211,7 @@ describe('setBorderSize', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const output = (
           <editor>
@@ -237,7 +237,7 @@ describe('setBorderSize', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const editor = createEditorInstance(input);
         setBorderSize(editor, 3, { border: 'left' });
@@ -273,7 +273,7 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const output = (
             <editor>
@@ -299,7 +299,7 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const editor = createEditorInstance(input);
           setBorderSize(editor, 2, { border: 'top' });
@@ -334,7 +334,7 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const output = (
             <editor>
@@ -360,7 +360,7 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const editor = createEditorInstance(input);
           setBorderSize(editor, 1, { border: 'right' });
@@ -394,7 +394,7 @@ describe('setBorderSize', () => {
                   </htr>
                 </htable>
               </editor>
-            ) as any as SlateEditor;
+            ) as any as BasePlateEditor;
 
             const output = (
               <editor>
@@ -420,7 +420,7 @@ describe('setBorderSize', () => {
                   </htr>
                 </htable>
               </editor>
-            ) as any as SlateEditor;
+            ) as any as BasePlateEditor;
 
             const editor = createEditorInstance(input);
             setBorderSize(editor, 2, { border: 'left' });
@@ -456,7 +456,7 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const output = (
             <editor>
@@ -482,7 +482,7 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const editor = createEditorInstance(input);
           setBorderSize(editor, 4, { border: 'bottom' });

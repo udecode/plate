@@ -1,4 +1,5 @@
-import type { Editor, NodeEntry } from 'platejs';
+import type { NodeEntry } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -7,18 +8,21 @@ import { type ListOptions, indentList, indentTodo } from './indentList';
 
 /** Set indent list if not set. */
 export const toggleListSet = (
-  editor: Editor,
+  editor: BasePlateEditor,
   [node, _path]: NodeEntry,
   { listStyleType = ListStyleType.Disc, ...options }: ListOptions
 ) => {
-  if (Object.hasOwn(node, KEYS.listChecked) || node[KEYS.listType]) return;
+  const nodeProps = node as Record<string, unknown>;
+
+  if (Object.hasOwn(nodeProps, KEYS.listChecked) || nodeProps[KEYS.listType])
+    return;
   if (listStyleType === 'todo') {
-    indentTodo(editor as any, {
+    indentTodo(editor, {
       listStyleType,
       ...options,
     });
   } else {
-    indentList(editor as any, {
+    indentList(editor, {
       listStyleType,
       ...options,
     });

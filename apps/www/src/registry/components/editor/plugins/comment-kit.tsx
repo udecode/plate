@@ -25,7 +25,7 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(BaseCommentPlugin, {
   handlers: {
     onClick: ({ api, event, setOption, type }) => {
       const activeTarget = getDiscussionClickTarget({
-        selector: `.slate-${type}`,
+        selector: `.plite-${type}`,
         target: event.target,
       });
 

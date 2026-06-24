@@ -1,4 +1,4 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import type { DeserializeMdOptions } from '../deserializeMd';
 
@@ -15,7 +15,7 @@ import { getRemarkPluginsWithoutMdx } from '../../utils/getRemarkPluginsWithoutM
  * @returns The final merged configuration
  */
 export const getMergedOptionsDeserialize = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options?: DeserializeMdOptions
 ): DeserializeMdOptions => {
   const {

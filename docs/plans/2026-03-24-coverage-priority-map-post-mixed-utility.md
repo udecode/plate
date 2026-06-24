@@ -94,7 +94,7 @@ That is because what remains there is mostly revisit work, already-swept crumbs,
 - `resizable`
 - `@udecode/cn`
 - type-only leftovers in `@udecode/utils`
-- DOM-ish `slate/internal/dom-editor`
+- DOM-ish `plite/internal/dom-editor`
 - reopening just-swept `core`, `docx-io`, `basic-styles`, `selection`, or `emoji` without a real seam
 
 ## Full Data

@@ -7,7 +7,7 @@ describe('insertExcalidraw', () => {
     const editor = {
       api: { parent: mock(() => null) },
       selection: null,
-      tf: { insertNodes: mock() },
+      update: mock(),
     } as any;
 
     insertExcalidraw(editor);
@@ -18,10 +18,11 @@ describe('insertExcalidraw', () => {
     };
     insertExcalidraw(editor);
 
-    expect(editor.tf.insertNodes).not.toHaveBeenCalled();
+    expect(editor.update).not.toHaveBeenCalled();
   });
 
   it('inserts a next block at the parent path and merges custom props', () => {
+    const insertNodes = mock();
     const editor = {
       api: {
         parent: mock(() => [{ children: [{ text: '' }], type: 'p' }, [0]]),
@@ -31,7 +32,7 @@ describe('insertExcalidraw', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      tf: { insertNodes: mock() },
+      update: mock((fn: any) => fn({ nodes: { insert: insertNodes } })),
     } as any;
 
     insertExcalidraw(
@@ -40,13 +41,13 @@ describe('insertExcalidraw', () => {
       { select: true } as any
     );
 
-    expect(editor.tf.insertNodes).toHaveBeenCalledWith(
+    expect(insertNodes).toHaveBeenCalledWith(
       {
         children: [{ text: '' }],
         data: { elements: [], state: { theme: 'dark' } },
         type: KEYS.excalidraw,
       },
-      { at: [0], nextBlock: true, select: true }
+      { at: [1], select: true }
     );
   });
 });

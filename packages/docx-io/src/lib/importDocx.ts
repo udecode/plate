@@ -1,6 +1,6 @@
 import { cleanDocx } from '@platejs/docx';
 import mammoth from 'mammoth';
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import {
   extractComments,
@@ -31,8 +31,9 @@ function parseHtmlElement(html: string): HTMLElement | undefined {
  * const arrayBuffer = await file.arrayBuffer();
  * const result = await importDocx(editor, arrayBuffer);
  *
- * // Insert nodes into editor
- * editor.tf.insertNodes(result.nodes);
+ * editor.update((tx) => {
+ *   tx.nodes.insert(result.nodes);
+ * });
  *
  * // Handle comments separately
  * for (const comment of result.comments) {
@@ -41,7 +42,7 @@ function parseHtmlElement(html: string): HTMLElement | undefined {
  * ```
  */
 export async function importDocx(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   arrayBuffer: ArrayBuffer,
   options: ImportDocxOptions = {}
 ): Promise<ImportDocxResult> {

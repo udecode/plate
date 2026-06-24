@@ -28,7 +28,7 @@ component to add the menu to an editor toolbar.
 | HTML | `serializeHtml` from `platejs/static` with `BaseEditorKit` and `EditorStatic` | `plate.html` |
 | PDF | `html2canvas-pro` snapshot converted with `pdf-lib` | `plate.pdf` |
 | Image | `html2canvas-pro` snapshot | `plate.png` |
-| Markdown | `editor.getApi(MarkdownPlugin).markdown.serialize()` | `plate.md` |
+| Markdown | `editor.getPluginApi(MarkdownPlugin).markdown.serialize()` | `plate.md` |
 | Word | `exportToDocx(editor.children, { editorPlugins })` from `@platejs/docx-io` | `plate.docx` |
 
 The PDF and image exporters snapshot the current editable DOM. Use them for a

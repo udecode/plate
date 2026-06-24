@@ -1,15 +1,18 @@
-import { useEditorRef } from '@platejs/core/react';
-import type { TElement } from '@platejs/slate';
+import { useEditorRef, useNodePath } from '@platejs/core/react';
+import type { Element } from '@platejs/plite';
 
-export const useRemoveNodeButton = ({ element }: { element: TElement }) => {
+export const useRemoveNodeButton = ({ element }: { element: Element }) => {
   const editor = useEditorRef();
+  const path = useNodePath(element);
 
   return {
     props: {
       onClick: () => {
-        const path = editor.api.findPath(element);
+        if (!path) return;
 
-        editor.tf.removeNodes({ at: path });
+        editor.update((tx) => {
+          tx.nodes.remove({ at: path });
+        });
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();

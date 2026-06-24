@@ -1,9 +1,10 @@
-import { type Editor, type NodeEntry, type Path, PathApi } from 'platejs';
+import { type NodeEntry, type Path, PathApi } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { getCellInNextTableRow } from './getCellInNextTableRow';
 
 export const getNextTableCell = (
-  editor: Editor,
+  editor: BasePlateEditor,
   _currentCell: NodeEntry,
   currentPath: Path,
   currentRow: NodeEntry

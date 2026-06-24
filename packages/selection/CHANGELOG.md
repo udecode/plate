@@ -1,5 +1,7 @@
 # @platejs/selection
 
+## 54.0.0-beta.0
+
 ## 53.1.6
 
 ### Patch Changes
@@ -332,7 +334,7 @@
 - [#3597](https://github.com/udecode/plate/pull/3597) by [@zbeyens](https://github.com/zbeyens) – The following changes were made to improve performance:
 
   - Removed `useHooksBlockSelection` in favor of `BlockSelectionAfterEditable`
-  - Removed `slate-selected` class from `BlockSelectable`. You can do it on your components using `useBlockSelected()` instead, or by using our new `block-selection.tsx` component.
+  - Removed `plite-selected` class from `BlockSelectable`. You can do it on your components using `useBlockSelected()` instead, or by using our new `block-selection.tsx` component.
   - Introduced `useBlockSelectableStore` for managing selectable state.
 
 ### Minor Changes

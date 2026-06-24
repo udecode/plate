@@ -1,18 +1,10 @@
 // Components
 export {
-  type RenderPlaceholderProps,
-  DefaultPlaceholder,
   Editable,
-  Slate,
-} from 'slate-react';
-
-// Hooks
-export {
-  useComposing,
-  useFocused,
-  useReadOnly,
-  useSelected,
-} from 'slate-react';
-
-// Plugin
-export { withReact, useSlateStatic } from 'slate-react';
+  type RenderPlaceholderProps,
+  useEditorComposing as useComposing,
+  useEditorFocused as useFocused,
+  useEditorReadOnly as useReadOnly,
+  useElementSelected as useSelected,
+  usePliteHistory,
+} from '@platejs/plite-react';

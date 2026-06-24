@@ -41,13 +41,13 @@ function WithPlate({ id, value }: any) {
 //   const editor = useMemo(() => withReact(createEditor() as ReactEditor), []);
 //
 //   return (
-//     <Slate
+//     <Plite
 //       editor={editor}
 //       value={value}
 //       onChange={useCallback((v) => setValue(v), [])}
 //     >
 //       <Editable renderElement={renderElement} />
-//     </Slate>
+//     </Plite>
 //   );
 // }
 

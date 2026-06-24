@@ -8,13 +8,14 @@ decision: Use the Slate v2 vs Slate compare artifact as the first real editor co
 
 ## Goal
 
-Expose `.tmp/slate-v2` vs `../slate` as the active rich-text benchmark scope.
+Expose the historical Slate v2 donor checkout vs `../slate` as the active
+rich-text benchmark scope.
 
 ## Evidence
 
 - Source artifact:
-  `.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json`
-- Current repo in artifact: `/Users/zbeyens/git/plate-2/.tmp/slate-v2`
+  `tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json`
+- Current repo in artifact: historical Slate v2 donor checkout under this repo
 - Legacy repo in artifact: `/Users/zbeyens/git/slate`
 - Workload: 5,000 blocks, 3 iterations, 20 type ops, combined selection lane.
 

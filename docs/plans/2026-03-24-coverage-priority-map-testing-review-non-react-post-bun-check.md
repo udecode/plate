@@ -82,7 +82,7 @@ There is one last real non-React cleanup phase left. It is mostly parser or seri
 12. `core`: [traverseHtmlNode.ts](packages/core/src/lib/plugins/html/utils/traverseHtmlNode.ts) — score `5`
 13. `list-classic`: [moveListItemSublistItemsToListItemSublist.ts](packages/list-classic/src/lib/transforms/moveListItemSublistItemsToListItemSublist.ts) — score `5`
 14. `markdown`: [mdastToSlate.ts](packages/markdown/src/lib/deserializer/mdastToSlate.ts) — score `5`
-15. `markdown`: [markdownToSlateNodesSafely.ts](packages/markdown/src/lib/deserializer/utils/markdownToSlateNodesSafely.ts) — score `5`
+15. `markdown`: [markdownToPliteNodesSafely.ts](packages/markdown/src/lib/deserializer/utils/markdownToPliteNodesSafely.ts) — score `5`
 16. `suggestion`: [addMarkSuggestion.ts](packages/suggestion/src/lib/transforms/addMarkSuggestion.ts) — score `5`
 17. `suggestion`: [removeMarkSuggestion.ts](packages/suggestion/src/lib/transforms/removeMarkSuggestion.ts) — score `5`
 18. `table`: [deleteRowWhenExpanded.ts](packages/table/src/lib/merge/deleteRowWhenExpanded.ts) — score `5`

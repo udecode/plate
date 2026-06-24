@@ -1,7 +1,6 @@
+import type { Descendant, Element } from '@platejs/plite';
 import {
   KEYS,
-  type Descendant,
-  type TElement,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
@@ -13,23 +12,23 @@ export const isSingleCellTable = (
 ): nodes is [TTableElement] => {
   if (nodes.length !== 1) return false;
 
-  const table = nodes[0] as TElement;
+  const table = nodes[0] as Element;
 
   if (table.type !== KEYS.table) return false;
 
-  const rows = table.children as TElement[];
+  const rows = table.children as Element[];
 
   if (rows.length !== 1) return false;
 
-  const row = rows[0] as TElement;
+  const row = rows[0] as Element;
 
   if (row.type !== KEYS.tr) return false;
 
-  const cells = row.children as TElement[];
+  const cells = row.children as Element[];
 
   if (cells.length !== 1) return false;
 
-  const cell = cells[0] as TElement;
+  const cell = cells[0] as Element;
 
   return cell.type === KEYS.td;
 };

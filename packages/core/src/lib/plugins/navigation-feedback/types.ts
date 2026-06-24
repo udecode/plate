@@ -1,4 +1,4 @@
-import type { Path, PathRef, Point, TRange } from '@platejs/slate';
+import type { Path, PathRef, Point, Range } from '@platejs/plite';
 
 import type { PluginConfig } from '../../plugin';
 
@@ -42,8 +42,16 @@ export type NavigationNavigateOptions = {
   focus?: boolean;
   scroll?: boolean;
   scrollTarget?: Point;
-  select?: Point | TRange;
+  select?: Point | Range;
   target: NavigationFeedbackTarget;
+};
+
+export type NavigationFeedbackTx = {
+  navigation: {
+    clear: () => void;
+    flashTarget: (options: NavigationFlashTargetOptions) => boolean;
+    navigate: (options: NavigationNavigateOptions) => boolean;
+  };
 };
 
 export type NavigationFeedbackConfig = PluginConfig<
@@ -59,11 +67,7 @@ export type NavigationFeedbackConfig = PluginConfig<
       isTarget: (path: Path) => boolean;
     };
   },
-  {
-    navigation: {
-      clear: () => void;
-      flashTarget: (options: NavigationFlashTargetOptions) => boolean;
-      navigate: (options: NavigationNavigateOptions) => boolean;
-    };
-  }
+  {},
+  {},
+  NavigationFeedbackTx
 >;

@@ -1,17 +1,15 @@
 import {
-  type SetNodesOptions,
-  type SlateEditor,
-  createSlatePlugin,
+  type BasePlateEditor,
+  createEditorPlugin,
+  getInjectMatch,
   KEYS,
 } from 'platejs';
-
-import { setLineHeight } from './transforms';
 
 /**
  * Enables support for text alignment, useful to align your content to left,
  * right and center it.
  */
-export const BaseLineHeightPlugin = createSlatePlugin({
+export const BaseLineHeightPlugin = createEditorPlugin({
   key: KEYS.lineHeight,
   inject: {
     isBlock: true,
@@ -24,7 +22,7 @@ export const BaseLineHeightPlugin = createSlatePlugin({
       editor,
       plugin,
     }: {
-      editor: SlateEditor;
+      editor: BasePlateEditor;
       plugin: { key: string };
     }) => ({
       parsers: {
@@ -42,7 +40,22 @@ export const BaseLineHeightPlugin = createSlatePlugin({
       },
     }),
   },
-}).extendTransforms(({ editor }: { editor: SlateEditor }) => ({
-  setNodes: (value: number, options?: SetNodesOptions) =>
-    setLineHeight(editor, value, options),
+}).extendTx(({ plugin, type }) => (tx, editor) => ({
+  set: (value: number, options?: unknown) => {
+    const defaultValue =
+      (plugin.inject.nodeProps?.defaultNodeValue as number | undefined) ?? 1.5;
+    const nodeKey = plugin.inject.nodeProps?.nodeKey ?? type;
+    const nextOptions = {
+      match: getInjectMatch(editor, plugin),
+      ...((options ?? {}) as Record<string, unknown>),
+    };
+
+    if (Object.is(value, defaultValue)) {
+      tx.nodes.unset(nodeKey, nextOptions);
+
+      return;
+    }
+
+    tx.nodes.set({ [nodeKey]: value }, nextOptions);
+  },
 }));

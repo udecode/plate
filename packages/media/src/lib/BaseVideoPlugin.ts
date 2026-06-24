@@ -1,6 +1,6 @@
-import { createSlatePlugin, KEYS } from 'platejs';
+import { createEditorPlugin, KEYS } from 'platejs';
 
-export const BaseVideoPlugin = createSlatePlugin({
+export const BaseVideoPlugin = createEditorPlugin({
   key: KEYS.video,
   node: {
     dangerouslyAllowAttributes: ['width', 'height'],

@@ -10,7 +10,7 @@ import {
   useSelectionWithinBlock,
 } from './useSelection';
 
-const createWrapper = (editor: ReturnType<typeof createPlateEditor>) =>
+const createWrapper = (editor: any) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <Plate editor={editor} suppressInstanceWarning>

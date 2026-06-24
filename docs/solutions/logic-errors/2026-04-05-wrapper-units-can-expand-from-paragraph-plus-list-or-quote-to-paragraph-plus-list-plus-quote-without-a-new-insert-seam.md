@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Wrapper units can expand from paragraph plus list or quote to paragraph plus list plus quote without a new insert seam
 tags:
-  - slate-v2
+  - plite
   - list-item
   - wrapper-unit
   - quote
@@ -38,8 +38,8 @@ The same sibling-unit seam held:
 
 That was enough for:
 
-- `slate-v2` contracts
-- `slate-dom-v2` clipboard round-trip
+- `plite` contracts
+- `plite-dom-v2` clipboard round-trip
 - real Chromium copy/paste routes
 
 ## Why this works

@@ -7,21 +7,20 @@ describe('removeBlocksAndFocus', () => {
       [{ id: 'a', type: 'p' }, [0]],
       [{ id: 'b', type: 'p' }, [1]],
     ] as any);
-    const removeNodes = mock();
     const focus = mock();
+    const removeNodes = mock();
+    const tx = { nodes: { remove: removeNodes } };
     const editor = {
       api: {
+        dom: { focus },
         nodesRange: mock(() => ({ anchor: [0], focus: [1] })),
       },
-      tf: {
-        focus,
-        removeNodes,
-      },
+      update: mock((fn) => fn(tx)),
     } as any;
 
     removeBlocksAndFocus(editor, {} as any);
 
-    expect(removeNodes).toHaveBeenCalledWith({
+    expect(tx.nodes.remove).toHaveBeenCalledWith({
       at: { anchor: [0], focus: [1] },
     });
     expect(focus).toHaveBeenCalledTimes(1);

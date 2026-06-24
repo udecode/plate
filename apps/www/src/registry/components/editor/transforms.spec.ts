@@ -1,5 +1,5 @@
 import { SuggestionPlugin } from '@platejs/suggestion/react';
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { BaseBlockquotePlugin } from '../../../../../../packages/basic-nodes/src/lib/BaseBlockquotePlugin';
 import { insertBlock, setBlockType } from './transforms';
@@ -17,7 +17,7 @@ const createEditor = ({
   selection: any;
   value: any;
 }> = {}) =>
-  createSlateEditor({
+  createBasePlateEditor({
     plugins: [BaseBlockquotePlugin, SuggestionPlugin],
     selection,
     value,

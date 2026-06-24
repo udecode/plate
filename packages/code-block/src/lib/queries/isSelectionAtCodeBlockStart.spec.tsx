@@ -1,16 +1,19 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { isSelectionAtCodeBlockStart } from './isSelectionAtCodeBlockStart';
 
 jsxt;
 
 describe('isSelectionAtCodeBlockStart', () => {
-  const run = (input: any) =>
+  const run = (input: BasePlateEditor) =>
     isSelectionAtCodeBlockStart(
-      createSlateEditor({ editor: createEditor(input) })
+      createBasePlateEditor({
+        selection: input.selection,
+        value: input.children,
+      })
     );
 
   it.each([
@@ -28,7 +31,7 @@ describe('isSelectionAtCodeBlockStart', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ),
+      ) as any as BasePlateEditor,
       title: 'returns false outside a code block',
     },
     {
@@ -45,7 +48,7 @@ describe('isSelectionAtCodeBlockStart', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ),
+      ) as any as BasePlateEditor,
       title: 'returns false on a later code line',
     },
     {
@@ -59,7 +62,7 @@ describe('isSelectionAtCodeBlockStart', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ),
+      ) as any as BasePlateEditor,
       title: 'returns false when the cursor is not at the line start',
     },
     {
@@ -74,7 +77,7 @@ describe('isSelectionAtCodeBlockStart', () => {
             <hcodeline>line 2</hcodeline>
           </hcodeblock>
         </editor>
-      ),
+      ) as any as BasePlateEditor,
       title: 'returns true at the start of the first code line',
     },
   ])('$title', ({ input, expected }) => {

@@ -3,5 +3,4 @@
  */
 
 export * from './BaseIndentPlugin';
-export * from './withIndent';
 export * from './transforms/index';

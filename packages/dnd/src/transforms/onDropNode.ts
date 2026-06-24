@@ -1,12 +1,19 @@
 import type { PlateEditor } from 'platejs/react';
 import type { DropTargetMonitor } from 'react-dnd';
+import type { Element, NodeEntry, Path } from '@platejs/plite';
 
-import { type NodeEntry, type Path, type TElement, PathApi } from 'platejs';
+import { PathApi } from '@platejs/plite';
 
 import type { UseDropNodeOptions } from '../hooks';
 import type { DragItemNode, ElementDragItemNode } from '../types';
 
 import { getHoverDirection } from '../utils';
+
+const getElementEntryById = (
+  editor: PlateEditor,
+  id: string
+): NodeEntry<Element> | undefined =>
+  editor.api.node({ at: [], id }) as NodeEntry<Element> | undefined;
 
 /** Callback called on drag and drop a node with id. */
 export const getDropPath = (
@@ -36,19 +43,22 @@ export const getDropPath = (
 
   if (!direction) return;
 
-  let dragEntry: NodeEntry<TElement> | undefined;
-  let dropEntry: NodeEntry<TElement> | undefined;
+  let dragEntry: NodeEntry<Element> | undefined;
+  let dropEntry: NodeEntry<Element> | undefined;
 
   if ('element' in dragItem) {
-    const dragPath = editor.api.findPath(dragItem.element);
-    const hoveredPath = editor.api.findPath(element);
+    const dragPath = getElementEntryById(
+      editor,
+      dragItem.element.id as string
+    )?.[1];
+    const hoveredPath = getElementEntryById(editor, element.id as string)?.[1];
 
     if (!dragPath || !hoveredPath) return;
 
     dragEntry = [dragItem.element, dragPath];
     dropEntry = [element, hoveredPath];
   } else {
-    dropEntry = editor.api.node<TElement>({ id: element.id as string, at: [] });
+    dropEntry = getElementEntryById(editor, element.id as string);
   }
   if (!dropEntry) return;
   if (
@@ -129,29 +139,36 @@ export const onDropNode = (
 
     if (draggedIds.length > 1) {
       // Handle multi-node drop - get elements by their IDs and sort them
-      const elements: TElement[] = [];
+      const elements: Element[] = [];
 
       draggedIds.forEach((id) => {
-        const entry = editor.api.node<TElement>({ id, at: [] });
+        const entry = getElementEntryById(editor, id);
         if (entry) {
           elements.push(entry[0]);
         }
       });
 
-      editor.tf.moveNodes({
-        at: [],
-        to,
-        match: (n) => elements.some((element) => element.id === n.id),
+      editor.update((tx) => {
+        tx.nodes.move({
+          at: [],
+          to,
+          match: (n) =>
+            elements.some((element) => element.id === (n as Element).id),
+        });
       });
     } else {
       // Single node drop
-      editor.tf.moveNodes({
-        at: dragPath,
-        to,
+      editor.update((tx) => {
+        tx.nodes.move({
+          at: dragPath,
+          to,
+        });
       });
     }
   } else {
-    editor.tf.insertNodes(dragItem.element, { at: to });
+    editor.update((tx) => {
+      tx.nodes.insert(dragItem.element, { at: to });
+    });
 
     const sourceEditor = dragItem.editor;
 
@@ -163,13 +180,20 @@ export const onDropNode = (
           : [];
 
       const paths = draggedIds
-        .map((id) => sourceEditor.api.node<TElement>({ id, at: [] }))
-        .filter((entry): entry is NodeEntry<TElement> => !!entry)
+        .map(
+          (id) =>
+            sourceEditor.api.node({ at: [], id }) as
+              | NodeEntry<Element>
+              | undefined
+        )
+        .filter((entry): entry is NodeEntry<Element> => !!entry)
         .map(([, path]) => path)
         .sort((a, b) => PathApi.compare(b, a));
 
       paths.forEach((path) => {
-        sourceEditor.tf.removeNodes({ at: path });
+        sourceEditor.update((tx) => {
+          tx.nodes.remove({ at: path });
+        });
       });
     }
   }

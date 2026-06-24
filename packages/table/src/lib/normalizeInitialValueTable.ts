@@ -11,7 +11,7 @@ export const normalizeInitialValueTable: TransformInitialValue<TableConfig> = ({
 }) => {
   const tables = editor.api.nodes<TTableElement>({
     at: [],
-    match: { type },
+    match: (node) => node.type === type,
   });
 
   for (const [table] of tables) {

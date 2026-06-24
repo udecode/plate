@@ -56,7 +56,7 @@ This keeps the first block as an H1 and inserts a paragraph at path `[1]` when t
 |-------|-------|--------------|
 | `NormalizeTypesPlugin` | `platejs` / `@platejs/utils` | Stores `rules` and `onError`, then overrides normalization. |
 | `withNormalizeTypes` | `@platejs/utils` | Runs the path rules during root normalization. |
-| `NodeApi.get(editor, path)` | `@platejs/slate` | Reads the node at the configured path. |
+| `NodeApi.get(editor, path)` | `@platejs/plite` | Reads the node at the configured path. |
 | `editor.api.create.block` | Core editor API | Creates inserted or replacement block props. |
 | Playground demo | Registry example | Enables a first-block H1 rule when the playground id is `forced-layout`. |
 
@@ -125,7 +125,7 @@ That example keeps the first playground block as an H1 while leaving the rest of
 |-----|---------|-----|
 | `NormalizeTypesPlugin` | `platejs` / `@platejs/utils` | Path-based type normalization plugin. |
 | `NormalizeTypesConfig.options.rules` | `@platejs/utils` | Ordered list of path rules. Defaults to `[]`. |
-| `Rule.path` | `@platejs/utils` | Slate `Path` where the rule applies. |
+| `Rule.path` | `@platejs/utils` | Plite `Path` where the rule applies. |
 | `Rule.strictType` | `@platejs/utils` | Required type for an existing or missing node. |
 | `Rule.type` | `@platejs/utils` | Type for a missing node only. |
 | `NormalizeTypesConfig.options.onError` | `@platejs/utils` | Called when inserting a missing node throws. |

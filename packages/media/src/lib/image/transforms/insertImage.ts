@@ -1,20 +1,44 @@
-import type { InsertNodesOptions, SlateEditor, TImageElement } from 'platejs';
+import type { NodeInsertNodesOptions } from '@platejs/plite';
+import type { BasePlateEditor, TImageElement } from 'platejs';
 
-import { KEYS } from 'platejs';
+import { KEYS, PathApi } from 'platejs';
+
+type InsertNodesOptions = NodeInsertNodesOptions<TImageElement> & {
+  nextBlock?: boolean;
+};
+
+const getNextBlockInsertLocation = (
+  editor: BasePlateEditor,
+  at: InsertNodesOptions['at']
+) => {
+  const location = at ?? editor.selection;
+
+  if (!location) return at;
+
+  const endPoint = editor.api.end(location);
+  const blockEntry = endPoint ? editor.api.block({ at: endPoint }) : undefined;
+
+  return blockEntry ? PathApi.next(blockEntry[1]) : at;
+};
 
 export const insertImage = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   url: ArrayBuffer | string,
   options: InsertNodesOptions = {}
 ) => {
+  const { nextBlock = true, ...insertOptions } = options;
   const text = { text: '' };
   const image: TImageElement = {
     children: [text],
     type: editor.getType(KEYS.img),
-    url: url as any,
+    url: url as TImageElement['url'],
   };
-  editor.tf.insertNodes<TImageElement>(image, {
-    nextBlock: true,
-    ...(options as any),
+  editor.update((tx) => {
+    tx.nodes.insert<TImageElement>(image, {
+      ...insertOptions,
+      at: nextBlock
+        ? getNextBlockInsertLocation(editor, insertOptions.at)
+        : insertOptions.at,
+    });
   });
 };

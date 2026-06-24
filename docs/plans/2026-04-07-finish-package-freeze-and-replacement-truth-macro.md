@@ -6,7 +6,7 @@
 
 ## Scope
 
-- Freeze `slate-dom`, `slate-react`, `slate-history`, and `slate-browser`
+- Freeze `plite-dom`, `plite-react`, `plite-history`, and `plite-browser`
   stable surfaces explicitly.
 - Refresh the replacement-truth docs and final stop/go read.
 - Mark the roadmap macro program complete enough to freeze.

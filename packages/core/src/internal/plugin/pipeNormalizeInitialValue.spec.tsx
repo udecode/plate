@@ -2,15 +2,15 @@ import React from 'react';
 
 import { renderHook } from '@testing-library/react';
 
-import { createSlateEditor } from '../../lib/editor';
-import { createSlatePlugin } from '../../lib/plugin';
+import { createBasePlateEditor } from '../../lib/editor';
+import { createEditorPlugin } from '../../lib/plugin';
 import { TestPlate as Plate } from '../../react/__tests__/TestPlate';
 import { createPlateEditor, useEditorValue } from '../../react';
 import { pipeTransformInitialValue } from './pipeTransformInitialValue';
 
 describe('pipeTransformInitialValue', () => {
   const createTestPlugin = (key: string) =>
-    createSlatePlugin({
+    createEditorPlugin({
       key,
       transformInitialValue: ({ value: initialValue }: any) =>
         initialValue.map((node: any) => ({
@@ -108,7 +108,7 @@ describe('pipeTransformInitialValue', () => {
         ]);
       });
 
-      it('use create.value when children is empty', () => {
+      it('keeps the current editor value when children are empty', () => {
         const editor = createPlateEditor({
           plugins,
           value: [{ children: [{ text: 'Factory' }], count: 0, type: 'p' }],
@@ -169,9 +169,9 @@ describe('pipeTransformInitialValue', () => {
   });
 
   it('supports legacy normalizeInitialValue hooks that return a value', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'legacy',
           normalizeInitialValue: ({ value: initialValue }: any) =>
             initialValue.map((node: any) => ({
@@ -193,9 +193,9 @@ describe('pipeTransformInitialValue', () => {
   });
 
   it('supports legacy normalizeInitialValue hooks that mutate in place', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'legacy-mutate',
           normalizeInitialValue: ({ value: initialValue }: any) => {
             initialValue[0].count += 1;
@@ -215,9 +215,9 @@ describe('pipeTransformInitialValue', () => {
   });
 
   it('throws when a transformInitialValue hook returns undefined', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'bad',
           transformInitialValue: (() => {}) as any,
         }),
@@ -233,9 +233,9 @@ describe('pipeTransformInitialValue', () => {
 
   it('skips transformInitialValue for read-only editOnly plugins', () => {
     const callCount = mock();
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'skip',
           editOnly: { transformInitialValue: true },
           transformInitialValue: ({ value }) => {

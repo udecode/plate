@@ -2,17 +2,17 @@
 title: Lexical history harvest rows need stack-law contracts
 date: 2026-05-09
 category: docs/solutions/best-practices
-module: slate-v2 lexical harvest slate-history
+module: plite lexical harvest slate-history
 problem_type: best_practice
 component: testing_framework
 symptoms:
   - LexicalHistory tests mixed portable undo/redo behavior with command payloads and nested editor wiring.
-  - Copying the source tests directly would import Lexical APIs instead of strengthening Slate history contracts.
-  - Existing Slate history rows covered many undo cases but missed redo-stack invalidation and node-property history capture.
+  - Copying the source tests directly would import Lexical APIs instead of strengthening Plite history contracts.
+  - Existing Plite history rows covered many undo cases but missed redo-stack invalidation and node-property history capture.
 root_cause: wrong_api
 resolution_type: test_fix
 severity: medium
-tags: [slate-v2, lexical-harvest, history, undo, redo, testing]
+tags: [plite, lexical-harvest, history, undo, redo, testing]
 ---
 
 # Lexical history harvest rows need stack-law contracts
@@ -39,20 +39,20 @@ redo, what clears redo, and which document/selection state comes back.
 
 ## What Didn't Work
 
-- Copying Lexical command payload assertions into Slate. Slate history exposes
+- Copying Lexical command payload assertions into Plite. Plite history exposes
   stacks and commands differently.
-- Treating nested parent/child shared history as a raw Slate invariant. That is
-  framework/product integration until a Slate nested-editor owner accepts it.
+- Treating nested parent/child shared history as a raw Plite invariant. That is
+  framework/product integration until a Plite nested-editor owner accepts it.
 - Counting existing broad undo rows as enough. They did not explicitly prove the
   three stack laws this source file exposed.
 
 ## Solution
 
-Translate each LexicalHistory row to the narrow Slate history contract it
+Translate each LexicalHistory row to the narrow Plite history contract it
 actually exercises.
 
 The accepted rows landed in
-[`packages/slate-history/test/history-contract.ts`](/Users/zbeyens/git/slate-v2/packages/slate-history/test/history-contract.ts):
+[`packages/plite-history/test/history-contract.ts`](/Users/zbeyens/git/plite/packages/plite-history/test/history-contract.ts):
 
 - a new edit after undo clears redo history and later redo is a no-op
 - selected block property changes undo and redo cleanly
@@ -71,28 +71,28 @@ The rejected rows stayed out:
 History portability lives at the stack and committed-state level, not at the
 source framework's command surface.
 
-Slate can share the same behavior without sharing Lexical APIs:
+Plite can share the same behavior without sharing Lexical APIs:
 
 - undo and redo stacks are observable
 - document and selection snapshots are observable
 - metadata and commit tags already own explicit grouping, merging, and skipping
 - nested editor shared history needs its own accepted owner before it becomes a
-  Slate claim
+  Plite claim
 
 ## Prevention
 
 - For external history tests, first classify rows as stack law, selection
   restoration, command API, nested-editor integration, or harness setup.
-- Add Slate rows only for stack laws and state restoration that current Slate
+- Add Plite rows only for stack laws and state restoration that current Plite
   owns.
-- Reject command payloads and shared-editor wiring unless a Slate public owner
+- Reject command payloads and shared-editor wiring unless a Plite public owner
   exists.
-- Keep history proof in `slate-history` package contracts unless the behavior
+- Keep history proof in `plite-history` package contracts unless the behavior
   needs browser/native transport.
 
 ## Related Issues
 
-- [Slate history capture must anchor to commit subscribers, not onChange order](../logic-errors/2026-04-03-slate-history-capture-must-anchor-to-commit-subscribers-not-onchange-order.md)
-- [Slate history withNewBatch must split at the commit writer](../logic-errors/2026-04-09-slate-history-withnewbatch-must-split-at-the-commit-writer.md)
-- [Slate history deleted test closure must follow live contract width](../workflow-issues/2026-04-09-slate-history-deleted-test-closure-must-follow-live-contract-width.md)
-- [Slate history typing bursts need legacy-style merge heuristics before anything else](../performance-issues/2026-04-11-slate-history-typing-bursts-need-legacy-style-merge-heuristics-before-anything-else.md)
+- [Plite history capture must anchor to commit subscribers, not onChange order](../logic-errors/2026-04-03-slate-history-capture-must-anchor-to-commit-subscribers-not-onchange-order.md)
+- [Plite history withNewBatch must split at the commit writer](../logic-errors/2026-04-09-slate-history-withnewbatch-must-split-at-the-commit-writer.md)
+- [Plite history deleted test closure must follow live contract width](../workflow-issues/2026-04-09-slate-history-deleted-test-closure-must-follow-live-contract-width.md)
+- [Plite history typing bursts need legacy-style merge heuristics before anything else](../performance-issues/2026-04-11-slate-history-typing-bursts-need-legacy-style-merge-heuristics-before-anything-else.md)

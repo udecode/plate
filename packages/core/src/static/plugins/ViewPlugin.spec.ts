@@ -1,54 +1,32 @@
 import { createDataTransfer } from '@platejs/test-utils';
+import type { Descendant } from '@platejs/plite';
 
 import { createStaticEditor } from '../editor/withStatic';
 import * as getSelectedDomFragmentModule from '../utils/getSelectedDomFragment';
-import * as getSelectedDomBlocksModule from '../utils/getSelectedDomBlocks';
 import * as getSelectedDomNodeModule from '../utils/getSelectedDomNode';
 import * as isSelectOutsideModule from '../utils/isSelectOutside';
 import { ViewPlugin } from './ViewPlugin';
 
 describe('ViewPlugin', () => {
   let getSelectedDomFragmentSpy: ReturnType<typeof spyOn>;
-  let getSelectedDomBlocksSpy: ReturnType<typeof spyOn>;
   let getSelectedDomNodeSpy: ReturnType<typeof spyOn>;
   let isSelectOutsideSpy: ReturnType<typeof spyOn>;
-  let warnSpy: ReturnType<typeof spyOn>;
 
   afterEach(() => {
     getSelectedDomFragmentSpy?.mockRestore();
-    getSelectedDomBlocksSpy?.mockRestore();
     getSelectedDomNodeSpy?.mockRestore();
     isSelectOutsideSpy?.mockRestore();
-    warnSpy?.mockRestore();
   });
-
-  const suppressSetFragmentDataOverrideWarning = () => {
-    const originalWarn = console.warn;
-
-    warnSpy = spyOn(console, 'warn').mockImplementation((message, ...args) => {
-      if (
-        typeof message === 'string' &&
-        message.includes('[OVERRIDE_MISSING]') &&
-        message.includes('editor.setFragmentData()')
-      ) {
-        return;
-      }
-
-      originalWarn(message, ...args);
-    });
-  };
 
   describe('integration with createStaticEditor', () => {
     it('is included in the static editor', () => {
       const editor = createStaticEditor();
 
       expect(editor.getPlugin(ViewPlugin)).toBeDefined();
-      expect(editor.tf.setFragmentData).toBeDefined();
+      expect(editor.api.setFragmentData).toBeDefined();
     });
 
     it('handles copy events without throwing', () => {
-      suppressSetFragmentDataOverrideWarning();
-
       const editor = createStaticEditor();
       editor.children = [
         {
@@ -65,11 +43,6 @@ describe('ViewPlugin', () => {
 
       const mockData = createDataTransfer();
 
-      // Mock DOM utilities
-      getSelectedDomBlocksSpy = spyOn(
-        getSelectedDomBlocksModule,
-        'getSelectedDomBlocks'
-      ).mockReturnValue([]);
       getSelectedDomNodeSpy = spyOn(
         getSelectedDomNodeModule,
         'getSelectedDomNode'
@@ -80,23 +53,25 @@ describe('ViewPlugin', () => {
       ).mockReturnValue(false);
 
       // Should not throw when called
-      expect(() => editor.tf.setFragmentData(mockData, 'copy')).not.toThrow();
+      expect(() => editor.api.setFragmentData(mockData, 'copy')).not.toThrow();
     });
 
     it('proxies getFragment through getSelectedDomFragment', () => {
-      const fragment = [{ children: [{ text: 'First paragraph' }], type: 'p' }];
+      const fragment = [
+        { children: [{ text: 'First paragraph' }], type: 'p' },
+      ] satisfies Descendant[];
       const editor = createStaticEditor();
 
       getSelectedDomFragmentSpy = spyOn(
         getSelectedDomFragmentModule,
         'getSelectedDomFragment'
-      ).mockReturnValue(fragment as any);
+      ).mockReturnValue(fragment);
 
       expect(editor.api.getFragment()).toEqual(fragment);
     });
   });
 
-  describe('setFragmentData override', () => {
+  describe('setFragmentData API', () => {
     let mockData: DataTransfer;
     let originalBtoa: typeof window.btoa;
     let originalEncodeURIComponent: typeof encodeURIComponent;
@@ -106,14 +81,9 @@ describe('ViewPlugin', () => {
       originalBtoa = global.window.btoa;
       originalEncodeURIComponent = global.encodeURIComponent;
 
-      // Mock DataTransfer with spy
       const dataMap = new Map();
-      mockData = {
-        getData: mock((type: string) => dataMap.get(type) ?? ''),
-        setData: mock((type: string, value: string) =>
-          dataMap.set(type, value)
-        ),
-      } as any;
+      mockData = createDataTransfer(dataMap);
+      spyOn(mockData, 'setData');
 
       // Mock window.btoa
       global.window.btoa = mock((str) => `base64-${str}`);
@@ -127,50 +97,36 @@ describe('ViewPlugin', () => {
     });
 
     it('handle copy with no selection', () => {
-      suppressSetFragmentDataOverrideWarning();
-
       const editor = createStaticEditor();
 
       // Mock utilities to return null
-      getSelectedDomBlocksSpy = spyOn(
-        getSelectedDomBlocksModule,
-        'getSelectedDomBlocks'
-      ).mockReturnValue(undefined);
       getSelectedDomNodeSpy = spyOn(
         getSelectedDomNodeModule,
         'getSelectedDomNode'
       ).mockReturnValue(undefined);
 
       // Should not throw
-      expect(() => editor.tf.setFragmentData(mockData, 'copy')).not.toThrow();
+      expect(() => editor.api.setFragmentData(mockData, 'copy')).not.toThrow();
     });
 
     it('handle non-copy events', () => {
-      suppressSetFragmentDataOverrideWarning();
-
       const editor = createStaticEditor();
 
       // Should pass through for non-copy events
-      editor.tf.setFragmentData(mockData, 'cut');
-      editor.tf.setFragmentData(mockData, 'drag');
+      editor.api.setFragmentData(mockData, 'cut');
+      editor.api.setFragmentData(mockData, 'drag');
 
       // Should not call setData for non-copy events
       expect(mockData.setData).not.toHaveBeenCalled();
     });
 
     it('handle copy with selection outside editor', () => {
-      suppressSetFragmentDataOverrideWarning();
-
       // Mock selection outside editor
       const mockHtml = document.createElement('div');
       const editorDiv = document.createElement('div');
       editorDiv.dataset.slateEditor = 'true';
       mockHtml.append(editorDiv);
 
-      getSelectedDomBlocksSpy = spyOn(
-        getSelectedDomBlocksModule,
-        'getSelectedDomBlocks'
-      ).mockReturnValue([]);
       getSelectedDomNodeSpy = spyOn(
         getSelectedDomNodeModule,
         'getSelectedDomNode'
@@ -183,14 +139,14 @@ describe('ViewPlugin', () => {
       const editor = createStaticEditor();
 
       // Should not throw
-      expect(() => editor.tf.setFragmentData(mockData, 'copy')).not.toThrow();
+      expect(() => editor.api.setFragmentData(mockData, 'copy')).not.toThrow();
     });
 
     it('writes slate fragment, html, and plain text payloads on copy', () => {
-      suppressSetFragmentDataOverrideWarning();
-
       const editor = createStaticEditor();
-      const fragment = [{ children: [{ text: 'Alpha' }], type: 'p' }];
+      const fragment = [
+        { children: [{ text: 'Alpha' }], type: 'p' },
+      ] satisfies Descendant[];
       const html = document.createElement('div');
 
       html.innerHTML = '<p>Alpha</p>';
@@ -198,7 +154,7 @@ describe('ViewPlugin', () => {
       getSelectedDomFragmentSpy = spyOn(
         getSelectedDomFragmentModule,
         'getSelectedDomFragment'
-      ).mockReturnValue(fragment as any);
+      ).mockReturnValue(fragment);
       getSelectedDomNodeSpy = spyOn(
         getSelectedDomNodeModule,
         'getSelectedDomNode'
@@ -208,10 +164,10 @@ describe('ViewPlugin', () => {
         'isSelectOutside'
       ).mockReturnValue(false);
 
-      editor.tf.setFragmentData(mockData, 'copy');
+      editor.api.setFragmentData(mockData, 'copy');
 
       expect(mockData.setData).toHaveBeenCalledWith(
-        'application/x-slate-fragment',
+        'application/x-plite-fragment',
         expect.any(String)
       );
       expect(mockData.setData).toHaveBeenCalledWith(

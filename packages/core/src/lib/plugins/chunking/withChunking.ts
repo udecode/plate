@@ -1,6 +1,6 @@
-import type { Ancestor } from '@platejs/slate';
+import type { Ancestor } from '@platejs/plite';
 
-import type { OverrideEditor } from '../../plugin/SlatePlugin';
+import type { OverrideEditor } from '../../plugin/EditorPlugin';
 import type { ChunkingConfig } from './ChunkingPlugin';
 
 export const withChunking: OverrideEditor<ChunkingConfig> = ({

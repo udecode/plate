@@ -1,10 +1,10 @@
-import { createSlateEditor } from '../../lib/editor';
-import { createSlatePlugin } from '../../lib/plugin';
+import { createBasePlateEditor } from '../../lib/editor';
+import { createEditorPlugin } from '../../lib/plugin';
 import { pipeDecorate } from './pipeDecorate';
 
 describe('pipeDecorate', () => {
   it('returns undefined when there are no decorate hooks', () => {
-    const editor = createSlateEditor();
+    const editor = createBasePlateEditor();
 
     expect(pipeDecorate(editor)).toBeUndefined();
   });
@@ -20,11 +20,11 @@ describe('pipeDecorate', () => {
       focus: { offset: 4, path: [0, 0] },
       comment: true,
     };
-    const HighlightPlugin = createSlatePlugin({
+    const HighlightPlugin = createEditorPlugin({
       key: 'highlight',
       decorate: () => [rangeFromPlugin as any],
     });
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [HighlightPlugin],
     });
     const decorate = pipeDecorate(editor, () => [rangeFromProp as any])!;

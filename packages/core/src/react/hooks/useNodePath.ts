@@ -1,7 +1,8 @@
 import React from 'react';
 
-import type { TNode } from '@platejs/slate';
+import type { Descendant } from '@platejs/plite';
 
+import { findEditorPath } from '../../internal/utils/runtimeEditorQueries';
 import { useEditorRef } from '../stores';
 
 /**
@@ -9,8 +10,8 @@ import { useEditorRef } from '../stores';
  * if another node is updated in a way that affects this node's path, this hook
  * will not return the new path.
  */
-export const useNodePath = (node: TNode) => {
+export const useNodePath = (node: Descendant) => {
   const editor = useEditorRef();
 
-  return React.useMemo(() => editor.api.findPath(node), [editor, node]);
+  return React.useMemo(() => findEditorPath(editor, node), [editor, node]);
 };

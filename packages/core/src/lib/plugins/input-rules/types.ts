@@ -1,25 +1,31 @@
 import type {
-  InsertTextOptions,
+  Element,
   NodeEntry,
   Path,
   Point,
-  TRange,
-} from '@platejs/slate';
+  Range,
+  TextInsertTextOptions,
+} from '@platejs/plite';
 
-import type { SlateEditor } from '../../editor';
+import type { BasePlateEditor } from '../../editor';
 
 export type InputRuleTarget = 'insertBreak' | 'insertData' | 'insertText';
+
+export type InsertTextOptions = TextInsertTextOptions & {
+  /** @default true */
+  marks?: boolean;
+};
 
 type BivariantCallback<TArgs extends unknown[], TResult> = {
   bivarianceHack: (...args: TArgs) => TResult;
 }['bivarianceHack'];
 
 export type SelectionInputRuleContext<
-  TEditor extends SlateEditor = SlateEditor,
+  TEditor extends BasePlateEditor = BasePlateEditor,
 > = {
   editor: TEditor;
-  getBlockEntry: () => NodeEntry | undefined;
-  getBlockStartRange: () => TRange | undefined;
+  getBlockEntry: () => NodeEntry<Element> | undefined;
+  getBlockStartRange: () => Range | undefined;
   getBlockStartText: () => string | undefined;
   getBlockTextBeforeSelection: () => string;
   getCharAfter: () => string | undefined;
@@ -29,14 +35,14 @@ export type SelectionInputRuleContext<
 };
 
 export type InsertBreakInputRuleContext<
-  TEditor extends SlateEditor = SlateEditor,
+  TEditor extends BasePlateEditor = BasePlateEditor,
 > = SelectionInputRuleContext<TEditor> & {
   cause: 'insertBreak';
   insertBreak: () => void;
 };
 
 export type InsertDataInputRuleContext<
-  TEditor extends SlateEditor = SlateEditor,
+  TEditor extends BasePlateEditor = BasePlateEditor,
 > = SelectionInputRuleContext<TEditor> & {
   cause: 'insertData';
   data: DataTransfer;
@@ -45,7 +51,7 @@ export type InsertDataInputRuleContext<
 };
 
 export type InsertTextInputRuleContext<
-  TEditor extends SlateEditor = SlateEditor,
+  TEditor extends BasePlateEditor = BasePlateEditor,
 > = SelectionInputRuleContext<TEditor> & {
   cause: 'insertText';
   insertText: (text: string, options?: InsertTextOptions) => void;
@@ -70,7 +76,7 @@ export type MarkInputRuleConfig = BaseInputRule<InsertTextInputRuleContext> & {
 };
 
 export type BlockStartInputRuleMatch = {
-  range: TRange;
+  range: Range;
   text: string;
 };
 
@@ -81,7 +87,7 @@ export type MatchBlockStartOptions<
   match: RegExp | string | ((context: TContext) => RegExp | string | undefined);
   resolveMatch?: (args: {
     match: RegExpMatchArray | string;
-    range: TRange;
+    range: Range;
     text: string;
   }) => TMatch | undefined;
 };
@@ -108,7 +114,7 @@ export type MatchBlockFenceOptions<TMatch = BlockFenceInputRuleMatch> = {
   resolveMatch?: (args: {
     fence: string;
     path: Path;
-    range: TRange;
+    range: Range;
     text: string;
   }) => TMatch | undefined;
 };
@@ -125,7 +131,7 @@ export type BlockFenceInputRuleConfig<TMatch = BlockFenceInputRuleMatch> =
 
 export type DelimitedInlineInputRuleMatch = {
   content: string;
-  deleteRange: TRange;
+  deleteRange: Range;
 };
 
 export type MatchDelimitedInlineOptions = {
@@ -189,7 +195,7 @@ export type InputRulesFactoryContext = {
 
 export type InsertBreakInputRule<
   TMatch = true,
-  TEditor extends SlateEditor = SlateEditor,
+  TEditor extends BasePlateEditor = BasePlateEditor,
 > = BaseInputRule<InsertBreakInputRuleContext<TEditor>> & {
   apply: BivariantCallback<
     [context: InsertBreakInputRuleContext<TEditor>, match: TMatch],
@@ -204,7 +210,7 @@ export type InsertBreakInputRule<
 
 export type InsertDataInputRule<
   TMatch = true,
-  TEditor extends SlateEditor = SlateEditor,
+  TEditor extends BasePlateEditor = BasePlateEditor,
 > = BaseInputRule<InsertDataInputRuleContext<TEditor>> & {
   apply: BivariantCallback<
     [context: InsertDataInputRuleContext<TEditor>, match: TMatch],
@@ -220,7 +226,7 @@ export type InsertDataInputRule<
 
 export type InsertTextInputRule<
   TMatch = true,
-  TEditor extends SlateEditor = SlateEditor,
+  TEditor extends BasePlateEditor = BasePlateEditor,
 > = BaseInputRule<InsertTextInputRuleContext<TEditor>> & {
   apply: BivariantCallback<
     [context: InsertTextInputRuleContext<TEditor>, match: TMatch],
@@ -236,7 +242,7 @@ export type InsertTextInputRule<
 
 export type AnyInputRule<
   TMatch = unknown,
-  TEditor extends SlateEditor = SlateEditor,
+  TEditor extends BasePlateEditor = BasePlateEditor,
 > =
   | InsertBreakInputRule<TMatch, TEditor>
   | InsertDataInputRule<TMatch, TEditor>
@@ -280,7 +286,7 @@ export type InputRulesDefinition =
   | InputRulesConfig
   | ((ctx: InputRulesFactoryContext) => InputRulesConfig);
 
-export type InputRulesConfig = AnyInputRule<any, SlateEditor>[];
+export type InputRulesConfig = AnyInputRule<any, BasePlateEditor>[];
 
 export type ResolvedInputRule = StoredInputRule & {
   id: string;

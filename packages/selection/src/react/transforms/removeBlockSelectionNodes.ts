@@ -1,15 +1,20 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
-export const removeBlockSelectionNodes = (editor: SlateEditor) => {
+export const removeBlockSelectionNodes = (editor: BasePlateEditor) => {
   const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
 
   if (!selectedIds) return;
 
-  editor.tf.removeNodes({
-    at: [],
-    block: true,
-    match: (n: any) => !!n.id && selectedIds.has((n as any).id),
+  editor.update((tx) => {
+    tx.nodes.remove({
+      at: [],
+      match: (node) => {
+        const id = (node as { id?: unknown }).id;
+
+        return typeof id === 'string' && selectedIds.has(id);
+      },
+    });
   });
 };

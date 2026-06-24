@@ -3,5 +3,5 @@
  */
 
 export * from './normalizeListNotIndented';
+export * from './normalizeListSequence';
 export * from './normalizeListStart';
-export * from './withInsertBreakList';

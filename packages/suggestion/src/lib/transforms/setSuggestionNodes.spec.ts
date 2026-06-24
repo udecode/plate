@@ -25,9 +25,12 @@ describe('setSuggestionNodes', () => {
         return { currentUserId: 'user-1' };
       },
       selection,
-      tf: {
-        setNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
+      update: (fn: (tx: any) => void) => {
+        fn({
+          nodes: {
+            set: setNodes,
+          },
+        });
       },
     } as any;
 
@@ -48,7 +51,8 @@ describe('setSuggestionNodes', () => {
 
     expect(setNodes).toHaveBeenNthCalledWith(1, props, {
       at: selection,
-      marks: true,
+      match: expect.any(Function),
+      split: true,
     });
     expect(setNodes).toHaveBeenNthCalledWith(
       2,
@@ -85,9 +89,12 @@ describe('setSuggestionNodes', () => {
         return { currentUserId: 'user-1' };
       },
       selection,
-      tf: {
-        setNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
+      update: (fn: (tx: any) => void) => {
+        fn({
+          nodes: {
+            set: setNodes,
+          },
+        });
       },
     } as any;
 
@@ -110,7 +117,8 @@ describe('setSuggestionNodes', () => {
     expect(setNodes).toHaveBeenCalledTimes(1);
     expect(setNodes).toHaveBeenCalledWith(props, {
       at: selection,
-      marks: true,
+      match: expect.any(Function),
+      split: true,
     });
   });
 });

@@ -31,7 +31,7 @@ Only after editing a line did the stale tokens disappear, so the bug looked like
 
 `withCodeBlock.apply` cleared `CODE_LINE_TO_DECORATIONS` when `lang` changed, but it stopped there.
 
-That removed cached ranges, but Plate's React `decorate` function was still memoized behind `versionDecorate`. Without `editor.api.redecorate()`, Slate kept rendering with the old decoration pass until another change forced a fresh decorate cycle.
+That removed cached ranges, but Plate's React `decorate` function was still memoized behind `versionDecorate`. Without `editor.api.redecorate()`, Plite kept rendering with the old decoration pass until another change forced a fresh decorate cycle.
 
 The original check also only looked at truthy `operation.newProperties.lang`, which missed some real transitions such as clearing or resetting the language.
 
@@ -70,7 +70,7 @@ pnpm turbo typecheck --filter=./packages/core --filter=./packages/code-block
 
 ## Prevention
 
-When a plugin caches decoration state outside Slate nodes, clearing the cache is not enough. Also verify what actually triggers the next decorate pass.
+When a plugin caches decoration state outside Plite nodes, clearing the cache is not enough. Also verify what actually triggers the next decorate pass.
 
 For regressions around `decorate`, add one test that changes the underlying node data and asserts any explicit refresh hook is called. In this case, the stable seam is `withCodeBlock.apply`, not the UI combobox that calls `setNodes({ lang })`.
 

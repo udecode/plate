@@ -4,7 +4,7 @@ topic: api-drift-perf-execution-batch
 status: active
 source_repos:
   - /Users/zbeyens/git/plate-2
-  - /Users/zbeyens/git/slate-v2
+  - /Users/zbeyens/git/plite
 context_snapshot:
   - /Users/zbeyens/git/plate-2/.omx/context/api-drift-perf-batch-20260410T192507Z.md
 ---
@@ -22,7 +22,7 @@ Finish the kept API-drift performance program until every drift class is either:
 ## Hard Rules
 
 - do not expand the drift inventory unless a kept public surface is missing
-- treat `slate-batch-engine` as compare-only black-box evidence
+- treat `plite-batch-engine` as compare-only black-box evidence
 - blocker lanes outrank diagnostic lanes
 - generic tax beats one-off cleanup
 - non-API drift stays out unless needed to explain blocker-facing numbers

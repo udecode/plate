@@ -1,45 +1,48 @@
-import type {
-  InsertNodesOptions,
-  SlateEditor,
-  TColumnGroupElement,
-} from 'platejs';
+import type { EditorUpdateTransaction } from '@platejs/plite';
+import type { TColumnGroupElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
+import { type ColumnEditor, createColumnBlock } from './ColumnEditor';
+
+export type InsertColumnGroupNodeOptions = NonNullable<
+  Parameters<EditorUpdateTransaction['nodes']['insert']>[1]
+>;
+
+export type InsertColumnGroupOptions = InsertColumnGroupNodeOptions & {
+  columns?: number;
+};
+
 export const insertColumnGroup = (
-  editor: SlateEditor,
-  {
-    columns = 2,
-    select: selectProp,
-    ...options
-  }: InsertNodesOptions & {
-    columns?: number;
-  } = {}
+  editor: ColumnEditor,
+  { columns = 2, select: selectProp, ...options }: InsertColumnGroupOptions = {}
 ) => {
   const width = 100 / columns;
 
-  editor.tf.withoutNormalizing(() => {
-    editor.tf.insertNodes<TColumnGroupElement>(
-      {
-        children: new Array(columns).fill(null).map(() => ({
-          children: [editor.api.create.block()],
-          type: editor.getType(KEYS.column) as any,
-          width: `${width}%`,
-        })),
-        type: editor.getType(KEYS.columnGroup) as any,
-      },
-      options
-    );
+  editor.update((tx) => {
+    tx.withoutNormalizing(() => {
+      tx.nodes.insert<TColumnGroupElement>(
+        {
+          children: new Array(columns).fill(null).map(() => ({
+            children: [createColumnBlock(editor)],
+            type: editor.getType(KEYS.column) as any,
+            width: `${width}%`,
+          })),
+          type: editor.getType(KEYS.columnGroup) as any,
+        },
+        options
+      );
 
-    if (selectProp) {
-      const entry = editor.api.node({
-        at: options.at,
-        match: { type: editor.getType(KEYS.column) },
-      });
+      if (selectProp) {
+        const entry = editor.api.node({
+          at: options.at,
+          match: { type: editor.getType(KEYS.column) },
+        });
 
-      if (!entry) return;
+        if (!entry) return;
 
-      editor.tf.select(entry[1].concat([0]));
-    }
+        tx.selection.set(entry[1].concat([0]));
+      }
+    });
   });
 };

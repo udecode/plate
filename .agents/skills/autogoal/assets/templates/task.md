@@ -35,6 +35,11 @@ Completion threshold:
 
 Verification surface:
 - TODO: Name tests, typecheck, lint, browser proof, source audit, tracker/PR sync, or other artifact proving the threshold.
+- Browser strategy: TODO. Use Browser for normal app QA; use Chrome directly
+  for native downloads, print/print-preview, file picker/uploads, clipboard,
+  browser dialogs/permissions, extension/profile state, or exact Chrome
+  rendering; use Computer Use only for native Chrome/OS UI that needs visual
+  confirmation.
 
 Constraints:
 - Preserve behavior outside scope.
@@ -60,7 +65,9 @@ Pre-solution issue challenge:
 - repro ladder:
   - tests / source-level repro: pending
   - repo-owned automated browser or integration proof: pending
-  - Browser plugin: pending
+  - Browser plugin for normal app-surface proof: pending
+  - Chrome plugin for native browser/profile/OS proof: pending
+  - Computer Use for native Chrome/OS visual confirmation: pending
   - screenshot / visual proof: pending
 - reproduction verdict: pending
 - validity verdict: pending
@@ -89,6 +96,7 @@ Start Gates:
 | Suggested fix reviewed against durable boundary | pending | pending |
 | TDD decision before behavior change or bug fix | pending | pending |
 | Browser proof decision for browser surface | pending | pending |
+| Chrome/Computer decision for native browser surface | pending | pending |
 
 Work Checklist:
 - [ ] First checkpoint complete: every explicit prompt requirement, scope
@@ -109,10 +117,14 @@ Work Checklist:
 - [ ] Repro escalation ladder followed for bug/behavior claims: focused
       test/source-level repro first when applicable; existing repo-owned
       automated browser or integration proof next when available and useful as
-      executable coverage; the repo-approved Browser tool next when tests or
-      automation cannot reproduce or cannot model the surface honestly;
+      executable coverage; the repo-approved Browser tool next for normal
+      app-surface behavior when tests or automation cannot reproduce or cannot
+      model the surface honestly; Chrome directly for native downloads,
+      print/print-preview, file picker/uploads, clipboard, browser
+      dialogs/permissions, extension/profile state, or exact Chrome rendering;
+      Computer Use when native Chrome/OS UI needs visual confirmation;
       screenshot or explicit visual-proof waiver when visual/native state
-      matters.
+      matters and the Browser->Chrome->Computer escalation cannot inspect it.
 - [ ] Hard-stop rule followed for bug/behavior claims: no code when the issue
       is not reproduced, invalid, or won't-fix; partial validity pivots to the
       best long-term fix and records what was wrong or incomplete in the
@@ -129,12 +141,12 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Named verification threshold | pending | Run the named proof or record blocker | pending |
 | Pre-solution issue challenge verdict | pending | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | pending |
-| Repro escalation ladder | pending | For bug/behavior claims, record test/source-level, automated browser/integration, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | pending |
+| Repro escalation ladder | pending | For bug/behavior claims, record test/source-level, automated browser/integration, Browser, Chrome, Computer Use, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | pending |
 | Bug reproduced before fix | pending | Record failing test/repro or N/A with reason | pending |
 | Targeted behavior verification | pending | Run focused test/proof for changed behavior or record N/A | pending |
 | TypeScript or typed config changed | pending | Run relevant typecheck | pending |
 | Build-sensitive behavior changed | pending | Run relevant build/check | pending |
-| Browser surface changed | pending | Capture browser proof | pending |
+| Browser surface changed | pending | Capture Browser proof for normal app surfaces, or Chrome/Computer proof for native browser/OS surfaces | pending |
 | Final lint/format | pending | Run relevant lint/format command or record N/A | pending |
 | Autoreview | pending | Review final diff/output against objective, acceptance criteria, constraints, and newest user request | pending |
 | Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |

@@ -1,36 +1,40 @@
 import React from 'react';
 
-import { type CreatePlateEditorOptions, createPlateEditor } from '../editor';
-import { type PlateProps, Plate } from './Plate';
+import {
+  type CreatePlateEditorRuntimeOptions,
+  createPlateEditor,
+} from '../editor';
+import { type PlateProps, type PlateRootEditor, Plate } from './Plate';
 import { type PlateContentProps, PlateContent } from './PlateContent';
 
-export function PlateTest({
+type PlateTestProps<E extends PlateRootEditor = PlateRootEditor> = Omit<
+  PlateProps<E>,
+  'editor'
+> &
+  CreatePlateEditorRuntimeOptions & {
+    editableProps?: PlateContentProps;
+    editor?: E | null;
+    variant?: 'comment' | 'wordProcessor';
+  };
+
+export function PlateTest<E extends PlateRootEditor = PlateRootEditor>({
   editableProps,
   shouldNormalizeEditor,
   variant = 'wordProcessor',
   ...props
-}: CreatePlateEditorOptions &
-  PlateProps & {
-    editableProps?: PlateContentProps;
-    variant?: 'comment' | 'wordProcessor';
-  }) {
-  const { id, editor: _editor, plugins } = props;
-
-  let editor = _editor;
-
-  if (editor && !editor.meta.pluginList) {
-    editor = createPlateEditor({
-      id,
-      editor,
-      plugins,
+}: PlateTestProps<E>) {
+  const { editor: providedEditor, ...editorOptions } = props;
+  const editor =
+    providedEditor ??
+    (createPlateEditor({
+      ...editorOptions,
       shouldNormalizeEditor,
-    });
-  }
+    }) as unknown as E);
 
   return (
     <Plate {...props} editor={editor}>
       <PlateContent
-        data-testid="slate-content-editable"
+        data-testid="plite-content-editable"
         data-variant={variant}
         autoFocus
         {...editableProps}

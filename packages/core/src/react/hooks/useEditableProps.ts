@@ -115,7 +115,7 @@ export const useEditableProps = ({
       ...props,
       'aria-disabled': disabled,
       className: clsx(
-        'slate-editor',
+        'plite-editor',
         'ignore-click-outside/toolbar',
         editableProps.className
       ),

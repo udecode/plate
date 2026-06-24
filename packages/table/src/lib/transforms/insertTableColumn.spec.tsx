@@ -1,11 +1,8 @@
 /** @jsx jsxt */
 
-import {
-  type Editor,
-  type SlateEditor,
-  type TElement,
-  createSlateEditor,
-} from 'platejs';
+import type { Element } from '@platejs/plite';
+
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -45,7 +42,7 @@ const makeTableWithCols = ({
         ))}
       </htable>
     </editor>
-  ) as unknown as Editor;
+  ) as unknown as BasePlateEditor;
 
 describe('insertTableColumn', () => {
   describe('without initialTableWidth', () => {
@@ -71,7 +68,7 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -105,7 +102,7 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -138,7 +135,7 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -173,7 +170,7 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -213,7 +210,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -255,7 +252,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -295,7 +292,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -337,7 +334,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -377,7 +374,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -418,7 +415,7 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({
           disableMerge,
@@ -466,9 +463,9 @@ describe('insertTableColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -482,8 +479,8 @@ describe('insertTableColumn', () => {
       insertTableColumn(editor);
 
       // Count cells in each row
-      const table = editor.children[0] as TElement;
-      const rows = table.children as TElement[];
+      const table = editor.children[0] as Element;
+      const rows = table.children as Element[];
 
       // Should have 3 rows with 3 cells each
       expect(rows).toHaveLength(3);

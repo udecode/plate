@@ -1,12 +1,11 @@
 import {
   type Descendant,
-  type TElement,
-  type TText,
-  getPluginKey,
-  getPluginType,
-  KEYS,
+  type Element,
+  ElementApi,
+  type Text,
   TextApi,
-} from 'platejs';
+} from '@platejs/plite';
+import { getPluginKey, getPluginType, KEYS } from 'platejs';
 
 import type { unistLib } from '../types';
 import type { SerializeMdOptions } from './serializeMd';
@@ -23,16 +22,19 @@ export const convertNodesSerialize = (
   isBlock = false
 ): unistLib.Node[] => {
   const mdastNodes: unistLib.Node[] = [];
-  let textQueue: TText[] = [];
+  let textQueue: Text[] = [];
 
-  const listBlock: TElement[] = [];
+  const listBlock: Element[] = [];
 
   for (let i = 0; i <= nodes.length; i++) {
     const n = nodes[i] as any;
 
     if (n && TextApi.isText(n)) {
       // Only add text nodes that pass the filtering
-      if (shouldIncludeText(n, options)) {
+      if (
+        shouldIncludeText(n, options) &&
+        !isInlineBoundaryZeroWidthText(n, nodes, i, options)
+      ) {
         textQueue.push(n);
       }
     } else {
@@ -57,7 +59,7 @@ export const convertNodesSerialize = (
       if (n?.type === pType && 'listStyleType' in n) {
         listBlock.push(n);
 
-        const next = nodes[i + 1] as TElement;
+        const next = nodes[i + 1] as Element;
         const isNextIndent =
           next && next.type === pType && 'listStyleType' in next;
         const firstList = listBlock.at(0);
@@ -129,7 +131,7 @@ export const buildMdastNode = (
 };
 
 const shouldIncludeText = (
-  text: TText,
+  text: Text,
   options: SerializeMdOptions
 ): boolean => {
   const { allowedNodes, allowNode, disallowedNodes } = options;
@@ -167,8 +169,35 @@ const shouldIncludeText = (
   return true;
 };
 
+const isInlineBoundaryZeroWidthText = (
+  text: Text,
+  nodes: Descendant[],
+  index: number,
+  options: SerializeMdOptions
+): boolean => {
+  if (
+    text.text !== '\u200B' ||
+    !Object.keys(text).every((key) => key === 'text')
+  ) {
+    return false;
+  }
+
+  const isInlineAdjacentElement = (node: Descendant | undefined) =>
+    ElementApi.isElement(node) &&
+    Boolean(
+      options.editor?.read(
+        (state) => state.schema.isInline(node) || state.schema.isVoid(node)
+      )
+    );
+
+  return (
+    isInlineAdjacentElement(nodes[index - 1]) ||
+    isInlineAdjacentElement(nodes[index + 1])
+  );
+};
+
 const shouldIncludeNode = (
-  node: TElement,
+  node: Element,
   options: SerializeMdOptions
 ): boolean => {
   const { allowedNodes, allowNode, disallowedNodes } = options;

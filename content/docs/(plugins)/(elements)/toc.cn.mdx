@@ -176,7 +176,7 @@ function Layout() {
     滚动至标题时的顶部偏移量
     - **默认值:** `80`
   </APIItem>
-  <APIItem name="queryHeading" type="(editor: SlateEditor) => Heading[]" optional>
+  <APIItem name="queryHeading" type="(editor: BasePlateEditor) => Heading[]" optional>
     自定义标题查询函数
   </APIItem>
 </APIOptions>
@@ -189,7 +189,7 @@ function Layout() {
 插入目录元素。
 
 <API name="insertToc">
-<APIOptions type="InsertNodesOptions<SlateEditor>">
+<APIOptions type="object<BasePlateEditor>">
     节点插入选项
 </APIOptions>
 </API>

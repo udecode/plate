@@ -21,11 +21,11 @@ The fastest way to enable HTML serialization is with the `BaseEditorKit`, which 
 ### Add Kit
 
 ```tsx
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { serializeHtml } from 'platejs/static';
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 
-const editor = createSlateEditor({
+const editor = createBasePlateEditor({
   plugins: BaseEditorKit,
   value: [
     { type: 'h1', children: [{ text: 'Hello World' }] },
@@ -41,7 +41,7 @@ const html = await serializeHtml(editor);
 
 See a complete server-side HTML generation example:
 
-<ComponentSource name="slate-to-html" />
+<ComponentSource name="plite-to-html" />
 
 </Steps>
 
@@ -49,12 +49,12 @@ See a complete server-side HTML generation example:
 
 Convert Plate editor content (Plate nodes) into an HTML string. This is often done server-side.
 
-[View Server-Side Example](/docs/examples/slate-to-html)
+[View Server-Side Example](/docs/examples/plite-to-html)
 
 <Callout type="warning" title="Key Server-Side Constraint">
   When using `serializeHtml` or other Plate utilities in a server environment (Node.js, RSC), you **must not** import from `/react` subpaths of any `platejs*` package. Always use the base imports (e.g., `@platejs/basic-nodes` instead of `@platejs/basic-nodes/react`).
 
-  This means you should use `createSlateEditor` from `platejs` for server-side editor instances, not `usePlateEditor` or `createPlateEditor` from `platejs/react`.
+  This means you should use `createBasePlateEditor` from `platejs` for server-side editor instances, not `usePlateEditor` or `createPlateEditor` from `platejs/react`.
 </Callout>
 
 <Steps>
@@ -64,7 +64,7 @@ Convert Plate editor content (Plate nodes) into an HTML string. This is often do
 Provide a server-side editor instance and configure your Plate components during editor creation.
 
 ```tsx title="lib/generate-html.ts"
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { serializeHtml } from 'platejs/static'; // Static import
 // Import base plugins (NOT from /react paths)
 import { BaseHeadingPlugin } from '@platejs/basic-nodes';
@@ -82,7 +82,7 @@ const components = {
 };
 
 // Create a server-side editor instance with components
-const editor = createSlateEditor({
+const editor = createBasePlateEditor({
   plugins: [
     BaseHeadingPlugin,   // Base plugin for headings
     // ... add all other base plugins relevant to your content
@@ -150,14 +150,14 @@ Refer to the [Static Rendering Guide](/docs/static) for detailed instructions on
 
 ```tsx title="components/ui/paragraph-node-static.tsx"
 import React from 'react';
-import type { SlateElementProps } from 'platejs/static';
+import type { PliteElementProps } from 'platejs/static';
 
 // Example static paragraph component
-export function ParagraphElementStatic(props: SlateElementProps) {
+export function ParagraphElementStatic(props: PliteElementProps) {
   return (
-    <SlateElement {...props} className={cn('m-0 px-0 py-1')}>
+    <PliteElement {...props} className={cn('m-0 px-0 py-1')}>
       {props.children}
-    </SlateElement>
+    </PliteElement>
   );
 }
 ```
@@ -251,7 +251,7 @@ Each Plate plugin can define rules for how it interprets specific HTML tags, sty
 
 Plugins can define how they handle HTML deserialization using properties within their `parsers.html.deserializer` configuration:
 
--   **`parse`**: A function `({ editor, element, getOptions, ... }) => Partial<SlateNode>` that takes an HTML element and returns a partial Plate node. This is where the main conversion logic resides.
+-   **`parse`**: A function `({ editor, element, getOptions, ... }) => Partial<PliteNode>` that takes an HTML element and returns a partial Plate node. This is where the main conversion logic resides.
 -   **`query`**: An optional function `({ element, getOptions }) => boolean` that determines if the deserializer rule should even be considered for the current HTML element.
 -   **`rules`**: An array of rule objects, each defining conditions for matching an HTML element:
     -   `validNodeName`: String or array of strings for matching HTML tag names (e.g., `'P'`, `['STRONG', 'B']`).
@@ -349,7 +349,7 @@ Converts Plate nodes from `editor.children` (or a provided `value`) into an HTML
 <API name="serializeHtml">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    A server-side Plate editor instance, created via `createSlateEditor` with components configured.
+    A server-side Plate editor instance, created via `createBasePlateEditor` with components configured.
   </APIItem>
   <APIItem name="options" type="SerializeHtmlOptions">
     Options for serialization.
@@ -367,7 +367,7 @@ Converts Plate nodes from `editor.children` (or a provided `value`) into an HTML
     Plate nodes to serialize. If not provided, `editor.children` will be used.
   </APIItem>
   <APIItem name="preserveClassNames" type="string[]" optional>
-    Class name prefixes to preserve when `stripClassNames` is true. Default preserve list in the stripping helper: `['slate-']`.
+    Class name prefixes to preserve when `stripClassNames` is true. Default preserve list in the stripping helper: `['plite-']`.
   </APIItem>
   <APIItem name="stripClassNames" type="boolean" optional>
     If `true`, removes all class names from the output HTML except those whose prefixes are listed in `preserveClassNames`. Default: `false`.
@@ -420,4 +420,4 @@ Parses an HTML string or `HTMLElement` into a Plate `Value` (an array of `Descen
 
 -   Explore the [Static Rendering guide](/docs/static) for creating server-safe components.
 -   Review individual plugin documentation for specific HTML serialization/deserialization capabilities and default rules.
--   See the [Server-Side HTML Generation Example](/docs/examples/slate-to-html).
+-   See the [Server-Side HTML Generation Example](/docs/examples/plite-to-html).

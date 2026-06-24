@@ -1,4 +1,4 @@
-import type { Descendant, SlateEditor } from 'platejs';
+import type { Descendant, BasePlateEditor } from 'platejs';
 
 import remarkStringify, {
   type Options as RemarkStringifyOptions,
@@ -16,7 +16,7 @@ export type SerializeMdOptions = {
   allowedNodes?: PlateType[] | null;
   allowNode?: AllowNodeConfig;
   disallowedNodes?: PlateType[] | null;
-  editor?: SlateEditor;
+  editor?: BasePlateEditor;
   /** Marks to treat as plain text without applying markdown formatting. */
   plainMarks?: PlateType[] | null;
   preserveEmptyParagraphs?: boolean;
@@ -30,7 +30,7 @@ export type SerializeMdOptions = {
 
 /** Serialize the editor value to Markdown. */
 export const serializeMd = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options?: Omit<SerializeMdOptions, 'editor'>
 ) => {
   const mergedOptions = getMergedOptionsSerialize(editor, options);

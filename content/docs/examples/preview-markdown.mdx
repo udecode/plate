@@ -3,7 +3,7 @@ title: Preview Markdown
 description: Decorate text ranges so Markdown syntax previews inline.
 ---
 
-This example previews Markdown syntax with Slate decorations. It does not
+This example previews Markdown syntax with Plite decorations. It does not
 deserialize Markdown into Plate nodes; it keeps the text as text and styles
 matching ranges with a custom leaf renderer.
 
@@ -30,9 +30,9 @@ characters.
 
 | Surface | Owner | Notes |
 | --- | --- | --- |
-| `decoratePreview` | Registry example | Reads text nodes, tokenizes `node.text`, and returns Slate ranges with token-type flags. |
+| `decoratePreview` | Registry example | Reads text nodes, tokenizes `node.text`, and returns Plite ranges with token-type flags. |
 | `PreviewLeaf` | Registry example | Applies CSS classes when a decorated leaf has `bold`, `italic`, `title`, `list`, `hr`, `blockquote`, or `code`. |
-| `preview-markdown` plugin | Registry example | Local `createSlatePlugin({ decorate })` plugin. |
+| `preview-markdown` plugin | Registry example | Local `createEditorPlugin({ decorate })` plugin. |
 | `BasicNodesKit` | Registry kit | Supplies the editor's normal paragraph and heading plugins. |
 | `prismjs` | Dependency | Supplies the Markdown tokenizer used by the decoration function. |
 
@@ -44,4 +44,4 @@ Plate nodes.
 
 - [Markdown](/docs/markdown) covers Markdown deserialization and serialization.
 - [Plate Plugin](/docs/api/core/plate-plugin) covers `decorate`.
-- [Text](/docs/api/slate/text) covers text decorations and decorated leaves.
+- [Text](/docs/api/plite/text) covers text decorations and decorated leaves.

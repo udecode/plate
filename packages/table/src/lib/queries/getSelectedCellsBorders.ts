@@ -1,8 +1,10 @@
-import type { SlateEditor, TElement, TTableCellElement } from 'platejs';
+import type { Element } from '@platejs/plite';
+import type { BasePlateEditor, TTableCellElement } from 'platejs';
 
 import type { BorderDirection } from '../types';
 
 import { getCellIndices, getCellTypes } from '../utils';
+import { findTableNodePath } from '../utils/findTableNodePath';
 import { getColSpan } from './getColSpan';
 import { getLeftTableCell } from './getLeftTableCell';
 import { getRowSpan } from './getRowSpan';
@@ -35,8 +37,8 @@ export type TableBorderStates = {
  * - None: true if all borders are hidden (size === 0)
  */
 export const getSelectedCellsBorders = (
-  editor: SlateEditor,
-  selectedCells?: TElement[] | null,
+  editor: BasePlateEditor,
+  selectedCells?: Element[] | null,
   options: GetSelectedCellsBordersOptions = {}
 ): TableBorderStates => {
   const { select = { none: true, outer: true, side: true } } = options;
@@ -83,7 +85,7 @@ export const getSelectedCellsBorders = (
   // Single pass through cells to check all border conditions
   for (const cell of cellElements) {
     const { col, row } = getCellIndices(editor, cell);
-    const cellPath = editor.api.findPath(cell);
+    const cellPath = findTableNodePath(editor, cell);
     const cSpan = getColSpan(cell);
     const rSpan = getRowSpan(cell);
     const isFirstRow = row === 0;
@@ -218,13 +220,13 @@ export const getSelectedCellsBorders = (
  * If **any** edge is > 0, returns false.
  */
 export function isSelectedCellBordersNone(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   cells: TTableCellElement[]
 ): boolean {
   return cells.every((cell) => {
     const { borders } = cell;
     const { col, row } = getCellIndices(editor, cell);
-    const cellPath = editor.api.findPath(cell);
+    const cellPath = findTableNodePath(editor, cell);
 
     if (!cellPath) return true;
 
@@ -266,7 +268,7 @@ export function isSelectedCellBordersNone(
  * internal edges, only bounding rectangle edges.
  */
 export function isSelectedCellBordersOuter(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   cells: TTableCellElement[]
 ): boolean {
   const { maxCol, maxRow, minCol, minRow } = getSelectedCellsBoundingBox(
@@ -302,7 +304,7 @@ export function isSelectedCellBordersOuter(
  * top boundary has top=1.
  */
 export function isSelectedCellBorder(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   cells: TTableCellElement[],
   side: BorderDirection
 ): boolean {
@@ -315,7 +317,7 @@ export function isSelectedCellBorder(
     const { col, row } = getCellIndices(editor, cell);
     const cSpan = getColSpan(cell);
     const rSpan = getRowSpan(cell);
-    const cellPath = editor.api.findPath(cell);
+    const cellPath = findTableNodePath(editor, cell);
 
     if (!cellPath) return true;
 

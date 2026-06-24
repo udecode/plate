@@ -1,0 +1,152 @@
+---
+title: "Overview"
+description: "Plite editor runtime docs for the Plate-maintained package set."
+---
+
+Plite is a JSON editor runtime for building product-specific rich text editors. This docs section covers the Plite packages, their React renderer, their browser proof harness, and the boundaries that keep the runtime verifiable. Start here when you want the current package shape, not upstream Slate 0.x compatibility notes.
+
+## On This Page
+
+- [Install](#install)
+- [Core Shape](#core-shape)
+- [Pick A First Path](#pick-a-first-path)
+- [Examples](#examples)
+- [Package Map](#package-map)
+- [Proof Boundary](#proof-boundary)
+- [Read Next](#read-next)
+
+## Install
+
+Install the React editor path first:
+
+```bash
+npm install @platejs/plite @platejs/plite-dom @platejs/plite-react react react-dom
+```
+
+Add optional packages only when the editor imports them:
+
+```bash
+npm install @platejs/plite-history @platejs/plite-hyperscript @platejs/yjs @platejs/plite-layout
+```
+
+`@platejs/browser` is the browser proof package. Use it in tests and proof harnesses, not as the product editing API.
+
+## Core Shape
+
+Plite gives you a document model, an explicit runtime, and React rendering hooks.
+
+| Layer          | What it owns                                                                                                                    |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Document model | nested JSON nodes, paths, points, ranges, operations, primary `children`, extra `roots`, and document `state`                   |
+| Runtime        | `editor.read(...)`, `editor.update(...)`, transactions, commits, normalization, refs, history integration, and extension groups |
+| React          | `<Plite>`, `<Editable>`, render functions, editor hooks, DOM repair, selection sync, overlays, and root-aware chrome            |
+| Proof          | browser tests that check model state, rendered DOM, native selection where observable, focus, replay, and follow-up typing      |
+
+The first editor usually looks like this:
+
+```tsx
+import { Editable, Plite, usePliteEditor } from "@platejs/plite-react";
+
+const initialValue = [
+  {
+    type: "paragraph",
+    children: [{ text: "A line of text." }],
+  },
+];
+
+export function Editor() {
+  const editor = usePliteEditor({ initialValue });
+
+  return (
+    <Plite editor={editor}>
+      <Editable placeholder="Start typing..." />
+    </Plite>
+  );
+}
+```
+
+Reads stay explicit:
+
+```tsx
+const value = editor.read((state) => state.value.get());
+```
+
+Writes stay explicit:
+
+```tsx
+editor.update((tx) => {
+  tx.text.insert("Hello");
+});
+```
+
+## Pick A First Path
+
+| If you want to...                       | Start with                                                                                                    |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Render one editor in React              | [Installing Plite](walkthroughs/01-installing-plite)                                                          |
+| Understand the model                    | [Nodes](concepts/02-nodes), then [Locations](concepts/03-locations)                                           |
+| Port commands                           | [Executing Commands](walkthroughs/05-executing-commands), then [Commands](concepts/06-commands)               |
+| Store editor values                     | [Saving to a Database](walkthroughs/06-saving-to-a-database) and [Document State](concepts/14-document-state) |
+| Add schema or custom transactions       | [Extensions](concepts/08-extensions)                                                                          |
+| Understand editing behavior             | [Editing Behavior](concepts/15-editing-behavior), then [Selection And DOM](concepts/16-selection-and-dom)     |
+| Handle paste, copy, drop, or fragments  | [Clipboard And Paste](concepts/17-clipboard-and-paste)                                                        |
+| Build comments, highlights, or overlays | [Projection And Overlays](concepts/18-projection-and-overlays)                                                |
+| Test browser editing behavior           | [Plite Browser](libraries/plite-browser)                                                                      |
+| Move from upstream Slate 0.x            | [Migration](migration)                                                                                        |
+
+## Examples
+
+The examples run inside this docs app:
+
+- [Plain text](/examples/plite/plaintext)
+- [Rich text](/examples/plite/richtext)
+- [Markdown shortcuts](/examples/plite/markdown-shortcuts)
+- [Checklists](/examples/plite/check-lists)
+- [Editable voids](/examples/plite/editable-voids)
+- [Custom placeholder](/examples/plite/custom-placeholder)
+- [Hidden content blocks](/examples/plite/hidden-content-blocks)
+- [Huge document](/examples/plite/huge-document)
+- [Multi-root document](/examples/plite/multi-root-document)
+- [Document state](/examples/plite/document-state)
+- [Yjs collaboration](/examples/plite/yjs-collaboration)
+
+Use examples for behavior shape. Use the docs pages for the API contract.
+
+## Package Map
+
+| Package                                                     | Read when                                                                                            |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [`@platejs/plite`](libraries/plite)                         | You need the editor runtime, document model, helper APIs, transactions, extensions, or state fields. |
+| [`@platejs/plite-dom`](libraries/plite-dom)                 | You need DOM conversion, clipboard helpers, hotkeys, or browser environment helpers.                 |
+| [`@platejs/plite-react`](libraries/plite-react)             | You render editors with React, use `<Editable>`, read editor state in components, or build overlays. |
+| [`@platejs/plite-history`](libraries/plite-history)         | You need undo/redo and history state.                                                                |
+| [`@platejs/plite-hyperscript`](libraries/plite-hyperscript) | You write JSX editor fixtures for tests.                                                             |
+| [`@platejs/yjs`](libraries/plite-yjs)                       | You connect a Plite editor to Yjs document state and awareness.                                      |
+| [`@platejs/plite-layout`](libraries/plite-layout)           | You build page-layout proof surfaces or paged editor experiments.                                    |
+| [`@platejs/browser`](libraries/plite-browser)               | You write browser-level editor proof.                                                                |
+
+## Proof Boundary
+
+This package set is unpublished beta documentation. Treat the runtime as current, but do not treat every adjacent editor problem as solved.
+
+| Area                       | Claim                                                                                    |
+| -------------------------- | ---------------------------------------------------------------------------------------- |
+| Desktop editor behavior    | Claimed when package tests and browser proof cover the behavior.                         |
+| Raw mobile device behavior | Deferred until real device proof exists.                                                 |
+| Pagination                 | Kept in `@platejs/plite-layout` and example lanes; not the core editor promise.          |
+| Collaboration              | `@platejs/yjs` owns Plite/Yjs mapping. Apps own providers, auth, persistence, and rooms. |
+| Upstream identity          | This is Plite package set, not an official upstream Slate release.               |
+
+Read [Why This Fork](why-this-fork) for the maintenance philosophy and hard boundaries.
+
+## Read Next
+
+- [Installing Plite](walkthroughs/01-installing-plite)
+- [Why This Fork](why-this-fork)
+- [Migration](migration)
+- [React Editor Setup](libraries/plite-react/react-editor-setup)
+- [Editable Component](libraries/plite-react/editable)
+- [Extensions](concepts/08-extensions)
+- [Clipboard And Paste](concepts/17-clipboard-and-paste)
+- [Projection And Overlays](concepts/18-projection-and-overlays)
+- [Docs Proof Map](general/docs-proof-map)

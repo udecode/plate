@@ -1,6 +1,6 @@
 {
   "name": "@platejs/autoformat",
-  "version": "53.0.0",
+  "version": "54.0.0-beta.0",
   "description": "Deprecated autoformat compatibility plugin for Plate",
   "keywords": [
     "plate",
@@ -43,7 +43,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=53.0.0"
+    "platejs": ">=54.0.0-beta.0"
   },
   "publishConfig": {
     "access": "public"

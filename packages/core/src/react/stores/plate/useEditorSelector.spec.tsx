@@ -38,7 +38,6 @@ describe('useEditorSelector', () => {
     const initialRenderCount = renderValues.length;
 
     act(() => {
-      editor.children = [...editor.children];
       result.current.store.set('versionEditor', 2);
     });
 
@@ -46,10 +45,12 @@ describe('useEditorSelector', () => {
     expect(renderValues).toHaveLength(initialRenderCount);
 
     act(() => {
-      editor.children = [
-        ...editor.children,
-        { children: [{ text: 'two' }], type: 'p' },
-      ];
+      editor.update((tx) => {
+        tx.nodes.insert(
+          { children: [{ text: 'two' }], type: 'p' },
+          { at: [1] }
+        );
+      });
       result.current.store.set('versionEditor', 3);
     });
 

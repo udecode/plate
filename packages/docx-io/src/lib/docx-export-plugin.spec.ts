@@ -1,0 +1,45 @@
+import { createBasePlateEditor } from 'platejs';
+
+import {
+  DocxExportPlugin,
+  type DocxExportApiMethods,
+  type DocxExportOperationOptions,
+  type DocxExportPluginConfig,
+} from './docx-export-plugin';
+
+describe('DocxExportPlugin', () => {
+  it('delegates exportAndDownload through the typed plugin API', async () => {
+    const editor = createBasePlateEditor({
+      plugins: [DocxExportPlugin],
+      value: [{ children: [{ text: 'Export me' }], type: 'p' }],
+    });
+    const blob = new Blob(['docx']);
+    const exportToBlobCalls: (DocxExportOperationOptions | undefined)[] = [];
+    const downloadCalls: [Blob, string][] = [];
+    const exportToBlob: DocxExportApiMethods['exportToBlob'] = async (
+      options
+    ) => {
+      exportToBlobCalls.push(options);
+
+      return blob;
+    };
+    const download: DocxExportApiMethods['download'] = (value, filename) => {
+      downloadCalls.push([value, filename]);
+    };
+    const api = editor.api as typeof editor.api & DocxExportPluginConfig['api'];
+
+    api.docxExport.exportToBlob = exportToBlob;
+    api.docxExport.download = download;
+
+    await api.docxExport.exportAndDownload('document', {
+      orientation: 'landscape',
+    });
+
+    expect(exportToBlobCalls).toEqual([
+      {
+        orientation: 'landscape',
+      },
+    ]);
+    expect(downloadCalls).toEqual([[blob, 'document']]);
+  });
+});

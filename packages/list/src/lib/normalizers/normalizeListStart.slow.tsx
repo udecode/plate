@@ -1,11 +1,11 @@
 /** @jsx jsxt */
 
 import {
-  type SlateEditor,
+  type BasePlateEditor,
   type Value,
   BaseParagraphPlugin,
-  createSlateEditor,
-  createTSlatePlugin,
+  createBasePlateEditor,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -13,6 +13,7 @@ import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt } from '@platejs/test-utils';
 import { omit } from 'lodash';
 
+import { getCurrentRuntimeTransforms } from '../../../../core/src/internal/currentRuntimeBridge';
 import { listPluginPage } from '../../__tests__/listPluginPage';
 import { BaseListPlugin } from '../BaseListPlugin';
 
@@ -20,7 +21,7 @@ jsxt;
 
 const CUSTOM_H1 = 'heading-one';
 
-const H1Plugin = createTSlatePlugin({
+const H1Plugin = createEditorPlugin({
   key: KEYS.h1,
 });
 
@@ -28,7 +29,7 @@ const CustomH1Plugin = H1Plugin.extend({
   node: { type: CUSTOM_H1 },
 });
 
-const BlockquotePlugin = createTSlatePlugin({
+const BlockquotePlugin = createEditorPlugin({
   key: KEYS.blockquote,
 });
 
@@ -45,7 +46,7 @@ const createEditor = ({
   pages?: boolean;
   targetPlugins?: string[];
 }) =>
-  createSlateEditor({
+  createBasePlateEditor({
     plugins: [
       BaseParagraphPlugin,
       headingPlugin,
@@ -140,9 +141,9 @@ const createBlockquoteItem = (
   </hblockquote>
 );
 
-const expectAlreadyNormalized = (editor: SlateEditor) => {
+const expectAlreadyNormalized = (editor: BasePlateEditor) => {
   const before = editor.children;
-  editor.tf.normalize({ force: true });
+  getCurrentRuntimeTransforms(editor).normalize({ force: true });
   expect(editor.children).toBe(before);
 };
 
@@ -584,7 +585,9 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.insertNode(createItem('x'), { at: [0] });
+        getCurrentRuntimeTransforms(editor).insertNode(createItem('x'), {
+          at: [0],
+        });
 
         expect(editor.children).toEqual(output);
         expectAlreadyNormalized(editor);
@@ -617,7 +620,9 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ pages: true, value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.insertNode(createItem('x'), { at: [0, 2] });
+        getCurrentRuntimeTransforms(editor).insertNode(createItem('x'), {
+          at: [0, 2],
+        });
 
         expect(editor.children).toEqual(output);
         expectAlreadyNormalized(editor);
@@ -644,7 +649,7 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.insertNode(<hp>x</hp>, { at: [3] });
+        getCurrentRuntimeTransforms(editor).insertNode(<hp>x</hp>, { at: [3] });
 
         expect(editor.children).toEqual(output);
         expectAlreadyNormalized(editor);
@@ -671,7 +676,7 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.removeNodes({ at: [0] });
+        getCurrentRuntimeTransforms(editor).removeNodes({ at: [0] });
 
         expect(editor.children).toEqual(output);
         expectAlreadyNormalized(editor);
@@ -696,7 +701,7 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.removeNodes({ at: [3] });
+        getCurrentRuntimeTransforms(editor).removeNodes({ at: [3] });
 
         expect(editor.children).toEqual(output);
         expectAlreadyNormalized(editor);
@@ -721,7 +726,7 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.removeNodes({ at: [2] });
+        getCurrentRuntimeTransforms(editor).removeNodes({ at: [2] });
 
         expect(editor.children).toEqual(output);
         expectAlreadyNormalized(editor);
@@ -753,7 +758,7 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.moveNodes({
+        getCurrentRuntimeTransforms(editor).moveNodes({
           at: [0],
           to: [1],
         });
@@ -784,7 +789,7 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.moveNodes({
+        getCurrentRuntimeTransforms(editor).moveNodes({
           at: [1],
           to: [0],
         });
@@ -813,7 +818,7 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.moveNodes({
+        getCurrentRuntimeTransforms(editor).moveNodes({
           at: [0],
           to: [2],
         });
@@ -842,7 +847,7 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.moveNodes({
+        getCurrentRuntimeTransforms(editor).moveNodes({
           at: [3],
           to: [0],
         });
@@ -871,7 +876,7 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.moveNodes({
+        getCurrentRuntimeTransforms(editor).moveNodes({
           at: [2],
           to: [0],
         });
@@ -900,7 +905,7 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.moveNodes({
+        getCurrentRuntimeTransforms(editor).moveNodes({
           at: [0],
           to: [2],
         });
@@ -929,7 +934,10 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.setNodes({ indent: 2 }, { at: [1] });
+        getCurrentRuntimeTransforms(editor).setNodes(
+          { indent: 2 },
+          { at: [1] }
+        );
 
         expect(editor.children).toEqual(output);
         expectAlreadyNormalized(editor);
@@ -953,7 +961,10 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.setNodes({ indent: 1 }, { at: [1] });
+        getCurrentRuntimeTransforms(editor).setNodes(
+          { indent: 1 },
+          { at: [1] }
+        );
 
         expect(editor.children).toEqual(output);
         expectAlreadyNormalized(editor);
@@ -980,7 +991,7 @@ describe('normalizeListStart', () => {
         expectAlreadyNormalized(editor);
 
         const itemProps = omit(createItem(''), ['type', 'children']);
-        editor.tf.setNodes(itemProps, { at: [2] });
+        getCurrentRuntimeTransforms(editor).setNodes(itemProps, { at: [2] });
 
         expect(editor.children).toEqual(output);
         expectAlreadyNormalized(editor);
@@ -1006,7 +1017,7 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.setNodes(
+        getCurrentRuntimeTransforms(editor).setNodes(
           { indent: undefined, listStyleType: undefined },
           { at: [2] }
         );
@@ -1034,7 +1045,7 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.mergeNodes({
+        getCurrentRuntimeTransforms(editor).mergeNodes({
           at: [2],
         });
 
@@ -1061,7 +1072,7 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.mergeNodes({
+        getCurrentRuntimeTransforms(editor).mergeNodes({
           at: [1],
         });
 
@@ -1088,7 +1099,7 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.mergeNodes({
+        getCurrentRuntimeTransforms(editor).mergeNodes({
           at: [2],
         });
 
@@ -1117,7 +1128,7 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        editor.tf.splitNodes({
+        getCurrentRuntimeTransforms(editor).splitNodes({
           at: { offset: 1, path: [2, 0] },
         });
 

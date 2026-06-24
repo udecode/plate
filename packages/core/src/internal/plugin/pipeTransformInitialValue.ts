@@ -1,10 +1,10 @@
-import type { SlateEditor } from '../../lib/editor';
+import type { BasePlateEditor } from '../../lib/editor';
 
 import { getEditorPlugin } from '../../lib/plugin';
 import { isEditOnly } from './isEditOnlyDisabled';
 
 /** Transform initial value from editor plugins before the editor is ready. */
-export const pipeTransformInitialValue = (editor: SlateEditor) => {
+export const pipeTransformInitialValue = (editor: BasePlateEditor) => {
   const value = editor.meta.isNormalizing;
 
   editor.meta.isNormalizing = true;

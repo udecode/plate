@@ -3,7 +3,7 @@
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { jsxt } from '@platejs/test-utils';
 import { describe, expect, it } from 'bun:test';
-import { createSlateEditor, createSlatePlugin, KEYS } from 'platejs';
+import { createBasePlateEditor, createEditorPlugin, KEYS } from 'platejs';
 
 import {
   BLOCK_SUGGESTION_TOKEN,
@@ -50,12 +50,12 @@ const getSuggestionDataList = (node: any) =>
 
 const getSuggestionId = (node: any) => node.suggestion_1?.id;
 
-const MentionPlugin = createSlatePlugin({
+const MentionPlugin = createEditorPlugin({
   key: KEYS.mention,
   node: { isElement: true, isInline: true, isMarkableVoid: true, isVoid: true },
 });
 
-const InlineEquationPlugin = createSlatePlugin({
+const InlineEquationPlugin = createEditorPlugin({
   key: KEYS.inlineEquation,
   node: { isElement: true, isInline: true, isVoid: true },
 });
@@ -66,13 +66,15 @@ const getResolvedSuggestions = (editor: any) =>
     entries: collectEntries(editor),
     getCommentId: () => {},
     getSuggestionData: (node: any) =>
-      editor.getApi(BaseSuggestionPlugin).suggestion.suggestionData(node),
+      editor.getPluginApi(BaseSuggestionPlugin).suggestion.suggestionData(node),
     getSuggestionDataList: (node: any) =>
-      editor.getApi(BaseSuggestionPlugin).suggestion.dataList(node),
+      editor.getPluginApi(BaseSuggestionPlugin).suggestion.dataList(node),
     getSuggestionId: (node: any) =>
-      editor.getApi(BaseSuggestionPlugin).suggestion.nodeId(node),
+      editor.getPluginApi(BaseSuggestionPlugin).suggestion.nodeId(node),
     isBlockSuggestion: (node: any) =>
-      editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(node),
+      editor
+        .getPluginApi(BaseSuggestionPlugin)
+        .suggestion.isBlockSuggestion(node),
   }).suggestionsByBlock.get('0') ?? [];
 
 describe('buildBlockDiscussionIndex', () => {
@@ -268,7 +270,7 @@ describe('buildBlockDiscussionIndex', () => {
   }) => {
     const input = createValue() as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseSuggestionPlugin.configure({
           options: { currentUserId: 'u1' },

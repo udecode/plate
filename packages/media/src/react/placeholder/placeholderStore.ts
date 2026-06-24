@@ -1,15 +1,29 @@
 import { createAtomStore } from 'platejs/react';
 
-type PlaceholderStore = {
+export type PlaceholderProgresses = Record<string, number>;
+
+export type PlaceholderSize = {
+  height: number;
+  width: number;
+} | null;
+
+export type PlaceholderStore = {
   isUploading: boolean;
-  progresses: Progresses;
-  size: {
-    height: number;
-    width: number;
-  } | null;
+  progresses: PlaceholderProgresses;
+  size: PlaceholderSize;
   updatedFiles: File[];
 };
-type Progresses = Record<string, number>;
+
+export type PlaceholderStoreSetter<K extends keyof PlaceholderStore> = (
+  value: PlaceholderStore[K]
+) => void;
+
+const placeholderInitialState: PlaceholderStore = {
+  isUploading: false,
+  progresses: {},
+  size: null,
+  updatedFiles: [],
+};
 
 export const {
   PlaceholderProvider,
@@ -18,12 +32,4 @@ export const {
   usePlaceholderState,
   usePlaceholderStore,
   usePlaceholderValue,
-} = createAtomStore(
-  {
-    isUploading: false,
-    progresses: {},
-    size: null,
-    updatedFiles: [],
-  } as PlaceholderStore,
-  { name: 'placeholder' }
-) as any;
+} = createAtomStore(placeholderInitialState, { name: 'placeholder' as const });

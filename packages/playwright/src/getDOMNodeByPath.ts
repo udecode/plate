@@ -1,5 +1,5 @@
 import type { ElementHandle, Page } from '@playwright/test';
-import type { Path } from 'platejs';
+import type { Path } from '@platejs/plite';
 import { getNodeByPath } from './getNodeByPath';
 import { getAdapter } from './internal/getAdapter';
 import type { EditorHandle } from './types';
@@ -15,7 +15,7 @@ export const getDOMNodeByPath = async (
 
   return page.evaluateHandle(
     ([, editor, node]) => {
-      const domNode = editor.api.toDOMNode(node);
+      const domNode = editor.api.dom.resolveDOMNode(node);
 
       if (!domNode)
         throw new Error(`getDOMNodeByPath: DOM node not found at path ${path}`);

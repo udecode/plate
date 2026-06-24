@@ -53,7 +53,7 @@ export function MentionElement(
       attributes={{
         ...props.attributes,
         contentEditable: false,
-        'data-slate-value': element.value,
+        'data-plite-value': element.value,
         draggable: true,
       }}
     >

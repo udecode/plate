@@ -1,6 +1,7 @@
+import type { NodeInsertNodesOptions } from '@platejs/plite';
 import {
   type ExtendConfig,
-  type InsertNodesOptions,
+  type TPlaceholderElement,
   bindFirst,
   KEYS,
   NodeApi,
@@ -12,7 +13,6 @@ import type { MediaItemConfig, UploadError } from './type';
 
 import { type PlaceholderConfig, BasePlaceholderPlugin } from '../../lib';
 import { insertMedia } from './transforms/insertMedia';
-import { isHistoryMarking } from './utils/history';
 
 export type PlaceholderApi = {
   addUploadingFile: (id: string, file: File) => void;
@@ -20,97 +20,86 @@ export type PlaceholderApi = {
   removeUploadingFile: (id: string) => void;
 };
 
-export type PlaceholderTransforms = {
-  insertMedia: (files: FileList, options?: InsertNodesOptions) => void;
-};
+type InsertNodesOptions = NonNullable<
+  NodeInsertNodesOptions<TPlaceholderElement> & { nextBlock?: boolean }
+>;
 
 export type UploadConfig = Partial<Record<AllowedFileType, MediaItemConfig>>;
 
-export const PlaceholderPlugin = toTPlatePlugin<
-  ExtendConfig<
-    PlaceholderConfig,
-    {
-      disableEmptyPlaceholder: boolean;
-      disableFileDrop: boolean;
-      uploadConfig: UploadConfig;
-      uploadingFiles: Record<string, File>;
-      error?: UploadError | null;
-      maxFileCount?: number;
-      // Whether multiple files of the same type can be uploaded.
-      multiple?: boolean;
-    },
-    { placeholder: PlaceholderApi }
-  >
->(BasePlaceholderPlugin, {
-  options: {
-    disableEmptyPlaceholder: false,
-    disableFileDrop: false,
-    error: null,
-    maxFileCount: 5,
-    multiple: true,
-    uploadConfig: {
-      audio: {
-        maxFileCount: 1,
-        maxFileSize: '8MB',
-        mediaType: KEYS.audio,
-        minFileCount: 1,
-      },
-      blob: {
-        maxFileCount: 1,
-        maxFileSize: '8MB',
-        mediaType: KEYS.file,
-        minFileCount: 1,
-      },
-      image: {
-        maxFileCount: 3,
-        maxFileSize: '4MB',
-        mediaType: KEYS.img,
-        minFileCount: 1,
-      },
-      pdf: {
-        maxFileCount: 1,
-        maxFileSize: '4MB',
-        mediaType: KEYS.file,
-        minFileCount: 1,
-      },
-      text: {
-        maxFileCount: 1,
-        maxFileSize: '64KB',
-        mediaType: KEYS.file,
-        minFileCount: 1,
-      },
-      video: {
-        maxFileCount: 1,
-        maxFileSize: '16MB',
-        mediaType: KEYS.video,
-        minFileCount: 1,
-      },
-    },
-    uploadingFiles: {},
+type PlaceholderPluginConfig = ExtendConfig<
+  PlaceholderConfig,
+  {
+    disableEmptyPlaceholder: boolean;
+    disableFileDrop: boolean;
+    uploadConfig: UploadConfig;
+    uploadingFiles: Record<string, File>;
+    error?: UploadError | null;
+    maxFileCount?: number;
+    // Whether multiple files of the same type can be uploaded.
+    multiple?: boolean;
   },
-})
-  .overrideEditor(({ editor, tf: { writeHistory } }) => ({
-    transforms: {
-      writeHistory(stack, batch) {
-        if (isHistoryMarking(editor)) {
-          const newBatch = {
-            ...batch,
-            [KEYS.placeholder]: true,
-          };
-
-          writeHistory(stack, newBatch);
-
-          return;
-        }
-
-        return writeHistory(stack, batch);
-      },
-    },
-  }))
-  .extendEditorTransforms(({ editor }) => ({
+  { placeholder: PlaceholderApi },
+  {},
+  {
     insert: {
-      media: bindFirst(insertMedia, editor),
+      media: (files: FileList, options?: InsertNodesOptions) => void;
+    };
+  }
+>;
+
+export const PlaceholderPlugin = toTPlatePlugin<PlaceholderPluginConfig>(
+  BasePlaceholderPlugin,
+  {
+    options: {
+      disableEmptyPlaceholder: false,
+      disableFileDrop: false,
+      error: null,
+      maxFileCount: 5,
+      multiple: true,
+      uploadConfig: {
+        audio: {
+          maxFileCount: 1,
+          maxFileSize: '8MB',
+          mediaType: KEYS.audio,
+          minFileCount: 1,
+        },
+        blob: {
+          maxFileCount: 1,
+          maxFileSize: '8MB',
+          mediaType: KEYS.file,
+          minFileCount: 1,
+        },
+        image: {
+          maxFileCount: 3,
+          maxFileSize: '4MB',
+          mediaType: KEYS.img,
+          minFileCount: 1,
+        },
+        pdf: {
+          maxFileCount: 1,
+          maxFileSize: '4MB',
+          mediaType: KEYS.file,
+          minFileCount: 1,
+        },
+        text: {
+          maxFileCount: 1,
+          maxFileSize: '64KB',
+          mediaType: KEYS.file,
+          minFileCount: 1,
+        },
+        video: {
+          maxFileCount: 1,
+          maxFileSize: '16MB',
+          mediaType: KEYS.video,
+          minFileCount: 1,
+        },
+      },
+      uploadingFiles: {},
     },
+  }
+)
+  .extendTxGroup('insert', ({ editor }) => () => ({
+    media: bindFirst(insertMedia, editor),
   }))
   .extendApi(({ getOption, setOption }) => ({
     addUploadingFile: (id: string, file: File) => {
@@ -136,7 +125,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
   }))
   .extend(({ getOption }) => ({
     handlers: {
-      onDrop: ({ editor, event, tf }) => {
+      onDrop: ({ editor, event }) => {
         // using DnD plugin by default
         if (!getOption('disableFileDrop')) return;
 
@@ -157,11 +146,13 @@ export const PlaceholderPlugin = toTPlatePlugin<
 
         if (!at) return false;
 
-        tf.insert.media(files);
+        editor.update<PlaceholderPluginConfig['tx']>((tx) =>
+          tx.insert.media(files)
+        );
 
         return true;
       },
-      onPaste: ({ editor, event, tf }) => {
+      onPaste: ({ editor, event }) => {
         const { files, types } = event.clipboardData;
         const TEXT_HTML = 'text/html';
 
@@ -177,13 +168,15 @@ export const PlaceholderPlugin = toTPlatePlugin<
             const [node, path] = ancestor;
 
             if (NodeApi.string(node).length === 0) {
-              editor.tf.removeNodes({ at: path });
-              tf.insert.media(files, { at: path, nextBlock: false });
+              editor.update((tx) => {
+                tx.nodes.remove({ at: path });
+              });
+              insertMedia(editor, files, { at: path, nextBlock: false });
               inserted = true;
             }
           }
           if (!inserted) {
-            tf.insert.media(files, { nextBlock: false });
+            insertMedia(editor, files, { nextBlock: false });
           }
 
           return true;

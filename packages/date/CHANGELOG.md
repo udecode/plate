@@ -1,5 +1,7 @@
 # @platejs/date
 
+## 54.0.0-beta.0
+
 ## 53.0.0
 
 ### Patch Changes

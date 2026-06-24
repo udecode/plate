@@ -1,16 +1,19 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
 
+import { createPlateRuntimeEditor } from '../../../../core/src/react/editor/createPlateRuntimeEditor';
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
 import { unwrapLink } from './unwrapLink';
 
 jsxt;
 
 describe('unwrapLink', () => {
+  const root = (editor: { read: <T>(fn: (state: any) => T) => T }) =>
+    editor.read((state) => state.value.root());
+
   it('unwraps an entire link when split mode is off', () => {
     const input = (
       <editor>
@@ -18,20 +21,20 @@ describe('unwrapLink', () => {
           before <ha url="https://example.com">link</ha> after
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
-      plugins: [BaseLinkPlugin],
-      selection: {
+    const editor = createPlateRuntimeEditor({
+      initialSelection: {
         anchor: { offset: 0, path: [0, 1, 0] },
         focus: { offset: 4, path: [0, 1, 0] },
       },
-      value: input.children,
+      initialValue: input.children,
+      plugins: [BaseLinkPlugin],
     });
 
-    unwrapLink(editor);
+    unwrapLink(editor as unknown as BasePlateEditor);
 
-    expect(editor.children).toEqual(
+    expect(root(editor)).toEqual(
       (
         <editor>
           <hp>before link after</hp>
@@ -41,13 +44,12 @@ describe('unwrapLink', () => {
   });
 
   it('split mode preserves the linked prefix and unwraps the trailing fragment', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseLinkPlugin],
-      selection: {
+    const editor = createPlateRuntimeEditor({
+      initialSelection: {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 4, path: [0, 1, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { text: 'x' },
@@ -61,11 +63,12 @@ describe('unwrapLink', () => {
           type: 'p',
         },
       ],
+      plugins: [BaseLinkPlugin],
     });
 
-    unwrapLink(editor, { split: true });
+    unwrapLink(editor as unknown as BasePlateEditor, { split: true });
 
-    expect(editor.children).toEqual([
+    expect(root(editor)).toEqual([
       {
         children: [
           { text: 'x' },
@@ -82,13 +85,12 @@ describe('unwrapLink', () => {
   });
 
   it('split mode preserves the linked suffix when only the focus is inside the link', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseLinkPlugin],
-      selection: {
+    const editor = createPlateRuntimeEditor({
+      initialSelection: {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 2, path: [0, 1, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { text: 'x' },
@@ -102,11 +104,12 @@ describe('unwrapLink', () => {
           type: 'p',
         },
       ],
+      plugins: [BaseLinkPlugin],
     });
 
-    unwrapLink(editor, { split: true });
+    unwrapLink(editor as unknown as BasePlateEditor, { split: true });
 
-    expect(editor.children).toEqual([
+    expect(root(editor)).toEqual([
       {
         children: [
           { text: 'x' },
@@ -123,13 +126,12 @@ describe('unwrapLink', () => {
   });
 
   it('split mode preserves the linked suffix when only the anchor is inside the link', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseLinkPlugin],
-      selection: {
+    const editor = createPlateRuntimeEditor({
+      initialSelection: {
         anchor: { offset: 4, path: [0, 1, 0] },
         focus: { offset: 1, path: [0, 2] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { text: 'x' },
@@ -143,11 +145,12 @@ describe('unwrapLink', () => {
           type: 'p',
         },
       ],
+      plugins: [BaseLinkPlugin],
     });
 
-    unwrapLink(editor, { split: true });
+    unwrapLink(editor as unknown as BasePlateEditor, { split: true });
 
-    expect(editor.children).toEqual([
+    expect(root(editor)).toEqual([
       {
         children: [
           { text: 'x' },

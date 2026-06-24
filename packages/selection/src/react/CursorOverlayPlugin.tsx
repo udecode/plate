@@ -3,11 +3,7 @@ import { useEffect } from 'react';
 import type { PluginConfig } from 'platejs';
 
 import { KEYS } from 'platejs';
-import {
-  type DOMHandler,
-  createTPlatePlugin,
-  usePluginOption,
-} from 'platejs/react';
+import { createTPlatePlugin, usePluginOption } from 'platejs/react';
 
 import type { CursorData, CursorState } from './types';
 
@@ -30,8 +26,8 @@ export type CursorOverlayConfig = PluginConfig<
 >;
 
 const getRemoveCursorHandler =
-  (id: string): DOMHandler<CursorOverlayConfig> =>
-  ({ api }) => {
+  (id: string) =>
+  ({ api }: { api: Pick<CursorOverlayConfig['api'], 'cursorOverlay'> }) => {
     api.cursorOverlay.removeCursor(id);
   };
 
@@ -62,21 +58,6 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
       },
     })
   )
-  .overrideEditor(({ api, editor, getOptions, tf: { setSelection } }) => ({
-    transforms: {
-      setSelection(props) {
-        if (getOptions().cursors?.selection) {
-          setTimeout(() => {
-            api.cursorOverlay.addCursor('selection', {
-              selection: editor.selection,
-            });
-          }, 0);
-        }
-
-        setSelection(props);
-      },
-    },
-  }))
   .extend(() => ({
     handlers: {
       onBlur: ({ api, editor, event }) => {
@@ -91,8 +72,8 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
           selection: editor.selection,
         });
       },
-      onDragEnd: getRemoveCursorHandler('drag') as any,
-      onDragLeave: getRemoveCursorHandler('drag') as any,
+      onDragEnd: getRemoveCursorHandler('drag'),
+      onDragLeave: getRemoveCursorHandler('drag'),
       onDragOver: ({ api, editor, event }) => {
         if (
           !editor.plugins.dnd ||
@@ -113,8 +94,8 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
           selection: range,
         });
       },
-      onDrop: getRemoveCursorHandler('drag') as any,
-      onFocus: getRemoveCursorHandler('selection') as any,
+      onDrop: getRemoveCursorHandler('drag'),
+      onFocus: getRemoveCursorHandler('selection'),
     },
     useHooks: ({ api, setOption }) => {
       const isSelecting = usePluginOption(BlockSelectionPlugin, 'isSelecting');

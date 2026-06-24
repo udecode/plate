@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: BR line-break placeholders are already bridge-compatible
 tags:
-  - slate-dom-v2
+  - plite-dom-v2
   - zero-width
   - br
   - selection
@@ -26,7 +26,7 @@ The honest first thing to prove was not “delete FEFF everywhere.”
 
 It was:
 
-- does the `slate-dom-v2` bridge already tolerate `<br>`-style line-break
+- does the `plite-dom-v2` bridge already tolerate `<br>`-style line-break
   placeholders?
 
 ## What the proof showed

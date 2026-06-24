@@ -3,25 +3,31 @@
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '../..');
-const registryPath = path.join(root, 'benchmarks/targets/slate-v2.json');
+const registryPath = path.join(root, 'benchmarks/targets/plite.json');
 const historyPath = path.join(
   root,
-  'benchmarks/targets/history/slate-v2-latest.json'
+  'benchmarks/targets/history/plite-latest.json'
 );
-const reportPath = path.join(root, 'benchmarks/targets/reports/slate-v2.md');
+const historyRepoPath = path
+  .relative(root, historyPath)
+  .replaceAll(path.sep, '/');
+const reportPath = path.join(root, 'benchmarks/targets/reports/plite.md');
 const evidenceKitRegistryPath = path.join(
   root,
   'benchmarks/editor/research/benchmark-registry.json'
 );
 const evidenceKitRoot = path.join(root, 'benchmarks/editor');
-const autoresearchScript = path.resolve(
-  root,
-  '../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs'
-);
+const autoresearchScriptCandidates = [
+  process.env.CODEX_AUTORESEARCH_SCRIPT,
+  path.resolve(
+    root,
+    '../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs'
+  ),
+].filter(Boolean);
 
 const usage = `Usage:
   node tooling/scripts/bench-targets.mjs list
@@ -39,8 +45,38 @@ function fail(message) {
   process.exit(1);
 }
 
+function resolveAutoresearchScript({ required = true } = {}) {
+  const script = autoresearchScriptCandidates.find((candidate) =>
+    fs.existsSync(candidate)
+  );
+
+  if (script) return script;
+  if (!required) return null;
+
+  fail(
+    'Missing Codex Autoresearch script. Set CODEX_AUTORESEARCH_SCRIPT or clone codex-autoresearch next to this repo.'
+  );
+}
+
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function readJsonIfExists(file) {
+  if (!fs.existsSync(file)) return null;
+  return readJson(file);
+}
+
+function readHeadJson(repoPath) {
+  const result = spawnSync('git', ['show', `HEAD:${repoPath}`], {
+    cwd: root,
+    encoding: 'utf8',
+    stdio: 'pipe',
+  });
+
+  if (result.status !== 0 || result.stdout.trim().length === 0) return null;
+
+  return JSON.parse(result.stdout);
 }
 
 function normalizeRepoPath(value) {
@@ -62,7 +98,7 @@ function targetFromEvidenceKitArtifact(artifact) {
   return {
     id: artifact.id,
     question: artifact.decision,
-    owner: artifact.owner ?? 'slate-v2',
+    owner: artifact.owner ?? 'plite',
     family: artifact.family ?? artifact.category ?? 'uncategorized',
     kind: artifact.kind ?? 'benchmark',
     cwd: normalizeRepoPath(artifact.cwd),
@@ -211,9 +247,37 @@ function checkTargets() {
   console.log(`benchmark-targets ok: ${registry.targets.length} targets`);
 }
 
-function artifactState(artifact) {
+function artifactKey(targetId, artifactPath) {
+  return `${targetId}\0${artifactPath}`;
+}
+
+function previousExistingArtifacts(histories) {
+  const existing = new Set();
+
+  for (const history of histories) {
+    for (const target of history?.targets ?? []) {
+      for (const artifact of target.artifacts ?? []) {
+        if (artifact.exists === true) {
+          existing.add(artifactKey(target.id, artifact.path));
+        }
+      }
+    }
+  }
+
+  return existing;
+}
+
+function loadTargetHistoryInputs() {
+  return [readJsonIfExists(historyPath), readHeadJson(historyRepoPath)].filter(
+    Boolean
+  );
+}
+
+function artifactState(targetId, artifact, previousExisting) {
   const absolutePath = path.resolve(root, artifact.path);
-  const exists = fs.existsSync(absolutePath);
+  const exists =
+    fs.existsSync(absolutePath) ||
+    previousExisting.has(artifactKey(targetId, artifact.path));
 
   return {
     path: artifact.path,
@@ -222,9 +286,12 @@ function artifactState(artifact) {
   };
 }
 
-function buildTargetHistory(registry) {
+function buildTargetHistory(registry, histories = loadTargetHistoryInputs()) {
+  const previousExisting = previousExistingArtifacts(histories);
   const targets = sortedTargets(registry).map((target) => {
-    const artifacts = target.artifacts.map(artifactState);
+    const artifacts = target.artifacts.map((artifact) =>
+      artifactState(target.id, artifact, previousExisting)
+    );
     const missingArtifacts = artifacts.filter(
       (artifact) => artifact.required && !artifact.exists
     );
@@ -324,7 +391,7 @@ function renderMarkdownReport(history) {
     })
     .join('\n');
 
-  return `# Slate v2 Benchmark Targets
+  return `# Plite v2 Benchmark Targets
 
 This report is generated from \`${history.registryPath}\`.
 
@@ -421,7 +488,7 @@ function autoresearchSetupArgs(target, command) {
   return [
     command,
     '--cwd',
-    path.join(root, '.tmp/slate-v2'),
+    root,
     '--name',
     target.id,
     '--metric-name',
@@ -442,8 +509,9 @@ function autoresearchSetupArgs(target, command) {
 function runAutoresearchSetupPlan(id) {
   const target = getTarget(id);
   const args = autoresearchSetupArgs(target, 'setup-plan');
+  const script = resolveAutoresearchScript();
 
-  const result = spawnSync(process.execPath, [autoresearchScript, ...args], {
+  const result = spawnSync(process.execPath, [script, ...args], {
     cwd: root,
     stdio: 'inherit',
   });
@@ -453,8 +521,9 @@ function runAutoresearchSetupPlan(id) {
 function runAutoresearchInit(id) {
   const target = getTarget(id);
   const args = autoresearchSetupArgs(target, 'setup');
+  const script = resolveAutoresearchScript();
 
-  const result = spawnSync(process.execPath, [autoresearchScript, ...args], {
+  const result = spawnSync(process.execPath, [script, ...args], {
     cwd: root,
     stdio: 'inherit',
   });
@@ -471,9 +540,27 @@ function dryRun(id = 'react-active-typing-breakdown') {
 
   const history = buildTargetHistory(registry);
   const target = getTarget(id);
+  const script = resolveAutoresearchScript({ required: false });
+
+  if (!script) {
+    console.log('benchmark-targets dry-run ok');
+    console.log(`targets=${history.counts.targets}`);
+    console.log(
+      `missingOptionalArtifacts=${history.counts.missingOptionalArtifacts}`
+    );
+    console.log(
+      `missingRequiredArtifacts=${history.counts.missingRequiredArtifacts}`
+    );
+    console.log(`target=${target.id}`);
+    console.log(`metric=${target.metrics.primary}`);
+    console.log('autoresearchSetupOk=skipped');
+    console.log('benchmarkMode=codex-autoresearch script unavailable');
+    return;
+  }
+
   const setup = spawnSync(
     process.execPath,
-    [autoresearchScript, ...autoresearchSetupArgs(target, 'setup-plan')],
+    [script, ...autoresearchSetupArgs(target, 'setup-plan')],
     {
       cwd: root,
       encoding: 'utf8',
@@ -523,44 +610,55 @@ function writeImportedRegistry() {
   );
 }
 
-const [command, ...rawArgs] = process.argv.slice(2);
-const args = rawArgs[0] === '--' ? rawArgs.slice(1) : rawArgs;
+function main() {
+  const [command, ...rawArgs] = process.argv.slice(2);
+  const args = rawArgs[0] === '--' ? rawArgs.slice(1) : rawArgs;
 
-switch (command) {
-  case 'autoresearch-init':
-    runAutoresearchInit(args[0]);
-    break;
-  case 'autoresearch-setup':
-    runAutoresearchSetupPlan(args[0]);
-    break;
-  case 'autoresearch-setup-plan':
-    runAutoresearchSetupPlan(args[0]);
-    break;
-  case 'check':
-    checkTargets();
-    break;
-  case 'dry-run':
-    dryRun(args[0]);
-    break;
-  case 'import-evidence-kit':
-    if (args.includes('--write')) {
-      writeImportedRegistry();
-    } else {
-      console.log(JSON.stringify(importEvidenceKit(), null, 2));
-    }
-    break;
-  case 'list':
-    listTargets();
-    break;
-  case 'report':
-    writeTargetReport({
-      check: args.includes('--check'),
-      dryRun: args.includes('--dry-run'),
-    });
-    break;
-  case 'run':
-    runTarget(args[0]);
-    break;
-  default:
-    fail(usage);
+  switch (command) {
+    case 'autoresearch-init':
+      runAutoresearchInit(args[0]);
+      break;
+    case 'autoresearch-setup':
+      runAutoresearchSetupPlan(args[0]);
+      break;
+    case 'autoresearch-setup-plan':
+      runAutoresearchSetupPlan(args[0]);
+      break;
+    case 'check':
+      checkTargets();
+      break;
+    case 'dry-run':
+      dryRun(args[0]);
+      break;
+    case 'import-evidence-kit':
+      if (args.includes('--write')) {
+        writeImportedRegistry();
+      } else {
+        console.log(JSON.stringify(importEvidenceKit(), null, 2));
+      }
+      break;
+    case 'list':
+      listTargets();
+      break;
+    case 'report':
+      writeTargetReport({
+        check: args.includes('--check'),
+        dryRun: args.includes('--dry-run'),
+      });
+      break;
+    case 'run':
+      runTarget(args[0]);
+      break;
+    default:
+      fail(usage);
+  }
 }
+
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+  main();
+}
+
+export { buildTargetHistory, renderMarkdownReport, validateRegistry };

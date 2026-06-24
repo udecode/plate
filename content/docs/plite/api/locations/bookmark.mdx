@@ -1,0 +1,39 @@
+---
+title: "Bookmark API"
+description: "Runtime range bookmark API for keeping annotation-style anchors synced through operations."
+---
+
+`Bookmark` objects keep a local range synced as operations change the document.
+Use them for annotation-like state that belongs to the current editor runtime,
+such as temporary comments, review markers, or UI anchors.
+
+## Type
+
+```ts
+type BookmarkAffinity = "backward" | "forward" | "inward";
+
+type Bookmark = {
+  affinity: BookmarkAffinity;
+  resolve(): Range | null;
+  unref(): Range | null;
+};
+```
+
+## Create A Bookmark
+
+Create bookmarks inside a read boundary.
+
+```tsx
+const bookmark = editor.read((state) =>
+  state.ranges.bookmark({
+    anchor: { path: [0, 0], offset: 2 },
+    focus: { path: [0, 0], offset: 8 },
+  })
+);
+```
+
+`resolve()` returns the current range, or `null` when the anchored content is
+gone. `unref()` stops tracking and returns the last resolved range.
+
+Bookmarks default to `inward` affinity, which keeps annotation ranges tight when
+text is inserted at their edges.

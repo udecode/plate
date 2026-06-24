@@ -1,4 +1,4 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { CsvPlugin } from '../../CsvPlugin';
 import { deserializeCsv } from './deserializeCsv';
@@ -7,7 +7,7 @@ const createCsvEditor = (options?: {
   errorTolerance?: number;
   header?: boolean;
 }) =>
-  createSlateEditor({
+  createBasePlateEditor({
     plugins: [
       CsvPlugin.configure({
         options: {

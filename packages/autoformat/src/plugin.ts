@@ -1,4 +1,4 @@
-import { KEYS, createSlatePlugin } from 'platejs';
+import { KEYS, createEditorPlugin } from 'platejs';
 
 /**
  * Deprecated compatibility plugin for legacy `@platejs/autoformat` imports.
@@ -15,6 +15,6 @@ import { KEYS, createSlatePlugin } from 'platejs';
  * @deprecated Use feature-owned `inputRules` instead. Remove
  * `AutoformatPlugin` from editor plugin arrays after migrating rules.
  */
-export const AutoformatPlugin = createSlatePlugin({
+export const AutoformatPlugin = createEditorPlugin({
   key: KEYS.autoformat,
 });

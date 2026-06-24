@@ -1,6 +1,7 @@
 import { useEditorPlugin, useHotkeys, usePluginOption } from 'platejs/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
+import { focusEditorAtSelection } from '../../utils';
 
 export const useFloatingLinkEscape = () => {
   const { api, editor, getOptions } = useEditorPlugin(LinkPlugin);
@@ -18,12 +19,12 @@ export const useFloatingLinkEscape = () => {
 
       if (mode === 'edit' && isEditing) {
         api.floatingLink.show('edit', editor.id);
-        editor.tf.focus({ at: editor.selection! });
+        focusEditorAtSelection(editor);
 
         return;
       }
       if (mode === 'insert') {
-        editor.tf.focus({ at: editor.selection! });
+        focusEditorAtSelection(editor);
       }
 
       api.floatingLink.hide();

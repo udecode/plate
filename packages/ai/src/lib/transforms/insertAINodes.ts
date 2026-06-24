@@ -1,7 +1,8 @@
-import type { Descendant, Path, SlateEditor } from 'platejs';
+import type { Descendant, Path } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 export const insertAINodes = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   nodes: Descendant[],
   {
     target,
@@ -16,11 +17,11 @@ export const insertAINodes = (
     ai: true,
   }));
 
-  editor.tf.withoutNormalizing(() => {
-    editor.tf.insertNodes(aiNodes, {
+  editor.update((tx) => {
+    tx.nodes.insert(aiNodes, {
       at: editor.api.end(target || editor.selection!.focus.path),
       select: true,
     });
-    editor.tf.collapse({ edge: 'end' });
+    tx.selection.collapse({ edge: 'end' });
   });
 };

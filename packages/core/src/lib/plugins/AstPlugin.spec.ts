@@ -1,17 +1,17 @@
-import { createSlateEditor } from '../editor';
+import { createBasePlateEditor } from '../editor';
 import { AstPlugin } from './AstPlugin';
 
 describe('AstPlugin', () => {
   it('declares the slate fragment mime type', () => {
-    const editor = createSlateEditor();
+    const editor = createBasePlateEditor();
 
     expect(editor.getPlugin(AstPlugin).parser.format).toBe(
-      'application/x-slate-fragment'
+      'application/x-plite-fragment'
     );
   });
 
   it('decodes and parses serialized slate fragments', () => {
-    const editor = createSlateEditor();
+    const editor = createBasePlateEditor();
     const fragment = [{ children: [{ text: 'alpha' }], type: 'p' }];
     const data = window.btoa(encodeURIComponent(JSON.stringify(fragment)));
 
@@ -23,7 +23,7 @@ describe('AstPlugin', () => {
   });
 
   it('returns undefined when the decoded payload is not valid json', () => {
-    const editor = createSlateEditor();
+    const editor = createBasePlateEditor();
 
     expect(
       editor.getPlugin(AstPlugin).parser.deserialize?.({

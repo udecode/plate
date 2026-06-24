@@ -13,7 +13,7 @@ description: 配置常见的编辑行为。
 
 插件规则使用特定的操作名称来定义行为：
 
-- **`'default'`**: Slate 的默认行为。
+- **`'default'`**: Plite 的默认行为。
 - **`'reset'`**: 将当前块重置为默认段落，保留内容。
 - **`'exit'`**: 退出当前块结构，在其后插入新段落。详见 [Exit Break](/docs/exit-break) 了解此行为的更多信息。
 - **`'lift'`**: 将当前块从最近匹配的祖先容器中提升出来，一次只移除一层结构。
@@ -22,7 +22,7 @@ description: 配置常见的编辑行为。
 
 ### `default`
 
-标准 Slate 行为。对于 `rules.break` 会拆分块，对于 `rules.delete` 会与前一个块合并。
+标准 Plite 行为。对于 `rules.break` 会拆分块，对于 `rules.delete` 会与前一个块合并。
 
 ```tsx
 <p>
@@ -519,7 +519,7 @@ const plugins = [
 ```
 
 <Callout>
-Slate 的默认值为 `true`，因为默认块（段落）是一等公民，而 Plate 插件很可能用于定义其他节点行为，这些行为不应自动移除空的前驱块。
+Plite 的默认值为 `true`，因为默认块（段落）是一等公民，而 Plate 插件很可能用于定义其他节点行为，这些行为不应自动移除空的前驱块。
 </Callout>
 
 ## `rules.normalize`
@@ -618,7 +618,7 @@ const plugins = [
 
 ## 自定义重置逻辑
 
-某些插件需要超出标准段落转换的特殊重置行为。您可以覆盖 `resetBlock` 转换：
+某些插件需要超出标准段落转换的特殊重置行为。你可以覆盖已有的 `resetBlock` transform 方法：
 
 **列表插件重置（缩进而非转换为段落）：**
 
@@ -627,7 +627,7 @@ const ListPlugin = createPlatePlugin({
   key: 'list',
   // ... 其他配置
 }).overrideEditor(({ editor, tf: { resetBlock } }) => ({
-  transforms: {
+  tf: {
     resetBlock(options) {
       if (editor.api.block(options)?.[0]?.listStyleType) {
         outdentList();
@@ -647,7 +647,7 @@ const CodeBlockPlugin = createPlatePlugin({
   key: 'code_block',
   // ... 其他配置
 }).overrideEditor(({ editor, tf: { resetBlock } }) => ({
-  transforms: {
+  tf: {
     resetBlock(options) {
       if (editor.api.block({
         at: options?.at,
@@ -730,14 +730,14 @@ const plugins = [
 
 ## 高级用法
 
-对于超出简单规则的复杂场景，您可以直接使用 [`.overrideEditor`](/docs/plugin-methods#overrideeditor) 覆盖编辑器转换。这使您可以完全控制 [`resetBlock`](/docs/plugin-methods#extendtransforms) 和 [`insertExitBreak`](/docs/plugin-methods#extendtransforms) 等转换：
+对于超出简单规则的复杂场景，可以使用 [`.overrideEditor`](/docs/plugin-methods#overrideeditor) 覆盖已有编辑器 transform 方法。这让你控制 `resetBlock` 和 `insertExitBreak` 等方法：
 
 ```tsx
 const CustomPlugin = createPlatePlugin({
   key: 'custom',
   // ... 其他配置
 }).overrideEditor(({ editor, tf: { insertBreak, deleteBackward, resetBlock } }) => ({
-  transforms: {
+  tf: {
     insertBreak() {
       const block = editor.api.block();
       
@@ -796,7 +796,7 @@ BoldPlugin.configure({
 
 #### `default`
 
-使用 Slate 的默认行为。对于标记，光标在起始边缘具有向外亲和性（在标记前输入不会应用它），在结束边缘具有向内亲和性（在标记后输入会扩展它）。
+使用 Plite 的默认行为。对于标记，光标在起始边缘具有向外亲和性（在标记前输入不会应用它），在结束边缘具有向内亲和性（在标记后输入会扩展它）。
 
 **在标记结束处（向内亲和性）：**
 ```tsx

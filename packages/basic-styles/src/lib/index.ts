@@ -10,5 +10,4 @@ export * from './BaseFontWeightPlugin';
 export * from './BaseLineHeightPlugin';
 export * from './BaseTextAlignPlugin';
 export * from './BaseTextIndentPlugin';
-export * from './transforms/index';
 export * from './utils/index';

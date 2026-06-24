@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Wrapper block units with inner paragraphs can reuse the current block geometry model at top level
 tags:
-  - slate-v2
+  - plite
   - geometry
   - wrapper-block
   - list-item

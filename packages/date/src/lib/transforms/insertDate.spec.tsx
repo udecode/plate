@@ -1,11 +1,11 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { BaseDatePlugin } from '../BaseDatePlugin';
 import { insertDate } from './insertDate';
 
 describe('insertDate', () => {
   it('inserts the provided date node and trailing spacer at the cursor', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseDatePlugin],
       selection: {
         anchor: { offset: 2, path: [0, 0] },
@@ -42,7 +42,7 @@ describe('insertDate', () => {
   });
 
   it('bound insert.date uses the configured node type', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseDatePlugin.configure({ node: { type: 'custom-date' } })],
       selection: {
         anchor: { offset: 1, path: [0, 0] },
@@ -56,7 +56,7 @@ describe('insertDate', () => {
       ],
     });
 
-    editor.tf.insert.date({ date: 'Mon Mar 23 2026' });
+    editor.update((tx) => tx.date.insert({ date: 'Mon Mar 23 2026' }));
 
     expect(editor.children[0]).toMatchObject({
       children: [
@@ -72,7 +72,7 @@ describe('insertDate', () => {
   });
 
   it('forwards explicit insertion options to insertNodes', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseDatePlugin],
       selection: {
         anchor: { offset: 1, path: [0, 0] },
@@ -108,7 +108,7 @@ describe('insertDate', () => {
   });
 
   it('preserves non-normalizable input on the raw fallback field', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseDatePlugin],
       selection: {
         anchor: { offset: 1, path: [0, 0] },

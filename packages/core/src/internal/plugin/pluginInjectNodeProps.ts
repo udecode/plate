@@ -1,12 +1,12 @@
-import type { Path, TElement, TText } from '@platejs/slate';
+import type { Element, Path, Text } from '@platejs/plite';
 
 import { isDefined } from '@udecode/utils';
 
-import type { SlateEditor } from '../../lib/editor';
+import type { BasePlateEditor } from '../../lib/editor';
 import type {
   EditorPlugin,
   TransformOptions,
-} from '../../lib/plugin/SlatePlugin';
+} from '../../lib/plugin/EditorPlugin';
 
 import {
   type GetInjectNodePropsOptions,
@@ -23,10 +23,10 @@ import { getInjectMatch } from '../../lib/utils/getInjectMatch';
  * `[styleKey]: value`.
  */
 export const pluginInjectNodeProps = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   plugin: EditorPlugin,
   nodeProps: GetInjectNodePropsOptions,
-  getElementPath: (node: TElement | TText) => Path
+  getElementPath: (node: Element | Text) => Path
 ): GetInjectNodePropsReturnType | undefined => {
   const {
     key,
@@ -55,6 +55,16 @@ export const pluginInjectNodeProps = (
 
   const injectMatch = getInjectMatch(editor, plugin);
   const shouldResolvePathForMatch = !!(excludeBelowPlugins || maxLevel);
+  const nodeValue = node[nodeKey!] as any;
+  const editorPluginContext = getEditorPlugin(editor, plugin) as any;
+  const transformOptions: TransformOptions = {
+    ...nodeProps,
+    ...editorPluginContext,
+    nodeValue,
+  };
+  const callTransformPropsForHookStability = () => {
+    transformProps?.({ ...transformOptions, props: {} });
+  };
 
   if (
     !injectMatch(
@@ -62,20 +72,22 @@ export const pluginInjectNodeProps = (
       shouldResolvePathForMatch ? getElementPath(node) : undefined
     )
   ) {
+    callTransformPropsForHookStability();
+
     return;
   }
 
   const queryResult = query?.({
     ...injectNodeProps,
-    ...(getEditorPlugin(editor, plugin) as any),
+    ...editorPluginContext,
     nodeProps,
   });
 
   if (query && !queryResult) {
+    callTransformPropsForHookStability();
+
     return;
   }
-
-  const nodeValue = node[nodeKey!] as any;
 
   // early return if there is no reason to inject props
   if (
@@ -87,18 +99,13 @@ export const pluginInjectNodeProps = (
     return;
   }
 
-  const transformOptions: TransformOptions = {
-    ...nodeProps,
-    ...(getEditorPlugin(editor, plugin) as any),
-    nodeValue,
-  };
   const value = transformNodeValue?.(transformOptions) ?? nodeValue;
   transformOptions.value = value;
 
   let newProps: GetInjectNodePropsReturnType = {};
 
   if (element && nodeKey && nodeValue) {
-    newProps.className = `slate-${nodeKey}-${nodeValue}`;
+    newProps.className = `plite-${nodeKey}-${nodeValue}`;
   }
   if (classNames?.[nodeValue] || transformClassName) {
     newProps.className =

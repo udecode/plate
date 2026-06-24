@@ -1,7 +1,7 @@
-import { createSlatePlugin, findHtmlParentElement, KEYS } from 'platejs';
+import { createEditorPlugin, findHtmlParentElement, KEYS } from 'platejs';
 
 /** Enables support for code formatting */
-export const BaseCodePlugin = createSlatePlugin({
+export const BaseCodePlugin = createEditorPlugin({
   key: KEYS.code,
   node: { isLeaf: true },
   parsers: {
@@ -23,8 +23,8 @@ export const BaseCodePlugin = createSlatePlugin({
   },
   render: { as: 'code' },
   rules: { selection: { affinity: 'hard' } },
-}).extendTransforms(({ editor, type }) => ({
+}).extendTx(({ type }) => (tx) => ({
   toggle: () => {
-    editor.tf.toggleMark(type);
+    tx.marks.toggle(type);
   },
 }));

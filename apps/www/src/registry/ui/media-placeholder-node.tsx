@@ -12,7 +12,12 @@ import {
 } from '@platejs/media/react';
 import { AudioLines, FileUp, Film, ImageIcon, Loader2Icon } from 'lucide-react';
 import { KEYS } from 'platejs';
-import { PlateElement, useEditorPlugin, withHOC } from 'platejs/react';
+import {
+  PlateElement,
+  useEditorPlugin,
+  useNodePath,
+  withHOC,
+} from 'platejs/react';
 import { useFilePicker } from 'use-file-picker';
 
 import { cn } from '@/lib/utils';
@@ -48,10 +53,17 @@ const CONTENT: Record<
   },
 };
 
+type PlaceholderTx = {
+  insert: {
+    media: (files: File[]) => void;
+  };
+};
+
 export const PlaceholderElement = withHOC(
   PlaceholderProvider,
   function PlaceholderElement(props: PlateElementProps<TPlaceholderElement>) {
     const { editor, element } = props;
+    const path = useNodePath(element);
 
     const { api } = useEditorPlugin(PlaceholderPlugin);
 
@@ -76,7 +88,13 @@ export const PlaceholderElement = withHOC(
         replaceCurrentPlaceholder(firstFile);
 
         if (restFiles.length > 0) {
-          editor.getTransforms(PlaceholderPlugin).insert.media(restFiles);
+          const updatePlaceholder = editor.update as (
+            fn: (tx: PlaceholderTx) => void
+          ) => void;
+
+          updatePlaceholder((tx) => {
+            tx.insert.media(restFiles);
+          });
         }
       },
     });
@@ -92,30 +110,32 @@ export const PlaceholderElement = withHOC(
     React.useEffect(() => {
       if (!uploadedFile) return;
 
-      const path = editor.api.findPath(element);
+      if (!path) return;
 
-      editor.tf.withoutSaving(() => {
-        editor.tf.removeNodes({ at: path });
+      editor.api.history.withoutSaving(() => {
+        editor.update((tx) => {
+          tx.nodes.remove({ at: path });
 
-        const node = {
-          children: [{ text: '' }],
-          initialHeight: imageRef.current?.height,
-          initialWidth: imageRef.current?.width,
-          isUpload: true,
-          name: element.mediaType === KEYS.file ? uploadedFile.name : '',
-          placeholderId: element.id as string,
-          type: element.mediaType!,
-          url: uploadedFile.url,
-        };
+          const node = {
+            children: [{ text: '' }],
+            initialHeight: imageRef.current?.height,
+            initialWidth: imageRef.current?.width,
+            isUpload: true,
+            name: element.mediaType === KEYS.file ? uploadedFile.name : '',
+            placeholderId: element.id as string,
+            type: element.mediaType!,
+            url: uploadedFile.url,
+          };
 
-        editor.tf.insertNodes(node, { at: path });
+          tx.nodes.insert(node, { at: path });
 
-        updateUploadHistory(editor, node);
+          updateUploadHistory(editor, node);
+        });
       });
 
       api.placeholder.removeUploadingFile(element.id as string);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [uploadedFile, element.id]);
+    }, [uploadedFile, element.id, path]);
 
     // React dev mode will call React.useEffect twice
     const isReplaced = React.useRef(false);

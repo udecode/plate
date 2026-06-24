@@ -1,13 +1,12 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from '@platejs/core';
+import { createListClassicTestEditor as createBasePlateEditor } from '../__tests__/createListClassicTestEditor';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 import { unwrapList } from './unwrapList';
-import * as platejs from 'platejs';
 
 jsxt;
 
@@ -36,7 +35,7 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -44,9 +43,9 @@ describe('li list unwrapping', () => {
         <hp>11</hp>
         <hp>12</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
@@ -71,7 +70,7 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -84,9 +83,9 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
@@ -119,7 +118,7 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -127,9 +126,9 @@ describe('li list unwrapping', () => {
         <hp>11</hp>
         <hp>2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
@@ -159,7 +158,7 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -176,9 +175,9 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
@@ -190,31 +189,34 @@ describe('li list unwrapping', () => {
   });
 
   it('treats the selection common node as a list root when there is no direct ancestor match', () => {
-    const commonSpy = spyOn(platejs.NodeApi, 'common').mockImplementation(
-      () => {
-        editor.selection = null;
+    let editor: any;
+    const node = mock(() => {
+      editor.selection = null;
 
-        return [{ children: [], type: 'ul' } as any, [0]];
-      }
-    );
-    const editor = {
+      return [{ children: [], type: 'ul' } as any, [0]];
+    });
+    const unwrapNodes = mock();
+
+    editor = {
       api: {
         above: mock(() => {}),
+        node,
       },
       getType: (key: string) => key,
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 1] },
       },
-      tf: {
-        withoutNormalizing: (fn: () => void) => fn(),
-        unwrapNodes: mock(),
-      },
+      update: (fn: any) =>
+        fn({
+          nodes: { unwrap: unwrapNodes },
+          withoutNormalizing: (callback: () => void) => callback(),
+        }),
     } as any;
 
     unwrapList(editor);
 
-    expect(commonSpy).toHaveBeenCalled();
-    expect(editor.tf.unwrapNodes).toHaveBeenCalledTimes(4);
+    expect(node).toHaveBeenCalledWith([0]);
+    expect(unwrapNodes).toHaveBeenCalledTimes(4);
   });
 });

@@ -1,19 +1,21 @@
-import { type SlateEditor, NodeApi } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
+import { NodeApi } from '@platejs/plite';
 
 import { getCodeLineEntry } from './getCodeLineEntry';
 
 /** Is the selection inside an empty code block */
-export const isCodeBlockEmpty = (editor: SlateEditor) => {
+export const isCodeBlockEmpty = (editor: BasePlateEditor) => {
   const { codeBlock } = getCodeLineEntry(editor) ?? {};
 
   if (!codeBlock) return false;
 
-  const codeLines = Array.from(NodeApi.children(editor, codeBlock[1]));
+  const [codeBlockNode] = codeBlock;
+  const codeLines = codeBlockNode.children;
 
   if (codeLines.length === 0) return true;
   if (codeLines.length > 1) return false;
 
-  const firstCodeLineNode = codeLines[0][0];
+  const firstCodeLineNode = codeLines[0];
 
   return !NodeApi.string(firstCodeLineNode);
 };

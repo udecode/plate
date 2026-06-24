@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plite-api-locations-location-docs",
+  "title": "Location API",
+  "description": "Location union helpers for validating paths, points, and ranges.",
+  "files": [
+    {
+      "path": "../../content/docs/plite/api/locations/location.mdx",
+      "content": "---\ntitle: \"Location API\"\ndescription: \"Location union helpers for validating paths, points, and ranges.\"\n---\n\nThe `Location` interface is a union of the ways to refer to a specific location\nin a Plite document: paths, points, or ranges. Methods often accept `Location`\ninstead of requiring only `Path`, `Point`, or `Range`.\n\n## Type\n\n```typescript\ntype Location = Path | Point | Range;\n```\n\n## On This Page\n\n- [Static methods](location#static-methods)\n  - [Check methods](location#check-methods)\n\n## Static methods\n\n### Check methods\n\n#### `LocationApi.isLocation(value: unknown) => value is Location`\n\nCheck if a value implements the `Location` interface.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plite/api/locations/location.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

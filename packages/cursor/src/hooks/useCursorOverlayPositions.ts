@@ -1,6 +1,8 @@
 import React from 'react';
 
-import type { TRange, UnknownObject } from 'platejs';
+import type { Range } from '@platejs/plite';
+
+import type { UnknownObject } from 'platejs';
 
 import { useEditorRef, useIsomorphicLayoutEffect } from 'platejs/react';
 
@@ -22,7 +24,7 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
 }: CursorOverlayProps<TCursorData> = {}) => {
   const editor = useEditorRef();
 
-  const selectionRectCache = React.useRef<WeakMap<TRange, SelectionRect[]>>(
+  const selectionRectCache = React.useRef<WeakMap<Range, SelectionRect[]>>(
     new WeakMap()
   );
 

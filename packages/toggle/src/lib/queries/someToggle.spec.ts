@@ -1,10 +1,10 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { someToggle } from './someToggle';
 
 describe('someToggle', () => {
   it('returns false when the editor has no selection', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
@@ -12,7 +12,7 @@ describe('someToggle', () => {
   });
 
   it('returns true when the current selection is inside a toggle node', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       selection: {
         anchor: { offset: 1, path: [0, 0, 0] },
         focus: { offset: 1, path: [0, 0, 0] },
@@ -30,7 +30,7 @@ describe('someToggle', () => {
   });
 
   it('returns false when the selection is outside toggle content', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       selection: {
         anchor: { offset: 1, path: [1, 0] },
         focus: { offset: 1, path: [1, 0] },

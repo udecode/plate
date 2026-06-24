@@ -6,7 +6,7 @@ root_cause: async_timing
 title: Structural break proof rows need selection sync before follow up typing
 tags:
   - slate-react
-  - slate-browser
+  - plite-browser
   - android
   - chromium
   - insertBreak

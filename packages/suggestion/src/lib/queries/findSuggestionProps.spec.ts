@@ -1,10 +1,10 @@
-import { createSlateEditor, createSlatePlugin, KEYS } from 'platejs';
+import { createBasePlateEditor, createEditorPlugin, KEYS } from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from './findSuggestionProps';
 
 describe('findSuggestionProps', () => {
-  const MentionPlugin = createSlatePlugin({
+  const MentionPlugin = createEditorPlugin({
     key: KEYS.mention,
     node: {
       isElement: true,
@@ -15,7 +15,7 @@ describe('findSuggestionProps', () => {
   });
 
   it('reuses metadata only for same-type current-user suggestions', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseSuggestionPlugin.configure({
           options: {
@@ -68,7 +68,7 @@ describe('findSuggestionProps', () => {
   });
 
   it('falls back to the previous line-break suggestion at the start of the next block', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseSuggestionPlugin.configure({
           options: {
@@ -108,7 +108,7 @@ describe('findSuggestionProps', () => {
   });
 
   it('reuses remove metadata from the adjacent inline void suggestion when continuing backward deletion', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseSuggestionPlugin.configure({
           options: {

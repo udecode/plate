@@ -1,6 +1,7 @@
 import { deserializeMd } from '@platejs/markdown';
 import { diffToSuggestions } from '@platejs/suggestion';
-import { type SlateEditor, type TElement, ElementApi } from 'platejs';
+import type { Descendant, Element, Value } from '@platejs/plite';
+import { type BasePlateEditor, ElementApi } from 'platejs';
 
 import {
   withoutSuggestionAndComments,
@@ -12,13 +13,38 @@ export type TableCellUpdate = {
   id: string;
 };
 
+const replaceChildrenAtPath = (
+  nodes: Descendant[],
+  path: number[],
+  children: Descendant[]
+): Descendant[] => {
+  const [index, ...restPath] = path;
+
+  if (index === undefined) return nodes;
+
+  return nodes.map((node, nodeIndex) => {
+    if (nodeIndex !== index) return node;
+
+    if (!ElementApi.isElement(node)) return node;
+
+    if (restPath.length === 0) {
+      return { ...node, children };
+    }
+
+    return {
+      ...node,
+      children: replaceChildrenAtPath(node.children, restPath, children),
+    };
+  });
+};
+
 /**
  * Apply AI-generated content to a table cell as diff suggestions. Finds the
  * cell by ID, deserializes the markdown content, computes diff, and replaces
  * the cell's children with suggestion-marked nodes.
  */
 export const applyTableCellSuggestion = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   cellUpdate: TableCellUpdate
 ) => {
   const { content, id } = cellUpdate;
@@ -34,7 +60,7 @@ export const applyTableCellSuggestion = (
     return;
   }
 
-  const [cell, cellPath] = cellEntry as [TElement, number[]];
+  const [cell, cellPath] = cellEntry as [Element, number[]];
 
   // Get original cell children (without suggestion marks)
   const originalChildren = withoutSuggestionAndComments(cell.children);
@@ -51,8 +77,13 @@ export const applyTableCellSuggestion = (
   const transientDiffNodes = withTransient(diffNodes);
 
   // Replace cell children with diff nodes
-  editor.tf.replaceNodes(transientDiffNodes, {
-    at: cellPath,
-    children: true,
+  editor.update((tx) => {
+    tx.value.replace({
+      children: replaceChildrenAtPath(
+        editor.children,
+        cellPath,
+        transientDiffNodes
+      ) as Value,
+    });
   });
 };

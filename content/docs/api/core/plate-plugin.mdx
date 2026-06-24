@@ -17,8 +17,8 @@ Unique identifier used by Plate to store the plugins by key in `editor.plugins`.
 An object of API functions provided by the plugin. These functions are accessible via `editor.api[key]`.
 </APIItem>
 
-<APIItem name="transforms" type="Record<string, Function>">
-Transform functions provided by the plugin that modify the editor state. These are accessible via `editor.tf[key]`.
+<APIItem name="tx" type="Record<string, Function>">
+Transaction commands provided by the plugin. Call them inside `editor.update((tx) => tx[key].method())`.
 </APIItem>
 
 <APIItem name="options" type="Record<string, any>">
@@ -138,12 +138,12 @@ When `true`, indicates that the plugin's elements are primarily containers for o
 <APISubListItem parent="rules" name="selection.affinity" type="'default' | 'directional' | 'outward' | 'hard'" optional>
 Defines the selection behavior at the boundaries of nodes. See [Plugin Rules](/docs/plugin-rules#rulesselection).
 
-- `'default'`: Uses Slate's default behavior
+- `'default'`: Uses Plite's default behavior
 - `'directional'`: Selection affinity is determined by the direction of cursor movement. Maintains inward or outward affinity based on approach
 - `'outward'`: Forces outward affinity. Typing at the edge of a mark will not apply the mark to new text
 - `'hard'`: Creates a 'hard' edge that requires two key presses to move across. Uses offset-based navigation
 
-- **Default:** `undefined` (Slate's default behavior)
+- **Default:** `undefined` (Plite's default behavior)
 </APISubListItem>
 <APISubListItem parent="node" name="isMarkableVoid" type="boolean" optional>
 Indicates if this plugin's void elements should be markable.
@@ -232,13 +232,13 @@ Specifies the type identifier for this plugin's nodes.
 React component used to render this plugin's nodes.
 </APISubListItem>
 <APISubListItem parent="node" name="leafProps" type="LeafNodeProps<WithAnyKey<C>>" optional>
-Override `data-slate-leaf` element attributes.
+Override `data-plite-leaf` element attributes.
 </APISubListItem>
 <APISubListItem parent="node" name="props" type="NodeProps<WithAnyKey<C>>" optional>
 Override node attributes.
 </APISubListItem>
 <APISubListItem parent="node" name="textProps" type="TextNodeProps<WithAnyKey<C>>" optional>
-Override `data-slate-node="text"` element attributes.
+Override `data-plite-node="text"` element attributes.
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -281,13 +281,13 @@ Defines how the plugin renders components.
 
 <APISubList>
 <APISubListItem parent="render" name="aboveEditable" type="Component" optional>
-Component rendered above the Editable component but inside the Slate wrapper.
+Component rendered above the Editable component but inside the Plite wrapper.
 </APISubListItem>
 <APISubListItem parent="render" name="aboveNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
 Create a function that generates a parent React node for all other plugins' node components.
 </APISubListItem>
-<APISubListItem parent="render" name="aboveSlate" type="Component" optional>
-Component rendered above the Slate wrapper.
+<APISubListItem parent="render" name="abovePlite" type="Component" optional>
+Component rendered above the Plite wrapper.
 </APISubListItem>
 <APISubListItem parent="render" name="afterEditable" type="EditableSiblingComponent" optional>
 Renders a component after the Editable component.
@@ -298,7 +298,7 @@ Renders a component before the Editable component.
 <APISubListItem parent="render" name="belowNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
 Create a function that generates a React node below all other plugins' node React node, but above their children.
 </APISubListItem>
-<APISubListItem parent="render" name="belowRootNodes" type="(props: PlateElementProps<TElement, C>) => React.ReactNode" optional>
+<APISubListItem parent="render" name="belowRootNodes" type="(props: PlateElementProps<Element, C>) => React.ReactNode" optional>
 Renders a component after the direct children of the root element. This differs from `belowNodes` in that it's the direct child of `PlateElement` rather than wrapping the children that could be nested. This is useful when you need components relative to the root element.
 </APISubListItem>
 <APISubListItem parent="render" name="leaf" type="NodeComponent" optional>
@@ -350,11 +350,11 @@ Property used by Plate to decorate editor ranges.
 </APIItem>
 
 <APIItem name="extendEditor" type="ExtendEditor<WithAnyKey<C>>" optional>
-Function to extend the editor instance. Used primarily for integrating legacy Slate plugins that need direct editor mutation. Only one `extendEditor` is allowed per plugin.
+Function to extend the editor instance. Used primarily for integrating legacy Plite plugins that need direct editor mutation. Only one `extendEditor` is allowed per plugin.
 
 ```ts
 extendEditor: ({ editor }) => {
-  // Example: Integrating a legacy Slate plugin
+  // Example: Integrating a legacy Plite plugin
   return withYjs(editor);
 }
 ```
@@ -444,8 +444,8 @@ Creates a new plugin instance with overridden editor methods. Provides access to
 
 ```ts
 overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
-  transforms: {
-    // Override transforms
+  tf: {
+    // Override existing editor transform methods
     deleteForward(options) {
       deleteForward(options);
     },
@@ -461,7 +461,7 @@ overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
 
 - Preferred method for modifying editor behavior
 - Type-safe access to original methods
-- Clean separation between transforms and API
+- Clean separation between `tf` overrides and API overrides
 - Can be chained multiple times
 </APIItem>
 
@@ -481,19 +481,19 @@ Extends the editor's API with plugin-specific methods.
 ```
 </APIItem>
 
-<APIItem name="extendTransforms" type="(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
-Extends the plugin's transforms.
+<APIItem name="extendTx" type="(tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin">
+Extends the plugin's transaction group. The group is available inside `editor.update` at `tx[plugin.key]`.
 
 ```ts
-(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
+(tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin
 ```
 </APIItem>
 
-<APIItem name="extendEditorTransforms" type="(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
-Extends the editor's transforms with plugin-specific methods.
+<APIItem name="extendTxGroup" type="(key: string, tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin">
+Extends a named transaction group. Use this when one plugin contributes commands to another plugin's tx namespace.
 
 ```ts
-(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
+(key: string, tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin
 ```
 </APIItem>
 

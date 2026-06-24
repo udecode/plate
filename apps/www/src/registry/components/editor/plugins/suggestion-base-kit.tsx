@@ -1,5 +1,5 @@
+import type { Element } from '@platejs/plite';
 import type {
-  TElement,
   TInlineSuggestionData,
   TSuggestionData,
   TSuggestionText,
@@ -20,8 +20,8 @@ const INLINE_SUGGESTION_TARGET_PLUGINS = [
   KEYS.mention,
 ];
 
-function getInlineSuggestionData(editor: any, element: TElement) {
-  const suggestionApi = editor.getApi(BaseSuggestionPlugin).suggestion;
+function getInlineSuggestionData(editor: any, element: Element) {
+  const suggestionApi = editor.getPluginApi(BaseSuggestionPlugin).suggestion;
   const data = suggestionApi.suggestionData(element) as
     | TSuggestionData
     | TInlineSuggestionData

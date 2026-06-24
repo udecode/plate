@@ -2,7 +2,7 @@
 
 ## Goal
 
-Fix issue `#4535` by stopping the drag handle path from creating a Slate caret / DOM point inside the draggable UI, then verify with targeted tests and package checks.
+Fix issue `#4535` by stopping the drag handle path from creating a Plite caret / DOM point inside the draggable UI, then verify with targeted tests and package checks.
 
 ## Tracker Context
 
@@ -11,7 +11,7 @@ Fix issue `#4535` by stopping the drag handle path from creating a Slate caret /
 - Task type: bug
 - Browser surface: yes
 - Reported browser: Firefox
-- Reported error: `Cannot resolve a Slate point from DOM point: [object HTMLDivElement],1`
+- Reported error: `Cannot resolve a Plite point from DOM point: [object HTMLDivElement],1`
 
 ## Relevant Instructions
 

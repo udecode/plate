@@ -1,14 +1,8 @@
-import {
-  type NodeEntry,
-  type NodeOf,
-  type Path,
-  type QueryNodeOptions,
-  type TNode,
-  NodeApi,
-  queryNode,
-} from '@platejs/slate';
+import type { Node, NodeEntry, NodeOf, Path } from '@platejs/plite';
 
-export type ApplyDeepToNodesOptions<N extends TNode> = {
+import { type QueryNodeOptions, queryNode } from './queryNode';
+
+export type ApplyDeepToNodesOptions<N extends Node> = {
   // Function to call on each node following the query.
   apply: (
     node: NodeOf<N>,
@@ -24,7 +18,7 @@ export type ApplyDeepToNodesOptions<N extends TNode> = {
 };
 
 /** Recursively apply an operation to children nodes with a query. */
-export const applyDeepToNodes = <N extends TNode>({
+export const applyDeepToNodes = <N extends Node>({
   apply,
   node,
   path = [],
@@ -40,9 +34,9 @@ export const applyDeepToNodes = <N extends TNode>({
       apply(node, source);
     }
   }
-  if (!NodeApi.isAncestor(node)) return;
+  if (!('children' in node) || !Array.isArray(node.children)) return;
 
-  node.children.forEach((child, index) => {
+  node.children.forEach((child: Node, index) => {
     applyDeepToNodes({
       apply,
       node: child as any,

@@ -32,11 +32,14 @@ describe('useTocElement', () => {
       `./useTocElement?test=${Math.random().toString(36).slice(2)}`
     );
     const onContentScroll = mock();
-    const toDOMNode = mock(() => document.createElement('h2'));
+    const resolveDOMNode = mock(() => document.createElement('h2'));
 
     useEditorPluginMock.mockReturnValue({
       editor: {
-        api: { toDOMNode },
+        api: {
+          dom: { resolveDOMNode },
+          node: () => [{ id: 'node' }, [0]],
+        },
       },
       getOptions: () => ({
         isScroll: true,

@@ -1,14 +1,14 @@
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/plite';
 
-import { jsx } from 'slate-hyperscript';
+import { jsx } from '@platejs/plite-hyperscript';
 
-import type { SlateEditor } from '../../../editor';
+import type { BasePlateEditor } from '../../../editor';
 
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 
 /** Deserialize HTML body element to Fragment. */
 export const htmlBodyToFragment = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   element: HTMLElement
 ): Descendant[] | undefined => {
   if (element.nodeName === 'BODY') {

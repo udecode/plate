@@ -1,11 +1,11 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { BaseTocPlugin } from '../BaseTocPlugin';
 import { insertToc } from './insertToc';
 
 describe('insertToc', () => {
   it('inserts the default toc node shape', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseTocPlugin],
       value: [
         {
@@ -30,7 +30,7 @@ describe('insertToc', () => {
   });
 
   it('respects the configured node type', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseTocPlugin.configure({ node: { type: 'custom-toc' } })],
       value: [
         {

@@ -32,14 +32,14 @@ Fix GitHub issue `#4798` so toggling the left border for a multi-row table selec
 
 - The bug is not stale cell references.
 - `setSelectedCellsBorder` writes left-border changes onto adjacent cells via `setBorderSize(... { at: leftCellPath, border: 'right' })`.
-- While a multi-cell selection is active, `withTableCellSelection.tsx` overrides `editor.tf.setNodes` using the broader linear Slate selection as a proxy for selected-cell membership.
+- While a multi-cell selection is active, `withTableCellSelection.tsx` overrides `editor.tf.setNodes` using the broader linear Plite selection as a proxy for selected-cell membership.
 - For the lower adjacent cell in a multi-row selection, that proxy returns true even though the cell is not itself selected.
 - Result: the path-targeted adjacent-cell write is intercepted by the selection override and effectively turned into a no-op.
 - Long-term fix: make `withTableCellSelection` only override targeted writes when `options.at` actually points into one of the selected cells.
 
 ## Progress Log
 
-- Loaded `task`, `goal workflow`, `learnings-researcher`, `reproduce-bug`, and `tdd`.
+- Loaded `task`, `goal workflow`, `learnings-researcher`, and `tdd`.
 - Re-fetched issue `#4798`.
 - Identified likely implementation file and existing spec file.
 - Added `packages/table/src/react/components/TableCellElement/setSelectedCellsBorder.integration.spec.tsx`.
@@ -48,7 +48,7 @@ Fix GitHub issue `#4798` so toggling the left border for a multi-row table selec
   - non-first-column multi-row left toggle failed before the fix
 - Confirmed direct `setBorderSize` writes to adjacent cells work outside the active multi-cell selection override.
 - Replaced the border-command workaround with a plugin-level fix in `withTableCellSelection.tsx`.
-- Added a selection-override regression spec for path-targeted writes into non-selected cells that still fall inside the broader Slate range.
+- Added a selection-override regression spec for path-targeted writes into non-selected cells that still fall inside the broader Plite range.
 - Removed `withoutActiveSelection(...)` from `getOnSelectTableBorderFactory.ts` after the plugin-layer fix made it unnecessary.
 - Updated the existing internal solution doc to reflect the new long-term seam fix instead of the old workaround.
 - Added a patch changeset for `@platejs/table`.

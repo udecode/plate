@@ -1,5 +1,5 @@
 import {
-  type SlateEditor,
+  type BasePlateEditor,
   type TTagElement,
   type TTagProps,
   KEYS,
@@ -13,7 +13,7 @@ import {
  * @returns Boolean indicating if the sets contain the same values
  */
 export function isEqualTags<T extends TTagProps>(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   newTags?: T[]
 ): boolean {
   const currentTags = [

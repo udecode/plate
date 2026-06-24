@@ -2,14 +2,12 @@ import React from 'react';
 
 import { usePluginOption } from 'platejs/react';
 
-import {
-  type EmojiSettingsType,
-  EmojiFloatingIndexSearch,
-  EmojiSettings,
-} from '../../lib';
+import { EmojiSettings } from '../../lib/constants';
+import type { EmojiSettingsType } from '../../lib/types';
+import { EmojiFloatingIndexSearch } from '../../lib/utils/IndexSearch/EmojiFloatingIndexSearch';
 import { EmojiPlugin } from '../EmojiPlugin';
 import { FrequentEmojiStorage } from '../storage';
-import { EmojiFloatingLibrary } from '../utils';
+import { EmojiFloatingLibrary } from '../utils/EmojiLibrary/EmojiFloatingLibrary';
 import { useEmojiPicker } from './useEmojiPicker';
 
 export type EmojiDropdownMenuOptions = {

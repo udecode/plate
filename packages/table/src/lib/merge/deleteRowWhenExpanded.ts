@@ -1,7 +1,7 @@
 import type {
   NodeEntry,
   PathRef,
-  SlateEditor,
+  BasePlateEditor,
   TTableCellElement,
 } from 'platejs';
 
@@ -15,7 +15,7 @@ import {
 import { getTableGridAbove } from '../queries';
 
 export const deleteRowWhenExpanded = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   [table, tablePath]: NodeEntry<TTableCellElement>
 ) => {
   const { api } = getEditorPlugin(editor, BaseTablePlugin);
@@ -66,7 +66,9 @@ export const deleteRowWhenExpanded = (
     }
 
     pathRefs.forEach((item) => {
-      editor.tf.removeNodes({ at: item.unref()! });
+      editor.update((tx) => {
+        tx.nodes.remove({ at: item.unref()! });
+      });
     });
   }
 };

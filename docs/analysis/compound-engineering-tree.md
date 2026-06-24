@@ -169,7 +169,7 @@ This is the sharpest major-task branch for Plate-specific framework work:
 - compare equivalent workloads, not vibes
 - start from repo constraints before internet takes
 - for editor-framework performance questions:
-  - prefer `Plate vs Slate` first for direct inheritance pressure
+  - prefer `Plate vs Plite` first for direct inheritance pressure
   - use `ProseMirror` and `Lexical` for deeper runtime or architecture direction
   - use `Tiptap` more for product-layer or packaging cost than raw engine performance
   - use `Pretext` and `Premirror` for pagination, composition, and layout-aware editing questions

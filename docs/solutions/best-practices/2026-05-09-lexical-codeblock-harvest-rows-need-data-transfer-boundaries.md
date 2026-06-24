@@ -2,7 +2,7 @@
 title: Lexical codeblock harvest rows need DataTransfer boundaries
 date: 2026-05-09
 category: docs/solutions/best-practices
-module: Slate v2 Lexical harvest
+module: Plite Lexical harvest
 problem_type: best_practice
 component: testing_framework
 symptoms:
@@ -12,7 +12,7 @@ symptoms:
 root_cause: wrong_api
 resolution_type: documentation_update
 severity: medium
-tags: [slate-v2, lexical-harvest, code-block, paste-html, clipboard, tests]
+tags: [plite, lexical-harvest, code-block, paste-html, clipboard, tests]
 ---
 
 # Lexical codeblock harvest rows need DataTransfer boundaries
@@ -27,7 +27,7 @@ without source gutters.
 ## Symptoms
 
 - Quip-style `<pre>function...<br>...</pre>` imported through Chromium native
-  clipboard as plain paragraphs, not a Slate code block.
+  clipboard as plain paragraphs, not a Plite code block.
 - A custom `onPaste` interception made that browser row pass, but it bypassed
   the runtime command path and failed the generated paste kernel-trace gauntlet.
 - The source file also includes Postman bold token styling, Google Docs title
@@ -42,7 +42,7 @@ without source gutters.
   from the runtime clipboard strategy and removed the expected `insert-data`
   kernel trace.
 - Copying Lexical's full source matrix one-for-one. Some rows are source-theme
-  styling or product typography, not raw Slate behavior.
+  styling or product typography, not raw Plite behavior.
 
 ## Solution
 
@@ -73,7 +73,7 @@ clipboard gauntlet that asserts the runtime command trace.
 
 The copied invariant is "code-source HTML maps to code content," not "native
 browser paste always preserves code blocks." DataTransfer proof covers the same
-insertion boundary as Lexical's unit test without weakening Slate React's
+insertion boundary as Lexical's unit test without weakening Plite React's
 clipboard runtime contract.
 
 Keeping native clipboard transport separate also prevents a small parser row
@@ -90,7 +90,7 @@ app importer shortcut.
 - When touching paste-html import, run the focused row and the whole
   `paste-html.test.ts` browser file.
 - Split code-source import from syntax highlighting, source theme styling, and
-  typography rows before editing Slate.
+  typography rows before editing Plite.
 
 ## Related Issues
 

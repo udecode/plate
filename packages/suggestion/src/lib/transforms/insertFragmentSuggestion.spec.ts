@@ -22,16 +22,19 @@ describe('insertFragmentSuggestion', () => {
     const insertFragment = mock();
     const withoutSuggestions = mock((fn: () => void) => fn());
     const editor = {
-      getApi: () => ({
+      api: {
         suggestion: {
           withoutSuggestions,
         },
-      }),
+      },
       getOptions: () => ({ currentUserId: 'user-1' }),
       selection: { anchor: { offset: 0, path: [0, 0] } },
-      tf: {
-        insertFragment,
-        withoutNormalizing: (fn: () => void) => fn(),
+      update: (fn: (tx: any) => void) => {
+        fn({
+          fragment: {
+            insert: insertFragment,
+          },
+        });
       },
     } as any;
     const fragment = [

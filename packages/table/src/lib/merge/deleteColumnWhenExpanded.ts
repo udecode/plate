@@ -1,7 +1,7 @@
 import {
   type NodeEntry,
   type PathRef,
-  type SlateEditor,
+  type BasePlateEditor,
   type TTableCellElement,
   KEYS,
   NodeApi,
@@ -11,7 +11,7 @@ import {
 import { getTableGridAbove } from '../queries';
 
 export const deleteColumnWhenExpanded = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   tableEntry: NodeEntry<TTableCellElement>
 ) => {
   const [start, end] = RangeApi.edges(editor.selection!);
@@ -39,7 +39,7 @@ export const deleteColumnWhenExpanded = (
     deleteSelection(editor);
 };
 
-const deleteSelection = (editor: SlateEditor) => {
+const deleteSelection = (editor: BasePlateEditor) => {
   const cells = getTableGridAbove(editor, {
     format: 'cell',
   }) as NodeEntry<TTableCellElement>[];
@@ -51,6 +51,8 @@ const deleteSelection = (editor: SlateEditor) => {
   });
 
   pathRefs.forEach((pathRef) => {
-    editor.tf.removeNodes({ at: pathRef.unref()! });
+    editor.update((tx) => {
+      tx.nodes.remove({ at: pathRef.unref()! });
+    });
   });
 };

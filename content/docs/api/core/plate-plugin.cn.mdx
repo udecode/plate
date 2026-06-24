@@ -17,8 +17,8 @@ Plate 用于在 `editor.plugins` 中按 key 存储插件的唯一标识符。
 插件提供的 API 函数对象。这些函数可通过 `editor.api[key]` 访问。
 </APIItem>
 
-<APIItem name="transforms" type="Record<string, Function>">
-插件提供的用于修改编辑器状态的转换函数。可通过 `editor.tf[key]` 访问。
+<APIItem name="tx" type="Record<string, Function>">
+插件提供的事务命令。通过 `editor.update((tx) => tx[key].method())` 调用。
 </APIItem>
 
 <APIItem name="options" type="Record<string, any>">
@@ -138,12 +138,12 @@ Plate 用于向任何节点组件注入 props 的属性。
 <APISubListItem parent="rules" name="selection.affinity" type="'default' | 'directional' | 'outward' | 'hard'" optional>
 定义节点边界的选区行为。参见 [插件规则](/docs/plugin-rules#rulesselection)。
 
-- `'default'`: 使用 Slate 的默认行为
+- `'default'`: 使用 Plite 的默认行为
 - `'directional'`: 选区亲和性由光标移动方向决定。根据接近方向保持向内或向外亲和性
 - `'outward'`: 强制向外亲和性。在标记边缘输入不会将标记应用到新文本
 - `'hard'`: 创建需要两次按键才能跨越的"硬"边缘。使用基于偏移的导航
 
-- **默认值:** `undefined` (Slate 的默认行为)
+- **默认值:** `undefined` (Plite 的默认行为)
 </APISubListItem>
 <APISubListItem parent="node" name="isMarkableVoid" type="boolean" optional>
 指示此插件的 void elements 是否可标记。
@@ -232,13 +232,13 @@ Plate 用于向任何节点组件注入 props 的属性。
 用于渲染此插件节点的 React 组件。
 </APISubListItem>
 <APISubListItem parent="node" name="leafProps" type="LeafNodeProps<WithAnyKey<C>>" optional>
-覆盖 `data-slate-leaf` 元素属性。
+覆盖 `data-plite-leaf` 元素属性。
 </APISubListItem>
 <APISubListItem parent="node" name="props" type="NodeProps<WithAnyKey<C>>" optional>
 覆盖节点属性。
 </APISubListItem>
 <APISubListItem parent="node" name="textProps" type="TextNodeProps<WithAnyKey<C>>" optional>
-覆盖 `data-slate-node="text"` 元素属性。
+覆盖 `data-plite-node="text"` 元素属性。
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -281,13 +281,13 @@ HTML React 序列化器配置。
 
 <APISubList>
 <APISubListItem parent="render" name="aboveEditable" type="Component" optional>
-在 Editable 组件上方但在 Slate 包装器内部渲染的组件。
+在 Editable 组件上方但在 Plite 包装器内部渲染的组件。
 </APISubListItem>
 <APISubListItem parent="render" name="aboveNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
 创建一个函数，为所有其他插件的节点组件生成父 React 节点。
 </APISubListItem>
-<APISubListItem parent="render" name="aboveSlate" type="Component" optional>
-在 Slate 包装器上方渲染的组件。
+<APISubListItem parent="render" name="abovePlite" type="Component" optional>
+在 Plite 包装器上方渲染的组件。
 </APISubListItem>
 <APISubListItem parent="render" name="afterEditable" type="EditableSiblingComponent" optional>
 在 Editable 组件之后渲染的组件。
@@ -298,7 +298,7 @@ HTML React 序列化器配置。
 <APISubListItem parent="render" name="belowNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
 创建一个函数，在所有其他插件的节点 React 节点下方生成 React 节点，但在它们的子节点上方。
 </APISubListItem>
-<APISubListItem parent="render" name="belowRootNodes" type="(props: PlateElementProps<TElement, C>) => React.ReactNode" optional>
+<APISubListItem parent="render" name="belowRootNodes" type="(props: PlateElementProps<Element, C>) => React.ReactNode" optional>
 在根元素的直接子元素之后渲染组件。与 `belowNodes` 的不同之处在于它是 `PlateElement` 的直接子元素，而不是包装可能是嵌套的子元素。当需要相对于根元素的组件时很有用。
 </APISubListItem>
 <APISubListItem parent="render" name="leaf" type="NodeComponent" optional>
@@ -350,11 +350,11 @@ Plate 用于装饰编辑器范围的属性。
 </APIItem>
 
 <APIItem name="extendEditor" type="ExtendEditor<WithAnyKey<C>>" optional>
-扩展编辑器实例的函数。主要用于集成需要直接编辑器变异的旧版 Slate 插件。每个插件只允许一个 `extendEditor`。
+扩展编辑器实例的函数。主要用于集成需要直接编辑器变异的旧版 Plite 插件。每个插件只允许一个 `extendEditor`。
 
 ```ts
 extendEditor: ({ editor }) => {
-  // 示例：集成旧版 Slate 插件
+  // 示例：集成旧版 Plite 插件
   return withYjs(editor);
 }
 ```
@@ -444,8 +444,8 @@ editOnly: { render: false }
 
 ```ts
 overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
-  transforms: {
-    // 重写 transforms
+  tf: {
+    // 重写已有编辑器 transform 方法
     deleteForward(options) {
       deleteForward(options);
     },
@@ -461,7 +461,7 @@ overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
 
 - 修改编辑器行为的首选方法
 - 类型安全的原始方法访问
-- transforms 和 API 的清晰分离
+- `tf` 重写和 API 重写保持分离
 - 可以多次链式调用
 </APIItem>
 
@@ -481,19 +481,19 @@ overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
 ```
 </APIItem>
 
-<APIItem name="extendTransforms" type="(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
-扩展插件的 transforms。
+<APIItem name="extendTx" type="(tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin">
+扩展插件自己的事务组。该组在 `editor.update` 内通过 `tx[plugin.key]` 使用。
 
 ```ts
-(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
+(tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin
 ```
 </APIItem>
 
-<APIItem name="extendEditorTransforms" type="(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
-使用插件特定方法扩展编辑器的 transforms。
+<APIItem name="extendTxGroup" type="(key: string, tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin">
+扩展指定名称的事务组。一个插件需要给另一个插件的 tx 命名空间贡献命令时使用。
 
 ```ts
-(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
+(key: string, tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin
 ```
 </APIItem>
 

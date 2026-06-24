@@ -1,8 +1,5 @@
-import type {
-  EmojiCategoryList,
-  EmojiSettingsType,
-  GridElements,
-} from '../../../lib';
+import type { EmojiCategoryList, EmojiSettingsType } from '../../../lib/types';
+import type { GridElements } from '../../../lib/utils/Grid/Grid.types';
 import type { IFrequentEmojiStorage } from './EmojiFloatingLibrary.types';
 
 import {

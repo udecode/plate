@@ -6,7 +6,7 @@ root_cause: logic_error
 title: Firefox table multi-range proof needs native table selection and a multi-range sync guard
 tags:
   - slate-react
-  - slate-browser
+  - plite-browser
   - firefox
   - tables
   - selection
@@ -18,7 +18,7 @@ severity: high
 
 ## What happened
 
-The legacy Slate Firefox carve-out was specific:
+The legacy Plite Firefox carve-out was specific:
 
 - when Firefox exposes more than one DOM range for table selection
 - calling the normal DOM selection sync collapses that state

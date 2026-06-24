@@ -1,6 +1,6 @@
 import type {
   Path,
-  SlateEditor,
+  BasePlateEditor,
   TTableCellElement,
   TTableElement,
 } from 'platejs';
@@ -15,7 +15,7 @@ import { findCellByIndexes } from './findCellByIndexes';
 import { getCellPath } from './getCellPath';
 import { getTableMergedColumnCount } from './getTableMergedColumnCount';
 
-export const deleteTableMergeColumn = (editor: SlateEditor) => {
+export const deleteTableMergeColumn = (editor: BasePlateEditor) => {
   const type = editor.getType(KEYS.table);
   const tableEntry = editor.api.above<TTableElement>({
     match: { type },
@@ -23,170 +23,176 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
 
   if (!tableEntry) return;
 
-  editor.tf.withoutNormalizing(() => {
-    const { api } = getEditorPlugin(editor, BaseTablePlugin);
+  const { api } = getEditorPlugin(editor, BaseTablePlugin);
 
-    if (editor.api.isExpanded()) {
-      return deleteColumnWhenExpanded(editor, tableEntry);
-    }
+  if (editor.api.isExpanded()) {
+    return deleteColumnWhenExpanded(editor, tableEntry);
+  }
 
-    const table = tableEntry[0] as TTableElement;
+  const table = tableEntry[0] as TTableElement;
 
-    const selectedCellEntry = editor.api.above({
-      match: {
-        type: getCellTypes(editor),
-      },
+  const selectedCellEntry = editor.api.above({
+    match: {
+      type: getCellTypes(editor),
+    },
+  });
+
+  if (!selectedCellEntry) return;
+
+  const selectedCell = selectedCellEntry[0] as TTableCellElement;
+
+  const { col: deletingColIndex } = getCellIndices(editor, selectedCell);
+  const colsDeleteNumber = api.table.getColSpan(selectedCell);
+
+  if (getTableMergedColumnCount(table) <= colsDeleteNumber) {
+    editor.update((tx) => {
+      tx.nodes.remove({ at: tableEntry[1] });
     });
 
-    if (!selectedCellEntry) return;
+    return;
+  }
 
-    const selectedCell = selectedCellEntry[0] as TTableCellElement;
+  const endingColIndex = deletingColIndex + colsDeleteNumber - 1;
 
-    const { col: deletingColIndex } = getCellIndices(editor, selectedCell);
-    const colsDeleteNumber = api.table.getColSpan(selectedCell);
+  const rowNumber = table.children.length;
+  const affectedCellsSet = new Set();
+  // iterating by rows is important here to keep the order of affected cells
+  for (const rI of Array.from({ length: rowNumber }, (_, i) => i)) {
+    for (const cI of Array.from({ length: colsDeleteNumber }, (_, i) => i)) {
+      const colIndex = deletingColIndex + cI;
+      const found = findCellByIndexes(editor, table, rI, colIndex);
 
-    if (getTableMergedColumnCount(table) <= colsDeleteNumber) {
-      editor.tf.removeNodes({ at: tableEntry[1] });
-
-      return;
-    }
-
-    const endingColIndex = deletingColIndex + colsDeleteNumber - 1;
-
-    const rowNumber = table.children.length;
-    const affectedCellsSet = new Set();
-    // iterating by rows is important here to keep the order of affected cells
-    for (const rI of Array.from({ length: rowNumber }, (_, i) => i)) {
-      for (const cI of Array.from({ length: colsDeleteNumber }, (_, i) => i)) {
-        const colIndex = deletingColIndex + cI;
-        const found = findCellByIndexes(editor, table, rI, colIndex);
-
-        if (found) {
-          affectedCellsSet.add(found);
-        }
+      if (found) {
+        affectedCellsSet.add(found);
       }
     }
-    const affectedCells = Array.from(affectedCellsSet) as TTableCellElement[];
+  }
+  const affectedCells = Array.from(affectedCellsSet) as TTableCellElement[];
 
-    const { squizeColSpanCells } = affectedCells.reduce<{
-      squizeColSpanCells: TTableCellElement[];
-    }>(
-      (acc, cur) => {
-        if (!cur) return acc;
+  const { squizeColSpanCells } = affectedCells.reduce<{
+    squizeColSpanCells: TTableCellElement[];
+  }>(
+    (acc, cur) => {
+      if (!cur) return acc;
 
-        const currentCell = cur as TTableCellElement;
-        const { col: curColIndex } = getCellIndices(editor, currentCell);
-        const curColSpan = api.table.getColSpan(currentCell);
+      const currentCell = cur as TTableCellElement;
+      const { col: curColIndex } = getCellIndices(editor, currentCell);
+      const curColSpan = api.table.getColSpan(currentCell);
 
-        if (curColIndex < deletingColIndex && curColSpan > 1) {
-          acc.squizeColSpanCells.push(currentCell);
-        } else if (
-          curColSpan > 1 &&
-          curColIndex + curColSpan - 1 > endingColIndex
-        ) {
-          acc.squizeColSpanCells.push(currentCell);
-        }
+      if (curColIndex < deletingColIndex && curColSpan > 1) {
+        acc.squizeColSpanCells.push(currentCell);
+      } else if (
+        curColSpan > 1 &&
+        curColIndex + curColSpan - 1 > endingColIndex
+      ) {
+        acc.squizeColSpanCells.push(currentCell);
+      }
 
-        return acc;
-      },
-      { squizeColSpanCells: [] }
+      return acc;
+    },
+    { squizeColSpanCells: [] }
+  );
+
+  /** Change colSpans */
+  squizeColSpanCells.forEach((cur) => {
+    const curCell = cur as TTableCellElement;
+
+    const { col: curColIndex, row: curColRowIndex } = getCellIndices(
+      editor,
+      curCell
+    );
+    const curColSpan = api.table.getColSpan(curCell);
+
+    const curCellPath = getCellPath(
+      editor,
+      tableEntry,
+      curColRowIndex,
+      curColIndex
     );
 
-    /** Change colSpans */
-    squizeColSpanCells.forEach((cur) => {
-      const curCell = cur as TTableCellElement;
+    const curCellEndingColIndex = Math.min(
+      curColIndex + curColSpan - 1,
+      endingColIndex
+    );
+    const colsNumberAffected = curCellEndingColIndex - deletingColIndex + 1;
+    const colSpan = curColSpan - colsNumberAffected;
+    const newCell = cloneDeep({ ...curCell, colSpan });
 
-      const { col: curColIndex, row: curColRowIndex } = getCellIndices(
+    if (newCell.attributes?.colspan) {
+      newCell.attributes.colspan = colSpan.toString();
+    }
+
+    editor.update((tx) => {
+      tx.nodes.set(newCell, { at: curCellPath });
+    });
+  });
+
+  const trEntry = editor.api.above({
+    match: { type: editor.getType(KEYS.tr) },
+  });
+
+  /** Remove cells */
+  if (
+    selectedCell &&
+    trEntry &&
+    tableEntry &&
+    // Cannot delete the last cell
+    trEntry[0].children.length > 1
+  ) {
+    const [tableNode, tablePath] = tableEntry;
+
+    // calc paths to delete
+    const paths: Path[][] = [];
+    affectedCells.forEach((cur) => {
+      const curCell = cur as TTableCellElement;
+      const { col: curColIndex, row: curRowIndex } = getCellIndices(
         editor,
         curCell
       );
-      const curColSpan = api.table.getColSpan(curCell);
 
-      const curCellPath = getCellPath(
-        editor,
-        tableEntry,
-        curColRowIndex,
-        curColIndex
-      );
-
-      const curCellEndingColIndex = Math.min(
-        curColIndex + curColSpan - 1,
-        endingColIndex
-      );
-      const colsNumberAffected = curCellEndingColIndex - deletingColIndex + 1;
-      const colSpan = curColSpan - colsNumberAffected;
-      const newCell = cloneDeep({ ...curCell, colSpan });
-
-      if (newCell.attributes?.colspan) {
-        newCell.attributes.colspan = colSpan.toString();
-      }
-
-      editor.tf.setNodes<TTableCellElement>(newCell, { at: curCellPath });
-    });
-
-    const trEntry = editor.api.above({
-      match: { type: editor.getType(KEYS.tr) },
-    });
-
-    /** Remove cells */
-    if (
-      selectedCell &&
-      trEntry &&
-      tableEntry &&
-      // Cannot delete the last cell
-      trEntry[0].children.length > 1
-    ) {
-      const [tableNode, tablePath] = tableEntry;
-
-      // calc paths to delete
-      const paths: Path[][] = [];
-      affectedCells.forEach((cur) => {
-        const curCell = cur as TTableCellElement;
-        const { col: curColIndex, row: curRowIndex } = getCellIndices(
+      if (
+        !squizeColSpanCells.includes(curCell) &&
+        curColIndex >= deletingColIndex &&
+        curColIndex <= endingColIndex
+      ) {
+        const cellPath = getCellPath(
           editor,
-          curCell
+          tableEntry,
+          curRowIndex,
+          curColIndex
         );
 
-        if (
-          !squizeColSpanCells.includes(curCell) &&
-          curColIndex >= deletingColIndex &&
-          curColIndex <= endingColIndex
-        ) {
-          const cellPath = getCellPath(
-            editor,
-            tableEntry,
-            curRowIndex,
-            curColIndex
-          );
-
-          if (!paths[curRowIndex]) {
-            paths[curRowIndex] = [];
-          }
-
-          paths[curRowIndex].push(cellPath);
+        if (!paths[curRowIndex]) {
+          paths[curRowIndex] = [];
         }
-      });
 
-      paths.forEach((cellPaths) => {
-        const pathToDelete = cellPaths[0];
-        cellPaths.forEach(() => {
-          editor.tf.removeNodes({
+        paths[curRowIndex].push(cellPath);
+      }
+    });
+
+    paths.forEach((cellPaths) => {
+      const pathToDelete = cellPaths[0];
+      cellPaths.forEach(() => {
+        editor.update((tx) => {
+          tx.nodes.remove({
             at: pathToDelete,
           });
         });
       });
+    });
 
-      const { colSizes } = tableNode;
+    const { colSizes } = tableNode;
 
-      if (colSizes) {
-        const newColSizes = [...colSizes];
-        newColSizes.splice(deletingColIndex, 1);
+    if (colSizes) {
+      const newColSizes = [...colSizes];
+      newColSizes.splice(deletingColIndex, 1);
 
-        editor.tf.setNodes<TTableElement>(
-          { colSizes: newColSizes },
+      editor.update((tx) => {
+        tx.nodes.set(
+          { colSizes: newColSizes } satisfies Partial<TTableElement>,
           { at: tablePath }
         );
-      }
+      });
     }
-  });
+  }
 };

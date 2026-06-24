@@ -3,10 +3,6 @@ import { renderHook } from '@testing-library/react';
 const useEditorRefMock = mock();
 const usePluginOptionMock = mock();
 
-mock.module('../BlockSelectionPlugin', () => ({
-  BlockSelectionPlugin: { key: 'blockSelection' },
-}));
-
 mock.module('platejs/react', async () => ({
   useEditorRef: useEditorRefMock,
   usePluginOption: usePluginOptionMock,

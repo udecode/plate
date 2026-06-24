@@ -16,9 +16,8 @@ Use this when a Plate plan claims speed, responsiveness, large-document readines
 | --- | --- | --- |
 | `vercel-react-best-practices` | React/Next waterfalls, bundles, server/client fetching, rerenders, rendering, JS micro-opts, React runtime primitives | Load exact rule files for local micro-tactics. Do not paste the whole Vercel catalog into the plan. |
 | `react-useeffect` | Effect law, subscriptions, event/effect alternatives | Use when repeated units attach effects, listeners, observers, or store subscriptions. |
-| `performance-oracle` | Big-O, cache shape, memory pressure, 10x/100x/1000x projections | Use when the hot path needs bounded complexity proof. |
 | Chrome DevTools, Lighthouse, web.dev docs | Browser traces, Core Web Vitals, network chains, layout shifts, long tasks | Use when load, hydration, layout, or input latency needs browser proof. |
-| `performance` | Cohorts, repeated-unit budgets, p95/p99 interactions, memory tags, degradation, native behavior proof, RUM/dashboard gaps | Record the final performance-lane verdict. |
+| `performance` | Big-O, cache shape, memory pressure, 10x/100x/1000x projections, cohorts, repeated-unit budgets, p95/p99 interactions, memory tags, degradation, native behavior proof, RUM/dashboard gaps | Record the final performance-lane verdict. |
 
 Rule: if the plan only says "use React best practices", "avoid O(n)", or "seems fast locally", it is not done.
 

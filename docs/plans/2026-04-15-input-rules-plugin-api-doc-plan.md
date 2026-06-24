@@ -503,7 +503,7 @@ Required explanation:
 Show:
 
 ```tsx
-createSlatePlugin({
+createPlitePlugin({
   key: 'custom',
   inputRules: ({ rule }) => [
     rule.mark(...),

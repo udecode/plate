@@ -524,7 +524,7 @@ External:
   - `pnpm --filter www exec next build`
   - `pnpm turbo typecheck --filter=./apps/www`
   - `pnpm lint:fix`
-  - dev-browser smoke for `/docs`, `/docs/installation`, `/docs/components/editor`, `/docs/table`, `/docs/api/core`, `/docs/releases`, `/cn/docs/table`, and `/docs/examples/slate-to-html`
+  - dev-browser smoke for `/docs`, `/docs/installation`, `/docs/components/editor`, `/docs/table`, `/docs/api/core`, `/docs/releases`, `/cn/docs/table`, and `/docs/examples/plite-to-html`
 - `next build` still reports the existing Turbopack NFT warning through `src/lib/rehype-utils.ts` and `/api/registry/[name]`. It does not block the build.
 - I did not run `pnpm --filter www rd` because repo instructions forbid local registry builds outside CI.
 - Closeout verification after compounding also passed:

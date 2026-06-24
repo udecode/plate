@@ -1,19 +1,22 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import copyToClipboard from 'copy-to-clipboard';
 
-import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
+import {
+  type BlockSelectionConfig,
+  BlockSelectionPlugin,
+} from '../BlockSelectionPlugin';
 
 const writeSelectedBlocksToDataTransfer = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   data: DataTransfer
 ) => {
   if (!data) return false;
 
   const { selectedIds } = editor.getOptions(BlockSelectionPlugin);
-  const selectedEntries = editor
-    .getApi(BlockSelectionPlugin)
-    .blockSelection.getNodes({ collapseTableRows: true });
+  const selectedEntries = (
+    editor.api as unknown as BlockSelectionConfig['api']
+  ).blockSelection.getNodes({ collapseTableRows: true });
   const selectedFragment = selectedEntries.map(([node]) => node);
 
   if (selectedEntries.length === 0) return false;
@@ -21,10 +24,10 @@ const writeSelectedBlocksToDataTransfer = (
   let textPlain = '';
   const div = document.createElement('div');
 
-  editor.tf.withoutNormalizing(() => {
+  editor.update((tx) => {
     selectedEntries.forEach(([, path]) => {
       // select block by block
-      editor.tf.select({
+      tx.selection.set({
         anchor: editor.api.start(path)!,
         focus: editor.api.end(path)!,
       });
@@ -34,14 +37,14 @@ const writeSelectedBlocksToDataTransfer = (
       if (isEmpty) {
         const after = editor.api.after(editor.selection!);
 
-        editor.tf.select({
+        tx.selection.set({
           anchor: editor.api.start(path)!,
           focus: after!,
         });
       }
 
       if (!isEmpty) {
-        editor.tf.setFragmentData(data);
+        editor.api.clipboard.writeSelection(data);
       }
 
       // get plain text
@@ -64,7 +67,7 @@ const writeSelectedBlocksToDataTransfer = (
     });
 
     // deselect and select back selectedIds
-    editor.tf.deselect();
+    tx.selection.clear();
     editor.setOption(BlockSelectionPlugin, 'selectedIds', selectedIds);
   });
 
@@ -74,13 +77,13 @@ const writeSelectedBlocksToDataTransfer = (
   // set slate fragment
   const selectedFragmentStr = JSON.stringify(selectedFragment);
   const encodedFragment = window.btoa(encodeURIComponent(selectedFragmentStr));
-  data.setData('application/x-slate-fragment', encodedFragment);
+  data.setData('application/x-plite-fragment', encodedFragment);
 
   return true;
 };
 
 export const copySelectedBlocks = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   dataTransfer?: DataTransfer
 ) => {
   if (dataTransfer) {

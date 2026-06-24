@@ -2,20 +2,28 @@ import type { PlateEditor } from 'platejs/react';
 
 import { PathApi } from 'platejs';
 
-import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
+import {
+  type BlockSelectionConfig,
+  BlockSelectionPlugin,
+} from '../BlockSelectionPlugin';
 
 export const duplicateBlockSelectionNodes = (editor: PlateEditor) => {
-  const blocks = editor.getApi(BlockSelectionPlugin).blockSelection.getNodes();
+  const blocks = (
+    editor.api as unknown as BlockSelectionConfig['api']
+  ).blockSelection.getNodes();
 
   const lastBlock = blocks.at(-1);
 
   if (!lastBlock) return;
 
-  editor.tf.duplicateNodes({
-    nodes: blocks,
-  });
-
   const path = PathApi.next(lastBlock[1]);
+
+  editor.update((tx) => {
+    tx.nodes.insert(
+      blocks.map(([node]) => node),
+      { at: path }
+    );
+  });
 
   const ids = blocks
     .map((_, index) => {

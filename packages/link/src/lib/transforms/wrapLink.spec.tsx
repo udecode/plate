@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
 import { wrapLink } from './wrapLink';
@@ -20,9 +20,9 @@ describe('wrapLink', () => {
           <focus />!
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseLinkPlugin],
       selection: input.selection,
       value: input.children,

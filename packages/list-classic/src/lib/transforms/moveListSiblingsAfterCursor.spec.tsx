@@ -1,8 +1,7 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from 'platejs';
-
 import { jsxt } from '@platejs/test-utils';
+import { createListClassicTestEditor as createBasePlateEditor } from '../__tests__/createListClassicTestEditor';
 
 import { moveListSiblingsAfterCursor } from './moveListSiblingsAfterCursor';
 
@@ -31,7 +30,7 @@ describe('moveListSiblingsAfterCursor', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: input.children,
     });
 
@@ -85,7 +84,7 @@ describe('moveListSiblingsAfterCursor', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: input.children,
     });
 

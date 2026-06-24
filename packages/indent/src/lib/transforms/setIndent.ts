@@ -1,10 +1,14 @@
-import type { AnyObject, EditorNodesOptions, SlateEditor } from 'platejs';
+import type { AnyObject, BasePlateEditor, NodeEntry } from 'platejs';
 
 import { BaseIndentPlugin } from '../BaseIndentPlugin';
 
+export type IndentNodesOptions = NonNullable<
+  Parameters<BasePlateEditor['api']['nodes']>[0]
+>;
+
 export type SetIndentOptions = {
   /** GetNodeEntries options */
-  getNodesOptions?: EditorNodesOptions;
+  getNodesOptions?: IndentNodesOptions;
 
   /**
    * 1 to indent -1 to outdent
@@ -22,7 +26,7 @@ export type SetIndentOptions = {
 
 /** Add offset to the indentation of the selected blocks. */
 export const setIndent = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     getNodesOptions,
     offset = 1,
@@ -37,9 +41,9 @@ export const setIndent = (
     mode: 'lowest',
     ...getNodesOptions,
   });
-  const nodes = Array.from(_nodes);
+  const nodes = Array.from(_nodes) as NodeEntry<AnyObject>[];
 
-  editor.tf.withoutNormalizing(() => {
+  editor.update((tx) => {
     nodes.forEach(([node, path]) => {
       const blockIndent = (node[nodeKey!] as number) ?? 0;
       const newIndent = blockIndent + offset;
@@ -47,11 +51,11 @@ export const setIndent = (
       const props = setNodesProps?.({ indent: newIndent }) ?? {};
 
       if (newIndent <= 0) {
-        editor.tf.unsetNodes([nodeKey!, ...unsetNodesProps], {
+        tx.nodes.unset([nodeKey!, ...unsetNodesProps], {
           at: path,
         });
       } else {
-        editor.tf.setNodes({ [nodeKey!]: newIndent, ...props }, { at: path });
+        tx.nodes.set({ [nodeKey!]: newIndent, ...props }, { at: path });
       }
     });
   });

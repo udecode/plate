@@ -1,5 +1,13 @@
 # @platejs/ai
 
+## 54.0.0-beta.1
+
+### Patch Changes
+
+- Synced latest changes from `main` into the beta lane.
+
+## 54.0.0-beta.0
+
 ## 53.2.2
 
 ### Patch Changes
@@ -545,7 +553,7 @@
 
 ### Patch Changes
 
-- [#3874](https://github.com/udecode/plate/pull/3874) by [@felixfeng33](https://github.com/felixfeng33) – Fix editor type using `SlateEditor` instead of `PlateEditor`.
+- [#3874](https://github.com/udecode/plate/pull/3874) by [@felixfeng33](https://github.com/felixfeng33) – Fix editor type using `PliteEditor` instead of `PlateEditor`.
 
 ## 41.0.0
 

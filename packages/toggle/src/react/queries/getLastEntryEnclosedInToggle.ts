@@ -1,21 +1,22 @@
-import type { SlateEditor } from 'platejs';
+import type { NodeEntry, BasePlateEditor } from 'platejs';
 
 import last from 'lodash/last.js';
 
+import type { ToggleIndexElement } from '../internal/toggleElement';
+
+import { isToggleIndexElement } from '../internal/toggleElement';
 import { buildToggleIndex } from '../toggleIndexAtom';
 
-type NodeEntry = [any, number[]];
-
 export const getLastEntryEnclosedInToggle = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   toggleId: string
-): NodeEntry | undefined => {
+): NodeEntry<ToggleIndexElement> | undefined => {
   const toggleIndex = buildToggleIndex(editor.children);
   const entriesInToggle = editor.children
-    .map((node: any, index: number) => [node, [index]] as NodeEntry)
-    .filter(([node]: NodeEntry) =>
-      (toggleIndex.get(node.id as string) || []).includes(toggleId)
-    );
+    .flatMap((node, index): NodeEntry<ToggleIndexElement>[] =>
+      isToggleIndexElement(node) ? [[node, [index]]] : []
+    )
+    .filter(([node]) => (toggleIndex.get(node.id) || []).includes(toggleId));
 
   return last(entriesInToggle);
 };

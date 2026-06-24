@@ -1,16 +1,16 @@
-import type { PlateEditor } from 'platejs/react';
-
-import { type DeserializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
-import { type TElement, getPluginType, KEYS, TextApi } from 'platejs';
+import type { DeserializeMdOptions } from '@platejs/markdown';
+import type { Element } from '@platejs/plite';
+import { getPluginType, KEYS, TextApi } from 'platejs';
 
 import { AIChatPlugin } from '../AIChatPlugin';
+import type { AIChatPlateEditor } from '../internal/editorTypes';
 import { getChunkTrimmed } from './utils';
 import { escapeInput } from './utils/escapeInput';
 
 const statMdxTagRegex = /<([A-Za-z][A-Za-z0-9._:-]*)(?:\s[^>]*?)?(?<!\/)>/;
 
 export const streamDeserializeMd = (
-  editor: PlateEditor,
+  editor: AIChatPlateEditor,
   data: string,
   options?: DeserializeMdOptions
 ) => {
@@ -20,16 +20,16 @@ export const streamDeserializeMd = (
 
   if (Array.isArray(value)) return value;
 
-  let blocks: TElement[] = [];
+  let blocks: Element[] = [];
 
-  blocks = editor.getApi(MarkdownPlugin).markdown.deserialize(input, {
+  blocks = editor.api.markdown.deserialize(input, {
     ...options,
     preserveEmptyParagraphs: false,
   });
 
   const trimmedData = getChunkTrimmed(data);
 
-  const lastBlock = blocks.at(-1) as TElement | undefined;
+  const lastBlock = blocks.at(-1) as Element | undefined;
 
   const addNewLine = trimmedData === '\n\n';
   const unshiftNewLine =
@@ -98,7 +98,7 @@ export const streamDeserializeMd = (
   return result;
 };
 
-const withoutDeserializeInMdx = (editor: PlateEditor, input: string) => {
+const withoutDeserializeInMdx = (editor: AIChatPlateEditor, input: string) => {
   const mdxName = editor.getOption(AIChatPlugin, '_mdxName');
 
   if (mdxName) {

@@ -1,10 +1,7 @@
-import {
-  type ElementEntry,
-  type Path,
-  type SlateEditor,
-  NodeApi,
-  PathApi,
-} from 'platejs';
+import type { Element, ElementEntry, Path } from '@platejs/plite';
+import type { BasePlateEditor } from '@platejs/core';
+import { getEditorDescendant } from '../internal/editorQueries';
+import { runWithoutNormalizing } from '../internal/runWithoutNormalizing';
 
 import { getListTypes } from '../queries/getListTypes';
 
@@ -39,7 +36,7 @@ export type MergeListItemIntoListOptions = {
  * `fromList` is defined).
  */
 export const moveListItemsToList = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     deleteFromList = true,
     fromList,
@@ -53,50 +50,57 @@ export const moveListItemsToList = (
   let fromListPath: Path | undefined;
   let moved: boolean | void = false;
 
-  editor.tf.withoutNormalizing(() => {
-    if (fromListItem) {
-      const fromListItemSublist = editor.api.descendant({
-        at: fromListItem[1],
-        match: {
-          type: getListTypes(editor),
-        },
-      });
+  editor.update((tx) => {
+    runWithoutNormalizing(tx, () => {
+      if (fromListItem) {
+        const fromListItemSublist = getEditorDescendant(editor, {
+          at: fromListItem[1],
+          match: (node) => getListTypes(editor).includes(node.type),
+        });
 
-      if (!fromListItemSublist) return;
+        if (!fromListItemSublist) return;
 
-      fromListPath = fromListItemSublist?.[1];
-    } else if (fromList) {
-      fromListPath = fromList[1];
-    } else {
-      return;
-    }
-
-    let to: Path | null = null;
-
-    if (_to) to = _to;
-    if (toList) {
-      if (toListIndex === null) {
-        const lastChildPath = NodeApi.lastChild(editor, toList[1])?.[1];
-        to = lastChildPath
-          ? PathApi.next(lastChildPath)
-          : toList[1].concat([0]);
+        fromListPath = fromListItemSublist?.[1];
+      } else if (fromList) {
+        fromListPath = fromList[1];
       } else {
-        to = toList[1].concat([toListIndex]);
+        return;
       }
-    }
-    if (!to) return;
 
-    moved = editor.tf.moveNodes({
-      at: fromListPath,
-      children: true,
-      fromIndex: fromStartIndex,
-      to,
+      let to: Path | null = null;
+
+      if (_to) to = _to;
+      if (toList) {
+        if (toListIndex === null) {
+          to = toList[1].concat([toList[0].children.length]);
+        } else {
+          to = toList[1].concat([toListIndex]);
+        }
+      }
+      if (!to) return;
+
+      const fromListNode = editor.api.node<Element>(fromListPath)?.[0];
+      const startIndex = fromStartIndex ?? 0;
+
+      if (!fromListNode) return;
+
+      for (
+        let index = fromListNode.children.length - 1;
+        index >= startIndex;
+        index--
+      ) {
+        tx.nodes.move({
+          at: [...fromListPath, index],
+          to,
+        });
+        moved = true;
+      }
+
+      // Remove the empty list
+      if (deleteFromList) {
+        tx.nodes.remove({ at: fromListPath });
+      }
     });
-
-    // Remove the empty list
-    if (deleteFromList) {
-      editor.tf.delete({ at: fromListPath });
-    }
   });
 
   return moved;

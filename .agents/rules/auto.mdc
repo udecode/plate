@@ -1,0 +1,1453 @@
+---
+description: Plate/Slate ergonomic automation router and internal supervisor. Routes public GitHub queue prompts to maintainer, post-merge/current-tree closure to autoclosure, and runs autogoal-backed Plate/Slate quality loops without user micro-routing.
+argument-hint: '[PR|issue|queue|slate|plate|current tree|post-merge|lane/surface/objective] [full-loop | timed 1h|2h|overnight | batch-loop]'
+disable-model-invocation: true
+---
+
+# Auto
+
+Handle $ARGUMENTS.
+
+Use this as the ergonomic Plate/Slate front door. If the prompt names public
+GitHub queue work, route immediately to `maintainer`. If it names already
+applied/current-tree closure, route immediately to `autoclosure`. Otherwise,
+run internal Plate/Slate automation until the surface is actually good:
+correct, fast, visually stable, well-tested, architecturally clean,
+docs-aligned, and ready for review.
+
+This is a router and supervisor skill. It does not replace `maintainer`,
+`autoclosure`, `slate-patch`, `slate-plan`, `plate-plan`, `slate-ar`,
+`slate-migration`, `architecture-cleanup`, or package owners unless evidence
+proves the skill topology itself is wrong. It routes them, repairs missing
+proof/metrics/skills, reshapes the Plate/Slate skill stack when needed, and
+keeps the loop honest.
+
+## Core Take
+
+The perfect loop is not "run perf until faster".
+
+The perfect loop is:
+
+```txt
+status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
+-> benchmark -> patch one hot lane -> verify -> keep/revert -> log -> reassess
+```
+
+Repeat by checkpoint, not by giant prompt. One Codex prompt has limited output
+and compaction degrades judgment. The supervisor should abuse `autogoal` as the
+quality primitive: one focused checkpoint, one durable plan update, one proof
+packet, then continue from the checkpoint state instead of relying on chat
+scrollback.
+
+Repeat until the surface has no known P0/P1 regressions, meaningful perf is at
+target or plateau, visual/editor parity is proven, API/test gaps are closed or
+explicitly deferred, decisions are consolidated, and ship readiness is clean.
+
+## Use When
+
+- The user invokes `auto`.
+- The user says `auto PR #123`, `auto issue #123`, `auto <GitHub URL>`,
+  `auto all PRs`, `auto all issues`, `auto queue`, or `auto security`; treat
+  this as a user-friendly `maintainer` invocation, not as internal quality work.
+- The user says `auto current tree`, `auto post-merge`, `auto ready to commit`,
+  or `auto teammate/external branch`; treat this as a user-friendly
+  `autoclosure` invocation.
+- The user asks to run a long autonomous Plate or Slate loop overnight.
+- The surface mixes bugs, perf, visual shifts, virtualization, editor behavior,
+  missing tests, API cleanup, and workflow repair.
+- The user wants "absolute best" implementation quality without picking every
+  sub-skill.
+- Repeated manual calls to Slate AR modes or `slate-patch` are producing
+  reactive thrash.
+- The user wants external editor issue/test corpora, such as Lexical open and
+  closed issues, mined for Slate v2 robustness gaps without hand-routing every
+  cluster.
+- The user invokes `issue-harvester` and expects exhaustive issue-by-issue
+  test coverage from Slate, Plate, or external editor issue history.
+
+## Do Not Use When
+
+- The user asks one narrow Slate bug fix: use `slate-patch`.
+- The user asks one ordinary local patch outside Slate automation: use `task`.
+- The user asks one architecture/API plan for review: use `slate-plan` or
+  `plate-plan` according to lane.
+- The user asks one Slate benchmark target: use `slate-ar perf <target>`.
+- The user asks whether existing Slate gates pass: use `slate-ar gate`.
+- The user asks to maintain public GitHub issues/PRs/security queue, run a repo
+  heartbeat, classify agent-ready queue work, or route across Plate + Slate
+  without invoking `auto`: use `maintainer`. If the prompt starts with `auto`,
+  `auto` must route to `maintainer` and then stop doing queue-brain work.
+- The user asks for post-merge, current-tree, teammate branch, external PR,
+  ready-to-commit, or until-clean closure of already-applied work without
+  invoking `auto`: use `autoclosure`. If the prompt starts with `auto`, `auto`
+  must route to `autoclosure`.
+
+## Front-Door Routing
+
+Resolve public queue and closure intent before lane routing or goal creation.
+`auto` is allowed to be the thing the user remembers; it is not allowed to
+become the public queue brain.
+
+Route these immediately:
+
+| User says | Route | Reason |
+| --- | --- | --- |
+| `auto PR #123`, `auto https://github.com/.../pull/123` | `maintainer <pr>` | public PR queue/control-plane work |
+| `auto issue #123`, `auto https://github.com/.../issues/123` | `maintainer <issue>` | public issue queue/control-plane work |
+| `auto all PRs`, `auto all issues`, `auto queue`, `auto repo heartbeat` | `maintainer heartbeat` or the matching maintainer mode | broad public queue work |
+| `auto security`, `auto GHSA...`, `auto CVE...` | `maintainer security` | security authority boundary |
+| `auto current tree`, `auto post-merge`, `auto ready to commit`, `auto teammate branch` | `autoclosure <target>` | already-applied/current-tree closure |
+| `auto slate`, `auto slate-v2`, `auto huge-document`, `auto editor behavior` | `auto` Slate lane | internal Slate quality loop |
+| `auto plate`, `auto plate packages`, `auto docs`, `auto registry` | `auto` Plate lane | internal Plate quality loop |
+
+When routing away, preserve the user's arguments and newest constraints. Do
+not create a second competing goal under `auto`; let the routed owner create
+or continue the correct goal/template.
+
+## Lane Routing
+
+Resolve the lane before checkpoint work:
+
+- **Slate lane:** raw Slate v2 package/runtime/browser/proof work, usually under
+  `packages/slate*`, `packages/browser`, `packages/yjs`, Slate docs/routes,
+  migration, external editor issue/test harvesting, and Slate public API/DX
+  cleanup. All old Slate automation laws in this file still apply here.
+- **Plate lane:** Plate packages, plugin/product docs, registry examples,
+  package exports, public component/plugin DX, and docs app behavior. Use Plate
+  commands, routes, and package owners; do not pretend Slate package proof
+  covers Plate product behavior.
+- **Shared editor lane:** editor behavior, selection, paste, history, IME,
+  voids, table fragments, docs/API vocabulary, and architecture boundaries that
+  cross Slate substrate and Plate product layers. Name the primary owner before
+  patching and keep the Slate-vs-Plate boundary explicit in the plan.
+
+If the prompt is ambiguous, infer from paths/URLs/packages first. If the lane is
+still ambiguous but safe proof remains, run a no-code status/gap checkpoint and
+queue the lane decision only when patching would cross public API or product
+taste.
+
+## Invocation Modes
+
+Parse the user's wording into one mode before starting. Record the mode,
+timebox, and stop-question policy in the active plan.
+
+- **Full-loop mode:** default when no duration is given. Run one complete
+  automation loop until a real stopping checkpoint, completion threshold, or
+  ship-readiness boundary. Stop immediately for stop questions.
+- **Timed mode:** when the user says `1 hour`, `2 hours`, `8h`, `overnight`,
+  or a similar duration. Treat the duration as the minimum active automation
+  runtime, not an estimate, not a proof budget, and not a permission to stop
+  early. Keep starting or continuing packets until the requested duration has
+  elapsed, then finish, revert, or quarantine the active packet even if that
+  exceeds the wall-clock time. Queue soft stopping checkpoints for final
+  handoff instead of interrupting the run, then ask the batch of unblock
+  questions at the end. `8h` means at least eight hours of active Plate/Slate
+  automation unless the user interrupts or a hard external blocker makes
+  autonomous work impossible.
+- **Batch-loop mode:** when the user says `batch`, `many loops`, `stack
+  questions`, or wants to unblock everything at the end. Behaves like timed
+  mode even without an explicit duration: keep working through safe alternate
+  owners and stack soft stopping checkpoints for final handoff.
+- **Issue-harvester mode:** when the user says `issue-harvester`,
+  `all-issues closure ledger`, or asks to process every relevant issue for test
+  coverage. Delegate the ledger autodiscovery, latest issue refresh,
+  closed-issue PR/test provenance scan, and unchecked issue-by-issue loop to
+  `issue-harvester`. `auto` owns the autogoal, timebox, packet
+  ledger, workflow repairs, and final handoff.
+
+Natural prompts should work:
+
+- `auto PR #123`
+- `auto issue #123`
+- `auto all PRs, issues`
+- `auto current tree`
+- `auto post-merge`
+- `auto slate`
+- `auto plate packages`
+- `auto huge-document auto timed 2h`
+- `auto editor behavior batch loop`
+- `auto lexical all issues robustness harvest`
+- `auto facebook/lexical --issues --state all batch-loop`
+- `auto issue-harvester prosemirror`
+- `auto issue-harvester facebook/lexical --state all`
+
+Pagination is explicit opt-in only. `auto` must not infer pagination work
+from `virtualized`, `huge-document`, performance debt, skip ledgers,
+supervision mode, or generic architecture backlog. It may enter pagination only
+when the user's prompt literally names pagination or a pagination route/plan.
+Valid explicit prompts include:
+
+- `auto pagination rows800 virtualized`
+- `auto pagination rows800 virtualized full loop`
+- `auto pagination rows800 virtualized for 1 hour`
+
+For timed and batch-loop modes:
+
+- calculate and record the minimum runtime, start time, and target deadline
+  before mutable work;
+- do not start a risky patch after the timebox has already expired unless it is
+  needed to close or quarantine the current packet;
+- do not hand off before the minimum runtime has elapsed because the obvious
+  backlog looks empty. Enter supervision mode and create the next checkpoint
+  from `vision`, the active plan, current repo evidence, Browser
+  proof gaps, benchmark gaps, issue/test harvest gaps, docs/API mismatches, and
+  workflow slowdowns;
+- do not hand off early just because the first packet closed;
+- do not turn `Needs your attention`, `deferred-with-owner`, or "route to
+  slate-plan/slate-ar perf" into a pause while the timebox is still open and a
+  reversible experiment, research packet, benchmark packet, or architecture
+  spike can be run safely;
+- if a lane is risky but important, use the supervisor's freedom: start a
+  controlled scratchpad experiment, through `slate-ar`/`slate-plan` for Slate
+  lanes or `plate-plan`/the package owner for Plate lanes as the owner demands,
+  record the hypothesis and proof gate before changing code, then keep, revert,
+  or quarantine the packet from evidence;
+- risky architecture/perf packets must be reversible. If code changes are made,
+  do not leave dirty speculative work behind at handoff: either keep with
+  behavior/visual/package proof, revert, or quarantine as an explicit scratch
+  artifact outside the runtime path with a plan row explaining why it is not
+  active code;
+- if more than roughly 15 minutes or 25% of the requested timebox remains,
+  immediately pick the next safe owner from the remaining-backlog ladder below;
+- when the minimum runtime expires mid-packet, continue only far enough to verify,
+  revert, or quarantine that packet, then hand off;
+- finish or quarantine the current packet before handoff even if it exceeds the
+  requested timebox;
+- keep queued stop questions concise and answerable in one pass;
+- after the user answers the batch, first apply reusable taste captures and
+  plan decisions, then resume queued packets.
+
+## Goal Contract
+
+Use `autogoal` aggressively. It is the supervisor's memory, checkpoint,
+anti-compaction strategy, and quality gate.
+
+Goal handle shape:
+
+```txt
+Automate <surface>; done when behavior, visual, perf, repair, docs, and ship-readiness gates pass; plan docs/plans/<path>.md.
+```
+
+The plan must record:
+
+- first checkpoint requirement extraction before implementation;
+- lane: Slate, Plate, or shared editor;
+- surface and target route/package;
+- invocation mode, timebox, and deadline when present;
+- completion threshold;
+- behavior families in scope;
+- visual proof surface;
+- primary perf metric and correctness contract;
+- API/DX cleanup authority;
+- benchmark/test/skill repair authority;
+- docs consolidation target;
+- root `VISION.md` read/update state;
+- taste coverage gaps and capture state;
+- packet ledger location;
+- changed-list location;
+- review-attention list location;
+- queued stopping-checkpoint list location;
+- workflow-slowdown ledger location;
+- research/discovery target, query/repo set, artifact path, and local proof
+  owner when discovery mode runs;
+- external issue-harvest target repo, issue states, output artifacts, and
+  open/closed coverage when in issue-harvest mode;
+- stop rules and blockers.
+
+Use the dedicated Auto template:
+
+```bash
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template auto \
+  --title "<surface>"
+```
+
+Do not use `--template task` for ordinary Auto. `task` is for
+normal one-shot work and drags in PR, tracker, release, and branch gates that
+make the supervisor noisy and weak. Add packs only for unusual extra surfaces
+that the `auto` template does not already cover.
+
+Do not invent a custom non-template plan shape for automation. Create the
+generated `auto` autogoal plan with the helper, fill the generated
+gates, mark non-applicable rows `N/A: <reason>`, and keep that plan as the
+runtime truth. The first checkpoint must copy every explicit user requirement
+into checkable rows before implementation: scope, non-goals, timing, stop
+conditions, deliverables, final handoff sections, verification surfaces, and
+success criteria.
+
+The generated plan is a living supervisor ledger, not a frozen task checklist.
+At the end of every loop, reconcile the checkpoint table against current
+evidence. The supervisor has full authority to add, update, split, merge,
+retire, remove, reprioritize, or reopen checkpoints. Do not keep stale rows
+alive because they were in the initial prompt or template. Do not stay stuck on
+the original plan when a new higher-value owner is proven by code, tests,
+Browser proof, benchmark evidence, or `vision`.
+
+## Autogoal Checkpoint Model
+
+Do not run an overnight task as one huge assistant turn.
+
+Split long work into checkpoints that fit one high-quality prompt:
+
+- **Taste checkpoint:** read
+  the `vision` skill as checkpoint zero, then read the active goal
+  plan and latest user request. If root `VISION.md` is missing or stale
+  for a reusable decision, consolidate it before patching.
+- **Taste-capture checkpoint:** stop implementation when the next safe move
+  depends on user taste that `vision` does not cover. Record the
+  taste gap in the plan, ask at most one terse checkpoint question only when
+  the answer is genuinely missing, then patch root `VISION.md` from the
+  answer before resuming. In timed or batch-loop mode, queue the question when
+  safe alternate work remains.
+- **Status checkpoint:** read current goal, plan, AR status, dirty evidence, and
+  latest user request.
+- **Checkpoint-supervision checkpoint:** before choosing the next owner, update
+  the active plan's checkpoint table from current evidence. Add missing
+  checkpoints, update stale owners/proof commands, split broad rows, merge
+  duplicates, retire or remove irrelevant rows, reprioritize the next owner, and
+  reopen any row whose proof was invalidated. Record the mutation before more
+  implementation.
+- **Proof checkpoint:** run one behavior/visual/package/browser gate family and
+  record pass/fail signatures.
+- **Patch checkpoint:** fix one correctness class or one missing oracle.
+- **Perf checkpoint:** optimize one measured hot lane with correctness green.
+- **Architecture checkpoint:** run `slate-plan` for Slate API/runtime
+  boundaries, `plate-plan` for Plate behavior/product boundaries, and
+  `architecture-cleanup` for source shape/deslop/navigation friction before
+  choosing either when the issue is structural.
+- **Closure handoff checkpoint:** when the current work becomes already-landed,
+  teammate/external PR, ready-to-commit, or current-tree cleanup, invoke
+  `autoclosure`. Do not keep post-merge/current-tree closure as an `auto`
+  sub-mode unless the user explicitly asks `auto` to wrap it.
+- **Architecture-cleanup checkpoint:** when repeated Slate or Plate bugs, weak tests,
+  copied helpers, hard-to-prove behavior, package-boundary confusion, deslop,
+  over-splits, or perf work expose broader source-layout friction, invoke
+  `architecture-cleanup` before choosing `slate-plan`, `plate-plan`,
+  `slate-patch`, `slate-ar`, or a package owner.
+- **Skill-repair checkpoint:** patch the owning skill/rule when the workflow
+  missed a recurring expectation.
+- **Research-discovery checkpoint:** when local evidence is thin, the problem
+  smells under-researched, the next owner is unclear, or a timed run needs
+  discovery instead of blind local soak, invoke `slate-research` for Slate/editor
+  substrate problems and `research-wiki`, `docs-creator`, or the package owner
+  for Plate/framework/package problems. The
+  checkpoint is done only after the research artifact records ledgers, dedupe,
+  evidence grade, scored leads, rejected leads, promoted packets, and next
+  owner. If a promoted research packet is executed later, close the loop in the
+  originating research artifact too: update `lead-ledger.tsv`,
+  `promoted-ledger.tsv`, and the README/summary status from `queued` or
+  `promote-*` to the real keep/revert/quarantine/defer result with the exact
+  proof command and metrics. Do not let the active goal plan be the only place
+  where a research lead is marked done.
+- **External issue-harvest checkpoint:** for prompts that name another editor's
+  issues, route first-pass inventory and clustering through
+  `editor-test-harvester --issues --state all` under ClawSweeper provenance
+  discipline. For `issue-harvester` or all-issues closure prompts, delegate
+  ledger detection/resume, latest issue refresh, closed-issue PR/test
+  provenance, and the unchecked row loop to `issue-harvester`. Cluster open and
+  closed issues first, skip framework/product/support noise, extract portable
+  editor invariants, map coverage to `Plate repo root` and Plate owners, then
+  create or refresh the issue-by-issue closure ledger. The cluster/matrix is
+  only a routing checkpoint. For every relevant issue, mark one of:
+  `covered-by-existing-test`, `test-written`, `plate-owned-covered`,
+  `deferred-with-owner`, or `invalid-skip`. A harvest is not done while any
+  relevant issue lacks a checkmark. After the ledger names owner/proof/command,
+  keep looping issue-by-issue: if the test exists, link it and verify it; if it
+  does not exist, write the local Slate/Plate test, run it, and mark the issue
+  checked only after proof passes or a real defer owner is recorded.
+  If the prompt or later user correction scopes the run to Slate v2 only,
+  Plate-owned rows are checked as `deferred-with-owner` with a concrete Plate
+  owner and reason; do not patch Plate packages/tests in that run.
+- **Workflow-slowdown checkpoint:** when a specialist command, gate, review,
+  finalizer, browser proof, or benchmark burns unexpected time, log the slow
+  step and repair the owning workflow if the slowdown is avoidable or repeated.
+- **Consolidation checkpoint:** move accepted reusable decisions into durable
+  docs/rules before ship readiness.
+- **Changed-list checkpoint:** update the concise list of all current-run
+  changes before final handoff so the user does not need to read every diff.
+- **Review-attention checkpoint:** rank the few things that most need user
+  attention before final handoff.
+- **Stopping-checkpoint queue:** in timed or batch-loop mode, collect soft
+  blockers and user-answer checkpoints for final handoff instead of stopping
+  immediately when safe alternate work remains.
+- **Readiness checkpoint:** run the lane's readiness owner and pause only for
+  explicit commit/PR/release authority. For Slate loops, readiness means
+  behavior, proof, package/API, docs, and plan ledger closure unless
+  ship/release was explicitly requested.
+
+Each checkpoint must end with:
+
+- plan state updated;
+- checkpoint mutation recorded: add, update, split, merge, retire, remove,
+  reprioritize, reopen, or no-change with reason;
+- evidence recorded with cwd/tool;
+- packet ledger row for any code, test, benchmark, docs, or skill packet;
+- workflow-slowdown row when a checkpoint, command, or specialist step is
+  materially slower than expected;
+- changed-list row when files, commands, docs, tests, benchmarks, examples, or
+  skills changed;
+- review-attention row when a packet needs human review, taste confirmation,
+  risky API attention, or close visual inspection;
+- queued stopping-checkpoint row for any deferred question or user decision;
+- next checkpoint owner named;
+- `check-complete.mjs` run only when the whole goal is actually closable.
+
+If output starts getting large, stop expanding prose and write artifacts or plan
+rows. The next activation should resume from the goal plan, not from compacted
+chat.
+
+## Remaining-Backlog Ladder
+
+When a timed or batch-loop run finishes a packet early, spend the remaining
+timebox on safe backlog. A 1h run that stops after 16 minutes failed the
+supervisor contract. An 8h run that stops after about 1h failed harder.
+
+Default next-owner order for stable feature/API validation:
+
+1. rerun focused stable example failures in Firefox/WebKit first when recent
+   failures named those engines;
+2. generate more realistic stress families around paste, undo/redo, selection,
+   Enter bursts, and follow-up typing;
+3. run in-app Browser visual smoke on richtext, plaintext, editable-voids, and
+   hidden-content-blocks when those stable examples are in scope;
+4. patch missing oracles, command pitfalls, or skill workflow misses discovered
+   by the proof;
+5. rerun focused proof and record packet keep/revert/quarantine;
+6. run `check-complete.mjs` only when the whole goal is actually closable.
+
+For prompts that explicitly name pagination, replace the stable-example ladder
+with the pagination route's scenario matrix, but keep the same rule: continue
+until the minimum runtime has elapsed and the active packet is closed. Before
+that, empty obvious backlog is not a stop condition. For prompts that mention
+only virtualization, huge documents, perf, DOM budget, or staged/virtualized
+strategies, stay in those non-pagination owners unless the user explicitly says
+pagination.
+
+## Supervision Mode
+
+Enter supervision mode when a timed or batch run has remaining minimum runtime
+but no obvious next packet. This is not a pause. The supervisor predicts the
+next useful work from the user's taste profile and evidence already gathered.
+
+Supervision mode loop:
+
+1. reread `vision`, the active goal plan, and the latest handoff rows;
+2. scan for stale claims, weak proofs, missing browser/selection oracles,
+   benchmark honesty gaps, API/docs mismatch, command pitfalls, skill drift,
+   issue-harvest gaps, sibling-editor comparison opportunities,
+   research opportunities, and slow loop steps. Treat pagination as out of
+   scope unless the prompt explicitly names it;
+3. add, split, or reprioritize checkpoints from that scan;
+4. run the highest-value reversible checkpoint that does not require new user
+   authority;
+5. record keep/revert/quarantine, changed list, metrics, review-attention, and
+   the next supervision hypothesis;
+6. repeat until the minimum runtime expires, then close the active packet and
+   hand off.
+
+If supervision mode truly finds no useful runtime patch, it must still spend
+the remaining time on proof hardening, oracle audits, benchmark hygiene,
+scratch experiments, research packets, external issue/sample mining, docs/API
+consistency, and workflow repair. "No idea what to do next" is a skill bug;
+patch the owning rule instead of asking the user to route the next loop.
+
+## Research / Discovery Delegation
+
+Use research when automation needs external prior art, better testing strategy,
+OSS/GitHub discovery, scalable repo scans, or a research system before
+patching. Slate/editor substrate research goes through `slate-research`. Plate,
+framework, package, docs, and product-DX research goes through `research-wiki`,
+`docs-creator`, direct source/docs audit, or the package owner.
+
+`auto` owns the checkpoint decision, timebox, final handoff, and promotion back
+into patch/perf/plan/docs work. The delegated research owner owns the research
+loop: artifact layout, repo/query/lead/read ledgers, dedupe keys, shards,
+evidence grades, scoring, context budget, raw-storage policy, and research
+closeout.
+
+Do not keep long research governance inside this skill. If research gets slow,
+duplicate-heavy, or weak, repair the owning research rule and sync the
+generated mirror.
+
+For risky performance or architecture lanes inside a timed run:
+
+1. do not stop at "needs attention" if the issue is measurable and reversible;
+2. run a creative but bounded experiment packet: alternate strategy, owner
+   split, benchmark-instrumentation repair, scratch runtime variant, proof
+   harness, or quality-gap research;
+3. use `slate-ar` for Slate measured loop state when the work needs packet
+   history, ASI logging, dashboard/status, or quality-gap research;
+4. use `slate-ar` perf mode for Slate target-backed performance experiments,
+   and use `slate-plan`/`plate-plan` only when an API/runtime/product decision
+   must be made explicit before implementation;
+5. compare baseline/latest/best and record why the packet is `keep`, `revert`,
+   or `quarantine`;
+6. if the timebox expires during the lane, fully close the active packet even
+   when that exceeds the nominal duration. No dirty half-experiment is a valid
+   timed-mode handoff.
+
+For external editor issue-harvest prompts, replace the stable-example ladder
+with the issue-harvest ladder. If the prompt is `issue-harvester`, invoke
+`issue-harvester` as the primary owner and use this ladder as its supervisor
+checklist:
+
+1. resolve the target repo locally, cloning to `../<repo>` only if missing;
+2. run the license/output gate from `editor-test-harvester`;
+3. detect an existing closure ledger under
+   `docs/editor-issue-harvester/<repo>/full/`; if it exists, refresh it to
+   latest issue inventory and resume only unchecked rows. If only a legacy
+   `.tmp/editor-issue-harvester/<repo>/full/` ledger exists, import or
+   regenerate its compact state into the docs path first, then continue from
+   docs;
+4. inventory issues across `open` and `closed` by default, using `state=all`
+   unless the user explicitly narrows the state;
+5. cluster issues before reading them one by one;
+6. skip Lexical/editor-specific API, node-class, command-system, product, docs,
+   support, release, and framework-only issues with explicit reasons;
+7. keep only portable editor robustness clusters: selection, IME, beforeinput,
+   clipboard, history, decorations, void/inline, tables, collaboration,
+   browser/mobile, and large-document performance;
+8. for every relevant closed issue, scan linked PRs and test diffs before
+   deciding local coverage;
+9. search target tests/source/PRs for kept clusters;
+10. map each invariant to current `Plate repo root` and Plate coverage;
+11. create or refresh an issue-by-issue closure ledger for every relevant issue,
+   with one row per issue and a checkmark state:
+   `covered-by-existing-test`, `test-written`, `plate-owned-covered`,
+   `deferred-with-owner`, or `invalid-skip`;
+12. patch or create local tests only after the issue row names owner, proof
+   kind, and verification command;
+13. keep looping over relevant unchecked issues one by one. A cluster-level
+   matrix is a checkpoint, not a stop condition. If a matching test exists,
+   link the exact file/line/test name and rerun the focused command. If it does
+   not, write the test in the owner surface, verify it, then check off that
+   issue;
+   If the user scopes the harvest to Slate v2 only, do not write Plate tests;
+   mark Plate-owned rows `deferred-with-owner` with the concrete Plate owner
+   and continue to the next Slate-v2-owned row.
+14. record compact external issue ledgers, matrices, owner decisions, proof
+    commands, and checkmarks under `docs/editor-issue-harvester/<repo>/`;
+    keep raw issue bodies/comments and hydrated JSON only under
+    `.tmp/editor-issue-harvester/<repo>/raw/`.
+
+Do not broaden into experimental architecture when the user scoped it out.
+Pagination is scoped out by default for `auto`; route it as a deferred
+stopping checkpoint only, not a next owner, unless the prompt explicitly names
+pagination.
+
+## Packet Ledger
+
+Every optimization, bug fix, oracle repair, benchmark repair, docs repair, or
+skill repair is a packet. The active goal plan must carry a compact ledger with
+one row per packet:
+
+- packet id and checkpoint owner;
+- hypothesis or failure signature;
+- files/commands changed or inspected;
+- baseline, latest, and best metric when a metric exists;
+- behavior proof and visual proof run;
+- decision: `keep`, `revert`, or `quarantine`;
+- reason for that decision;
+- next owner or follow-up.
+
+Use the decisions strictly:
+
+- `keep` only when correctness, native editor behavior, visual proof, and any
+  relevant metric are green enough for the packet's risk.
+- `revert` when the packet creates a known regression, hides latency behind
+  fake debounce, dirties API shape without architectural approval, or has no
+  credible proof.
+- `quarantine` when the packet contains useful evidence or partial code but is
+  not shippable. Quarantined packets do not count toward completion, ship
+  readiness, or benchmark wins until promoted to `keep`.
+
+No-code proof packets still get a ledger row with pass/fail evidence and the
+next owner. A final handoff without packet decisions is incomplete.
+
+## Workflow Slowdown Ledger
+
+Automation performance is part of product quality. Slow agent loops hide real
+work, waste timeboxes, and make overnight runs harder to trust.
+
+Log a workflow-slowdown row when:
+
+- a checkpoint takes materially longer than expected;
+- a specialist skill spends time on avoidable setup, broad scans, repeated
+  finalization, redundant gates, or noisy output;
+- a command has no narrow mode and blocks timed/batch progress;
+- `slate-ar ship`, finalization, `autoreview`, browser proof, docs proof, or
+  benchmark setup dominates the loop without producing proportional evidence;
+- compaction/output budget pressure is caused by command shape rather than the
+  real task.
+
+Each row must include:
+
+- step or command;
+- owner skill/script/package;
+- elapsed time or best available estimate;
+- expected timebox if known;
+- why it was slow;
+- evidence produced;
+- repair decision: keep as necessary, narrow command, cache/reuse evidence,
+  split checkpoint, patch skill, patch script, or defer with reason.
+
+Repair repeated or avoidable workflow slowdowns:
+
+- slow specialist routing -> patch the owning `.agents/rules/*.mdc`;
+- slow Slate finalization/readiness -> patch `slate-ar`;
+- slow proof gate -> add a focused gate or route through the lane's proof owner;
+- slow browser repetition -> promote reusable proof into `@platejs/browser`;
+- slow benchmark setup -> fix benchmark target/script ergonomics;
+- slow output -> narrow command output or write artifacts instead of streaming.
+- slow or silent review -> bound the review packet, record the timeout, then
+  fall back to deterministic focused gates for the touched surfaces. Do not call
+  the review clean when the reviewer produced no result.
+
+Do not optimize away necessary proof. A slow step is acceptable when it is the
+only honest evidence for the claim, but the handoff must say so.
+
+## Command Pitfalls
+
+Automation should use the repo's known focused commands, not improvised command
+shapes.
+
+## Release Boundary
+
+Slate packages are beta-release candidates in this repo, but ordinary
+automation loops still do not open PRs, publish, or run release packaging unless
+the prompt or active lane asks for it. In ordinary automation loops:
+
+- do not raise release, publish, changeset, or PR readiness as a next step
+  unless that surface is in scope;
+- do not treat published-package artifact work as a blocker for behavior or
+  package closure;
+- record package/runtime deltas as package state, not as release authority;
+- keep closure on behavior proof, Browser proof, package checks, workflow
+  repairs, and the active plan ledger;
+- route release packaging only when the prompt names ship, release, publish,
+  PR, or a release-specific skill.
+
+For Slate v2 loops, ignore unrelated dirty state by default. Repo changes are
+review attention only when the current work owns that surface. Do not warn
+about unrelated `.agents`, templates, locks, generated mirrors, or older manual
+changes in the final handoff.
+
+In `Plate repo root`, prefer these focused forms:
+
+```bash
+pnpm check:slate
+pnpm --filter slate test:slate-browser:chromium <file-or--grep>
+pnpm check:slate:browser-matrix
+PLAYWRIGHT_BASE_URL=http://localhost:3102 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter slate test:slate-browser:chromium tests/slate-browser/donor/examples/<suite>.test.ts -g "<pattern>"
+pnpm --filter @platejs/<package> test -- <file-or-pattern>
+cd packages/<package> && bun test ./test/<file>.test.ts --test-name-pattern "<pattern>"
+```
+
+Rules:
+
+- `pnpm check:slate` is the default daily Slate lane: package typecheck/tests,
+  browser package tests, and full Chromium browser proof through `apps/slate`.
+- Transplant parity, docs-v2 audits, benchmark target audits, www typecheck,
+  WebKit, mobile viewport, and the full Playwright app matrix are not part of
+  the daily Slate loop.
+- `pnpm --filter slate test:slate-browser:chromium <file-or--grep>` is
+  the focused changed-row browser lane. `apps/slate` must reuse
+  `apps/www` Slate example modules instead of owning duplicate examples.
+- WebKit, mobile viewport, and the full Playwright app matrix are closure
+  gates through `pnpm check:slate:browser-matrix`.
+- run commands from the Plate repo root unless a package-local script requires
+  the package cwd;
+- keep docs, skill, runtime, package, benchmark, and Playwright scans rooted in
+  the Plate repo. Do not search the donor checkout for current runtime facts;
+- before running a focused test, resolve the actual runnable entrypoint from
+  the owning surface, not memory: use targeted searches such as
+  `rg --files packages/<pkg>/test apps/slate/tests tooling benchmarks | rg
+  "<basename>|<suite>"`, or run the same search from the package cwd for
+  package-local Vitest. Do this first, not after one failed command. Many owner
+  files are imported by a `*.test.*` wrapper, while some root Bun contract files
+  intentionally do not use `.test.*`;
+- match the runner to the resolved entrypoint: Slate browser specs under
+  `apps/slate/tests/slate-browser/**` use `pnpm --filter slate test:slate-browser:chromium`; root Bun contracts under
+  `packages/*/test/*.ts` use `bun test ./...`; package-local Vitest wrappers
+  use the package cwd and package script;
+- if Bun or Vitest says "No test files found" or "filters did not match", stop
+  guessing command variants. Locate the exact file or wrapper with `rg --files`
+  / `rg -n`, then rerun once with the correct runner;
+- for Bun workspace package commands, prefer path filters such as
+  `bun --filter ./packages/slate-history typecheck`. Package-name filters can
+  miss in this workspace and waste the loop;
+- use `pnpm --filter slate test:slate-browser:chromium ...` for focused Slate
+  browser specs; do not send Playwright specs through `bun test` or the
+  `apps/www` docs app;
+- do not run multiple managed Playwright commands in parallel,
+  including through `multi_tool_use.parallel`. The managed route builds and
+  serves the Next example app, and concurrent runs can trip the Next build lock
+  (`Another next build process is already running`) or prove the wrong stale
+  server. Parallelize file reads and package-level non-server tests, but
+  serialize managed Playwright proofs unless one checkpoint explicitly owns a
+  prebuilt server plus `PLAYWRIGHT_BASE_URL`;
+- managed Playwright proofs can still reuse an already-listening server through
+  `reuseExistingServer` and silently skip `bun build:next`. After package,
+  runtime, example, generated-site, or route-control source edits, verify server
+  freshness before trusting a managed Playwright red or green. If a proof shows
+  stale rendered output, stop the Playwright server on the configured port or use
+  a fresh port/baseURL, rerun through a fresh build, and log the stale-server
+  miss as a workflow slowdown;
+- every integration entrypoint that imports public package exports during
+  Playwright, including async/local wrappers, must route through the repo
+  managed `www` Playwright path; raw `playwright test` is a stale-dist footgun
+  when `@platejs/browser/playwright` changes;
+- if an integration wrapper captures `--reporter=json` from Playwright stdout,
+  do not run the full managed browser-proof command as that child command. Run
+  the required package build as a separate preflight, then run the repo-owned
+  Playwright config with JSON stdout so `report.json` stays parseable;
+- after changing `packages/browser/src/playwright/**` helpers or browser
+  handle APIs consumed through `@platejs/browser/playwright`, run
+  `pnpm --filter @platejs/browser build` before browser proofs that import the
+  package. The specs can otherwise load stale generated package output and fail
+  on missing helper methods instead of product behavior;
+- after changing `packages/slate-react/src/**`, `packages/slate-dom/src/**`, or
+  any public package runtime consumed by the example app through package
+  exports, run the touched package build before managed Playwright proof, for
+  example `pnpm --filter @platejs/slate-react build`. The managed Playwright
+  wrapper builds `@platejs/browser` and the Next site, but stale package `dist`
+  can still make the browser prove old runtime behavior;
+- when running packed/external-consumer package smoke, start from the live
+  export/type contracts such as
+  `packages/slate/test/public-package-import-smoke.test.ts` and
+  `packages/slate/test/public-package-types-smoke.ts`. Do not invent public
+  function call examples from memory. Prefer type-importing exported names and
+  doing only tiny value references unless the package docs/source were just
+  inspected for that exact signature;
+- split external consumer type smoke by claim width. App-facing Slate packages
+  should compile with strict Slate declaration checking. `slate-browser`
+  Playwright subpaths may need a separate config with third-party lib checking
+  skipped so Playwright/Node ambient declarations do not hide the Slate package
+  result. Record the split as proof scope, not as a product exemption;
+- use `bun test ./path` only with repo-relative Bun test paths from
+  `Plate repo root`, or with package-local paths after recording the package cwd;
+- if root `bun test ./packages/.../<file>.test.ts` says the path filter did not
+  match and suggests adding more `./` prefixes, do not chase prefixes. Either
+  add `--path-ignore-patterns ''` from `Plate repo root` or switch to the owning
+  package cwd and run the local wrapper path, for example
+  `cd packages/slate-dom && bun test ./test/bridge.test.ts --test-name-pattern
+  "<pattern>"`;
+- do not claim a root package test directory proved anything until its output
+  reports the expected file and pass counts. The repo `bunfig.toml` ignores
+  `*.test.*` by default, so root aggregate package tests must use
+  `--path-ignore-patterns ''` when they intentionally cover `.test.*` contracts.
+  Package-local scripts such as `bun --filter slate-browser test:core` are also
+  valid because they run under the package owner instead of the root ignore;
+- for package Vitest contracts, target the actual `*.test.*` entrypoint. Some
+  contract bodies live in imported siblings such as `surface-contract.tsx`;
+  running the sibling path directly fails the Vitest include filter and proves
+  only a command-shape miss. Before running Vitest against any target path that
+  does not already match `*.test.*`, locate the wrapper with
+  `rg -n "<imported-file-basename>" <package>/test --glob "*.test.*"`;
+- `packages/slate-react` contracts are Vitest-owned. Run them from
+  `packages/slate-react` as
+  `bun test:vitest test/<file>.test.tsx`; do not run them through root
+  `bun test ./packages/slate-react/...`;
+- do not run `generic-*-contract.ts` or other type-contract files with
+  top-level compile examples through `bun test`; they may contain deliberate
+  runtime-invalid `@ts-expect-error` calls. Use the owning package `typecheck`
+  script or the relevant `tsc --project ...` command instead;
+- do not broad-scan every example/package test name into chat with
+  `rg "test\\(" ...` when the lane is already scoped; use a curated file list,
+  targeted `rg` filters, or write discovery output to an artifact;
+- when searching for text that contains shell metacharacters, especially
+  backticks around command names, quote the pattern with single quotes or use
+  `rg -F`. Do not put a backtick-containing `rg` pattern inside double quotes;
+  the shell will execute it and create a fake command failure;
+- default to single-quoted `rg` patterns in Auto. Use double quotes
+  only when shell interpolation is intentionally required and the pattern has no
+  markdown/code/backtick/metacharacter content;
+- before executing any `rg` command whose pattern is inside double quotes, do a
+  literal shell-expansion check: if the pattern contains backticks, `$`, `()`,
+  `|`, `<`, `>`, or markdown inline-code text, stop and rewrite it to
+  single quotes, `rg -F`, or one literal per command. A failed command followed
+  by a broad noisy rerun is a supervisor bug, not harmless friction;
+- when searching docs for inline-code terms, search each literal with
+  `rg -F 'literal' <paths>` or a single-quoted regex. Do not combine
+  backtick-wrapped alternatives inside one double-quoted pattern;
+- do not write one-line `rg` regexes that mix shell quote types, such as a
+  single-quoted command containing embedded single-quoted alternatives or a
+  double-quoted command containing markdown/backtick terms. Split the scan into
+  separate `rg -F` literals or use a tiny Node script with an array of patterns;
+- for stale-doc wording scans copied from markdown, first inspect the pattern
+  for backticks, `$`, `()`, `|`, `<`, `>`, and command substitutions. If any
+  are present, use single quotes, `rg -F`, or split the scan into multiple
+  fixed-string commands. A double-quoted `rg` pattern containing markdown
+  backticks is always a workflow bug, even when the scan is "only quick";
+- for API/docs/current-state audits, do not stream broad `rg -n` matches across
+  `docs site packages` into chat. First run `rg -l` or `rg --count-matches`
+  with generated trees excluded, then inspect only the small suspect files with
+  `sed` slices or write the full audit to an artifact. Exclude generated static
+  output such as `apps/www/.next/**` unless that artifact is the target;
+- before any `rg -n` over more than one large root such as
+  `docs/slate-v2`, `packages`, `site/examples`, or `playwright/integration`,
+  run a preflight with `rg -l`, `rg --count-matches`, or `rg --files | rg`.
+  If the file list is larger than roughly 20 files or includes generated
+  ledgers/benchmarks, narrow the roots or write the full result to `.tmp/**`.
+  Never stream a broad helper/test inventory into chat just to decide which
+  package script to run;
+- if a packet already has a known owner file, fixture path, research artifact,
+  benchmark script, or package entrypoint, start there. Do not run a broad
+  repo/root scan first "just in case"; broaden only after the owner file proves
+  the missing symbol or dependency is outside its boundary;
+- when closing a `docs/slate-v2/research/**` lead, read that artifact's
+  `lead-ledger.tsv`, `promoted-ledger.tsv`, and `read-log.tsv` first. Use exact
+  source refs and owner files from those ledgers before any repo-wide `rg`.
+  Broad current-tree or OSS scans are allowed only after the recorded anchors
+  are missing, stale, or insufficient for the proof command;
+- when parsing ledgers, match exact column names before fuzzy fallbacks. Prefer
+  a literal `status` column over `decision`, `action`, or regex matches. Never
+  infer backlog/open state from a `decision` column when a `status` column
+  exists in the same TSV;
+- when scanning research backlog/open status, parse work ledgers only:
+  `lead-ledger.tsv`, `promoted-ledger.tsv`, issue closure ledgers, or an
+  explicitly named action matrix. Do not count `repo-registry.tsv`,
+  `read-log.tsv`, source registries, or other provenance metadata as open work
+  just because they contain a `status`-like column;
+- when classifying research status values, separate actionable backlog from
+  accepted deferral. `promote-*`, `promoted-pending`, `queued-*`, `open`,
+  `todo`, `candidate`, `needs-*`, and untriaged rows can be actionable. Statuses
+  like `promoted-kept`, `promoted-existing`, `kept-*`, `covered`,
+  `covered-existing`, `supporting`, `supporting-only`, `invalid-skip`,
+  `rejected`, and `closed` are closed. Statuses starting with `deferred-*` or
+  legacy `defer` are queued stopping checkpoints, not work to "fix" during a
+  timed run unless the active packet deliberately takes that owner;
+- if a checkpoint hits an output-budget miss from a broad scan, stop widening in
+  that checkpoint. Record the miss in the slowdown ledger, switch to exact
+  owner files or a scratch artifact, and patch this skill again if the miss
+  repeats after an existing rule should have prevented it;
+- before any `rg -n` over a newly cloned or unfamiliar OSS repo root, also run
+  `rg -l`, `rg --count-matches`, or a content index first, even when it is only
+  one root. If the first pass hits docs/cases/tests at repo scale, switch to
+  exact filenames or write the full result to `.tmp/**`; do not stream the
+  whole external corpus into chat;
+- do not broad-search `docs/editor-issue-harvester/**` or raw issue JSON just
+  to learn ledger status. Parse `issue-closure-ledger.md` / `.tsv` directly
+  for the `check` column, `unchecked relevant`, total rows, and next unchecked
+  issue;
+- before writing one-off reducers over generated benchmark, ledger, or proof
+  artifacts, inspect the artifact schema first: print the TSV header or JSON
+  top-level keys, then parse the real field names. Do not guess columns such as
+  `checked` when the ledger uses `check`, and do not guess benchmark summary
+  keys before reading the artifact shape;
+- when durable Slate v2 docs contain absolute checkout paths, verify the path
+  exists before reusing the command. Current Slate v2 runtime/package commands
+  belong to the Plate repo root; stale donor-checkout command snippets should
+  be repaired unless the doc explicitly names a historical draft/source
+  checkout such as `slate-v2-draft`;
+- when Playwright imports a package through public exports such as
+  `@platejs/browser/playwright`, verify whether the export resolves built `dist`;
+  after source changes to those packages, run the focused package build (for
+  example `pnpm --filter @platejs/browser build`) before claiming the rerun tested
+  the patch, and patch any wrapper script that bypasses that build path;
+- after package, runtime, example, or generated-site source edits, do not use an
+  already-running `PLAYWRIGHT_BASE_URL` dev server for final proof until you
+  have restarted it or proven it rebuilt the current tree. If freshness is
+  uncertain, omit `PLAYWRIGHT_BASE_URL` once and let Playwright run its managed
+  build/server path, then record the extra time as proof cost instead of trusting
+  stale green or stale red results;
+- for ad hoc route screenshot or DOM-metric proof outside a managed Playwright
+  spec, do not run raw `node` and assume it can import `playwright`. Prefer the
+  repo-managed `pnpm --filter slate test:slate-browser:chromium` path for
+  Slate proof when the proof should be durable;
+- use `*_SKIP_BUILD=1` benchmark env vars only after a successful fresh build
+  from the current runtime source. If runtime, example, package export, or
+  benchmark-injected browser-handle code changed since the last build, rerun
+  the benchmark without `SKIP_BUILD` once before trusting any pass;
+- do not casually swap in raw `playwright`, or a custom wrapper unless the
+  package script and argument forwarding are verified in the plan;
+- if a command fails because of command shape, classify it as a workflow
+  slowdown, repair the owning skill/script when reusable, and rerun the focused
+  proof with the corrected command.
+
+## Taste Coverage Stop
+
+`vision` is the supervisor's taste profile. If the loop reaches a
+stopping checkpoint, user-answer checkpoint, or architecture decision and the
+needed preference is not covered there, stop implementation before more product
+or runtime work.
+
+Record a taste-gap row in the active plan:
+
+- prompt or stopping checkpoint that exposed the gap;
+- missing preference or decision pressure;
+- exact user answer when available;
+- reusable rule candidate;
+- owner: `vision`, another `.agents/rules/**` file, or non-reusable
+  run note;
+- capture decision: `recorded`, `not reusable`, or `needs one answer`.
+
+When the user answers a stopping checkpoint and the answer is reusable, first
+patch root `VISION.md`, verify the `vision` skill still routes there, and then
+resume the automation. If the answer
+is run-specific, record it in the active plan and mark the taste gap
+`not reusable`.
+
+Do not turn this into routine polling. Ask only when the answer changes product
+intent, risk tolerance, architecture ownership, or a taste rule that cannot be
+inferred from source evidence. Do not ship while reusable taste gaps remain
+uncaptured.
+
+## Stopping Checkpoint Queue
+
+Timed and batch-loop modes do not stop at the first soft question. They stack
+questions for the final handoff when another safe owner remains runnable.
+
+Queue soft checkpoints:
+
+- missing taste rule where work can continue on unrelated safe packets;
+- user-only product preference for one packet while other packets remain safe;
+- architecture/API fork that affects one lane but does not block proof, docs,
+  benchmark, skill, or oracle repair elsewhere;
+- scoped proof limitation that needs user claim-width confirmation, except raw
+  mobile/device claims are already deferred by default until a real device lane
+  exists;
+- accepted deferral that deserves final review.
+
+Never defer hard checkpoints:
+
+- commit, push, PR, branch creation, destructive cleanup, or external
+  credential;
+- unsafe API/runtime break where no safe alternate work remains;
+- same real blocker repeated with no autonomous move left;
+- tool/access failure that prevents all meaningful progress;
+- explicit user instruction to stop at the first checkpoint;
+- timebox expired before starting the next safe packet.
+
+Each queued stopping checkpoint needs:
+
+- id;
+- type: taste, product, API/runtime, proof-width, deferral, authority, or other;
+- question or needed decision;
+- why the decision matters;
+- what work was paused or skipped;
+- what safe work continued;
+- current recommendation;
+- exact file, route, command, benchmark, screenshot, or plan row anchor.
+
+Final handoff must group queued questions so the user can answer them in one
+reply. After the user answers, update the plan, capture reusable taste in
+`vision`, and resume the highest-value queued owner first.
+
+## Changed List Checkpoint
+
+Autogoal-backed Auto must leave a readable list of what changed.
+The active plan and final handoff must include a concise current-run list,
+derived from the packet ledger and current file/source evidence, not old branch
+history.
+
+Group it like this:
+
+- code/runtime/API;
+- tests/oracles/browser proof;
+- benchmarks/metrics/targets;
+- examples/docs;
+- skills/workflow;
+- reverted/quarantined packets.
+
+Keep each row short and concrete. Include only things changed or intentionally
+reverted/quarantined during the current automation run. If a group has no
+changes, say `none`. No public changelog prose.
+
+## Review Attention Checkpoint
+
+The final handoff must include the items that most deserve the user's attention.
+This is not another changed-list. It is a ranked review guide.
+
+Include at most five items, ordered by review value:
+
+- risky architecture/API decision;
+- behavior that passed tests but still deserves human visual feel;
+- perf tradeoff or plateau that affects product judgment;
+- quarantined packet or accepted deferral;
+- changed skill/workflow rule that alters future automation behavior;
+- area where browser proof is scoped narrower than the user's likely claim.
+
+Each item must say:
+
+- what to inspect;
+- why it matters;
+- exact file, route, command, screenshot, benchmark, or plan row to inspect;
+- current agent recommendation: accept, inspect closely, defer, or reject.
+
+If there is nothing meaningful for the user to review, say `none`, but only
+after checking packet ledger decisions, scoped proof, residual risks, and
+changed workflow rules.
+
+## No Runtime Questions
+
+Do not pause for routine "grill me" questions during the loop.
+
+The supervisor self-grills:
+
+- What would the user complain about after watching the route for 30 seconds?
+- What native editor behavior could this patch break?
+- What visual shift or blank state would not show in metrics?
+- Is the benchmark measuring the real editor operation or hiding the hot lane?
+- Is this a package/runtime API smell rather than another route patch?
+- Did a skill miss a recurring expectation that should be repaired?
+- What decision should be consolidated so the next run does not rediscover it?
+
+Answer these from code, tests, docs, Browser, screenshots, Playwright, and
+benchmarks. Stop only for a true authority boundary:
+
+- commit, push, PR, branch creation, destructive cleanup, external credential,
+  or a user-only product decision;
+- an unsafe API break where the repo evidence leaves two viable futures and the
+  wrong choice would be expensive.
+
+Do not ask one question per packet. If a boundary question is unavoidable,
+record the blocked state once with the exact decision needed. In timed or
+batch-loop mode, queue soft questions and keep working on safe alternate owners.
+
+## Authority
+
+The supervisor may repair workflow sources when the loop proves they are wrong.
+It may also change the Plate/Slate skill topology when overlap, missing
+ownership, or stale routing is causing repeated misses.
+
+Allowed skill repair:
+
+1. identify the missed recurring expectation;
+2. patch the owning `.agents/rules/<owner>.mdc`;
+3. run `pnpm install` to sync generated `.agents/skills/**/SKILL.md`;
+4. verify source and generated mirror with `rg`;
+5. record the repair in the goal plan.
+
+Use `slate-patch repair <expectation>` for patch-lane misses.
+Use `autogoal repair <expectation>` for universal goal lifecycle misses.
+Patch `auto` itself when the supervisor cadence, proof, or routing
+missed the expectation.
+
+Allowed topology changes:
+
+- update any `.agents/rules/*.mdc` rule owned by the missed workflow;
+- create a new repo-local skill when a repeated workflow has no clear owner;
+- merge skills when two wrappers overlap and confuse routing;
+- remove or deprecate a repo-local skill when it adds ceremony without distinct
+  ownership;
+- update `argument-hint`, description, routing, stop rules, and handoff shape;
+- update benchmark target policy and proof-gate ownership when needed.
+
+Topology changes need evidence:
+
+- repeated miss, routing confusion, or no-owner gap;
+- source-rule patch, not generated mirror edits;
+- `pnpm install`;
+- generated mirror audit with `rg`;
+- agent-native review;
+- plan row explaining what future mistake is now prevented.
+
+Do not hand-edit generated `.agents/skills/**/SKILL.md`.
+
+## Learning Loop
+
+Every failed attempt is classified before the next checkpoint:
+
+- runtime bug;
+- missing oracle;
+- missing metric;
+- lying metric;
+- weak visual proof;
+- stale docs/decision memory;
+- bad public/internal API shape;
+- missing taste coverage;
+- wrong specialist owner;
+- missing skill;
+- overlapping/dead skill;
+- workflow slowdown;
+- too-large prompt/output-budget miss.
+
+Then repair the owning layer:
+
+- runtime bug -> `slate-patch`;
+- missing oracle -> `slate-patch` or `tdd`;
+- missing/lying metric -> benchmark target/script repair;
+- visual proof gap -> Browser/screenshot/Playwright geometry proof;
+- stale docs -> decision consolidation;
+- bad API -> `slate-plan` or accepted implementation;
+- missing taste coverage -> stop, capture the answer, and patch
+  `vision` before resuming when the answer is reusable;
+- wrong/missing/overlapping skill -> `.agents/rules/**` repair;
+- workflow slowdown -> log the slow owner, then patch the skill, script, gate,
+  command shape, or checkpoint split when the slowdown is avoidable;
+- output-budget miss -> split into smaller autogoal checkpoint.
+
+Learning is only real when the future loop changes. A plan note without a rule,
+test, metric, doc, or owner update is just archaeology.
+
+## Cadence
+
+Each loop cycle has one primary owner and one packet-ledger decision.
+
+1. **Status:** run `slate-ar status` for Slate packets or direct source/status
+   reads for Plate/shared packets.
+2. **Research discovery:** run the lane research owner when API, DX, tests,
+   docs, metric coverage, or owner choice is unclear.
+3. **Quality gap:** run `slate-ar quality` for Slate autoresearch execution, or
+   route Plate quality gaps to the package/docs/test owner.
+4. **Behavior:** run `slate-ar stabilize` / `slate-ar gate` before Slate perf;
+   run focused Plate behavior/browser/docs proof for Plate lanes.
+5. **Oracle repair:** if proof is missing, use `slate-patch`, `tdd`, or the
+   package test owner.
+6. **Vision proof:** use Browser, screenshot, and/or Playwright geometry checks
+   for visual/editor parity.
+7. **Perf:** run `slate-ar perf` for Slate only with correctness green; run
+   package/app benchmarks for Plate only after behavior proof is credible.
+8. **Architecture cleanup:** use `architecture-cleanup` when the evidence
+   points to shallow modules, split ownership, copied proof helpers, over-splits,
+   deslop, or poor test locality rather than one obvious API decision.
+9. **API cleanup:** use `slate-plan` or `plate-plan` when repeated bugs show
+   bad public or internal API shape.
+10. **Skill repair:** patch source rules when the loop itself missed policy.
+11. **Decision consolidation:** update durable docs before ship readiness.
+12. **Readiness:** use the lane readiness owner when the current tree is
+   reviewable; do not turn readiness into release/publish unless requested.
+
+After each cycle:
+
+- keep only if correctness and visual proof are green enough for the packet's
+  risk;
+- revert, rework, or quarantine if the packet weakens behavior, hides work
+  behind debounce, breaks native editor expectations, or makes API shape
+  dirtier;
+- switch bottleneck after two correctness-green no-gain packets;
+- route to `architecture-cleanup` when the next win is broader architecture/code
+  cleanup, or to `slate-plan` when it is a concrete public API/runtime
+  decision;
+- log evidence, rejected attempts, and the next owner in the plan.
+
+## Taste Profile
+
+Act like the user would after reading the code at 2am:
+
+- long-term architecture over local symptom patches;
+- package/runtime owner over example glue;
+- no hidden debounce wins unless explicitly accepted;
+- no fake stress fixtures pretending to be realistic docs;
+- examples should show the actual API/DX, not helper ceremony;
+- source of truth first, generated mirrors second;
+- no branch/review-branch surprises;
+- no public changelog prose in internal decision docs;
+- no "green" claim without behavior, visual, and metric truth matching the
+  surface;
+- delete, merge, or repair workflow tools when they confuse ownership.
+
+## Vision Proof
+
+Metrics are not enough. Browser-visible editor work needs a human-like proof.
+
+Use the in-app Browser for live local routes when a route is named or obvious.
+Use Playwright for replayable proof. Use screenshots or geometry assertions when
+the failure can be visual:
+
+- text shifts on selection/focus;
+- blank virtualized windows;
+- overlapped pages/content;
+- wrong scroll anchoring;
+- caret at the wrong visual line;
+- margin click placed on the wrong side;
+- table/page fragment drift;
+- native selection handles not matching model selection.
+
+Selection/editing regressions need both layers. Do not call a packet fixed when
+only Slate's model selection is green. Assert native selected text through
+`window.getSelection()` / `slate-browser` `selectedText`, and assert exact DOM
+selection endpoints when the route has stable text-node structure. If expected
+native behavior is disputed, compare against the matching upstream
+`https://www.slatejs.org/examples` route or captured upstream behavior before
+weakening the oracle.
+
+If the user reports a screenshot-visible selection/caret artifact, the proof
+must include a fresh screenshot or pixel/geometry artifact from the real route
+after the real interaction. Inspect the image before claiming fixed. Pair the
+image with model selection, native `window.getSelection()` state, and visible
+view-selection marker or caret-rect assertions so a projected selection cannot
+hide a second native paint. When a route uses projected/view selection, include
+the `slate-browser` `noDoubleSelectionHighlight` assertion or an equivalent
+pixel/geometry proof.
+
+For vertical selection/navigation, prove reverse movement. A Shift+Down row is
+not complete until Shift+Up is run from the resulting state and its focus
+sequence equals the reverse of the Shift+Down prefix. Staged-vs-virtualized
+parity is useful, but never sufficient by itself: both modes can be wrong in
+the same way. Add an independent oracle such as reverse-path equality, native
+or upstream Slate behavior, exact visual-line geometry, or screenshot proof.
+
+Do not trust Playwright rows that use browser/project-gated `return` statements
+to avoid unsupported engines or mobile lanes. That is fake green: Playwright
+reports a pass while no behavior ran. Convert those gates to `test.skip(...)`
+with a concrete reason, or remove the gate and run the row on the broader
+browser set. Before trusting a route-level Playwright proof, scan the target
+spec with `rg -n "\\breturn\\b|test\\.skip|project\\.name|browserName" <spec>`
+and classify every hit in the plan as helper return, explicit skip, or fake
+green repaired. For multi-file or route-family skip audits, do not stream raw
+hits into chat. Write the raw scan to a scratch/research artifact or summarize
+counts by skip class first, then inspect only suspicious rows. When widening a
+row exposes browser-specific DOM leaf shape, keep the behavior assertion strict
+on model text, collapsed model selection, native caret/selected text, and visual
+caret, but do not overfit a Chromium-only leaf path when another browser
+preserves the same user-visible contract with a split text node.
+
+Mobile-emulation proof is scoped proof. The Playwright `mobile` project can
+prove viewport, touch/semantic-handle, and claim-width behavior, but
+`page.keyboard.type(...)` is not raw mobile native typing. For mobile-only
+editing rows, use a `slate-browser` semantic insert/composition/touch helper or
+record the row as desktop-native keyboard proof with an explicit mobile skip. If
+a desktop row keeps `page.keyboard.type(...)`, rerun at least one desktop project
+after adding a mobile semantic branch so the desktop-native claim is not
+silently downgraded.
+
+Raw mobile/device claims are deferred by default until the repo has a real,
+repeatable Android/iOS/Appium or equivalent device lane with artifacts. Do not
+ask the user to reconfirm this in every handoff. Record the claim as
+`deferred-with-owner` or `scoped proof only`, keep Playwright mobile evidence
+for viewport/semantic behavior, and continue with desktop/browser proof unless
+the user explicitly asks to build the raw-device lane.
+
+Do not let a single-DOM-text-node selection row stand in for rich editor
+coverage. When the selected text can cross marks, links, inline boundaries, or
+multiple leaves, add a multi-path row with real keyboard typing, one undo,
+model value/selection, native selected text, and DOM endpoint assertions.
+`dragTextRange`-style substring helpers are not enough for that row because
+they cannot express many-leaf DOM selection.
+
+For route-level editor proof, simulate real use:
+
+- click paragraph, table cell, margin, page corner;
+- type bursts and Enter bursts;
+- double click word;
+- drag selection across lines and pages;
+- undo/redo after edits;
+- copy/paste/select-all where relevant;
+- scroll away and back, then continue typing;
+- strategy/control changes when the example exposes them.
+
+When using the in-app Browser:
+
+- use Browser Playwright locators for keyboard shortcut proof such as
+  `ControlOrMeta+Z`, select-all, copy, paste, and arrow-key assertions;
+- do not count Browser CUA `keypress` shortcut attempts as undo/select-all/
+  clipboard proof unless the run verifies the expected editor state changed;
+- CUA click/type is acceptable for lightweight visual smoke, but replayable
+  behavior claims need Browser Playwright state checks or route Playwright
+  integration tests;
+- if Browser typing fails with a missing virtual clipboard, stop retrying
+  Browser typing in that packet; keep Browser for visual/console proof and use
+  route Playwright integration tests for interaction behavior;
+- if a tab is stuck on an error page or Browser prints a huge encoded failure
+  document, retry once from a fresh in-app Browser tab, catch per-route errors,
+  and truncate recorded error text before falling back to Playwright screenshots;
+- record a workflow-slowdown row if Browser command shape, not Slate runtime,
+  caused a weak or misleading proof packet.
+
+Classify intentionally skipped families in the plan. Do not claim full editor
+parity when only one route and one gesture were checked.
+
+## Scenario Generator
+
+Before route-level proof, synthesize a scenario matrix from the named surface
+instead of checking random gestures.
+
+Build rows from these axes:
+
+- document topology: paragraphs, wrapped text, lists, tables, voids, pages,
+  blank space, hidden/materialized blocks, inline boundaries with marks/links,
+  multi-leaf text, and huge-doc windows present on the route;
+- viewport and strategy: staged, virtualized, auto, rows/count controls,
+  desktop/mobile where relevant, top/middle/end scroll positions;
+- editor gesture: click, double click, drag selection, margin click, arrow nav,
+  type burst, Enter burst, paste, select-all, undo/redo, scroll away/back;
+- assertion family: model selection, DOM selection, caret rect, scroll anchor,
+  visible text, DOM node budget, type-to-paint, console errors, and screenshot
+  or pixel/geometry stability;
+- native parity risk: browser behavior that should remain native unless Slate
+  deliberately owns it.
+
+For any row involving selection plus editing, include the post-action selection
+state after undo/redo, not just the text delta. The minimum oracle is: model
+selection, native selected text, and visible text. Add DOM endpoints or caret
+rects when the bug is about the exact selection location.
+
+For any row involving vertical Shift+Arrow selection, include the reverse leg:
+drive several steps in the reported direction, then drive back and verify the
+focus path reverses the prior sequence. Include staged and virtualized when the
+surface has both, but keep a non-parity oracle so two broken strategies do not
+produce fake confidence. If the row uses projected/view selection, assert
+`noDoubleSelectionHighlight` so the test fails on mixed native and projected
+blue highlights.
+
+Pick the smallest matrix that covers the surface risk, then expand when a bug
+appears. Add new rows when user reports, screenshots, or Browser observation
+show a missed human journey. Promote repeated rows into reusable Playwright or
+`slate-browser` helpers instead of retyping the same automation.
+
+## Repair Duties
+
+The supervisor repairs whatever layer is missing:
+
+- **Bug:** reproduce and fix with `slate-patch`.
+- **Missing oracle:** add Playwright/unit/Browser proof with `slate-patch` or
+  `tdd`.
+- **Runtime-boundary oracle gap:** when repeated proof needs a host, browser,
+  peer, transport, or editor-service boundary, build the smallest fake runtime
+  or contract helper that exercises both directions before optimizing or
+  claiming coverage. Do not keep stacking one-off smoke scripts when a
+  first-party contract helper would make the next loop stronger.
+- **Missing metric:** update `benchmarks/targets/slate-v2.json`, benchmark
+  script, and `METRIC` output before optimizing.
+- **Lying metric:** fix summary/worst-lane math before using it as a gate.
+- **Noisy hot-lane metric:** do not treat p95 from a tiny hot-lane sample set
+  as the whole story. For repeated keyboard, selection, paste, or scroll lanes,
+  benchmark output must expose distribution shape (`median`, `p75`, `p95`,
+  `max`), sample count, raw artifact samples, and the relevant profiler buckets
+  before the supervisor picks a runtime owner or calls a regression closed.
+- **Weak example DX:** improve the example only when it is the API contract
+  surface; otherwise fix package/runtime ownership.
+- **Architecture smell:** use `architecture-cleanup` when the smell is spread
+  across modules, package ownership, proof harnesses, over-splits, deslop, or
+  testability.
+- **API smell:** use `slate-plan` or implement the accepted shape when the plan
+  is already accepted.
+- **Missing taste coverage:** stop at the checkpoint, record the missing taste
+  in the plan, capture the user's answer, and patch root `VISION.md` when
+  reusable.
+- **Repeated browser proof pattern:** promote it into the `slate-browser` API,
+  helper commands, or proof contract so future agents can run it directly.
+- **External issue/test corpus gap:** route first-pass corpus discovery to
+  `editor-test-harvester --issues` with ClawSweeper provenance. Route
+  exhaustive all-issues coverage, existing ledger refresh, closed-issue PR/test
+  provenance, and unchecked row processing to `issue-harvester`. Do not patch
+  Slate from external issue titles alone; require a portable invariant, current
+  Slate/Plate coverage mapping, and a local proof target.
+- **Research/discovery gap:** route to `slate-research`, then convert the
+  strongest promoted lead into a Slate-native test, benchmark, API plan, docs
+  packet, or keep/revert/quarantine packet.
+- **Workflow slowdown:** log slow commands/checkpoints, classify the owner, and
+  repair avoidable slow paths in the owning skill, script, proof gate, or
+  benchmark command.
+- **Skill miss:** patch `.agents/rules/**`, sync, and verify generated mirrors.
+- **Docs memory gap:** consolidate accepted decisions into durable docs.
+
+## Decision Consolidation
+
+Before closeout, consolidate decisions so the next overnight run does not
+rediscover them.
+
+At the start of a long run, ingest decisions before acting:
+
+- read the `vision` skill first;
+- search active/recent goal plans under `docs/plans/**`;
+- search accepted architecture/proof docs under `docs/slate-v2/**`;
+- search compiled evidence under `docs/slate-v2/research/**`;
+- read benchmark target context from `benchmarks/targets/slate-v2.json`;
+- read source rules for any specialist skill before blaming the specialist.
+
+At every stop or handoff, compare the reason against root `VISION.md`. If the
+user's preference is missing and reusable, update `VISION.md` before
+claiming the automation loop is ready to resume or ship.
+
+Use the smallest durable target:
+
+- active goal plan for run-specific findings;
+- `VISION.md` for reusable user taste, correction patterns, and
+  supervisor routing decisions;
+- `docs/slate-v2/**` for accepted Slate v2 architecture, proof, issue, and
+  reviewer-facing decisions;
+- `docs/slate-v2/research/**` for Slate v2 research/evidence layers;
+- `docs/editor-issue-harvester/**` for durable external issue closure ledgers,
+  compact matrices, owner decisions, proof commands, and checkmarks;
+- `.tmp/editor-issue-harvester/**/raw/**` for unversioned external issue-corpus
+  scratch, especially open/closed GitHub issue bodies and hydrated JSON;
+- `.agents/rules/**` only for reusable agent workflow policy.
+
+When work originates from `docs/slate-v2/research/**`, update that artifact
+before closeout. A research lead is not closed while its durable
+`lead-ledger.tsv` / `promoted-ledger.tsv` still says `queued`, `promote-now`,
+or `TBD` after the packet was kept, reverted, quarantined, or deferred with an
+owner.
+
+Do not write public changelog prose. Write latest-state decisions, proof
+commands, accepted tradeoffs, rejected alternatives, and next owner.
+
+For "think like me" work, create or update compact `VISION.md` rules only after
+decisions are accepted and reusable. Do not dump raw chat history into the
+skill. The skill should route to `VISION.md`, not carry doctrine in its own
+body.
+
+When the task is to improve root `VISION.md` itself, use numbered
+source-read passes over the owner docs instead of a vague docs review. Record
+the pass count, source families, reusable gaps found, and resulting profile
+changes in the active goal plan.
+
+If the user specifies a batch shape, obey it exactly. For example, "10
+iterations reading docs/ 10 files at a time" means ten concrete checkpoints,
+each with ten explicit `docs/**` file paths read and logged before synthesis.
+Do not substitute thematic source-family passes, directory summaries, or a
+single broad scan for a requested file-batched pass.
+
+## Stop Rules
+
+Stop when:
+
+- completion threshold passes;
+- ship/readiness path says `READY TO COMMIT` or asks for explicit commit/PR
+  approval;
+- `vision` does not cover a taste or risk-tolerance decision needed
+  for the next safe move and no safe alternate owner remains, or the invocation
+  mode is full-loop;
+- the next safe move is a `slate-plan` or `plate-plan` public API/runtime/product
+  decision;
+- the next safe move is pagination and the prompt did not explicitly request
+  pagination. Queue it as deferred with owner `slate-plan` instead of entering
+  it from `auto`;
+- a same-signal behavior failure has already been routed through the right
+  specialist owner and still needs a user-only decision or unsafe architecture
+  choice;
+- the same real blocker repeats and no autonomous move remains.
+- the timed/batch minimum runtime has elapsed and the current packet is
+  verified, reverted, or quarantined. If the minimum runtime expires
+  mid-packet, keep working only until that packet has a
+  keep/revert/quarantine decision.
+
+Do not stop just because one benchmark improved or one focused test passed.
+Do not stop just because a behavior lane needs `slate-patch`; switch owner
+inside the same automation loop and keep the packet ledger honest.
+Do not stop a timed or batch run before its minimum runtime because no obvious
+owner remains; enter supervision mode and create the next checkpoint.
+When stopping for missing taste, record the gap and resume by updating
+`vision` from the user's answer before more implementation.
+In timed or batch-loop mode, prefer queuing soft stopping checkpoints over
+stopping early when safe, high-value work remains.
+
+## Final Handoff
+
+Report:
+
+- goal plan path;
+- surface and route/package;
+- invocation mode, elapsed time/timebox when relevant, and loop/checkpoint
+  count;
+- behavior gates and visual proof run;
+- primary metric baseline/latest/best and stop reason;
+- bugs fixed and oracles added;
+- external issue-harvest artifacts, issue states covered, cluster counts, and
+  resulting coverage/test actions when an external issue corpus was in scope;
+- research/discovery artifacts, best OSS leads, rejected leads, and local proof
+  actions when web/GitHub discovery was in scope;
+- benchmark/skill/docs repairs made;
+- workflow slowdown rows and repairs, including slow-but-necessary proof;
+- concise changed list grouped by code, tests/oracles, benchmarks, examples/docs,
+  skills/workflow, and reverted/quarantined packets;
+- `Needs your attention` section with the highest-review-value items, each with
+  file/route/command anchor and recommendation;
+- `Stopping checkpoints to unblock` section with queued questions, current
+  recommendation, and exact anchors;
+- accepted deferrals and residual risks;
+- next owner: continue automation, `slate-plan`, `plate-plan`, `slate-ar`, a
+  package owner, or blocked authority decision.

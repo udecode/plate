@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: V2 element primitives should compose element and void contracts
 tags:
-  - slate-v2
+  - plite
   - slate-react-v2
   - element
   - void
@@ -30,14 +30,14 @@ examples.
 
 ## What fixed it
 
-`slate-react-v2` now owns the next compositional layer:
+`plite-react-v2` now owns the next compositional layer:
 
-- [EditableElement](/Users/zbeyens/git/slate-v2/packages/slate-react-v2/src/components/editable-element.tsx)
-- [VoidElement](/Users/zbeyens/git/slate-v2/packages/slate-react-v2/src/components/void-element.tsx)
+- [EditableElement](/Users/zbeyens/git/plite/packages/plite-react-v2/src/components/editable-element.tsx)
+- [VoidElement](/Users/zbeyens/git/plite/packages/plite-react-v2/src/components/void-element.tsx)
 
 Those build on the lower-level primitives:
 
-- `SlateElement`
+- `PliteElement`
 - `SlateSpacer`
 
 The proof surfaces and matrix routes now consume the element layer instead of
@@ -54,7 +54,7 @@ another way to leak renderer ownership back into examples.
 
 ## Reusable rule
 
-For `slate-react-v2`:
+For `plite-react-v2`:
 
 - package low-level DOM attrs first
 - then package repeated branch logic

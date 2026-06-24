@@ -36,7 +36,7 @@ function Cursor({
   const editor = useEditorRef();
   const streaming = usePluginOption(AIChatPlugin, 'streaming');
   const { style, selectionStyle = style } = data ?? ({} as CursorData);
-  const isCursor = RangeApi.isCollapsed(selection);
+  const isCursor = selection ? RangeApi.isCollapsed(selection) : false;
 
   if (streaming) return null;
 

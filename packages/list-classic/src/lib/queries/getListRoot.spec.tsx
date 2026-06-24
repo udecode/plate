@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createListClassicLegacyTestEditor as createBasePlateEditor } from '../__tests__/createListClassicLegacyTestEditor';
 
 import { getListRoot } from './getListRoot';
 
@@ -29,7 +29,7 @@ const listRoot = (
 const input = (<editor>{listRoot}</editor>) as any;
 
 it('returns the top-most list containing the current selection', () => {
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     selection: input.selection,
     value: input.children,
   });

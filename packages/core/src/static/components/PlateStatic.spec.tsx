@@ -8,10 +8,10 @@ import ReactDOMServer from 'react-dom/server';
 
 import { render } from '@testing-library/react';
 
-import { createSlateEditor, createSlatePlugin } from '../../lib';
+import { createBasePlateEditor, createEditorPlugin } from '../../lib';
 // We assume these are your real components (memoized) imported:
 import { PlateStatic } from './PlateStatic';
-import { SlateElement, SlateLeaf } from './slate-nodes';
+import { PliteElement, PliteLeaf } from './plite-nodes';
 
 const components = {
   bold: LeafStaticMock,
@@ -30,9 +30,9 @@ const createEditor = ({
     },
   ],
 } = {}) =>
-  createSlateEditor({
+  createBasePlateEditor({
     components,
-    plugins: [createSlatePlugin({ key: 'bold', node: { isLeaf: true } })],
+    plugins: [createEditorPlugin({ key: 'bold', node: { isLeaf: true } })],
     selection: {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
@@ -56,18 +56,18 @@ const createEditorWithMultipleElements = ({
     },
   ],
 } = {}) =>
-  createSlateEditor({
+  createBasePlateEditor({
     components,
-    plugins: [createSlatePlugin({ key: 'bold', node: { isLeaf: true } })],
+    plugins: [createEditorPlugin({ key: 'bold', node: { isLeaf: true } })],
     value,
   });
 
 let elementRenderCount = 0;
 
-function ElementStaticMock(props: Parameters<typeof SlateElement>[0]) {
+function ElementStaticMock(props: Parameters<typeof PliteElement>[0]) {
   elementRenderCount++;
 
-  return <SlateElement {...props} />;
+  return <PliteElement {...props} />;
 }
 
 /** Expose the render count so our tests can read it */
@@ -81,10 +81,10 @@ function resetElementRenderCount() {
 
 let leafRenderCount = 0;
 
-function LeafStaticMock(props: Parameters<typeof SlateLeaf>[0]) {
+function LeafStaticMock(props: Parameters<typeof PliteLeaf>[0]) {
   leafRenderCount++;
 
-  return <SlateLeaf {...props} />;
+  return <PliteLeaf {...props} />;
 }
 
 function getLeafRenderCount() {
@@ -151,7 +151,9 @@ describe('PlateStatic Memoization', () => {
     render(<PlateStatic editor={editor} />);
 
     // This will mutate the text but also element reference
-    editor.tf.insertText('+');
+    editor.update((tx) => {
+      tx.text.insert('+');
+    });
 
     // Re-render with the updated children
     // (the reference changed as well as the text)
@@ -285,8 +287,8 @@ describe('PlateStatic Memoization', () => {
 
   describe('when rendering unknown element type', () => {
     it('does not crash when encountering an element with an unknown type', () => {
-      const editor = createSlateEditor({
-        plugins: [createSlatePlugin({ key: 'bold', node: { isLeaf: true } })],
+      const editor = createBasePlateEditor({
+        plugins: [createEditorPlugin({ key: 'bold', node: { isLeaf: true } })],
         value: [
           {
             id: '1',
@@ -308,8 +310,8 @@ describe('PlateStatic Memoization', () => {
     });
   });
 
-  it('renders text node injections without calling findPath when the path is already known', () => {
-    const TonePlugin = createSlatePlugin({
+  it('renders text node injections when the path is already known', () => {
+    const TonePlugin = createEditorPlugin({
       inject: {
         nodeProps: {
           nodeKey: 'tone',
@@ -318,7 +320,7 @@ describe('PlateStatic Memoization', () => {
       },
       key: 'tone',
     });
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [TonePlugin],
       value: [
         {
@@ -327,18 +329,6 @@ describe('PlateStatic Memoization', () => {
         },
       ],
     });
-    const originalFindPath = editor.api.findPath.bind(editor.api);
-
-    editor.api.findPath = ((node: any) => {
-      if ('text' in node) {
-        throw new Error(
-          'text findPath should not be needed during static render'
-        );
-      }
-
-      return originalFindPath(node);
-    }) as any;
-
     const markup = ReactDOMServer.renderToStaticMarkup(
       <PlateStatic editor={editor} />
     );

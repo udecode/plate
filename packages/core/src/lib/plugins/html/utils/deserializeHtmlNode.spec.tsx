@@ -2,13 +2,13 @@
 
 import { getHtmlDocument, jsxt } from '@platejs/test-utils';
 
-import { createSlateEditor } from '../../../editor';
+import { createBasePlateEditor } from '../../../editor';
 import { deserializeHtmlNode } from './deserializeHtmlNode';
 
 jsxt;
 
 describe('when element has a br', () => {
-  const editor = createSlateEditor({ plugins: [] });
+  const editor = createBasePlateEditor({ plugins: [] });
 
   const html = '<html><body>test<br /></body></html>';
   const element = getHtmlDocument(html).body;
@@ -25,7 +25,7 @@ describe('when element has a br', () => {
 });
 
 describe('deserializeHtmlNode standalone br handling', () => {
-  const editor = createSlateEditor({ plugins: [] });
+  const editor = createBasePlateEditor({ plugins: [] });
 
   it('converts standalone br tags into empty paragraphs', () => {
     const element = getHtmlDocument(

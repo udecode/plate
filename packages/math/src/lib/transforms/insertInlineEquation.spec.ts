@@ -1,11 +1,11 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { BaseInlineEquationPlugin } from '../BaseInlineEquationPlugin';
 import { insertInlineEquation } from './insertInlineEquation';
 
 describe('insertInlineEquation', () => {
   it('uses the selected text as the default tex expression', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseInlineEquationPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 0] },
@@ -38,7 +38,7 @@ describe('insertInlineEquation', () => {
   });
 
   it('prefers the provided tex expression and configured node type', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseInlineEquationPlugin.configure({
           node: { type: 'custom-inline-equation' },

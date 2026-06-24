@@ -8,12 +8,12 @@ export const PlateView = (props: PlateViewProps) => (
   <PlateStatic
     onCopy={useCallback(
       (e: React.ClipboardEvent<HTMLDivElement>) => {
-        props.editor.tf.setFragmentData(e.clipboardData, 'copy');
-        if (e.clipboardData.getData('application/x-slate-fragment')) {
+        props.editor.api.setFragmentData(e.clipboardData, 'copy');
+        if (e.clipboardData.getData('application/x-plite-fragment')) {
           e.preventDefault();
         }
       },
-      [props.editor.tf]
+      [props.editor]
     )}
     {...props}
   />

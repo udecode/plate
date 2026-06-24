@@ -2,7 +2,7 @@
 
 import { jsxt } from '@platejs/test-utils';
 
-import { createSlateEditor } from '../../../editor';
+import { createBasePlateEditor } from '../../../editor';
 import { BaseParagraphPlugin } from '../../paragraph';
 import { htmlElementToElement } from './htmlElementToElement';
 import { parseHtmlElement } from './parseHtmlElement';
@@ -19,7 +19,7 @@ describe('when deserializing p > test', () => {
   it('returns a paragraph element', () => {
     expect(
       htmlElementToElement(
-        createSlateEditor({
+        createBasePlateEditor({
           plugins: [BaseParagraphPlugin],
         }),
         parseHtmlElement('<p>test</p>')

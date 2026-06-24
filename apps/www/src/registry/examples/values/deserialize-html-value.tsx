@@ -8,7 +8,7 @@ export const deserializeHtmlValue: any = (
   <fragment>
     <hh2>HTML</hh2>
     <hp>
-      By default, when you paste content into the Slate editor, it will utilize
+      By default, when you paste content into the Plite editor, it will utilize
       the clipboard's <htext code>'text/plain'</htext>
       data. While this is suitable for certain scenarios, there are times when
       you want users to be able to paste content while preserving its

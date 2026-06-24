@@ -27,16 +27,18 @@ const createEditor = ({
       isEnd: () => isEnd,
       isStart: () => isStart,
       range: () => blockRange,
-      toDOMRange: (range: unknown) => {
-        if (range === blockRange) {
-          return {
-            getClientRects: () => blockRects,
-          };
-        }
+      dom: {
+        resolveDOMRange: (range: unknown) => {
+          if (range === blockRange) {
+            return {
+              getClientRects: () => blockRects,
+            };
+          }
 
-        return {
-          getClientRects: () => caretRects,
-        };
+          return {
+            getClientRects: () => caretRects,
+          };
+        },
       },
     },
   }) as any;

@@ -1,6 +1,6 @@
-import { createSlatePlugin, KEYS } from 'platejs';
+import { createEditorPlugin, KEYS } from 'platejs';
 
-export const BaseFilePlugin = createSlatePlugin({
+export const BaseFilePlugin = createEditorPlugin({
   key: KEYS.file,
   node: { isElement: true, isVoid: true },
 });

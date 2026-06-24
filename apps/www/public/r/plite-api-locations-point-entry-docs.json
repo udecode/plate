@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plite-api-locations-point-entry-docs",
+  "title": "PointEntry API",
+  "description": "Tuple form used when iterating range endpoints.",
+  "files": [
+    {
+      "path": "../../content/docs/plite/api/locations/point-entry.mdx",
+      "content": "---\ntitle: \"PointEntry API\"\ndescription: \"Tuple form used when iterating range endpoints.\"\n---\n\n`PointEntry` objects are returned when iterating over `Point` objects that belong to a range.\n\n## Type\n\n```typescript\ntype PointEntry = [Point, \"anchor\" | \"focus\"];\n```\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plite/api/locations/point-entry.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

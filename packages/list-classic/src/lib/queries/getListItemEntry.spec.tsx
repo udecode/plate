@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createListClassicLegacyTestEditor as createBasePlateEditor } from '../__tests__/createListClassicLegacyTestEditor';
 
 import { getListItemEntry } from './getListItemEntry';
 
@@ -20,7 +20,7 @@ it('returns the current list and list item for a top-level list selection', () =
       </hul>
     </editor>
   ) as any;
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     selection: input.selection,
     value: input.children,
   });
@@ -71,7 +71,7 @@ it('returns the nearest nested list and list item for a nested selection', () =>
       </hul>
     </editor>
   ) as any;
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     selection: input.selection,
     value: input.children,
   });
@@ -127,7 +127,7 @@ it('uses the focus path for expanded selections', () => {
       </hul>
     </editor>
   ) as any;
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     selection: input.selection,
     value: input.children,
   });
@@ -185,7 +185,7 @@ it('returns undefined when the selection is outside of a list item', () => {
       </hp>
     </editor>
   ) as any;
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     selection: input.selection,
     value: input.children,
   });

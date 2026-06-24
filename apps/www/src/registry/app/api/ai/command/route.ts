@@ -16,7 +16,7 @@ import {
   tool,
 } from 'ai';
 import { NextResponse } from 'next/server';
-import { type SlateEditor, createSlateEditor, nanoid } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor, nanoid } from 'platejs';
 import { z } from 'zod';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
   const { children, selection, toolName: toolNameParam } = ctx;
 
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins: BaseEditorKit,
     selection,
     value: children,
@@ -177,7 +177,7 @@ export async function POST(req: NextRequest) {
 }
 
 const getCommentTool = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     messagesRaw,
     model,
@@ -249,7 +249,7 @@ const getCommentTool = (
   });
 
 const getTableTool = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     messagesRaw,
     model,

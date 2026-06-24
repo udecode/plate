@@ -53,7 +53,7 @@ const editable = getEditable(page.getByTestId('my-editor-container'));
 const editorHandle = await getEditorHandle(page, editable);
 ```
 
-定位器必须精确匹配一个 `[data-slate-editor]` 元素。
+定位器必须精确匹配一个 `[data-plite-editor]` 元素。
 
 ### 开始编写测试
 
@@ -165,7 +165,7 @@ await editorHandle.evaluate((editor) => {
     Playwright 页面对象。
   </APIItem>
   <APIItem name="editable" type="Locator" optional>
-    可编辑元素的定位器。默认为第一个 [data-slate-editor]。
+    可编辑元素的定位器。默认为第一个 [data-plite-editor]。
   </APIItem>
 </APIParameters>
 
@@ -191,7 +191,7 @@ await editorHandle.evaluate((editor) => {
   </APIItem>
 </APIParameters>
 
-<APIReturns type="JSHandle<TNode>">
+<APIReturns type="JSHandle<Node>">
     路径处节点的句柄。
 </APIReturns>
 </API>

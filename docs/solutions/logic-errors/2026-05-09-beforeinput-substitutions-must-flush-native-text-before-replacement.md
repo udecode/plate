@@ -2,7 +2,7 @@
 title: Beforeinput substitutions must flush native text before replacement
 date: 2026-05-09
 category: docs/solutions/logic-errors
-module: Slate v2 React input runtime
+module: Plite React input runtime
 problem_type: logic_error
 component: frontend_react
 symptoms:
@@ -12,7 +12,7 @@ symptoms:
 root_cause: logic_error
 resolution_type: code_fix
 severity: high
-tags: [slate-v2, beforeinput, target-ranges, autocorrect, input-runtime]
+tags: [plite, beforeinput, target-ranges, autocorrect, input-runtime]
 ---
 
 # Beforeinput substitutions must flush native text before replacement
@@ -23,7 +23,7 @@ Browser text substitutions can send a native `insertText` beforeinput, mutate
 the DOM, then send a model-owned replacement before the matching `input` event
 imports the native text.
 
-If Slate applies the replacement first, the native DOM text is lost or the
+If Plite applies the replacement first, the native DOM text is lost or the
 replacement lands at the wrong current selection.
 
 ## Symptoms
@@ -39,7 +39,7 @@ replacement lands at the wrong current selection.
 The runtime now treats native text beforeinput as pending model work until the
 matching `input` event or the next model-owned beforeinput:
 
-- `runtime-before-input-events.ts` queues native text repair when Slate allows
+- `runtime-before-input-events.ts` queues native text repair when Plite allows
   native `insertText`.
 - The next beforeinput flushes queued native repair before applying the
   model-owned replacement.
@@ -51,7 +51,7 @@ matching `input` event or the next model-owned beforeinput:
 ## Why This Works
 
 Mac autocorrect and punctuation substitution are ordered around browser-owned
-DOM text. Slate must import the browser-owned text before applying the later
+DOM text. Plite must import the browser-owned text before applying the later
 model-owned replacement, but the replacement still has to use the event's
 target range rather than whatever selection the repair leaves behind.
 
@@ -65,10 +65,10 @@ Expanded `insertText` target ranges are replacement instructions. Collapsed
 - Unit tests should lock the two smaller owners: expanded `insertText` target
   range import, and replacement text using the provided selection.
 - Do not convert OS labels, emoji product rendering, theme spans, or raw mobile
-  claims into generic Slate behavior unless a separate owner accepts them.
+  claims into generic Plite behavior unless a separate owner accepts them.
 
 ## Related Issues
 
-- [Slate browser IME proof rows need honest DOM composition boundaries](../developer-experience/2026-05-07-slate-browser-ime-proof-rows-need-honest-dom-composition.md)
-- [Slate React model-owned input must ignore stale DOM target ranges](../ui-bugs/2026-04-21-slate-react-model-owned-input-must-ignore-stale-dom-target-ranges.md)
-- [Slate React runtime owner cuts need static inventories and browser proof](../developer-experience/2026-04-27-slate-react-runtime-owner-cuts-need-static-inventories-and-browser-proof.md)
+- [Plite browser IME proof rows need honest DOM composition boundaries](../developer-experience/2026-05-07-plite-browser-ime-proof-rows-need-honest-dom-composition.md)
+- [Plite React model-owned input must ignore stale DOM target ranges](../ui-bugs/2026-04-21-slate-react-model-owned-input-must-ignore-stale-dom-target-ranges.md)
+- [Plite React runtime owner cuts need static inventories and browser proof](../developer-experience/2026-04-27-slate-react-runtime-owner-cuts-need-static-inventories-and-browser-proof.md)

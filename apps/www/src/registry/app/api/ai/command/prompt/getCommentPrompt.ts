@@ -1,5 +1,5 @@
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { getMarkdown } from '@platejs/ai';
 import dedent from 'dedent';
@@ -11,7 +11,7 @@ import {
 } from '../utils';
 
 export function getCommentPrompt(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     messages,
   }: {

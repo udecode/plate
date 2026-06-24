@@ -1,10 +1,10 @@
-import { createSlateEditor } from '../../editor';
+import { createBasePlateEditor } from '../../editor';
 import { AUTO_SCROLL, DOMPlugin } from './DOMPlugin';
 import { withScrolling } from './withScrolling';
 
 describe('withScrolling', () => {
   it('maps temporary scrolling options onto DOMPlugin and restores them after the callback', () => {
-    const editor = createSlateEditor();
+    const editor = createBasePlateEditor();
     const previousOptions = { ...editor.getOptions(DOMPlugin) };
     let callbackOptions: any;
     let callbackScrolling = false;
@@ -39,7 +39,7 @@ describe('withScrolling', () => {
   });
 
   it('restores scrolling state even if the callback throws', () => {
-    const editor = createSlateEditor();
+    const editor = createBasePlateEditor();
     const previousOptions = { ...editor.getOptions(DOMPlugin) };
 
     expect(() =>

@@ -1,16 +1,18 @@
 import {
   type Descendant,
+  type Element,
+  type Text,
   ElementApi,
-  type SlateEditor,
-  type TElement,
+} from '@platejs/plite';
+import { normalizeDateValue } from '@platejs/date';
+import {
+  type BasePlateEditor,
   type TListElement,
   type TMentionElement,
-  type TText,
   getPluginKey,
   getPluginType,
   KEYS,
 } from 'platejs';
-import { normalizeDateValue } from '@platejs/date';
 
 import type {
   MdBlockquote,
@@ -30,7 +32,7 @@ import type { MentionNode } from '../plugins/remarkMention';
 import type { MdRules } from '../types';
 
 import {
-  buildSlateNode,
+  buildPliteNode,
   convertChildrenDeserialize,
   convertNodesDeserialize,
   convertTextsDeserialize,
@@ -56,7 +58,7 @@ function isBoolean(value: any) {
 }
 
 const createClassicListItemContent = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   children: Descendant[] = []
 ) => ({
   children: children.length > 0 ? children : [{ text: '' }],
@@ -66,7 +68,7 @@ const createClassicListItemContent = (
 const deserializeClassicListItemChildren = (
   mdastChildren: MdRootContent[],
   deco: any,
-  options: { editor?: SlateEditor } & Record<string, any>
+  options: { editor?: BasePlateEditor } & Record<string, any>
 ) => {
   const licType = getPluginType(options.editor!, KEYS.lic);
   const children = mdastChildren
@@ -90,7 +92,7 @@ const deserializeClassicListItemChildren = (
 };
 
 const groupInlineChildrenIntoParagraphs = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   children: Descendant[] = []
 ) => {
   const paragraphType = getPluginType(editor, KEYS.p);
@@ -103,7 +105,7 @@ const groupInlineChildrenIntoParagraphs = (
     elements.push({
       children: inlineNodes as any,
       type: paragraphType,
-    } as TElement);
+    } as Element);
     inlineNodes = [];
   };
 
@@ -132,7 +134,7 @@ const groupInlineChildrenIntoParagraphs = (
     {
       children: [{ text: '' }],
       type: paragraphType,
-    } as TElement,
+    } as Element,
   ];
 };
 
@@ -262,7 +264,7 @@ export const defaultRules: MdRules = {
   code_block: {
     deserialize: (mdastNode, _deco, options) => ({
       children: (mdastNode.value || '').split('\n').map((line) => ({
-        children: [{ text: line } as TText],
+        children: [{ text: line } as Text],
         type: getPluginType(options.editor!, KEYS.codeLine),
       })),
       lang: mdastNode.lang ?? undefined,
@@ -479,7 +481,7 @@ export const defaultRules: MdRules = {
   },
   hr: {
     deserialize: (_, __, options) => ({
-      children: [{ text: '' } as TText],
+      children: [{ text: '' } as Text],
       type: getPluginType(options.editor!, KEYS.hr),
     }),
     serialize: () => ({ type: 'thematicBreak' }),
@@ -499,8 +501,8 @@ export const defaultRules: MdRules = {
       } = attributes ? parseAttributes(attributes) : ({} as any);
 
       return {
-        caption: [{ text: altAttr || alt || '' } as TText],
-        children: [{ text: '' } as TText],
+        caption: [{ text: altAttr || alt || '' } as Text],
+        children: [{ text: '' } as Text],
         ...(title && { title }),
         type: getPluginType(options.editor!, KEYS.img),
         url: src || url,
@@ -604,7 +606,7 @@ export const defaultRules: MdRules = {
 
           // Create list item from paragraph content
           const result = paragraph
-            ? buildSlateNode(paragraph, deco, options)
+            ? buildPliteNode(paragraph, deco, options)
             : {
                 children: [{ text: '' }],
                 type: getPluginType(options.editor!, KEYS.p),
@@ -651,8 +653,8 @@ export const defaultRules: MdRules = {
               );
               items.push(...nestedItems);
             } else {
-              // Transform any other node type using buildSlateNode
-              const result = buildSlateNode(subNode, deco, options);
+              // Transform any other node type using buildPliteNode
+              const result = buildPliteNode(subNode, deco, options);
 
               // Handle both array and single node results
               if (Array.isArray(result)) {
@@ -678,7 +680,7 @@ export const defaultRules: MdRules = {
       const startIndex = (mdastNode as any).start || 1;
       return parseListItems(mdastNode, 1, startIndex);
     },
-    serialize: (node: { type: 'ol' | 'ul' } & TElement, options): MdList => {
+    serialize: (node: { type: 'ol' | 'ul' } & Element, options): MdList => {
       const editor = options.editor!;
       const isOrdered = getPluginKey(editor, node.type) === KEYS.olClassic;
 
@@ -1112,7 +1114,7 @@ export const defaultRules: MdRules = {
   ...columnRules,
 };
 
-export const buildRules = (editor: SlateEditor) => {
+export const buildRules = (editor: BasePlateEditor) => {
   const keys = Object.keys(defaultRules);
 
   const newRules: Record<string, any> = {};

@@ -10,8 +10,10 @@ describe('withAIBatch', () => {
     const withMerging = mock((cb: () => void) => cb());
     const withNewBatch = mock(() => {});
     const editor = {
+      api: {
+        history: { withMerging, withNewBatch },
+      },
       history: { undos: [batch] },
-      tf: { withMerging, withNewBatch },
     } as any;
 
     withAIBatch(editor, fn);
@@ -31,8 +33,10 @@ describe('withAIBatch', () => {
     const withMerging = mock(() => {});
     const withNewBatch = mock((cb: () => void) => cb());
     const editor = {
+      api: {
+        history: { withMerging, withNewBatch },
+      },
       history: { undos: [batch] },
-      tf: { withMerging, withNewBatch },
     } as any;
 
     withAIBatch(editor, fn, { split: true });
@@ -50,8 +54,10 @@ describe('withAIBatch', () => {
     };
     const withMerging = mock((cb: () => void) => cb());
     const editor = {
+      api: {
+        history: { withMerging, withNewBatch: mock(() => {}) },
+      },
       history: { undos: [] },
-      tf: { withMerging, withNewBatch: mock(() => {}) },
     } as any;
 
     expect(() => withAIBatch(editor, fn)).not.toThrow();

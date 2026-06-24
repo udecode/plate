@@ -201,7 +201,7 @@ Completion Gates:
 | Pre-solution issue challenge verdict | no | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | N/A: user-directed cleanup, not a public bug report; durable boundary still recorded as core/plugin metadata ownership. |
 | Repro escalation ladder | no | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | N/A: cleanup, no bug/visual claim. |
 | Bug reproduced before fix | no | Record failing test/repro or N/A with reason | N/A: cleanup, not a bug fix. |
-| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | `pnpm --filter @platejs/slate build && pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx` passed: 30 pass, 0 fail. |
+| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | `pnpm --filter @platejs/plite build && pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx` passed: 30 pass, 0 fail. |
 | TypeScript or typed config changed | yes | Run relevant typecheck | `pnpm turbo typecheck --filter=./packages/core --filter=./packages/utils` passed: 7 successful, 7 total; `pnpm check` also passed full package typecheck. |
 | Package exports or file layout changed | no | Run `pnpm brl` before final verification and keep generated barrel updates | N/A: no exported files, package export maps, or barrel-owned file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | Run `pnpm install` and relevant package checks | N/A for package install graph: no package manifests or lockfiles changed. |
@@ -231,7 +231,7 @@ Completion Gates:
 | Plugin page specifics | yes | For plugin pages, apply `docs-creator` kit/manual/API rules; otherwise N/A | Block placeholder plugin API docs no longer list the branch-only option and use current-state reference voice. |
 | Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | `BlockPlaceholderConfig` no longer has `isEmptyBlockPristine`; `rg` found no source/docs/changeset references. |
 | Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Published `@platejs/utils` behavior fix from main gets patch changeset; branch-only option removal gets no release artifact. |
-| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | `.changeset/utils-block-placeholder-list.md` is patch-only for `@platejs/utils`; stale major/option-removal changeset absent. |
+| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | `.changeset/utils-block-placeholder-list.md` is patch-only for `@platejs/utils`; stale major/option-removal changeset absent. |
 | Registry changelog | no | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | N/A: not registry-only. |
 | No release artifact | yes | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | No release artifact for `isEmptyBlockPristine` removal because it never existed on `main`; changeset rule now forbids branch-only API claims. |
 | Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | Focused tests and `pnpm turbo typecheck --filter=./packages/core --filter=./packages/utils` passed; `pnpm check` passed. |
@@ -277,13 +277,13 @@ Review fixes:
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| First focused test run failed while a parallel typecheck was building `@platejs/slate` dist | 1 | Rerun after dependency build settled | Rerun passed: 30 tests, 0 fail |
+| First focused test run failed while a parallel typecheck was building `@platejs/plite` dist | 1 | Rerun after dependency build settled | Rerun passed: 30 tests, 0 fail |
 | Initial broad parallel read exceeded output budget before compaction | 1 | Resume with narrow `rg`/`sed` commands | Completed audits with capped output |
 
 Verification evidence:
 - `rg -n "isEmptyBlockPristine" packages content apps .changeset -g '!apps/www/public/**' -g '!apps/www/src/generated/**' -g '!apps/www/src/__registry__/**' -g '!**/CHANGELOG.md'` returned no matches.
 - `rg -n 'Always relative to `main`, never last commit|NEVER write a changeset relative to the last commit|branch-only API|exists on `main`' .agents/rules/changeset.mdc .agents/skills/changeset/SKILL.md` found the rule in both source and generated skill.
-- `pnpm --filter @platejs/slate build && pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx` passed: 30 pass, 0 fail.
+- `pnpm --filter @platejs/plite build && pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx` passed: 30 pass, 0 fail.
 - `pnpm turbo typecheck --filter=./packages/core --filter=./packages/utils` passed: 7 successful, 7 total.
 - `pnpm --filter www build:source && pnpm --filter www check:docs` passed.
 - `pnpm lint:fix` passed: 3280 files checked, no fixes applied.

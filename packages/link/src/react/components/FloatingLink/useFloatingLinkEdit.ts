@@ -24,6 +24,22 @@ import { useFloatingLinkEnter } from './useFloatingLinkEnter';
 import { useFloatingLinkEscape } from './useFloatingLinkEscape';
 import { useVirtualFloatingLink } from './useVirtualFloatingLink';
 
+type FloatingRangeEditor = Parameters<typeof getRangeBoundingClientRect>[0];
+
+export type FloatingLinkEditProps = {
+  editButtonProps: {
+    onClick: () => void;
+  };
+  props: {
+    style: React.CSSProperties;
+  };
+  ref: React.RefCallback<HTMLElement | null>;
+  unlinkButtonProps: {
+    onClick: () => void;
+    onMouseDown: React.MouseEventHandler<HTMLButtonElement>;
+  };
+};
+
 export const useFloatingLinkEditState = ({
   floatingOptions,
 }: LinkFloatingToolbarState = {}) => {
@@ -44,10 +60,13 @@ export const useFloatingLinkEditState = ({
     if (entry) {
       const [, path] = entry;
 
-      return getRangeBoundingClientRect(editor, {
-        anchor: editor.api.start(path)!,
-        focus: editor.api.end(path)!,
-      });
+      return getRangeBoundingClientRect(
+        editor as unknown as FloatingRangeEditor,
+        {
+          anchor: editor.api.start(path)!,
+          focus: editor.api.end(path)!,
+        }
+      );
     }
 
     return getDOMSelectionBoundingClientRect();
@@ -78,7 +97,7 @@ export const useFloatingLinkEdit = ({
   floating,
   triggerFloatingLinkHotkeys,
   versionEditor,
-}: ReturnType<typeof useFloatingLinkEditState>): any => {
+}: ReturnType<typeof useFloatingLinkEditState>): FloatingLinkEditProps => {
   const { api, getOptions } = useEditorPlugin(LinkPlugin);
 
   React.useEffect(() => {

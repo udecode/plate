@@ -2,7 +2,7 @@
 title: V2 HTML paste formatting should stay app-owned on explicit inline elements
 date: 2026-04-06
 category: docs/solutions/logic-errors
-module: Slate v2 HTML paste surface
+module: Plite HTML paste surface
 problem_type: logic_error
 component: documentation
 symptoms:
@@ -13,7 +13,7 @@ root_cause: logic_error
 resolution_type: code_fix
 severity: medium
 tags:
-  - slate-v2
+  - plite
   - slate-react-v2
   - paste-html
   - html
@@ -31,7 +31,7 @@ The next honest Phase 8 expansion for `paste-html` was a small formatting set:
 The dangerous version of that work was obvious too:
 
 - treat it as a reason to add generic mark support to the runtime
-- widen `slate-dom`
+- widen `plite-dom`
 - or pretend legacy rich HTML parity was already back
 
 That would have spent proof budget in the wrong layer.
@@ -47,9 +47,9 @@ That would have spent proof budget in the wrong layer.
 
 ## What Didn't Work
 
-- Treating the problem as “`slate-react` needs general mark rendering now”.
+- Treating the problem as “`plite-react` needs general mark rendering now”.
   That would have widened the runtime seam for one example-level policy.
-- Treating it as a `slate-dom` clipboard problem. The browser boundary was
+- Treating it as a `plite-dom` clipboard problem. The browser boundary was
   already fine; the missing piece was how the app wanted to represent the pasted
   formatting subset.
 - Flattening link children back to plain text. That would have kept the old
@@ -104,8 +104,8 @@ if (isFormatElement(element)) {
 This preserves the real package boundary:
 
 - app code decides which pasted HTML subset is worth supporting
-- `slate-react` provides the runtime seam for app-owned rendering
-- `slate-dom` stays the browser transport boundary
+- `plite-react` provides the runtime seam for app-owned rendering
+- `plite-dom` stays the browser transport boundary
 - `slate` stays out of formatting policy
 
 The durable insight is that the current `EditableBlocks` seam is better at
@@ -135,5 +135,5 @@ elements”.
 
 ## Related Issues
 
-- [2026-04-03-slate-v2-clipboard-boundary-proof-must-split-fragment-semantics-and-dom-transport.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-03-slate-v2-clipboard-boundary-proof-must-split-fragment-semantics-and-dom-transport.md)
+- [2026-04-03-plite-clipboard-boundary-proof-must-split-fragment-semantics-and-dom-transport.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-03-plite-clipboard-boundary-proof-must-split-fragment-semantics-and-dom-transport.md)
 - [2026-04-04-v2-editable-blocks-need-structure-preserving-dom-reconciliation-for-mixed-inline-editing.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-04-v2-editable-blocks-need-structure-preserving-dom-reconciliation-for-mixed-inline-editing.md)

@@ -2,296 +2,362 @@ import isEqual from 'lodash/isEqual.js';
 import uniqWith from 'lodash/uniqWith.js';
 import {
   type Editor,
-  type EditorTransforms,
   type InsertTextOperation,
-  type LegacyEditorMethods,
   type MergeNodeOperation,
+  type Node,
   type Operation,
+  type Path,
+  type Range,
   type PointRef,
   type RangeRef,
   type RemoveTextOperation,
   type SetNodeOperation,
   type SplitNodeOperation,
-  type TText,
+  type Value,
+  ElementApi,
   NodeApi,
   PathApi,
   PointApi,
   RangeApi,
-} from 'platejs';
+  TextApi,
+  type Text,
+} from '@platejs/plite';
+import {
+  insertNode as editorInsertNode,
+  pointRef as editorPointRef,
+  rangeRef as editorRangeRef,
+  setNodes as editorSetNodes,
+} from '@platejs/plite/internal';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
+type ApplyOperation = (operation: Operation) => void;
+
 export type ChangeTrackingEditor = {
+  editor: Editor;
   insertedTexts: {
-    node: TText;
+    node: Text;
     rangeRef: RangeRef;
   }[];
-
   propsChanges: {
     newProperties: Record<string, any>;
     properties: Record<string, any>;
     rangeRef: RangeRef;
   }[];
-
   recordingOperations: boolean;
-
   removedTexts: {
-    node: TText;
+    node: Text;
     pointRef: PointRef;
   }[];
+  apply: (operation: Operation) => void;
   commitChangesToDiffs: () => void;
+  getTextChildren: (path: Path) => Text[];
+  replaceChildren: (children: Value) => void;
+  withoutNormalizing: (fn: () => void) => void;
 };
 
-export const withChangeTracking = <E extends Editor>(
-  editor: E,
+export const withChangeTracking = (
+  editor: Editor,
   options: ComputeDiffOptions
-): ChangeTrackingEditor & E => {
-  const e = editor as ChangeTrackingEditor & E & LegacyEditorMethods;
+): ChangeTrackingEditor => {
+  let activeTx: Parameters<Parameters<Editor['update']>[0]>[0] | null = null;
 
-  e.propsChanges = [];
-  e.insertedTexts = [];
-  e.removedTexts = [];
-  e.recordingOperations = true;
-
-  const { apply } = e;
-  e.apply = (op: Operation) => applyWithChangeTracking(e, apply, op);
-  e.tf.apply = e.apply;
-
-  e.commitChangesToDiffs = () => commitChangesToDiffs(e, options);
-
-  return e;
-};
-
-const applyWithChangeTracking = <E extends Editor>(
-  editor: ChangeTrackingEditor & E,
-  apply: EditorTransforms['apply'],
-  op: Operation
-) => {
-  if (!editor.recordingOperations) {
-    return apply(op);
-  }
-
-  withoutRecordingOperations(editor, () => {
-    switch (op.type) {
-      case 'insert_text': {
-        applyInsertText(editor, apply, op);
-
-        break;
-      }
-      case 'merge_node': {
-        applyMergeNode(editor, apply, op);
-
-        break;
-      }
-      case 'remove_text': {
-        applyRemoveText(editor, apply, op);
-
-        break;
-      }
-      case 'set_node': {
-        applySetNode(editor, apply, op);
-
-        break;
-      }
-      case 'split_node': {
-        applySplitNode(editor, apply, op);
-
-        break;
-      }
-
-      default: {
-        apply(op);
-      }
+  const readNode = (path: Path): Node => {
+    if (activeTx) {
+      return activeTx.nodes.get(path)[0];
     }
-  });
-};
 
-const applyInsertText = <E extends Editor>(
-  editor: ChangeTrackingEditor & E,
-  apply: EditorTransforms['apply'],
-  op: InsertTextOperation
-) => {
-  const node = NodeApi.get(editor, op.path) as TText;
+    return editor.read((state) => state.nodes.get(path)[0]);
+  };
 
-  apply(op);
+  const readRange = (path: Path) => {
+    if (activeTx) {
+      return activeTx.ranges.get(path);
+    }
 
-  const startPoint = { offset: op.offset, path: op.path };
-  const endPoint = { offset: op.offset + op.text.length, path: op.path };
-  const range = { anchor: startPoint, focus: endPoint };
-  const rangeRef = editor.api.rangeRef(range);
+    return editor.read((state) => state.ranges.get(path));
+  };
 
-  editor.insertedTexts.push({
-    node: {
-      ...node,
-      text: op.text,
+  const readEnd = (path: Path) => {
+    if (activeTx) {
+      return activeTx.points.end(path);
+    }
+
+    return editor.read((state) => state.points.end(path));
+  };
+
+  const apply = (operation: Operation) => {
+    const replayOperation = cloneOperation(operation);
+
+    if (activeTx) {
+      activeTx.operations.replay([replayOperation]);
+      return;
+    }
+
+    editor.update((tx) => {
+      tx.operations.replay([replayOperation]);
+    });
+  };
+
+  const tracker: ChangeTrackingEditor = {
+    editor,
+    insertedTexts: [],
+    propsChanges: [],
+    recordingOperations: true,
+    removedTexts: [],
+    apply: (operation) => applyWithChangeTracking(tracker, apply, operation),
+    commitChangesToDiffs: () => commitChangesToDiffs(tracker, options),
+    getTextChildren: (path) => {
+      const node = editor.read((state) => state.nodes.get(path)[0]);
+
+      if (!ElementApi.isElement(node) || !NodeApi.isNodeList(node.children)) {
+        return [];
+      }
+
+      return node.children.filter(TextApi.isText);
     },
-    rangeRef,
-  });
-};
-
-const applyRemoveText = <E extends Editor>(
-  editor: ChangeTrackingEditor & E,
-  apply: EditorTransforms['apply'],
-  op: RemoveTextOperation
-) => {
-  const node = NodeApi.get(editor, op.path) as TText;
-
-  apply(op);
-
-  const point = { offset: op.offset, path: op.path };
-  const pointRef = editor.api.pointRef(point, {
-    affinity: 'backward',
-  });
-
-  editor.removedTexts.push({
-    node: {
-      ...node,
-      text: op.text,
+    replaceChildren: (children) => {
+      editor.update((tx) => {
+        tx.value.replace({ children });
+      });
     },
-    pointRef,
-  });
+    withoutNormalizing: (fn) => {
+      editor.update((tx) => {
+        const previousTx = activeTx;
+
+        activeTx = tx;
+        tx.withoutNormalizing(fn);
+        activeTx = previousTx;
+      });
+    },
+  };
+
+  const applyInsertText = (op: InsertTextOperation) => {
+    const node = readNode(op.path) as Text;
+
+    apply(op);
+
+    const startPoint = { offset: op.offset, path: op.path };
+    const endPoint = { offset: op.offset + op.text.length, path: op.path };
+    const range = { anchor: startPoint, focus: endPoint };
+    const rangeRef = editorRangeRef(editor, range);
+
+    tracker.insertedTexts.push({
+      node: {
+        ...node,
+        text: op.text,
+      },
+      rangeRef,
+    });
+  };
+
+  const applyRemoveText = (op: RemoveTextOperation) => {
+    const node = readNode(op.path) as Text;
+
+    apply(op);
+
+    const point = { offset: op.offset, path: op.path };
+    const pointRef = editorPointRef(editor, point, {
+      affinity: 'backward',
+    });
+
+    tracker.removedTexts.push({
+      node: {
+        ...node,
+        text: op.text,
+      },
+      pointRef,
+    });
+  };
+
+  const applyMergeNode = (op: MergeNodeOperation) => {
+    const oldNode = readNode(op.path) as Text;
+    const properties = NodeApi.extractProps(oldNode);
+
+    const prevNodePath = PathApi.previous(op.path)!;
+    const prevNode = readNode(prevNodePath) as Text;
+    const newProperties = NodeApi.extractProps(prevNode);
+
+    apply(op);
+
+    const startPoint = { offset: prevNode.text.length, path: prevNodePath };
+    const endPoint = readEnd(prevNodePath);
+    const range = { anchor: startPoint, focus: endPoint };
+    const rangeRef = editorRangeRef(editor, range);
+
+    tracker.propsChanges.push({
+      newProperties,
+      properties,
+      rangeRef,
+    });
+  };
+
+  const applySplitNode = (op: SplitNodeOperation) => {
+    const oldNode = readNode(op.path) as Text;
+    const properties = NodeApi.extractProps(oldNode);
+    const newProperties = op.properties;
+
+    apply(op);
+
+    const newNodePath = PathApi.next(op.path);
+    const newNodeRange = readRange(newNodePath);
+    const rangeRef = editorRangeRef(editor, newNodeRange);
+
+    tracker.propsChanges.push({
+      newProperties,
+      properties,
+      rangeRef,
+    });
+  };
+
+  const applySetNode = (op: SetNodeOperation) => {
+    apply(op);
+
+    const range = readRange(op.path);
+    const rangeRef = editorRangeRef(editor, range);
+
+    tracker.propsChanges.push({
+      newProperties: op.newProperties,
+      properties: op.properties,
+      rangeRef,
+    });
+  };
+
+  const applyWithChangeTracking = (
+    editor: ChangeTrackingEditor,
+    apply: ApplyOperation,
+    op: Operation
+  ) => {
+    if (!editor.recordingOperations) {
+      return apply(op);
+    }
+
+    withoutRecordingOperations(editor, () => {
+      switch (op.type) {
+        case 'insert_text': {
+          applyInsertText(op);
+
+          break;
+        }
+        case 'merge_node': {
+          applyMergeNode(op);
+
+          break;
+        }
+        case 'remove_text': {
+          applyRemoveText(op);
+
+          break;
+        }
+        case 'set_node': {
+          applySetNode(op);
+
+          break;
+        }
+        case 'split_node': {
+          applySplitNode(op);
+
+          break;
+        }
+
+        default: {
+          apply(op);
+        }
+      }
+    });
+  };
+
+  return tracker;
 };
 
-const applyMergeNode = <E extends Editor>(
-  editor: ChangeTrackingEditor & E,
-  apply: EditorTransforms['apply'],
-  op: MergeNodeOperation
-) => {
-  const oldNode = NodeApi.get(editor, op.path) as TText;
-  const properties = NodeApi.extractProps(oldNode);
-
-  const prevNodePath = PathApi.previous(op.path)!;
-  const prevNode = NodeApi.get(editor, prevNodePath) as TText;
-  const newProperties = NodeApi.extractProps(prevNode);
-
-  apply(op);
-
-  const startPoint = { offset: prevNode.text.length, path: prevNodePath };
-  const endPoint = editor.api.end(prevNodePath)!;
-  const range = { anchor: startPoint, focus: endPoint };
-  const rangeRef = editor.api.rangeRef(range);
-
-  editor.propsChanges.push({
-    newProperties,
-    properties,
-    rangeRef,
-  });
-};
-
-const applySplitNode = <E extends Editor>(
-  editor: ChangeTrackingEditor & E,
-  apply: EditorTransforms['apply'],
-  op: SplitNodeOperation
-) => {
-  const oldNode = NodeApi.get(editor, op.path) as TText;
-  const properties = NodeApi.extractProps(oldNode);
-  const newProperties = op.properties;
-
-  apply(op);
-
-  const newNodePath = PathApi.next(op.path);
-  const newNodeRange = editor.api.range(newNodePath)!;
-  const rangeRef = editor.api.rangeRef(newNodeRange);
-
-  editor.propsChanges.push({
-    newProperties,
-    properties,
-    rangeRef,
-  });
-};
-
-const applySetNode = <E extends Editor>(
-  editor: ChangeTrackingEditor & E,
-  apply: EditorTransforms['apply'],
-  op: SetNodeOperation
-) => {
-  apply(op);
-
-  const range = editor.api.range(op.path)!;
-  const rangeRef = editor.api.rangeRef(range);
-
-  editor.propsChanges.push({
-    newProperties: op.newProperties,
-    properties: op.properties,
-    rangeRef,
-  });
-};
-
-const commitChangesToDiffs = <E extends Editor>(
-  editor: ChangeTrackingEditor & E,
+const commitChangesToDiffs = (
+  editor: ChangeTrackingEditor,
   { getDeleteProps, getInsertProps, getUpdateProps }: ComputeDiffOptions
 ) => {
   withoutRecordingOperations(editor, () => {
-    // Reverse the array to prevent path changes
-    const flatUpdates = flattenPropsChanges(editor).reverse();
+    const insertedTexts = editor.insertedTexts.flatMap(({ node, rangeRef }) => {
+      const range = rangeRef.unref();
 
-    flatUpdates.forEach(({ newProperties, properties, range }) => {
-      const node = NodeApi.get(editor, range.anchor.path) as TText;
-
-      editor.tf.setNodes(getUpdateProps(node, properties, newProperties), {
-        at: range,
-        marks: true,
-      });
+      return range ? [{ node, range }] : [];
     });
 
-    editor.removedTexts.forEach(
-      ({ node, pointRef }: ChangeTrackingEditor['removedTexts'][number]) => {
-        const point = pointRef.current;
+    const propsChanges = editor.propsChanges.flatMap(
+      ({ newProperties, properties, rangeRef }) => {
+        const range = rangeRef.unref();
 
-        if (point) {
-          editor.tf.insertNode(
-            {
-              ...node,
-              ...getDeleteProps(node),
-            },
-            { at: point }
-          );
-        }
-
-        pointRef.unref();
+        return range ? [{ newProperties, properties, range }] : [];
       }
     );
+    const insertedTextRefs = insertedTexts.map(({ node, range }) => ({
+      node,
+      rangeRef: editorRangeRef(editor.editor, range),
+    }));
 
-    editor.insertedTexts.forEach(
-      ({ node, rangeRef }: ChangeTrackingEditor['insertedTexts'][number]) => {
-        const range = rangeRef.current;
+    // Reverse the array to prevent path changes.
+    const flatUpdates = flattenPropsChanges(propsChanges, insertedTexts)
+      .toSorted(compareRangeStart)
+      .reverse();
 
-        if (range) {
-          editor.tf.setNodes(getInsertProps(node), {
-            at: range,
-            marks: true,
-          });
-        }
+    flatUpdates.forEach(({ newProperties, properties, range }) => {
+      const node = editor.editor.read(
+        (state) => state.nodes.get(range.anchor.path)[0]
+      ) as Text;
 
-        rangeRef.unref();
+      setTextNodes(
+        editor,
+        range,
+        getUpdateProps(node, properties, newProperties)
+      );
+    });
+
+    insertedTextRefs
+      .flatMap(({ node, rangeRef }) => {
+        const range = rangeRef.unref();
+
+        return range ? [{ node, range }] : [];
+      })
+      .toSorted(compareRangeStart)
+      .reverse()
+      .forEach(({ node, range }) => {
+        setTextNodes(editor, range, getInsertProps(node));
+      });
+
+    editor.removedTexts.forEach(({ node, pointRef }) => {
+      const point = pointRef.unref();
+
+      if (point) {
+        editorInsertNode(
+          editor.editor,
+          {
+            ...node,
+            ...getDeleteProps(node),
+          },
+          { at: point }
+        );
       }
-    );
+    });
   });
 };
 
-const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
-  const propChangeRangeRefs = editor.propsChanges.map(
-    ({ rangeRef }) => rangeRef
-  );
-
-  const insertedTextRangeRefs = editor.insertedTexts.map(
-    ({ rangeRef }) => rangeRef
-  );
-
+const flattenPropsChanges = (
+  propsChanges: {
+    newProperties: Record<string, any>;
+    properties: Record<string, any>;
+    range: Range;
+  }[],
+  insertedTexts: {
+    node: Text;
+    range: Range;
+  }[]
+) => {
   /**
    * The set of points at which some range starts or ends. Insertion ranges are
    * included because we don't want to return props changes for them.
    */
   const unsortedRangePoints = [
-    ...propChangeRangeRefs,
-    ...insertedTextRangeRefs,
-  ].flatMap((rangeRef) => {
-    const range = rangeRef.current;
-
-    if (!range) return [];
-
-    return [range.anchor, range.focus];
-  });
+    ...propsChanges.map(({ range }) => range),
+    ...insertedTexts.map(({ range }) => range),
+  ].flatMap((range) => [range.anchor, range.focus]);
 
   const rangePoints = uniqWith(
     unsortedRangePoints.sort(PointApi.compare),
@@ -312,15 +378,8 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
     }));
 
   const flatUpdates = flatRanges.map((flatRange) => {
-    // The set of changes of a certain type that intersect with `flatRange`
-    const getIntersectingChanges = <T extends { rangeRef: RangeRef }>(
-      changes: T[]
-    ) =>
-      changes.filter(({ rangeRef }) => {
-        const range = rangeRef.current;
-
-        if (!range) return false;
-
+    const getIntersectingChanges = <T extends { range: Range }>(changes: T[]) =>
+      changes.filter(({ range }) => {
         const intersection = RangeApi.intersection(range, flatRange);
 
         if (!intersection) return false;
@@ -328,14 +387,12 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
         return RangeApi.isExpanded(intersection);
       });
 
-    // If the range is part of an insertion, return null
-    if (getIntersectingChanges(editor.insertedTexts).length > 0) return null;
+    if (getIntersectingChanges(insertedTexts).length > 0) return null;
 
-    const intersectingUpdates = getIntersectingChanges(editor.propsChanges);
+    const intersectingUpdates = getIntersectingChanges(propsChanges);
 
     if (intersectingUpdates.length === 0) return null;
 
-    // Get the props of the range before and after the updates
     const initialProps = objectWithoutUndefined(
       intersectingUpdates[0].properties
     );
@@ -351,7 +408,9 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
 
     for (const key of Object.keys(finalProps)) {
       if (!isEqual(initialProps[key], finalProps[key])) {
-        properties[key] = initialProps[key];
+        if (initialProps[key] !== undefined) {
+          properties[key] = initialProps[key];
+        }
         newProperties[key] = finalProps[key];
       }
     }
@@ -370,14 +429,90 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
     };
   });
 
-  for (const rangeRef of propChangeRangeRefs) {
-    rangeRef.unref();
-  }
-
   return flatUpdates.filter(Boolean) as Exclude<
     (typeof flatUpdates)[number],
     null
   >[];
+};
+
+const compareRangeStart = (a: { range: Range }, b: { range: Range }) =>
+  PointApi.compare(RangeApi.start(a.range), RangeApi.start(b.range));
+
+const setTextNodes = (
+  editor: ChangeTrackingEditor,
+  range: Range,
+  props: Record<string, any>
+) => {
+  const normalizedRange = normalizeTextRange(editor, range);
+
+  if (!normalizedRange || RangeApi.isCollapsed(normalizedRange)) {
+    return;
+  }
+
+  editorSetNodes(editor.editor, props, {
+    at: normalizedRange,
+    match: TextApi.isText,
+    split: true,
+  });
+};
+
+const normalizeTextRange = (
+  editor: ChangeTrackingEditor,
+  range: Range
+): Range | null => {
+  const [start, end] = RangeApi.edges(range);
+  const normalizedEnd =
+    end.offset === 0 && !PathApi.equals(start.path, end.path)
+      ? previousTextEnd(editor, end.path)
+      : clampTextPoint(editor, end);
+
+  const normalizedStart = clampTextPoint(editor, start);
+
+  if (!normalizedStart || !normalizedEnd) {
+    return null;
+  }
+
+  return RangeApi.isBackward(range)
+    ? { anchor: normalizedEnd, focus: normalizedStart }
+    : { anchor: normalizedStart, focus: normalizedEnd };
+};
+
+const clampTextPoint = (
+  editor: ChangeTrackingEditor,
+  point: Range['anchor']
+): Range['anchor'] | null => {
+  const node = editor.editor.read((state) => state.nodes.get(point.path)[0]);
+
+  if (!TextApi.isText(node)) {
+    return null;
+  }
+
+  return {
+    ...point,
+    offset: Math.max(0, Math.min(point.offset, node.text.length)),
+  };
+};
+
+const previousTextEnd = (
+  editor: ChangeTrackingEditor,
+  path: Path
+): Range['anchor'] | null => {
+  const previousPath = PathApi.previous(path);
+
+  if (!previousPath) {
+    return null;
+  }
+
+  const node = editor.editor.read((state) => state.nodes.get(previousPath)[0]);
+
+  if (!TextApi.isText(node)) {
+    return null;
+  }
+
+  return {
+    offset: node.text.length,
+    path: previousPath,
+  };
 };
 
 const objectWithoutUndefined = (obj: Record<string, any>) => {
@@ -391,6 +526,9 @@ const objectWithoutUndefined = (obj: Record<string, any>) => {
 
   return newObj;
 };
+
+const cloneOperation = (operation: Operation): Operation =>
+  structuredClone(operation) as Operation;
 
 const withoutRecordingOperations = (
   editor: ChangeTrackingEditor,

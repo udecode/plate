@@ -1,38 +1,45 @@
+import type { EditorUpdateTransaction } from '@platejs/plite';
 import {
   type PluginConfig,
-  bindFirst,
-  createTSlatePlugin,
+  type EditorPlugin,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
 import {
-  insertAudioPlaceholder,
-  insertFilePlaceholder,
-  insertImagePlaceholder,
-  insertVideoPlaceholder,
+  type InsertPlaceholderOptions,
+  createPlaceholderNode,
 } from './transforms';
 
 export type MediaPlaceholderOptions = {
   rules?: PlaceholderRule[];
 };
 
+type PlaceholderTx = {
+  placeholder: {
+    insert: (mediaType: string, options?: InsertPlaceholderOptions) => void;
+  };
+};
+
 export type PlaceholderConfig = PluginConfig<
-  'placeholder',
-  MediaPlaceholderOptions
+  typeof KEYS.placeholder,
+  MediaPlaceholderOptions,
+  {},
+  {},
+  {},
+  PlaceholderTx
 >;
 
 export type PlaceholderRule = {
   mediaType: string;
 };
 
-export const BasePlaceholderPlugin = createTSlatePlugin<PlaceholderConfig>({
-  key: KEYS.placeholder,
-  node: { isElement: true, isVoid: true },
-}).extendEditorTransforms(({ editor }) => ({
-  insert: {
-    audioPlaceholder: bindFirst(insertAudioPlaceholder, editor),
-    filePlaceholder: bindFirst(insertFilePlaceholder, editor),
-    imagePlaceholder: bindFirst(insertImagePlaceholder, editor),
-    videoPlaceholder: bindFirst(insertVideoPlaceholder, editor),
-  },
-}));
+export const BasePlaceholderPlugin: EditorPlugin<PlaceholderConfig> =
+  createEditorPlugin<PlaceholderConfig>({
+    key: KEYS.placeholder,
+    node: { isElement: true, isVoid: true },
+  }).extendTx(({ type }) => (tx: EditorUpdateTransaction) => ({
+    insert: (mediaType: string, options?: InsertPlaceholderOptions) => {
+      tx.nodes.insert(createPlaceholderNode(type, mediaType), options);
+    },
+  }));

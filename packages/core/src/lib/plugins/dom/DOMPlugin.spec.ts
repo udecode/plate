@@ -1,5 +1,42 @@
-import { createSlateEditor } from '../../editor';
+import { defineEditorExtension } from '@platejs/plite';
+
+import { createPlateRuntimeEditor } from '../../../react/editor/createPlateRuntimeEditor';
+
 import { DOMPlugin } from './DOMPlugin';
+
+const createRuntimeDomEditor = () => {
+  const editor = createPlateRuntimeEditor({
+    initialValue: [{ children: [{ text: '' }], type: 'p' }],
+    plugins: [DOMPlugin],
+  });
+
+  editor.update((tx) => {
+    tx.selection.set({ offset: 0, path: [0, 0] });
+  });
+
+  return editor;
+};
+
+const installScrollSpy = (
+  editor: ReturnType<typeof createRuntimeDomEditor>
+) => {
+  const scrollSpy = mock(() => {});
+
+  editor.extend(
+    defineEditorExtension({
+      name: 'test:scroll-spy',
+      setup() {
+        return {
+          api: {
+            scrollIntoView: scrollSpy,
+          },
+        };
+      },
+    })
+  );
+
+  return scrollSpy;
+};
 
 describe('DOMPlugin', () => {
   afterEach(() => {
@@ -7,27 +44,21 @@ describe('DOMPlugin', () => {
   });
 
   it('scrolls enabled operations while auto-scrolling is active', () => {
-    const editor = createSlateEditor({
-      selection: {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      },
-      value: [{ children: [{ text: '' }], type: 'p' }],
-    } as any);
-    const scrollSpy = spyOn(editor.api, 'scrollIntoView').mockImplementation(
-      () => {}
-    );
+    const editor = createRuntimeDomEditor();
+    const scrollSpy = installScrollSpy(editor);
 
-    (editor.getTransforms(DOMPlugin) as any).withScrolling(
-      () => {
-        editor.tf.insertText('a');
-        editor.tf.insertText('b');
-      },
-      {
-        mode: 'first',
-        scrollOptions: { block: 'center' },
-      }
-    );
+    editor.update((tx) => {
+      tx.dom.withScrolling(
+        (scrollTx) => {
+          scrollTx.text.insert('a');
+          scrollTx.text.insert('b');
+        },
+        {
+          mode: 'first',
+          scrollOptions: { block: 'center' },
+        }
+      );
+    });
 
     expect(scrollSpy).toHaveBeenCalledTimes(2);
     expect(scrollSpy.mock.calls).toEqual([
@@ -43,43 +74,38 @@ describe('DOMPlugin', () => {
   });
 
   it('skips scrolling when the current operation type is disabled', () => {
-    const editor = createSlateEditor({
-      selection: {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      },
-      value: [{ children: [{ text: '' }], type: 'p' }],
-    } as any);
-    const scrollSpy = spyOn(editor.api, 'scrollIntoView').mockImplementation(
-      () => {}
-    );
+    const editor = createRuntimeDomEditor();
+    const scrollSpy = installScrollSpy(editor);
 
-    (editor.getTransforms(DOMPlugin) as any).withScrolling(
-      () => {
-        editor.tf.insertText('a');
-      },
-      {
-        operations: { insert_text: false },
-      }
-    );
+    editor.update((tx) => {
+      tx.dom.withScrolling(
+        (scrollTx) => {
+          scrollTx.text.insert('a');
+        },
+        {
+          operations: { insert_text: false },
+        }
+      );
+    });
 
     expect(scrollSpy).not.toHaveBeenCalled();
   });
 
   it('stores prevSelection and clears currentKeyboardEvent on set_selection', () => {
-    const editor = createSlateEditor({
-      selection: {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      },
-      value: [{ children: [{ text: 'ab' }], type: 'p' }],
-    } as any);
-    const previousSelection = structuredClone(editor.selection);
+    const editor = createPlateRuntimeEditor({
+      initialValue: [{ children: [{ text: 'ab' }], type: 'p' }],
+      plugins: [DOMPlugin],
+    });
+
+    editor.update((tx) => {
+      tx.selection.set({ offset: 0, path: [0, 0] });
+    });
+
+    const previousSelection = editor.read((state) => state.selection.get());
 
     editor.dom.currentKeyboardEvent = {} as any;
-    editor.tf.select({
-      anchor: { offset: 2, path: [0, 0] },
-      focus: { offset: 2, path: [0, 0] },
+    editor.update((tx) => {
+      tx.selection.set({ offset: 2, path: [0, 0] });
     });
 
     expect(editor.dom.prevSelection).toEqual(previousSelection);

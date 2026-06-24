@@ -1,44 +1,51 @@
-import type {
-  InsertNodesOptions,
-  SlateEditor,
-  TPlaceholderElement,
-} from 'platejs';
+import type { NodeInsertNodesOptions } from '@platejs/plite';
+import type { BasePlateEditor, TPlaceholderElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
+export type InsertPlaceholderOptions =
+  NodeInsertNodesOptions<TPlaceholderElement>;
+
+export const createPlaceholderNode = (
+  type: string,
+  mediaType: string
+): TPlaceholderElement => ({
+  children: [{ text: '' }],
+  mediaType,
+  type,
+});
+
 export const insertPlaceholder = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   mediaType: string,
-  options?: InsertNodesOptions
+  options?: InsertPlaceholderOptions
 ) => {
-  editor.tf.withoutNormalizing(() =>
-    editor.tf.insertNodes<TPlaceholderElement>(
-      {
-        children: [{ text: '' }],
-        mediaType,
-        type: editor.getType(KEYS.placeholder),
-      },
-      options as any
-    )
-  );
+  editor.update((tx) => {
+    tx.withoutNormalizing(() =>
+      tx.nodes.insert<TPlaceholderElement>(
+        createPlaceholderNode(editor.getType(KEYS.placeholder), mediaType),
+        options
+      )
+    );
+  });
 };
 
 export const insertImagePlaceholder = (
-  editor: SlateEditor,
-  options?: InsertNodesOptions
+  editor: BasePlateEditor,
+  options?: InsertPlaceholderOptions
 ) => insertPlaceholder(editor, KEYS.img, options);
 
 export const insertVideoPlaceholder = (
-  editor: SlateEditor,
-  options?: InsertNodesOptions
+  editor: BasePlateEditor,
+  options?: InsertPlaceholderOptions
 ) => insertPlaceholder(editor, KEYS.video, options);
 
 export const insertAudioPlaceholder = (
-  editor: SlateEditor,
-  options?: InsertNodesOptions
+  editor: BasePlateEditor,
+  options?: InsertPlaceholderOptions
 ) => insertPlaceholder(editor, KEYS.audio, options);
 
 export const insertFilePlaceholder = (
-  editor: SlateEditor,
-  options?: InsertNodesOptions
+  editor: BasePlateEditor,
+  options?: InsertPlaceholderOptions
 ) => insertPlaceholder(editor, KEYS.file, options);

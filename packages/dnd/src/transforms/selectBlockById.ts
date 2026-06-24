@@ -1,11 +1,13 @@
-import type { Editor } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
 /** Select the block above the selection by id and focus the editor. */
-export const selectBlockById = (editor: Editor, id: string) => {
+export const selectBlockById = (editor: PlateEditor, id: string) => {
   const path = editor.api.node({ id, at: [] })?.[1];
 
   if (!path) return;
 
-  editor.tf.select(editor.api.range(path)!);
-  editor.tf.focus();
+  editor.update((tx) => {
+    tx.selection.set(editor.api.range(path)!);
+  });
+  editor.api.dom.focus();
 };

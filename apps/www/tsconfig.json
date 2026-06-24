@@ -36,6 +36,25 @@
       "@platejs/slash-command/react": [
         "../../packages/slash-command/src/react"
       ],
+      "@platejs/browser/browser": ["../../packages/browser/src/browser"],
+      "@platejs/browser/core": ["../../packages/browser/src/core"],
+      "@platejs/browser/playwright": ["../../packages/browser/src/playwright"],
+      "@platejs/browser/transports": ["../../packages/browser/src/transports"],
+      "@platejs/plite": ["../../packages/plite/src/index.ts"],
+      "@platejs/plite/internal": ["../../packages/plite/src/internal/index.ts"],
+      "@platejs/plite-dom": ["../../packages/plite-dom/src/index.ts"],
+      "@platejs/plite-dom/internal": [
+        "../../packages/plite-dom/src/internal/index.ts"
+      ],
+      "@platejs/plite-history": ["../../packages/plite-history/src/index.ts"],
+      "@platejs/plite-hyperscript": [
+        "../../packages/plite-hyperscript/src/index.ts"
+      ],
+      "@platejs/plite-layout": ["../../packages/plite-layout/src/index.ts"],
+      "@platejs/plite-layout/react": [
+        "../../packages/plite-layout/src/react.tsx"
+      ],
+      "@platejs/plite-react": ["../../packages/plite-react/src/index.ts"],
       "@platejs/suggestion/react": ["../../packages/suggestion/src/react"],
       "@platejs/tabbable/react": ["../../packages/tabbable/src/react"],
       "@platejs/table/react": ["../../packages/table/src/react"],
@@ -43,6 +62,9 @@
       "@platejs/toc/react": ["../../packages/toc/src/react"],
       "@platejs/toggle/react": ["../../packages/toggle/src/react"],
       "@platejs/utils/react": ["../../packages/utils/src/react"],
+      "@platejs/yjs": ["../../packages/yjs/src/index.ts"],
+      "@platejs/yjs/core": ["../../packages/yjs/src/core/index.ts"],
+      "@platejs/yjs/internal": ["../../packages/yjs/src/internal/index.ts"],
       "@platejs/yjs/react": ["../../packages/yjs/src/react"],
       "@platejs/*": ["../../packages/*/src"],
       "@udecode/*": ["../../packages/udecode/*/src"],

@@ -1,22 +1,22 @@
 import * as React from 'react';
 
 import type { TTableCellElement, TTableElement } from 'platejs';
-import type { SlateElementProps } from 'platejs/static';
+import type { PliteElementProps } from 'platejs/static';
 
 import { BaseTablePlugin } from '@platejs/table';
-import { SlateElement } from 'platejs/static';
+import { PliteElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
 
 export function TableElementStatic({
   children,
   ...props
-}: SlateElementProps<TTableElement>) {
+}: PliteElementProps<TTableElement>) {
   const { disableMarginLeft } = props.editor.getOptions(BaseTablePlugin);
   const marginLeft = disableMarginLeft ? 0 : props.element.marginLeft;
 
   return (
-    <SlateElement
+    <PliteElement
       {...props}
       className="overflow-x-auto py-5"
       style={{ paddingLeft: marginLeft }}
@@ -29,22 +29,22 @@ export function TableElementStatic({
           <tbody className="min-w-full">{children}</tbody>
         </table>
       </div>
-    </SlateElement>
+    </PliteElement>
   );
 }
 
-export function TableRowElementStatic(props: SlateElementProps) {
+export function TableRowElementStatic(props: PliteElementProps) {
   return (
-    <SlateElement {...props} as="tr" className="h-full">
+    <PliteElement {...props} as="tr" className="h-full">
       {props.children}
-    </SlateElement>
+    </PliteElement>
   );
 }
 
 export function TableCellElementStatic({
   isHeader,
   ...props
-}: SlateElementProps<TTableCellElement> & {
+}: PliteElementProps<TTableCellElement> & {
   isHeader?: boolean;
 }) {
   const { editor, element } = props;
@@ -54,7 +54,7 @@ export function TableCellElementStatic({
   const borders = api.table.getCellBorders({ element });
 
   return (
-    <SlateElement
+    <PliteElement
       {...props}
       as={isHeader ? 'th' : 'td'}
       className={cn(
@@ -90,12 +90,12 @@ export function TableCellElementStatic({
       >
         {props.children}
       </div>
-    </SlateElement>
+    </PliteElement>
   );
 }
 
 export function TableCellHeaderElementStatic(
-  props: SlateElementProps<TTableCellElement>
+  props: PliteElementProps<TTableCellElement>
 ) {
   return <TableCellElementStatic {...props} isHeader />;
 }

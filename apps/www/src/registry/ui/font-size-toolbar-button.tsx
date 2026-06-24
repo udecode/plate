@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { TElement } from 'platejs';
+import type { Element } from 'platejs';
 
 import { toUnitLess } from '@platejs/basic-styles';
 import { FontSizePlugin } from '@platejs/basic-styles/react';
@@ -47,7 +47,7 @@ const FONT_SIZES = [
 export function FontSizeToolbarButton() {
   const [inputValue, setInputValue] = React.useState(DEFAULT_FONT_SIZE);
   const [isFocused, setIsFocused] = React.useState(false);
-  const { editor, tf } = useEditorPlugin(FontSizePlugin);
+  const { editor } = useEditorPlugin(FontSizePlugin);
 
   const cursorFontSize = useEditorSelector((editor) => {
     const fontSize = editor.api.marks()?.[KEYS.fontSize];
@@ -56,7 +56,7 @@ export function FontSizeToolbarButton() {
       return toUnitLess(fontSize as string);
     }
 
-    const [block] = editor.api.block<TElement>() || [];
+    const [block] = editor.api.block<Element>() || [];
 
     if (!block?.type) return DEFAULT_FONT_SIZE;
 
@@ -77,7 +77,7 @@ export function FontSizeToolbarButton() {
       return;
     }
     if (newSize !== toUnitLess(cursorFontSize)) {
-      tf.fontSize.addMark(`${newSize}px`);
+      editor.tf.addMarks({ [KEYS.fontSize]: `${newSize}px` });
     }
 
     editor.tf.focus();
@@ -85,7 +85,7 @@ export function FontSizeToolbarButton() {
 
   const handleFontSizeChange = (delta: number) => {
     const newSize = Number(displayValue) + delta;
-    tf.fontSize.addMark(`${newSize}px`);
+    editor.tf.addMarks({ [KEYS.fontSize]: `${newSize}px` });
     editor.tf.focus();
   };
 
@@ -134,7 +134,7 @@ export function FontSizeToolbarButton() {
                 'flex h-8 w-full items-center justify-center text-sm hover:bg-accent data-[highlighted=true]:bg-accent'
               )}
               onClick={() => {
-                tf.fontSize.addMark(`${size}px`);
+                editor.tf.addMarks({ [KEYS.fontSize]: `${size}px` });
                 setIsFocused(false);
               }}
               data-highlighted={size === displayValue}

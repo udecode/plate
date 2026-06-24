@@ -1,20 +1,20 @@
 import * as React from 'react';
 
 import type { TCaptionProps, TImageElement, TResizableProps } from 'platejs';
-import type { SlateElementProps } from 'platejs/static';
+import type { PliteElementProps } from 'platejs/static';
 
 import { NodeApi } from 'platejs';
-import { SlateElement } from 'platejs/static';
+import { PliteElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
 
 export function ImageElementStatic(
-  props: SlateElementProps<TImageElement & TCaptionProps & TResizableProps>
+  props: PliteElementProps<TImageElement & TCaptionProps & TResizableProps>
 ) {
   const { align = 'center', caption, url, width } = props.element;
 
   return (
-    <SlateElement {...props} className="py-2.5">
+    <PliteElement {...props} className="py-2.5">
       <figure className="group relative m-0 inline-block" style={{ width }}>
         <div
           className="relative min-w-[92px] max-w-full"
@@ -41,6 +41,6 @@ export function ImageElementStatic(
         </div>
       </figure>
       {props.children}
-    </SlateElement>
+    </PliteElement>
   );
 }

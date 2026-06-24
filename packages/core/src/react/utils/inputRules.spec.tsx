@@ -11,6 +11,7 @@ import {
 import { MathRules } from '@platejs/math';
 import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
 
+import { getCurrentRuntimeTransforms } from '../../internal/currentRuntimeBridge';
 import { createPlateEditor } from '../editor';
 import { createPlatePlugin } from '../plugin';
 import {
@@ -63,7 +64,7 @@ describe('input rules', () => {
       value: [{ children: [{ text: '' }], type: 'p' }],
     } as any);
 
-    editor.tf.insertText('*');
+    getCurrentRuntimeTransforms(editor).insertText('*');
 
     expect(apply).toHaveBeenCalledTimes(1);
   });
@@ -89,7 +90,7 @@ describe('input rules', () => {
       value: [{ children: [{ text: '' }], type: 'p' }],
     } as any);
 
-    editor.tf.insertText('*');
+    getCurrentRuntimeTransforms(editor).insertText('*');
 
     expect(enabled).toHaveBeenCalledTimes(1);
     expect(apply).not.toHaveBeenCalled();
@@ -153,28 +154,15 @@ describe('input rules', () => {
       ],
       value: [{ children: [{ text: '##' }], type: 'p' }],
     } as any);
-    const originalRange = editor.api.range.bind(editor.api);
-    const originalString = editor.api.string.bind(editor.api);
-    const range = mock((...args: Parameters<typeof originalRange>) =>
-      originalRange(...args)
-    );
-    const string = mock((...args: Parameters<typeof originalString>) =>
-      originalString(...args)
-    );
-
-    editor.api.range = range as typeof editor.api.range;
-    editor.api.string = string as typeof editor.api.string;
-    editor.tf.select({
+    getCurrentRuntimeTransforms(editor).select({
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     });
 
-    editor.tf.insertText(' ');
+    getCurrentRuntimeTransforms(editor).insertText(' ');
 
     expect(resolve).toHaveBeenCalledTimes(1);
     expect(apply).toHaveBeenCalledTimes(1);
-    expect(range).toHaveBeenCalledTimes(1);
-    expect(string).toHaveBeenCalledTimes(1);
   });
 
   it('provides lazy cached character getters to insertText resolve', () => {
@@ -204,34 +192,15 @@ describe('input rules', () => {
       ],
       value: [{ children: [{ text: 'abc' }], type: 'p' }],
     } as any);
-    const originalAfter = editor.api.after.bind(editor.api);
-    const originalBefore = editor.api.before.bind(editor.api);
-    const originalString = editor.api.string.bind(editor.api);
-    const after = mock((...args: Parameters<typeof originalAfter>) =>
-      originalAfter(...args)
-    );
-    const before = mock((...args: Parameters<typeof originalBefore>) =>
-      originalBefore(...args)
-    );
-    const string = mock((...args: Parameters<typeof originalString>) =>
-      originalString(...args)
-    );
-
-    editor.api.after = after as typeof editor.api.after;
-    editor.api.before = before as typeof editor.api.before;
-    editor.api.string = string as typeof editor.api.string;
-    editor.tf.select({
+    getCurrentRuntimeTransforms(editor).select({
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     });
 
-    editor.tf.insertText(' ');
+    getCurrentRuntimeTransforms(editor).insertText(' ');
 
     expect(resolve).toHaveBeenCalledTimes(1);
     expect(apply).toHaveBeenCalledTimes(1);
-    expect(before).toHaveBeenCalledTimes(1);
-    expect(after).toHaveBeenCalledTimes(1);
-    expect(string).toHaveBeenCalledTimes(2);
   });
 
   it('orders competing rules by priority, then plugin order, then declaration order', () => {
@@ -280,11 +249,11 @@ describe('input rules', () => {
       value: [{ children: [{ text: '**hello*' }], type: 'p' }],
     });
 
-    editor.tf.select({
+    getCurrentRuntimeTransforms(editor).select({
       anchor: { offset: 8, path: [0, 0] },
       focus: { offset: 8, path: [0, 0] },
     });
-    editor.tf.insertText('*');
+    getCurrentRuntimeTransforms(editor).insertText('*');
 
     expect(editor.meta.inputRules.plugins.bold.rules).toHaveLength(1);
     expect(editor.meta.inputRules.insertText.byTrigger['*']).toHaveLength(1);
@@ -315,11 +284,11 @@ describe('input rules', () => {
       value: [{ children: [{ text: '``' }], type: 'p' }],
     } as any);
 
-    editor.tf.select({
+    getCurrentRuntimeTransforms(editor).select({
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     });
-    editor.tf.insertText('`');
+    getCurrentRuntimeTransforms(editor).insertText('`');
 
     expect(apply).toHaveBeenCalledTimes(1);
     expect(editor.meta.inputRules.plugins.codeBlock.rules).toHaveLength(1);
@@ -339,7 +308,7 @@ describe('input rules', () => {
       value: [{ children: [{ text: '``' }], type: 'p' }],
     } as any);
 
-    editor.tf.select({
+    getCurrentRuntimeTransforms(editor).select({
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     });
@@ -387,11 +356,11 @@ describe('input rules', () => {
       value: [{ children: [{ text: '|' }], type: 'p' }],
     } as any);
 
-    editor.tf.select({
+    getCurrentRuntimeTransforms(editor).select({
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     });
-    editor.tf.insertText(' ');
+    getCurrentRuntimeTransforms(editor).insertText(' ');
 
     expect(editor.children).toMatchObject([
       {

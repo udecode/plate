@@ -1,11 +1,12 @@
 import * as React from 'react';
 
-import type { SlateElementProps } from 'platejs/static';
+import type { PliteElementProps } from 'platejs/static';
+import type { Element } from '@platejs/plite';
 
 import { type Heading, BaseTocPlugin, isHeading } from '@platejs/toc';
 import { cva } from 'class-variance-authority';
-import { type SlateEditor, type TElement, NodeApi } from 'platejs';
-import { SlateElement } from 'platejs/static';
+import { NodeApi, type BasePlateEditor } from 'platejs';
+import { PliteElement } from 'platejs/static';
 
 import { Button } from '@/components/ui/button';
 
@@ -22,12 +23,12 @@ const headingItemVariants = cva(
   }
 );
 
-export function TocElementStatic(props: SlateElementProps) {
+export function TocElementStatic(props: PliteElementProps) {
   const { editor } = props;
   const headingList = getHeadingList(editor);
 
   return (
-    <SlateElement {...props} className="mb-1 p-0">
+    <PliteElement {...props} className="mb-1 p-0">
       <div>
         {headingList.length > 0 ? (
           headingList.map((item: Heading) => (
@@ -48,7 +49,7 @@ export function TocElementStatic(props: SlateElementProps) {
         )}
       </div>
       {props.children}
-    </SlateElement>
+    </PliteElement>
   );
 }
 
@@ -61,7 +62,7 @@ const headingDepth: Record<string, number> = {
   h6: 6,
 };
 
-const getHeadingList = (editor?: SlateEditor) => {
+const getHeadingList = (editor?: BasePlateEditor) => {
   if (!editor) return [];
 
   const options = editor.getOptions(BaseTocPlugin);
@@ -72,7 +73,7 @@ const getHeadingList = (editor?: SlateEditor) => {
 
   const headingList: Heading[] = [];
 
-  const values = editor.api.nodes<TElement>({
+  const values = editor.api.nodes<Element>({
     at: [],
     match: (n) => isHeading(n),
   });
@@ -97,7 +98,7 @@ const getHeadingList = (editor?: SlateEditor) => {
  * DOCX-compatible TOC component.
  * Renders TOC items as anchor links for proper Word internal navigation.
  */
-export function TocElementDocx(props: SlateElementProps) {
+export function TocElementDocx(props: PliteElementProps) {
   const { editor } = props;
   const headingList = getHeadingList(editor);
 
@@ -108,7 +109,7 @@ export function TocElementDocx(props: SlateElementProps) {
   };
 
   return (
-    <SlateElement {...props}>
+    <PliteElement {...props}>
       <div
         style={{
           marginBottom: '12pt',
@@ -142,6 +143,6 @@ export function TocElementDocx(props: SlateElementProps) {
         )}
       </div>
       {props.children}
-    </SlateElement>
+    </PliteElement>
   );
 }

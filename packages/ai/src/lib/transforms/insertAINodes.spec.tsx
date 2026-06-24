@@ -3,16 +3,16 @@
 import { jsxt } from '@platejs/test-utils';
 import {
   BaseParagraphPlugin,
-  type SlateEditor,
-  createSlateEditor,
+  type BasePlateEditor,
+  createBasePlateEditor,
 } from 'platejs';
 
 import { insertAINodes } from './insertAINodes';
 
 jsxt;
 
-const createEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createEditor = (input: BasePlateEditor) =>
+  createBasePlateEditor({
     plugins: [BaseParagraphPlugin],
     selection: input.selection,
     value: input.children,
@@ -20,7 +20,7 @@ const createEditor = (input: SlateEditor) =>
 
 describe('insertAINodes', () => {
   it('does nothing without a selection or explicit target', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin],
       value: [{ type: 'p', children: [{ text: 'one' }] }],
     });
@@ -40,7 +40,7 @@ describe('insertAINodes', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
     const editor = createEditor(input);
 
     insertAINodes(editor, [{ text: ' AI' }]);
@@ -66,7 +66,7 @@ describe('insertAINodes', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
     const editor = createEditor(input);
 
     insertAINodes(editor, [{ text: ' AI' }], { target: [0, 0] });

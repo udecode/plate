@@ -2,17 +2,17 @@
 title: Lexical normalization harvest rows need selection query boundaries
 date: 2026-05-09
 category: docs/solutions/best-practices
-module: Slate v2 Lexical harvest
+module: Plite Lexical harvest
 problem_type: best_practice
 component: testing_framework
 symptoms:
   - Lexical normalization tests only exercised `$normalizeSelection`, not tree repair.
-  - The obvious Slate target looked like normalization contracts, but the portable behavior was path edge resolution.
-  - Copying the source file directly would mix Lexical element-point and decorator semantics into Slate tests.
+  - The obvious Plite target looked like normalization contracts, but the portable behavior was path edge resolution.
+  - Copying the source file directly would mix Lexical element-point and decorator semantics into Plite tests.
 root_cause: inadequate_documentation
 resolution_type: documentation_update
 severity: medium
-tags: [slate-v2, lexical-harvest, normalization, selection, query-contract]
+tags: [plite, lexical-harvest, normalization, selection, query-contract]
 ---
 
 # Lexical normalization harvest rows need selection query boundaries
@@ -29,20 +29,20 @@ selection endpoints are converted to concrete text endpoints when possible.
   `RangeSelection` and calls `$normalizeSelection`.
 - Some rows are portable text-edge behavior; others depend on Lexical decorator
   and element-point semantics.
-- Routing the whole file to Slate normalization would invite a broad tree-repair
-  test where Slate only needs a query/location contract.
+- Routing the whole file to Plite normalization would invite a broad tree-repair
+  test where Plite only needs a query/location contract.
 
 ## What Didn't Work
 
 - Treating the file as generic tree normalization would reopen the wrong owner.
-- Copying Lexical element-point assertions would be fake parity because Slate
+- Copying Lexical element-point assertions would be fake parity because Plite
   public `Point` values target text nodes.
 - Treating reversed rows as a separate browser behavior would overclaim; the
   accepted behavior is package-level location resolution.
 
 ## Solution
 
-Route the portable part to Slate's public query APIs:
+Route the portable part to Plite's public query APIs:
 
 - element path -> `Editor.range(editor, path)`;
 - element path start/end -> `Editor.edges(editor, path)`;
@@ -51,16 +51,16 @@ Route the portable part to Slate's public query APIs:
 - backward ranges -> `Editor.point(editor, range)` and `{ edge: 'end' }`.
 
 The compact proof belongs in
-`.tmp/slate-v2/packages/slate/test/query-contract.ts`, not in
+`packages/plite/test/query-contract.ts`, not in
 `normalization-contract.ts`.
 
 ## Why This Works
 
-Slate's public selection model stores text points. Lexical's normalization
+Plite's public selection model stores text points. Lexical's normalization
 helper is useful only as a reminder to prove that callers can pass element
 paths and still get stable text endpoints through the public query layer.
 
-Decorator and element-point rows are intentionally not generic Slate behavior.
+Decorator and element-point rows are intentionally not generic Plite behavior.
 They should only come back under a real decorator, void, or browser-selection
 owner.
 
@@ -72,11 +72,11 @@ owner.
   query/location owner first.
 - Keep tree-repair normalization rows in `normalization-contract.ts`; keep
   path/range/point resolution rows in `query-contract.ts`.
-- Reject decorator endpoint semantics unless a Slate owner exposes the same
+- Reject decorator endpoint semantics unless a Plite owner exposes the same
   public behavior.
 
 ## Related Issues
 
 - [Lexical caret harvest rows need range-edge contracts](./2026-05-09-lexical-caret-harvest-rows-need-range-edge-contracts.md)
 - [Lexical docs traversal harvest rows need query-shape contracts](./2026-05-09-lexical-docs-traversal-harvest-rows-need-query-shape-contracts.md)
-- [Slate built-in normalization cannot be ported naively onto v2](../logic-errors/2026-04-09-slate-built-in-normalization-cannot-be-ported-naively-onto-v2.md)
+- [Plite built-in normalization cannot be ported naively onto v2](../logic-errors/2026-04-09-slate-built-in-normalization-cannot-be-ported-naively-onto-v2.md)

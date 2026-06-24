@@ -1,7 +1,7 @@
-import { type Descendant, ElementApi, TextApi } from '@platejs/slate';
-import { jsx } from 'slate-hyperscript';
+import { type Descendant, ElementApi, TextApi } from '@platejs/plite';
+import { jsx } from '@platejs/plite-hyperscript';
 
-import type { SlateEditor } from '../../../editor';
+import type { BasePlateEditor } from '../../../editor';
 
 import { mergeDeepToNodes } from '../../../utils';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
@@ -12,7 +12,7 @@ import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
  * leaf deserializers of each plugin.
  */
 export const htmlElementToLeaf = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   element: HTMLElement
 ) => {
   const node = pipeDeserializeHtmlLeaf(editor, element);

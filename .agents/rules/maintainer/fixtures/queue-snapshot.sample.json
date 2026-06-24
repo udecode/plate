@@ -1,0 +1,44 @@
+{
+  "advisories": [
+    {
+      "ghsa_id": "GHSA-sample",
+      "html_url": "https://github.com/udecode/plate/security/advisories/GHSA-sample",
+      "state": "open",
+      "summary": "Sample private advisory for queue-snapshot validation",
+      "updated_at": "2026-06-16T00:00:00Z"
+    }
+  ],
+  "issues": [
+    {
+      "assignees": [],
+      "comments": 3,
+      "labels": [{ "name": "bug" }],
+      "number": 1001,
+      "title": "Editor selection loses focus after paste",
+      "updatedAt": "2026-06-15T00:00:00Z",
+      "url": "https://github.com/udecode/plate/issues/1001"
+    },
+    {
+      "assignees": [],
+      "comments": 0,
+      "labels": [{ "name": "needs reproduction" }],
+      "number": 1002,
+      "title": "Support question without repro",
+      "updatedAt": "2026-06-14T00:00:00Z",
+      "url": "https://github.com/udecode/plate/issues/1002"
+    }
+  ],
+  "prs": [
+    {
+      "author": { "login": "contributor" },
+      "isDraft": false,
+      "labels": [],
+      "number": 1003,
+      "reviewDecision": "REVIEW_REQUIRED",
+      "title": "Fix table paste regression",
+      "updatedAt": "2026-06-16T00:00:00Z",
+      "url": "https://github.com/udecode/plate/pull/1003"
+    }
+  ],
+  "warnings": []
+}

@@ -1,13 +1,13 @@
 import * as React from 'react';
 
-import type { SlateLeafProps } from 'platejs/static';
+import type { PliteLeafProps } from 'platejs/static';
 
-import { SlateLeaf } from 'platejs/static';
+import { PliteLeaf } from 'platejs/static';
 
-export function HighlightLeafStatic(props: SlateLeafProps) {
+export function HighlightLeafStatic(props: PliteLeafProps) {
   return (
-    <SlateLeaf {...props} as="mark" className="bg-highlight/30 text-inherit">
+    <PliteLeaf {...props} as="mark" className="bg-highlight/30 text-inherit">
       {props.children}
-    </SlateLeaf>
+    </PliteLeaf>
   );
 }

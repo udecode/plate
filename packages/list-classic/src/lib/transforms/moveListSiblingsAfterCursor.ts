@@ -1,17 +1,11 @@
-import {
-  type ElementEntry,
-  type Path,
-  type SlateEditor,
-  type TElement,
-  match,
-  NodeApi,
-  PathApi,
-} from 'platejs';
+import type { BasePlateEditor } from '@platejs/core';
+import type { Element, Path } from '@platejs/plite';
+import { PathApi } from '@platejs/plite';
 
 import { getListTypes } from '../queries/getListTypes';
 
 export const moveListSiblingsAfterCursor = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     at,
     to,
@@ -22,20 +16,32 @@ export const moveListSiblingsAfterCursor = (
 ) => {
   const offset = at.at(-1)!;
   at = PathApi.parent(at);
-  const listNode = NodeApi.get<TElement>(editor, at)!;
-  const listEntry: ElementEntry = [listNode, at];
+  const listEntry = editor.api.node<Element>(at);
+
+  if (!listEntry) {
+    return false;
+  }
+
+  const [listNode] = listEntry;
 
   if (
-    !match(listNode, [], { type: getListTypes(editor) }) ||
+    !getListTypes(editor).includes(listNode.type) ||
     PathApi.isParent(at, to) // avoid moving nodes within its own list
   ) {
     return false;
   }
 
-  return editor.tf.moveNodes({
-    at: listEntry[1],
-    children: true,
-    fromIndex: offset + 1,
-    to,
+  let moved = false;
+
+  editor.update((tx) => {
+    for (let index = listNode.children.length - 1; index > offset; index--) {
+      tx.nodes.move({
+        at: [...listEntry[1], index],
+        to,
+      });
+      moved = true;
+    }
   });
+
+  return moved;
 };

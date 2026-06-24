@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import {
   BaseBoldPlugin,
@@ -41,12 +41,12 @@ describe('basic mark input rules', () => {
       </fragment>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseBoldPlugin],
       value: input,
     } as any);
 
-    editor.tf.insertText('*');
+    editor.update((tx) => tx.text.insert('*'));
 
     expect(input.children).toEqual(output.children);
   });
@@ -327,13 +327,13 @@ describe('basic mark input rules', () => {
       title: 'formats combined italic underline delimiters',
     },
   ])('$title', ({ input, output, plugin, text }) => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [plugin],
       value: input,
     } as any);
 
     text.forEach((step) => {
-      editor.tf.insertText(step);
+      editor.update((tx) => tx.text.insert(step));
     });
 
     expect(input.children).toEqual(output.children);

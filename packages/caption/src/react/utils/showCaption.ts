@@ -1,9 +1,12 @@
-import type { SlateEditor, TElement } from 'platejs';
+import type { Path, BasePlateEditor, TCaptionElement } from 'platejs';
 
 import { CaptionPlugin } from '../CaptionPlugin';
 
-export const showCaption = (editor: SlateEditor, element: TElement) => {
-  const path = editor.api.findPath(element);
+export const showCaption = (
+  editor: BasePlateEditor,
+  element: TCaptionElement,
+  path: Path | null
+) => {
   editor.setOption(CaptionPlugin, 'visibleId', element.id as string);
 
   setTimeout(() => {

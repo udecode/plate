@@ -1,9 +1,9 @@
-import { type SlateEditor, getEditorPlugin } from 'platejs';
+import { type BasePlateEditor, getEditorPlugin } from 'platejs';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 /** Select inserted blocks from the last operations. */
-export const selectInsertedBlocks = (editor: SlateEditor) => {
+export const selectInsertedBlocks = (editor: BasePlateEditor) => {
   const { setOption } = getEditorPlugin(editor, BlockSelectionPlugin);
 
   const ids = new Set<string>();

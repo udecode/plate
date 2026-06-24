@@ -1,14 +1,15 @@
 import {
-  type EditorBeforeOptions,
   type PluginConfig,
   type TLinkElement,
-  createTSlatePlugin,
+  createEditorPlugin,
   isUrl,
   KEYS,
 } from 'platejs';
 
+import type { MatchBeforeOptions } from './LinkRules';
 import { getLinkAttributes, validateUrl } from './utils/index';
-import { withLink } from './withLink';
+
+type RangeBeforeOptions = MatchBeforeOptions;
 
 export type BaseLinkConfig = PluginConfig<
   'a',
@@ -43,7 +44,7 @@ export type BaseLinkConfig = PluginConfig<
      *     "afterMatch": true
      *   }
      */
-    rangeBeforeOptions?: EditorBeforeOptions;
+    rangeBeforeOptions?: RangeBeforeOptions;
     /**
      * Hotkeys to trigger floating link.
      *
@@ -83,7 +84,7 @@ export type BaseLinkConfig = PluginConfig<
 >;
 
 /** Enables support for hyperlinks. */
-export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
+export const BaseLinkPlugin = createEditorPlugin<BaseLinkConfig>({
   key: KEYS.link,
   node: {
     dangerouslyAllowAttributes: ['target'],
@@ -131,4 +132,4 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
     normalize: { removeEmpty: true },
     selection: { affinity: 'directional' },
   },
-}).overrideEditor(withLink);
+});

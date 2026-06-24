@@ -1,7 +1,7 @@
-import { createSlatePlugin, KEYS } from 'platejs';
+import { createEditorPlugin, KEYS } from 'platejs';
 
 /** Enables support for code formatting */
-export const BaseKbdPlugin = createSlatePlugin({
+export const BaseKbdPlugin = createEditorPlugin({
   key: KEYS.kbd,
   node: { isLeaf: true },
   parsers: {
@@ -13,8 +13,8 @@ export const BaseKbdPlugin = createSlatePlugin({
   },
   render: { as: 'kbd' },
   rules: { selection: { affinity: 'hard' } },
-}).extendTransforms(({ editor, type }) => ({
+}).extendTx(({ type }) => (tx) => ({
   toggle: () => {
-    editor.tf.toggleMark(type);
+    tx.marks.toggle(type);
   },
 }));

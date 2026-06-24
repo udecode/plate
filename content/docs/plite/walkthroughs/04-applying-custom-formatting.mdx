@@ -1,0 +1,157 @@
+---
+title: "Applying Custom Formatting"
+description: "Toggle marks and render inline formatting with current Plite transactions."
+---
+
+Block types change whole elements. Marks change text. Use marks for inline
+formatting such as bold, italic, code, and strikethrough.
+
+## Starting Point
+
+Start with the block renderer from the previous walkthrough:
+
+```tsx
+const renderElement = (props) => {
+  switch (props.element.type) {
+    case "code":
+      return <CodeElement {...props} />;
+    default:
+      return <DefaultElement {...props} />;
+  }
+};
+```
+
+## Toggle A Mark
+
+Use `tx.marks.toggle(...)` inside `editor.update(...)`.
+
+```tsx
+import { ElementApi } from "@platejs/plite";
+
+const App = () => {
+  const editor = usePliteEditor({ initialValue });
+
+  return (
+    <Plite editor={editor}>
+      <Editable
+        renderElement={renderElement}
+        onKeyDown={(event) => {
+          if (!event.ctrlKey) {
+            return;
+          }
+
+          switch (event.key) {
+            case "`": {
+              event.preventDefault();
+              const match = editor.read((state) =>
+                state.nodes.find({
+                  match: (node) =>
+                    ElementApi.isElement(node) && node.type === "code",
+                })
+              );
+              editor.update((tx) => {
+                tx.nodes.set(
+                  { type: match ? "paragraph" : "code" },
+                  {
+                    match: (node) =>
+                      ElementApi.isElement(node) && tx.schema.isBlock(node),
+                  }
+                );
+              });
+              break;
+            }
+
+            case "b": {
+              event.preventDefault();
+              editor.update((tx) => {
+                tx.marks.toggle("bold");
+              });
+              break;
+            }
+          }
+        }}
+      />
+    </Plite>
+  );
+};
+```
+
+`tx.marks.toggle('bold')` applies the mark to the selected range. When the
+selection is collapsed, it changes the active mark for text typed next.
+
+## Render Marks
+
+Add `renderLeaf` to decide how marked text appears.
+
+```tsx
+const renderLeaf = ({ attributes, children, leaf }) => {
+  return (
+    <span
+      {...attributes}
+      style={{
+        fontWeight: leaf.bold ? "bold" : "normal",
+      }}
+    >
+      {children}
+    </span>
+  );
+};
+```
+
+Pass both renderers to `Editable`:
+
+```tsx
+const App = () => {
+  const editor = usePliteEditor({ initialValue });
+
+  return (
+    <Plite editor={editor}>
+      <Editable
+        renderElement={renderElement}
+        renderLeaf={renderLeaf}
+        onKeyDown={(event) => {
+          if (!event.ctrlKey) {
+            return;
+          }
+
+          switch (event.key) {
+            case "`": {
+              event.preventDefault();
+              const match = editor.read((state) =>
+                state.nodes.find({
+                  match: (node) =>
+                    ElementApi.isElement(node) && node.type === "code",
+                })
+              );
+              editor.update((tx) => {
+                tx.nodes.set(
+                  { type: match ? "paragraph" : "code" },
+                  {
+                    match: (node) =>
+                      ElementApi.isElement(node) && tx.schema.isBlock(node),
+                  }
+                );
+              });
+              break;
+            }
+
+            case "b": {
+              event.preventDefault();
+              editor.update((tx) => {
+                tx.marks.toggle("bold");
+              });
+              break;
+            }
+          }
+        }}
+      />
+    </Plite>
+  );
+};
+```
+
+Hotkeys like `Ctrl+B` belong in `onKeyDown` because they are UI shortcuts.
+Editing behavior that maps to Plite transform names, such as `deleteBackward`,
+`deleteForward`, `insertBreak`, or `insertText`, belongs in extension
+`transforms` so keyboard input, native input, toolbars, programmatic calls, and
+tests use the same behavior.

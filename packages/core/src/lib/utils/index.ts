@@ -19,3 +19,4 @@ export * from './overridePluginsByKey';
 export * from './pipeInsertDataQuery';
 export * from './pipeOnNodeChange';
 export * from './pipeOnTextChange';
+export * from './queryNode';

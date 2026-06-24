@@ -1,11 +1,11 @@
-import type { Descendant, TElement, TText } from '@platejs/slate';
+import type { Descendant, Element, Text } from '@platejs/plite';
 import type { UnknownObject } from '@udecode/utils';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Elements
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface TCalloutElement extends TElement {
+export interface TCalloutElement extends Element {
   backgroundColor?: string;
   icon?: string;
   variant?:
@@ -20,35 +20,35 @@ export interface TCalloutElement extends TElement {
 
 export type TTagProps = { value: string } & UnknownObject;
 
-export type TTagElement = TElement & TTagProps;
+export type TTagElement = Element & TTagProps;
 
-export interface TCodeBlockElement extends TElement {
+export interface TCodeBlockElement extends Element {
   lang?: string;
 }
 
-export interface TCodeSyntaxLeaf extends TText {
+export interface TCodeSyntaxLeaf extends Text {
   className?: string;
 }
 
-export interface TColumnElement extends TElement {
+export interface TColumnElement extends Element {
   type: 'column';
   width: string;
   id?: string;
 }
 
-export interface TColumnGroupElement extends TElement {
+export interface TColumnGroupElement extends Element {
   children: TColumnElement[];
   type: 'column_group';
   id?: string;
   layout?: number[];
 }
 
-export interface TDateElement extends TElement {
+export interface TDateElement extends Element {
   date?: string;
   rawDate?: string;
 }
 
-export interface TEquationElement extends TElement {
+export interface TEquationElement extends Element {
   texExpression: string;
 }
 
@@ -57,7 +57,7 @@ export interface TImageElement extends TMediaElement {
   initialWidth?: number;
 }
 
-export interface TPlaceholderElement extends TElement {
+export interface TPlaceholderElement extends Element {
   mediaType: string;
 }
 
@@ -73,29 +73,29 @@ export interface TMediaEmbedElement extends TMediaElement {}
 // Inline
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface TLinkElement extends TElement {
+export interface TLinkElement extends Element {
   url: string;
   target?: string;
 }
 
-export interface TMentionElement extends TElement {
+export interface TMentionElement extends Element {
   value: string;
 }
 
-export interface TComboboxInputElement extends TElement {
+export interface TComboboxInputElement extends Element {
   value: string;
 }
 
-export interface TTableElement extends TElement {
+export interface TTableElement extends Element {
   colSizes?: number[];
   marginLeft?: number;
 }
 
-export interface TTableRowElement extends TElement {
+export interface TTableRowElement extends Element {
   size?: number;
 }
 
-export interface TTableCellElement extends TElement {
+export interface TTableCellElement extends Element {
   id?: string;
   attributes?: {
     colspan?: string;
@@ -129,7 +129,7 @@ export type TIdProps = {
   id: string;
 };
 
-export type TIdElement = TElement & TIdProps;
+export type TIdElement = Element & TIdProps;
 
 export type TTextAlignProps = {
   align?: React.CSSProperties['textAlign'];
@@ -140,7 +140,7 @@ export type TResizableProps = {
   width?: number;
 };
 
-export type TResizableElement = TElement & TResizableProps;
+export type TResizableElement = Element & TResizableProps;
 
 export type TMediaProps = {
   url: string;
@@ -152,19 +152,19 @@ export type TMediaProps = {
   sourceUrl?: string;
 };
 
-export type TMediaElement = TElement & TMediaProps;
+export type TMediaElement = Element & TMediaProps;
 
 export type TCaptionProps = {
   caption?: Descendant[];
 };
 
-export type TCaptionElement = TElement & TCaptionProps;
+export type TCaptionElement = Element & TCaptionProps;
 
 export type TIndentProps = {
   indent: number;
 };
 
-export type TIndentElement = TElement & TIndentProps;
+export type TIndentElement = Element & TIndentProps;
 
 export type TListProps = TIndentProps & {
   listStyleType: string;
@@ -173,13 +173,13 @@ export type TListProps = TIndentProps & {
   listRestartPolite?: number;
   listStart?: number;
 };
-export type TListElement = TElement & TListProps;
+export type TListElement = Element & TListProps;
 
 export type TSuggestionProps = {
   suggestion: TSuggestionData;
 };
 
-export type TSuggestionElement = TElement & TSuggestionProps;
+export type TSuggestionElement = Element & TSuggestionProps;
 
 export type TLineHeightProps = {
   lineHeight?: React.CSSProperties['lineHeight'];
@@ -206,7 +206,7 @@ export type TFontMarks = {
   fontWeight?: React.CSSProperties['fontWeight'];
 };
 
-export interface TCommentText extends TText {
+export interface TCommentText extends Text {
   comment?: boolean;
 }
 
@@ -218,7 +218,7 @@ export type TSuggestionData = {
   isLineBreak?: boolean;
 };
 
-export type TSuggestionText = TText & {
+export type TSuggestionText = Text & {
   [key: string]: TInlineSuggestionData | boolean | string;
   suggestion: true;
   text: string;
@@ -260,60 +260,60 @@ export type PlainText = {
   text: string;
 };
 
-export type TNodeMap = {
+export type NodeMap = {
   a: TLinkElement;
   action_item: TListElement;
-  ai: TText & { ai: true };
-  aiChat: TElement;
+  ai: Text & { ai: true };
+  aiChat: Element;
   audio: TAudioElement;
-  blockquote: TElement;
-  bold: TText & { bold: true };
+  blockquote: Element;
+  bold: Text & { bold: true };
   callout: TCalloutElement;
-  code: TText & { code: true };
+  code: Text & { code: true };
   code_block: TCodeBlockElement;
-  code_line: TElement;
+  code_line: Element;
   code_syntax: TCodeSyntaxLeaf;
   column: TColumnElement;
   column_group: TColumnGroupElement;
-  comment: TText & { comment: true };
+  comment: Text & { comment: true };
   date: TDateElement;
   emoji_input: TComboboxInputElement;
   equation: TEquationElement;
-  excalidraw: TElement;
+  excalidraw: Element;
   file: TFileElement;
-  h1: TElement;
-  h2: TElement;
-  h3: TElement;
-  h4: TElement;
-  h5: TElement;
-  h6: TElement;
-  highlight: TText & { highlight: true };
-  hr: TElement;
+  h1: Element;
+  h2: Element;
+  h3: Element;
+  h4: Element;
+  h5: Element;
+  h6: Element;
+  highlight: Text & { highlight: true };
+  hr: Element;
   img: TImageElement & TCaptionProps;
   inline_equation: TEquationElement;
-  italic: TText & { italic: true };
-  kbd: TText & { kbd: true };
-  li: TElement;
-  lic: TElement;
+  italic: Text & { italic: true };
+  kbd: Text & { kbd: true };
+  li: Element;
+  lic: Element;
   media_embed: TMediaEmbedElement & TCaptionProps;
   mention: TMentionElement;
   mention_input: TComboboxInputElement;
   ol: TListElement;
-  p: TElement;
-  search_highlight: TText & { search_highlight: true };
+  p: Element;
+  search_highlight: Text & { search_highlight: true };
   slash_input: TComboboxInputElement;
-  strikethrough: TText & { strikethrough: true };
-  subscript: TText & { subscript: true };
+  strikethrough: Text & { strikethrough: true };
+  subscript: Text & { subscript: true };
   suggestion: TSuggestionText;
-  superscript: TText & { superscript: true };
+  superscript: Text & { superscript: true };
   table: TTableElement;
   tag: TTagElement;
   td: TTableCellElement;
   th: TTableCellElement;
-  toc: TElement;
-  toggle: TElement;
+  toc: Element;
+  toggle: Element;
   tr: TTableRowElement;
   ul: TListElement;
-  underline: TText & { underline: true };
+  underline: Text & { underline: true };
   video: TVideoElement & TCaptionProps;
 };

@@ -1,11 +1,11 @@
 ---
 date: 2026-05-09
 problem_type: best_practice
-component: slate-v2 harvest
+component: plite harvest
 root_cause: test_design
 title: Lexical list utility harvest rows need path ancestry contracts
 tags:
-  - slate-v2
+  - plite
   - lexical-harvest
   - list
   - query-contract
@@ -20,7 +20,7 @@ severity: medium
 Lexical list utility tests look tempting to port as helper APIs:
 `$getListDepth`, `$getTopListNode`, and `$isLastItemInList`.
 
-That is the wrong target for Slate v2 unless Slate has accepted a public list
+That is the wrong target for Plite unless Plite has accepted a public list
 helper API. The portable behavior is the tree fact those helpers expose.
 
 ## Symptoms
@@ -29,7 +29,7 @@ helper API. The portable behavior is the tree fact those helpers expose.
   API shape.
 - Copying the row would create a local list helper just to satisfy an upstream
   helper name.
-- Existing Slate coverage already has broad transform/list behavior, but not a
+- Existing Plite coverage already has broad transform/list behavior, but not a
   compact proof that public path queries expose the same ancestry facts.
 
 ## What Didn't Work
@@ -42,18 +42,18 @@ helper API. The portable behavior is the tree fact those helpers expose.
 
 ## Solution
 
-Write one compact package proof against Slate's public query primitives:
+Write one compact package proof against Plite's public query primitives:
 
 - `Path.levels` gives the logical ancestor chain.
 - `Node.get` lets the proof filter list and list-item paths.
 - `Node.has(editor, Path.next(path))` distinguishes terminal and non-terminal
   sibling positions.
 
-The proof belongs in `.tmp/slate-v2/packages/slate/test/query-contract.ts`.
+The proof belongs in `packages/plite/test/query-contract.ts`.
 
 ## Why This Works
 
-Slate's raw model does not need Lexical's list helper API to preserve the
+Plite's raw model does not need Lexical's list helper API to preserve the
 behavior. The durable contract is that public path and node queries can recover:
 
 - nested list depth;
@@ -65,7 +65,7 @@ behavior. The durable contract is that public path and node queries can recover:
 
 When harvesting list utility tests from another editor:
 
-- reject upstream helper API shape unless Slate already owns that public API;
+- reject upstream helper API shape unless Plite already owns that public API;
 - map helper outputs to `Path`, `Node`, or `Editor` query contracts;
 - add one mechanism-level package proof instead of one fixture per source
   depth;

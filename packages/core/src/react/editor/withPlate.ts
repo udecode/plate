@@ -1,23 +1,32 @@
-import { type Editor, type Value, createEditor } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 
 import type { AnyPlatePlugin } from '../plugin';
-import type { EventEditorPlugin, SlateReactExtensionPlugin } from '../plugins';
+import type { EventEditorPlugin, PliteReactExtensionPlugin } from '../plugins';
 import type { PlateEditor, TPlateEditor } from './PlateEditor';
+import { createPlatePlugin } from '../plugin/createPlatePlugin';
+import type { CurrentRuntimeEditor as Editor } from '../../internal/currentRuntimeBridge';
 
 import {
   type AnyPluginConfig,
   type BaseWithSlateOptions,
   type CorePlugin,
+  getCorePlugins,
   type InferPlugins,
-  withSlate,
+  type WithSlateOptions,
+  withPlite,
 } from '../../lib';
+import {
+  createPlateRuntimeEditor,
+  type CreatePlateRuntimeEditorOptions,
+  type PlateRuntimeEditor,
+} from './createPlateRuntimeEditor';
 import { createZustandStore } from '../libs/zustand';
 import { getPlateCorePlugins } from './getPlateCorePlugins';
 
 export type PlateCorePlugin =
   | CorePlugin
   | typeof EventEditorPlugin
-  | typeof SlateReactExtensionPlugin;
+  | typeof PliteReactExtensionPlugin;
 
 export type WithPlateOptions<
   V extends Value = Value,
@@ -37,7 +46,6 @@ export type WithPlateOptions<
     | 'priority'
     | 'render'
     | 'shortcuts'
-    | 'transforms'
     | 'useHooks'
   > & {
     // override?: {
@@ -67,7 +75,7 @@ export type WithPlateOptions<
  *   event handlers, and React hooks integration.
  * @see {@link createPlateEditor} for a higher-level React editor creation function.
  * @see {@link usePlateEditor} for a memoized version in React components.
- * @see {@link withSlate} for the non-React version of editor enhancement.
+ * @see {@link withPlite} for the non-React version of editor enhancement.
  */
 export const withPlate = <
   V extends Value = Value,
@@ -83,26 +91,226 @@ export const withPlate = <
     ...rest
   } = options;
 
-  const editor = withSlate<V, P>(e, {
+  const editor = withPlite<V, PlateCorePlugin | P>(e, {
     navigationFeedback,
     ...rest,
     optionsStoreFactory: optionsStoreFactory ?? createZustandStore,
     plugins: [...getPlateCorePlugins({ navigationFeedback }), ...plugins],
-  } as any) as unknown as TPlateEditor<V, InferPlugins<P[]>>;
+  } as WithSlateOptions<V, PlateCorePlugin | P>) as unknown as TPlateEditor<
+    V,
+    InferPlugins<P[]>
+  >;
 
   return editor;
 };
 
-export type CreatePlateEditorOptions<
+export type CreatePlateEditorRuntimeOptions<
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
-> = WithPlateOptions<V, P> & {
-  /**
-   * Initial editor to be extended with `withPlate`.
-   *
-   * @default createEditor()
-   */
-  editor?: Editor;
+> = Pick<
+  BaseWithSlateOptions<P>,
+  | 'affinity'
+  | 'chunking'
+  | 'components'
+  | 'id'
+  | 'maxLength'
+  | 'navigationFeedback'
+  | 'nodeId'
+  | 'plugins'
+  | 'readOnly'
+  | 'selection'
+  | 'shouldNormalizeEditor'
+  | 'userId'
+> & {
+  autoSelect?: boolean | 'end' | 'start';
+  decorate?: AnyPlatePlugin['decorate'];
+  handlers?: PlateRuntimeRootHandlers;
+  inject?: AnyPlatePlugin['inject'];
+  onReady?: (ctx: {
+    editor: RuntimePlateEditor<V, P>;
+    isAsync: false;
+    value: V;
+  }) => void;
+  optionsStoreFactory?: CreatePlateRuntimeEditorOptions<
+    V,
+    readonly [],
+    InferPlugins<P[]>
+  >['optionsStoreFactory'];
+  options?: AnyPlatePlugin['options'];
+  override?: AnyPlatePlugin['override'];
+  render?: AnyPlatePlugin['render'];
+  rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
+  shortcuts?: AnyPlatePlugin['shortcuts'];
+  transformInitialValue?: AnyPlatePlugin['transformInitialValue'];
+  useHooks?: AnyPlatePlugin['useHooks'];
+  value?: V | null;
+};
+
+type RuntimePlateEditor<
+  V extends Value,
+  P extends AnyPluginConfig,
+> = PlateRuntimeEditor<V, readonly [], InferPlugins<P[]>>;
+
+type PlateRuntimeRootHandlers = Pick<
+  NonNullable<AnyPlatePlugin['handlers']>,
+  'onChange' | 'onKeyDown' | 'onNodeChange' | 'onTextChange'
+>;
+
+const unsupportedPlateRuntimeOptionKeys = [
+  'api',
+  'editor',
+  'extendEditor',
+  'normalizeInitialValue',
+  'priority',
+  'skipInitialization',
+] as const;
+
+const assertSupportedPlateRuntimeOptions = (
+  options: Record<string, unknown>
+) => {
+  const unsupportedKeys = unsupportedPlateRuntimeOptionKeys.filter(
+    (key) => options[key] !== undefined
+  );
+
+  if (unsupportedKeys.length > 0) {
+    throw new Error(
+      `[Plate] createPlateEditor() does not support these options yet: ${unsupportedKeys.join(', ')}.`
+    );
+  }
+
+  if (
+    typeof options.value === 'function' ||
+    typeof options.value === 'string'
+  ) {
+    throw new Error(
+      '[Plate] createPlateEditor() currently accepts only array values or null.'
+    );
+  }
+};
+
+const createPlateRuntimePluginList = <
+  V extends Value,
+  P extends AnyPluginConfig,
+>({
+  affinity = true,
+  chunking = true,
+  components,
+  decorate,
+  handlers,
+  inject,
+  maxLength,
+  navigationFeedback,
+  nodeId,
+  options,
+  override,
+  plugins = [],
+  render,
+  rootPlugin,
+  shortcuts,
+  transformInitialValue,
+  useHooks,
+}: CreatePlateEditorRuntimeOptions<V, P>): unknown[] => {
+  const pluginList = [
+    ...getPlateCorePlugins({ navigationFeedback }),
+    ...plugins,
+  ];
+  const corePlugins = getCorePlugins({
+    affinity,
+    chunking,
+    maxLength,
+    navigationFeedback,
+    nodeId,
+    plugins: pluginList,
+  });
+  let rootPluginInstance =
+    components ||
+    decorate ||
+    handlers ||
+    inject ||
+    options ||
+    override ||
+    render ||
+    rootPlugin ||
+    shortcuts ||
+    transformInitialValue ||
+    useHooks
+      ? createPlatePlugin({
+          decorate,
+          handlers,
+          inject,
+          key: 'root',
+          options,
+          override:
+            components || override
+              ? {
+                  ...override,
+                  components: {
+                    ...components,
+                    ...override?.components,
+                  },
+                }
+              : undefined,
+          plugins: [...corePlugins, ...pluginList],
+          priority: 10_000,
+          render,
+          shortcuts,
+          transformInitialValue,
+          useHooks,
+        })
+      : null;
+
+  if (rootPluginInstance && rootPlugin) {
+    rootPluginInstance = rootPlugin(rootPluginInstance);
+  }
+
+  return rootPluginInstance
+    ? [rootPluginInstance]
+    : [...corePlugins, ...pluginList];
+};
+
+const applyPlateRuntimeInitializationOptions = <
+  V extends Value,
+  P extends AnyPluginConfig,
+>(
+  editor: RuntimePlateEditor<V, P>,
+  {
+    autoSelect,
+    onReady,
+    selection,
+    shouldNormalizeEditor,
+  }: Pick<
+    CreatePlateEditorRuntimeOptions<V, P>,
+    'autoSelect' | 'onReady' | 'selection' | 'shouldNormalizeEditor'
+  >
+) => {
+  if (!selection && autoSelect) {
+    const edge = autoSelect === true ? 'end' : autoSelect;
+    const point = editor.read((state) =>
+      edge === 'start' ? state.points.start([]) : state.points.end([])
+    );
+
+    editor.update(
+      (tx) => {
+        tx.selection.set({ anchor: point, focus: point });
+      },
+      { metadata: { history: { mode: 'skip' } } }
+    );
+  }
+
+  if (shouldNormalizeEditor) {
+    editor.update(
+      (tx) => {
+        tx.normalize({ force: true });
+      },
+      { metadata: { history: { mode: 'skip' } } }
+    );
+  }
+
+  onReady?.({
+    editor,
+    isAsync: false,
+    value: editor.read((state) => state.value.root()) as V,
+  });
 };
 
 /**
@@ -134,15 +342,43 @@ export type CreatePlateEditorOptions<
  * });
  * ```
  *
- * @see {@link createSlateEditor} for a non-React version of editor creation.
+ * @see {@link createBasePlateEditor} for a non-React version of editor creation.
  * @see {@link usePlateEditor} for a memoized version in React components.
  * @see {@link withPlate} for the underlying function that applies Plate enhancements to an editor.
  */
-export const createPlateEditor = <
+export function createPlateEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
->({
-  editor = createEditor(),
-  ...options
-}: CreatePlateEditorOptions<V, P> = {}): TPlateEditor<V, InferPlugins<P[]>> =>
-  withPlate<V, P>(editor, options);
+>(options?: CreatePlateEditorRuntimeOptions<V, P>): RuntimePlateEditor<V, P>;
+
+export function createPlateEditor<
+  V extends Value = Value,
+  P extends AnyPluginConfig = PlateCorePlugin,
+>(
+  options: CreatePlateEditorRuntimeOptions<V, P> = {}
+): RuntimePlateEditor<V, P> {
+  assertSupportedPlateRuntimeOptions(options as Record<string, unknown>);
+
+  const { id, optionsStoreFactory, readOnly, selection, userId, value } =
+    options;
+
+  const editor = createPlateRuntimeEditor<V, readonly [], InferPlugins<P[]>>({
+    id,
+    initialSelection: selection,
+    initialValue: value ?? undefined,
+    optionsStoreFactory,
+    plugins: createPlateRuntimePluginList(
+      options
+    ) as CreatePlateRuntimeEditorOptions<
+      V,
+      readonly [],
+      InferPlugins<P[]>
+    >['plugins'],
+    readOnly,
+    userId,
+  });
+
+  applyPlateRuntimeInitializationOptions(editor, options);
+
+  return editor;
+}

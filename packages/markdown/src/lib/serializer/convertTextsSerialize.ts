@@ -1,4 +1,6 @@
-import { type TText, getPluginType } from 'platejs';
+import type { Text } from '@platejs/plite';
+
+import { getPluginType } from 'platejs';
 
 import type { MdMark } from '../types';
 import type { SerializeMdOptions } from './serializeMd';
@@ -11,7 +13,7 @@ import { getSerializerByKey } from './utils/getSerializerByKey';
 export const basicMarkdownMarks = ['italic', 'bold', 'strikethrough', 'code'];
 
 export const convertTextsSerialize = (
-  slateTexts: readonly TText[],
+  slateTexts: readonly Text[],
   options: SerializeMdOptions,
   _key?: string
 ): MdMark[] => {

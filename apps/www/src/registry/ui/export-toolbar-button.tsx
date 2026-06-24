@@ -7,8 +7,8 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { exportToDocx } from '@platejs/docx-io';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowDownToLineIcon } from 'lucide-react';
-import type { SlatePlugin } from 'platejs';
-import { createSlateEditor } from 'platejs';
+import type { EditorPlugin } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { useEditorRef } from 'platejs/react';
 import { serializeHtml } from 'platejs/static';
 
@@ -100,7 +100,7 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToHtml = async () => {
-    const editorStatic = createSlateEditor({
+    const editorStatic = createBasePlateEditor({
       plugins: BaseEditorKit,
       value: editor.children,
     });
@@ -145,14 +145,14 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToMarkdown = async () => {
-    const md = editor.getApi(MarkdownPlugin).markdown.serialize();
+    const md = editor.getPluginApi(MarkdownPlugin).markdown.serialize();
     const url = `data:text/markdown;charset=utf-8,${encodeURIComponent(md)}`;
     await downloadFile(url, 'plate.md');
   };
 
   const exportToWord = async () => {
     const blob = await exportToDocx(editor.children, {
-      editorPlugins: [...BaseEditorKit, ...DocxExportKit] as SlatePlugin[],
+      editorPlugins: [...BaseEditorKit, ...DocxExportKit] as EditorPlugin[],
     });
 
     const url = URL.createObjectURL(blob);

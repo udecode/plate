@@ -3,5 +3,4 @@
  */
 
 export * from './types';
-export * from './withTriggerCombobox';
 export * from './utils/index';

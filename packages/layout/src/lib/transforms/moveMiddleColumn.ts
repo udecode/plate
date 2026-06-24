@@ -1,18 +1,19 @@
 import {
   type NodeEntry,
-  type SlateEditor,
   type TColumnElement,
-  type TNode,
+  type TColumnGroupElement,
   NodeApi,
 } from 'platejs';
+
+import type { ColumnEditor } from './ColumnEditor';
 
 /**
  * Move the middle column to the left if direction is 'left', or to the right if
  * 'right'. If the middle node is empty, return false and remove it.
  */
-export const moveMiddleColumn = <N extends TNode>(
-  editor: SlateEditor,
-  [node, path]: NodeEntry<N>,
+export const moveMiddleColumn = (
+  editor: ColumnEditor,
+  [node, path]: NodeEntry<TColumnGroupElement>,
   options?: {
     direction: 'left' | 'right';
   }
@@ -22,7 +23,10 @@ export const moveMiddleColumn = <N extends TNode>(
   if (direction === 'left') {
     const DESCENDANT_PATH = [1];
 
-    const middleChildNode = NodeApi.get<TColumnElement>(node, DESCENDANT_PATH);
+    const middleChildNode = NodeApi.get(
+      node,
+      DESCENDANT_PATH
+    ) as TColumnElement;
 
     if (!middleChildNode) return false;
 
@@ -32,19 +36,29 @@ export const moveMiddleColumn = <N extends TNode>(
     const middleChildPathRef = editor.api.pathRef(path.concat(DESCENDANT_PATH));
 
     if (isEmpty) {
-      editor.tf.removeNodes({ at: middleChildPathRef.current! });
+      editor.update((tx) => {
+        tx.nodes.remove({ at: middleChildPathRef.current! });
+      });
+      middleChildPathRef.unref();
 
       return false;
     }
 
-    const firstNode = NodeApi.descendant<TColumnElement>(node, [0]);
+    const firstNode = NodeApi.descendant(node, [0]) as TColumnElement;
 
     if (!firstNode) return false;
 
-    const firstLast = path.concat([0, firstNode.children.length]);
+    editor.update((tx) => {
+      const appendOffset = firstNode.children.length;
 
-    editor.tf.moveNodes({ at: middleChildPathRef.current!, to: firstLast });
-    editor.tf.unwrapNodes({ at: middleChildPathRef.current! });
+      middleChildNode.children.forEach((_, childIndex) => {
+        tx.nodes.move({
+          at: middleChildPathRef.current!.concat([0]),
+          to: path.concat([0, appendOffset + childIndex]),
+        });
+      });
+      tx.nodes.remove({ at: middleChildPathRef.current! });
+    });
     middleChildPathRef.unref();
   }
 };

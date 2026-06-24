@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Path, TElement, TText } from '@platejs/slate';
+import type { Element, Path, Text } from '@platejs/plite';
 import type { UnknownObject } from '@udecode/utils';
 
 import { useComposedRef } from '@udecode/react-utils';
@@ -14,6 +14,7 @@ import type {
   RenderLeafProps,
   RenderTextProps,
 } from '../../lib';
+import { isEditorBlock } from '../../internal/utils/runtimeEditorQueries';
 import type { PlatePluginContext } from '../plugin';
 
 const VOID_HTML_TAGS = new Set<keyof HTMLElementTagNameMap>([
@@ -66,7 +67,7 @@ export const useBlockIdAttributeRef = <T extends HTMLElement>(
 export type PlateChunkProps = RenderChunkProps;
 
 export type PlateElementProps<
-  N extends TElement = TElement,
+  N extends Element = Element,
   C extends AnyPluginConfig = PluginConfig,
 > = PlateNodeProps<C> &
   RenderElementProps<N> & {
@@ -119,7 +120,7 @@ export type PlateHTMLProps<
 };
 
 export type StyledPlateElementProps<
-  N extends TElement = TElement,
+  N extends Element = Element,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'div',
 > = Omit<PlateElementProps<N, C>, keyof DeprecatedNodeProps> &
@@ -132,7 +133,7 @@ export const PlateElement = React.forwardRef(function PlateElement(
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
   const blockId =
-    props.element.id && props.editor.api.isBlock(props.element)
+    props.element.id && isEditorBlock(props.editor, props.element)
       ? props.element.id
       : undefined;
   const blockIdRef = useBlockIdAttributeRef(blockId, ref);
@@ -154,7 +155,7 @@ export const PlateElement = React.forwardRef(function PlateElement(
     </PlateElementBody>
   );
 }) as <
-  N extends TElement = TElement,
+  N extends Element = Element,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'div',
 >(
@@ -179,8 +180,8 @@ function PlateElementBody({
       {inset && <NonBreakingSpace />}
       {isVoidTag ? (
         <div
-          data-slate-node="element"
-          data-slate-inline={attributes['data-slate-inline']}
+          data-plite-node="element"
+          data-plite-inline={attributes['data-plite-inline']}
           {...attributes}
           style={
             {
@@ -194,8 +195,8 @@ function PlateElementBody({
         </div>
       ) : (
         <Tag
-          data-slate-node="element"
-          data-slate-inline={attributes['data-slate-inline']}
+          data-plite-node="element"
+          data-plite-inline={attributes['data-plite-inline']}
           {...attributes}
           style={
             {
@@ -214,7 +215,7 @@ function PlateElementBody({
 }
 
 export type PlateTextProps<
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
 > = PlateNodeProps<C> &
   RenderTextProps<N> &
@@ -223,7 +224,7 @@ export type PlateTextProps<
   };
 
 export type StyledPlateTextProps<
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'span',
 > = Omit<PlateTextProps<N, C>, keyof DeprecatedNodeProps> &
@@ -237,7 +238,7 @@ export const PlateText = React.forwardRef<
 
   return <Tag {...attributes}>{children}</Tag>;
 }) as <
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'span',
 >(
@@ -245,14 +246,14 @@ export const PlateText = React.forwardRef<
 ) => React.ReactElement;
 
 export type PlateLeafProps<
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
 > = PlateNodeProps<C> &
   RenderLeafProps<N> &
   DeprecatedNodeProps & { attributes: UnknownObject; inset?: boolean };
 
 export type StyledPlateLeafProps<
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'span',
 > = Omit<PlateLeafProps<N, C>, keyof DeprecatedNodeProps> &
@@ -287,7 +288,7 @@ export const PlateLeaf = React.forwardRef<
 
   return <Tag {...attributes}>{children}</Tag>;
 }) as <
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'span',
 >({

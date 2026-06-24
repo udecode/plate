@@ -12,7 +12,7 @@ import { LinkPlugin } from '@platejs/link/react';
 import { ImagePlugin } from '@platejs/media/react';
 import { TablePlugin } from '@platejs/table/react';
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseListPlugin } from '../../../../../../packages/list/src/lib/BaseListPlugin';
 
@@ -38,7 +38,7 @@ describe('when insertData disc and decimal from gdocs', () => {
         </hp>
       </editor>
     ) as any;
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         ImagePlugin,
         HorizontalRulePlugin,
@@ -128,7 +128,7 @@ describe('when insertData with nested ul inside li', () => {
         </hp>
       </editor>
     ) as any;
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         ImagePlugin,
         HorizontalRulePlugin,

@@ -1,11 +1,11 @@
-import type { Editor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import type { IndentCodeLineOptions } from '../transforms/indentCodeLine';
 
 const nonWhitespaceOrEndRegex = /\S|$/;
 
 export const getIndentDepth = (
-  editor: Editor,
+  editor: BasePlateEditor,
   { codeLine }: IndentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;

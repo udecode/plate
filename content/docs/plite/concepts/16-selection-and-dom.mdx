@@ -1,0 +1,145 @@
+---
+title: "Selection And DOM"
+description: "Understand model selection, browser-native selection, DOM coverage, voids, hidden content, and browser proof."
+---
+
+Plite stores selection in the model, then reconciles it with browser-native selection in React. Use this page for caret and DOM rules; use [Editing Behavior](15-editing-behavior) for the full event-to-commit pipeline.
+
+## Choose The Right Assertion
+
+Selection bugs need the layer that can actually fail.
+
+| Claim                                           | Assert                                                      | Owner                                           |
+| ----------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------- |
+| The Plite selection is correct                  | model selection                                             | `@platejs/plite`                                |
+| The browser caret lands in the right DOM text   | DOM caret or DOM selection                                  | `@platejs/plite-react` and `@platejs/plite-dom` |
+| The visible browser highlight is not duplicated | displayed selection snapshot                                | `@platejs/browser`                              |
+| Hidden content remains selectable or copyable   | DOM coverage policy plus model result                       | `@platejs/plite-dom` and `@platejs/plite-react` |
+| Follow-up typing still works                    | text, selection, focus, and commit after the asserted state | `@platejs/browser`                              |
+
+Do not close a selection bug with only one layer unless the bug only exists in that layer.
+
+## Selection Ownership
+
+Plite has two selection systems in a React editor:
+
+| Selection        | What it means                                                                   |
+| ---------------- | ------------------------------------------------------------------------------- |
+| Model selection  | The `Range` stored by the Plite editor. Transactions read and write this value. |
+| Native selection | The browser `Selection` visible in the contenteditable DOM.                     |
+
+Most editor code should write the model selection and let Plite export the DOM/native selection. Plite imports the native selection when the browser is the current source of truth, such as user selection movement or native input.
+
+## Model Selection
+
+Read selection through `editor.read(...)`.
+
+```tsx
+const selection = editor.read((state) => state.selection.get());
+```
+
+Write selection inside `editor.update(...)`.
+
+```tsx
+editor.update((tx) => {
+  tx.selection.set({
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [1, 0], offset: 3 },
+  });
+});
+```
+
+Use [Locations](03-locations) for `Path`, `Point`, `Range`, and refs. Use [Transforms](04-transforms#selection) for transaction selection helpers.
+
+## Native Selection
+
+The browser can move native selection through mouse, keyboard, touch, composition, spellcheck, selection handles, and platform editing commands. Plite React observes those moves and imports them when they should become model state.
+
+Application code should not patch the browser `Selection` directly for normal editor behavior. Use model transactions, `Editable` handlers, or DOM-aware React APIs that preserve Plite's repair path.
+
+Use [React Editor](../libraries/plite-react/react-editor) for DOM translation helpers and [Plite React Event Handling](../libraries/plite-react/event-handling) for browser event hooks.
+
+## DOM Coverage
+
+DOM coverage boundaries represent model content whose editable DOM is not mounted.
+
+| Policy                          | Use it when                                                                 |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| `selectionPolicy="skip"`        | Hidden content is app chrome or should not receive cursor movement.         |
+| `selectionPolicy="model"`       | Hidden content can be selected in the Plite model without mounting DOM.     |
+| `selectionPolicy="materialize"` | Plite should ask the app to reveal content before moving selection into it. |
+
+Clipboard has its own policy. Model-backed copy can include hidden document content without selecting every hidden DOM node.
+Use [Clipboard And Paste](17-clipboard-and-paste) for copy, paste, drop, and
+fragment import ownership.
+
+Use [DOM Coverage Boundaries](../libraries/plite-react/dom-coverage-boundaries) for `selectionPolicy`, `copyPolicy`, `findPolicy`, and materialization behavior.
+
+## Voids And Editable Islands
+
+Void elements still need a model text anchor so Plite can place selection around them. Editable islands keep an element void for outer rendering policy while allowing cursor projection into its text children.
+
+```tsx
+import { defineEditorExtension } from "@platejs/plite";
+
+const media = defineEditorExtension({
+  name: "media",
+  elements: [
+    {
+      type: "captioned-image",
+      void: "editable-island",
+    },
+  ],
+});
+```
+
+Keep visible void UI inside the void renderer. Let Plite render the shell and text anchor. Use [Editable Component](../libraries/plite-react/editable#rendervoid) for void rendering rules.
+
+## Large Documents
+
+Large documents may not have a complete DOM mounted at every moment. `Editable` can use DOM strategies such as `auto`, `staged`, `full`, or `virtualized` to keep the active editing surface responsive.
+
+That changes what native DOM can prove. A model selection can cover the full document while the mounted DOM only covers the active window or materialized boundary.
+
+Use [Editable Component](../libraries/plite-react/editable#dom-strategy) for `domStrategy` and [Virtualized Rendering](../libraries/plite-react/experimental-virtualized-rendering) for the experimental lane.
+
+## Browser Proof
+
+Selection proof should assert the layers named by the claim.
+
+```tsx
+import { openExample } from "@platejs/browser/playwright";
+
+const editor = await openExample(page, "plaintext", {
+  ready: { editor: "visible" },
+});
+
+await editor.focus();
+await editor.selectAll();
+await editor.type("Hello");
+
+await editor.assert.selection({
+  anchor: { path: [0, 0], offset: 5 },
+  focus: { path: [0, 0], offset: 5 },
+});
+
+await editor.assert.domCaret({ text: "Hello", offset: 5 });
+await editor.assert.noDoubleSelectionHighlight();
+await editor.type("!");
+await editor.assert.text("Hello!");
+```
+
+Use [Plite Browser](../libraries/plite-browser) for Playwright helpers that capture model selection, DOM selection, displayed selection, focus, native event traces, clipboard, screenshots, and follow-up typing.
+
+## Reference
+
+- [Range API](../api/locations/range)
+- [Point API](../api/locations/point)
+- [Transforms API](../api/transforms)
+- [Clipboard And Paste](17-clipboard-and-paste)
+- [Projection And Overlays](18-projection-and-overlays)
+- [React Editor](../libraries/plite-react/react-editor)
+- [DOM Coverage Boundaries](../libraries/plite-react/dom-coverage-boundaries)
+- [Plite Browser](../libraries/plite-browser)
+
+Done. You can now say which selection layer owns the bug before writing the fix or the proof.

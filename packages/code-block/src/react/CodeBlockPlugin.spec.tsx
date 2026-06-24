@@ -1,14 +1,17 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 import {
   BaseParagraphPlugin,
-  createSlateEditor,
-  createSlatePlugin,
+  createEditorPlugin,
+  HtmlPlugin,
+  ParserPlugin,
 } from 'platejs';
 
+import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
+import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
 import { CodeBlockPlugin } from './CodeBlockPlugin';
 
 jsxt;
@@ -25,7 +28,7 @@ describe('code block deserialization', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -33,13 +36,15 @@ describe('code block deserialization', () => {
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateRuntimeEditor({
+        initialSelection: input.selection,
+        initialValue: input.children,
         plugins: [
           BaseParagraphPlugin,
           CodeBlockPlugin,
-          createSlatePlugin({
+          createEditorPlugin({
             key: 'a',
             parser: {
               format: 'text/plain',
@@ -49,15 +54,20 @@ describe('code block deserialization', () => {
             },
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
 
-      editor.tf.insertData({
-        getData: () => `<pre><code>test</code></pre>`,
+      getCurrentRuntimeTransforms(editor).insertData({
+        getData: (format: string) =>
+          format === 'text/html'
+            ? `<pre><code>test</code></pre>`
+            : format === 'text/plain'
+              ? 'test'
+              : '',
       } as any);
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read((state) => state.value.root())).toEqual(
+        output.children
+      );
     });
   });
 
@@ -69,7 +79,7 @@ describe('code block deserialization', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -77,20 +87,31 @@ describe('code block deserialization', () => {
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
-        plugins: [BaseParagraphPlugin, CodeBlockPlugin],
-        selection: input.selection,
-        value: input.children,
+      const editor = createPlateRuntimeEditor({
+        initialSelection: input.selection,
+        initialValue: input.children,
+        plugins: [
+          ParserPlugin,
+          HtmlPlugin,
+          BaseParagraphPlugin,
+          CodeBlockPlugin,
+        ],
       });
 
-      editor.tf.insertData({
+      getCurrentRuntimeTransforms(editor).insertData({
         getData: (format: string) =>
-          format === 'text/html' && `<pre><code>test</code></pre>`,
+          format === 'text/html'
+            ? `<pre><code>test</code></pre>`
+            : format === 'text/plain'
+              ? 'test'
+              : '',
       } as any);
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read((state) => state.value.root())).toEqual(
+        output.children
+      );
     });
   });
 
@@ -106,7 +127,7 @@ describe('code block deserialization', () => {
           </hcodeblock>
           <hp>Line 3</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -118,16 +139,20 @@ describe('code block deserialization', () => {
           </hcodeblock>
           <hp>Line 3</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateRuntimeEditor({
+        initialSelection: input.selection,
+        initialValue: input.children,
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
-        selection: input.selection,
-        value: input.children,
       });
 
-      editor.tf.deleteBackward();
-      expect(editor.children).toEqual(output.children);
+      editor.update((tx) => {
+        tx.text.deleteBackward({ unit: 'character' });
+      });
+      expect(editor.read((state) => state.value.root())).toEqual(
+        output.children
+      );
     });
   });
 });

@@ -1,4 +1,5 @@
 import { type TPlaceholderElement, KEYS } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 import {
   useEditorRef,
   useElement,
@@ -7,11 +8,29 @@ import {
   useSelected,
 } from 'platejs/react';
 
+import type {
+  PlaceholderStore,
+  PlaceholderStoreSetter,
+} from '../placeholderStore';
 import { usePlaceholderSet, usePlaceholderValue } from '../placeholderStore';
 
-export const usePlaceholderElementState = (): any => {
-  const element = useElement();
-  const editor = useEditorRef();
+export type PlaceholderElementState = {
+  editor: PlateEditor;
+  element: TPlaceholderElement;
+  focused: boolean;
+  isUploading: PlaceholderStore['isUploading'];
+  mediaType: TPlaceholderElement['mediaType'];
+  progresses: PlaceholderStore['progresses'];
+  progressing: boolean;
+  readOnly: boolean;
+  selected: boolean;
+  setSize: PlaceholderStoreSetter<'size'>;
+  updatedFiles: PlaceholderStore['updatedFiles'];
+};
+
+export const usePlaceholderElementState = (): PlaceholderElementState => {
+  const element = useElement<TPlaceholderElement>(KEYS.placeholder);
+  const editor = useEditorRef<PlateEditor>();
   const focused = useFocused();
   const readOnly = useReadOnly();
   const selected = useSelected();
@@ -21,7 +40,7 @@ export const usePlaceholderElementState = (): any => {
   const updatedFiles = usePlaceholderValue('updatedFiles');
   const setSize = usePlaceholderSet('size');
 
-  const { mediaType } = useElement<TPlaceholderElement>(KEYS.placeholder);
+  const { mediaType } = element;
 
   const progressing = updatedFiles.length > 0 && isUploading;
 

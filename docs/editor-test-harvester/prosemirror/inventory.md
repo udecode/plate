@@ -24,16 +24,16 @@ The plain `rg --files ../prosemirror | rg ...` probe returned no rows because th
 | Product-shell | 0 |
 | Skip source files | 0 |
 
-`plate-owned` is an owner-routing overlay on top of the closed counts above. It marks useful plugin/view behavior that belongs in Plate packages, examples, docs, or backlog instead of raw Slate v2.
+`plate-owned` is an owner-routing overlay on top of the closed counts above. It marks useful plugin/view behavior that belongs in Plate packages, examples, docs, or backlog instead of raw Plite.
 
 ## Plate-Owned Overlay
 
-| Source pattern | Current category | Plate target | Raw Slate split |
+| Source pattern | Current category | Plate target | Raw Plite split |
 | --- | --- | --- | --- |
-| `state/test/test-state.ts` plugin fields, prop functions, filter/append transactions, plugin keys | `portable-mixed` | Plate plugin middleware/lifecycle law | Transaction metadata and public commit behavior stay in Slate v2. |
-| `view/test/webtest-draw.ts`, `view/test/webtest-view.ts` plugin views, props, dispatch binding, editable/attribute policy | `portable-mixed` | Plate React/plugin host and editor integration examples | Surface/editable lifecycle and DOM position mapping stay in Slate/browser proof. |
-| `view/test/webtest-draw-decoration.ts` multiple plugin decorations, widget destroy, node-view handoff | `portable` | Plate plugin decoration/render lifecycle | Projection, annotation store, and widget mapping stay in Slate v2. |
-| `view/test/webtest-markview.ts`, `view/test/webtest-nodeview.ts` contentDOM, update, ignoreMutation, destroy, getPos, inner/outer decorations | `portable-mixed` | Plate render/plugin authoring contracts | Raw Slate should not clone PM NodeView/MarkView APIs. |
+| `state/test/test-state.ts` plugin fields, prop functions, filter/append transactions, plugin keys | `portable-mixed` | Plate plugin middleware/lifecycle law | Transaction metadata and public commit behavior stay in Plite. |
+| `view/test/webtest-draw.ts`, `view/test/webtest-view.ts` plugin views, props, dispatch binding, editable/attribute policy | `portable-mixed` | Plate React/plugin host and editor integration examples | Surface/editable lifecycle and DOM position mapping stay in Plite/browser proof. |
+| `view/test/webtest-draw-decoration.ts` multiple plugin decorations, widget destroy, node-view handoff | `portable` | Plate plugin decoration/render lifecycle | Projection, annotation store, and widget mapping stay in Plite. |
+| `view/test/webtest-markview.ts`, `view/test/webtest-nodeview.ts` contentDOM, update, ignoreMutation, destroy, getPos, inner/outer decorations | `portable-mixed` | Plate render/plugin authoring contracts | Raw Plite should not clone PM NodeView/MarkView APIs. |
 
 ## File Rows
 

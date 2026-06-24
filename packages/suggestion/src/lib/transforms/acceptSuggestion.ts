@@ -1,5 +1,5 @@
 import {
-  type SlateEditor,
+  type BasePlateEditor,
   type TSuggestionElement,
   type TSuggestionText,
   ElementApi,
@@ -10,28 +10,28 @@ import {
 
 import type { TResolvedSuggestion } from '../types';
 
-import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData, getTransientSuggestionKey } from '../utils';
+import { getSuggestionApi } from '../utils/getSuggestionApi';
 
 export const acceptSuggestion = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   description: TResolvedSuggestion
 ) => {
-  editor.tf.withoutNormalizing(() => {
+  const suggestionApi = getSuggestionApi(editor);
+
+  editor.update((tx) => {
     const mergeNodes = [
       ...editor.api.nodes({
         at: [],
         match: (n) => {
           if (!ElementApi.isElement(n)) return false;
 
-          if (
-            editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
-          ) {
+          if (suggestionApi.isBlockSuggestion(n)) {
             const suggestionElement = n as TSuggestionElement;
-            return (
+            return Boolean(
               suggestionElement.suggestion.type === 'remove' &&
-              suggestionElement.suggestion.isLineBreak &&
-              suggestionElement.suggestion.id === description.suggestionId
+                suggestionElement.suggestion.isLineBreak &&
+                suggestionElement.suggestion.id === description.suggestionId
             );
           }
 
@@ -41,10 +41,10 @@ export const acceptSuggestion = (
     ];
 
     mergeNodes.reverse().forEach(([, path]) => {
-      editor.tf.mergeNodes({ at: PathApi.next(path) });
+      tx.nodes.merge({ at: PathApi.next(path) });
     });
 
-    editor.tf.unsetNodes(
+    tx.nodes.unset(
       [description.keyId, KEYS.suggestion, getTransientSuggestionKey()],
       {
         at: [],
@@ -54,9 +54,9 @@ export const acceptSuggestion = (
             TextApi.isText(n) ||
             (ElementApi.isElement(n) && editor.api.isInline(n))
           ) {
-            const suggestionDataList = editor
-              .getApi(BaseSuggestionPlugin)
-              .suggestion.dataList(n as TSuggestionText);
+            const suggestionDataList = suggestionApi.dataList(
+              n as TSuggestionText
+            );
             const includeUpdate = suggestionDataList.some(
               (data) => data.type === 'update'
             );
@@ -76,10 +76,7 @@ export const acceptSuggestion = (
 
             return false;
           }
-          if (
-            ElementApi.isElement(n) &&
-            editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
-          ) {
+          if (ElementApi.isElement(n) && suggestionApi.isBlockSuggestion(n)) {
             const suggestionElement = n as TSuggestionElement;
             const suggestionData = suggestionElement.suggestion;
 
@@ -101,9 +98,8 @@ export const acceptSuggestion = (
       }
     );
 
-    editor.tf.removeNodes({
+    tx.nodes.remove({
       at: [],
-      mode: 'all',
       match: (n) => {
         if (
           TextApi.isText(n) ||
@@ -122,10 +118,7 @@ export const acceptSuggestion = (
           return false;
         }
 
-        if (
-          ElementApi.isElement(n) &&
-          editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
-        ) {
+        if (ElementApi.isElement(n) && suggestionApi.isBlockSuggestion(n)) {
           const suggestionElement = n as TSuggestionElement;
           const suggestionData = suggestionElement.suggestion;
 
@@ -143,5 +136,7 @@ export const acceptSuggestion = (
         return false;
       },
     });
+
+    tx.normalize({ force: true });
   });
 };

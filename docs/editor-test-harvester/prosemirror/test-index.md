@@ -491,7 +491,7 @@ Names: 21
 
 Category: portable-mixed  
 Behavior rows: PM-14  
-Plate-owned residual: plugin fields, prop functions, filter/append transactions, plugin keys, and reconfiguration policy belong in Plate plugin middleware/lifecycle docs or tests. Raw Slate keeps only transaction metadata and public commit behavior.
+Plate-owned residual: plugin fields, prop functions, filter/append transactions, plugin keys, and reconfiguration policy belong in Plate plugin middleware/lifecycle docs or tests. Raw Plite keeps only transaction metadata and public commit behavior.
 Names: 16
 
 - 27: describe - State
@@ -930,7 +930,7 @@ Names: 34
 
 Category: portable  
 Behavior rows: PM-12  
-Plate-owned residual: multiple plugin decoration composition, widget destroy hooks, and node-view decoration handoff belong in Plate plugin/render lifecycle docs or tests. Raw Slate keeps projection, annotation store, and widget mapping proof.
+Plate-owned residual: multiple plugin decoration composition, widget destroy hooks, and node-view decoration handoff belong in Plate plugin/render lifecycle docs or tests. Raw Plite keeps projection, annotation store, and widget mapping proof.
 Names: 41
 
 - 43: describe - Decoration drawing
@@ -979,7 +979,7 @@ Names: 41
 
 Category: portable-mixed  
 Behavior rows: PM-12, PM-14  
-Plate-owned residual: plugin views, attributes prop, editable prop, and app-facing redraw policy belong in Plate React/plugin integration examples. Raw Slate keeps only surface lifecycle and generic DOM redraw/projection pressure.
+Plate-owned residual: plugin views, attributes prop, editable prop, and app-facing redraw policy belong in Plate React/plugin integration examples. Raw Plite keeps only surface lifecycle and generic DOM redraw/projection pressure.
 Names: 8
 
 - 7: describe - EditorView draw
@@ -1018,7 +1018,7 @@ Names: 16
 
 Category: portable-mixed  
 Behavior rows: PM-12, PM-14  
-Plate-owned residual: mark-view `contentDOM`, `ignoreMutation`, and `destroy` lifecycle are Plate render/plugin authoring pressure, not raw Slate API.
+Plate-owned residual: mark-view `contentDOM`, `ignoreMutation`, and `destroy` lifecycle are Plate render/plugin authoring pressure, not raw Plite API.
 Names: 4
 
 - 6: describe - markViews prop
@@ -1030,7 +1030,7 @@ Names: 4
 
 Category: portable-mixed  
 Behavior rows: PM-12, PM-14  
-Plate-owned residual: node-view `update`, `contentDOM`, `ignoreMutation`, `destroy`, `getPos`, and inner/outer decoration handoff are Plate render/plugin authoring pressure, not raw Slate API.
+Plate-owned residual: node-view `update`, `contentDOM`, `ignoreMutation`, `destroy`, `getPos`, and inner/outer decoration handoff are Plate render/plugin authoring pressure, not raw Plite API.
 Names: 10
 
 - 7: describe - nodeViews prop
@@ -1074,7 +1074,7 @@ Names: 19
 
 Category: portable-mixed  
 Behavior rows: PM-13, PM-14  
-Plate-owned residual: prop updates, dispatch binding, and app-facing view lifecycle belong in Plate React/editor integration. Raw Slate keeps DOM position mapping and selection geometry proof.
+Plate-owned residual: prop updates, dispatch binding, and app-facing view lifecycle belong in Plate React/editor integration. Raw Plite keeps DOM position mapping and selection geometry proof.
 Names: 10
 
 - 10: describe - EditorView

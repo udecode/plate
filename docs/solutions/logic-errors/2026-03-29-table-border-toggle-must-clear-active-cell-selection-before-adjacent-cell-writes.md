@@ -32,7 +32,7 @@ The bug was not stale cell references and not the border command itself.
 
 `setSelectedCellsBorder` correctly resolved the adjacent left-cell paths. The failure came from `withTableCellSelection`.
 
-While a multi-cell selection was active, its `setNodes` override used the broader linear Slate selection as a proxy for selected-cell membership. That proxy was too wide. In a right-column selection that spanned multiple rows, the lower left-adjacent cell still fell inside the linear Slate range even though it was not one of the selected cells.
+While a multi-cell selection was active, its `setNodes` override used the broader linear Plite selection as a proxy for selected-cell membership. That proxy was too wide. In a right-column selection that spanned multiple rows, the lower left-adjacent cell still fell inside the linear Plite range even though it was not one of the selected cells.
 
 The override intercepted that path-targeted write, combined it with a match predicate scoped to selected cells, matched nothing, and still returned `true`. That turned the intended adjacent-cell write into an effective no-op, so only the first row changed.
 
@@ -70,12 +70,12 @@ pnpm lint:fix
 
 The new regression coverage proves both layers:
 
-- `withTableCellSelection.spec.tsx` proves path-targeted writes to unselected cells inside the broader Slate range are no longer hijacked.
+- `withTableCellSelection.spec.tsx` proves path-targeted writes to unselected cells inside the broader Plite range are no longer hijacked.
 - `setSelectedCellsBorder.integration.spec.tsx` proves a multi-row, non-first-column left-border toggle now updates the left-adjacent cells on every selected row.
 
 ## Prevention
 
-Do not use the linear Slate selection as a substitute for semantic multi-cell membership.
+Do not use the linear Plite selection as a substitute for semantic multi-cell membership.
 
 If a selection plugin overrides `setNodes` or similar transforms, its `options.at` guard must answer the actual ownership question: does this target belong to the selected cells, or is it merely inside the broader linear range?
 

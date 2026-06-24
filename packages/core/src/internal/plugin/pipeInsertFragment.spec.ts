@@ -1,18 +1,18 @@
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/plite';
 
-import { createSlateEditor } from '../../lib/editor';
-import { createSlatePlugin } from '../../lib/plugin';
+import { createBasePlateEditor } from '../../lib/editor';
+import { createEditorPlugin } from '../../lib/plugin';
 import { pipeInsertFragment } from './pipeInsertFragment';
 
 const createParserEditor = (
-  plugins: Parameters<typeof createSlateEditor>[0]['plugins']
-) => createSlateEditor({ plugins });
+  plugins: Parameters<typeof createBasePlateEditor>[0]['plugins']
+) => createBasePlateEditor({ plugins });
 
 describe('pipeInsertFragment', () => {
   it('stops at the first preInsert handler returning true and still inserts the fragment', () => {
     const calls: string[] = [];
 
-    const firstPlugin = createSlatePlugin({
+    const firstPlugin = createEditorPlugin({
       key: 'first',
       parser: {
         preInsert: ({ fragment }) => {
@@ -22,7 +22,7 @@ describe('pipeInsertFragment', () => {
       },
     });
 
-    const secondPlugin = createSlatePlugin({
+    const secondPlugin = createEditorPlugin({
       key: 'second',
       parser: {
         preInsert: ({ fragment }) => {
@@ -32,7 +32,7 @@ describe('pipeInsertFragment', () => {
       },
     });
 
-    const thirdPlugin = createSlatePlugin({
+    const thirdPlugin = createEditorPlugin({
       key: 'third',
       parser: {
         preInsert: () => {
@@ -43,9 +43,6 @@ describe('pipeInsertFragment', () => {
     });
 
     const editor = createParserEditor([firstPlugin, secondPlugin, thirdPlugin]);
-    const insertFragment = mock();
-
-    editor.tf.insertFragment = insertFragment as any;
 
     const fragment: Descendant[] = [
       { children: [{ text: 'hello' }], type: 'p' },
@@ -59,6 +56,6 @@ describe('pipeInsertFragment', () => {
     });
 
     expect(calls).toEqual(['first:1', 'second:1']);
-    expect(insertFragment).toHaveBeenCalledWith(fragment);
+    expect(editor.children).toEqual(fragment);
   });
 });

@@ -1,0 +1,34 @@
+packages/plite-react/src/hooks/android-input-manager/android-input-manager.ts:1110:    // here. See https://github.com/ianstormtaylor/slate/pull/4988#issuecomment-1201050535
+content/docs/plite/why-this-fork.mdx:6:Plite is an agent-first editor substrate, not an official upstream Slate release. It keeps Plite's JSON document model and operation idea, then rebuilds the runtime around explicit reads, explicit writes, typed transactions, multi-root documents, state fields, and browser proof. This page explains the bet, the runtime shape, the package split, and the current proof limits.
+content/docs/plite/why-this-fork.mdx:11:- [Why Not Stay Closer To Upstream Slate?](#why-not-stay-closer-to-upstream-slate)
+content/docs/plite/why-this-fork.mdx:13:- [What Stays From Slate](#what-stays-from-slate)
+content/docs/plite/why-this-fork.mdx:41:## Why Not Stay Closer To Upstream Slate?
+content/docs/plite/why-this-fork.mdx:43:The first attempted design was conservative: keep upstream Slate core intact, rewrite `plite-react`, and push the hard work into the renderer. That would have kept the public runtime closer to Slate 0.x while trying to unlock extra roots, document state, overlays, and React performance from React alone.
+content/docs/plite/why-this-fork.mdx:66:| Use Plite if                                                                                    | Use upstream Slate if                                                                  |
+content/docs/plite/why-this-fork.mdx:73:This is not a nicer wrapper around Slate 0.x. It is a stricter runtime for teams that prefer proof and maintainability over compatibility comfort.
+content/docs/plite/why-this-fork.mdx:75:## What Stays From Slate
+content/docs/plite/why-this-fork.mdx:257:| Upstream identity          | This is Plite, not an official upstream Slate release.                                             |
+packages/plite-dom/src/plugin/dom-editor.ts:1104:    // https://github.com/ianstormtaylor/slate/issues/1819
+packages/plite-dom/src/plugin/dom-editor.ts:1802:        // (https://github.com/ianstormtaylor/slate/pull/5486#issue-1820720223)
+packages/plite-react/src/editable/native-input-strategy.ts:142:  // composition text if we aren't composing to work around https://github.com/ianstormtaylor/slate/issues/5038
+apps/plite/tests/plite-browser/donor/examples/example-navigation.test.ts:22:  test('marks only examples that are new versus upstream Slate', async ({
+packages/plite-react/src/editable/selection-reconciler.ts:1008:      // (https://github.com/ianstormtaylor/slate/pull/5486#issue-1820720223)
+content/docs/plite/migration.mdx:3:description: "Move an upstream Slate 0.x editor to the Plite runtime without keeping compatibility aliases."
+content/docs/plite/migration.mdx:6:This guide walks through moving an upstream Slate 0.x editor to the Plite runtime. The migration is mostly a runtime migration: create the editor with an initial value, read with `editor.read(...)`, write with `editor.update(...)`, and render through the React runtime.
+content/docs/plite/migration.mdx:31:| An editor that needs cleaner command ownership, document state, overlays, extra roots, or large-document proof. | An editor whose only goal is to keep old Slate 0.x behavior with the smallest possible diff.                                                  |
+content/docs/plite/migration.mdx:70:| Slate 0.x                                                            | Plite runtime                                                                            |
+content/docs/plite/migration.mdx:75:| Slate 0.x transform helper calls                                     | `editor.update((tx) => tx.*...)`                                                                          |
+content/docs/plite/migration.mdx:119:Slate 0.x:
+content/docs/plite/migration.mdx:178:Slate 0.x commands often mixed read helpers and transform helpers directly
+content/docs/plite/migration.mdx:316:Slate 0.x event handlers often prevented the browser event and mutated text
+content/docs/plite/migration.mdx:356:| Slate 0.x hook          | Plite hook                                                                   |
+content/docs/plite/migration.mdx:400:Slate 0.x:
+content/docs/plite/index.mdx:6:Plite is a JSON editor runtime for building product-specific rich text editors. This docs section covers the Plite packages, their React renderer, their browser proof harness, and the boundaries that keep the runtime verifiable. Start here when you want the current package shape, not upstream Slate 0.x compatibility notes.
+content/docs/plite/index.mdx:95:| Move from upstream Slate 0.x            | [Migration](migration)                                                                                        |
+content/docs/plite/index.mdx:138:| Upstream identity          | This is Plite package set, not an official upstream Slate release.               |
+content/docs/plite/general/resources.mdx:11:- [Migration](../migration) gives an ordered path for moving an upstream Slate 0.x editor.
+content/docs/plite/general/resources.mdx:27:- [`plite-yjs`](https://github.com/BitPhinix/slate-yjs) is useful prior art for Yjs integration patterns.
+content/docs/plite/general/resources.mdx:28:- [`plite-angular`](https://github.com/worktile/slate-angular) and [`plite-vue3`](https://github.com/Guan-Erjia/slate-vue3) are useful prior art for non-React view layers.
+content/docs/plite/general/faq.mdx:38:Start with [Installing Plite](../walkthroughs/01-installing-plite). Then read [Why This Fork](../why-this-fork) if you need the project boundary, or [Migration](../migration) if you are moving from upstream Slate 0.x.
+packages/plite/test/release-scripts-contract.ts:168:        packageJson.repository !== 'https://github.com/ianstormtaylor/slate.git'
+packages/plite/test/release-scripts-contract.ts:177:        'https://github.com/ianstormtaylor/slate/issues'

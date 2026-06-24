@@ -1,13 +1,13 @@
 import type { TCodeBlockElement } from 'platejs';
 
-import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, createBasePlateEditor } from 'platejs';
 
 import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 import { setCodeBlockContent } from './setCodeBlockContent';
 
 describe('setCodeBlockContent', () => {
   it('replaces code block children with code lines and redecorates', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
       value: [
         {

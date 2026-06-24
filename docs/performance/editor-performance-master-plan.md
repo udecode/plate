@@ -6,7 +6,7 @@ Keep Plate performance brutally honest over time.
 
 This plan owns the full editor-performance program:
 
-- Slate comparison
+- Plite comparison
 - Plate core overhead
 - `nodeId`
 - Huge Document parity/demo surface
@@ -21,20 +21,20 @@ half a dozen files.
 
 ## Explicit Exclusion
 
-Do **not** merge the separate Slate batching track into this document.
+Do **not** merge the separate Plite batching track into this document.
 
 That work stays in:
 
-- [slate-batch-engine.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/slate-batch-engine.md)
+- [slate-batch-engine.md](/Users/zbeyens/git/plate-2/docs/plite/references/slate-batch-engine.md)
 
 That is a different lane with a different owner.
 
 ## Decision
 
-Slate is the standing reference floor on equivalent workloads.
+Plite is the standing reference floor on equivalent workloads.
 
-Plate does **not** need to imitate Slate’s architecture, but every extra
-millisecond above Slate needs a reason. If the cost buys real framework value,
+Plate does **not** need to imitate Plite’s architecture, but every extra
+millisecond above Plite needs a reason. If the cost buys real framework value,
 budget it tightly. If it does not, kill it.
 
 Default optimization order:
@@ -62,7 +62,7 @@ wrong layer.
 
 ### Release snapshot (`2026-04-03`)
 
-- core baseline is good enough versus Slate for release
+- core baseline is good enough versus Plite for release
 - insert-text perf is good enough
 - `CodePlugin` was the last real core-plugin embarrassment and got a major cut
   from the hard-affinity redesign:
@@ -85,12 +85,12 @@ important distinction:
 
 - Plate is still competitive on the simpler chunked large-document harness in
   `apps/www`
-- Slate is currently faster on the richer standalone `10k` markdown mount lane
+- Plite is currently faster on the richer standalone `10k` markdown mount lane
 
 Current local-built standalone result:
 
 - Plate `03_mount-10k`: `736.30 ms`
-- Slate `03_mount-10k`: `437.60 ms`
+- Plite `03_mount-10k`: `437.60 ms`
 
 That does not invalidate the earlier public harness.
 It means the public harness was narrower than the richer markdown profile.
@@ -111,7 +111,7 @@ See:
 
 Latest exact mark finding:
 
-- the bold leaf DOM shape is already basically the same between Plate and Slate
+- the bold leaf DOM shape is already basically the same between Plate and Plite
 - the remaining tax is runtime work around that DOM, not extra leaf nodes
 - the bold gap splits into two parts:
   - bundle fan-out from `BasicMarksPlugin`
@@ -152,15 +152,15 @@ Latest exact list finding:
 - the DOM probe shows the real reason:
   - old Plate `list-only` rendered one `<ul>` per item
   - fixed Plate `list-only` renders paragraph elements as `[role="listitem"]`
-  - Slate renders one `<ul>` per logical list
+  - Plite renders one `<ul>` per logical list
 - the kept list fix:
   - removes unordered `belowNodes` wrappers
   - injects unordered list-item styling directly onto paragraph elements
   - keeps the plain element fast path when wrappers are inactive and inject
     props are pathless
 - current standalone result:
-  - `49_mount-10k-list-markdown`: Plate `890.40 ms`, Slate `630.10 ms`
-  - `97_mount-10k-list-only`: Plate `848.70 ms`, Slate `671.70 ms`
+  - `49_mount-10k-list-markdown`: Plate `890.40 ms`, Plite `630.10 ms`
+  - `97_mount-10k-list-only`: Plate `848.70 ms`, Plite `671.70 ms`
 
 ### What already exists
 
@@ -183,7 +183,7 @@ Latest exact list finding:
 
 ### What we already proved
 
-- The original Plate-vs-Slate gap was mostly mount-path waste and `nodeId`
+- The original Plate-vs-Plite gap was mostly mount-path waste and `nodeId`
   initialization, not construction cost.
 - `zustand-x` creation cost is real but small.
 - `jotai-x` had redundant sync work worth trimming, but it was not the whole
@@ -192,7 +192,7 @@ Latest exact list finding:
 - The exported element-hook surface was still expensive after those cuts:
   `useElement()` and `usePath()` were reading through the per-node atom store
   even when they only needed nearest-node context.
-- `nodeId` init was catastrophically wrong when it used one Slate transform per
+- `nodeId` init was catastrophically wrong when it used one Plite transform per
   missing id.
 - The Huge Document docs page and `/dev/editor-perf` were drifting until they
   shared one config seam.
@@ -530,7 +530,7 @@ Use `/docs/examples/huge-document` for:
 
 - visual parity
 - interaction gut-checks
-- manual compare between `Plate + Slate`, `Plate only`, and `Slate only`
+- manual compare between `Plate + Plite`, `Plate only`, and `Plite only`
 
 Do **not** use it as the source of truth for benchmark numbers.
 
@@ -591,11 +591,11 @@ No chunking is the honesty test.
 
 Layer 0 answers one question continuously:
 
-- how far is Plate above or below the equivalent Slate lane?
+- how far is Plate above or below the equivalent Plite lane?
 
 The Layer 0 baseline family is:
 
-- Slate baseline
+- Plite baseline
 - Plate core
 - Plate core + `nodeId`
 - Plate core + `nodeId` seeded
@@ -641,19 +641,19 @@ Current full-run artifacts:
 From the retained smoke snapshot notes:
 
 - mixed `1k` chunked:
-  - Slate mount: `65.85 ms`
+  - Plite mount: `65.85 ms`
   - Plate core mount: `57.67 ms`
   - Plate core + `nodeId`: `61.43 ms`
   - Plate core + `nodeId` seeded: `66.08 ms`
   - Plate basic: `59.67 ms`
 - paragraph `1k` chunked:
-  - Slate mount: `59.05 ms`
+  - Plite mount: `59.05 ms`
   - Plate core mount: `58.99 ms`
 - heading `1k` chunked:
-  - Slate mount: `59.79 ms`
+  - Plite mount: `59.79 ms`
   - Plate core mount: `76.21 ms`
 - blockquote `1k` chunked:
-  - Slate mount: `62.91 ms`
+  - Plite mount: `62.91 ms`
   - Plate core mount: `63.55 ms`
 - `nodeId` init `5k`:
   - raw: `8.24 ms`
@@ -664,19 +664,19 @@ From the retained smoke snapshot notes:
 
 - full Layer 0 now completes cleanly on the trimmed baseline preset
 - mixed `5k` chunked is basically parity:
-  - Slate: `311.94 ms`
+  - Plite: `311.94 ms`
   - Plate core: `312.30 ms`
 - paragraph `5k` chunked is green:
-  - Slate: `347.07 ms`
+  - Plite: `347.07 ms`
   - Plate core: `336.26 ms`
 - heading `5k` chunked is the only small red core-activated lane left:
-  - Slate: `326.40 ms`
+  - Plite: `326.40 ms`
   - Plate core: `331.57 ms`
 - blockquote `5k` chunked is green after the fallback-path cut:
-  - Slate: `347.05 ms`
+  - Plite: `347.05 ms`
   - Plate core: `317.38 ms`
 - mixed `5k` no-chunk is green:
-  - Slate: `419.17 ms`
+  - Plite: `419.17 ms`
   - Plate core: `385.24 ms`
 - `nodeId` init is no longer the giant cliff it used to be
 - plain core is close enough to call mostly green, but the provider-rich active
@@ -754,7 +754,7 @@ Each plugin now runs:
 - one inactive lane
 - one activated lane
 - three comparison scenarios:
-  - Slate
+  - Plite
   - Plate core
   - Plate + plugin
 
@@ -957,7 +957,7 @@ Keep the benchmark harness narrow:
 
 ### Huge Document shape
 
-Huge Document should mirror Slate’s control surface and workload semantics, but
+Huge Document should mirror Plite’s control surface and workload semantics, but
 remain honest about engine isolation.
 
 That means:
@@ -1071,11 +1071,11 @@ The store-tech split proved:
 
 The `nodeId` investigation proved:
 
-- the old init path was wrong because it paid one Slate transform per missing id
+- the old init path was wrong because it paid one Plite transform per missing id
 - pure value normalization is the correct init seam
 - live normalization is where batch updates belong
 - once init and block-id mount waste were removed, `Plate core + nodeId`
-  stopped trailing Slate on the main huge-doc lane
+  stopped trailing Plite on the main huge-doc lane
 
 ### The docs-page diagnosis
 
@@ -1143,11 +1143,11 @@ Current stance:
   lane, keep fixing core and do not shift attention to plugins yet
 - seeded `nodeId` should stay close to core
 - unseeded `nodeId` init gets its own init budget, not hidden inside mount
-- plugins should be judged against Plate core first and Slate second
+- plugins should be judged against Plate core first and Plite second
 
 The comparison hierarchy is:
 
-1. Slate vs Plate core
+1. Plite vs Plate core
 2. Plate core vs Plate + one plugin
 3. one plugin vs real bundle
 

@@ -48,12 +48,9 @@ describe('useBlockSelectable', () => {
       const editor = {
         api: {
           above: () => [{ id: 'a', type: 'p' }, [0]],
-          findPath: () => [0],
+          blockSelection: { add: mock() },
           isVoid: () => false,
         },
-        getApi: () => ({
-          blockSelection: { add: mock() },
-        }),
         getOption: () => false,
         getOptions: () => ({
           enableContextMenu: true,
@@ -70,6 +67,7 @@ describe('useBlockSelectable', () => {
           stopPropagation,
           target: { dataset: {} },
         } as any,
+        path: [0],
       });
 
       expect(stopPropagation).toHaveBeenCalled();
@@ -80,12 +78,9 @@ describe('useBlockSelectable', () => {
       const editor = {
         api: {
           above: () => {},
-          findPath: () => [0],
+          blockSelection: { add },
           isVoid: () => false,
         },
-        getApi: () => ({
-          blockSelection: { add },
-        }),
         getOptions: () => ({
           enableContextMenu: true,
           selectedIds: new Set<string>(),
@@ -108,12 +103,9 @@ describe('useBlockSelectable', () => {
       const editor = {
         api: {
           above: () => {},
-          findPath: () => [0],
+          blockSelection: { add: mock() },
           isVoid: () => false,
         },
-        getApi: () => ({
-          blockSelection: { add: mock() },
-        }),
         getOptions: () => ({
           enableContextMenu: true,
           selectedIds: new Set(['b']),
@@ -139,12 +131,12 @@ describe('useBlockSelectable', () => {
   describe('useBlockSelectable', () => {
     it('returns selectable props when the block is selectable', async () => {
       const editor = {
-        getApi: () => ({
+        api: {
           blockSelection: {
             add: mock(),
             isSelectable: () => true,
           },
-        }),
+        },
         getOptions: () => ({
           enableContextMenu: true,
           selectedIds: new Set<string>(),
@@ -165,7 +157,7 @@ describe('useBlockSelectable', () => {
       const { useBlockSelectable } = await loadModule();
       const { result } = renderHook(() => useBlockSelectable());
 
-      expect(result.current.props.className).toBe('slate-selectable');
+      expect(result.current.props.className).toBe('plite-selectable');
       expect(typeof result.current.props.onContextMenu).toBe('function');
     });
 

@@ -1,7 +1,7 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor, TSuggestionText } from 'platejs';
 
-import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from './getSuggestionKeys';
+import { getSuggestionApi } from './getSuggestionApi';
 import { getSuggestionNodeEntries } from './getSuggestionNodeEntries';
 
 export type TSuggestionCommonDescription = {
@@ -31,30 +31,38 @@ export type TSuggestionReplacementDescription = {
   type: 'replacement';
 } & TSuggestionCommonDescription;
 
+const getInlineSuggestionType = (
+  node: TSuggestionText,
+  suggestionKey: string
+) => {
+  const data = node[suggestionKey];
+
+  return typeof data === 'object' && data !== null ? data.type : undefined;
+};
+
 /**
  * Get the suggestion descriptions of the selected node. A node can have
  * multiple suggestions (multiple users). Each description maps to a user
  * suggestion.
  */
 export const getActiveSuggestionDescriptions = (
-  editor: SlateEditor
+  editor: BasePlateEditor
 ): TSuggestionDescription[] => {
-  const aboveEntry = editor.getApi(BaseSuggestionPlugin).suggestion.node({
+  const suggestionApi = getSuggestionApi(editor);
+  const aboveEntry = suggestionApi.node({
     isText: true,
   });
 
   if (!aboveEntry) return [];
 
   const aboveNode = aboveEntry[0];
-  const suggestionId = editor
-    .getApi(BaseSuggestionPlugin)
-    .suggestion.nodeId(aboveNode);
+  const suggestionId = suggestionApi.nodeId(aboveNode);
 
   if (!suggestionId) return [];
 
-  const suggestionDataList = editor
-    .getApi(BaseSuggestionPlugin)
-    .suggestion.dataList(aboveNode as any);
+  const suggestionDataList = suggestionApi.dataList(
+    aboveNode as TSuggestionText
+  );
 
   return suggestionDataList.map(({ id: activeSuggestionId, userId }) => {
     const suggestionKey = getSuggestionKey(activeSuggestionId);
@@ -62,10 +70,10 @@ export const getActiveSuggestionDescriptions = (
       getSuggestionNodeEntries(editor, activeSuggestionId)
     ).map(([node]) => node);
     const insertions = nodes.filter(
-      (node: any) => node[suggestionKey]?.type === 'insert'
+      (node) => getInlineSuggestionType(node, suggestionKey) === 'insert'
     );
     const deletions = nodes.filter(
-      (node: any) => node[suggestionKey]?.type === 'remove'
+      (node) => getInlineSuggestionType(node, suggestionKey) === 'remove'
     );
     const insertedText = insertions.map((node) => node.text).join('');
     const deletedText = deletions.map((node) => node.text).join('');

@@ -1,5 +1,13 @@
 # @platejs/markdown
 
+## 54.0.0-beta.1
+
+### Patch Changes
+
+- Synced latest changes from `main` into the beta lane.
+
+## 54.0.0-beta.0
+
 ## 53.2.2
 
 ### Patch Changes
@@ -461,7 +469,7 @@
   - Added default underline mark serialization as `<u>underline</u>`
   - Improved serialization process:
     - Now uses a two-step process: `slate nodes => MDAST nodes => markdown string`
-    - Previously: direct conversion from Slate nodes to markdown string
+    - Previously: direct conversion from Plite nodes to markdown string
     - Results in more reliable and robust serialization
   - New node filtering options:
     - `allowedNodes`: Whitelist specific nodes
@@ -1485,12 +1493,12 @@
 
 ### Major Changes
 
-🎉 The **Slate Plugins** project has evolved to **Plate** 🎉
+🎉 The **Plite Plugins** project has evolved to **Plate** 🎉
 
 To migrate, install `@udecode/plate[-x]` then find and replace all
 occurrences of:
 
-- `slate-plugins` to `plate`
+- `plite-plugins` to `plate`
 - `SlatePlugins` to `Plate`
 - `SlatePlugin` to `PlatePlugin`
 

@@ -2,11 +2,11 @@
 
 import * as React from 'react';
 
+import type { Text } from '@platejs/plite';
 import {
   type Decorate,
   type RenderLeafProps,
-  type TText,
-  createSlatePlugin,
+  createEditorPlugin,
   TextApi,
 } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
@@ -72,7 +72,7 @@ function PreviewLeaf({
     italic?: boolean;
     list?: boolean;
     title?: boolean;
-  } & TText
+  } & Text
 >) {
   const { blockquote, bold, code, hr, italic, list, title } = leaf;
 
@@ -100,7 +100,7 @@ export default function PreviewMdDemo() {
     {
       plugins: [
         ...BasicNodesKit,
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'preview-markdown',
           decorate: decoratePreview,
         }),

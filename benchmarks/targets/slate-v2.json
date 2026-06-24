@@ -13,8 +13,8 @@
       "owner": "slate-v2",
       "family": "react-large-document",
       "kind": "slate-legacy-compare",
-      "cwd": ".tmp/slate-v2",
-      "command": "REACT_HUGE_COMPARE_LEGACY_REPO=../../../slate REACT_HUGE_COMPARE_DISPOSE_DELAY_MS=0 REACT_HUGE_COMPARE_SPLIT_SELECTION=1 REACT_HUGE_COMPARE_ISOLATE_SURFACES=1 REACT_HUGE_COMPARE_SURFACES=v2DefaultRenderAuto,v2DomPresent REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local",
+      "cwd": ".",
+      "command": "REACT_HUGE_COMPARE_LEGACY_REPO=../slate REACT_HUGE_COMPARE_DISPOSE_DELAY_MS=0 REACT_HUGE_COMPARE_SPLIT_SELECTION=1 REACT_HUGE_COMPARE_ISOLATE_SURFACES=1 REACT_HUGE_COMPARE_SURFACES=v2DefaultRenderAuto,v2DomPresent REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs",
       "metrics": {
         "primary": "react_huge_doc_legacy_compare_worst_p95_ratio",
         "direction": "lower",
@@ -23,12 +23,12 @@
         "upgrade": "Primary metric is the worst p95 ratio across the 5,000-block default/render-auto and DOM-present product lanes versus legacy chunking-on."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Promotion requires the benchmark p95 ratio plus the fast Slate v2 check suite."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-v2DefaultRenderAuto-v2DomPresent-blocks-5000-iters-5-ops-10-isolated-surfaces-split-selection-no-profile.json",
+          "path": "tmp/slate-react-huge-document-legacy-compare-benchmark-compare-v2DefaultRenderAuto-v2DomPresent-blocks-5000-iters-5-ops-10-isolated-surfaces-split-selection-no-profile.json",
           "required": true
         }
       ],
@@ -56,22 +56,22 @@
       "owner": "slate-v2",
       "family": "react-large-document",
       "kind": "benchmark-suite",
-      "cwd": ".tmp/slate-v2",
-      "command": "HUGE_DOC_FULL_LEGACY_REPO=../../../slate HUGE_DOC_FULL_BLOCKS=5000 HUGE_DOC_FULL_ITERATIONS=5 HUGE_DOC_FULL_TRACE_ITERATIONS=5 HUGE_DOC_FULL_TYPE_OPS=10 bun run bench:react:huge-document:full:local",
+      "cwd": ".",
+      "command": "HUGE_DOC_FULL_STRICT_BUDGET=1 HUGE_DOC_FULL_LEGACY_REPO=../slate HUGE_DOC_FULL_BLOCKS=5000 HUGE_DOC_FULL_ITERATIONS=5 HUGE_DOC_FULL_TRACE_ITERATIONS=5 HUGE_DOC_FULL_TYPE_OPS=10 bun benchmarks/slate-v2/donor/browser/react/huge-document-full.mjs",
       "metrics": {
         "primary": "react_huge_doc_full_max_budget_ratio",
         "direction": "lower",
         "unit": "ratio",
         "printsMetric": true,
-        "upgrade": "Primary metric is the worst normalized budget ratio across core huge-doc ops, React legacy compare, browser type-to-paint, long-task, and overlay locality lanes. Supporting METRIC lines expose the raw p95 values."
+        "upgrade": "Primary metric is the worst normalized budget ratio across core huge-doc ops, React legacy compare, browser type-to-paint, click latency, cold and materialized selection, model-backed typing, DOM budget, long-task, listener, selector, and overlay locality lanes. Strict budget mode must be enabled so over-budget rows fail instead of only printing metrics."
       },
       "correctness": {
-        "command": "bun check",
-        "policy": "Promotion requires the aggregate suite metric, zero react_huge_doc_full_failure_count, and the fast Slate v2 check suite."
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
+        "policy": "Promotion requires the aggregate suite metric at or below budget, zero react_huge_doc_full_budget_failure_count, zero react_huge_doc_full_failure_count, and the fast Slate v2 check suite."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-react-huge-document-full-benchmark.json",
+          "path": "tmp/slate-react-huge-document-full-benchmark.json",
           "required": true
         }
       ],
@@ -94,8 +94,8 @@
       "owner": "slate-v2",
       "family": "react-locality",
       "kind": "current",
-      "cwd": ".tmp/slate-v2/packages/slate-react",
-      "command": "bun ../../scripts/benchmarks/browser/react/rerender-breadth.tsx",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/browser/react/rerender-breadth.tsx",
       "metrics": {
         "primary": "benchmark_seconds",
         "direction": "lower",
@@ -104,12 +104,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/packages/slate-react/tmp/slate-react-rerender-breadth-benchmark.json",
+          "path": "tmp/slate-react-rerender-breadth-benchmark.json",
           "required": true
         }
       ],
@@ -132,8 +132,8 @@
       "owner": "slate-v2",
       "family": "react-locality",
       "kind": "browser-trace",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:react:runtime-node-fanout:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/browser/react/runtime-node-fanout.tsx",
       "metrics": {
         "primary": "slate_react_runtime_node_fanout_count",
         "direction": "lower",
@@ -142,12 +142,12 @@
         "upgrade": "Primary metric is the aggregate fanout violation count; local root-order edits should be 0 and full replacement should stay within the benchmark allowance."
       },
       "correctness": {
-        "command": "cd packages/slate-react && bun test:vitest test/provider-hooks-contract.tsx -t \"fan out|full-document replacement\"",
+        "command": "pnpm --filter @platejs/slate-react exec vitest run --config ./vitest.config.mjs test/provider-hooks-contract.test.tsx -t \"fan out|full-document replacement\"",
         "policy": "Promotion requires the runtime-node selector fanout contract plus the benchmark metric at 0."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/packages/slate-react/tmp/slate-react-runtime-node-fanout-benchmark.json",
+          "path": "tmp/slate-react-runtime-node-fanout-benchmark.json",
           "required": true
         }
       ],
@@ -166,8 +166,8 @@
       "owner": "slate-v2",
       "family": "react-large-document",
       "kind": "current",
-      "cwd": ".tmp/slate-v2/packages/slate-react",
-      "command": "bun ../../scripts/benchmarks/browser/react/huge-document-overlays.tsx",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx",
       "metrics": {
         "primary": "benchmark_seconds",
         "direction": "lower",
@@ -176,12 +176,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/packages/slate-react/tmp/slate-react-huge-document-overlays-benchmark.json",
+          "path": "tmp/slate-react-huge-document-overlays-benchmark.json",
           "required": true
         }
       ],
@@ -204,8 +204,8 @@
       "owner": "slate-v2",
       "family": "react-typing",
       "kind": "current",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:react:active-typing:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/browser/react/active-typing-breakdown.tsx",
       "metrics": {
         "primary": "typing_seconds",
         "direction": "lower",
@@ -214,12 +214,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-react-active-typing-breakdown-benchmark.json",
+          "path": "tmp/slate-react-active-typing-breakdown-benchmark.json",
           "required": true
         }
       ],
@@ -242,8 +242,8 @@
       "owner": "slate-v2",
       "family": "react-pagination",
       "kind": "browser-trace",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:react:pagination-virtualized-char-burst:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/browser/react/pagination-virtualized-char-burst.mjs",
       "metrics": {
         "primary": "pagination_virtualized_vs_table_ratio",
         "direction": "lower",
@@ -257,7 +257,39 @@
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-pagination-virtualized-char-burst-benchmark.json",
+          "path": "tmp/slate-pagination-virtualized-char-burst-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-05-31-pagination-virtualized-rows800-perf.md",
+          "docs/plans/2026-06-01-pagination-virtualization-char-burst-perf.md"
+        ]
+      }
+    },
+    {
+      "id": "react-pagination-virtualized-real-editor-ops",
+      "question": "Does virtualized pagination keep real editor interactions fast while preserving native selection, editing, undo/redo, and bounded page DOM?",
+      "owner": "slate-v2",
+      "family": "react-pagination",
+      "kind": "browser-trace",
+      "cwd": ".",
+      "command": "SLATE_PAGINATION_REAL_OPS_PROFILER=0 SLATE_PAGINATION_REAL_OPS_COHORTS=current,rows800 SLATE_PAGINATION_REAL_OPS_ITERATIONS=5 bun benchmarks/slate-v2/donor/browser/react/pagination-virtualized-real-editor-ops.mjs",
+      "metrics": {
+        "primary": "pagination_virtualized_real_ops_worst_p95_ms",
+        "direction": "lower",
+        "unit": "ms",
+        "printsMetric": true,
+        "upgrade": "Primary metric is the worst p95 across real editor operations for the selected cohorts, with click, selection, typing, break, delete, undo/redo, scroll-click, DOM node, and page-surface guardrails in the same artifact. Run profiler-off for user-visible latency."
+      },
+      "correctness": {
+        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter www exec playwright test --config playwright.slate.config.ts --project=chromium tests/slate-browser/donor/examples/pagination.test.ts -g \"moves the cursor between the first two virtualized pagination blocks on click|keeps virtualized pagination text aligned when a paragraph becomes selected|selects virtualized pagination text when dragging from the page line margin|places virtualized pagination selection at line start from the page margin|places virtualized pagination selection at wrapped line ends|selects projected pagination words on native double click\"",
+        "policy": "Promotion requires latency gains without native click, selection, margin, wrapped-line, or double-click regressions."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/slate-pagination-virtualized-real-editor-ops-benchmark.json",
           "required": true
         }
       ],
@@ -274,22 +306,22 @@
       "owner": "slate-v2",
       "family": "react-large-document",
       "kind": "browser-trace",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:react:huge-document:browser-trace:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
       "metrics": {
-        "primary": "browser_trace_seconds",
+        "primary": "react_huge_doc_type_to_paint_p95_ms",
         "direction": "lower",
-        "unit": "s",
-        "printsMetric": false,
-        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+        "unit": "ms",
+        "printsMetric": true,
+        "upgrade": "Primary metric is browser p95 type-to-paint for the default auto and staged DOM-present surfaces. Supporting METRIC lines cover click-to-paint, click-to-selection-ready, cold select-to-paint, materialized select-to-paint, model-backed typing, DOM nodes, heap, long tasks, listener counts, and selector counts."
       },
       "correctness": {
-        "command": "bun check",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
+        "policy": "Use this trace for diagnosis only. Promotion is owned by react-huge-document-full strict budget mode or a target-specific correctness command."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-3-ops-10.json",
+          "path": "tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-3-ops-10.json",
           "required": true
         }
       ],
@@ -312,8 +344,8 @@
       "owner": "slate-v2",
       "family": "react-large-document",
       "kind": "browser-trace",
-      "cwd": ".tmp/slate-v2",
-      "command": "SLATE_BROWSER_TRACE_SURFACES=virtualized SLATE_BROWSER_TRACE_ITERATIONS=5 SLATE_BROWSER_TRACE_TYPE_OPS=10 SLATE_BROWSER_TRACE_NATIVE_TIMEOUT_MS=5000 bun run bench:react:huge-document:browser-trace:local",
+      "cwd": ".",
+      "command": "SLATE_BROWSER_TRACE_SURFACES=virtualized SLATE_BROWSER_TRACE_ITERATIONS=5 SLATE_BROWSER_TRACE_TYPE_OPS=10 SLATE_BROWSER_TRACE_NATIVE_TIMEOUT_MS=5000 bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
       "metrics": {
         "primary": "react_huge_doc_type_to_paint_p95_ms",
         "direction": "lower",
@@ -327,7 +359,7 @@
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-5-ops-10.json",
+          "path": "tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-5-ops-10.json",
           "required": true
         }
       ],
@@ -347,8 +379,8 @@
       "owner": "slate-v2",
       "family": "react-large-document",
       "kind": "browser-trace",
-      "cwd": ".tmp/slate-v2",
-      "command": "SLATE_LEGACY_BROWSER_TRACE_SURFACES=legacyChunkOn bun run bench:react:huge-document:slate-browser-trace:local",
+      "cwd": ".",
+      "command": "SLATE_LEGACY_BROWSER_TRACE_SURFACES=legacyChunkOn bun benchmarks/slate-v2/donor/browser/react/huge-document-slate-browser-trace.mjs",
       "metrics": {
         "primary": "browser_trace_seconds",
         "direction": "lower",
@@ -357,12 +389,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-react-huge-document-slate-browser-trace-benchmark-surfaces-legacyChunkOn-blocks-5000-iters-3-ops-10.json",
+          "path": "tmp/slate-react-huge-document-slate-browser-trace-benchmark-surfaces-legacyChunkOn-blocks-5000-iters-3-ops-10.json",
           "required": true
         }
       ],
@@ -385,8 +417,8 @@
       "owner": "slate-v2",
       "family": "browser-rich-text",
       "kind": "rows",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:browser:rich-text-replay-coverage:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/browser/rich-text-replay-coverage.mjs",
       "metrics": {
         "primary": "replay_seconds",
         "direction": "lower",
@@ -395,12 +427,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-browser-rich-text-replay-coverage-benchmark.json",
+          "path": "tmp/slate-browser-rich-text-replay-coverage-benchmark.json",
           "required": true
         }
       ],
@@ -423,8 +455,8 @@
       "owner": "slate-v2",
       "family": "core-current",
       "kind": "current",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:core:normalization:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/core/current/normalization.mjs",
       "metrics": {
         "primary": "core_benchmark_seconds",
         "direction": "lower",
@@ -433,12 +465,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-normalization-benchmark.json",
+          "path": "tmp/slate-normalization-benchmark.json",
           "required": true
         }
       ],
@@ -461,8 +493,8 @@
       "owner": "slate-v2",
       "family": "core-current",
       "kind": "current",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:core:query-ref-observation:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/core/current/query-ref-observation.mjs",
       "metrics": {
         "primary": "core_benchmark_seconds",
         "direction": "lower",
@@ -471,12 +503,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-query-ref-observation-benchmark.json",
+          "path": "tmp/slate-query-ref-observation-benchmark.json",
           "required": true
         }
       ],
@@ -499,8 +531,8 @@
       "owner": "slate-v2",
       "family": "core-current",
       "kind": "current",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:core:node-transforms:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/core/current/node-transforms.mjs",
       "metrics": {
         "primary": "core_benchmark_seconds",
         "direction": "lower",
@@ -509,12 +541,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-node-transform-benchmark.json",
+          "path": "tmp/slate-node-transform-benchmark.json",
           "required": true
         }
       ],
@@ -537,8 +569,8 @@
       "owner": "slate-v2",
       "family": "core-current",
       "kind": "current",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:core:text-selection:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/core/current/text-selection.mjs",
       "metrics": {
         "primary": "core_benchmark_seconds",
         "direction": "lower",
@@ -547,12 +579,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-text-selection-benchmark.json",
+          "path": "tmp/slate-text-selection-benchmark.json",
           "required": true
         }
       ],
@@ -575,8 +607,8 @@
       "owner": "slate-v2",
       "family": "core-current",
       "kind": "current",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:core:editor-store:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/core/current/editor-store.mjs",
       "metrics": {
         "primary": "core_benchmark_seconds",
         "direction": "lower",
@@ -585,12 +617,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-editor-store-benchmark.json",
+          "path": "tmp/slate-editor-store-benchmark.json",
           "required": true
         }
       ],
@@ -613,8 +645,8 @@
       "owner": "slate-v2",
       "family": "core-current",
       "kind": "current",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:core:refs-projection:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/core/current/refs-projection.mjs",
       "metrics": {
         "primary": "core_benchmark_seconds",
         "direction": "lower",
@@ -623,12 +655,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-refs-projection-benchmark.json",
+          "path": "tmp/slate-refs-projection-benchmark.json",
           "required": true
         }
       ],
@@ -651,8 +683,8 @@
       "owner": "slate-v2",
       "family": "clipboard",
       "kind": "current",
-      "cwd": ".tmp/slate-v2",
-      "command": "SLATE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 SLATE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun run bench:core:clipboard-large-payload:local",
+      "cwd": ".",
+      "command": "SLATE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 SLATE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs",
       "metrics": {
         "primary": "clipboard_seconds",
         "direction": "lower",
@@ -661,12 +693,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-clipboard-large-payload-benchmark.json",
+          "path": "tmp/slate-clipboard-large-payload-benchmark.json",
           "required": true
         }
       ],
@@ -684,13 +716,50 @@
       }
     },
     {
+      "id": "yjs-collaboration",
+      "question": "Does @platejs/yjs keep multi-peer sync, awareness, reconnect, and large-document collaboration fast while preserving convergence?",
+      "owner": "slate-v2",
+      "family": "collaboration",
+      "kind": "current",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs",
+      "metrics": {
+        "primary": "yjs_collaboration_worst_p95_ms",
+        "direction": "lower",
+        "unit": "ms",
+        "printsMetric": true,
+        "upgrade": "Primary metric is the worst total p95 across multi-editor sync, awareness updates, reconnect, and large-document sync. Pair it with yjs_collaboration_worst_work_p95_ms, yjs_collaboration_worst_verification_p95_ms, yjs_large_doc_local_edit_p95_ms, yjs_large_doc_remote_sync_p95_ms, yjs_large_doc_remote_encode_p95_ms, yjs_large_doc_remote_apply_p95_ms, and yjs_correctness_failures so work-time wins do not hide verification, remote-import, or convergence regressions."
+      },
+      "correctness": {
+        "command": "pnpm --filter @platejs/yjs test && pnpm --filter @platejs/yjs typecheck",
+        "policy": "Promotion requires the @platejs/yjs package suite and source-first typecheck plus yjs_correctness_failures=0 from the benchmark artifact."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/slate-yjs-collaboration-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-06-13-yjs-research-mode-8h.md",
+          "docs/plans/2026-06-12-yjs-optimization-strict-8h.md"
+        ]
+      },
+      "thresholds": {
+        "calibration": "repeat 3 baseline runs before enforcing a promotion threshold",
+        "correctness": "yjs_correctness_failures=0",
+        "plateau": "stop after two correctness-green packets with no meaningful yjs_collaboration_worst_work_p95_ms improvement; if large-doc remains worst, use yjs_large_doc_local_edit_p95_ms, yjs_large_doc_remote_sync_p95_ms, yjs_large_doc_remote_encode_p95_ms, and yjs_large_doc_remote_apply_p95_ms to pick the next owner"
+      }
+    },
+    {
       "id": "collab-readiness",
       "question": "Are remote replay, bookmark rebase, canonical replacement, history skip, and cleanup lanes ready?",
       "owner": "slate-v2",
       "family": "collaboration",
       "kind": "current",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:core:collab-readiness:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/core/current/collab-readiness.mjs",
       "metrics": {
         "primary": "benchmark_seconds",
         "direction": "lower",
@@ -699,12 +768,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-collab-readiness-benchmark.json",
+          "path": "tmp/slate-collab-readiness-benchmark.json",
           "required": true
         }
       ],
@@ -727,8 +796,8 @@
       "owner": "slate-v2",
       "family": "issue-replay",
       "kind": "current",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:slate:6038:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/slate/6038-transaction-execution.mjs",
       "metrics": {
         "primary": "benchmark_seconds",
         "direction": "lower",
@@ -737,12 +806,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/bench-slate-6038.json",
+          "path": "tmp/bench-slate-6038.json",
           "required": true
         }
       ],
@@ -765,8 +834,8 @@
       "owner": "slate-v2",
       "family": "core-compare",
       "kind": "compare",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:core:huge-document:compare:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/core/compare/huge-document.mjs",
       "metrics": {
         "primary": "core_benchmark_seconds",
         "direction": "lower",
@@ -775,12 +844,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-core-huge-document-benchmark.json",
+          "path": "tmp/slate-core-huge-document-benchmark.json",
           "required": true
         }
       ],
@@ -803,8 +872,8 @@
       "owner": "slate-v2",
       "family": "core-compare",
       "kind": "compare",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:core:normalization:compare:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/core/compare/normalization.mjs",
       "metrics": {
         "primary": "core_benchmark_seconds",
         "direction": "lower",
@@ -813,12 +882,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-normalization-compare-benchmark.json",
+          "path": "tmp/slate-normalization-compare-benchmark.json",
           "required": true
         }
       ],
@@ -841,8 +910,8 @@
       "owner": "slate-v2",
       "family": "core-compare",
       "kind": "compare",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:core:observation:compare:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/core/compare/observation.mjs",
       "metrics": {
         "primary": "core_benchmark_seconds",
         "direction": "lower",
@@ -851,12 +920,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-core-observation-benchmark.json",
+          "path": "tmp/slate-core-observation-benchmark.json",
           "required": true
         }
       ],
@@ -879,8 +948,8 @@
       "owner": "slate-v2",
       "family": "editing-navigation",
       "kind": "compare",
-      "cwd": ".tmp/slate-v2",
-      "command": "RICH_TEXT_OPS_COMPARE_ITERATIONS=51 bun run bench:core:rich-text-operations:compare:local",
+      "cwd": ".",
+      "command": "RICH_TEXT_OPS_COMPARE_ITERATIONS=51 bun benchmarks/slate-v2/donor/core/compare/rich-text-operations.mjs",
       "metrics": {
         "primary": "rich_text_structural_ops_p95_ms",
         "direction": "lower",
@@ -889,12 +958,12 @@
         "upgrade": "Primary metric is the structural-operation composite p95 across the catastrophic rich-text lanes; legacy ratio remains a supporting guardrail."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Promotion requires the core benchmark metric plus the fast Slate v2 check suite."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-rich-text-operations-compare-benchmark.json",
+          "path": "tmp/slate-rich-text-operations-compare-benchmark.json",
           "required": true
         }
       ],
@@ -923,8 +992,8 @@
       "owner": "slate-v2",
       "family": "history",
       "kind": "compare",
-      "cwd": ".tmp/slate-v2",
-      "command": "HISTORY_BENCH_LEGACY_REPO=../../../slate bun run bench:history:compare:local",
+      "cwd": ".",
+      "command": "HISTORY_BENCH_LEGACY_REPO=../slate bun benchmarks/slate-v2/donor/core/compare/history.mjs",
       "metrics": {
         "primary": "history_compare_worst_p95_ratio",
         "direction": "lower",
@@ -932,12 +1001,12 @@
         "printsMetric": true
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-history-compare-benchmark.json",
+          "path": "tmp/slate-history-compare-benchmark.json",
           "required": true
         }
       ],
@@ -964,8 +1033,8 @@
       "owner": "slate-v2",
       "family": "core-current",
       "kind": "current",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:core:transaction:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/core/current/transaction-execution.mjs",
       "metrics": {
         "primary": "core_benchmark_seconds",
         "direction": "lower",
@@ -974,12 +1043,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-transaction-benchmark.json",
+          "path": "tmp/slate-transaction-benchmark.json",
           "required": false
         }
       ],
@@ -1002,8 +1071,8 @@
       "owner": "slate-v2",
       "family": "history",
       "kind": "current",
-      "cwd": ".tmp/slate-v2",
-      "command": "bun run bench:core:history-retained-memory:local",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/core/current/history-retained-memory.mjs",
       "metrics": {
         "primary": "benchmark_seconds",
         "direction": "lower",
@@ -1012,12 +1081,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun check",
+        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
         "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-history-retained-memory-benchmark.json",
+          "path": "tmp/slate-history-retained-memory-benchmark.json",
           "required": false
         }
       ],

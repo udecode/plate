@@ -1,4 +1,4 @@
-import { createSlateEditor, type Value } from 'platejs';
+import { createBasePlateEditor, type Value } from 'platejs';
 import { BaseParagraphPlugin } from 'platejs';
 
 import {
@@ -63,7 +63,7 @@ const BasePlugins = [
 ];
 
 export const createTestEditor = (value: Value) =>
-  createSlateEditor({
+  createBasePlateEditor({
     plugins: BasePlugins,
     value,
   });

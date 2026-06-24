@@ -139,16 +139,16 @@ Whenever a target is active, the plugin injects transient attributes onto that n
 Style them anywhere your editor styles live:
 
 ```css
-.slate-editor [data-nav-highlight] {
+.plite-editor [data-nav-highlight] {
   border-radius: 0.375rem;
 }
 
-.slate-editor [data-nav-highlight][data-nav-cycle='0'] {
+.plite-editor [data-nav-highlight][data-nav-cycle='0'] {
   animation: plate-nav-highlight-a var(--plate-nav-feedback-duration, 900ms)
     ease-out;
 }
 
-.slate-editor [data-nav-highlight][data-nav-cycle='1'] {
+.plite-editor [data-nav-highlight][data-nav-cycle='1'] {
   animation: plate-nav-highlight-b var(--plate-nav-feedback-duration, 900ms)
     ease-out;
 }
@@ -194,7 +194,7 @@ export function FootnoteReferenceElement(props) {
 }
 ```
 
-The hook returns `null` when this node isn't the active target and the full target (`{ cycle, duration, path, pulse, type, variant }`) when it is. Pass a `Path`, a `TElement`, or a `TText` — paths go through, nodes get resolved via `editor.api.findPath`.
+The hook returns `null` when this node isn't the active target and the full target (`{ cycle, duration, path, pulse, type, variant }`) when it is. Pass a `Path`, a `Element`, or a `Text` — paths go through, nodes get resolved via `editor.api.findPath`.
 
 Done. You now have a deterministic flash on every jump and the wiring to style or extend it.
 
@@ -287,7 +287,7 @@ Select, focus, scroll, and flash a target in one call. Each step is independent 
   <APIItem name="target" type="{ path: Path; type: 'node' }">
     Node target to navigate to.
   </APIItem>
-  <APIItem name="select" type="Point | TRange" optional>
+  <APIItem name="select" type="Point | Range" optional>
     Point (collapsed) or range to apply before scrolling and flashing.
   </APIItem>
   <APIItem name="focus" type="boolean" optional>
@@ -326,7 +326,7 @@ Subscribe a custom render to the active navigation target. Returns the target me
 
 <API name="useNavigationHighlight">
 <APIParameters>
-  <APIItem name="target" type="Path | TElement | TText | null | undefined">
+  <APIItem name="target" type="Path | Element | Text | null | undefined">
     Path to compare, or a node the hook resolves via `editor.api.findPath`.
   </APIItem>
 </APIParameters>

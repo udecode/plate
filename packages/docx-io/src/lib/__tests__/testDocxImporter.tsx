@@ -18,8 +18,8 @@ import { BaseIndentPlugin } from '@platejs/indent';
 import { BaseLinkPlugin } from '@platejs/link';
 import { BaseListPlugin } from '@platejs/list';
 import { BaseImagePlugin } from '@platejs/media';
-import type { Descendant, SlatePlugin } from 'platejs';
-import { createSlateEditor } from 'platejs';
+import type { Descendant, EditorPlugin } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { BaseTablePlugin } from '@platejs/table';
 import { jsx } from '@platejs/test-utils';
 import mammoth from 'mammoth';
@@ -56,11 +56,11 @@ export const testDocxImporter = ({
 }: {
   expected: any;
   filename: string;
-  overridePlugins?: SlatePlugin['override']['plugins'];
+  overridePlugins?: EditorPlugin['override']['plugins'];
   plugins?: any[];
 }) => {
   it('import', async () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       override: {
         plugins: overridePlugins,
       },

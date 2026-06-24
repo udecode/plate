@@ -1,17 +1,17 @@
 ---
 name: autoreview
-description: "Run a structured code review (Codex default, Claude optional) as a closeout check on a local or PR branch before commit or ship."
+description: "Pre-commit/ship code review: Codex default; optional Claude, Pi, Droid, Copilot, or OpenCode."
 ---
 
 # Auto Review
 
 Run the bundled structured review helper as a closeout check. This is code review, not Guardian `auto_review` approval routing.
 
-Codex review is the default when no engine is set. It usually delivers the best review results and should remain the normal final closeout engine.
+Codex review is the default when no engine is set. It uses `gpt-5.5` by default, usually delivers the best review results, and should remain the normal final closeout engine. Claude review is optional and uses `claude-fable-5` by default.
 
 Use when:
 
-- user asks for Codex review / Claude review / autoreview / second-model review
+- user asks for Codex review / Claude review / Pi review / Droid review / OpenCode review / autoreview / second-model review
 - after non-trivial code edits, before final/commit/ship
 - reviewing a local branch or PR branch after fixes
 
@@ -24,7 +24,7 @@ Use when:
 - Prefer small fixes at the right ownership boundary; no refactor unless it clearly improves the bug class.
 - When an accepted finding shows a bug class or repeated pattern, inspect the current PR scope for sibling instances before fixing.
 - Fix the scoped bug class at once when practical; stop at touched surfaces, owner boundaries, and clear follow-up territory.
-- Keep going until structured review returns no accepted/actionable findings.
+- Keep going until structured review returns no accepted/actionable findings only while the work remains inside the original task scope.
 - If a review-triggered fix changes code, rerun focused tests and rerun the structured review helper.
 - For security-audit suppression changes, verify accepted findings remain auditable: suppressed findings stay in structured output, active output keeps an unsuppressible suppression notice, and aggregate findings cannot hide unrelated active risk.
 - Never switch or override the requested review engine/model. If the review hits model capacity, retry the same command a few times with the same engine/model.
@@ -44,12 +44,75 @@ Use when:
 - If Gitcrawl reports a portable manifest mismatch, source/runtime DB health error, or stale portable-store checkout, run `gitcrawl doctor --json` and inspect `source_db_health`, `runtime_db_health`, and `portable_store_status` before falling back to live GitHub.
 - Do not push just to review. Push only when the user requested push/ship/PR update.
 
+## Scope Governor
+
+Autoreview is a closeout gate, not permission to rewrite the task.
+
+Before the first review, freeze a scope baseline: original request or issue, target branch, intended behavior, owner boundary, changed files, and non-test LOC. For inherited or already-bloated branches, use the intended PR diff as the baseline rather than accepting all existing branch drift.
+
+Before patching a finding, classify it:
+
+- **In-scope blocker**: the finding is introduced by the current diff, affects the same owner boundary, and can be fixed without changing the task's contract.
+- **Follow-up**: the finding is real but belongs to an adjacent bug class, sibling surface, cleanup, or broader hardening track.
+- **Stop-and-escalate**: the finding requires a new protocol/config/storage/public API contract, a different owner boundary, a release-process change, or a design choice outside the original request.
+
+Stop patching and report the scope break instead of continuing when:
+
+- a narrow PR turns into an architecture change, protocol change, migration, or release-process change;
+- the diff grows past 2x the original files or non-test LOC without explicit approval to expand scope;
+- two review-triggered patch cycles have not converged; pause and reclassify every remaining finding before another edit;
+- the best fix is "define the canonical contract first" rather than another local inference layer;
+- fixing the accepted finding would make the PR no longer describe the same behavior, issue, or owner boundary.
+
+After the two-cycle pause, continue only when every remaining accepted finding is still an in-scope blocker. Otherwise preserve the useful analysis, identify the smallest safe landed subset if one exists, and open or request a follow-up for the larger fix. Do not keep committing speculative fixes just to satisfy the reviewer.
+
+Do not stack or push review-triggered fix commits while scope classification or focused proof is unresolved. Keep exploratory edits local until the cycle is proven in scope; if scope breaks, remove them from the landing lane instead of preserving them as branch history.
+
+Critical exceptions must be explicit: active data loss, crash, broken install/upgrade, release blocker, or concrete security exposure. If the exception is not one of those, it is not critical enough to blow up scope.
+
+## Release Branches And Release Process
+
+On release, beta, stable, hotfix, signing, notarization, appcast, package-publish, or release-check work, use freeze discipline even when the branch name is not release-like:
+
+- Fix only release blockers, failed release infrastructure, exact backports, install/upgrade breakage, data loss, crashes, or concrete security exposure.
+- Treat non-blocking autoreview findings as follow-ups for `main`, not reasons to broaden the release branch.
+- Do not introduce new product behavior, config surface, protocol shape, migration, plugin ownership, docs narrative, or process policy unless it directly unblocks the release.
+- Keep proof tied to the release target: exact branch/ref, failing check or shipped-risk reason, smallest command/proof, and whether the fix must also forward-port to `main`.
+- If review discovers a real but non-critical design problem during release closeout, stop with a follow-up issue/PR plan; do not use the release branch as the refactor lane.
+
+## Skill Path (set once)
+
+Set the skill script paths once, then use `"$AUTOREVIEW"` and `"$AUTOREVIEW_HARNESS"` in the examples below.
+
+Choose one:
+
+```bash
+# Project-local skill in the current repo:
+export AUTOREVIEW=".agents/skills/autoreview/scripts/autoreview"
+export AUTOREVIEW_HARNESS=".agents/skills/autoreview/scripts/test-review-harness"
+```
+
+```bash
+# Source checkout of openclaw/agent-skills:
+export AUTOREVIEW="skills/autoreview/scripts/autoreview"
+export AUTOREVIEW_HARNESS="skills/autoreview/scripts/test-review-harness"
+```
+
+```bash
+# Global skill:
+export AGENTS_HOME="${AGENTS_HOME:-$HOME/.agents}"
+export AUTOREVIEW="$AGENTS_HOME/skills/autoreview/scripts/autoreview"
+export AUTOREVIEW_HARNESS="$AGENTS_HOME/skills/autoreview/scripts/test-review-harness"
+```
+
+When using Claude Code, set `AGENTS_HOME="$HOME/.claude"` for global skills. Project-local skills live under `.claude/skills/` in the current repo.
+
 ## Pick Target
 
 Dirty local work:
 
 ```bash
-<autoreview-helper> --mode local
+"$AUTOREVIEW" --mode local
 ```
 
 Use this only when the patch is actually unstaged/staged/untracked in the
@@ -62,32 +125,26 @@ only proves there is no local patch.
 Branch/PR work:
 
 ```bash
-<autoreview-helper> --mode branch --base origin/main
+"$AUTOREVIEW" --mode branch --base origin/main
 ```
 
-Optional review context is first-class:
+Optional review context is first-class. Prompt files and datasets must be repo-relative so review bundles cannot pull arbitrary host files:
 
 ```bash
-<autoreview-helper> --mode branch --base origin/main --prompt-file /tmp/review-notes.md --dataset /tmp/evidence.json
+"$AUTOREVIEW" --mode branch --base origin/main --prompt-file review-notes.md --dataset evidence.json
 ```
 
 If an open PR exists, use its actual base:
 
 ```bash
 base=$(gh pr view --json baseRefName --jq .baseRefName)
-<autoreview-helper> --mode branch --base "origin/$base"
+"$AUTOREVIEW" --mode branch --base "origin/$base"
 ```
 
 Committed single change:
 
 ```bash
-<autoreview-helper> --mode commit --commit HEAD
-```
-
-or with the helper:
-
-```bash
-/Users/steipete/Projects/agent-scripts/skills/autoreview/scripts/autoreview --mode commit --commit HEAD
+"$AUTOREVIEW" --mode commit --commit HEAD
 ```
 
 Use commit review for already-landed or already-pushed work on `main`. Reviewing
@@ -100,7 +157,7 @@ with `--base`.
 Format first if formatting can change line locations. Then it is OK to run tests and review in parallel:
 
 ```bash
-scripts/autoreview --parallel-tests "<focused test command>"
+"$AUTOREVIEW" --parallel-tests "<focused test command>"
 ```
 
 On Windows, the default `--parallel-tests` shell preserves the platform `cmd.exe`
@@ -114,30 +171,112 @@ Tradeoff: tests may force code changes that stale the review. If tests or review
 Run multiple reviewers against one frozen bundle:
 
 ```bash
-<autoreview-helper> --reviewers codex,claude
+"$AUTOREVIEW" --reviewers codex,claude,pi,droid
 ```
 
 `--panel` is shorthand for Codex plus Claude unless `--engine` changes the first reviewer:
 
 ```bash
-<autoreview-helper> --panel
+"$AUTOREVIEW" --panel
 ```
 
 Set reviewer models and thinking/effort explicitly:
 
 ```bash
-<autoreview-helper> --reviewers codex,claude --model codex=gpt-5.1 --thinking codex=high --model claude=sonnet --thinking claude=max
+"$AUTOREVIEW" --reviewers codex,claude --model codex=gpt-5.5 --thinking codex=high --model claude=claude-fable-5 --thinking claude=max
 ```
 
-Inline syntax is also supported:
+Inline syntax is also supported for simple model IDs:
 
 ```bash
-<autoreview-helper> --reviewers codex:gpt-5.1:high,claude:sonnet:max
+"$AUTOREVIEW" --reviewers codex:gpt-5.5:high,claude:claude-fable-5:max
 ```
 
-Codex maps thinking to `model_reasoning_effort` and accepts `low`, `medium`,
-`high`, or `xhigh`. Claude maps thinking to `--effort` and also accepts `max`.
-Engines without a real thinking knob reject `--thinking`.
+For models with slashes or extra colons, prefer keyed form:
+
+```bash
+"$AUTOREVIEW" --engine pi --model anthropic/claude-sonnet-4 --thinking high
+"$AUTOREVIEW" --engine opencode --model opencode/north-mini-code-free --thinking high
+"$AUTOREVIEW" --engine droid --model claude-opus-4-8 --thinking low
+"$AUTOREVIEW" --reviewers codex,pi --model codex=gpt-5.5 --model pi=anthropic/claude-sonnet-4
+"$AUTOREVIEW" --reviewers codex,opencode --model codex=gpt-5.5 --model opencode=opencode/north-mini-code-free
+"$AUTOREVIEW" --reviewers codex,droid --model codex=gpt-5.5 --model droid=claude-opus-4-8
+```
+
+## Models and thinking
+
+The helper accepts `--model` globally or per engine (`engine=model`) and `--thinking` globally or per engine (`engine=level`). Repeat either flag for multiple reviewers.
+
+Recommended model defaults:
+
+| Engine | Default model | Source note |
+|--------|---------------|-------------|
+| **codex** (default) | `gpt-5.5` | OpenAI's current GPT-5.5 alias |
+| **claude** | `claude-fable-5` | Anthropic's most capable widely released Claude model |
+
+CLI flags and environment variables override these defaults. Droid, Copilot, Pi, and OpenCode do not get built-in model defaults here because their provider catalogs are external to the Codex/Claude closeout path and may vary by installation.
+
+| Engine | Model flag | Example model IDs | Thinking flag | Accepted levels |
+|--------|------------|-------------------|---------------|-----------------|
+| **codex** (default) | `codex --model X exec ...` | `gpt-5.5`, `gpt-5.5-2026-04-23` | `-c model_reasoning_effort=Y` | `none`, `minimal`, `low`, `medium`, `high`, `xhigh` |
+| **claude** | `claude --model X` | `claude-fable-5`, `claude-opus-4-8`, `claude-sonnet-4-6`, `claude-haiku-4-5` | `--effort Y` | `low`, `medium`, `high`, `xhigh`, `max` |
+| **droid** | `droid exec --model X` | `claude-opus-4-8`, Factory model IDs | `-r, --reasoning-effort Y` | `off`, `none`, `low`, `medium`, `high` |
+| **copilot** | `copilot --model X` | `gpt-5.2`, Copilot model aliases | not supported | n/a |
+| **pi** | `pi --model X` | `anthropic/claude-sonnet-4`, `openai/gpt-4o` | `--thinking Y` | `off`, `minimal`, `low`, `medium`, `high`, `xhigh` |
+| **opencode** | `opencode run -m X` | `opencode/north-mini-code-free`, OpenCode provider/model IDs | `--variant Y` | `minimal`, `low`, `medium`, `high`, `max` |
+
+Claude also supports `--fallback-model a,b` for availability-based fallback chains ([model-config](https://code.claude.com/docs/en/model-config)). Current Claude docs note that auth, billing, rate-limit, request-size, and transport errors do not trigger fallback, and the changelog documents interactive-session support in `v2.1.166`.
+
+Examples matching current `main` behavior:
+
+```bash
+# Codex with explicit model and reasoning
+"$AUTOREVIEW" --engine codex --model gpt-5.5 --thinking high
+
+# Claude Code aliases or full model names, with optional availability fallback
+"$AUTOREVIEW" --engine claude --model claude-fable-5 --thinking max
+"$AUTOREVIEW" --engine claude --model claude-fable-5 --fallback-model claude-opus-4-8,claude-sonnet-4-6
+
+# Factory Droid with explicit model and reasoning effort
+"$AUTOREVIEW" --engine droid --model claude-opus-4-8 --thinking low
+
+# GitHub Copilot (model only; no thinking knob)
+"$AUTOREVIEW" --engine copilot --model gpt-5.2
+
+# Pi with explicit model and thinking level
+"$AUTOREVIEW" --engine pi --model anthropic/claude-sonnet-4 --thinking high --pi-bin pi
+
+# OpenCode with explicit provider/model and variant
+"$AUTOREVIEW" --engine opencode --model opencode/north-mini-code-free --thinking high
+```
+
+### Environment defaults
+
+CLI flags take precedence over environment variables.
+
+| Variable | Purpose |
+|----------|---------|
+| `AUTOREVIEW_MODEL` | Override the built-in default `--model` for all engines |
+| `AUTOREVIEW_THINKING` | Default `--thinking` for all engines |
+| `AUTOREVIEW_FALLBACK_MODEL` | Default Claude `--fallback-model` chain |
+| `AUTOREVIEW_<ENGINE>_MODEL` | Per-engine model override, for example `AUTOREVIEW_CODEX_MODEL=gpt-5.5` |
+| `AUTOREVIEW_<ENGINE>_THINKING` | Per-engine thinking override |
+| `AUTOREVIEW_CLAUDE_FALLBACK_MODEL` | Claude-only fallback chain |
+
+Codex maps thinking to `model_reasoning_effort`. Claude maps thinking to `--effort`. Droid maps thinking to `-r, --reasoning-effort`. Pi maps thinking to `--thinking`. OpenCode maps thinking to `--variant`. Copilot rejects `--thinking`. Only Claude accepts `--fallback-model`; global CLI/env fallback requires at least one Claude reviewer, and engine-specific fallback overrides require that reviewer to be selected. Non-Claude fallback overrides, including `AUTOREVIEW_<NONCLAUDE>_FALLBACK_MODEL`, fail closed instead of being silently ignored.
+
+## Review engine isolation
+
+When autoreview runs inside the repository under review, external reviewer CLIs must not load project-local trust or configuration that the branch controls.
+
+| Engine | Isolation flags | Reference |
+|--------|-----------------|-----------|
+| **codex** | Auth-only config overrides, `-c project_doc_max_bytes=0`, repo `trust_level="untrusted"`, `exec --ignore-user-config --ignore-rules`, plus read-only sandbox | Codex CLI `exec --help` |
+| **claude** | `--safe-mode --setting-sources user --strict-mcp-config --disallowedTools mcp__*` plus explicit `--allowedTools` (`--safe-mode` requires Claude Code `v2.1.169+`) | Claude Code [CLI reference](https://code.claude.com/docs/en/cli-reference) |
+| **pi** | `--no-approve --no-session --no-context-files --no-extensions --no-skills --no-prompt-templates --no-themes`, plus read-only tool allowlist | Pi CLI `--help`; requires Pi `v0.79.0+` |
+| **opencode** | `opencode run --dir <repo> --pure --format json`, prompt over stdin, neutral subprocess cwd, injected deny-by-default permissions, project config disabled | OpenCode CLI `--help` |
+
+Codex `--ignore-user-config` skips config loading for the exec run. Autoreview reconstructs only the documented `cli_auth_credentials_store`, `forced_login_method`, and `forced_chatgpt_workspace_id` settings from `CODEX_HOME/config.toml`, keeping authentication and workspace restrictions usable without forwarding unrelated user configuration. The explicit repo trust override and zero project-doc budget keep reviewed-repo `AGENTS.md` and `.codex/` trust surfaces out of the review prompt. `--ignore-rules` skips user/project execpolicy rules. Claude `--safe-mode` disables project hooks, skills, plugins, MCP servers, and CLAUDE.md while preserving normal authentication, model selection, built-in tools, and permissions; managed settings policy can still apply. `--setting-sources user` avoids project/local settings from the reviewed checkout, and current Claude Code docs note the project-skill blocking behavior was fixed in `v2.1.69`. `--strict-mcp-config` and `--disallowedTools mcp__*` keep MCP unavailable to the review run. `--bare` is not used here because Claude's headless docs say it skips OAuth and keychain reads. Pi `--no-approve` ignores project-local files for one run; the helper requires Pi `v0.79.0+` plus help output that advertises every required isolation flag because older legacy binaries can ignore unknown flags. The current package is `@earendil-works/pi-coding-agent`; deprecated `@mariozechner/pi-coding-agent` `0.73.x` is intentionally rejected. Pi version/help probes and the review command run from neutral temporary directories, not the reviewed repo. Pi `--no-context-files` removes `AGENTS.md`/`CLAUDE.md`, the resource-disable flags keep `.pi` extensions, skills, prompts, and themes out of the run, `--no-session` avoids writing review sessions, and the read-only allowlist omits `bash`, `edit`, and `write`. OpenCode starts from a neutral temporary directory, points at the reviewed repo with `--dir`, disables project config through `OPENCODE_DISABLE_PROJECT_CONFIG=1`, and injects `OPENCODE_CONFIG_CONTENT`; permissions default to deny, allow read/grep/glob, preserve OpenCode's `.env` ask rules, and gate `websearch`/`webfetch` with `--no-web-search`. The injected config also clears command/instruction/plugin arrays and disables write/edit/bash/task/skill/todowrite tools without changing user auth storage. The helper sends the review prompt over stdin rather than argv and extracts the final structured JSON from `type: "text"` events. OpenCode rejects `--no-tools`.
 
 ## Context Efficiency
 
@@ -145,16 +284,16 @@ Run the helper directly so target selection, engine choice, structured validatio
 
 ## Helper
 
-OpenClaw repo-local helper:
+After setting `AUTOREVIEW` and `AUTOREVIEW_HARNESS` above:
 
 ```bash
-.agents/skills/autoreview/scripts/autoreview --help
+"$AUTOREVIEW" --help
 ```
 
-`agent-scripts` checkout helper:
+The smoke harness has thin shell wrappers over a shared Python implementation:
 
 ```bash
-skills/autoreview/scripts/autoreview --help
+"$AUTOREVIEW_HARNESS" --fixture benign --engine codex
 ```
 
 On native Windows, invoke the extensionless Python helper through Python:
@@ -163,26 +302,10 @@ On native Windows, invoke the extensionless Python helper through Python:
 python skills\autoreview\scripts\autoreview --help
 ```
 
-The smoke harness has thin shell wrappers over a shared Python implementation:
-
-```bash
-skills/autoreview/scripts/test-review-harness --fixture benign --engine codex
-```
+and the smoke harness:
 
 ```powershell
 skills\autoreview\scripts\test-review-harness.ps1 -Fixture benign -Engine codex
-```
-
-Global helper from `agent-scripts`:
-
-```bash
-~/.codex/skills/agent-scripts/autoreview/scripts/autoreview --help
-```
-
-If installed from `agent-scripts`, path is:
-
-```bash
-/Users/steipete/Projects/agent-scripts/skills/autoreview/scripts/autoreview --help
 ```
 
 The helper:
@@ -191,15 +314,21 @@ The helper:
 - accepts `--mode uncommitted` as an alias for `--mode local`
 - otherwise uses current PR base if `gh pr view` works
 - otherwise uses `origin/main` for non-main branches
-- supports `--engine codex`, `claude`, `droid`, and `copilot`; default is `AUTOREVIEW_ENGINE` or `codex`; Codex should remain the default when nothing is set
+- does not fetch automatically during branch review; the selected base ref must already resolve locally
+- supports `--engine codex`, `claude`, `droid`, `copilot`, `pi`, and `opencode`; default is `AUTOREVIEW_ENGINE` or `codex`; Codex should remain the default when nothing is set
 - resolves bare `git`, `gh`, reviewer, and PowerShell shell commands from absolute `PATH` entries only, never from the reviewed checkout; explicit relative `--*-bin` paths are resolved from the reviewed repository root
 - use `--mode commit --commit <ref>` for already-committed work, especially clean `main` after landing
 - should be left in `--mode auto` or forced to `--mode branch` for PR/branch work; do not force `--mode local` after committing
 - writes only to stdout unless `--output`, `--json-output`, or live streamed engine stderr is set
-- supports `--dry-run`, `--parallel-tests`, `--parallel-tests-shell`, `--prompt`, `--prompt-file`, `--dataset`, `--no-tools`, `--no-web-search`, and commit refs
+- supports `--dry-run`, `--parallel-tests`, `--parallel-tests-shell`, `--prompt`, repo-relative `--prompt-file`, repo-relative `--dataset`, `--no-tools`, `--no-web-search`, and commit refs
 - supports `--stream-engine-output` or `AUTOREVIEW_STREAM_ENGINE_OUTPUT=1` for live engine text while preserving structured validation; Codex and Claude hide tool/file event details, emit compact activity summaries, and report usage at turn completion
-- supports opt-in review panels with `--panel` / `--reviewers`, plus per-engine `--model` and `--thinking`
-- allows read-only tools and web search by default where the selected CLI supports them; forbids nested review in the prompt; Codex is run through `codex exec` with read-only sandbox and structured output
+- supports opt-in review panels with `--panel` / `--reviewers`, plus per-engine `--model`, `--thinking`, and Claude `--fallback-model`
+- uses built-in model defaults `codex=gpt-5.5` and `claude=claude-fable-5`; honors `AUTOREVIEW_MODEL`, `AUTOREVIEW_THINKING`, `AUTOREVIEW_FALLBACK_MODEL`, and per-engine `AUTOREVIEW_<ENGINE>_MODEL` / `AUTOREVIEW_<ENGINE>_THINKING` environment overrides when CLI flags are omitted
+- allows read-only tools and web search by default where the selected CLI supports them; forbids nested review in the prompt; Codex is run through `codex exec` with auth-only user settings, read-only sandbox, reviewed-repo instruction/config/rule isolation flags, and structured output
+- runs Claude with `--safe-mode` (`v2.1.169+`), `--setting-sources user`, MCP disabled, explicit allowed tools, and `--fallback-model` when set, so reviewed-repo hooks/skills/MCP do not affect the review run while normal auth still works; managed settings policy can still apply
+- runs Droid with `droid exec` in read-only mode, forwards `--model` and `-r, --reasoning-effort`, and switches `--output-format` to `stream-json` when streaming is enabled
+- runs Pi `v0.79.0+` from neutral temporary directories with `--no-approve`, `--no-session`, disabled Pi context/resource loading, and built-in read-only tools (`read,grep,find,ls`) when tools are enabled
+- runs OpenCode with `opencode run --dir <repo> --pure --format json` from a neutral temporary directory, forwards `--model` and `--variant`, injects deny-by-default permissions, disables project config loading, and passes the review prompt over stdin
 - prints `review still running: <engine> elapsed=<seconds>s pid=<pid>` to stderr at long-running intervals while waiting for the selected review engine, unless streamed output or compact Codex activity has been visible recently
 - prints `autoreview clean: no accepted/actionable findings reported` when the selected review command exits 0
 - exits nonzero when accepted/actionable findings are present

@@ -1,15 +1,15 @@
 import {
+  type OmitFirst,
   type PluginConfig,
   bindFirst,
-  createTSlatePlugin,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
 import type { MediaPluginOptions } from '../media';
 
+import { ImageRules } from './ImageRules';
 import { insertImageFromFiles } from './transforms';
-import { withImageEmbed } from './withImageEmbed';
-import { withImageUpload } from './withImageUpload';
 
 export type ImageConfig = PluginConfig<
   'img',
@@ -26,11 +26,19 @@ export type ImageConfig = PluginConfig<
     uploadImage?: (
       dataUrl: ArrayBuffer | string
     ) => ArrayBuffer | Promise<ArrayBuffer | string> | string;
-  } & MediaPluginOptions
+  } & MediaPluginOptions,
+  {},
+  {},
+  {},
+  {
+    insert: {
+      imageFromFiles: OmitFirst<typeof insertImageFromFiles>;
+    };
+  }
 >;
 
 /** Enables support for images. */
-export const BaseImagePlugin = createTSlatePlugin<ImageConfig>({
+export const BaseImagePlugin = createEditorPlugin<ImageConfig>({
   key: KEYS.img,
   node: {
     dangerouslyAllowAttributes: ['alt', 'width', 'height'],
@@ -52,11 +60,7 @@ export const BaseImagePlugin = createTSlatePlugin<ImageConfig>({
       },
     },
   },
-})
-  .overrideEditor(withImageUpload)
-  .overrideEditor(withImageEmbed)
-  .extendEditorTransforms(({ editor }) => ({
-    insert: {
-      imageFromFiles: bindFirst(insertImageFromFiles, editor),
-    },
-  }));
+  inputRules: [ImageRules.upload(), ImageRules.embed()],
+}).extendTxGroup('insert', ({ editor }) => () => ({
+  imageFromFiles: bindFirst(insertImageFromFiles, editor),
+}));

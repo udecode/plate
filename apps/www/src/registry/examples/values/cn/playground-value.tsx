@@ -9,7 +9,7 @@ export const playgroundValue: Value = [
   {
     children: [
       { text: '体验使用 ' },
-      { children: [{ text: 'Slate' }], type: 'a', url: 'https://slatejs.org' },
+      { children: [{ text: 'Plite' }], type: 'a', url: 'https://slatejs.org' },
       { text: ' 和 ' },
       { children: [{ text: 'React' }], type: 'a', url: 'https://reactjs.org' },
       {

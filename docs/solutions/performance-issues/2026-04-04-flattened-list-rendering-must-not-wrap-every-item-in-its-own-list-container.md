@@ -7,7 +7,7 @@ problem_type: performance_issue
 component: tooling
 symptoms:
   - "The standalone `10k` list-heavy lane stayed deeply red even after the mark-bundle cut"
-  - "Plate list-heavy mount was much slower than both Slate and Plate's own flattened-list lower bound"
+  - "Plate list-heavy mount was much slower than both Plite and Plate's own flattened-list lower bound"
   - "Small wrapper and core fast-path experiments did not produce a clean win"
 root_cause: logic_error
 resolution_type: documentation
@@ -38,9 +38,9 @@ The key question was whether the cost came from:
 
 Dedicated list rows in the standalone lab after the kept fix:
 
-- `49_mount-10k-list-markdown`: Plate `934.20 ms`, Slate `619.50 ms`
-- `96_mount-10k-list-core`: Plate `642.80 ms`, Slate `586.30 ms`
-- `97_mount-10k-list-only`: Plate `871.90 ms`, Slate `563.70 ms`
+- `49_mount-10k-list-markdown`: Plate `934.20 ms`, Plite `619.50 ms`
+- `96_mount-10k-list-core`: Plate `642.80 ms`, Plite `586.30 ms`
+- `97_mount-10k-list-only`: Plate `871.90 ms`, Plite `563.70 ms`
 
 That split means the old bill was `ListPlugin`, not the flattened list payload
 by itself.
@@ -67,7 +67,7 @@ The DOM probe showed the original bad shape:
 
 - Plate `list-core`: `0` `<ul>`, `0` `<li>`, `30,000` paragraph nodes
 - Plate `list-only`: `30,000` `<ul>`, `30,000` `<li>`, `30,000` paragraph nodes
-- Slate nested list lane: `10,000` `<ul>`, `30,000` `<li>`
+- Plite nested list lane: `10,000` `<ul>`, `30,000` `<li>`
 
 So the old Plate list render model was paying one list container per item
 instead of one logical list container or a lighter paragraph-level list-item

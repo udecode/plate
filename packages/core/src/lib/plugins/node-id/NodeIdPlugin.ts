@@ -1,22 +1,22 @@
 import {
   type Descendant,
-  type QueryNodeOptions,
+  type EditorUpdateTransaction,
   type Value,
   ElementApi,
-  queryNode,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import { nanoid } from 'nanoid';
 
+import type { BasePlateEditor } from '../../editor/BasePlateEditor';
 import type { PluginConfig } from '../../plugin/BasePlugin';
 
-import { createTSlatePlugin } from '../../plugin/createSlatePlugin';
-import { withNodeId } from './withNodeId';
+import { createEditorPlugin } from '../../plugin/createEditorPlugin';
+import { type QueryNodeOptions, queryNode } from '../../utils/queryNode';
 
 export type NodeIdOptions = {
   /**
-   * By default, when a node inserted using editor.tf.insertNode(s) has an id,
-   * it will be used instead of the id generator, except if it already exists in
-   * the document. Set this option to true to disable this behavior.
+   * By default, inserted nodes reuse their existing id when that id is not
+   * already present in the document. Set this option to true to always assign a
+   * fresh id.
    */
   disableInsertOverrides?: boolean;
   /**
@@ -48,16 +48,6 @@ export type NodeIdOptions = {
    * @default 'if-needed'
    */
   initialValueIds?: false | 'always' | 'if-needed';
-  /**
-   * Legacy alias for `initialValueIds`.
-   *
-   * - `false`: only check the first and last top-level nodes
-   * - `true`: walk the whole initial value and fill missing ids
-   * - `null`: skip initial-value id assignment
-   *
-   * @deprecated Use `initialValueIds` instead.
-   */
-  normalizeInitialValue?: boolean | null;
   /**
    * Reports duplicate-id scan cost during inserted-node normalization.
    */
@@ -97,6 +87,15 @@ type NormalizeNodeIdRuntimeOptions = NormalizeNodeIdOptions & {
   isBlock?: (node: Descendant) => boolean;
 };
 
+type InlineFlagElement = Descendant & {
+  inline?: boolean;
+};
+
+type NodeIdBatchUpdate = {
+  at: number[];
+  props: Record<string, unknown>;
+};
+
 const defaultNodeIdFilter = () => true;
 
 const isDefaultNodeIdFastPath = ({
@@ -117,7 +116,7 @@ const isBlockCandidate = (
   isBlock?: (node: Descendant) => boolean
 ) =>
   ElementApi.isElement(node) &&
-  (isBlock ? isBlock(node) : (node as any).inline !== true);
+  (isBlock ? isBlock(node) : (node as InlineFlagElement).inline !== true);
 
 const shouldAssignNodeId = (
   entry: [Descendant, number[]],
@@ -148,7 +147,9 @@ const shouldAssignNodeId = (
         if (
           filterInline &&
           ElementApi.isElement(entryNode) &&
-          !(isBlock ? isBlock(entryNode) : (entryNode as any).inline !== true)
+          !(isBlock
+            ? isBlock(entryNode)
+            : (entryNode as InlineFlagElement).inline !== true)
         ) {
           return false;
         }
@@ -160,21 +161,25 @@ const shouldAssignNodeId = (
 };
 
 const resolveInitialValueIds = (
-  options: Pick<NodeIdOptions, 'initialValueIds' | 'normalizeInitialValue'>
-): false | 'always' | 'if-needed' => {
-  if (options.initialValueIds !== undefined) {
-    return options.initialValueIds;
-  }
+  options: Pick<NodeIdOptions, 'initialValueIds'>
+): false | 'always' | 'if-needed' => options.initialValueIds ?? 'if-needed';
 
-  if (options.normalizeInitialValue === null) {
-    return false;
-  }
+const setNodeIdBatch = (
+  editor: Pick<BasePlateEditor, 'update'>,
+  tx: EditorUpdateTransaction,
+  updates: NodeIdBatchUpdate[]
+) => {
+  if (updates.length === 0) return;
 
-  if (options.normalizeInitialValue === true) {
-    return 'always';
-  }
+  editor.update(() => {}, {
+    metadata: {
+      history: { mode: 'skip' },
+    },
+  });
 
-  return 'if-needed';
+  for (const { at, props } of updates) {
+    tx.nodes.set(props, { at });
+  }
 };
 
 /**
@@ -320,8 +325,7 @@ export type NodeIdConfig = PluginConfig<
   }
 >;
 
-/** @see {@link withNodeId} */
-export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
+const BaseNodeIdPlugin = createEditorPlugin<NodeIdConfig>({
   key: 'nodeId',
   options: {
     filterInline: true,
@@ -336,11 +340,11 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
       isMetadataProp: ({ key }) => key === (getOptions().idKey ?? 'id'),
     },
   }))
-  .extendTransforms(({ editor, getOptions }) => ({
+  .extendTx(({ editor, getOptions }) => (tx) => ({
     normalize() {
       const options = getOptions();
       const { idCreator, idKey } = options;
-      const updates: { at: number[]; props: Record<string, unknown> }[] = [];
+      const updates: NodeIdBatchUpdate[] = [];
 
       if (
         isDefaultNodeIdFastPath({ ...options, isBlock: editor.api.isBlock })
@@ -358,7 +362,7 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
             });
           }
 
-          node.children.forEach((child: any, index: number) => {
+          node.children.forEach((child, index) => {
             path.push(index);
             visitFast(child);
             path.pop();
@@ -371,11 +375,7 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
           path.pop();
         });
 
-        if (updates.length === 0) return;
-
-        editor.tf.withoutSaving(() => {
-          editor.tf.setNodesBatch(updates as any);
-        });
+        setNodeIdBatch(editor, tx, updates);
 
         return;
       }
@@ -394,7 +394,7 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
 
         // Only traverse children if this is an Element node
         if (ElementApi.isElement(node)) {
-          node.children.forEach((child: any, index: number) => {
+          node.children.forEach((child, index) => {
             addNodeId([child, [...path, index]]);
           });
         }
@@ -405,11 +405,7 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
         addNodeId([node, [index]]);
       });
 
-      if (updates.length === 0) return;
-
-      editor.tf.withoutSaving(() => {
-        editor.tf.setNodesBatch(updates as any);
-      });
+      setNodeIdBatch(editor, tx, updates);
     },
   }))
   .extend({
@@ -434,5 +430,8 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
 
       return normalizeNodeIdWithEditor(editor, value, options);
     },
-  })
-  .overrideEditor(withNodeId);
+  });
+
+export const NodeIdPlugin = Object.assign(BaseNodeIdPlugin, {
+  runtimeNodeId: true,
+});

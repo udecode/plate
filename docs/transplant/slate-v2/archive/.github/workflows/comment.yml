@@ -1,0 +1,118 @@
+# https://github.com/marketplace/actions/automatic-rebase  (https://github.com/cirrus-actions/rebase)
+name: Comment
+
+on:
+  issue_comment:
+    types:
+      - created
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+  pull-requests: read # to get info about PR (cirrus-actions/rebase)
+
+jobs:
+  rebase:
+    permissions:
+      contents: write # to push code to rebase (cirrus-actions/rebase)
+      pull-requests: read # to get info about PR (cirrus-actions/rebase)
+
+    name: rebase
+    runs-on: ubuntu-latest
+    if: |
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/rebase')
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Rebase PR
+        uses: cirrus-actions/rebase@1.3.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release_next:
+    permissions:
+      contents: read # to fetch code (actions/checkout)
+      pull-requests: write # to create or update comment (peter-evans/create-or-update-comment)
+
+    name: release:next
+    runs-on: ubuntu-latest
+    if: |
+      github.event.issue.pull_request &&
+      github.event.sender.login == 'ianstormtaylor' &&
+      startsWith(github.event.comment.body, '/release:next')
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: refs/pull/${{ github.event.issue.number }}/head
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.12
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.17
+          registry-url: https://registry.npmjs.org
+          key: node22
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Prepare release
+        run: bun run prerelease
+
+      # https://github.com/atlassian/changesets/blob/master/docs/snapshot-releases.md
+      - name: Release to @pr channel
+        run: |
+          bunx changeset version --snapshot
+          bunx changeset publish --tag pr
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get released version
+        id: packages
+        run: |
+          node <<'EOF' >> "$GITHUB_OUTPUT"
+          const { execSync } = require('node:child_process');
+          const { readFileSync } = require('node:fs');
+
+          const files = execSync(
+            "git diff --name-only -- packages/*/package.json",
+            { encoding: 'utf8' }
+          )
+            .trim()
+            .split('\n')
+            .filter(Boolean);
+
+          const lines = files.map((file) => {
+            const pkg = JSON.parse(readFileSync(file, 'utf8'));
+            return `- \`bun add ${pkg.name}@${pkg.version}\``;
+          });
+
+          console.log("body<<'BODY'");
+          console.log('A new `@pr` snapshot release has been made for this pull request.');
+          console.log('');
+
+          if (lines.length === 0) {
+            console.log('Check the workflow logs for the published package set.');
+          } else {
+            console.log('Install the published package(s) with:');
+            console.log(lines.join('\n'));
+          }
+
+          console.log('BODY');
+          EOF
+
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: ${{ steps.packages.outputs.body }}

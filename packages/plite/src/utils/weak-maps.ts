@@ -1,0 +1,14 @@
+import type { Editor, Path, PathRef, PointRef, RangeRef } from '..';
+
+export const ALL_RANGE_REFS: WeakMap<Editor, Set<RangeRef>> = new WeakMap();
+export const DIRTY_PATHS: WeakMap<Editor, Path[]> = new WeakMap();
+export const DIRTY_PATH_KEYS: WeakMap<Editor, Set<string>> = new WeakMap();
+export const DIRTY_PATH_ROOTS: WeakMap<
+  Editor,
+  Map<string, { keys: Set<string>; paths: Path[] }>
+> = new WeakMap();
+export const FLUSHING: WeakMap<Editor, boolean> = new WeakMap();
+export const NORMALIZING: WeakMap<Editor, boolean> = new WeakMap();
+export const PATH_REFS: WeakMap<Editor, Set<PathRef>> = new WeakMap();
+export const POINT_REFS: WeakMap<Editor, Set<PointRef>> = new WeakMap();
+export const RANGE_REFS: WeakMap<Editor, Set<RangeRef>> = new WeakMap();

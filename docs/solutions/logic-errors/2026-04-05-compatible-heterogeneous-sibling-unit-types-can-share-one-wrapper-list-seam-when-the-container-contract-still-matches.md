@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Compatible heterogeneous sibling unit types can share one wrapper-list seam when the container contract still matches
 tags:
-  - slate-v2
+  - plite
   - wrapper-unit
   - heterogeneous
   - list-item

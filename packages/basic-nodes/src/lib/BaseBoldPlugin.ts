@@ -1,7 +1,7 @@
-import { createSlatePlugin, KEYS, someHtmlElement } from 'platejs';
+import { createEditorPlugin, KEYS, someHtmlElement } from 'platejs';
 
 /** Enables support for bold formatting */
-export const BaseBoldPlugin = createSlatePlugin({
+export const BaseBoldPlugin = createEditorPlugin({
   key: KEYS.bold,
   node: { isLeaf: true },
   parsers: {
@@ -24,8 +24,8 @@ export const BaseBoldPlugin = createSlatePlugin({
     },
   },
   render: { as: 'strong' },
-}).extendTransforms(({ editor, type }) => ({
+}).extendTx(({ type }) => (tx) => ({
   toggle: () => {
-    editor.tf.toggleMark(type);
+    tx.marks.toggle(type);
   },
 }));

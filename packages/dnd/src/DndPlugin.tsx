@@ -92,7 +92,7 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
         // drop line which makes sense, since a potential drop would not insert anything into the editor.
         // This will also apply, if the user move the drag operation outside the document.
         if (e.target instanceof Node) {
-          const editorDOMNode = editor.api.toDOMNode(editor);
+          const editorDOMNode = editor.api.dom.resolveDOMNode(editor);
 
           if (!editorDOMNode) return;
 

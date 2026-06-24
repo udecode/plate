@@ -1,13 +1,13 @@
-import { createSlateEditor } from '../editor';
-import { createSlatePlugin } from '../plugin';
+import { createBasePlateEditor } from '../editor';
+import { createEditorPlugin } from '../plugin';
 import { pipeOnTextChange } from './pipeOnTextChange';
 
 describe('pipeOnTextChange', () => {
   it('skips handlers when the editor is read-only', () => {
     const onTextChange = mock(() => true);
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           handlers: { onTextChange },
           key: 'test',
         }),
@@ -32,17 +32,17 @@ describe('pipeOnTextChange', () => {
     const node = { text: 'node' } as any;
     const operation = { type: 'insert_text' } as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           handlers: { onTextChange: first },
           key: 'first',
         }),
-        createSlatePlugin({
+        createEditorPlugin({
           handlers: { onTextChange: second },
           key: 'second',
         }),
-        createSlatePlugin({
+        createEditorPlugin({
           handlers: { onTextChange: third },
           key: 'third',
         }),

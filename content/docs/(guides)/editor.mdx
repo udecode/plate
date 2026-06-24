@@ -338,24 +338,24 @@ editor.tf.insert.tableRow()
 For more complex editors, you can define your types in a separate file (e.g., `plate-types.ts`):
 
 ```ts
-import type { TElement, TText } from 'platejs';
+import type { Element, Text } from 'platejs';
 import type { TPlateEditor } from 'platejs/react';
 
 // Define custom element types
-interface ParagraphElement extends TElement {
+interface ParagraphElement extends Element {
   align?: 'left' | 'center' | 'right' | 'justify';
   children: RichText[];
   type: typeof ParagraphPlugin.key;
 }
 
-interface ImageElement extends TElement {
+interface ImageElement extends Element {
   children: [{ text: '' }]
   type: typeof ImagePlugin.key;
   url: string;
 }
 
 // Define custom text types
-interface FormattedText extends TText {
+interface FormattedText extends Text {
   bold?: boolean;
   italic?: boolean;
 }

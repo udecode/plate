@@ -1,6 +1,6 @@
-import { type SlateEditor, createSlatePlugin, KEYS } from 'platejs';
+import { createEditorPlugin, KEYS } from 'platejs';
 
-export const BaseFontSizePlugin = createSlatePlugin({
+export const BaseFontSizePlugin = createEditorPlugin({
   key: KEYS.fontSize,
   inject: {
     nodeProps: {
@@ -24,10 +24,8 @@ export const BaseFontSizePlugin = createSlatePlugin({
       },
     },
   },
-}).extendTransforms(({ editor }: { editor: SlateEditor }) => ({
-  addMark: (value: string) => {
-    editor.tf.addMarks({
-      [KEYS.fontSize]: value,
-    });
+}).extendTx(({ plugin, type }) => (tx) => ({
+  set: (value: string) => {
+    tx.marks.add(plugin.inject.nodeProps?.nodeKey ?? type, value);
   },
 }));

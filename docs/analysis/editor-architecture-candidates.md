@@ -12,7 +12,7 @@ It is intentionally not a prescription for exact features Plate should copy. The
 - [Pretext](https://github.com/chenglou/pretext)
 - [Premirror](https://github.com/samwillis/premirror)
 - [Portable Text](https://github.com/portabletext/portabletext)
-- [Slate](https://github.com/ianstormtaylor/slate)
+- [Plite](https://github.com/ianstormtaylor/slate)
 - [edix](https://github.com/inokawa/edix)
 - [use-editable](https://github.com/FormidableLabs/use-editable)
 - [rich-textarea](https://github.com/inokawa/rich-textarea)
@@ -62,7 +62,7 @@ done
 3. Tiptap
 4. Pretext + Premirror
 5. Portable Text
-6. Slate
+6. Plite
 7. edix
 8. use-editable
 9. rich-textarea
@@ -148,11 +148,11 @@ Why it matters:
 
 Take:
 
-Steal the spec discipline, schema-applicability selectors, behavior event/action vocabulary, and scenario-test posture. Do not steal the Portable Text value format as Slate core, the CMS-shaped schema categories as raw Slate law, or its XState actor engine as the runtime backbone.
+Steal the spec discipline, schema-applicability selectors, behavior event/action vocabulary, and scenario-test posture. Do not steal the Portable Text value format as Plite core, the CMS-shaped schema categories as raw Plite law, or its XState actor engine as the runtime backbone.
 
 ## Tier 2: Important, But Not the Main Bet
 
-### Slate
+### Plite
 
 Important because Plate comes from this world.
 
@@ -168,7 +168,7 @@ Why it is not the north star:
 
 Take:
 
-Study Slate to understand your inheritance and its limits, not because it is the future benchmark.
+Study Plite to understand your inheritance and its limits, not because it is the future benchmark.
 
 ### edix
 
@@ -309,7 +309,7 @@ That is the serious shortlist.
 
 Use these for tactical ideas, not for "should we rebuild Plate around this?":
 
-- Slate
+- Plite
 - edix
 - use-editable
 - rich-textarea
@@ -338,7 +338,7 @@ Tiptap is the best productization benchmark.
 
 Pretext, especially combined with the `../premirror` direction, is the most important future-facing bet because it attacks the layout and pagination problem that web editors still mostly fake.
 
-Portable Text is the strongest reminder that editor architecture is not only runtime mechanics. A serious editor needs a content specification, schema-derived applicability, behavior customization semantics, and replayable behavior tests. Slate v2 should steal those standards without becoming a Portable Text-only editor.
+Portable Text is the strongest reminder that editor architecture is not only runtime mechanics. A serious editor needs a content specification, schema-derived applicability, behavior customization semantics, and replayable behavior tests. Plite should steal those standards without becoming a Portable Text-only editor.
 
 The smartest non-editor inspirations are TanStack DB and the VS Code/LSP model.
 
@@ -351,7 +351,7 @@ The smartest non-editor inspirations are TanStack DB and the VS Code/LSP model.
 - [Lexical](https://lexical.dev/docs/intro)
 - [Tiptap](https://tiptap.dev/docs/editor/getting-started/overview)
 - [Portable Text](https://github.com/portabletext/portabletext)
-- [Slate](https://github.com/ianstormtaylor/slate)
+- [Plite](https://github.com/ianstormtaylor/slate)
 - [edix](https://github.com/inokawa/edix)
 - [use-editable](https://github.com/FormidableLabs/use-editable)
 - [rich-textarea](https://github.com/inokawa/rich-textarea)

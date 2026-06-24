@@ -1,6 +1,6 @@
 {
   "name": "platejs",
-  "version": "53.2.1",
+  "version": "54.0.0-beta.1",
   "description": "Plate – a framework for building rich text editors on the web",
   "keywords": [
     "contentEditable",
@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@platejs/core": "workspace:^",
-    "@platejs/slate": "workspace:^",
+    "@platejs/plite": "workspace:^",
     "@platejs/utils": "workspace:^",
     "@udecode/react-hotkeys": "workspace:^",
     "@udecode/react-utils": "workspace:^",

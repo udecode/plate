@@ -1,3 +1,5 @@
+import type { BasePlateEditor } from 'platejs';
+
 import { KEYS } from 'platejs';
 
 import {
@@ -8,21 +10,30 @@ import {
   insertVideoPlaceholder,
 } from './insertPlaceholder';
 
+const asPlaceholderEditor = (editor: {
+  getType: (key: string) => string;
+  update: (fn: (tx: any) => void) => void;
+}) => editor as unknown as BasePlateEditor;
+
 describe('insertPlaceholder', () => {
   it('wraps placeholder insertion in withoutNormalizing', () => {
     const insertNodes = mock();
-    const withoutNormalizing = mock((fn: () => void) => fn());
-    const editor = {
+    let withoutNormalizingCalls = 0;
+    const editor = asPlaceholderEditor({
       getType: (key: string) => key,
-      tf: {
-        insertNodes,
-        withoutNormalizing,
-      },
-    } as any;
+      update: (fn) =>
+        fn({
+          nodes: { insert: insertNodes },
+          withoutNormalizing: (callback: () => void) => {
+            withoutNormalizingCalls += 1;
+            callback();
+          },
+        }),
+    });
 
     insertPlaceholder(editor, KEYS.img, { at: [0] });
 
-    expect(withoutNormalizing).toHaveBeenCalledTimes(1);
+    expect(withoutNormalizingCalls).toBe(1);
     expect(insertNodes).toHaveBeenCalledWith(
       {
         children: [{ text: '' }],
@@ -35,13 +46,14 @@ describe('insertPlaceholder', () => {
 
   it('uses the expected media type helpers', () => {
     const insertNodes = mock();
-    const editor = {
+    const editor = asPlaceholderEditor({
       getType: (key: string) => key,
-      tf: {
-        insertNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
-    } as any;
+      update: (fn) =>
+        fn({
+          nodes: { insert: insertNodes },
+          withoutNormalizing: (callback: () => void) => callback(),
+        }),
+    });
 
     insertImagePlaceholder(editor);
     insertVideoPlaceholder(editor);

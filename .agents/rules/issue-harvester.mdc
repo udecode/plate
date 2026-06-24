@@ -1,0 +1,358 @@
+---
+description: 'Run exhaustive issue coverage harvests for Slate v2 and Plate from Slate, Plate, or external editor repos: auto-create or refresh issue closure ledgers, scan closed-issue PR/test provenance, process only unchecked issues, add fresh local tests, and keep one checkmark per relevant issue without giant prompts.'
+argument-hint: <repo-key|owner/repo|ledger-path> [--state all|open|closed] [--slate-v2-only] [--plate-only] [--continue] [--batch-loop|timed 1h]
+disable-model-invocation: true
+---
+
+# Issue Harvester
+
+Handle $ARGUMENTS.
+
+Use this skill when the user wants exhaustive issue-history coverage, including
+closed issues that predate AI-written tests. The prompt should be small:
+
+```txt
+issue-harvester prosemirror
+issue-harvester facebook/lexical --state all
+auto issue-harvester prosemirror
+```
+
+The skill expands that into the full issue-by-issue loop. Do not make the user
+paste the long closure-ledger prompt again.
+
+## Core Take
+
+Closed issues are regression gold. But a cluster summary is not coverage.
+
+Every relevant issue needs its own row and one final checkmark:
+
+- `invalid-skip`
+- `covered-by-existing-test`
+- `test-written`
+- `plate-owned-covered`
+- `deferred-with-owner`
+- `needs-repro`
+- `blocked`
+
+Clusters and matrices route work. They never close an issue row.
+
+## Owners
+
+- `issue-harvester`: exhaustive issue closure ledger, resume/new-issue refresh,
+  PR/test provenance, unchecked-row loop, and final issue handoff.
+- `editor-test-harvester`: first-pass external repo inventory, license gate,
+  issue corpus clustering, portable invariant matrix, and source test inventory.
+- `clawsweeper`: provenance discipline: exact thread, exact behavior, no claim
+  without proof, no GitHub mutations unless explicitly asked.
+- `auto`: timeboxed/batch supervisor; delegates `issue-harvester`
+  to this skill, then continues safe checkpoints.
+- `slate-patch` or `tdd`: write local Slate v2 or Plate tests/fixes once an
+  issue row names owner, proof kind, and verification command.
+- `slate-plan`: defer broad architecture/API gaps that cannot be proved by one
+  small test.
+
+## Scope
+
+This skill works for:
+
+- Slate/Plate issue history;
+- external editor issue history such as Lexical, ProseMirror, CodeMirror,
+  Tiptap, Monaco, and Quill;
+- open and closed issues, defaulting to `--state all`;
+- resuming an existing closure ledger;
+- adding only missing local tests for unchecked relevant issues.
+
+For external repos, never copy upstream code, fixtures, helper shape, snapshots,
+expected output blobs, or expressive test prose into versioned Slate/Plate
+output. Extract the behavior invariant, then write a fresh local proof using
+local fixtures, helpers, names, and assertions.
+
+## Required First Checkpoint
+
+Before mutable work, use `autogoal` when the run is broad, timeboxed, or
+expected to mutate tests/docs/skills. The first checkpoint must write checkable
+rows for:
+
+- target repo and repo key;
+- issue state, default `all`;
+- scope flags: `slate-v2-only`, `plate-only`, or both;
+- ledger path and whether it was found or created;
+- latest-issue refresh command;
+- existing unchecked count and next issue number;
+- PR/test provenance requirement for closed relevant issues;
+- copy-policy: behavior invariant only for external repos;
+- final handoff sections.
+
+Use one checkpoint per complex runtime issue, or one checkpoint per ten trivial
+skip/covered rows.
+
+## Ledger Autodiscovery
+
+Derive `repo_key` like this:
+
+- `owner/repo` -> `repo`
+- `../repo` or `/path/to/repo` -> basename
+- direct ledger path -> parse the parent repo folder under
+  `docs/editor-issue-harvester/<repo_key>/`
+
+Default artifacts:
+
+```txt
+docs/editor-issue-harvester/<repo_key>/full/issues.md
+docs/editor-issue-harvester/<repo_key>/full/issue-closure-ledger.tsv
+docs/editor-issue-harvester/<repo_key>/full/issue-closure-ledger.md
+docs/editor-issue-harvester/<repo_key>/full/issue-closure-overrides.json
+docs/editor-issue-harvester/<repo_key>/full/issue-closure-run.md
+.tmp/editor-issue-harvester/<repo_key>/raw/issues.json
+.tmp/editor-issue-harvester/<repo_key>/raw/issues-all-with-bodies.json
+.tmp/editor-issue-harvester/<repo_key>/raw/issue-bodies/*.json
+```
+
+The `docs/editor-issue-harvester/<repo_key>/full/` directory is the canonical
+resume/checkmark workspace. It may contain compact generated TSV/Markdown/JSON
+state, but it must not contain raw issue bodies/comments. The `.tmp` path is raw
+cache only. If a legacy ledger exists under
+`.tmp/editor-issue-harvester/<repo_key>/full/`, treat it as a read-only import
+source, copy or regenerate the compact ledger into the docs path, and continue
+from the docs path.
+
+When importing a legacy `.tmp/**/full` ledger:
+
+- copy only compact artifacts: classified indexes, matrices, reports,
+  closure ledgers, overrides, checkpoint summaries, and local generator
+  scripts;
+- do not copy `issues-all-with-bodies.json`, raw issue lists, hydrated thread
+  JSON, comments, or `issue-bodies/**`;
+- repair imported generator scripts so compact outputs are written under
+  `docs/editor-issue-harvester/<repo_key>/full/` while raw issue-body input, if
+  needed, is read from `.tmp/editor-issue-harvester/<repo_key>/full/` or
+  `.tmp/editor-issue-harvester/<repo_key>/raw/`;
+- run the docs-path closure generator and verify the unchecked count from the
+  docs ledger, not from the legacy `.tmp` copy;
+- grep or inspect the docs path for raw body/comment artifacts before claiming
+  the import is clean.
+
+If a ledger exists:
+
+1. read the TSV/MD and overrides;
+2. preserve all checked/manual decisions;
+3. refresh issue inventory to the latest available state;
+4. add new issue numbers as unchecked rows;
+5. remove no historical rows unless the user explicitly asks;
+6. resume from the lowest unchecked issue number that matches the objective.
+
+If no ledger exists:
+
+1. run the target repo/license gate from `editor-test-harvester`;
+2. inventory issues with `state=all` unless explicitly narrowed;
+3. cluster first;
+4. build the coverage matrix;
+5. generate the first closure ledger;
+6. start issue-by-issue processing from the first unchecked relevant row.
+
+## Refresh Commands
+
+Prefer `gitcrawl` for archive input:
+
+```bash
+gitcrawl doctor --json
+gitcrawl status --json
+gitcrawl sync <owner/repo> --state all --json
+gitcrawl search issues "" -R <owner/repo> --state all --json number,title,state,url,labels,updatedAt --limit 10000
+```
+
+If `gitcrawl` cannot provide the corpus, use `gh search issues`, the best local
+archive, or existing scratch issues. Record the fallback, state coverage, limit,
+and freshness. Do not call a sampled or capped corpus comprehensive.
+Write raw refresh output to `.tmp/editor-issue-harvester/<repo_key>/raw/`.
+Write only compact issue indexes, coverage rows, and checkmark ledgers to
+`docs/editor-issue-harvester/<repo_key>/`.
+
+Use exact hydration before issue decisions:
+
+```bash
+gitcrawl sync <owner/repo> --numbers <issue-or-pr-ref> --with pr-details --json
+gitcrawl threads <owner/repo> --numbers <issue-or-pr-ref> --include-closed --json
+gh issue view <issue-number> --repo <owner/repo> --comments --json number,title,state,body,comments,labels,url,closedAt
+```
+
+Live GitHub is final truth for current state, comments, linked PRs, and closure
+links when the local archive is stale or incomplete.
+
+## Closed-Issue PR/Test Provenance
+
+For every relevant closed issue, inspect whether a linked PR added a test before
+deciding local coverage.
+
+Look for:
+
+- issue body links, timeline/crossrefs, and comments mentioning PRs;
+- `Fixes #`, `Closes #`, `Resolves #`, issue URLs, and maintainer references;
+- PR files touched;
+- PR test files changed;
+- upstream test names or behavior labels;
+- current Slate v2 / Plate tests that already cover the same behavior.
+
+Useful probes:
+
+```bash
+gh search prs "<owner/repo>#<issue-number>" --repo <owner/repo> --state all --json number,title,state,url,mergedAt
+gh search prs "Fixes #<issue-number> OR Closes #<issue-number> OR Resolves #<issue-number>" --repo <owner/repo> --state all --json number,title,state,url,mergedAt
+gh pr view <pr-number> --repo <owner/repo> --json number,title,state,body,files,commits,url,mergedAt
+gh pr diff <pr-number> --repo <owner/repo> --name-only
+rg -n "#<issue-number>|issues/<issue-number>|Fixes .*<issue-number>|Closes .*<issue-number>|Resolves .*<issue-number>" <target-repo>
+```
+
+For external repos, PR diffs and upstream tests are provenance only. Copy the
+behavior, not the code.
+
+## Row Schema
+
+Each ledger row should carry enough information to resume without chat history:
+
+```txt
+issue_number
+state
+title
+classification
+owner
+status
+reason
+linked_prs
+upstream_test_provenance
+local_coverage
+local_test
+verification_command
+last_checked_at
+next_action
+```
+
+`owner` values:
+
+- `slate-v2`
+- `plate`
+- `external-framework`
+- `docs-support-release`
+- `needs-plan`
+- `unknown`
+
+`status` values:
+
+- `unchecked`
+- `invalid-skip`
+- `covered-by-existing-test`
+- `test-written`
+- `plate-owned-covered`
+- `deferred-with-owner`
+- `needs-repro`
+- `blocked`
+
+## Issue Loop
+
+Process issues in ascending issue number order unless the user gives a different
+objective. For each unchecked row:
+
+1. Read title, body, comments, labels, state, existing classification, and
+   current ledger row.
+2. Decide skip vs relevant. If irrelevant, write `invalid-skip` with a concrete
+   reason and continue.
+3. For closed relevant issues, scan linked PR/test provenance before coverage
+   search.
+4. Classify owner: raw Slate v2, Plate, external-framework noise, docs/support,
+   or needs-plan.
+5. Search exact current Slate v2 and/or Plate coverage. Use `--slate-v2-only`
+   to defer Plate rows instead of patching Plate.
+6. If exact coverage exists, link file:line, test name, and focused command;
+   run that command before marking covered.
+7. If coverage is absent, write the smallest correct local regression,
+   contract, or browser test in the owner surface.
+8. For external sources, express the test fresh from the invariant. Do not
+   preserve upstream fixture/helper shape.
+9. Run focused verification.
+10. Update `docs/editor-issue-harvester/<repo_key>/full/issue-closure-overrides.json`.
+11. Regenerate `issue-closure-ledger.tsv` and `.md` in the same docs directory.
+12. Move to the next unchecked issue.
+
+Do not patch runtime just because an external issue exists. Patch runtime only
+after a local failing proof exists or the missing test proves a current behavior
+contract gap.
+
+## Coverage Search
+
+Search for exact local coverage before writing a test:
+
+```bash
+rg -n "<distinct behavior phrase>|<issue number>|<upstream test label>" packages apps docs content benchmarks
+rg --files packages apps docs content benchmarks | rg '(test|spec|playwright|integration|fixtures)'
+```
+
+Coverage is exact only when it proves the same behavior class, not merely the
+same feature area. Link:
+
+- file path and line;
+- test name;
+- verification command;
+- result of the focused command.
+
+If coverage is partial, either strengthen the existing test or write a narrow
+new row. Avoid duplicate tests.
+
+## Verification Commands
+
+Prefer focused commands from the owner repo:
+
+```bash
+pnpm --filter @platejs/<package> test -- <file-or-pattern>
+bun test ./packages/<package>/test/<file>.ts --test-name-pattern "<test>"
+PLAYWRIGHT_BASE_URL=http://localhost:3102 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter slate test:slate-browser:chromium tests/slate-browser/donor/examples/<suite>.test.ts --grep "<test>"
+```
+
+For Plate-owned rows, use the relevant Plate package/example command. If the
+run is scoped to Slate v2 only, do not write Plate tests; mark
+`deferred-with-owner` with the concrete Plate owner and reason.
+
+## Regeneration
+
+After each issue, or each batch of ten trivial skip/covered issues:
+
+1. update `docs/editor-issue-harvester/<repo_key>/full/issue-closure-overrides.json`;
+2. regenerate TSV and Markdown ledgers in that same docs directory;
+3. record issues checked, commands run, tests written, and next issue number in
+   the active plan or `issue-closure-run.md`;
+4. keep going unless a stop rule fires.
+
+If no generator script exists, update the TSV/MD by the smallest reliable local
+method and record that the generator is missing as a workflow gap.
+
+## Stop Rules
+
+Stop only when:
+
+- all relevant rows for the objective are checked;
+- a real blocker prevents all useful issue progress;
+- commit, push, PR, or destructive cleanup authority is needed;
+- a broad API/runtime decision belongs in `slate-plan`;
+- the timebox expires and the active issue packet has a keep/defer/block
+  decision.
+
+Do not stop after a cluster summary, first matrix, first ten rows, or first test
+unless the invocation mode explicitly asked for a sample.
+
+## Final Handoff
+
+Include:
+
+- target repo, state, and ledger path;
+- issue inventory refresh command and freshness;
+- issues checked this run;
+- tests written;
+- existing tests linked and verified;
+- PR/test provenance used for closed issues;
+- skips/deferred with reasons;
+- remaining unchecked count;
+- next issue number;
+- changed files;
+- commands run;
+- anything needing user attention.
+
+Keep it concise. The ledger carries the detail.

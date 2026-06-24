@@ -16,7 +16,7 @@ export const hasSelectableClass = ({
   [className, attributes.className]
     .filter(Boolean)
     .join(' ')
-    .includes('slate-selectable');
+    .includes('plite-selectable');
 
 export const BlockSelectionKit = [
   BlockSelectionPlugin.configure(({ editor }) => ({
@@ -28,7 +28,7 @@ export const BlockSelectionKit = [
         ),
       onKeyDownSelecting: (editor, e) => {
         if (isHotkey('mod+j')(e)) {
-          editor.getApi(AIChatPlugin).aiChat.show();
+          editor.getPluginApi(AIChatPlugin).aiChat.show();
         }
       },
     },

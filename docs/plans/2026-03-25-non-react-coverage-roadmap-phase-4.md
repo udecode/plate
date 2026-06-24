@@ -43,11 +43,11 @@ Freeze the last defensible non-React cleanup queue after the Phase 3 burn-down a
 4. `[done]` `4` [get-package-manager.ts](packages/udecode/depset/src/utils/get-package-manager.ts)
 5. `[done]` `4` [getCellIndices.ts](packages/table/src/lib/utils/getCellIndices.ts)
 6. `[done]` `4` [BaseBoldPlugin.ts](packages/basic-nodes/src/lib/BaseBoldPlugin.ts)
-7. `[done]` `4` [deleteText.ts](packages/slate/src/internal/transforms/deleteText.ts)
+7. `[done]` `4` [deleteText.ts](packages/plite/src/internal/transforms/deleteText.ts)
 
 ## Deferred By Design
 
-- `[deferred]` score-4 Slate DOM-editor helpers like [hasDOMNode.ts](packages/slate/src/internal/dom-editor/hasDOMNode.ts)
+- `[deferred]` score-4 Plite DOM-editor helpers like [hasDOMNode.ts](packages/plite/src/internal/dom-editor/hasDOMNode.ts)
   Reason: DOM-only seam. Real code, wrong phase.
 - `[deferred]` score-4 schema dust like [settings.ts](packages/docx-io/src/lib/internal/schemas/settings.ts)
   Reason: low-signal data/schema constants. Bad ROI.

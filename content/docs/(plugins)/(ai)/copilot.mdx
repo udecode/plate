@@ -257,7 +257,7 @@ CopilotPlugin.configure(({ api }) => ({
         if (!contextEntry) return '';
 
         const prompt = serializeMd(editor, {
-          value: [contextEntry[0] as TElement],
+          value: [contextEntry[0] as Element],
         });
 
         return `Continue the text up to the next punctuation mark:

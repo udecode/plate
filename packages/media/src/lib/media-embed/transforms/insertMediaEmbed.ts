@@ -1,17 +1,21 @@
 import type {
-  InsertNodesOptions,
-  SlateEditor,
+  NodeInsertNodesOptions,
+  BasePlateEditor,
   TMediaEmbedElement,
 } from 'platejs';
 
-import { KEYS } from 'platejs';
+import { KEYS, PathApi } from 'platejs';
 
 import { parseMediaUrl } from '../../media/parseMediaUrl';
 import { parseTwitterUrl } from '../parseTwitterUrl';
 import { parseVideoUrl } from '../parseVideoUrl';
 
+type InsertNodesOptions = NonNullable<
+  NodeInsertNodesOptions<TMediaEmbedElement>
+>;
+
 export const insertMediaEmbed = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { url = '' }: Partial<TMediaEmbedElement>,
   options: InsertNodesOptions = {}
 ): void => {
@@ -22,23 +26,25 @@ export const insertMediaEmbed = (
   if (!selectionParentEntry) return;
 
   const [, path] = selectionParentEntry;
+  const at = options.at ?? PathApi.next(path);
   const normalized = parseMediaUrl(url, {
     urlParsers: [parseTwitterUrl, parseVideoUrl],
   });
 
-  editor.tf.insertNodes<TMediaEmbedElement>(
-    {
-      children: [{ text: '' }],
-      id: normalized?.id,
-      provider: normalized?.provider,
-      sourceUrl: normalized?.sourceUrl,
-      type: editor.getType(KEYS.mediaEmbed),
-      url: normalized?.url ?? url,
-    },
-    {
-      at: path,
-      nextBlock: true,
-      ...(options as any),
-    }
-  );
+  editor.update((tx) => {
+    tx.nodes.insert<TMediaEmbedElement>(
+      {
+        children: [{ text: '' }],
+        id: normalized?.id,
+        provider: normalized?.provider,
+        sourceUrl: normalized?.sourceUrl,
+        type: editor.getType(KEYS.mediaEmbed),
+        url: normalized?.url ?? url,
+      },
+      {
+        ...options,
+        at,
+      }
+    );
+  });
 };

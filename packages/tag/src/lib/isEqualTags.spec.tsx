@@ -1,10 +1,10 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { isEqualTags } from './isEqualTags';
 
 describe('isEqualTags', () => {
   it('treats matching tag values as equal regardless of order', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: [
         {
           children: [
@@ -24,15 +24,15 @@ describe('isEqualTags', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
-    expect(
-      isEqualTags(editor, [{ value: 'beta' }, { value: 'alpha' }] as any)
-    ).toBe(true);
+    expect(isEqualTags(editor, [{ value: 'beta' }, { value: 'alpha' }])).toBe(
+      true
+    );
   });
 
   it('returns false for different tag sets and true for empty ones', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: [
         {
           children: [
@@ -46,12 +46,12 @@ describe('isEqualTags', () => {
           type: 'p',
         },
       ],
-    } as any);
-    const emptyEditor = createSlateEditor({
+    });
+    const emptyEditor = createBasePlateEditor({
       value: [{ children: [{ text: '' }], type: 'p' }],
-    } as any);
+    });
 
-    expect(isEqualTags(editor, [{ value: 'beta' }] as any)).toBe(false);
+    expect(isEqualTags(editor, [{ value: 'beta' }])).toBe(false);
     expect(isEqualTags(emptyEditor)).toBe(true);
   });
 });

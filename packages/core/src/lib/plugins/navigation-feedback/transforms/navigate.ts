@@ -1,11 +1,11 @@
-import type { Point } from '@platejs/slate';
-import type { SlateEditor } from '../../../editor';
+import type { EditorUpdateTransaction, Point } from '@platejs/plite';
+import type { BasePlateEditor } from '../../../editor';
 import type { NavigationNavigateOptions } from '../types';
 
 import { flashTarget } from './flashTarget';
 
 const getScrollTarget = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { scrollTarget, select, target }: NavigationNavigateOptions
 ): Point | undefined => {
   if (scrollTarget) return scrollTarget;
@@ -17,7 +17,8 @@ const getScrollTarget = (
 };
 
 export const navigate = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
+  tx: EditorUpdateTransaction,
   {
     flash,
     focus = true,
@@ -31,9 +32,9 @@ export const navigate = (
 
   if (select) {
     if ('focus' in select) {
-      editor.tf.select(select);
+      tx.selection.set(select);
     } else {
-      editor.tf.select({
+      tx.selection.set({
         anchor: select,
         focus: select,
       });
@@ -41,7 +42,7 @@ export const navigate = (
   }
 
   if (focus) {
-    editor.tf.focus();
+    editor.api.dom?.focus?.();
   }
 
   if (scroll) {

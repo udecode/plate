@@ -52,7 +52,7 @@ describe('useSelectionArea', () => {
 
   it('blurs, deselects, and shows the selection area on start', async () => {
     const blur = mock();
-    const deselect = mock();
+    const clearSelection = mock();
     const setOption = mock();
     const clear = mock();
 
@@ -62,6 +62,7 @@ describe('useSelectionArea', () => {
       },
       editor: {
         api: {
+          dom: { blur },
           isFocused: () => true,
         },
         meta: { uid: 'editor' },
@@ -69,7 +70,9 @@ describe('useSelectionArea', () => {
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 0, path: [0, 0] },
         },
-        tf: { blur, deselect },
+        update: mock((fn) =>
+          fn({ selection: { clear: clearSelection } } as any)
+        ),
       },
       getOption: mock(() => new Set()),
       getOptions: mock(() => ({
@@ -90,7 +93,7 @@ describe('useSelectionArea', () => {
     lastSelectionArea!.handlers.get('stop')?.();
 
     expect(blur).toHaveBeenCalled();
-    expect(deselect).toHaveBeenCalled();
+    expect(clearSelection).toHaveBeenCalled();
     expect(clear).toHaveBeenCalled();
     expect(setOption).toHaveBeenCalledWith('isSelecting', false);
     expect(setOption).toHaveBeenCalledWith('isSelectionAreaVisible', true);

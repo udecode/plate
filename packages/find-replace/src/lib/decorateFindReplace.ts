@@ -1,4 +1,6 @@
-import type { Decorate, TRange } from 'platejs';
+import type { Range } from '@platejs/plite';
+
+import type { Decorate } from 'platejs';
 
 import { ElementApi, TextApi } from 'platejs';
 
@@ -105,4 +107,4 @@ export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
 
 type SearchRange = {
   search: string;
-} & TRange;
+} & Range;

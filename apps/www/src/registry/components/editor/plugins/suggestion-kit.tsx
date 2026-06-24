@@ -1,8 +1,8 @@
 'use client';
 
+import type { Element } from '@platejs/plite';
 import type {
   ExtendConfig,
-  TElement,
   TInlineSuggestionData,
   TSuggestionData,
   TSuggestionText,
@@ -41,8 +41,8 @@ const INLINE_SUGGESTION_TARGET_PLUGINS = [
   KEYS.mention,
 ];
 
-function getInlineSuggestionData(editor: any, element: TElement) {
-  const suggestionApi = editor.getApi(BaseSuggestionPlugin).suggestion;
+function getInlineSuggestionData(editor: any, element: Element) {
+  const suggestionApi = editor.getPluginApi(BaseSuggestionPlugin).suggestion;
   const data = suggestionApi.suggestionData(element) as
     | TSuggestionData
     | TInlineSuggestionData
@@ -74,7 +74,7 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
     // unset active suggestion when clicking outside of suggestion
     onClick: ({ api, event, setOption, type }) => {
       const markTarget = getDiscussionClickTarget({
-        selector: `.slate-${type}`,
+        selector: `.plite-${type}`,
         target: event.target,
       });
       const blockTarget = markTarget
@@ -131,7 +131,9 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
 const trailingBlockPlugin = TrailingBlockPlugin.configure({
   options: {
     insert: (editor, { insert }) => {
-      editor.getApi(suggestionPlugin).suggestion.withoutSuggestions(insert);
+      editor
+        .getPluginApi(suggestionPlugin)
+        .suggestion.withoutSuggestions(insert);
     },
   },
 });

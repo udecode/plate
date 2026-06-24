@@ -1,10 +1,14 @@
-import type { SlateEditor, TTableCellElement, TTableElement } from 'platejs';
+import type {
+  BasePlateEditor,
+  TTableCellElement,
+  TTableElement,
+} from 'platejs';
 
 import { getCellIndices } from '../utils/getCellIndices';
 import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';
 
 export const findCellByIndexes = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   table: TTableElement,
   searchRowIndex: number,
   searchColIndex: number

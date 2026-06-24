@@ -50,7 +50,7 @@ Constraints:
 Boundaries:
 - Source of truth: GitHub issue #4951 body, local `BlockPlaceholderPlugin` source/tests, repo instructions.
 - Allowed edit scope: `packages/core` state-empty API/tests, `packages/utils` placeholder plugin/tests, affected docs, `.changeset`, this goal plan, PR/issue text.
-- Browser surface: Browser route proof attempted because packages/content changed; the standalone demo route loads, but Browser automation cannot move the Slate selection from the heading into the empty paragraph, and the page exposes no editor object for direct state inspection. Focused React plugin specs remain the behavior authority.
+- Browser surface: Browser route proof attempted because packages/content changed; the standalone demo route loads, but Browser automation cannot move the Plite selection from the heading into the empty paragraph, and the page exposes no editor object for direct state inspection. Focused React plugin specs remain the behavior authority.
 - Tracker sync: posted concise issue comment after verified PR exists.
 - Non-goals: do not rewrite list autoformat, list data model, or expose a broad placeholder rendering API unless source proves it is needed.
 
@@ -113,7 +113,7 @@ Start Gates:
 | TDD decision before behavior change or bug fix | yes | Use red regression test in `BlockPlaceholderPlugin.spec.tsx` before implementation. |
 | Branch decision for code-changing task | yes | Created dedicated branch `codex/4951-block-placeholder-list` from `main`. |
 | Release artifact decision | yes | `.changeset` required because `@platejs/core` public API and `@platejs/utils` published package behavior changed. |
-| Browser tool decision for browser surface | yes | Required by repo policy for package/content changes; Browser loaded `http://localhost:3050/blocks/block-placeholder-demo`, force-focused the editor, but could not move Slate selection into the empty paragraph and found no editor global for direct plugin-state inspection. |
+| Browser tool decision for browser surface | yes | Required by repo policy for package/content changes; Browser loaded `http://localhost:3050/blocks/block-placeholder-demo`, force-focused the editor, but could not move Plite selection into the empty paragraph and found no editor global for direct plugin-state inspection. |
 | PR expectation decision | yes | Task workflow expects verified PR before tracker sync. |
 | Tracker sync expectation decision | yes | Comment on #4951 after PR exists and verification is complete. |
 | Output budget strategy recorded | yes | Exact source reads and capped focused commands only. |
@@ -196,7 +196,7 @@ Completion Gates:
 | Agent rules or skills changed | no | Run `pnpm install` and verify generated skill sync | N/A: no agent rules or skills changed. |
 | Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | Commands ran in `/Users/zbeyens/git/plate`; owning package proof is `packages/utils`. |
 | Browser surface changed | yes | Capture Browser Use proof or record explicit waiver/blocker | Browser loaded `http://localhost:3050/blocks/block-placeholder-demo`; demo source uses `BlockPlaceholderKit`; Browser could force-focus the editor, but click/key automation did not move selection into the empty paragraph and no window editor global exists, so visual placeholder proof is blocked. |
-| Browser final proof | yes | Attach screenshot or exact browser verification caveat when browser proof applies | Exact caveat recorded: Browser could not establish the empty-block Slate selection needed to activate the placeholder; focused React plugin spec proves `_target` and injected placeholder props instead. |
+| Browser final proof | yes | Attach screenshot or exact browser verification caveat when browser proof applies | Exact caveat recorded: Browser could not establish the empty-block Plite selection needed to activate the placeholder; focused React plugin spec proves `_target` and injected placeholder props instead. |
 | CI-controlled template output changed | no | Restore generated template output or record why it is intentionally kept | N/A: no `templates/**` output touched. |
 | Package behavior or public API changed | yes | Add a changeset or record why no changeset applies | Added `.changeset/core-node-metadata-prop.md` for `@platejs/core` and `.changeset/utils-block-placeholder-list.md` for `@platejs/utils`. |
 | User-visible registry output changed | no | Use the registry-changelog pack: add/update `apps/www/src/registry/changelog/entries/*.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --check`, or record N/A | N/A: no `apps/www/src/registry/**` behavior output changed. |
@@ -215,7 +215,7 @@ Completion Gates:
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-15-4951-block-placeholder-list-item.md` | `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-15-4951-block-placeholder-list-item.md` passed. |
 | Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | Public API in `@platejs/core` and runtime behavior in `@platejs/utils` changed; no exports or file layout changed; source audit via `git diff`, focused tests, and package typecheck passed. |
 | Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Published public API/runtime delta for `@platejs/core` and published runtime behavior delta for `@platejs/utils`; patch changesets added. |
-| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | `.changeset/core-node-metadata-prop.md` has `"@platejs/core": patch`; `.changeset/utils-block-placeholder-list.md` has `"@platejs/utils": patch`; no forbidden core package minor. |
+| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | `.changeset/core-node-metadata-prop.md` has `"@platejs/core": patch`; `.changeset/utils-block-placeholder-list.md` has `"@platejs/utils": patch`; no forbidden core package minor. |
 | Registry changelog | no | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | N/A: not registry-only. |
 | No release artifact | no | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | N/A: changeset is required and present. |
 | Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | `pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx`, `pnpm turbo typecheck --filter=./packages/core --filter=./packages/utils`, and `pnpm check` passed. |
@@ -249,7 +249,7 @@ Review fixes:
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| Ran focused tests before workspace dependency build finished, causing missing `@platejs/slate` resolution | 1 | Rerun after package typecheck built workspace deps | Sequential rerun passed: 30 tests, 0 failures. |
+| Ran focused tests before workspace dependency build finished, causing missing `@platejs/plite` resolution | 1 | Rerun after package typecheck built workspace deps | Sequential rerun passed: 30 tests, 0 failures. |
 | Autoreview treated the removed `editor.api.slateExtension.isElementStateEmpty` shape as published API | 1 | Check `origin/main` for the API before accepting the finding | Rejected as false-positive: the alias only existed inside this unmerged PR and is absent from `origin/main`. |
 | Broad stale-symbol search streamed generated docs JSON | 1 | Scope source audit to source-owned files and exclude generated/changelog blobs | Scoped `rg -n "isPropEmpty"` audit returned no source-owned matches. |
 

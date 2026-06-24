@@ -1,0 +1,13 @@
+{
+  "extends": "./typescript/tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "types": [
+      "bun-types",
+      "bun-types/test-globals",
+      "node",
+      "react",
+      "react-dom"
+    ]
+  }
+}

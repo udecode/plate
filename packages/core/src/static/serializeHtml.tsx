@@ -2,7 +2,7 @@ import React from 'react';
 
 import { decode } from 'html-entities';
 
-import type { SlateEditor } from '../lib';
+import type { BasePlateEditor } from '../lib';
 import type { PlateStaticProps } from './components/PlateStatic';
 
 import { PlateStatic } from './components/PlateStatic';
@@ -47,7 +47,7 @@ export type SerializeHtmlOptions<
 export const serializeHtml = async <
   T extends PlateStaticProps = PlateStaticProps,
 >(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     editorComponent: EditorComponent = PlateStatic,
     preserveClassNames,

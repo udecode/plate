@@ -16,10 +16,12 @@ describe('getBoundingClientRect', () => {
     const editor: any = {
       selection,
       api: {
-        toDOMRange: (range: any) =>
-          range === selection
-            ? { getBoundingClientRect: () => rect }
-            : undefined,
+        dom: {
+          resolveDOMRange: (range: any) =>
+            range === selection
+              ? { getBoundingClientRect: () => rect }
+              : undefined,
+        },
       },
     };
 
@@ -49,11 +51,13 @@ describe('getBoundingClientRect', () => {
     });
     const editor: any = {
       api: {
+        dom: {
+          resolveDOMRange: (range: any) =>
+            range === rangeA
+              ? { getBoundingClientRect: () => rectA }
+              : { getBoundingClientRect: () => rectB },
+        },
         range: (location: any) => (location[0] === 0 ? rangeA : rangeB),
-        toDOMRange: (range: any) =>
-          range === rangeA
-            ? { getBoundingClientRect: () => rectA }
-            : { getBoundingClientRect: () => rectB },
       },
     };
 
@@ -69,7 +73,9 @@ describe('getBoundingClientRect', () => {
     const editor: any = {
       selection: null,
       api: {
-        toDOMRange: () => {},
+        dom: {
+          resolveDOMRange: () => {},
+        },
       },
     };
 

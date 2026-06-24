@@ -1,6 +1,6 @@
 import {
   type PluginConfig,
-  type SlateEditor,
+  type BasePlateEditor,
   type TMediaElement,
   type WithRequiredKey,
   isUrl,
@@ -14,7 +14,7 @@ import { parseVideoUrl } from '../../../lib/media-embed/parseVideoUrl';
 import { FloatingMediaStore } from './FloatingMediaStore';
 
 export const submitFloatingMedia = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     element,
     plugin,
@@ -45,16 +45,18 @@ export const submitFloatingMedia = (
     urlParsers: [parseTwitterUrl, parseVideoUrl],
   });
 
-  editor.tf.setNodes<TMediaElement>({
-    id: normalized?.id,
-    provider: normalized?.provider,
-    sourceUrl: normalized?.sourceUrl,
-    url: normalized?.url ?? url,
+  editor.update((tx) => {
+    tx.nodes.set<TMediaElement>({
+      id: normalized?.id,
+      provider: normalized?.provider,
+      sourceUrl: normalized?.sourceUrl,
+      url: normalized?.url ?? url,
+    });
   });
 
   FloatingMediaStore.actions.reset();
 
-  editor.tf.focus({ at: editor.selection! });
+  editor.api.dom.focus();
 
   return true;
 };

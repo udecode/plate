@@ -7,7 +7,7 @@
 export const getEditorDOMFromHtmlString = (html: string) => {
   const node = document.createElement('body');
   node.innerHTML = html;
-  const editorNode = node.querySelector('[data-slate-editor="true"]');
+  const editorNode = node.querySelector('[data-plite-editor="true"]');
 
   return editorNode as HTMLElement;
 };

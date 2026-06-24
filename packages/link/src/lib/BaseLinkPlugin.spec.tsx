@@ -1,11 +1,11 @@
 import { getHtmlDocument } from '@platejs/test-utils';
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 
 describe('BaseLinkPlugin', () => {
   const createEditor = () =>
-    createSlateEditor({
+    createBasePlateEditor({
       plugins: [BaseLinkPlugin],
     } as any);
 

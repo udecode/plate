@@ -4,7 +4,7 @@ topic: browser-mobile-proof-batch
 status: in_progress
 source_repos:
   - /Users/zbeyens/git/plate-2
-  - /Users/zbeyens/git/slate-v2
+  - /Users/zbeyens/git/plite
   - /Users/zbeyens/git/agent-browser
   - /Users/zbeyens/git/agent-device
 ---
@@ -63,7 +63,7 @@ Current batch scope:
 
 ## Progress Notes
 
-- 2026-04-11: confirmed `agent-browser` iOS Simulator can open local Slate
+- 2026-04-11: confirmed `agent-browser` iOS Simulator can open local Plite
   example and return initial snapshot
 - 2026-04-11: confirmed Android setup is currently blocked on missing `adb`,
   missing `appium`, missing `emulator`, and missing Java for `sdkmanager`
@@ -78,7 +78,7 @@ Current batch scope:
   to call a reliable proof lane yet
 - 2026-04-11: advanced Android from setup-only to real browser proof:
   Appium can now create a Chrome session on the running emulator and navigate
-  to the local Slate example through `10.0.2.2`
+  to the local Plite example through `10.0.2.2`
 - 2026-04-11: the first packaged Android behavior proof is now explicitly red:
   `pnpm proof:appium:android:placeholder-input:local` fails because no
   trustworthy input commit is detected on the placeholder path

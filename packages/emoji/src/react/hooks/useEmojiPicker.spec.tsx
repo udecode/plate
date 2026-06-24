@@ -1,4 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
+import * as actualPlatejsReact from 'platejs/react';
 
 const useEditorRefMock = mock();
 const insertEmojiMock = mock();
@@ -6,16 +7,15 @@ const observeCategoriesMock = mock();
 const useEmojiPickerStateMock = mock();
 
 mock.module('platejs/react', () => ({
+  ...actualPlatejsReact,
   useEditorRef: useEditorRefMock,
 }));
 
-mock.module('../../lib', () => ({
-  EmojiCategory: { Frequent: 'frequent' },
-  i18n: { search: 'Search' },
+mock.module('../../lib/transforms/insertEmoji', () => ({
   insertEmoji: insertEmojiMock,
 }));
 
-mock.module('../utils', () => ({
+mock.module('../utils/EmojiObserver', () => ({
   observeCategories: observeCategoriesMock,
 }));
 

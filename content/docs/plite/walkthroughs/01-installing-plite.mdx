@@ -1,0 +1,110 @@
+---
+title: "Installing Plite"
+description: "Install the React editor packages and render the smallest useful Plite editor."
+---
+
+Plite is split into small packages. For a React editor, install the core editor, the DOM helpers, the React renderer, and React itself.
+
+## Installation
+
+Install the React editor path first.
+
+```text
+npm install @platejs/plite @platejs/plite-dom @platejs/plite-react react react-dom
+```
+
+| Package | Owns |
+| --- | --- |
+| `@platejs/plite` | editor runtime, document model, transactions, helper APIs |
+| `@platejs/plite-dom` | DOM conversion, clipboard helpers, browser environment helpers |
+| `@platejs/plite-react` | `<Plite>`, `<Editable>`, React hooks, editor setup |
+| `react`, `react-dom` | React peer packages |
+
+## Usage
+
+Import the React editor pieces from `@platejs/plite-react`.
+
+```tsx
+import {
+  Editable,
+  Plite,
+  type PliteChange,
+  usePliteEditor,
+} from "@platejs/plite-react";
+```
+
+Before we render anything, let's define the document shape for this editor.
+
+```tsx
+type CustomText = { text: string };
+type ParagraphElement = { type: "paragraph"; children: CustomText[] };
+type CustomValue = ParagraphElement[];
+
+const initialValue: CustomValue = [
+  {
+    type: "paragraph",
+    children: [{ text: "A line of text in a paragraph." }],
+  },
+];
+```
+
+`CustomValue` is the TypeScript shape of this editor's primary document.
+Passing it to `usePliteEditor` keeps element and text types attached to the
+editor API.
+
+Call `usePliteEditor` inside the component so React keeps the same editor
+object for the component lifetime.
+
+Render the editor with `<Plite>` and `<Editable>`.
+
+```tsx
+const App = () => {
+  const editor = usePliteEditor<CustomValue>({ initialValue });
+
+  return (
+    <Plite editor={editor}>
+      <Editable />
+    </Plite>
+  );
+};
+```
+
+The editor is seeded by `usePliteEditor({ initialValue })`. `<Plite>`
+provides that existing editor to everything underneath it, and `<Editable>`
+renders the editable document surface.
+
+This is the smallest useful Plite editor. If you render `App`, you should see a paragraph with the text `A line of text in a paragraph.` When you type, Plite updates the document through the editor runtime.
+
+## Listening For Changes
+
+Most applications save the document value somewhere. Pass `onChange` to `<Plite>` and save when `change.valueChanged` is true.
+
+```tsx
+const App = () => {
+  const editor = usePliteEditor<CustomValue>({ initialValue });
+
+  const handleChange = (
+    nextValue: CustomValue,
+    change: PliteChange<CustomValue>
+  ) => {
+    if (!change.valueChanged) return;
+
+    localStorage.setItem("content", JSON.stringify(nextValue));
+  };
+
+  return (
+    <Plite editor={editor} onChange={handleChange}>
+      <Editable />
+    </Plite>
+  );
+};
+```
+
+Use `initialValue` as the one-shot initial document passed to `usePliteEditor`.
+If your app needs to replace the whole document after the
+editor exists, use an explicit editor update instead of treating `<Plite>` like
+a controlled `<textarea>`.
+
+## Next steps
+
+The editor is rendering plain text. Next, add [event handlers](02-adding-event-handlers) so the editor can respond to keyboard shortcuts.

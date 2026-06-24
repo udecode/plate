@@ -4,6 +4,7 @@
 
 export * from './SkipSuggestionDeletes';
 export * from './getActiveSuggestionDescriptions';
+export * from './getSuggestionApi';
 export * from './getSuggestionId';
 export * from './getSuggestionKeys';
 export * from './getSuggestionNodeEntries';

@@ -1,11 +1,5 @@
-import { createEditor } from '@platejs/slate';
-
 import type { PluginConfig } from '@platejs/core';
-import {
-  createSlatePlugin,
-  createTSlatePlugin,
-  withSlate,
-} from '@platejs/core';
+import { createBasePlateEditor, createEditorPlugin } from '@platejs/core';
 
 type ChildMode = 'edit' | 'view';
 type ChildLabel = `${ChildMode}:${1 | 2}`;
@@ -19,15 +13,18 @@ type ChildConfig = PluginConfig<
   {
     getLabel: () => ChildLabel;
   },
-  {
-    setMode: (mode: ChildMode) => void;
-  },
+  {},
   {
     isLevel: (level: 1 | 2) => boolean;
+  },
+  {
+    child: {
+      setMode: (mode: ChildMode) => void;
+    };
   }
 >;
 
-const ChildPlugin = createTSlatePlugin<ChildConfig>({
+const ChildPlugin = createEditorPlugin<ChildConfig>({
   key: 'child',
   options: {
     level: 1,
@@ -40,13 +37,13 @@ const ChildPlugin = createTSlatePlugin<ChildConfig>({
   .extendEditorApi(({ getOptions }) => ({
     getLabel: () => `${getOptions().mode}:${getOptions().level}` as ChildLabel,
   }))
-  .extendEditorTransforms(({ plugin }) => ({
+  .extendTx(({ plugin }) => () => ({
     setMode: (mode) => {
       plugin.options.mode = mode;
     },
   }));
 
-const ParentPlugin = createSlatePlugin({
+const ParentPlugin = createEditorPlugin({
   key: 'parent',
   plugins: [ChildPlugin],
 }).configurePlugin(ChildPlugin, {
@@ -55,7 +52,7 @@ const ParentPlugin = createSlatePlugin({
   },
 });
 
-const GrandparentPlugin = createSlatePlugin({
+const GrandparentPlugin = createEditorPlugin({
   key: 'grandparent',
   plugins: [ParentPlugin],
 }).configurePlugin(ChildPlugin, {
@@ -66,7 +63,7 @@ const GrandparentPlugin = createSlatePlugin({
 
 type FormatTone = 'formal' | 'friendly';
 
-const FormatPlugin = createSlatePlugin({
+const FormatPlugin = createEditorPlugin({
   key: 'format',
   options: {
     tone: 'formal' as FormatTone,
@@ -75,40 +72,46 @@ const FormatPlugin = createSlatePlugin({
   .extendEditorApi(({ getOptions }) => ({
     format: () => getOptions().tone,
   }))
-  .extendEditorTransforms(({ plugin }) => ({
+  .extendTx(({ plugin }) => () => ({
     setTone: (tone: FormatTone) => {
       plugin.options.tone = tone;
     },
   }));
 
-const InspectorPlugin = createSlatePlugin({
+const InspectorPlugin = createEditorPlugin({
   key: 'inspector',
 })
   .extendEditorApi(({ editor }) => ({
-    describeFormat: () => editor.getApi(FormatPlugin).format(),
+    describeFormat: () => editor.api.format(),
   }))
-  .extendEditorTransforms(({ editor }) => ({
+  .extendTx(({ editor }) => () => ({
     setFriendly: () => {
-      editor.getPlugin(FormatPlugin).transforms.setTone('friendly');
+      editor.update((tx) => tx.format.setTone('friendly'));
     },
   }));
 
-const slateEditor = withSlate(createEditor(), {
+const basePlateEditor = createBasePlateEditor({
   plugins: [GrandparentPlugin, FormatPlugin, InspectorPlugin],
 });
 
-const childLevel: 1 | 2 = slateEditor.getOptions(ChildPlugin).level;
-const childMode: ChildMode = slateEditor.getOptions(ChildPlugin).mode;
-const childLabel: ChildLabel = slateEditor.getApi(ChildPlugin).getLabel();
-const isLevelTwo: boolean = slateEditor.getOption(ChildPlugin, 'isLevel', 2);
-const formatTone: FormatTone = slateEditor.api.format();
-const describedFormat: FormatTone = slateEditor.api.describeFormat();
+const childLevel: 1 | 2 = basePlateEditor.getOptions(ChildPlugin).level;
+const childMode: ChildMode = basePlateEditor.getOptions(ChildPlugin).mode;
+const childLabel: ChildLabel = basePlateEditor.api.getLabel();
+const isLevelTwo: boolean = basePlateEditor.getOption(
+  ChildPlugin,
+  'isLevel',
+  2
+);
+const formatTone: FormatTone = basePlateEditor.api.format();
+const describedFormat: FormatTone = basePlateEditor.api.describeFormat();
 
-slateEditor.getPlugin(ChildPlugin).transforms.setMode('view');
-slateEditor.getPlugin(ChildPlugin).transforms.setMode('edit');
-slateEditor.transforms.setTone('formal');
-slateEditor.transforms.setTone('friendly');
-slateEditor.transforms.setFriendly();
+basePlateEditor.update((tx) => {
+  tx.child.setMode('view');
+  tx.child.setMode('edit');
+  tx.format.setTone('formal');
+  tx.format.setTone('friendly');
+  tx.inspector.setFriendly();
+});
 
 void childLabel;
 void childLevel;
@@ -125,13 +128,17 @@ GrandparentPlugin.configurePlugin(ChildPlugin, {
 });
 
 // @ts-expect-error invalid merged selector argument
-slateEditor.getOption(ChildPlugin, 'isLevel', 3);
+basePlateEditor.getOption(ChildPlugin, 'isLevel', 3);
 
-// @ts-expect-error invalid nested transform argument
-slateEditor.getPlugin(ChildPlugin).transforms.setMode('preview');
+basePlateEditor.update((tx) => {
+  // @ts-expect-error invalid nested tx argument
+  tx.child.setMode('preview');
+});
 
 // @ts-expect-error invalid merged editor api
-slateEditor.api.missingFormat();
+basePlateEditor.api.missingFormat();
 
-// @ts-expect-error invalid merged transform argument
-slateEditor.transforms.setTone('preview');
+basePlateEditor.update((tx) => {
+  // @ts-expect-error invalid merged tx argument
+  tx.format.setTone('preview');
+});

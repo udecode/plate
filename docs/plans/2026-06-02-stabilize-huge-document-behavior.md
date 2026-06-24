@@ -1,7 +1,7 @@
 # stabilize huge document behavior
 
 Objective:
-Stabilize `http://localhost:3100/examples/huge-document` insert-break behavior in Slate v2 virtualized mode.
+Stabilize `http://localhost:3100/examples/huge-document` insert-break behavior in Plite virtualized mode.
 
 Goal plan:
 `docs/plans/2026-06-02-stabilize-huge-document-behavior.md`
@@ -11,23 +11,23 @@ Task source:
 - User clarification: the bug is `insertBreak` inserting relative to a stale cursor after native text input.
 
 Completion threshold:
-The route is stable when virtualized huge-document typing followed by Enter splits at the live caret, the structural keydown policy has a focused unit contract, the full Chromium huge-document suite passes, and `bun check` passes in `.tmp/slate-v2`.
+The route is stable when virtualized huge-document typing followed by Enter splits at the live caret, the structural keydown policy has a focused unit contract, the full Chromium huge-document suite passes, and `bun check` passes in `Plate repo root`.
 
 Verification surface:
-- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react && bun run test:vitest -- input-router-contract.test.tsx`
-- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright -- playwright/integration/examples/huge-document.test.ts --project=chromium --grep "keeps virtualized insert-break bursts split at the live caret"`
-- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright -- playwright/integration/examples/huge-document.test.ts --project=chromium`
-- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun check`
+- `cd /Users/zbeyens/git/plate-2/packages/plite-react && bun run test:vitest -- input-router-contract.test.tsx`
+- `cd /Users/zbeyens/git/plate-2/Plate repo root && PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright -- playwright/integration/examples/huge-document.test.ts --project=chromium --grep "keeps virtualized insert-break bursts split at the live caret"`
+- `cd /Users/zbeyens/git/plate-2/Plate repo root && PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright -- playwright/integration/examples/huge-document.test.ts --project=chromium`
+- `cd /Users/zbeyens/git/plate-2/Plate repo root && bun check`
 
 Constraints:
 - Keep printable virtualized text input native/fast.
 - Fix the shared runtime policy, not the huge-document example.
 - Do not commit, push, or open PRs.
-- Keep proof in the Slate v2 checkout that owns the runtime behavior.
+- Keep proof in the Plite checkout that owns the runtime behavior.
 
 Boundaries:
-- Source of truth: `.tmp/slate-v2` runtime, tests, and the supplied video/report.
-- Allowed edit scope: `packages/slate-react/src/editable/runtime-keyboard-events.ts`, `packages/slate-react/test/input-router-contract.test.tsx`, and `playwright/integration/examples/huge-document.test.ts`.
+- Source of truth: `Plate repo root` runtime, tests, and the supplied video/report.
+- Allowed edit scope: `packages/plite-react/src/editable/runtime-keyboard-events.ts`, `packages/plite-react/test/input-router-contract.test.tsx`, and `playwright/integration/examples/huge-document.test.ts`.
 - Browser surface: `/examples/huge-document?blocks=10000&strategy=virtualized&overscan=0&threshold=2000&editor_height=420&content_visibility=element`.
 - Tracker sync: N/A, no issue tracker item was supplied.
 - Non-goals: pagination, full perf optimization, PR creation, review branches.
@@ -54,15 +54,15 @@ Current verdict:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Skill analysis before edits | yes | Used `slate-ar-stabilize`; routed failed behavior to `slate-patch`-style TDD. |
+| Skill analysis before edits | yes | Used `plite-ar-stabilize`; routed failed behavior to `plite-patch`-style TDD. |
 | Active goal checked or created | yes | No active goal existed; created goal for huge-document behavior stabilization. |
-| Source of truth read before edits | yes | Read `.tmp/slate-v2` huge-document test, runtime keyboard/input files, and AR status ledger. |
+| Source of truth read before edits | yes | Read `Plate repo root` huge-document test, runtime keyboard/input files, and AR status ledger. |
 | Tracker comments and attachments read | yes | Read supplied video frames and user clarification; no tracker item supplied. |
 | Video transcript evidence required | yes | Extracted frames from the 5.03s CleanShot video and identified virtualized huge-document config. |
-| `docs/solutions` checked for non-trivial existing-code work | yes | Checked Slate v2 docs/plans/solutions paths; relevant lane evidence was in AR ledger and tests. |
+| `docs/solutions` checked for non-trivial existing-code work | yes | Checked Plite docs/plans/solutions paths; relevant lane evidence was in AR ledger and tests. |
 | TDD decision before behavior change or bug fix | yes | Added focused Playwright proof plus runtime contract for insert-break boundary flushing. |
 | Branch decision for code-changing task | N/A | Stayed in current checkout; user did not request branch work. |
-| Release artifact decision | N/A | Internal runtime bug fix in Slate v2 lab checkout; no release artifact requested. |
+| Release artifact decision | N/A | Internal runtime bug fix in Plite lab checkout; no release artifact requested. |
 | Browser tool decision for browser surface | yes | Browser plugin navigation tool was unavailable; used repo Playwright browser proof against localhost. |
 | PR expectation decision | N/A | User did not request PR. |
 | Tracker sync expectation decision | N/A | No tracker item supplied. |
@@ -102,13 +102,13 @@ Completion Gates:
 | Package exports or file layout changed | N/A | No export or layout change | No public file layout touched. |
 | Package manifests, lockfile, or install graph changed | N/A | No install graph change | No manifest or lockfile touched. |
 | Agent rules or skills changed | N/A | No agent rules changed | No `.agents` source edited. |
-| Workspace authority proof | yes | Run in `.tmp/slate-v2` | All proof commands ran in the Slate v2 checkout. |
+| Workspace authority proof | yes | Run in `Plate repo root` | All proof commands ran in the Plite checkout. |
 | Browser surface changed | yes | Exercise target route | Full Chromium huge-document suite passed, 9/9. |
 | Browser final proof | yes | Record exact route proof | New insert-break route test and full suite passed. |
 | CI-controlled template output changed | N/A | No template output touched | No `templates/**` edits. |
 | Package behavior or public API changed | N/A | No public API surface change | Internal runtime policy only. |
 | Registry-only component work changed | N/A | No registry work | No registry files touched. |
-| Docs or content changed | N/A | No product docs changed | Only this goal ledger changed outside Slate v2. |
+| Docs or content changed | N/A | No product docs changed | Only this goal ledger changed outside Plite. |
 | High-risk mini gate | yes | Runtime behavior proof | Unit contract plus browser route suite passed. |
 | Agent-native review for agent/tooling changes | N/A | No agent/tooling changes | No agent-native surface touched. |
 | Local install corruption suspected | N/A | No reinstall needed | No mixed React/install corruption signal appeared. |

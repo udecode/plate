@@ -1,36 +1,35 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createEditor, createSlateEditor } from 'platejs';
+import type { BasePlateEditor } from '@platejs/core';
+import { createListClassicTestEditor as createBasePlateEditor } from '../__tests__/createListClassicTestEditor';
 
 import { moveListItemsToList } from './moveListItemsToList';
 
 jsxt;
 
-const input = createEditor(
-  (
-    <editor>
-      <hul id="1">
-        <hli>
-          <hp>1</hp>
-        </hli>
-      </hul>
-      <hul>
-        <hli id="2">
-          <hp>2</hp>
-          <hul>
-            <hli>
-              <hp>21</hp>
-            </hli>
-            <hli>
-              <hp>22</hp>
-            </hli>
-          </hul>
-        </hli>
-      </hul>
-    </editor>
-  ) as any
-);
+const input = (
+  <editor>
+    <hul id="1">
+      <hli>
+        <hp>1</hp>
+      </hli>
+    </hul>
+    <hul>
+      <hli id="2">
+        <hp>2</hp>
+        <hul>
+          <hli>
+            <hp>21</hp>
+          </hli>
+          <hli>
+            <hp>22</hp>
+          </hli>
+        </hul>
+      </hli>
+    </hul>
+  </editor>
+) as any as BasePlateEditor;
 
 const output = (
   <editor>
@@ -54,7 +53,7 @@ const output = (
 ) as any;
 
 it('moves sublist items into the target list', () => {
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     selection: input.selection,
     value: input.children,
   });

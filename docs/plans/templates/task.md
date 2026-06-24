@@ -15,6 +15,14 @@ Task source:
 - title: pending
 - acceptance criteria: pending
 
+First checkpoint:
+- Before implementation or broad exploration, copy every explicit prompt
+  requirement into this plan as checkable checkpoints: scope, non-goals,
+  timing/duration, stop conditions, deliverables, final handoff sections,
+  verification surface, and success criteria.
+- Do not continue into implementation until this extraction is complete or
+  explicitly marked N/A with reason.
+
 Timed checkpoint:
 - requested duration: pending
 - semantics: pending
@@ -45,6 +53,11 @@ Boundaries:
 - Source of truth: TODO.
 - Allowed edit scope: TODO.
 - Browser surface: TODO.
+- Browser strategy: TODO. Use Browser for normal app QA; use Chrome directly
+  for native downloads, print/print-preview, file picker/uploads, clipboard,
+  browser dialogs/permissions, extension/profile state, or exact Chrome
+  rendering; use Computer Use only for native Chrome/OS UI that needs visual
+  inspection after Chrome automation cannot read it.
 - Tracker sync: TODO.
 - Non-goals: TODO.
 
@@ -70,20 +83,6 @@ Current verdict:
 - next owner: task
 - reason: pending
 
-Pre-solution issue challenge:
-- reporter claim: pending
-- suggested diagnosis or fix: pending
-- repro ladder:
-  - tests / source-level repro: pending
-  - Playwright / automated browser: pending
-  - Browser plugin: pending
-  - screenshot / visual proof: pending
-- reproduction verdict: pending
-- validity verdict: pending
-- best long-term fix boundary: pending
-- harsh honest feedback: pending
-- hard-stop decision: pending
-
 Completion rule:
 - Do not call `update_goal(status: complete)` while any required checklist item
   remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
@@ -96,16 +95,13 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
+| Prompt requirements captured before work | pending | pending |
 | Timed checkpoint parsed | pending | pending |
 | Skill analysis before edits | pending | pending |
 | Active goal checked or created | pending | pending |
 | Source of truth read before edits | pending | pending |
 | Tracker comments and attachments read | pending | pending |
 | Video transcript evidence required | pending | pending |
-| Pre-solution issue challenge required | pending | pending |
-| Reproduction verdict before implementation | pending | pending |
-| Repro escalation ladder selected | pending | pending |
-| Suggested fix reviewed against durable boundary | pending | pending |
 | `docs/solutions` checked for non-trivial existing-code work | pending | pending |
 | TDD decision before behavior change or bug fix | pending | pending |
 | Branch decision for code-changing task | pending | pending |
@@ -119,6 +115,10 @@ Work Checklist:
 - [ ] If a duration was requested, it is recorded as minimum active work unless
       explicitly marked hard stop; when no better metric exists, initial and
       final confidence scores are recorded.
+- [ ] First checkpoint complete: every explicit prompt requirement, scope
+      boundary, timing constraint, stop condition, deliverable, final handoff
+      section, verification surface, and success criterion is copied into this
+      plan as checkable checkpoints before implementation.
 - [ ] Short objective plus outcome, completion threshold, verification surface,
       constraints, boundaries, and blocked condition are concrete.
 - [ ] Task source classified with source type, id/link, title, task type,
@@ -126,25 +126,6 @@ Work Checklist:
       surface, and root-cause layer.
 - [ ] Required video or screen-recording evidence is cached/read as normalized
       `<video-transcripts>` XML, or marked N/A with reason.
-- [ ] For public tracker bug reports, behavior claims, technical diagnoses, or
-      suggested fixes, reporter claims are challenged before implementation
-      with a recorded verdict: `valid`, `not reproduced`, `invalid`,
-      `wont-fix`, `partially valid`, or `platform limitation`. Feature, docs,
-      support, or cleanup requests with no bug claim may mark reproduction
-      `N/A` with reason.
-- [ ] Repro escalation ladder followed for bug/behavior claims: focused
-      test/source-level repro first when applicable; existing repo-owned
-      Playwright regression/test harness next when available and useful as
-      executable coverage; do not use standalone Playwright, Puppeteer, or raw
-      DevTools as a substitute for the repo Browser policy;
-      `[@Browser](plugin://browser@openai-bundled)` next when tests or
-      Playwright cannot reproduce or cannot model the surface honestly;
-      screenshot or explicit visual-proof waiver when visual/native state
-      matters.
-- [ ] Hard-stop rule followed for bug/behavior claims: no code when the issue
-      is not reproduced, invalid, or won't-fix; partial validity pivots to the
-      best long-term fix and records what was wrong or incomplete in the issue's
-      proposed path.
 - [ ] Nearby repo instructions and implementation patterns read before edits.
 - [ ] Implementation fixes the right ownership boundary, or the narrower choice
       is recorded with reason.
@@ -173,8 +154,6 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
-| Pre-solution issue challenge verdict | pending | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | pending |
-| Repro escalation ladder | pending | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | pending |
 | Bug reproduced before fix | pending | Record failing test/repro or N/A with reason | pending |
 | Targeted behavior verification | pending | Run focused test/proof for changed behavior or record N/A | pending |
 | TypeScript or typed config changed | pending | Run relevant typecheck | pending |
@@ -182,12 +161,12 @@ Completion Gates:
 | Package manifests, lockfile, or install graph changed | pending | Run `pnpm install` and relevant package checks | pending |
 | Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
 | Workspace authority proof | pending | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | pending |
-| Browser surface changed | pending | Capture Browser Use proof or record explicit waiver/blocker | pending |
-| Browser final proof | pending | Attach screenshot or exact browser verification caveat when browser proof applies | pending |
+| Browser surface changed | pending | Capture Browser proof for normal app surfaces, or Chrome/Computer proof for native browser/OS surfaces | pending |
+| Browser final proof | pending | Attach Browser/Chrome/Computer proof or exact caveat when browser proof applies | pending |
 | CI-controlled template output changed | pending | Restore generated template output or record why it is intentionally kept | pending |
 | Package behavior or public API changed | pending | Add a changeset or record why no changeset applies | pending |
-| User-visible registry output changed | pending | Use the registry-changelog pack: add/update `apps/www/src/registry/changelog/entries/*.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --check`, or record N/A | pending |
-| Docs or content changed | pending | For docs-heavy work, use `--template docs`; for supporting public docs/content/API/example changes, load `docs-creator` and close the docs pack; for typo/link-only edits, record the explicit reason and proportional proof | pending |
+| Registry-only component work changed | pending | Update `docs/components/changelog.mdx` or record N/A | pending |
+| Docs or content changed | pending | For docs-heavy work, use `--template docs`; for incidental docs, verify source-backed claims, links, examples, and rendered output or record N/A | pending |
 | High-risk mini gate | pending | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | pending |
 | Agent-native review for agent/tooling changes | pending | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | pending |
 | Local install corruption suspected | pending | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | pending |

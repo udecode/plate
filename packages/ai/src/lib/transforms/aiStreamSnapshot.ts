@@ -1,16 +1,18 @@
 import cloneDeep from 'lodash/cloneDeep.js';
+import type { Descendant, Element, Range } from '@platejs/plite';
 import {
   ElementApi,
   KEYS,
-  type SlateEditor,
-  type TRange,
+  type BasePlateEditor,
   type Value,
   getPluginType,
 } from 'platejs';
 
+import { getEditorHistory } from '../internal/history';
+
 type AIPreviewState = {
   originalBlocks: Value;
-  selectionBefore: TRange | null;
+  selectionBefore: Range | null;
 };
 
 type BeginAIPreviewOptions = {
@@ -27,21 +29,38 @@ type PreviewRange =
 
 export const AI_PREVIEW_KEY = 'aiPreview';
 
-const AI_STREAM_SNAPSHOT = new WeakMap<SlateEditor, AIPreviewState>();
+const AI_STREAM_SNAPSHOT = new WeakMap<BasePlateEditor, AIPreviewState>();
 
-const clearAIPreview = (editor: SlateEditor) => {
+type DecoratedNode = Descendant & Record<string, unknown>;
+
+const clearAIPreview = (editor: BasePlateEditor) => {
   AI_STREAM_SNAPSHOT.delete(editor);
 };
 
-const getAIPreview = (editor: SlateEditor) => AI_STREAM_SNAPSHOT.get(editor);
+const getAIPreview = (editor: BasePlateEditor) =>
+  AI_STREAM_SNAPSHOT.get(editor);
 
-const getAIPreviewRange = (editor: SlateEditor): PreviewRange => {
+const withoutSaving = (editor: BasePlateEditor, fn: () => void) => {
+  const run =
+    editor.api.history?.withoutSaving ?? ((callback: () => void) => callback());
+
+  run(fn);
+};
+
+const withNewBatch = (editor: BasePlateEditor, fn: () => void) => {
+  const run =
+    editor.api.history?.withNewBatch ?? ((callback: () => void) => callback());
+
+  run(fn);
+};
+
+const getAIPreviewRange = (editor: BasePlateEditor): PreviewRange => {
   let closed = false;
   let end = -1;
   let invalid = false;
   let start = -1;
 
-  editor.children.forEach((node: any, index) => {
+  editor.children.forEach((node: DecoratedNode, index) => {
     if (!node?.[AI_PREVIEW_KEY]) {
       if (start !== -1) {
         closed = true;
@@ -72,39 +91,44 @@ const getAIPreviewRange = (editor: SlateEditor): PreviewRange => {
   };
 };
 
-const removeAIPreviewAnchor = (editor: SlateEditor) => {
+const removeAIPreviewAnchor = (editor: BasePlateEditor) => {
   const aiChatType = getPluginType(editor, KEYS.aiChat);
 
-  editor.tf.removeNodes({
-    at: [],
-    match: (node) => ElementApi.isElement(node) && node.type === aiChatType,
+  editor.update((tx) => {
+    tx.nodes.remove({
+      at: [],
+      match: (node) => ElementApi.isElement(node) && node.type === aiChatType,
+    });
   });
 };
 
 const restoreAIPreviewSelection = (
-  editor: SlateEditor,
-  selection: TRange | null
+  editor: BasePlateEditor,
+  selection: Range | null
 ) => {
-  if (selection) {
-    editor.tf.select(cloneDeep(selection));
+  editor.update((tx) => {
+    if (selection) {
+      tx.selection.set(cloneDeep(selection));
+      return;
+    }
 
-    return;
-  }
-
-  editor.tf.deselect();
+    tx.selection.clear();
+  });
 };
 
 const removePreviewRange = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   range: Extract<PreviewRange, { kind: 'range' }>
 ) => {
   for (let index = range.end; index >= range.start; index--) {
-    editor.tf.removeNodes({ at: [index] });
+    editor.update((tx) => {
+      tx.nodes.remove({ at: [index] });
+    });
   }
 };
 
 const replacePreviewRange = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   range: Extract<PreviewRange, { kind: 'range' }>,
   blocks: Value
 ) => {
@@ -112,36 +136,43 @@ const replacePreviewRange = (
 
   if (blocks.length === 0) return;
 
-  editor.tf.insertNodes(cloneDeep(blocks), { at: [range.start] });
+  editor.update((tx) => {
+    tx.nodes.insert(cloneDeep(blocks), { at: [range.start] });
+  });
 };
 
 const cloneAcceptedPreviewBlocks = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   range: Extract<PreviewRange, { kind: 'range' }>
 ) => {
   const aiType = getPluginType(editor, KEYS.ai);
   const blocks = cloneDeep(editor.children.slice(range.start, range.end + 1));
 
-  const stripNode = (node: any): any => {
+  const stripNode = (node: Descendant): Descendant => {
     if (ElementApi.isElement(node)) {
-      const { [AI_PREVIEW_KEY]: _preview, children, ...rest } = node;
+      const { children } = node;
+      const {
+        [AI_PREVIEW_KEY]: _preview,
+        children: _children,
+        ...rest
+      } = node as Element & Record<string, unknown>;
 
       return {
         ...rest,
         children: children.map(stripNode),
-      };
+      } as Descendant;
     }
 
-    const { [aiType]: _ai, ...rest } = node;
+    const { [aiType]: _ai, ...rest } = node as DecoratedNode;
 
-    return rest;
+    return rest as Descendant;
   };
 
   return blocks.map(stripNode);
 };
 
 export const beginAIPreview = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { originalBlocks = [] }: BeginAIPreviewOptions = {}
 ) => {
   if (getAIPreview(editor)) return false;
@@ -154,9 +185,9 @@ export const beginAIPreview = (
   return true;
 };
 
-export const hasAIPreview = (editor: SlateEditor) => !!getAIPreview(editor);
+export const hasAIPreview = (editor: BasePlateEditor) => !!getAIPreview(editor);
 
-export const cancelAIPreview = (editor: SlateEditor) => {
+export const cancelAIPreview = (editor: BasePlateEditor) => {
   const preview = getAIPreview(editor);
 
   if (!preview) return false;
@@ -165,7 +196,7 @@ export const cancelAIPreview = (editor: SlateEditor) => {
 
   if (range.kind === 'invalid') return false;
 
-  editor.tf.withoutSaving(() => {
+  withoutSaving(editor, () => {
     if (range.kind === 'range') {
       replacePreviewRange(editor, range, preview.originalBlocks);
     }
@@ -179,7 +210,7 @@ export const cancelAIPreview = (editor: SlateEditor) => {
   return true;
 };
 
-export const discardAIPreview = (editor: SlateEditor) => {
+export const discardAIPreview = (editor: BasePlateEditor) => {
   if (!getAIPreview(editor)) return false;
 
   clearAIPreview(editor);
@@ -187,7 +218,7 @@ export const discardAIPreview = (editor: SlateEditor) => {
   return true;
 };
 
-export const acceptAIPreview = (editor: SlateEditor, _value?: Value) => {
+export const acceptAIPreview = (editor: BasePlateEditor, _value?: Value) => {
   const preview = getAIPreview(editor);
 
   if (!preview) return false;
@@ -199,35 +230,39 @@ export const acceptAIPreview = (editor: SlateEditor, _value?: Value) => {
   if (range.kind === 'range') {
     const acceptedBlocks = cloneAcceptedPreviewBlocks(editor, range);
 
-    editor.tf.withoutSaving(() => {
+    withoutSaving(editor, () => {
       replacePreviewRange(editor, range, preview.originalBlocks);
       removeAIPreviewAnchor(editor);
       restoreAIPreviewSelection(editor, preview.selectionBefore);
     });
 
-    editor.tf.withNewBatch(() => {
+    withNewBatch(editor, () => {
       if (preview.originalBlocks.length > 0) {
         for (
           let index = preview.originalBlocks.length - 1;
           index >= 0;
           index--
         ) {
-          editor.tf.removeNodes({ at: [range.start + index] });
+          editor.update((tx) => {
+            tx.nodes.remove({ at: [range.start + index] });
+          });
         }
       }
 
       if (acceptedBlocks.length > 0) {
-        editor.tf.insertNodes(acceptedBlocks, { at: [range.start] });
+        editor.update((tx) => {
+          tx.nodes.insert(acceptedBlocks, { at: [range.start] });
+        });
       }
     });
 
-    const lastBatch = editor.history?.undos.at(-1);
+    const lastBatch = getEditorHistory(editor).undos.at(-1);
 
     if (lastBatch) {
       lastBatch.selectionBefore = cloneDeep(preview.selectionBefore);
     }
   } else {
-    editor.tf.withoutSaving(() => {
+    withoutSaving(editor, () => {
       removeAIPreviewAnchor(editor);
     });
   }

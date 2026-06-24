@@ -1,6 +1,7 @@
 import type { NodeComponent, PluginConfig } from '../../lib';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
+import { createPlateEditor } from '../editor';
 import { createPlatePlugin } from './createPlatePlugin';
 
 describe('withComponent method', () => {
@@ -84,6 +85,63 @@ describe('withComponent method', () => {
           return editor;
         },
       }));
+
+    expect(1).toBe(1);
+  });
+
+  it('extendTx keeps the Plate plugin wrapper chain', () => {
+    const plugin = createPlatePlugin({ key: 'txPlugin' }).extendTx(
+      () => () => ({
+        replace: () => undefined,
+      })
+    );
+
+    expect(plugin.__txExtensions).toHaveLength(1);
+    expect(plugin.extendTx(() => () => ({})).__txExtensions).toHaveLength(2);
+  });
+
+  it('infers Plate tx groups on createPlateEditor update callbacks', () => {
+    const TxPlugin = createPlatePlugin({ key: 'txPlugin' }).extendTx(
+      () => () => ({
+        replace: (text: string) => text.length,
+      })
+    );
+
+    const editor = createPlateEditor({
+      plugins: [TxPlugin],
+    });
+
+    editor.update((tx) => {
+      const length = tx.txPlugin.replace('text');
+
+      return length satisfies number;
+    });
+
+    expect(1).toBe(1);
+  });
+
+  it('infers explicit Plate tx groups on createPlateEditor update callbacks', () => {
+    const TxPlugin = createPlatePlugin({ key: 'sourcePlugin' }).extendTxGroup(
+      'foreignTx',
+      () => () => ({
+        replace: (text: string) => text.length,
+      })
+    );
+
+    const editor = createPlateEditor({
+      plugins: [TxPlugin],
+    });
+
+    // @ts-expect-error extendTxGroup does not add the plugin-owned group
+    type _MissingPluginGroup = Parameters<
+      Parameters<typeof editor.update>[0]
+    >[0]['sourcePlugin'];
+
+    editor.update((tx) => {
+      const length = tx.foreignTx.replace('text');
+
+      return length satisfies number;
+    });
 
     expect(1).toBe(1);
   });

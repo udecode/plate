@@ -2,9 +2,9 @@ import React from 'react';
 
 import clsx from 'clsx';
 
-import type { RenderTextProps, SlateEditor, SlatePlugin } from '..';
+import type { RenderTextProps, BasePlateEditor, EditorPlugin } from '..';
 
-import { SlateText } from './components';
+import { PliteText } from './components';
 import { getNodeDataAttributes } from './utils/getNodeDataAttributes';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
@@ -13,15 +13,15 @@ export type SlateRenderText = (
 ) => React.ReactElement<any> | undefined;
 
 export const pluginRenderTextStatic = (
-  editor: SlateEditor,
-  plugin: SlatePlugin
+  editor: BasePlateEditor,
+  plugin: EditorPlugin
 ): SlateRenderText =>
   function render(nodeProps) {
     const { children, text } = nodeProps;
 
     if (text[plugin.node.type ?? plugin.key]) {
       const Component = editor.meta.components?.[plugin.key] as any;
-      const Text = Component ?? SlateText;
+      const Text = Component ?? PliteText;
 
       // const dataAttributes = getPluginDataAttributes(editor, plugin, text);
 
@@ -48,11 +48,11 @@ export const pluginRenderTextStatic = (
 
 /** @see {@link RenderText} */
 export const pipeRenderTextStatic = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { renderText: renderTextProp }: { renderText?: SlateRenderText } = {}
 ): SlateRenderText => {
   const renderTexts: SlateRenderText[] = [];
-  const textPropsPlugins: SlatePlugin[] = [];
+  const textPropsPlugins: EditorPlugin[] = [];
 
   editor.meta.pluginCache.node.isText.forEach((key) => {
     const plugin = editor.getPlugin({ key });
@@ -115,7 +115,7 @@ export const pipeRenderTextStatic = (
     });
 
     return (
-      <SlateText
+      <PliteText
         {...ctxProps}
         attributes={{
           ...ctxProps.attributes,

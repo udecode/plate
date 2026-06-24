@@ -71,7 +71,7 @@ Current verdict:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Skill analysis before edits | yes | Used `autogoal`, `task`, `frontend-design`, and Browser for browser proof. |
+| Skill analysis before edits | yes | Used `autogoal`, `task`, and Browser for browser proof. |
 | Active goal checked or created | yes | Active goal and this plan created for the sidebar task. |
 | Source of truth read before edits | yes | Read `apps/www/src/components/docs-nav.tsx` and sidebar/collapsible primitives. |
 | Tracker comments and attachments read | no | No external tracker for this request. |

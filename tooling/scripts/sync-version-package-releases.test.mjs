@@ -299,7 +299,7 @@ test('parses wrapper-only Changesets entries', () => {
 test('parses commit-linked Changesets entries', () => {
   const [release] = parseVersionPackagesPullRequest({
     body: `# Releases
-## @platejs/slate@53.0.5
+## @platejs/plite@53.0.5
 
 ### Patch Changes
 

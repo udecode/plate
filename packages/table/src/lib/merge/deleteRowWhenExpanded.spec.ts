@@ -1,6 +1,7 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
+import type { TableConfig } from '../BaseTablePlugin';
 import * as tableLib from '..';
 import * as tableQueries from '../queries';
 import { deleteRowWhenExpanded } from './deleteRowWhenExpanded';
@@ -11,7 +12,7 @@ describe('deleteRowWhenExpanded', () => {
   });
 
   it('removes every carried row when a selected row includes a rowspan cell', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       nodeId: true,
       plugins: getTestTablePlugins({ disableMerge: true }),
       value: [
@@ -31,9 +32,14 @@ describe('deleteRowWhenExpanded', () => {
         },
       ],
     } as any);
-    const removeNodesSpy = spyOn(editor.tf, 'removeNodes').mockImplementation(
-      () => {}
-    );
+    const removeNodesSpy = mock();
+    spyOn(editor, 'update').mockImplementation((fn: any) => {
+      fn({
+        nodes: {
+          remove: removeNodesSpy,
+        },
+      });
+    });
 
     spyOn(tableQueries, 'getTableGridAbove').mockReturnValue([
       [{ children: [], rowSpan: 2, type: 'td' } as any, [0, 0, 0]],
@@ -45,7 +51,7 @@ describe('deleteRowWhenExpanded', () => {
       (path: any) => path.at(-2) ?? null
     );
     spyOn(
-      editor.getApi(tableLib.BaseTablePlugin).table,
+      (editor.api as unknown as TableConfig['api']).table,
       'getRowSpan'
     ).mockImplementation((cell: any) => cell.rowSpan ?? 1);
 

@@ -1,23 +1,28 @@
-import type { SlateEditor, TMediaElement } from 'platejs';
+import type { BasePlateEditor, TMediaElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
 import { type PreviewItem, ImagePreviewStore } from './ImagePreviewStore';
 
-const getUrlList = (editor: SlateEditor) => {
+const getUrlList = (editor: BasePlateEditor) => {
   const enties = editor.api.nodes({
     at: [],
-    match: (n) => n.type === KEYS.img,
+    match: (n: unknown) =>
+      typeof n === 'object' && n !== null && 'type' in n && n.type === KEYS.img,
   });
 
-  return Array.from(enties, (item) => ({
-    id: item[0].id,
-    url: item[0].url,
-  })) as unknown as PreviewItem[];
+  return Array.from(enties, ([node]) => {
+    const item = node as TMediaElement;
+
+    return {
+      id: item.id,
+      url: item.url,
+    };
+  }) as PreviewItem[];
 };
 
 export const openImagePreview = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   element: TMediaElement
 ) => {
   const { id, url } = element;

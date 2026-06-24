@@ -1,7 +1,7 @@
-import type { SlateEditor } from '../../../editor';
+import type { BasePlateEditor } from '../../../editor';
 
 import { type AnyEditorPlugin, getEditorPlugin } from '../../../plugin';
-import { isSlateLeaf, isSlatePluginNode } from '../../../utils';
+import { isPliteLeaf, isPlitePluginNode } from '../../../utils';
 
 const getDefaultNodeProps = ({
   element,
@@ -10,19 +10,16 @@ const getDefaultNodeProps = ({
   element: HTMLElement;
   type: string;
 }) => {
-  if (!isSlatePluginNode(element, type) && !isSlateLeaf(element)) return;
+  if (!isPlitePluginNode(element, type) && !isPliteLeaf(element)) return;
 
   const dataAttributes: Record<string, any> = {};
 
-  // Get all data-slate-* attributes from dataset
   Object.entries(element.dataset).forEach(([key, value]) => {
     if (
-      key.startsWith('slate') &&
+      key.startsWith('plite') &&
       value &&
-      // Ignore slate default attributes
-      !['slateInline', 'slateLeaf', 'slateNode', 'slateVoid'].includes(key)
+      !['pliteInline', 'pliteLeaf', 'pliteNode', 'pliteVoid'].includes(key)
     ) {
-      // Remove 'slate' prefix and convert to camelCase
       const attributeKey = key.slice(5).charAt(0).toLowerCase() + key.slice(6);
 
       // Parse value if it's a boolean or number string
@@ -49,7 +46,7 @@ export const getDataNodeProps = ({
   element,
   plugin,
 }: {
-  editor: SlateEditor;
+  editor: BasePlateEditor;
   element: HTMLElement;
   plugin: AnyEditorPlugin;
 }) => {

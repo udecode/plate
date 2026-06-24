@@ -1,9 +1,15 @@
-import type { Descendant, TextOperation } from '@platejs/slate';
+import type { Descendant, TextOperation } from '@platejs/plite';
 
-import type { SlateEditor } from '../editor/SlateEditor';
+import type { BasePlateEditor } from '../editor/BasePlateEditor';
+import type { AnyEditorPlugin } from '../plugin';
+import { getEditorPlugin } from '../plugin/getEditorPlugin';
+
+type OnTextChangeContext = Parameters<
+  NonNullable<NonNullable<AnyEditorPlugin['handlers']>['onTextChange']>
+>[0];
 
 export const pipeOnTextChange = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   node: Descendant,
   text: string,
   prevText: string,
@@ -24,14 +30,16 @@ export const pipeOnTextChange = (
 
     // The custom event handler may return a boolean to specify whether the event
     // shall be treated as being handled or not.
-    const shouldTreatEventAsHandled = handler({
+    const context: OnTextChangeContext = {
+      ...getEditorPlugin(editor, plugin),
       editor,
       node,
       operation,
       plugin,
       prevText,
       text,
-    } as any);
+    };
+    const shouldTreatEventAsHandled = handler(context);
 
     if (shouldTreatEventAsHandled != null) {
       return shouldTreatEventAsHandled;

@@ -6,6 +6,7 @@ import type { PlateHTMLProps } from '../components';
 import type { PlateEditor } from '../editor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
+import { findEditorPath } from '../../internal/utils/runtimeEditorQueries';
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import { getSlateClass } from '../../lib';
 import { getPluginNodeProps } from '../../lib/utils/getPluginNodeProps';
@@ -47,13 +48,13 @@ export const getRenderNodeProps = ({
       : {
           api: editor.api,
           editor,
-          tf: editor.transforms,
         };
+  const renderPluginContext = resolvedPluginContext as AnyObject;
   const { className } = props;
 
   let newProps = {
     ...props,
-    ...resolvedPluginContext,
+    ...renderPluginContext,
   };
 
   if (canSkipPluginNodeProps) {
@@ -103,7 +104,7 @@ export const getRenderNodeProps = ({
     newProps = pipeInjectNodeProps(
       editor,
       newProps,
-      (node) => editor.api.findPath(node)!,
+      (node) => findEditorPath(editor, node)!,
       readOnly
     ) as PlateHTMLProps;
   }

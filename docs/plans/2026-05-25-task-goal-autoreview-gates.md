@@ -17,7 +17,7 @@ Task source:
 - id / link: chat request
 - title: add autoreview-grade closeout gates to task and goal templates
 - acceptance criteria: task/goal rules and templates include compact
-  Slate-Plan-inspired gates without adopting Slate Plan's scorecard, issue
+  Plite-Plan-inspired gates without adopting Plite Plan's scorecard, issue
   ledger, or full pass schedule.
 
 Completion threshold:
@@ -40,14 +40,14 @@ Verification surface:
 - cwd `plate-2`: final `check-complete.mjs` on this plan
 
 Constraints:
-- Keep `task` lightweight; do not copy Slate Plan's scorecard, issue ledger,
+- Keep `task` lightweight; do not copy Plite Plan's scorecard, issue ledger,
   or 12-pass schedule.
 - Generated `.agents/skills/*/SKILL.md` files must come from `pnpm install`,
   not hand edits.
 - Preserve repo PR/commit boundaries; no PR or commit in this task.
 
 Boundaries:
-- Source of truth: latest user prompt plus pasted `task` and `slate-plan`
+- Source of truth: latest user prompt plus pasted `task` and `plite-plan`
   skills.
 - Allowed edit scope: `.agents/rules/task.mdc`, `.agents/rules/goal.mdc`,
   generated `.agents/skills/task/SKILL.md`,
@@ -90,7 +90,7 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Skill analysis before edits | yes | Read pasted `task` and `slate-plan`; loaded local `task`, `goal`, `autoreview`, and `agent-native-reviewer` skill/rule text. |
+| Skill analysis before edits | yes | Read pasted `task` and `plite-plan`; loaded local `task`, `goal`, `autoreview`, and `agent-native-reviewer` skill/rule text. |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` created the task/goal autoreview objective. |
 | Source of truth read before edits | yes | User prompt and pasted skill bodies read before patching. |
 | Tracker comments and attachments read | N/A: no tracker | No tracker source. |
@@ -148,7 +148,7 @@ Completion Gates:
 | CI-controlled template output changed | N/A: no CI-controlled template target edited by this task | Restore generated template output or record why it is intentionally kept | Touched `docs/plans/templates`, not `templates/**`. |
 | Package behavior or public API changed | N/A: no published package behavior | Add a changeset or record why no changeset applies | No package changeset. |
 | Registry-only component work changed | N/A: no registry component work | Update `docs/components/changelog.mdx` or record N/A | No registry work. |
-| High-risk mini gate | yes | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | Failure mode: `task` becomes Slate Plan-lite and agents skip it. Proof plan: compact source rows, generated skill sync, template smoke, final plan check. Chosen boundary: hard closeout gates only, no scorecard/pass ledger. |
+| High-risk mini gate | yes | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | Failure mode: `task` becomes Plite Plan-lite and agents skip it. Proof plan: compact source rows, generated skill sync, template smoke, final plan check. Chosen boundary: hard closeout gates only, no scorecard/pass ledger. |
 | Agent-native review for agent/tooling changes | yes | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | Loaded skill; manual incremental review found no user-action parity gap because this change adds agent workflow gates and no user-only action. |
 | Local install corruption suspected | N/A: no corruption signal | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | No local install corruption signal. |
 | Autoreview for non-trivial implementation changes | N/A: markdown/rule/template policy patch, no runtime implementation patch | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | Loaded skill and attempted scoped `--mode local`; helper failed before review because unrelated dirty checkout produced a 2,601,418-char bundle over Codex's 1,048,576-char input limit. Scoped source/smoke/agent-native checks cover this docs/rules patch. |
@@ -172,12 +172,12 @@ Phase / pass table:
 Findings:
 - Existing task/generic goal templates already had an autoreview row, but it was
   a weak decision row. The fix makes autoreview target selection and hard
-  closeout behavior explicit without importing Slate Plan machinery.
+  closeout behavior explicit without importing Plite Plan machinery.
 
 Decisions and tradeoffs:
 - Keep: compact hard closeout gates for autoreview, workspace authority,
   agent-native review, and high-risk notes.
-- Reject: Slate Plan scorecard, issue ledgers, 12-pass calendar, and exhaustive
+- Reject: Plite Plan scorecard, issue ledgers, 12-pass calendar, and exhaustive
   done handoff for generic `task`.
 - Tradeoff: `task` gets a few more rows, but they are concrete gates tied to
   real failure modes rather than broad ceremony.
@@ -222,8 +222,8 @@ Final handoff contract:
   - Verified: `pnpm install`, `rg` source/generated audit, task smoke,
     generic-goal smoke, final plan check.
 - Browser check: N/A: no browser surface.
-- Outcome: task/goal workflows now inherit the useful Slate Plan closeout ideas
-  without copying the heavyweight Slate Plan lane.
+- Outcome: task/goal workflows now inherit the useful Plite Plan closeout ideas
+  without copying the heavyweight Plite Plan lane.
 - Caveat: autoreview helper could not review the scoped dirty local patch
   because unrelated dirty checkout content made the local bundle too large.
 - Design:
@@ -231,7 +231,7 @@ Final handoff contract:
     source rules.
   - Why not quick patch: a template-only row would not teach the owning skill
     when and how to apply the gate.
-  - Why not broader change: Slate Plan machinery is too heavy for generic task
+  - Why not broader change: Plite Plan machinery is too heavy for generic task
     execution.
 - Verified: source/generation/template smoke checks passed as described above.
 

@@ -1,6 +1,8 @@
-import type { NodeEntry, PathRef, SlateEditor, TElement } from 'platejs';
+import type { NodeEntry, PathRef, BasePlateEditor } from 'platejs';
+import type { Operation } from '@platejs/plite';
 
 import { KEYS, PathApi } from 'platejs';
+import type { FootnoteElement } from './types';
 
 type FootnoteRegistry = {
   definitionsByIdentifier: Map<string, PathRef[]>;
@@ -8,7 +10,7 @@ type FootnoteRegistry = {
   dirty: boolean;
 };
 
-const FOOTNOTE_REGISTRY = new WeakMap<SlateEditor, FootnoteRegistry>();
+const FOOTNOTE_REGISTRY = new WeakMap<BasePlateEditor, FootnoteRegistry>();
 
 const cleanupRegistry = (registry: FootnoteRegistry) => {
   for (const refs of registry.definitionsByIdentifier.values()) {
@@ -27,7 +29,7 @@ const cleanupRegistry = (registry: FootnoteRegistry) => {
   registry.referencesByIdentifier.clear();
 };
 
-const getRegistry = (editor: SlateEditor) => {
+const getRegistry = (editor: BasePlateEditor) => {
   let registry = FOOTNOTE_REGISTRY.get(editor);
 
   if (!registry) {
@@ -42,32 +44,35 @@ const getRegistry = (editor: SlateEditor) => {
   return registry;
 };
 
-const rebuildRegistry = (editor: SlateEditor, registry: FootnoteRegistry) => {
+const rebuildRegistry = (
+  editor: BasePlateEditor,
+  registry: FootnoteRegistry
+) => {
   cleanupRegistry(registry);
 
   const definitionType = editor.getType(KEYS.footnoteDefinition);
   const referenceType = editor.getType(KEYS.footnoteReference);
 
-  for (const [, path] of editor.api.nodes<TElement>({
+  for (const [, path] of editor.api.nodes<FootnoteElement>({
     at: [],
     match: (node) => {
-      const type = (node as TElement).type;
+      const type = (node as FootnoteElement).type;
 
       return type === definitionType || type === referenceType;
     },
   })) {
-    const entry = editor.api.node<TElement>(path);
+    const entry = editor.api.node<FootnoteElement>(path);
 
     if (!entry) continue;
 
     const [node] = entry;
-    const identifier = (node as TElement & { identifier?: string }).identifier;
+    const identifier = node.identifier;
 
     if (!identifier) continue;
 
     const ref = editor.api.pathRef(path);
 
-    if ((node as TElement).type === definitionType) {
+    if (node.type === definitionType) {
       const refs = registry.definitionsByIdentifier.get(identifier) ?? [];
       refs.push(ref);
       registry.definitionsByIdentifier.set(identifier, refs);
@@ -91,13 +96,27 @@ const rebuildRegistry = (editor: SlateEditor, registry: FootnoteRegistry) => {
   registry.dirty = false;
 };
 
-export const invalidateFootnoteRegistry = (editor: SlateEditor) => {
+export const invalidateFootnoteRegistry = (editor: BasePlateEditor) => {
   getRegistry(editor).dirty = true;
 };
 
+const getOperationNodeType = (value: unknown) =>
+  typeof value === 'object' &&
+  value !== null &&
+  'type' in value &&
+  typeof value.type === 'string'
+    ? value.type
+    : undefined;
+
+const hasOperationIdentifier = (value: unknown) =>
+  typeof value === 'object' &&
+  value !== null &&
+  'identifier' in value &&
+  value.identifier !== undefined;
+
 export const shouldInvalidateFootnoteRegistry = (
-  editor: SlateEditor,
-  operation: any
+  editor: BasePlateEditor,
+  operation: Operation
 ) => {
   const definitionType = editor.getType(KEYS.footnoteDefinition);
   const referenceType = editor.getType(KEYS.footnoteReference);
@@ -105,28 +124,28 @@ export const shouldInvalidateFootnoteRegistry = (
     type === definitionType || type === referenceType;
 
   if (operation.type === 'insert_node' || operation.type === 'remove_node') {
-    return isFootnoteType(operation.node?.type);
+    return isFootnoteType(getOperationNodeType(operation.node));
   }
 
   if (operation.type === 'set_node') {
     if (
-      isFootnoteType(operation.properties?.type) ||
-      isFootnoteType(operation.newProperties?.type) ||
-      operation.properties?.identifier !== undefined ||
-      operation.newProperties?.identifier !== undefined
+      isFootnoteType(getOperationNodeType(operation.properties)) ||
+      isFootnoteType(getOperationNodeType(operation.newProperties)) ||
+      hasOperationIdentifier(operation.properties) ||
+      hasOperationIdentifier(operation.newProperties)
     ) {
       return true;
     }
 
-    const current = editor.api.node<TElement>(operation.path)?.[0];
+    const current = editor.api.node<FootnoteElement>(operation.path)?.[0];
 
-    return isFootnoteType((current as TElement | undefined)?.type);
+    return isFootnoteType(current?.type);
   }
 
   return false;
 };
 
-export const ensureFootnoteRegistry = (editor: SlateEditor) => {
+export const ensureFootnoteRegistry = (editor: BasePlateEditor) => {
   const registry = getRegistry(editor);
 
   if (registry.dirty) {
@@ -137,7 +156,7 @@ export const ensureFootnoteRegistry = (editor: SlateEditor) => {
 };
 
 export const getRegistryDefinition = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { identifier }: { identifier: string }
 ) => {
   const definitions = getRegistryDefinitions(editor, { identifier });
@@ -146,12 +165,12 @@ export const getRegistryDefinition = (
 };
 
 export const getRegistryReferences = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { identifier }: { identifier: string }
 ) => {
   const registry = ensureFootnoteRegistry(editor);
   const refs = registry.referencesByIdentifier.get(identifier) ?? [];
-  const liveEntries: NodeEntry<TElement>[] = [];
+  const liveEntries: NodeEntry<FootnoteElement>[] = [];
   const liveRefs: PathRef[] = [];
 
   for (const ref of refs) {
@@ -162,7 +181,7 @@ export const getRegistryReferences = (
       continue;
     }
 
-    const entry = editor.api.node<TElement>(path);
+    const entry = editor.api.node<FootnoteElement>(path);
 
     if (!entry) {
       ref.unref();
@@ -180,12 +199,12 @@ export const getRegistryReferences = (
 };
 
 export const getRegistryDefinitions = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { identifier }: { identifier: string }
 ) => {
   const registry = ensureFootnoteRegistry(editor);
   const refs = registry.definitionsByIdentifier.get(identifier) ?? [];
-  const liveEntries: NodeEntry<TElement>[] = [];
+  const liveEntries: NodeEntry<FootnoteElement>[] = [];
   const liveRefs: PathRef[] = [];
 
   for (const ref of refs) {
@@ -196,7 +215,7 @@ export const getRegistryDefinitions = (
       continue;
     }
 
-    const entry = editor.api.node<TElement>(path);
+    const entry = editor.api.node<FootnoteElement>(path);
 
     if (!entry) {
       ref.unref();
@@ -213,7 +232,7 @@ export const getRegistryDefinitions = (
   return liveEntries;
 };
 
-export const getRegistryIdentifiers = (editor: SlateEditor) => {
+export const getRegistryIdentifiers = (editor: BasePlateEditor) => {
   const registry = ensureFootnoteRegistry(editor);
 
   return [...registry.definitionsByIdentifier.keys()];

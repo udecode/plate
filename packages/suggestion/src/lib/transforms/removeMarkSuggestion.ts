@@ -1,7 +1,10 @@
-import { type SlateEditor, type TNode, KEYS, nanoid, TextApi } from 'platejs';
+import type { Node } from '@platejs/plite';
+
+import { type BasePlateEditor, KEYS, nanoid, TextApi } from 'platejs';
 
 import { getInlineSuggestionData, getSuggestionKey } from '../..';
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { getSuggestionApi } from '../utils/getSuggestionApi';
 
 const getRemoveMarkProps = () => {
   const defaultProps = {
@@ -13,11 +16,11 @@ const getRemoveMarkProps = () => {
 };
 
 // TODO remove mark when the text is already marked as a bold by suggestion
-export const removeMarkSuggestion = (editor: SlateEditor, key: string) => {
-  editor.getApi(BaseSuggestionPlugin).suggestion.withoutSuggestions(() => {
+export const removeMarkSuggestion = (editor: BasePlateEditor, key: string) => {
+  getSuggestionApi(editor).withoutSuggestions(() => {
     const { id, createdAt } = getRemoveMarkProps();
 
-    const match = (n: TNode) => {
+    const match = (n: Node) => {
       if (!TextApi.isText(n)) return false;
       // if the node is already marked as a suggestion, we don't want to remove it unless it's a removeMark suggestion
       if (n[KEYS.suggestion]) {
@@ -33,26 +36,28 @@ export const removeMarkSuggestion = (editor: SlateEditor, key: string) => {
       return true;
     };
 
-    editor.tf.unsetNodes(key, {
-      match,
-    });
-
-    editor.tf.setNodes(
-      {
-        [getSuggestionKey(id)]: {
-          id,
-          createdAt,
-          properties: {
-            [key]: undefined,
-          },
-          type: 'update',
-          userId: editor.getOptions(BaseSuggestionPlugin).currentUserId,
-        },
-        [KEYS.suggestion]: true,
-      },
-      {
+    editor.update((tx) => {
+      tx.nodes.unset(key, {
         match,
-      }
-    );
+      });
+
+      tx.nodes.set(
+        {
+          [getSuggestionKey(id)]: {
+            id,
+            createdAt,
+            properties: {
+              [key]: undefined,
+            },
+            type: 'update',
+            userId: editor.getOptions(BaseSuggestionPlugin).currentUserId,
+          },
+          [KEYS.suggestion]: true,
+        },
+        {
+          match,
+        }
+      );
+    });
   });
 };

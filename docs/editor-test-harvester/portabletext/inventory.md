@@ -41,10 +41,10 @@ Rerun delta against the previous appendix: 0 new rows, 0 removed rows.
 | 23 | `packages/editor/gherkin-tests/splitting-blocks.test.ts` | yes | portable | PT-H04 | insert/split/break placement invariant |
 | 24 | `packages/editor/gherkin-tests/undo-redo.test.tsx` | yes | portable | PT-H08 | collaboration/history/remote selection invariant |
 | 25 | `packages/editor/src/behaviors/fit-blocks-to-destination.test.ts` | yes | portable | PT-H04 | insert/split/break placement invariant |
-| 26 | `packages/editor/src/converters/converter.portable-text.deserialize.test.ts` | yes | plate-owned | PT-P02 | parser/serializer policy belongs to Plate serializers; raw Slate owns only fragment insertion |
-| 27 | `packages/editor/src/converters/converter.text-html.deserialize.test.ts` | yes | plate-owned | PT-P02 | parser/serializer policy belongs to Plate serializers; raw Slate owns only fragment insertion |
-| 28 | `packages/editor/src/converters/converter.text-html.serialize.test.ts` | yes | plate-owned | PT-P02 | parser/serializer policy belongs to Plate serializers; raw Slate owns only fragment insertion |
-| 29 | `packages/editor/src/converters/converter.text-plain.test.ts` | yes | plate-owned | PT-P02 | parser/serializer policy belongs to Plate serializers; raw Slate owns only fragment insertion |
+| 26 | `packages/editor/src/converters/converter.portable-text.deserialize.test.ts` | yes | plate-owned | PT-P02 | parser/serializer policy belongs to Plate serializers; raw Plite owns only fragment insertion |
+| 27 | `packages/editor/src/converters/converter.text-html.deserialize.test.ts` | yes | plate-owned | PT-P02 | parser/serializer policy belongs to Plate serializers; raw Plite owns only fragment insertion |
+| 28 | `packages/editor/src/converters/converter.text-html.serialize.test.ts` | yes | plate-owned | PT-P02 | parser/serializer policy belongs to Plate serializers; raw Plite owns only fragment insertion |
+| 29 | `packages/editor/src/converters/converter.text-plain.test.ts` | yes | plate-owned | PT-P02 | parser/serializer policy belongs to Plate serializers; raw Plite owns only fragment insertion |
 | 30 | `packages/editor/src/editor/get-selection-state.test.ts` | yes | portable | PT-H01 | selection/focus projection invariant |
 | 31 | `packages/editor/src/editor/resolve-element-drop-position.test.ts` | yes | portable-mixed | PT-H07 | native drag/drop substrate mixed with product drag handles and schema objects |
 | 32 | `packages/editor/src/editor/validate-selection-machine.test.ts` | yes | portable | PT-H01 | selection/focus projection invariant |
@@ -87,12 +87,12 @@ Rerun delta against the previous appendix: 0 new rows, 0 removed rows.
 | 69 | `packages/editor/src/plugins/plugin.internal.auto-close-brackets.test.tsx` | yes | portable-mixed | PT-H12 | raw event/command pressure mixed with Plate plugin or renderer API policy |
 | 70 | `packages/editor/src/priority/priority.sort.test.ts` | yes | portable-mixed | PT-H12 | raw event/command pressure mixed with Plate plugin or renderer API policy |
 | 71 | `packages/editor/src/renderers/renderer.types.test.tsx` | yes | portable-mixed | PT-H12 | raw event/command pressure mixed with Plate plugin or renderer API policy |
-| 72 | `packages/editor/src/schema/get-block-object-schema.test.ts` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 73 | `packages/editor/src/schema/resolve-containers.test.ts` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
+| 72 | `packages/editor/src/schema/get-block-object-schema.test.ts` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 73 | `packages/editor/src/schema/resolve-containers.test.ts` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
 | 74 | `packages/editor/src/selectors/drag-selection.test.ts` | yes | portable-mixed | PT-H07 | native drag/drop substrate mixed with product drag handles and schema objects |
 | 75 | `packages/editor/src/selectors/selector.get-active-annotations.test.ts` | yes | plate-owned | PT-P01 | Portable Text marks, annotations, comments, or decorators are Plate product policy |
 | 76 | `packages/editor/src/selectors/selector.get-active-decorators.test.ts` | yes | plate-owned | PT-P01 | Portable Text marks, annotations, comments, or decorators are Plate product policy |
-| 77 | `packages/editor/src/selectors/selector.get-applicable-schema.test.ts` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
+| 77 | `packages/editor/src/selectors/selector.get-applicable-schema.test.ts` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
 | 78 | `packages/editor/src/selectors/selector.get-caret-word-selection.test.ts` | yes | portable | PT-H01 | selection/focus projection invariant |
 | 79 | `packages/editor/src/selectors/selector.get-default-style.test.ts` | yes | plate-owned | PT-P01 | Portable Text marks, annotations, comments, or decorators are Plate product policy |
 | 80 | `packages/editor/src/selectors/selector.get-fragment.test.ts` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
@@ -115,9 +115,9 @@ Rerun delta against the previous appendix: 0 new rows, 0 removed rows.
 | 97 | `packages/editor/src/test/vitest/step-context.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 98 | `packages/editor/src/test/vitest/step-definitions.tsx` | yes | harness | none | upstream test harness/helper proof, not product/editor behavior |
 | 99 | `packages/editor/src/test/vitest/test-editor.tsx` | no | harness | none | support file discovered by inventory path but no test/scenario call |
-| 100 | `packages/editor/src/traversal/get-path-sub-schema.test.ts` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 101 | `packages/editor/src/traversal/get-union-schema.test.ts` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 102 | `packages/editor/src/utils/parse-blocks.test.ts` | yes | plate-owned | PT-P02 | parser/serializer policy belongs to Plate serializers; raw Slate owns only fragment insertion |
+| 100 | `packages/editor/src/traversal/get-path-sub-schema.test.ts` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 101 | `packages/editor/src/traversal/get-union-schema.test.ts` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 102 | `packages/editor/src/utils/parse-blocks.test.ts` | yes | plate-owned | PT-P02 | parser/serializer policy belongs to Plate serializers; raw Plite owns only fragment insertion |
 | 103 | `packages/editor/src/utils/util.block-offset.test.ts` | yes | portable | PT-H04 | insert/split/break placement invariant |
 | 104 | `packages/editor/src/utils/util.slice-text-block.test.ts` | yes | portable | PT-H04 | insert/split/break placement invariant |
 | 105 | `packages/editor/test-utils/boundary-equivalent.test.ts` | yes | portable | PT-H01 | generic selection helper invariant |
@@ -130,35 +130,35 @@ Rerun delta against the previous appendix: 0 new rows, 0 removed rows.
 | 112 | `packages/editor/test-utils/text-selection.test.ts` | yes | harness | none | upstream test harness/helper proof, not product/editor behavior |
 | 113 | `packages/editor/test-utils/to-textspec.test.ts` | yes | harness | none | upstream test harness/helper proof, not product/editor behavior |
 | 114 | `packages/editor/tests/PortableTextEditor.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
-| 115 | `packages/editor/tests/backspace-before-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
+| 115 | `packages/editor/tests/backspace-before-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
 | 116 | `packages/editor/tests/behavior-api.test.tsx` | yes | portable-mixed | PT-H12 | raw event/command pressure mixed with Plate plugin or renderer API policy |
 | 117 | `packages/editor/tests/behavior.snapshot-leak.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
-| 118 | `packages/editor/tests/block-selectors-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 119 | `packages/editor/tests/child-selectors-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 120 | `packages/editor/tests/click-lonely-block-object-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
+| 118 | `packages/editor/tests/block-selectors-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 119 | `packages/editor/tests/child-selectors-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 120 | `packages/editor/tests/click-lonely-block-object-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
 | 121 | `packages/editor/tests/code-block-registration.test.tsx` | yes | portable-mixed | PT-H12 | raw event/command pressure mixed with Plate plugin or renderer API policy |
 | 122 | `packages/editor/tests/code-block.navigation.test.tsx` | yes | portable-mixed | PT-H12 | raw event/command pressure mixed with Plate plugin or renderer API policy |
 | 123 | `packages/editor/tests/code-block.test.tsx` | yes | portable-mixed | PT-H12 | raw event/command pressure mixed with Plate plugin or renderer API policy |
 | 124 | `packages/editor/tests/collaborative-editing.test.tsx` | yes | portable | PT-H08 | collaboration/history/remote selection invariant |
 | 125 | `packages/editor/tests/composition.test.ts` | yes | portable | PT-H09 | IME/composition transport invariant |
-| 126 | `packages/editor/tests/container-dual-type.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 127 | `packages/editor/tests/container-enter-escape.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 128 | `packages/editor/tests/container-insert-block.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 129 | `packages/editor/tests/container-normalization.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 130 | `packages/editor/tests/container-permutations.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 131 | `packages/editor/tests/container-render-focused-selected.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 132 | `packages/editor/tests/container-rendering.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 133 | `packages/editor/tests/container-resolution-rules.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 134 | `packages/editor/tests/container-typing.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 135 | `packages/editor/tests/cross-container-range-delete.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
+| 126 | `packages/editor/tests/container-dual-type.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 127 | `packages/editor/tests/container-enter-escape.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 128 | `packages/editor/tests/container-insert-block.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 129 | `packages/editor/tests/container-normalization.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 130 | `packages/editor/tests/container-permutations.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 131 | `packages/editor/tests/container-render-focused-selected.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 132 | `packages/editor/tests/container-rendering.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 133 | `packages/editor/tests/container-resolution-rules.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 134 | `packages/editor/tests/container-typing.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 135 | `packages/editor/tests/cross-container-range-delete.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
 | 136 | `packages/editor/tests/data-path.test.tsx` | yes | portable | PT-H11 | core path/operation/traversal invariant |
-| 137 | `packages/editor/tests/define-container-leaf-conflict.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
+| 137 | `packages/editor/tests/define-container-leaf-conflict.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
 | 138 | `packages/editor/tests/define-leaf-block-object-wrapper.test.tsx` | yes | portable | PT-H03 | void/object boundary invariant |
 | 139 | `packages/editor/tests/define-leaf-inline-object-spacer.test.tsx` | yes | portable | PT-H03 | void/object boundary invariant |
 | 140 | `packages/editor/tests/define-textblock.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
-| 141 | `packages/editor/tests/delete-empty-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 142 | `packages/editor/tests/dom-structure.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 143 | `packages/editor/tests/edge-selectors-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
+| 141 | `packages/editor/tests/delete-empty-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 142 | `packages/editor/tests/dom-structure.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 143 | `packages/editor/tests/edge-selectors-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
 | 144 | `packages/editor/tests/editable-api.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
 | 145 | `packages/editor/tests/editor-snapshot.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
 | 146 | `packages/editor/tests/event.annotation.add.test.tsx` | yes | plate-owned | PT-P01 | Portable Text marks, annotations, comments, or decorators are Plate product policy |
@@ -193,7 +193,7 @@ Rerun delta against the previous appendix: 0 new rows, 0 removed rows.
 | 175 | `packages/editor/tests/event.insert.text.test.tsx` | yes | portable | PT-H04 | insert/split/break placement invariant |
 | 176 | `packages/editor/tests/event.keyboard.keydown.test.tsx` | yes | portable-mixed | PT-H12 | raw event/command pressure mixed with Plate plugin or renderer API policy |
 | 177 | `packages/editor/tests/event.list-item.add.test.tsx` | yes | plate-owned | PT-P01 | list indentation/rendering policy belongs to Plate lists |
-| 178 | `packages/editor/tests/event.move.block.cross-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
+| 178 | `packages/editor/tests/event.move.block.cross-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
 | 179 | `packages/editor/tests/event.move.block.selection.test.tsx` | yes | portable | PT-H01 | selection/focus projection invariant |
 | 180 | `packages/editor/tests/event.move.block.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
 | 181 | `packages/editor/tests/event.mutation.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
@@ -207,7 +207,7 @@ Rerun delta against the previous appendix: 0 new rows, 0 removed rows.
 | 189 | `packages/editor/tests/event.set.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
 | 190 | `packages/editor/tests/event.split.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
 | 191 | `packages/editor/tests/event.unset.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
-| 192 | `packages/editor/tests/event.update-value.container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
+| 192 | `packages/editor/tests/event.update-value.container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
 | 193 | `packages/editor/tests/event.update-value.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
 | 194 | `packages/editor/tests/event.value-changed.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
 | 195 | `packages/editor/tests/focus.test.tsx` | yes | portable | PT-H01 | selection/focus projection invariant |
@@ -217,7 +217,7 @@ Rerun delta against the previous appendix: 0 new rows, 0 removed rows.
 | 199 | `packages/editor/tests/inline-objects.test.tsx` | yes | portable | PT-H03 | void/object boundary invariant |
 | 200 | `packages/editor/tests/inline-pipeline-mode-inheritance.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
 | 201 | `packages/editor/tests/insert-block.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
-| 202 | `packages/editor/tests/insert-respects-sub-schema.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
+| 202 | `packages/editor/tests/insert-respects-sub-schema.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
 | 203 | `packages/editor/tests/legacy-suppression.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
 | 204 | `packages/editor/tests/list-index.test.tsx` | yes | plate-owned | PT-P01 | list indentation/rendering policy belongs to Plate lists |
 | 205 | `packages/editor/tests/mark-state-selectors-container.test.tsx` | yes | plate-owned | PT-P01 | Portable Text marks, annotations, comments, or decorators are Plate product policy |
@@ -234,9 +234,9 @@ Rerun delta against the previous appendix: 0 new rows, 0 removed rows.
 | 216 | `packages/editor/tests/positional-override-negative.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
 | 217 | `packages/editor/tests/pteWarningsSelfSolving.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
 | 218 | `packages/editor/tests/range-decorations.test.tsx` | yes | portable | PT-H01 | selection/focus projection invariant |
-| 219 | `packages/editor/tests/range-selectors-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
+| 219 | `packages/editor/tests/range-selectors-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
 | 220 | `packages/editor/tests/recursive-list-cross-plugin-code-block.test.tsx` | yes | plate-owned | PT-P01 | list indentation/rendering policy belongs to Plate lists |
-| 221 | `packages/editor/tests/recursive-schema.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
+| 221 | `packages/editor/tests/recursive-schema.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
 | 222 | `packages/editor/tests/register-node-clean-dom.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
 | 223 | `packages/editor/tests/render-annotation.test.tsx` | yes | plate-owned | PT-P01 | Portable Text marks, annotations, comments, or decorators are Plate product policy |
 | 224 | `packages/editor/tests/render-block.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
@@ -244,7 +244,7 @@ Rerun delta against the previous appendix: 0 new rows, 0 removed rows.
 | 226 | `packages/editor/tests/render-count-regression.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
 | 227 | `packages/editor/tests/render-decorator.test.tsx` | yes | plate-owned | PT-P01 | Portable Text marks, annotations, comments, or decorators are Plate product policy |
 | 228 | `packages/editor/tests/render-default-prop.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
-| 229 | `packages/editor/tests/schema-no-intermediate-row.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
+| 229 | `packages/editor/tests/schema-no-intermediate-row.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
 | 230 | `packages/editor/tests/selection-after-remote-patches.test.tsx` | yes | portable | PT-H08 | collaboration/history/remote selection invariant |
 | 231 | `packages/editor/tests/selection-emit-dedup.test.tsx` | yes | portable | PT-H08 | collaboration/history/remote selection invariant |
 | 232 | `packages/editor/tests/selection-emit-stability.test.tsx` | yes | portable | PT-H08 | collaboration/history/remote selection invariant |
@@ -253,8 +253,8 @@ Rerun delta against the previous appendix: 0 new rows, 0 removed rows.
 | 235 | `packages/editor/tests/setup.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
 | 236 | `packages/editor/tests/tables.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
 | 237 | `packages/editor/tests/test-editor.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
-| 238 | `packages/editor/tests/text-edge-selectors-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Slate while schema/render policy belongs to Plate |
-| 239 | `packages/editor/tests/text-plain-paste.test.tsx` | yes | plate-owned | PT-P02 | parser/serializer policy belongs to Plate serializers; raw Slate owns only fragment insertion |
+| 238 | `packages/editor/tests/text-edge-selectors-container.test.tsx` | yes | portable-mixed | PT-H02 | content-root behavior pressures Plite while schema/render policy belongs to Plate |
+| 239 | `packages/editor/tests/text-plain-paste.test.tsx` | yes | plate-owned | PT-P02 | parser/serializer policy belongs to Plate serializers; raw Plite owns only fragment insertion |
 | 240 | `packages/editor/tests/to-engine-range.test.tsx` | yes | portable | PT-H01 | selection/focus projection invariant |
 | 241 | `packages/editor/tests/undo-merge-blocks.test.tsx` | yes | portable-mixed | PT-H12 | editor behavior with framework policy mixed in |
 | 242 | `packages/editor/tests/undo-redo-collaboration.test.tsx` | yes | portable | PT-H08 | collaboration/history/remote selection invariant |
@@ -413,11 +413,11 @@ Rerun delta against the previous appendix: 0 new rows, 0 removed rows.
 | 395 | `packages/plugin-typography/src/input-rule.em-dash.test.tsx` | yes | plate-owned | PT-P02 | serializer, schema, plugin, toolbar, bridge, or product package belongs to Plate/docs |
 | 396 | `packages/plugin-typography/src/input-rule.multiplication.test.tsx` | yes | plate-owned | PT-P02 | serializer, schema, plugin, toolbar, bridge, or product package belongs to Plate/docs |
 | 397 | `packages/plugin-typography/src/input-rule.smart-quotes.test.tsx` | yes | plate-owned | PT-P02 | serializer, schema, plugin, toolbar, bridge, or product package belongs to Plate/docs |
-| 398 | `packages/racejar/example-playwright/playwright-homepage.test.ts` | yes | skip | none | non-editor package row with no Slate/Plate harvest value |
-| 399 | `packages/racejar/example/vitest.hello-herman.test.ts` | yes | skip | none | non-editor package row with no Slate/Plate harvest value |
-| 400 | `packages/racejar/example/vitest.hooks.test.ts` | yes | skip | none | non-editor package row with no Slate/Plate harvest value |
+| 398 | `packages/racejar/example-playwright/playwright-homepage.test.ts` | yes | skip | none | non-editor package row with no Plite/Plate harvest value |
+| 399 | `packages/racejar/example/vitest.hello-herman.test.ts` | yes | skip | none | non-editor package row with no Plite/Plate harvest value |
+| 400 | `packages/racejar/example/vitest.hooks.test.ts` | yes | skip | none | non-editor package row with no Plite/Plate harvest value |
 | 401 | `packages/racejar/src/playwright/index.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
-| 402 | `packages/racejar/src/playwright/playwright-gherkin-driver.ts` | yes | skip | none | non-editor package row with no Slate/Plate harvest value |
+| 402 | `packages/racejar/src/playwright/playwright-gherkin-driver.ts` | yes | skip | none | non-editor package row with no Plite/Plate harvest value |
 | 403 | `packages/sanity-bridge/src/same-name-objects.test.ts` | yes | plate-owned | PT-P02 | serializer, schema, plugin, toolbar, bridge, or product package belongs to Plate/docs |
 | 404 | `packages/sanity-bridge/src/sanity-schema-to-portable-text-schema.test.ts` | yes | plate-owned | PT-P02 | serializer, schema, plugin, toolbar, bridge, or product package belongs to Plate/docs |
 | 405 | `packages/schema/src/compile-schema.test.ts` | yes | plate-owned | PT-P02 | serializer, schema, plugin, toolbar, bridge, or product package belongs to Plate/docs |
@@ -427,14 +427,14 @@ Rerun delta against the previous appendix: 0 new rows, 0 removed rows.
 | 409 | `packages/test/package.config.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 410 | `packages/test/package.json` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 411 | `packages/test/src/index.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
-| 412 | `packages/test/src/terse-pt.test.ts` | yes | skip | none | non-editor package row with no Slate/Plate harvest value |
+| 412 | `packages/test/src/terse-pt.test.ts` | yes | skip | none | non-editor package row with no Plite/Plate harvest value |
 | 413 | `packages/test/src/terse-pt.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 414 | `packages/test/src/test-key-generator.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 415 | `packages/test/tsconfig.dist.json` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 416 | `packages/test/tsconfig.json` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 417 | `packages/test/tsconfig.settings.json` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 418 | `packages/toolbar/src/use-toolbar-schema.test.tsx` | yes | plate-owned | PT-P02 | serializer, schema, plugin, toolbar, bridge, or product package belongs to Plate/docs |
-| 419 | `react-portabletext/test/components.test.tsx` | yes | skip | none | non-editor package row with no Slate/Plate harvest value |
+| 419 | `react-portabletext/test/components.test.tsx` | yes | skip | none | non-editor package row with no Plite/Plate harvest value |
 | 420 | `react-portabletext/test/fixtures/001-empty-block.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 421 | `react-portabletext/test/fixtures/002-single-span.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 422 | `react-portabletext/test/fixtures/003-multiple-spans.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
@@ -467,15 +467,15 @@ Rerun delta against the previous appendix: 0 new rows, 0 removed rows.
 | 449 | `react-portabletext/test/fixtures/061-missing-mark-component.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 450 | `react-portabletext/test/fixtures/062-custom-block-type-with-children.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 451 | `react-portabletext/test/fixtures/index.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
-| 452 | `react-portabletext/test/mutations.test.tsx` | yes | skip | none | non-editor package row with no Slate/Plate harvest value |
-| 453 | `react-portabletext/test/portable-text.test.tsx` | yes | skip | none | non-editor package row with no Slate/Plate harvest value |
-| 454 | `react-portabletext/test/toPlainText.test.ts` | yes | skip | none | non-editor package row with no Slate/Plate harvest value |
+| 452 | `react-portabletext/test/mutations.test.tsx` | yes | skip | none | non-editor package row with no Plite/Plate harvest value |
+| 453 | `react-portabletext/test/portable-text.test.tsx` | yes | skip | none | non-editor package row with no Plite/Plate harvest value |
+| 454 | `react-portabletext/test/toPlainText.test.ts` | yes | skip | none | non-editor package row with no Plite/Plate harvest value |
 | 455 | `react-portabletext/test/typegen/sanity.cli.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 456 | `react-portabletext/test/typegen/sanity.config.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 457 | `react-portabletext/test/typegen/sanity.types.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 458 | `react-portabletext/test/typegen/schema.json` | no | harness | none | support file discovered by inventory path but no test/scenario call |
-| 459 | `react-portabletext/test/typegen/typegen.test-d.tsx` | yes | skip | none | non-editor package row with no Slate/Plate harvest value |
-| 460 | `to-html/test/escaping.test.ts` | yes | skip | none | non-editor package row with no Slate/Plate harvest value |
+| 459 | `react-portabletext/test/typegen/typegen.test-d.tsx` | yes | skip | none | non-editor package row with no Plite/Plate harvest value |
+| 460 | `to-html/test/escaping.test.ts` | yes | skip | none | non-editor package row with no Plite/Plate harvest value |
 | 461 | `to-html/test/fixtures/001-empty-block.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 462 | `to-html/test/fixtures/002-single-span.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 463 | `to-html/test/fixtures/003-multiple-spans.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
@@ -515,6 +515,6 @@ Rerun delta against the previous appendix: 0 new rows, 0 removed rows.
 | 497 | `to-html/test/fixtures/062-multiple-spaces.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 498 | `to-html/test/fixtures/063-custom-escape-html.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
 | 499 | `to-html/test/fixtures/index.ts` | no | harness | none | support file discovered by inventory path but no test/scenario call |
-| 500 | `to-html/test/mutations.test.ts` | yes | skip | none | non-editor package row with no Slate/Plate harvest value |
-| 501 | `to-html/test/portable-text.test.ts` | yes | skip | none | non-editor package row with no Slate/Plate harvest value |
-| 502 | `to-html/test/serializers.test.ts` | yes | skip | none | non-editor package row with no Slate/Plate harvest value |
+| 500 | `to-html/test/mutations.test.ts` | yes | skip | none | non-editor package row with no Plite/Plate harvest value |
+| 501 | `to-html/test/portable-text.test.ts` | yes | skip | none | non-editor package row with no Plite/Plate harvest value |
+| 502 | `to-html/test/serializers.test.ts` | yes | skip | none | non-editor package row with no Plite/Plate harvest value |

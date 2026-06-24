@@ -1,42 +1,46 @@
-import type { TElement } from 'platejs';
+import type { TMediaElement } from 'platejs';
 import type { PlateEditor } from 'platejs/react';
 
 import { KEYS } from 'platejs';
 
-const historyMarks = new WeakMap<PlateEditor, boolean>();
-
-export const withHistoryMark = (editor: PlateEditor, fn: () => void) => {
-  const prev = isHistoryMarking(editor);
-  historyMarks.set(editor, true);
-  fn();
-  historyMarks.set(editor, prev);
+type UploadHistoryOperation = {
+  node?: { id?: string };
+  type?: string;
 };
 
-export const isHistoryMarking = (editor: PlateEditor): boolean =>
-  historyMarks.get(editor) ?? false;
+type UploadHistoryBatch = {
+  operations: UploadHistoryOperation[];
+  [KEYS.placeholder]?: boolean;
+};
 
-export const updateUploadHistory = (editor: PlateEditor, node: TElement) => {
-  const index = editor.history.undos.findLastIndex(
-    (batch: any) =>
-      batch[KEYS.placeholder] &&
-      batch.operations.some(
-        (operation: any) =>
-          operation.type === 'insert_node' &&
-          operation.node.id === node.placeholderId
-      )
+const isPlaceholderInsertOperation = (
+  operation: UploadHistoryOperation,
+  placeholderId: string | undefined
+) => operation.type === 'insert_node' && operation.node?.id === placeholderId;
+
+export const updateUploadHistory = (
+  editor: PlateEditor,
+  node: TMediaElement
+) => {
+  const history = editor.history as { undos?: UploadHistoryBatch[] };
+  const undos = history.undos;
+
+  if (!undos) return;
+
+  const index = undos.findLastIndex((batch) =>
+    batch.operations.some((operation) =>
+      isPlaceholderInsertOperation(operation, node.placeholderId)
+    )
   );
 
   if (index < 0) return;
 
-  const batch = editor.history.undos[index];
+  const batch = undos[index];
 
-  const newOperations: any[] = [];
+  const newOperations: UploadHistoryOperation[] = [];
 
   for (const operation of batch.operations) {
-    if (
-      (operation.type === 'insert_node' && (operation.node as any)).id ===
-      node.placeholderId
-    ) {
+    if (isPlaceholderInsertOperation(operation, node.placeholderId)) {
       newOperations.push({
         ...operation,
         node,
@@ -53,5 +57,5 @@ export const updateUploadHistory = (editor: PlateEditor, node: TElement) => {
     operations: newOperations,
   };
 
-  editor.history.undos[index] = newBatch;
+  undos[index] = newBatch;
 };

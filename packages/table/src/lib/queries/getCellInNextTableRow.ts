@@ -1,16 +1,16 @@
 import {
-  type Editor,
+  type Element,
   type NodeEntry,
   type Path,
-  type TElement,
   PathApi,
-} from 'platejs';
+} from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 export const getCellInNextTableRow = (
-  editor: Editor,
+  editor: BasePlateEditor,
   currentRowPath: Path
 ): NodeEntry | undefined => {
-  const nextRow = editor.api.node<TElement>(PathApi.next(currentRowPath));
+  const nextRow = editor.api.node<Element>(PathApi.next(currentRowPath));
 
   if (!nextRow) return;
 

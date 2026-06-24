@@ -16,6 +16,8 @@ import { cn } from '@/lib/utils';
 
 import '@/app/globals.css';
 
+const isPliteMode = process.env.PLATE_WWW_PLITE === '1';
+
 export const metadata: Metadata = {
   authors: [
     {
@@ -32,7 +34,7 @@ export const metadata: Metadata = {
   },
   keywords: [
     'Plate',
-    'Slate',
+    'Plite',
     'editor',
     'wysiwyg',
     'Tailwind CSS',
@@ -121,11 +123,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
           </Providers>
         </NuqsAdapter>
 
-        {process.env.NODE_ENV === 'development' && <Agentation />}
-        <TailwindIndicator />
+        {process.env.NODE_ENV === 'development' && !isPliteMode && (
+          <Agentation />
+        )}
+        {!isPliteMode && <TailwindIndicator />}
 
-        <GA />
-        <Toaster />
+        {!isPliteMode && <GA />}
+        {!isPliteMode && <Toaster />}
       </body>
     </html>
   );

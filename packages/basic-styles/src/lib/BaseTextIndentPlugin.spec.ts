@@ -1,10 +1,10 @@
-import { BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, KEYS, createBasePlateEditor } from 'platejs';
 
 import { BaseTextIndentPlugin } from './BaseTextIndentPlugin';
 
 describe('BaseTextIndentPlugin', () => {
   it('exposes the default injected block contract', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseTextIndentPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseTextIndentPlugin);
@@ -32,7 +32,7 @@ describe('BaseTextIndentPlugin', () => {
         unit: 'em',
       },
     });
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, TextIndentPlugin],
     } as any);
     const plugin = editor.getPlugin(TextIndentPlugin);
@@ -47,7 +47,7 @@ describe('BaseTextIndentPlugin', () => {
   });
 
   it('applies and clears text indent through node updates', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseTextIndentPlugin],
       value: [
         {
@@ -58,10 +58,14 @@ describe('BaseTextIndentPlugin', () => {
     } as any);
     const nodeKey = editor.getType(KEYS.textIndent);
 
-    editor.tf.setNodes({ [nodeKey]: 2 }, { at: [0] });
+    editor.update((tx) => {
+      tx.nodes.set({ [nodeKey]: 2 }, { at: [0] });
+    });
     expect((editor.children[0] as any)[nodeKey]).toBe(2);
 
-    editor.tf.unsetNodes(nodeKey, { at: [0] });
+    editor.update((tx) => {
+      tx.nodes.unset(nodeKey, { at: [0] });
+    });
     expect((editor.children[0] as any)[nodeKey]).toBeUndefined();
   });
 });

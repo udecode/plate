@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { NodeApi } from '@platejs/slate';
 import clsx from 'clsx';
 
 import type { EditableProps } from '../../lib';
@@ -8,6 +7,10 @@ import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin';
 
+import {
+  getEditorNode,
+  isEditorSelectionCollapsed,
+} from '../../internal/utils/runtimeEditorQueries';
 import { PlateLeaf } from '../components';
 import { useReadOnly } from '../slate-react';
 import { getRenderNodeProps } from './getRenderNodeProps';
@@ -20,13 +23,13 @@ const HARD_AFFINITY_SPACER_STYLE = {
 } as const;
 
 const isActiveHardAffinityBoundary = (editor: PlateEditor, text: any) => {
-  if (!editor.api.isCollapsed()) return false;
+  if (!isEditorSelectionCollapsed(editor)) return false;
 
   const focus = editor.selection?.focus;
 
   if (!focus) return false;
 
-  const selectedText = NodeApi.get(editor, focus.path);
+  const selectedText = getEditorNode(editor, focus.path)?.[0];
 
   if (selectedText !== text) return false;
 
@@ -71,7 +74,7 @@ export const pipeRenderLeaf = (
 
       if (canUseSimpleLeaf) {
         const entry = {
-          className: plugin.node.type ? `slate-${plugin.node.type}` : undefined,
+          className: plugin.node.type ? `plite-${plugin.node.type}` : undefined,
           editOnly: plugin.editOnly,
           key: leafKey,
           selectionAffinity: plugin.rules.selection?.affinity,

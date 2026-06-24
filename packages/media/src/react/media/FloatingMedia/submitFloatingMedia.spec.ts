@@ -1,4 +1,4 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { BaseMediaEmbedPlugin } from '../../../lib/media-embed/BaseMediaEmbedPlugin';
 import { FloatingMediaStore } from './FloatingMediaStore';
@@ -11,7 +11,7 @@ describe('submitFloatingMedia', () => {
   });
 
   it('applies transformUrl before validation so allowlisted embed snippets can submit', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseMediaEmbedPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 0] },
@@ -26,8 +26,8 @@ describe('submitFloatingMedia', () => {
       ],
     } as any);
 
-    const setNodes = spyOn(editor.tf, 'setNodes');
-    const focus = spyOn(editor.tf, 'focus');
+    const focus = mock();
+    (editor.api as any).dom = { focus };
 
     FloatingMediaStore.set(
       'url',
@@ -40,17 +40,16 @@ describe('submitFloatingMedia', () => {
     });
 
     expect(result).toBe(true);
-    expect(setNodes).toHaveBeenCalledWith({
+    expect(editor.children[0]).toMatchObject({
       id: '1234567890',
       provider: 'twitter',
-      sourceUrl: undefined,
       url: 'https://x.com/platejs/status/1234567890',
     });
     expect(focus).toHaveBeenCalled();
   });
 
   it('stores canonical provider metadata for supported video urls', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseMediaEmbedPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 0] },
@@ -65,7 +64,7 @@ describe('submitFloatingMedia', () => {
       ],
     } as any);
 
-    const setNodes = spyOn(editor.tf, 'setNodes');
+    (editor.api as any).dom = { focus: mock() };
 
     FloatingMediaStore.set(
       'url',
@@ -78,7 +77,7 @@ describe('submitFloatingMedia', () => {
     });
 
     expect(result).toBe(true);
-    expect(setNodes).toHaveBeenCalledWith({
+    expect(editor.children[0]).toMatchObject({
       id: 'M7lc1UVf-VE',
       provider: 'youtube',
       sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
@@ -87,7 +86,7 @@ describe('submitFloatingMedia', () => {
   });
 
   it('rejects non-allowlisted script embed snippets after transform', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseMediaEmbedPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 0] },
@@ -102,8 +101,8 @@ describe('submitFloatingMedia', () => {
       ],
     } as any);
 
-    const setNodes = spyOn(editor.tf, 'setNodes');
-    const focus = spyOn(editor.tf, 'focus');
+    const focus = mock();
+    (editor.api as any).dom = { focus };
 
     FloatingMediaStore.set(
       'url',
@@ -116,7 +115,9 @@ describe('submitFloatingMedia', () => {
     });
 
     expect(result).toBeUndefined();
-    expect(setNodes).not.toHaveBeenCalled();
+    expect(editor.children[0]).toMatchObject({
+      url: 'https://example.com/old',
+    });
     expect(focus).not.toHaveBeenCalled();
   });
 });

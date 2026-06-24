@@ -5,9 +5,8 @@ import {
   type ExtendConfig,
   type NodeComponent,
   type PluginConfig,
-  type SlatePlugin,
-  createSlatePlugin,
-  createTSlatePlugin,
+  type EditorPlugin,
+  createEditorPlugin,
 } from '../../lib';
 import { createPlateEditor } from '../editor';
 import { toPlatePlugin, toTPlatePlugin } from './toPlatePlugin';
@@ -36,7 +35,7 @@ type CodeBlockConfig2 = CodeBlockConfig & {
 };
 
 describe('toPlatePlugin', () => {
-  const BaseParagraphPlugin = createSlatePlugin({
+  const BaseParagraphPlugin = createEditorPlugin({
     key: 'p',
     node: { isElement: true },
     options: { t: 1 },
@@ -55,7 +54,7 @@ describe('toPlatePlugin', () => {
   const MockComponent: NodeComponent = () => null;
   const MockAboveComponent: NodeComponent = () => null;
 
-  it('extend a SlatePlugin with React-specific properties and API', () => {
+  it('extend a EditorPlugin with React-specific properties and API', () => {
     const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin, {
       handlers: { onKeyDown: () => true },
       options: { hotkey: ['mod+opt+0', 'mod+shift+0'] },
@@ -134,7 +133,7 @@ describe('toPlatePlugin', () => {
     type TestConfig = PluginConfig<'test', { foo: string }>;
     type ExtendedConfig = PluginConfig<'test', { baz: number; foo: string }>;
 
-    const basePlugin: SlatePlugin<TestConfig> = createTSlatePlugin();
+    const basePlugin: EditorPlugin<TestConfig> = createEditorPlugin();
     const extended: PlatePlugin<ExtendedConfig> = toPlatePlugin(basePlugin, {
       options: { baz: 123 },
     });
@@ -147,7 +146,7 @@ describe('toPlatePlugin', () => {
 
 describe('toPlatePlugin type tests', () => {
   it('work with CodeBlockConfig for toPlatePlugin', () => {
-    const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
+    const BaseCodeBlockPlugin = createEditorPlugin<CodeBlockConfig>({
       key: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
     }).extendEditorApi<CodeBlockConfig['api']>(() => ({
@@ -160,7 +159,6 @@ describe('toPlatePlugin type tests', () => {
     const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
       handlers: {},
       options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
-      extendEditor: ({ editor }) => editor,
     }).extendEditorApi(() => ({
       plugin: {
         getLanguage: () => 'javascript' as string,
@@ -210,7 +208,7 @@ describe('toPlatePlugin type tests', () => {
   });
 
   it('work with function-based extension', () => {
-    const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
+    const BaseCodeBlockPlugin = createEditorPlugin<CodeBlockConfig>({
       key: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
     });
@@ -248,7 +246,7 @@ describe('toPlatePlugin type tests', () => {
   it('allow partial extension of options', () => {
     type TestConfig = PluginConfig<'test', { bar: number; foo: string }>;
 
-    const BasePlugin = createTSlatePlugin<TestConfig>({
+    const BasePlugin = createEditorPlugin<TestConfig>({
       key: 'test',
       options: { bar: 0, foo: 'initial' },
     });
@@ -272,7 +270,7 @@ describe('toPlatePlugin type tests', () => {
     type BaseConfig = PluginConfig<'test', { foo: string }>;
     type ExtendedConfig = ExtendConfig<BaseConfig, { bar: number }>;
 
-    const BasePlugin = createTSlatePlugin<BaseConfig>({
+    const BasePlugin = createEditorPlugin<BaseConfig>({
       key: 'test',
       options: { foo: 'initial' },
     });
@@ -313,7 +311,7 @@ describe('toPlatePlugin type tests', () => {
 // Type tests for toTPlatePlugin
 describe('toTPlatePlugin type tests', () => {
   it('work with CodeBlockConfig for toTPlatePlugin', () => {
-    const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
+    const BaseCodeBlockPlugin = createEditorPlugin<CodeBlockConfig>({
       key: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
     }).extendEditorApi<CodeBlockConfig['api']>(() => ({
@@ -330,18 +328,14 @@ describe('toTPlatePlugin type tests', () => {
           hotkey: ['mod+opt+8', 'mod+shift+8'],
         },
       }
-    )
-      .extendEditorApi(() => ({
-        plugin: {
-          getLanguage: () => 'javascript',
-        },
-        plugin2: {
-          setLanguage: (_: string) => {},
-        },
-      }))
-      .extend({
-        extendEditor: ({ editor }) => editor,
-      });
+    ).extendEditorApi(() => ({
+      plugin: {
+        getLanguage: () => 'javascript',
+      },
+      plugin2: {
+        setLanguage: (_: string) => {},
+      },
+    }));
 
     const editor = createPlateEditor({
       plugins: [CodeBlockPlugin],
@@ -388,7 +382,7 @@ describe('toTPlatePlugin type tests', () => {
     >;
     type CodeBlockConfig2 = ExtendConfig<CodeBlockConfig, { hotkey: string[] }>;
 
-    const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
+    const BaseCodeBlockPlugin = createEditorPlugin<CodeBlockConfig>({
       key: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
     });
@@ -419,7 +413,7 @@ describe('toTPlatePlugin type tests', () => {
 });
 
 describe('toPlatePlugin with extendPlugin', () => {
-  it('correctly type extendPlugin with SlatePlugin', () => {
+  it('correctly type extendPlugin with EditorPlugin', () => {
     type BaseConfig = PluginConfig<'base', { foo: string }>;
     type ChildConfig = PluginConfig<
       'child',
@@ -427,13 +421,13 @@ describe('toPlatePlugin with extendPlugin', () => {
       { child: () => void }
     >;
 
-    const BasePlugin = createTSlatePlugin<BaseConfig>({
+    const BasePlugin = createEditorPlugin<BaseConfig>({
       key: 'base',
       options: { foo: 'initial' },
     });
 
-    const ChildPlugin: SlatePlugin<ChildConfig> =
-      createTSlatePlugin<ChildConfig>({
+    const ChildPlugin: EditorPlugin<ChildConfig> =
+      createEditorPlugin<ChildConfig>({
         key: 'child',
         options: { bar: 42 },
       });
@@ -459,13 +453,13 @@ describe('toPlatePlugin with extendPlugin', () => {
     type BaseConfig = PluginConfig<'base', { foo: string }>;
     type ChildConfig = PluginConfig<'child', { bar: number }>;
 
-    const BasePlugin = createTSlatePlugin<BaseConfig>({
+    const BasePlugin = createEditorPlugin<BaseConfig>({
       key: 'base',
       options: { foo: 'initial' },
     });
 
     const ChildPlatePlugin: PlatePlugin<ChildConfig> = toPlatePlugin(
-      createTSlatePlugin<ChildConfig>({
+      createEditorPlugin<ChildConfig>({
         key: 'child',
         options: { bar: 42 },
       }),
@@ -505,7 +499,7 @@ describe('toPlatePlugin with direct merge for object configs', () => {
 
     const isUrl = (text: string) => text.startsWith('http');
 
-    const BaseLinkPlugin = createTSlatePlugin<LinkConfig>({
+    const BaseLinkPlugin = createEditorPlugin<LinkConfig>({
       key: 'link',
       options: {
         allowedSchemes: ['http', 'https'],
@@ -537,7 +531,7 @@ describe('toPlatePlugin with direct merge for object configs', () => {
   it('override an existing component', () => {
     const NewComponent: NodeComponent = () => null;
 
-    const basePlugin = createSlatePlugin({
+    const basePlugin = createEditorPlugin({
       key: 'testPlugin',
     });
 

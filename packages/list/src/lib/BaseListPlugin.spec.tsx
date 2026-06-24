@@ -1,6 +1,6 @@
 import ReactDOMServer from 'react-dom/server';
 
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 import { BaseListPlugin } from './BaseListPlugin';
 
 describe('BaseListPlugin', () => {
@@ -41,7 +41,7 @@ describe('BaseListPlugin', () => {
   });
 
   it('parses list metadata and renders list wrappers for list items', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseListPlugin.configure({
           options: {

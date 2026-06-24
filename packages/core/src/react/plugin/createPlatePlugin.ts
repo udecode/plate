@@ -6,7 +6,7 @@ import type { PlatePlugin, PlatePluginMethods } from './PlatePlugin';
 import {
   type AnyPluginConfig,
   type PluginConfig,
-  createSlatePlugin,
+  createEditorPlugin,
 } from '../../lib';
 import { toPlatePlugin } from './toPlatePlugin';
 
@@ -51,7 +51,7 @@ export const createPlatePlugin = <
     | ((editor: PlateEditor) => PlatePluginConfig<K, O, A, T, S>)
     | PlatePluginConfig<K, O, A, T, S> = {}
 ): PlatePlugin<PluginConfig<K, O, A, T, S>> => {
-  const plugin = createSlatePlugin(config as any);
+  const plugin = createEditorPlugin(config as any);
 
   return toPlatePlugin(plugin as any) as any;
 };

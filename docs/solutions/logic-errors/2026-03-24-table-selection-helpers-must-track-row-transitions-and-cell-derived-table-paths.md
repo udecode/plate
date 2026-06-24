@@ -64,4 +64,4 @@ pnpm turbo typecheck --filter=./packages/table
 
 For table helpers, keep direct deterministic specs alongside transform coverage.
 
-When selection code climbs through table structure, resolve from real node entries first. Raw Slate paths are shape-dependent and will happily lie to you.
+When selection code climbs through table structure, resolve from real node entries first. Raw Plite paths are shape-dependent and will happily lie to you.

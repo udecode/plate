@@ -24,12 +24,12 @@ description: 学习如何配置键盘快捷键。
 ```tsx title="plugins/my-document-plugin.ts"
 import { createPlatePlugin, Key } from 'platejs/react';
 
-// 示例：包含 transform 和 API 的简化插件
+// 示例：包含 tx 和 API 的简化插件
 export const MyDocumentPlugin = createPlatePlugin({
   key: 'doc',
 })
-// 定义 editor.tf.doc.format()
-.extendTransforms(({ editor, type }) => ({
+// 定义 tx.doc.format()
+.extendTx(({ editor, type }) => (tx) => ({
   format: () => {
     editor.tf.normalize({ force: true });
   },
@@ -43,7 +43,7 @@ export const MyDocumentPlugin = createPlatePlugin({
 }))
 .extend({ // 或使用 .configure() 扩展现有插件
   shortcuts: {
-    // 这会调用 editor.tf.doc.format()
+    // 这会运行 editor.update((tx) => tx.doc.format())
     format: {
       keys: [[Key.Mod, Key.Shift, 'f']], // 例如 Cmd/Ctrl + Shift + F
     },

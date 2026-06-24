@@ -1,4 +1,4 @@
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
 import { insertListItem } from './insertListItem';
 
@@ -25,11 +25,12 @@ describe('insertListItem', () => {
       },
       getType: (key: string) => key,
       selection: { focus: { offset: 0, path: [0, 0] } },
-      tf: {
-        delete: mock(),
-        insertNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
+      update: (fn: any) =>
+        fn({
+          nodes: { insert: insertNodes },
+          text: { delete: mock() },
+          withoutNormalizing: (callback: () => void) => callback(),
+        }),
     } as any;
 
     expect(
@@ -63,12 +64,13 @@ describe('insertListItem', () => {
       },
       getType: (key: string) => key,
       selection: { focus: { offset: 1, path: [0, 0] } },
-      tf: {
-        delete: mock(),
-        insertNodes,
-        select,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
+      update: (fn: any) =>
+        fn({
+          nodes: { insert: insertNodes },
+          selection: { set: select },
+          text: { delete: mock() },
+          withoutNormalizing: (callback: () => void) => callback(),
+        }),
     } as any;
 
     expect(
@@ -107,15 +109,20 @@ describe('insertListItem', () => {
       },
       getType: (key: string) => key,
       selection: { focus: { offset: 2, path: [0, 0] } },
-      tf: {
-        collapse,
-        delete: deleteSelection,
-        moveNodes,
-        select,
-        splitNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
-        wrapNodes,
-      },
+      update: (fn: any) =>
+        fn({
+          nodes: {
+            move: moveNodes,
+            split: splitNodes,
+            wrap: wrapNodes,
+          },
+          selection: {
+            collapse,
+            set: select,
+          },
+          text: { delete: deleteSelection },
+          withoutNormalizing: (callback: () => void) => callback(),
+        }),
     } as any;
 
     expect(

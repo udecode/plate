@@ -98,7 +98,7 @@ const App = withHoc(PlateController, () => {
 
 ## 处理回退编辑器
 
-当在 **`PlateController`** 内部调用的钩子无法找到匹配的 Plate Store 时，它将使用 Plate Store 的默认值。**`editor`** 的默认值是 **`createPlateFallbackEditor()`**。回退编辑器就像一个没有插件的空 Plate 编辑器，但如果它收到 Slate 操作，则会抛出运行时错误（即它是不可变的，不能用于转换）。
+当在 **`PlateController`** 内部调用的钩子无法找到匹配的 Plate Store 时，它将使用 Plate Store 的默认值。**`editor`** 的默认值是 **`createPlateFallbackEditor()`**。回退编辑器就像一个没有插件的空 Plate 编辑器，但如果它收到 Plite 操作，则会抛出运行时错误（即它是不可变的，不能用于转换）。
 
 这样做的原因是确保查询编辑器的代码（例如确定工具栏按钮是否处于活动状态）在出现问题时静默失败并返回合理的默认值，而转换编辑器的代码（例如按下工具栏按钮）则大声失败并显示错误。
 

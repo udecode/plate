@@ -28,6 +28,18 @@ const getIndexEntry = (dir: string) => {
   return null;
 };
 
+const WORKSPACE_ALIAS_SUBPATHS = [
+  'browser',
+  'core',
+  'internal',
+  'playwright',
+  'react',
+  'static',
+  'transports',
+];
+
+const isPliteMode = process.env.PLATE_WWW_PLITE === '1';
+
 const addAliasEntries = (
   aliases: Record<string, string>,
   importPath: string,
@@ -36,13 +48,15 @@ const addAliasEntries = (
 ) => {
   const rootDir = path.join(packageDir, rootDirName);
   const rootEntry = getIndexEntry(rootDir);
-  const reactEntry = getIndexEntry(path.join(rootDir, 'react'));
-  const staticEntry = getIndexEntry(path.join(rootDir, 'static'));
 
   if (rootEntry) aliases[importPath] = toAppImportPath(rootEntry);
-  if (reactEntry) aliases[`${importPath}/react`] = toAppImportPath(reactEntry);
-  if (staticEntry) {
-    aliases[`${importPath}/static`] = toAppImportPath(staticEntry);
+
+  for (const subpath of WORKSPACE_ALIAS_SUBPATHS) {
+    const subpathEntry = getIndexEntry(path.join(rootDir, subpath));
+
+    if (subpathEntry) {
+      aliases[`${importPath}/${subpath}`] = toAppImportPath(subpathEntry);
+    }
   }
 };
 
@@ -114,11 +128,20 @@ const buildWorkspaceDevAliases = () => {
   };
 };
 
+const buildWorkspaceDevWebpackAliases = () =>
+  Object.fromEntries(
+    Object.entries(buildWorkspaceDevAliases()).map(([key, value]) => [
+      key,
+      path.resolve(APP_ROOT, value),
+    ])
+  );
+
 const withMDX = createMDX({});
 
 const nextConfig = async (_phase: string) => {
   const isDev = _phase === PHASE_DEVELOPMENT_SERVER;
   const config: NextConfig = {
+    distDir: isPliteMode ? '.next-slate' : '.next',
     typescript: {
       ignoreBuildErrors: true,
     },
@@ -156,7 +179,7 @@ const nextConfig = async (_phase: string) => {
       '/blocks/slate-to-html': ['./public/tailwind.css'],
       '/cn/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],
       '/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],
-      '/docs/examples/slate-to-html': ['./public/tailwind.css'],
+      '/docs/examples/plite-to-html': ['./public/tailwind.css'],
       '/view/slate-to-html': ['./public/tailwind.css'],
     },
     reactCompiler: !isDev,
@@ -185,6 +208,21 @@ const nextConfig = async (_phase: string) => {
           destination: '/cn/docs/releases',
           permanent: true,
           source: '/cn/docs/migration',
+        },
+        {
+          destination: '/examples/plite/richtext',
+          permanent: true,
+          source: '/docs/plite/examples',
+        },
+        {
+          destination: '/docs/plite/migration',
+          permanent: true,
+          source: '/docs/plite/migration/plite',
+        },
+        {
+          destination: '/docs/plite/why-this-fork',
+          permanent: true,
+          source: '/docs/plite/releases/plite',
         },
         {
           destination: '/docs/installation/plate-ui#sync-copied-files',
@@ -273,33 +311,16 @@ const nextConfig = async (_phase: string) => {
       ];
     },
 
-    // webpack: (config, { buildId, dev, isServer, webpack }) => {
-    //   config.externals.push({
-    //     shiki: 'shiki',
-    //     typescript: 'typescript',
-    //   });
+    webpack: (config) => {
+      if (isDev) {
+        config.resolve.alias = {
+          ...config.resolve.alias,
+          ...buildWorkspaceDevWebpackAliases(),
+        };
+      }
 
-    //   if (!isServer) {
-    //     config.resolve.fallback = {
-    //       ...config.resolve.fallback,
-    //       crypto: require.resolve('crypto-browserify'),
-    //       stream: require.resolve('stream-browserify'),
-    //     };
-
-    //     config.plugins.push(
-    //       new webpack.ProvidePlugin({
-    //         process: 'process/browser',
-    //       }),
-    //       new webpack.NormalModuleReplacementPlugin(
-    //         /node:crypto/,
-    //         (resource: any) => {
-    //           resource.request = resource.request.replace(/^node:/, '');
-    //         }
-    //       )
-    //     );
-    //   }
-    //   return config;
-    // },
+      return config;
+    },
   };
 
   return withMDX(config);

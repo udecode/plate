@@ -29,6 +29,11 @@ Completion threshold:
 
 Verification surface:
 - TODO: Name the command, artifact, browser proof, source audit, or report that proves the threshold.
+- Browser strategy: TODO. Use Browser for normal app QA; use Chrome directly
+  for native downloads, print/print-preview, file picker/uploads, clipboard,
+  browser dialogs/permissions, extension/profile state, or exact Chrome
+  rendering; use Computer Use only for native Chrome/OS UI that needs visual
+  confirmation.
 
 Constraints:
 - TODO: List constraints or write `no extra constraints`.
@@ -52,6 +57,7 @@ Start Gates:
 | Source of truth read before edits | pending | pending |
 | TDD decision before behavior change or bug fix | pending | pending |
 | Browser proof decision for browser surface | pending | pending |
+| Chrome/Computer decision for native browser surface | pending | pending |
 
 Work Checklist:
 - [ ] First checkpoint complete: every explicit prompt requirement, scope
@@ -71,7 +77,7 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Named verification threshold | pending | Run the named proof or record blocker | pending |
 | Typecheck/build/test proof | pending | Run relevant owner checks or record N/A | pending |
-| Browser proof | pending | Exercise the affected browser surface or record N/A | pending |
+| Browser proof | pending | Capture Browser proof for normal app surfaces, or Chrome/Computer proof for native browser/OS surfaces; otherwise record N/A/blocker | pending |
 | Autoreview | pending | Review final diff/output against objective, constraints, and newest user request | pending |
 | Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |

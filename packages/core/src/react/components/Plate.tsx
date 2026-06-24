@@ -2,11 +2,20 @@ import React, { useId } from 'react';
 
 import type { EditableProps } from '../../lib/types/EditableProps';
 import type { PlateEditor } from '../editor/PlateEditor';
+import type { PlateStoreEditor } from '../stores';
 
 import { usePlateInstancesWarn } from '../../internal/hooks/usePlateInstancesWarn';
 import { type PlateStoreState, PlateStoreProvider } from '../stores';
 
-export interface PlateProps<E extends PlateEditor = PlateEditor>
+export type PlateRootEditor = PlateStoreEditor & {
+  dom: { readOnly: boolean };
+  meta: {
+    key: string;
+    uid?: string;
+  };
+};
+
+export interface PlateProps<E extends PlateRootEditor = PlateEditor>
   extends Partial<
     Pick<
       PlateStoreState<E>,
@@ -31,7 +40,7 @@ export interface PlateProps<E extends PlateEditor = PlateEditor>
   suppressInstanceWarning?: boolean;
 }
 
-function PlateInner({
+function PlateInner<E extends PlateRootEditor = PlateEditor>({
   children,
   containerRef,
   decorate,
@@ -46,7 +55,7 @@ function PlateInner({
   onSelectionChange,
   onTextChange,
   onValueChange,
-}: PlateProps & {
+}: PlateProps<E> & {
   containerRef: React.RefObject<HTMLDivElement | null>;
   scrollRef: React.RefObject<HTMLDivElement | null>;
 }) {
@@ -72,7 +81,7 @@ function PlateInner({
   );
 }
 
-export function Plate<E extends PlateEditor = PlateEditor>(
+export function Plate<E extends PlateRootEditor = PlateEditor>(
   props: PlateProps<E>
 ) {
   const id = useId();
@@ -87,11 +96,11 @@ export function Plate<E extends PlateEditor = PlateEditor>(
   props.editor.meta.uid = `e-${id.replaceAll(':', '')}`;
 
   return (
-    <PlateInner
+    <PlateInner<E>
       key={props.editor.meta.key}
       containerRef={containerRef}
       scrollRef={scrollRef}
-      {...(props as any)}
+      {...props}
     />
   );
 }

@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
 import { upsertLinkText } from './upsertLinkText';
@@ -11,8 +11,8 @@ import { upsertLinkText } from './upsertLinkText';
 jsxt;
 
 describe('upsertLinkText', () => {
-  const createEditor = (input: SlateEditor) =>
-    createSlateEditor({
+  const createEditor = (input: BasePlateEditor) =>
+    createBasePlateEditor({
       plugins: [BaseLinkPlugin],
       selection: input.selection,
       value: input.children,
@@ -31,7 +31,7 @@ describe('upsertLinkText', () => {
           </ha>
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createEditor(input);
 
@@ -65,7 +65,7 @@ describe('upsertLinkText', () => {
           </ha>
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createEditor(input);
 
@@ -87,7 +87,7 @@ describe('upsertLinkText', () => {
           </ha>
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createEditor(input);
 

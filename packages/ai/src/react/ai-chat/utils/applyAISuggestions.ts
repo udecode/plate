@@ -1,14 +1,12 @@
 import { deserializeMd } from '@platejs/markdown';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
 import {
   diffToSuggestions,
   getTransientSuggestionKey,
   SkipSuggestionDeletes,
 } from '@platejs/suggestion';
+import type { Descendant, Element } from '@platejs/plite';
 import {
-  type Descendant,
-  type SlateEditor,
-  type TElement,
+  type NodeEntry,
   type TIdElement,
   type TSuggestionData,
   type TSuggestionElement,
@@ -19,16 +17,20 @@ import {
 } from 'platejs';
 
 import { AIChatPlugin } from '../AIChatPlugin';
+import type { AIChatPliteEditor } from '../internal/editorTypes';
 import {
   getTableCellChildren as withoutTable,
   isSingleCellTable,
 } from './nestedContainerUtils';
 
-export const applyAISuggestions = (editor: SlateEditor, content: string) => {
+type NodesRangeInput = Parameters<AIChatPliteEditor['api']['nodesRange']>[0];
+
+export const applyAISuggestions = (
+  editor: AIChatPliteEditor,
+  content: string
+) => {
   /** Conflict with block selection */
-  editor
-    .getApi({ key: KEYS.cursorOverlay })
-    ?.cursorOverlay?.removeCursor('selection');
+  editor.api.cursorOverlay?.removeCursor('selection');
 
   const { chatNodes } = editor.getOptions(AIChatPlugin);
 
@@ -52,7 +54,7 @@ export const applyAISuggestions = (editor: SlateEditor, content: string) => {
           ElementApi.isElement(n) &&
           editor.getOption(AIChatPlugin, '_replaceIds').includes(n.id),
       })
-    );
+    ) as NodeEntry<TIdElement>[];
 
     replaceNodes.forEach(([node, path], index) => {
       const replaceNode = node as unknown as TSuggestionElement;
@@ -70,40 +72,48 @@ export const applyAISuggestions = (editor: SlateEditor, content: string) => {
         index === replaceNodes.length - 1 &&
         diffNodes.length > replaceNodes.length
       ) {
-        editor.tf.replaceNodes(diffNodes.slice(index), {
-          at: path,
+        editor.update((tx) => {
+          tx.nodes.remove({ at: path });
+          tx.nodes.insert(diffNodes.slice(index), { at: path });
         });
+        return;
       }
       // Performance optimization
       if (isSameString && isSameSuggestion && node.id === diffNode.id) {
         return;
       }
 
-      editor.tf.replaceNodes(diffNode, {
-        at: path,
+      editor.update((tx) => {
+        tx.nodes.remove({ at: path });
+        tx.nodes.insert(diffNode, { at: path });
       });
     });
 
-    editor
-      .getApi(BlockSelectionPlugin)
-      .blockSelection.set(diffNodes.map((node) => node.id as string));
+    editor.api.blockSelection.set(diffNodes.map((node) => node.id as string));
     setReplaceIds(diffNodes.map((node) => node.id as string));
   } else {
     const diffNodes = getDiffNodes(editor, content);
 
-    editor.tf.insertFragment(diffNodes);
+    editor.update((tx) => {
+      tx.fragment.insert(diffNodes);
+    });
 
     const nodes = Array.from(
       editor.api.nodes({
         at: [],
         mode: 'lowest',
-        match: (n) => TextApi.isText(n) && !!n[getTransientSuggestionKey()],
+        match: (n: unknown) =>
+          TextApi.isText(n) && !!n[getTransientSuggestionKey()],
       })
-    );
+    ) as NodeEntry[];
 
-    const range = editor.api.nodesRange(nodes);
+    const range = editor.api.nodesRange(nodes as NodesRangeInput);
 
-    editor.tf.setSelection(range!);
+    if (range) {
+      editor.update((tx) => {
+        tx.selection.set(range);
+      });
+    }
 
     return;
   }
@@ -116,7 +126,7 @@ const withProps = (
   diffNodes.map((node, index) => {
     if (!ElementApi.isElement(node)) return node;
 
-    const originalNode = chatNodes?.[index] as TElement | undefined;
+    const originalNode = chatNodes?.[index] as Element | undefined;
 
     return {
       ...node,
@@ -155,18 +165,18 @@ export const withoutSuggestionAndComments = (
     }
     if (ElementApi.isElement(node)) {
       if (node[KEYS.suggestion]) {
-        const nodeWithoutSuggestion: any = {};
+        const nodeWithoutSuggestion: Record<string, unknown> = {};
 
         Object.keys(node).forEach((key) => {
           if (key !== KEYS.suggestion && !key.startsWith(KEYS.suggestion)) {
-            nodeWithoutSuggestion[key] = node[key];
+            nodeWithoutSuggestion[key] = (node as Record<string, unknown>)[key];
           }
         });
 
         return {
           ...nodeWithoutSuggestion,
           children: withoutSuggestionAndComments(node.children),
-        };
+        } as Descendant;
       }
 
       return {
@@ -178,7 +188,7 @@ export const withoutSuggestionAndComments = (
     return node;
   });
 
-const getDiffNodes = (editor: SlateEditor, aiContent: string) => {
+const getDiffNodes = (editor: AIChatPliteEditor, aiContent: string) => {
   /** Original document nodes */
   const rawChatNodes = editor.getOption(AIChatPlugin, 'chatNodes');
 

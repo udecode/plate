@@ -1,0 +1,83 @@
+---
+title: "Plite React Event Handling"
+description: "Customize Editable browser events without replacing Plite's default editing runtime."
+---
+
+`Editable` owns the default browser event handlers for rich-text editing,
+including copy, paste, drop, keyboard, native input, selection, focus, and drag
+events.
+
+Pass event handlers to `Editable` when app UI needs to run before Plite's
+default behavior.
+
+Use [Editing Behavior](../../concepts/15-editing-behavior) when the behavior
+belongs in transactions or extension transform middleware instead of one
+`Editable` event prop.
+
+## Handler Return Values
+
+Handler return values control whether Plite continues with its own handling:
+
+- Return `true` to mark the event handled and skip Plite's default handler.
+- Return `false` to force Plite's default handler to run.
+- Return nothing to let Plite continue unless the event is default-prevented or
+  propagation-stopped.
+
+```tsx
+import type { DragEvent, MouseEvent } from "react";
+import { Editable } from "@platejs/plite-react";
+
+const MyEditor = () => {
+  const onClick = (event: MouseEvent<HTMLDivElement>) => {
+    trackEditorClick(event);
+
+    // Plite runs its click handler unless this handler prevents default,
+    // stops propagation, or returns true.
+  };
+
+  const onDrop = (event: DragEvent<HTMLDivElement>) => {
+    if (!isAppOwnedDrop(event)) return false;
+
+    insertAppOwnedDrop(event);
+
+    return true;
+  };
+
+  const onDragStart = (event: DragEvent<HTMLDivElement>) => {
+    annotateDragPayload(event);
+
+    return false;
+  };
+
+  return (
+    <Editable onClick={onClick} onDrop={onDrop} onDragStart={onDragStart} />
+  );
+};
+```
+
+## Editor-Aware Handlers
+
+Use `onKeyDown` and `onDOMBeforeInput` when a handler needs editor context:
+
+```tsx
+<Editable
+  onDOMBeforeInput={(event, { editor, inputType }) => {
+    if (inputType !== "formatBold") return false;
+
+    editor.update((tx) => {
+      tx.marks.toggle("bold");
+    });
+
+    return true;
+  }}
+  onKeyDown={(event, { editor }) => {
+    if (!(event.metaKey && event.key === "k")) return false;
+
+    editor.update((tx) => {
+      tx.text.insert("link");
+    });
+
+    return true;
+  }}
+/>
+```

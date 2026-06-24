@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn-prose";
 
+@source "../**/*.{ts,tsx,mdx}";
+
 @plugin "tailwind-scrollbar-hide";
 
 @custom-variant dark (&:is(.dark *));

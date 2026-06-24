@@ -1,8 +1,19 @@
-import { bindFirst, createSlatePlugin, KEYS } from 'platejs';
+import type { EditorUpdateTransaction } from '@platejs/plite';
+import { type PluginConfig, createEditorPlugin, KEYS } from 'platejs';
 
-import { insertCallout } from './transforms';
+import type { InsertCalloutOptions } from './transforms';
 
-export const BaseCalloutPlugin = createSlatePlugin({
+import { createCalloutNode } from './transforms';
+
+type CalloutTx = {
+  callout: {
+    insert: (options?: InsertCalloutOptions) => void;
+  };
+};
+
+export type CalloutConfig = PluginConfig<'callout', {}, {}, {}, {}, CalloutTx>;
+
+export const BaseCalloutPlugin = createEditorPlugin<CalloutConfig>({
   key: KEYS.callout,
   node: {
     isElement: true,
@@ -17,6 +28,8 @@ export const BaseCalloutPlugin = createSlatePlugin({
       start: 'reset',
     },
   },
-}).extendEditorTransforms(({ editor }) => ({
-  insert: { callout: bindFirst(insertCallout, editor) },
+}).extendTx(({ type }) => (tx: EditorUpdateTransaction) => ({
+  insert: ({ icon, variant, ...options }: InsertCalloutOptions = {}) => {
+    tx.nodes.insert(createCalloutNode(type, { icon, variant }), options);
+  },
 }));

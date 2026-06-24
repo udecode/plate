@@ -1,7 +1,9 @@
 /** @jsx jsxt */
 
+import type { Element } from '@platejs/plite';
+
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, type TElement, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { getTopTableCell } from './getTopTableCell';
@@ -9,7 +11,7 @@ import { getTopTableCell } from './getTopTableCell';
 jsxt;
 
 const createEditorInstance = (input: any) =>
-  createSlateEditor({
+  createBasePlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
@@ -41,12 +43,12 @@ describe('getTopTableCell', () => {
         </htr>
       </htable>
     </editor>
-  ) as any as SlateEditor;
+  ) as any as BasePlateEditor;
 
   it('returns the cell above the current cell', () => {
     const editor = createEditorInstance(input);
     const cellAbove = getTopTableCell(editor);
-    expect((cellAbove?.[0].children as TElement[])[0].children[0].text).toBe(
+    expect((cellAbove?.[0].children as Element[])[0].children[0].text).toBe(
       '12'
     );
   });
@@ -97,7 +99,7 @@ describe('getTopTableCell', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
     const editor = createEditorInstance(mergedInput);
 
     expect(getTopTableCell(editor)).toEqual([

@@ -1,0 +1,1073 @@
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts:142:  test('copies selected hidden content through model-backed clipboard data', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:290:              'This is editable plain text, just like a <textarea>!',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:293:              'This is editable plain text, just like a <textarea>!',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:307:  test('pastes at the clicked caret after Shift state is released', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:328:      const pastedText = 'PASTE'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:418:      await editor.clipboard.pasteText(pastedText)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:424:      )}${pastedText}${initialText.slice(safeInsertOffset)}`
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:428:        anchor: { path: [0, 0], offset: safeInsertOffset + pastedText.length },
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:429:        focus: { path: [0, 0], offset: safeInsertOffset + pastedText.length },
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:453:      const text = 'This is editable plain text, just like a <textarea>!'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:484:  test('stays interactive after dragging selected plain text', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:500:      const initialText = 'This is editable plain text, just like a <textarea>!'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:501:      const movedText = 'editableThis is  plain text, just like a <textarea>!'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:685:  test('imports synthetic ClipboardEvent paste data into editor state', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:690:      'Firefox blocks synthetic ClipboardEvent paste data'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:704:        new ClipboardEvent('paste', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:707:          clipboardData: data,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:719:  test('strips rich clipboard markup when pasting into plaintext', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:722:    test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard proof')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:725:      'Firefox blocks privileged HTML clipboard data in Playwright'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:735:    await editor.clipboard.pasteHtml('<b>abc</b>', 'abc')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:745:  test('creates a new plain text block on Enter before follow-up typing', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:919:  test('does not fallback insert after same-text native paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:922:    test.skip(testInfo.project.name !== 'chromium', 'Chromium clipboard proof')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:933:    await editor.clipboard.pasteText(text)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:934:    const pasteTrace = (await editor.get.kernelTrace()).slice(beforeTraceLength)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:938:      pasteTrace.some(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:940:          entry.eventFamily === 'paste' && entry.command?.kind === 'insert-data'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:944:      pasteTrace.some(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:952:  test('copies and cuts selected plain text with keyboard shortcuts', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:955:    test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard proof')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:958:      'WebKit blocks privileged clipboard reads in Playwright'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:966:    const originalText = 'This is editable plain text, just like a <textarea>!'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:976:    await expect.poll(() => editor.clipboard.readText()).toBe('editable')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:981:    await expect.poll(() => editor.clipboard.readText()).toBe('editable')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:982:    await editor.assert.text('This is  plain text, just like a <textarea>!')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:992:    test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard proof')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:995:      'WebKit blocks privileged clipboard reads in Playwright'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1005:      'without adding layout-wrap newlines to the clipboard payload',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1006:      'or to the text that is pasted back into the editor.',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1026:    const copiedText = await editor.clipboard.readText()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1038:  test('selects all plain text through a trailing empty line', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1085:    const initialText = 'This is editable plain text, just like a <textarea>!'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2195:    const originalText = 'This is editable plain text, just like a <textarea>!'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2204:      'This is editable abcplain text, just like a <textarea>!'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2230:    const originalText = 'This is editable plain text, just like a <textarea>!'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2262:    const originalText = 'This is editable plain text, just like a <textarea>!'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:29:    throw new Error('Missing text/html clipboard payload')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:35:    throw new Error('Missing Slate fragment in text/html clipboard payload')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:240:  test('copies and pastes a selected mention without crashing', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:243:    test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard repro')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:246:      'WebKit blocks privileged clipboard reads in Playwright'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:266:      const payload = await editor.clipboard.copyPayload()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:284:  test('copies and repeatedly pastes a selected mention as separate atoms', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:287:    test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard repro')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:290:      'WebKit blocks privileged clipboard reads in Playwright'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:308:      const payload = await editor.clipboard.copyPayload()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:346:  test('copies selected mention to deterministic browser clipboard payload', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:351:      'Chromium privileged clipboard payload proof'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:369:      const payload = await editor.clipboard.copyPayload()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:372:        expect.arrayContaining(['text/html', 'text/plain'])
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:397:      const externalTarget = page.locator('[data-cy="external-paste-target"]')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:403:        target.setAttribute('data-cy', 'external-paste-target')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:428:    test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard repro')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:511:  test('keeps mention portal closed for plain text without trigger', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts:56:  test('keeps pasted text inside an empty markdown quote', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts:71:    await editor.clipboard.pasteText('quoted paste')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts:73:    await expect(textbox.locator('blockquote')).toHaveText('quoted paste')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts:74:    await editor.assert.blockTexts(['quoted paste'])
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:317:  test('wraps pasted URL text as a link command', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:332:    await editor.clipboard.pasteText('https://example.com')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:588:  test('pastes content outside inline link boundaries without expanding the link', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:608:    await editor.clipboard.pasteText('before ')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:614:    await editor.clipboard.pasteHtml('<strong>after</strong> ', 'after ')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:725:  test('pastes plain text inside an inline link without splitting it', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:743:    await editor.clipboard.pasteText('TEXT')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:841:    await editor.clipboard.pasteHtml('<strong>replaced</strong>', 'replaced')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:864:    await editor.clipboard.pasteHtml('<em>replaced</em>', 'replaced')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:894:    await editor.clipboard.pasteHtml('<strong>replaced</strong>', 'replaced')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:921:  test('copies and pastes only selected inline link text', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:924:    test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard proof')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:927:      'WebKit blocks privileged clipboard reads in Playwright'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:943:    await expect.poll(() => editor.clipboard.readText()).toBe('per')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:1208:  test('triple-click paste replaces a paragraph that ends with a link', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:1243:    await editor.clipboard.pasteText('replacement')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:1252:  test('mouse drag undo restores typed plain text replacement', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:1263:      'There are two ways to add links. You can either add a link via the toolbar icon above, or if you want in on a little secret, copy a URL to your keyboard and paste it while a range of text is selected. '
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:1539:  test('pastes before a read-only inline without dropping following content', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:1542:    test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard proof')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:1550:    const pastedText = 'PASTE '
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:1556:    await editor.clipboard.pasteText(pastedText)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:1565:      .toContain(`${beforeBadgeText}${pastedText}Approved.`)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:1569:        offset: beforeBadgeText.length + pastedText.length,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:1573:        offset: beforeBadgeText.length + pastedText.length,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:1669:      await expect.poll(() => editor.clipboard.readText()).toBe('hyperlink')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:143:test.describe('paste html example', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:144:  test.beforeEach(async ({ page }) => await page.goto('/examples/paste-html'))
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:146:  const pasteHtml = async (page: Page, htmlContent: string) => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:153:        const clipboardEvent = Object.assign(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:154:          new Event('paste', { bubbles: true, cancelable: true }),
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:156:            clipboardData: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:157:              getData: (type = 'text/html') => htmlContent,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:158:              types: ['text/html'],
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:162:        el.dispatchEvent(clipboardEvent)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:166:  test('pasted bold text uses <strong>', async ({ page }) => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:167:    await pasteHtml(page, '<strong>Hello Bold</strong>')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:176:    await pasteHtml(page, '<p>a<strong>b</strong>c</p>')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:183:  test('imports a nested span headline from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:188:    await pasteHtml(page, '<h2><span>References</span></h2>')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:193:  test('pasted code uses <code>', async ({ page }) => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:194:    await pasteHtml(page, '<code>console.log("hello from slate!")</code>')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:200:  test('normalizes block elements pasted from invalid HTML nests', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:205:    await pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:225:      await pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:243:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:250:    await editor.clipboard.pasteHtml('<p><br></p><p>after</p>', '\nafter')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:258:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:271:    await editor.clipboard.pasteHtml('<p><br></p><p>Inserted</p>', '\nInserted')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:276:  test('ignores a newline immediately after a pasted br', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:279:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:293:      await editor.clipboard.pasteHtml(html, 'Before\nAfter')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:309:      await page.goto('/examples/paste-html')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:310:      const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:336:  test('keeps caret editable after rich HTML paste over selected content', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:339:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:352:      await editor.clipboard.pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:383:  test('preserves inherited bold through nested pasted HTML marks', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:386:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:397:      await editor.clipboard.pasteHtml(html, '123')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:404:  test('does not leak nested pasted bold marks into following blocks', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:407:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:422:      await editor.clipboard.pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:440:  test('preserves whitespace-only pasted bold marks', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:443:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:454:      await editor.clipboard.pasteHtml(html, ' ')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:461:  test('replaces a blank paragraph with pasted block styles', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:464:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:484:      await editor.clipboard.pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:502:  test('does not fallback insert after same-plain-text native HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:505:    test.skip(testInfo.project.name !== 'chromium', 'Chromium clipboard proof')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:507:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:519:    await editor.clipboard.pasteHtml('<strong>hello</strong>', 'hello')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:520:    const pasteTrace = (await editor.get.kernelTrace()).slice(beforeTraceLength)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:525:      pasteTrace.some(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:532:      pasteTrace.some(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:540:  test('keeps rich paste text representation stable after editing between blocks', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:543:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:554:      await editor.clipboard.pasteHtml(html, 'a\nb')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:568:  test('pastes copied rendered Slate content as an internal fragment before HTML import', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:571:    test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard repro')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:574:      'WebKit blocks privileged clipboard reads in Playwright'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:578:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:584:      'Try it out for yourself! Copy and paste some rendered HTML rich text content (not the source code) from another site into this editor and its formatting should be preserved.'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:586:      " default, pasting content into a Slate editor will use the clipboard's 'text/plain' data. That's okay for some use cases, but sometimes you want users to be able to paste in content and have it maintain its formatting. To do this, your editor needs to handle 'text/html' data. "
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:594:      const payload = await editor.clipboard.copyPayload()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:613:  test('treats iOS prediction payload as plain text inside formatted selection', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:616:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:646:      const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:659:  test('preserves Google Docs font-size spans from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:662:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:675:      await editor.clipboard.pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:691:  test('preserves text color and background color from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:694:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:709:      await editor.clipboard.pasteHtml(html, 'Styled text')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:725:  test('preserves nested span font size and underline from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:728:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:740:      await editor.clipboard.pasteHtml(html, 'Example Text')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:752:  test('preserves a standalone styled span from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:755:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:766:      await editor.clipboard.pasteHtml(html, 'World')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:775:  test('preserves Google Docs BIU formatting from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:778:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:791:      await editor.clipboard.pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:820:  test('keeps rich paste after a stale Shift tab-switch shortcut', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:825:      'Desktop modifier paste proof'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:828:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:849:    await editor.clipboard.pasteHtml(GOOGLE_DOCS_BIU_HTML, text)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:876:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:888:      await editor.clipboard.pasteHtml(html, text)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:900:  test('preserves nested underline formatting from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:903:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:914:      await editor.clipboard.pasteHtml(html, 'text')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:921:  test('preserves superscript and subscript formatting from HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:924:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:937:      await editor.clipboard.pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:953:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:966:      await editor.clipboard.pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:980:  test('imports Google Docs tab spans and loose line from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:983:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:996:      await editor.clipboard.pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1018:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1031:      await editor.clipboard.pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1063:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1076:      await editor.clipboard.pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1100:  test('preserves blank lines from contenteditable-style multiline HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1103:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1114:      await editor.clipboard.pasteHtml(html, 'a\n\nb')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1124:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1137:      await editor.clipboard.pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1148:  test('preserves leading and trailing br-only lines from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1151:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1163:      await editor.clipboard.pasteHtml(html, text)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1170:  test('preserves non-collapsible spaces from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1173:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1185:      await editor.clipboard.pasteHtml(html, text)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1191:  test('preserves spaces between adjacent inline mark elements from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1194:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1206:      await editor.clipboard.pasteHtml(html, text)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1217:  test('imports trailing spaces around inline mark elements from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1220:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1232:      await editor.clipboard.pasteHtml(html, text)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1239:  test('imports an anchor element from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1242:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1255:      await editor.clipboard.pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1268:  test('preserves ampersand URL query parameters from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1271:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1284:      await editor.clipboard.pasteHtml(html, 'a link')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1294:  test('keeps a Windows tab title link as one anchor when pasted', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1297:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1310:      await editor.clipboard.pasteHtml(WINDOWS_TAB_LINK_HTML, 'foo:bar.pdf')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1324:  test('sanitizes executable rich HTML paste payloads', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1327:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1346:      await editor.clipboard.pasteHtml(html, 'unsafe link')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1368:  test('sanitizes Word conditional HTML paste junk', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1371:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1384:      await editor.clipboard.pasteHtml(WORD_COMMENT_HTML, 'Visible Word text')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1395:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1409:      await editor.clipboard.pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1433:  test('imports a basic unordered list from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1436:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1450:      await editor.clipboard.pasteHtml(html, 'Hello\nworld!')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1460:  test('preserves marks inside implicit pasted list item paragraphs', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1463:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1477:      await editor.clipboard.pasteHtml(html, '1 2')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1486:  test('does not leak parent list item marks into nested pasted list items', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1489:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1518:      await editor.clipboard.pasteHtml(html, text)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1537:  test('pastes ProseMirror slice list items without runtime errors', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1541:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1554:        await editor.clipboard.pasteHtml(html, text)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1567:  test('pastes ProseMirror text slices without exposing slice metadata', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1570:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1582:      await editor.clipboard.pasteHtml(html, text)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1591:  test('pastes ProseMirror table row slices without exposing slice metadata', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1594:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1606:      await editor.clipboard.pasteHtml(html, text)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1623:  test('wraps orphan pasted list items in a list parent', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1626:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1640:      await editor.clipboard.pasteHtml(html, 'one\ntwo')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1649:  test('ignores whitespace between pasted list items', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1652:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1666:      await editor.clipboard.pasteHtml(html, 'one\ntwo')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1678:  test('imports compact nested list variants from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1700:      await page.goto('/examples/paste-html')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1701:      const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1714:        await editor.clipboard.pasteHtml(listCase.html, listCase.text)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1725:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1739:      await editor.clipboard.pasteHtml(html, '1\n2\n3\nA\nB\nC')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1754:  test('imports mixed nested ordered and unordered lists from rich HTML paste', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1757:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1786:      await editor.clipboard.pasteHtml(html, text)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1801:      await page.goto('/examples/paste-html')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1802:      const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1812:        await editor.clipboard.pasteHtml(imageCase.html, imageCase.text)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1831:  test('keeps pasted top-level images outside paragraph text', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1834:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1852:      await editor.clipboard.pasteHtml(html, '')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1865:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1878:      await editor.clipboard.pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1908:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1921:      await editor.clipboard.pasteHtml(QUIP_TABLE_HTML, 'a\tb\nb\tc\nd\te\tf')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1944:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1957:      await editor.clipboard.pasteHtml(WORD_TABLE_LINK_HTML, 'linked\tplain')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1972:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:1988:      await editor.clipboard.pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:2020:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:2033:      await editor.clipboard.pasteHtml(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:2049:  test('imports only the comment-bounded fragment from wrapped clipboard HTML', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:2052:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:2068:      await editor.clipboard.pasteHtml(COMMENT_BOUNDED_TABLE_HTML, '123\n456')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:2085:  test('runs generated clipboard paste gauntlet without illegal kernel transitions', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:2090:      'Desktop clipboard gauntlet proof'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:2093:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:2100:      'paste-html-generated-clipboard-gauntlet',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:2108:          capabilities: ['clipboard', 'html-paste', 'kernel-trace'],
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:2110:          transport: 'clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:2112:        tracePath: testInfo.outputPath('paste-html-clipboard-gauntlet.json'),
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:2117:    expect(result.metadata.claim).toBe('desktop-native-clipboard')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:2126:    const editor = await openExample(page, 'paste-html', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:2133:      'paste-html-generated-drop-data-gauntlet',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:2145:        tracePath: testInfo.outputPath('paste-html-drop-data-gauntlet.json'),
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history/test/document-state-history-contract.ts:350:    assert.deepEqual(undoCommit?.metadata.selection, {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history/test/document-state-history-contract.ts:427:  it('redoes non-main structural selection operations in the active root', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/synced-blocks.test.ts:2563:    const payload = await outer.clipboard.copyEventPayload()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/synced-blocks.test.ts:2568:        'text/html',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/synced-blocks.test.ts:2611:      clipboard: { status: 'supported' },
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/multi-root-document.test.ts:1083:  test('select-all copy paste and placeholder state are root-local', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/multi-root-document.test.ts:1108:    await footerEditor.clipboard.pasteText(copiedHeader)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts:600:  test('pastes selected text inside a code block without leaving the code block', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts:605:      'Native clipboard proof needs desktop keyboard shortcuts'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts:79:      getHistory(editor).undos[0]?.selectionBefore,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts:145:  it('withoutSaving suppresses history recording', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts:385:      getHistory(editor).undos[0]?.selectionBefore,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:2598:    const text = await editor.clipboard.readText()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/tables.test.ts:281:  test('pastes plain text into an empty table cell without throwing', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/tables.test.ts:291:      await editor.clipboard.pasteText('Pasted')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/read-only.test.ts:116:    const payload = await editor.clipboard.copyEventPayload()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/images.test.ts:114:  test('pastes image files from clipboard data', async ({ page }, testInfo) => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/images.test.ts:115:    test.skip(testInfo.project.name !== 'chromium', 'Chromium file paste proof')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/images.test.ts:126:      const file = new File(['not-real-image-bytes'], 'pasted.png', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/images.test.ts:132:        new ClipboardEvent('paste', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/images.test.ts:135:          clipboardData: data,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/images.test.ts:687:      'This example shows images in action. It features two ways to add images. You can either add an image via the toolbar icon above, or if you want in on a little secret, copy an image URL to your clipboard and paste it anywhere in the editor!'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/images.test.ts:808:      'This example shows images in action. It features two ways to add images. You can either add an image via the toolbar icon above, or if you want in on a little secret, copy an image URL to your clipboard and paste it anywhere in the editor!'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/images.test.ts:861:      'This example shows images in action. It features two ways to add images. You can either add an image via the toolbar icon above, or if you want in on a little secret, copy an image URL to your clipboard and paste it anywhere in the editor!'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/images.test.ts:973:    const payload = await editor.clipboard.copyPayload()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/images.test.ts:975:    expect(payload.types).toContain('text/html')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history/test/history-contract.ts:177:  it('undoes a stale native text burst selection to the inserted offset', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history/test/history-contract.ts:508:  it('does not restore a main selection into a non-main root undo batch', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history/test/history-contract.ts:1019:    replace(editor, [paragraph('This is editable plain text')], {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history/test/history-contract.ts:1378:  it('undo restores the imported caret when selection import leads a text commit', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history/test/history-contract.ts:1427:  it('redo preserves explicit selection after the first saveable operation', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history/test/history-contract.ts:1528:  it('does not replay partial set_selection patches during undo after selection is cleared', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history/test/history-contract.ts:1611:  it('restores the saved expanded selection after deleteFragment, blur, refocus, and undo', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history/test/history-contract.ts:1654:  it('restores the saved multi-block selection after insertBreak and undo', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history/test/history-contract.ts:1672:  it('restores marks and selection after marked Enter undo', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history/test/history-contract.ts:1714:  it('undoes a moveNodes commit back to the original tree and selection', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2142:  test('keeps native IME composition coherent when plain text is pasted at the composition point', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2153:    const pastedText = 'PASTE'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2156:    const expectedText = `one ${pastedText}${composedText}two three`
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2157:    const expectedOffset = `one ${pastedText}${composedText}`.length
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2176:    await editor.clipboard.pasteNativeText(pastedText)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2186:                  entry.eventFamily === 'paste' &&
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2990:  test('runs generated destructive paste and word-delete gauntlet', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:3006:      'richtext-generated-destructive-paste-word-delete-gauntlet',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:3048:        pasteSelection: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:3052:        pastedText: 'Paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:3083:            'paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:3087:          transport: 'native-keyboard-and-desktop-native-clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:3090:          'richtext-generated-destructive-paste-word-delete-gauntlet.json'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:3096:    expect(result.metadata.claim).toBe('desktop-native-clipboard')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:5293:  test('pastes a copied heading into an empty paragraph as a heading', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:5298:      'Desktop structured clipboard proof'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:5317:    let payload = await editor.clipboard.copyEventPayload()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:5320:      payload = await editor.clipboard.copyPayload()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:5333:    await editor.clipboard.pasteEventPayload(payload)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:5340:  test('cuts and pastes a fully selected heading as a heading', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:5345:      'Desktop structured cut/paste proof'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:5363:      const payload = await editor.clipboard.cutEventPayload()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:5372:          'text/html',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:5380:      await editor.clipboard.pasteEventPayload(payload)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:6968:  test('keeps caret editable after plain text paste over selected range', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:6989:      await editor.clipboard.pasteText('Paste')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/embeds.test.ts:187:        html: dragData.getData('text/html'),
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/embeds.test.ts:198:        'text/html',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/dom-coverage.ts:509:  test('writes model-backed clipboard data when selection crosses hidden content', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/dom-coverage.ts:512:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/dom-coverage.ts:527:      editor.api.clipboard.writeSelection(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/dom-coverage.ts:529:      expect(clipboard.getData('text/plain')).toBe('Hidden alpha')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/dom-coverage.ts:530:      expect(clipboard.getData('text/html')).toContain('Hidden alpha')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/dom-coverage.ts:531:      expect(clipboard.getData('text/html')).not.toContain('STALE')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/dom-coverage.ts:532:      expect(clipboard.getData('application/x-slate-fragment')).not.toBe('')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/dom-coverage.ts:536:  test('pastes over a hidden selection through the model without stale DOM', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/dom-coverage.ts:539:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/dom-coverage.ts:546:      clipboard.setData('text/plain', 'Pasted alpha')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/dom-coverage.ts:553:        editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts:176:  test('keeps native paste inside editable void input', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts:181:      'Native input clipboard proof needs desktop keyboard shortcuts'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts:1128:  test('pastes text inside same-runtime child root without stealing outer selection', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts:1133:      'Rich HTML clipboard proof needs desktop keyboard shortcuts'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts:1162:      await childRoot.clipboard.pasteText('Hello World')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/CHANGELOG.md:520:- [#4914](https://github.com/ianstormtaylor/slate/pull/4914) [`aff67312`](https://github.com/ianstormtaylor/slate/commit/aff67312cbfa7e45df5cf6abcaec9f4f7d5f1a89) Thanks [@sennpang](https://github.com/sennpang)! - Fixed Triple click selection and copy&paste in read-only mode
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/CHANGELOG.md:647:- [#4489](https://github.com/ianstormtaylor/slate/pull/4489) [`1b560de3`](https://github.com/ianstormtaylor/slate/commit/1b560de3e13d08cdc95d7f659a497ff0f07d296a) Thanks [@nemanja-tosic](https://github.com/nemanja-tosic)! - Fix paste to empty node losing structure of first block
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts:1335:  test('keeps staged 10k select-all delete, typing, paste, and undo bounded', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts:1454:    await editor.clipboard.pasteText('staged paste replacement')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts:1458:      .toEqual(['staged paste replacement'])
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts:1460:      anchor: { path: [0, 0], offset: 'staged paste replacement'.length },
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts:1461:      focus: { path: [0, 0], offset: 'staged paste replacement'.length },
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts:1534:  test('keeps auto partial-dom select-all paste and undo bounded', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts:1569:    await editor.clipboard.pasteText('auto partial-dom replacement')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts:1610:  test('keeps auto partial-dom 20k select-all paste and undo bounded', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts:1652:    await editor.clipboard.pasteText('20k partial-dom replacement')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts:1973:  test('replaces a huge select-all range with pasted text and undo restores it', async ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts:1987:    await editor.clipboard.pasteText('huge paste replacement')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts:1991:      .toEqual(['huge paste replacement'])
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts:1993:      anchor: { path: [0, 0], offset: 'huge paste replacement'.length },
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts:1994:      focus: { path: [0, 0], offset: 'huge paste replacement'.length },
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.test.ts:1:import './clipboard-boundary'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:503:    if (slots.clipboard?.insertData) {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:507:          'clipboard.insertData',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:509:            slots.clipboard?.insertData?.(data, {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/operations-contract.ts:383:  it('rebases selection with the effective move_node target when moving to a later sibling slot', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/operations-contract.ts:413:  it('rebases selection when insert_node inserts before the selected node', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/operations-contract.ts:752:  it('rebases selection inside merged text to the surviving branch', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/operations-contract.ts:841:  it('rebases selection to the next text when remove_node deletes the selected leading empty text', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/operations-contract.ts:872:  it('rebases selection to the previous text end when remove_node deletes the selected trailing empty text', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/operations-contract.ts:903:  it('rebases selection into the adjacent inline when remove_node deletes the selected trailing spacer text', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/collab-document-state-contract.ts:64:  it('replays shared state patches remotely without local undo history', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/core/public-state.ts:474:    `State field "${field.key}" stores a large shared/history value without patch hooks. Add diff/applyPatch/invertPatch or mark the field non-shared/history-skip.`
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/utils/dom.ts:98: * Checks whether a paste event is a plaintext-only event.
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/utils/dom.ts:103:    event.clipboardData &&
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/utils/dom.ts:104:    event.clipboardData.getData('text/plain') !== '' &&
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/utils/dom.ts:105:    event.clipboardData.types.length === 1
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/utils/dom.ts:269:  clipboardFormatKey = DEFAULT_CLIPBOARD_FORMAT_KEY
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/utils/dom.ts:271:  const htmlData = dataTransfer.getData('text/html')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/utils/dom.ts:281:    return fragmentFormat === clipboardFormatKey ? fragment : undefined
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/utils/dom.ts:284:  if (clipboardFormatKey === DEFAULT_CLIPBOARD_FORMAT_KEY) {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/utils/dom.ts:292: * Get the x-slate-fragment attribute that exist in text/html data
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/utils/dom.ts:297:  clipboardFormatKey = DEFAULT_CLIPBOARD_FORMAT_KEY
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/utils/dom.ts:299:  if (!dataTransfer.getData(`application/${clipboardFormatKey}`)) {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/utils/dom.ts:300:    const fragment = getSlateFragmentAttribute(dataTransfer, clipboardFormatKey)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/utils/dom.ts:302:      const clipboardData = new DataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/utils/dom.ts:304:        clipboardData.setData(type, dataTransfer.getData(type))
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/utils/dom.ts:306:      clipboardData.setData(`application/${clipboardFormatKey}`, fragment)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/utils/dom.ts:307:      return clipboardData
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/generic-dom-contract.ts:27:editor.api.clipboard.insertData(dataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/generic-dom-contract.ts:28:editor.api.clipboard.writeSelection(dataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/generic-dom-contract.ts:35:// @ts-expect-error clipboard methods are installed extension API only
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/generic-dom-contract.ts:36:plainEditor.api.clipboard.insertData(dataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/generic-dom-contract.ts:38:// @ts-expect-error clipboard is a sibling capability, not nested under dom
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/generic-dom-contract.ts:39:editor.api.dom.clipboard.insertData(dataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/generic-dom-contract.ts:41:// @ts-expect-error DOM methods are not exposed on the clipboard capability
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/generic-dom-contract.ts:42:editor.api.clipboard.resolvePath(slateNode)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:207:  | 'paste'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1501:  clipboard?: EditorClipboardMiddlewareMap<TEditor>
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1518:  clipboard?: EditorClipboardMiddlewareMap<TEditor>
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:453:  | 'paste'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:459:  | 'clipboard'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:801:  | 'desktop-native-clipboard'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:1019:  | { html: string; kind: 'pasteHtml'; label?: string; text?: string }
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:1020:  | { kind: 'pasteText'; label?: string; text: string }
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:1255:  pasteSelection: SelectionSnapshot
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:1256:  pastedText: string
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:1333:    kind: 'pasteHtml',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:1334:    label: 'paste-html',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:1339:    label: 'assert-paste-command-trace',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:1347:    label: 'assert-paste-repair-trace',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:1356:    label: 'assert-pasted-text',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2138:  pasteSelection,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2139:  pastedText,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2153:    label: 'select-paste-range',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2154:    selection: pasteSelection,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2157:    kind: 'pasteText',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2158:    label: 'paste-over-selected-range',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2159:    text: pastedText,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2163:    label: 'assert-text-after-paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2170:          label: 'assert-dom-shape-after-paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2179:          label: 'assert-selection-after-paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2187:    label: `delete-after-paste-${deleteAfterPasteKey}`,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2191:    label: 'assert-delete-trace-after-paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2199:    label: 'assert-text-after-delete-after-paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2206:          label: 'assert-dom-shape-after-delete-after-paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2215:          label: 'assert-selection-after-delete-after-paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2222:    label: 'type-after-delete-after-paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2689:    case 'pasteText':
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2877:  if (normalized.includes('clipboard')) {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2878:    return 'desktop-native-clipboard'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2894:const CLIPBOARD_LOCK_PATH = `${process.cwd()}/.slate-browser-clipboard.lock`
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3082:    throw new Error('Timed out waiting for exclusive clipboard access')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3098:    await navigator.clipboard.writeText(value)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3110:        'text/html': new Blob([nextHtml], { type: 'text/html' }),
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3114:      await navigator.clipboard.write([item])
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3197:          entry.eventFamily === 'paste' && entry.command?.kind === 'insert-data'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4098:  surface.evaluate(async () => navigator.clipboard.readText())
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4102:    const contents = await navigator.clipboard.read()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4105:      if (item.types.includes('text/html')) {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4106:        const blob = await item.getType('text/html')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4116:    const contents = await navigator.clipboard.read()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4138:    Object.defineProperty(event, 'clipboardData', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4145:      html: data.getData('text/html') || null,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4162:    Object.defineProperty(event, 'clipboardData', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4169:      html: data.getData('text/html') || null,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4176:const pastePayloadThroughEvent = async (
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4197:        data.setData('text/html', nextPayload.html)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4204:      const event = new ClipboardEvent('paste', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4209:      Object.defineProperty(event, 'clipboardData', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4382:      data.setData('text/html', payload.html)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:5493:  clipboard: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:5500:    pasteEventPayload: (payload: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:5505:    pasteNativeText: (text: string) => Promise<void>
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:5506:    pasteText: (text: string) => Promise<void>
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:5507:    pasteHtml: (html: string, plainText?: string) => Promise<void>
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:7926:    clipboard: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:7974:      pasteEventPayload: async (payload: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:7979:        await pastePayloadThroughEvent(root, payload)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:7981:      pasteNativeText: async (text: string) => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:7988:      pasteText: async (text: string) => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:8028:      pasteHtml: async (html: string, plainText?: string) => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:8039:            await pastePayloadThroughEvent(root, { html, text })
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:8070:            await pastePayloadThroughEvent(root, { html, text })
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:8076:          const payload = await harness.clipboard.copyPayload()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:8080:          const payload = await harness.clipboard.copyPayload()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:8084:          const payload = await harness.clipboard.copyPayload()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:8088:          const payload = await harness.clipboard.copyPayload()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:8576:              case 'pasteHtml':
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:8577:                await harness.clipboard.pasteHtml(step.html, step.text)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:8579:              case 'pasteText':
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:8580:                await harness.clipboard.pasteText(step.text)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/internal/index.ts:4:} from '../plugin/dom-clipboard-runtime'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:80:  clipboardFormatKey?: string,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:84:    extensions: [dom(clipboardFormatKey ? { clipboardFormatKey } : {})],
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:379:describe('slate-dom clipboard boundary', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:385:    expect(typeof editor.api.clipboard.insertData).toBe('function')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:386:    expect(typeof editor.api.clipboard.writeSelection).toBe('function')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:387:    expect('clipboard' in editor).toBe(false)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:390:  it('round-trips a selected fragment through clipboard payloads and replaces the target selection', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:403:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:408:      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:410:      expect(clipboard.getData('application/x-slate-fragment')).not.toBe('')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:411:      expect(clipboard.getData('text/html')).toContain('data-slate-fragment=')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:412:      expect(clipboard.getData('text/plain')).toBe('alpha')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:415:        target.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:435:  it('serializes empty paragraphs as blank lines in plain text clipboard output', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:457:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:461:      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:463:      expect(clipboard.getData('text/plain').trimEnd()).toBe('1\n\n2')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:464:      expect(clipboard.getData('text/html')).toContain('data-slate-fragment=')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:468:  it('serializes space-only and empty paragraphs as distinct plain text lines', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:494:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:498:      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:500:      expect(clipboard.getData('text/plain').trimEnd()).toBe(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:503:      expect(clipboard.getData('text/html')).toContain('data-slate-fragment=')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:507:  it('copies a selected whole list to clipboard data without DOM range traversal errors', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:528:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:533:        source.api.clipboard.writeSelection(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:534:          clipboard as unknown as DataTransfer
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:538:      const encoded = clipboard.getData('application/x-slate-fragment')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:542:      expect(clipboard.getData('text/html')).toContain('data-slate-fragment=')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:543:      expect(clipboard.getData('text/plain')).toContain('one')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:544:      expect(clipboard.getData('text/plain')).toContain('two')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:554:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:572:      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:574:      expect(clipboard.getData('text/plain')).toBe('alpha')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:575:      expect(clipboard.getData('text/html')).not.toContain(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:578:      expect(clipboard.getData('application/x-slate-fragment')).toBe('')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:603:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:608:      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:611:        target.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:627:  it('preserves block separation when a rich multi-block fragment is pasted in the middle of a text block', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:660:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:665:      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:667:      expect(clipboard.getData('application/x-slate-fragment')).not.toBe('')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:668:      expect(clipboard.getData('text/html')).toContain('data-slate-fragment=')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:669:      expect(clipboard.getData('text/plain').trimEnd()).toBe('one\ntwo')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:674:        target.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:695:  it('preserves the target empty text block for the first pasted text block and promotes the tail', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:728:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:733:      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:738:        target.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:792:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:797:      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:800:        target.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:849:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:854:      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:857:        target.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:873:  it('replaces selected content that starts with an empty block with multiple pasted blocks', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:910:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:915:      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:918:        target.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:959:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:964:      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:966:      expect(clipboard.getData('application/x-slate-fragment')).toBe('')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:967:      expect(clipboard.getData('application/x-proof-fragment')).not.toBe('')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:970:        target.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:993:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:998:      source.api.clipboard.writeSelection(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1001:      clipboard.setData('text/html', encodedClipboard.getData('text/html'))
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1004:        target.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1035:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1040:      source.api.clipboard.writeSelection(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1043:      clipboard.setData('text/html', encodedClipboard.getData('text/html'))
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1044:      clipboard.setData('text/plain', 'plain fallback')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1047:        target.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1074:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1079:      source.api.clipboard.writeSelection(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1082:      clipboard.setData('text/html', encodedClipboard.getData('text/html'))
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1083:      clipboard.setData('text/plain', 'plain fallback')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1086:        target.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1095:  it('falls back to plain text when no fragment payload exists', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1104:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1106:    clipboard.setData('text/plain', 'hello')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1109:      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1141:          name: 'inline-text-paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1145:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1147:    clipboard.setData('text/html', '<strong>replaced</strong>')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1148:    clipboard.setData('text/plain', 'replaced')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1151:      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1174:  it('pastes multiline plain text as separate blocks at a collapsed text selection', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1187:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1189:    clipboard.setData('text/plain', 'world\nAnd text below')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1192:      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1225:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1227:    clipboard.setData('text/plain', 'hello\tworld\nhello\tworld')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1230:      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1249:  it('keeps a single pasted tab inside one text node through follow-up editing', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1263:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1265:    clipboard.setData('text/plain', 'ABD\tEFG')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1268:      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1304:  it('falls back to plain text when the custom MIME fragment is malformed', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1310:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1313:      clipboard.setData('application/x-slate-fragment', 'not-valid-base64')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1314:      clipboard.setData('text/plain', 'fallback')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1318:          editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1328:  it('falls back to plain text when the embedded HTML fragment is only text', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1334:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1337:      clipboard.setData(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1338:        'text/html',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1341:      clipboard.setData('text/plain', 'fallback')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1345:          editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1368:        const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1371:        clipboard.setData('application/x-slate-fragment', payload)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1372:        clipboard.setData('text/plain', `fallback ${index}`)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1376:            editor.api.clipboard.insertData(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1377:              clipboard as unknown as DataTransfer
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1396:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1399:      clipboard.setData('application/x-slate-fragment', 'not-valid-base64')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1403:          editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1427:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1431:      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1433:      expect(clipboard.getData('application/x-slate-fragment')).not.toBe('')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1434:      expect(clipboard.getData('text/plain')).toBe('lph')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1435:      expect(clipboard.getData('text/html')).toContain('data-slate-fragment=')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1436:      expect(clipboard.getData('text/html')).not.toContain('data-tone=')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1469:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1485:            name: 'inline-void-paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1494:        source.api.clipboard.writeSelection(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1495:          clipboard as unknown as DataTransfer
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1499:      const encoded = clipboard.getData('application/x-slate-fragment')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1514:      expect(clipboard.getData('text/html')).toContain('data-slate-fragment=')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1515:      expect(clipboard.getData('text/plain')).not.toContain('\uFEFF')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1516:      expect(clipboard.getData('text/plain')).not.toContain('alpha')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1517:      expect(clipboard.getData('text/plain')).not.toContain('omega')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1522:        target.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1546:        target.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1592:  it('exports visible block void content for external HTML clipboard targets', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1622:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1626:      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1628:      const encoded = clipboard.getData('application/x-slate-fragment')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1629:      const html = clipboard.getData('text/html')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1642:      expect(clipboard.getData('text/plain')).not.toContain('\uFEFF')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1676:      const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1680:      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1682:      expect(clipboard.getData('application/x-slate-fragment')).not.toBe('')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1683:      expect(clipboard.getData('text/html')).toContain('data-slate-fragment=')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1684:      expect(clipboard.getData('text/html')).toContain('<img')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1702:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1704:    clipboard.setData('text/plain', 'A\nB')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1707:      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1744:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1747:    clipboard.setData('text/plain', 'one\ntwo\nthree')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1750:      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1796:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1798:    clipboard.setData('text/plain', 'paste one\npaste two')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1801:      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1807:        children: [{ text: 'paste one' }],
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1811:        children: [{ text: 'paste two' }],
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1830:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1833:    clipboard.setData('text/plain', 'one\ntwo\nthree')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1836:      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1864:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1880:    clipboard.setData('text/plain', 'one\ntwo\nthree')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1883:      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/transports/appium.ts:74:      platformName: 'iOS',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:107:  | 'paste'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:43:  clipboardFormatKey: string
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:45:  EDITOR_TO_CLIPBOARD_FORMAT_KEY.set(editor, clipboardFormatKey)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:233:  clipboardFormatKey: string
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:240:  data.setData(`application/${clipboardFormatKey}`, encoded)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:243:    'text/html',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:244:    `<span data-slate-fragment="${encoded}" ${SLATE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapeHtmlAttribute(clipboardFormatKey)}">${escapeHtmlText(text)}</span>`
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:264:  const clipboardFormatKey = getDOMClipboardFormatKey(editor)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:312:    writeModelBackedSelectionData(editor, data, clipboardFormatKey)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:317:  // fragment to the HTML, to decode on future pastes.
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:325:    writeModelBackedSelectionData(editor, data, clipboardFormatKey)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:366:  // show up elsewhere when pasted.
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:411:      clipboardFormatKey
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:413:    data.setData(`application/${clipboardFormatKey}`, encoded)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:421:  data.setData('text/html', div.innerHTML)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:432:    'clipboard.insertData'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:448:  const clipboardFormatKey = getDOMClipboardFormatKey(editor)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:450:    data.getData(`application/${clipboardFormatKey}`) ||
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:451:    getSlateFragmentAttribute(data, clipboardFormatKey)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/transports/contracts.ts:19:  | 'native-mobile-clipboard'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/transports/contracts.ts:38:  'native-mobile-clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/transports/contracts.ts:74:          'native-mobile-clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts:39:import { setDOMClipboardFormatKey } from './dom-clipboard-runtime'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts:53:   * Slate writes and reads `application/${clipboardFormatKey}`.
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts:55:  clipboardFormatKey?: string
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts:74:  const { clipboardFormatKey = DEFAULT_CLIPBOARD_FORMAT_KEY } = options
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts:76:  setDOMClipboardFormatKey(e, clipboardFormatKey)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts:297:      const { clipboard, ...domApi } = editor.dom
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts:303:          clipboard,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/README.md:18:  - real clipboard write + browser paste helpers
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/README.md:19:  - real clipboard read helpers
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/README.md:21:  - getter namespace for text/html/selection state
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/README.md:49:  - selection and clipboard snapshot types
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/README.md:56:    - `agent-browser` iOS
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/README.md:58:    - Appium iOS
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/README.md:66:  when the device gate actually runs; `agent-browser` iOS is proxy evidence,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/README.md:67:  and the current automated surface does not claim native mobile clipboard,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/README.md:82:semantics by themselves. `editor.clipboard.pasteHtml(...)` writes a rich
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/README.md:83:clipboard payload and triggers the browser paste path; the route-specific test
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/README.md:158:  text: 'This is editable plain text, just like a <textarea>!',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/README.md:192:await editor.clipboard.pasteText('more')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/README.md:193:await editor.clipboard.copy()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/README.md:194:expect(await editor.clipboard.readText()).toContain('more')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:59:} from './dom-clipboard-runtime'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:73:    'dataTransfer' in event ? event.dataTransfer : event.clipboardData
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:162:  clipboard: DOMEditorClipboardCapability
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:228:export type DOMApi = Omit<DOMEditorCapability, 'clipboard'>
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:372:  clipboard: DOMEditorClipboardInterface
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:1853:  clipboard: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:2678:    clipboard: Object.freeze({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:2680:        DOMEditor.clipboard.insertData(editor, data),
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:2682:        DOMEditor.clipboard.insertFragmentData(editor, data),
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:2684:        DOMEditor.clipboard.insertTextData(editor, data),
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:2686:        DOMEditor.clipboard.writeSelection(editor, data),
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:57:      'each pasted HTML image becomes a runtime-owned block void',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:60:      'focus remains editor-owned after paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:62:    family: 'paste-html-image-void',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:63:    routes: ['paste-html'],
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:185:      'native partial text replacement undo restores text and selection',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:186:      'mouse-drag typed replacement undo restores DOM and model selection',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:193:      'paste normalizes multiline content',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:198:    family: 'paste-normalize-undo',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:204:      'ProseMirror text slices paste only visible text',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:205:      'comment-bounded clipboard HTML imports only the bounded fragment',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:206:      'external table clipboard HTML preserves rows, cells, and cell-local marks',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:208:    family: 'external-clipboard-slice-context',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:209:    routes: ['paste-html'],
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:334:        'paste-html-image-void',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:375:        'external-clipboard-slice-context',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:376:        'paste-normalize-undo',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/CHANGELOG.md:113:- [#5877](https://github.com/ianstormtaylor/slate/pull/5877) [`747ebfda`](https://github.com/ianstormtaylor/slate/commit/747ebfda0a06b29fc31720f9172c67222fbeae07) Thanks [@12joan](https://github.com/12joan)! - Fix a crash on iOS when composing text using an IME at the start of a block, at the cost of breaking capitalization on iOS in an empty editor.
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/CHANGELOG.md:229:- [#5654](https://github.com/ianstormtaylor/slate/pull/5654) [`2a8b4e95`](https://github.com/ianstormtaylor/slate/commit/2a8b4e958bd02f3b70da51c3880fd764270424ad) Thanks [@alex-starostin](https://github.com/alex-starostin)! - Make capitalizing work for iOS
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/CHANGELOG.md:423:- [#5362](https://github.com/ianstormtaylor/slate/pull/5362) [`43999356`](https://github.com/ianstormtaylor/slate/commit/439993569001f8c5dc9e68194c198d430a4ef4bc) Thanks [@jason0x43](https://github.com/jason0x43)! - Fix an issue where pastes in Safari wouldn't include application/x-slate-fragment data
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/CHANGELOG.md:425:* [#5359](https://github.com/ianstormtaylor/slate/pull/5359) [`9825d29b`](https://github.com/ianstormtaylor/slate/commit/9825d29b87ffff96b4cdfd7339028cc1a92c6f68) Thanks [@jason0x43](https://github.com/jason0x43)! - Fix an issue on Android where content containing a newline wouldn't be pasted properly
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/CHANGELOG.md:481:- [#5305](https://github.com/ianstormtaylor/slate/pull/5305) [`11adbf96`](https://github.com/ianstormtaylor/slate/commit/11adbf966c764ffde866be38ada2d32e00105e48) Thanks [@alex-vladut](https://github.com/alex-vladut)! - Allow pasting plain text into editable voids
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/CHANGELOG.md:499:- [#5267](https://github.com/ianstormtaylor/slate/pull/5267) [`463edbd2`](https://github.com/ianstormtaylor/slate/commit/463edbd27ed78a4b4a3d38886da4d9e3e8b8efd5) Thanks [@ilya2204](https://github.com/ilya2204)! - Allow to change clipboard fragment format name
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/CHANGELOG.md:537:- [#5223](https://github.com/ianstormtaylor/slate/pull/5223) [`120437d6`](https://github.com/ianstormtaylor/slate/commit/120437d61237eeb8df4ed0db92af31698e910eda) Thanks [@alex-vladut](https://github.com/alex-vladut)! - Fix issue preventing editing and copy/paste into editable voids
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/CHANGELOG.md:549:- [#5121](https://github.com/ianstormtaylor/slate/pull/5121) [`06942c6d`](https://github.com/ianstormtaylor/slate/commit/06942c6d7e4b8418a467f022750b010491dbdbe7) Thanks [@laufeyrut](https://github.com/laufeyrut)! - Make it possible to copy/paste void elements
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/CHANGELOG.md:685:- [#4914](https://github.com/ianstormtaylor/slate/pull/4914) [`aff67312`](https://github.com/ianstormtaylor/slate/commit/aff67312cbfa7e45df5cf6abcaec9f4f7d5f1a89) Thanks [@sennpang](https://github.com/sennpang)! - Fixed Triple click selection and copy&paste in read-only mode
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/CHANGELOG.md:970:* [#4433](https://github.com/ianstormtaylor/slate/pull/4433) [`a1f925bd`](https://github.com/ianstormtaylor/slate/commit/a1f925bddfb8e4507977b3449972d4521d05b148) Thanks [@imdbsd](https://github.com/imdbsd)! - Fix copy-paste a slate fragment on android editable
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/CHANGELOG.md:990:* [#4333](https://github.com/ianstormtaylor/slate/pull/4333) [`e0776c5c`](https://github.com/ianstormtaylor/slate/commit/e0776c5c923f1fb33a130599e558e6dffdde40f4) Thanks [@dylans](https://github.com/dylans)! - Allow setFragmentData to work without copy/paste or DnD data structure
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/CHANGELOG.md:1143:- [`c6002024`](https://github.com/ianstormtaylor/slate/commit/c60020244b9d25094edb0ffcca8b49dead9b31dc) - Fixed deleting void elements when using cut-and-paste.
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/release-proof.ts:15:  | 'native-mobile-clipboard'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/release-proof.ts:275:      case 'native-mobile-clipboard':
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/release-proof.ts:280:          'native-mobile-clipboard'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/src/core/release-proof.ts:286:          'native-mobile-clipboard'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/root-interaction-resolver.test.ts:33:  test('restores selection for root chrome activation without coordinates', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/root-interaction-resolver.test.ts:101:  test('restores selection for editable root surface clicks without coordinates', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:897:        // Pastes from the Android clipboard will generate `insertText` events.
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:904:        // If the text includes a newline, split it at newlines and paste each component
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/read-update-contract.ts:39:      { tag: ['history-push', 'paste'] }
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/read-update-contract.ts:51:    assert.deepEqual(commit.tags, ['history-push', 'paste'])
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:237:  const { clipboard, ...domApi } = createDOMEditorCapability(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:244:      if (property === 'clipboard') {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:245:        return clipboard
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts:189:        ['core-editing', 'external-clipboard-slice-context', ['paste-html']],
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts:831:      pasteSelection: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts:835:      pastedText: 'Paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts:862:        'paste-over-selected-range',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts:863:        'assert-dom-shape-after-paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts:864:        'delete-after-paste-Backspace',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts:865:        'assert-dom-shape-after-delete-after-paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/core-benchmark-scripts-contract.ts:66:const clipboardLargePayloadPath = fileURLToPath(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/core-benchmark-scripts-contract.ts:68:    '../../../scripts/benchmarks/core/current/clipboard-large-payload.mjs',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/core-benchmark-scripts-contract.ts:311:    const clipboardDurationSummary = emptySummaryFromPath<{
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/core-benchmark-scripts-contract.ts:318:    }>(clipboardLargePayloadPath, 'summarizeDurations', 'percentile')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/core-benchmark-scripts-contract.ts:319:    const clipboardHeapSummary = emptySummaryFromPath<{
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/core-benchmark-scripts-contract.ts:323:    }>(clipboardLargePayloadPath, 'summarizeHeapDeltas')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/core-benchmark-scripts-contract.ts:338:    assert.deepEqual(clipboardDurationSummary, {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/core-benchmark-scripts-contract.ts:346:    assert.deepEqual(clipboardHeapSummary, {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/core-benchmark-scripts-contract.ts:353:    assert.ok(summaryNumbers(clipboardDurationSummary).every(Number.isFinite))
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/core-benchmark-scripts-contract.ts:354:    assert.ok(summaryNumbers(clipboardHeapSummary).every(Number.isFinite))
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts:99:  test('keeps native mobile clipboard outside the release claim without explicit direct evidence', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts:113:      claims: ['native-mobile-clipboard'],
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts:118:      'Missing automated-direct release proof for android-chrome native-mobile-clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts:119:      'Missing automated-direct release proof for ios-safari native-mobile-clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:20:describe('slate clipboard contract', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:934:  it('pastes rich text into selected inline link text without swallowing the paste into the link', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:1153:          children: [{ text: 'paste here' }],
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:1157:        anchor: { path: [0, 0], offset: 'paste '.length },
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:1158:        focus: { path: [0, 0], offset: 'paste '.length },
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:1173:          { text: 'paste ' },
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:1401:  it('insertFragment places selection after an inline void pasted into an empty target block', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/test/core/proof.test.ts:178:        'native-mobile-clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/test/core/proof.test.ts:196:        'native-mobile-clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/test/core/proof.test.ts:210:        'native-mobile-clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/test/core/proof.test.ts:220:        entry.unsupportedClaims.includes('native-mobile-clipboard')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/test/core/proof.test.ts:232:      'native-mobile-clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:170:      editor.read((state) => state.history.undos()[0]?.selectionBefore),
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:406:  it('replays replace_children paste operations through the collaboration import path', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/interfaces-contract.ts:29:  it('treats plain text objects as text', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:339:  it('unsupported projected paste payloads preserve the projected selection', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:362:  it('declining clipboard handlers preserve unsupported projected paste payloads', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:364:    const clipboardExtension = defineEditorExtension({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:365:      clipboard: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:372:      name: 'projected-command-declining-clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:374:    const { editor, graph } = createFixture([clipboardExtension])
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:399:  it('pasting a Slate fragment without plain text replaces the projected selection', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:425:  it('preserves projected selection for an empty Slate fragment paste so typing can replace it', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:463:  it('falls back to plain text for empty Slate fragments over projected selections', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:491:  it('lets clipboard insertData handlers own projected Slate fragment pastes', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:493:    const clipboardExtension = defineEditorExtension({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:494:      clipboard: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:502:      name: 'projected-command-custom-clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:504:    const { editor, graph } = createFixture([clipboardExtension])
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:530:  it('offers unsupported projected paste payloads to clipboard handlers', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:532:    const clipboardExtension = defineEditorExtension({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:533:      clipboard: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:541:      name: 'projected-command-custom-payload-clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:543:    const { editor, graph } = createFixture([clipboardExtension])
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:566:  it('releases projected range refs when clipboard insertData handlers throw', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:567:    const pasteError = new Error('custom paste failed')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:568:    const clipboardExtension = defineEditorExtension({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:569:      clipboard: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:571:          throw pasteError
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:574:      name: 'projected-command-throwing-clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:576:    const { editor, graph } = createFixture([clipboardExtension])
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:587:    ).toThrow(pasteError)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:600:      'text/html',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:627:      'text/html',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:1110:  it('undo and redo restore the projected selection sidecar instead of losing owner identity', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:1317:  it('does not paste into ambiguous projected selections across repeated content-root owners', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:1346:  it('does not delete projected selections for unsupported paste data', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:1387:      'text/html',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts:1406:  it('preserves projected selections for empty Slate fragments with empty plain text', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/selection-rebase-contract.ts:30:  it('rebases selection out of a removable empty marked leaf during destructive cleanup', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/selection-rebase-contract.ts:80:  it('rebases selection to the previous inline when the selected leaf is removed', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/selection-rebase-contract.ts:117:  it('rebases selection to the next top-level block when the selected block is removed', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts:335:      // programmatic access of paste events coming from external windows
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts:123:    records.set('text/html', html)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-native-affordance-contract.test.ts:12:      'clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-native-affordance-contract.test.ts:21:    expect(matrix.clipboard.status).toBe('supported')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-native-affordance-contract.test.ts:36:        .filter(([key]) => key !== 'clipboard')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/editor-runtime-view-contract.ts:177:          name: 'custom-clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/editor-runtime-view-contract.ts:178:          clipboard: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/editor-runtime-view-contract.ts:198:      viewRegistry.capabilities.get('clipboard.insertData')?.length,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/editor-runtime-view-contract.ts:1398:  it("preserves the focused root selection when undoing another root's batch", () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/editor-runtime-view-contract.ts:1548:  it('restores null selection when undoing a programmatic non-main root batch', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx:105:reactEditor.api.clipboard.insertData(dataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx:121:historyReactEditor.api.clipboard.writeSelection(dataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:913:    // COMPAT: In iOS, some of these hotkeys are handled in the
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:64:  | 'paste'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:70:  | 'clipboard'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:144:    inputFamilies: ['beforeinput', 'drop', 'paste'],
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:164:    inputFamilies: ['copy', 'cut', 'drop', 'paste'],
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/projected-clipboard.ts:105:  const clipboardFormatKey = getProjectedClipboardFormatKey(editor)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/projected-clipboard.ts:106:  const escapedClipboardFormatKey = escapeHtmlAttribute(clipboardFormatKey)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/projected-clipboard.ts:108:  data.setData(`application/${clipboardFormatKey}`, encoded)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/projected-clipboard.ts:111:    'text/html',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts:145:  it('defers iOS Korean Backspace to native input', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts:165:  it('keeps non-Backspace keys model-owned for iOS Korean input', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts:942:  it("repairs history focus to the preserved selection root when undoing another root's batch", () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts:1064:  it('repairs history focus to the history root when undo leaves no selection', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts:359:  it('extension clipboard middleware receives read-only state without tx', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts:375:        name: 'clipboard-state',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts:376:        clipboard: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts:389:        'clipboard.insertData'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts:25:import { useRuntimeClipboardEvents } from './runtime-clipboard-events'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts:238:  const clipboardHandlers = useRuntimeClipboardEvents({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts:304:      ...clipboardHandlers,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts:312:      clipboardHandlers,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/runtime-clipboard-events.ts:7:} from './clipboard-input-strategy'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/runtime-clipboard-events.ts:55:        family: 'paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/runtime-clipboard-events.ts:59:      const pasteResult = applyEditablePaste({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/runtime-clipboard-events.ts:66:      if (pasteResult.repair) {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/runtime-clipboard-events.ts:67:        repair.requestEditableRepair(pasteResult.repair)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/runtime-clipboard-events.ts:69:      if (pasteResult.explicitPartialDOMBackedSelection !== undefined) {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/runtime-clipboard-events.ts:71:          pasteResult.explicitPartialDOMBackedSelection
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/runtime-clipboard-events.ts:75:        command: pasteResult.command,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/runtime-clipboard-events.ts:76:        family: 'paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts:357:  const clipboardFormatKey = getDOMClipboardFormatKey(editor)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts:358:  const clipboardFragment = data.getData(`application/${clipboardFormatKey}`)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts:360:  if (clipboardFragment) {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts:361:    return clipboardFragment
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts:364:  const html = data.getData('text/html')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts:371:  const document = new DOMParser().parseFromString(html, 'text/html')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts:389:    return fragmentFormat === clipboardFormatKey ? htmlFragmentData : ''
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts:392:  return clipboardFormatKey === DEFAULT_SLATE_CLIPBOARD_FORMAT_KEY
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts:419:    'clipboard.insertData'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts:869:              clipboard: { insertTextData: (data: DataTransfer) => boolean }
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts:871:          ).clipboard.insertTextData(data)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts:1758:            clipboard: { insertData: (data: DataTransfer) => boolean }
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts:1760:        ).clipboard.insertData(command.data)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/snapshot-contract.ts:3261:it('supports remove_text operation replay and rebases selection inward', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/slate-runtime-provider-contract.test.tsx:1182:  test('root-bound Slate clipboard API inserts into the selected root', async () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/slate-runtime-provider-contract.test.tsx:1209:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/slate-runtime-provider-contract.test.tsx:1210:    clipboard.setData('text/plain', '!')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/slate-runtime-provider-contract.test.tsx:1219:        headerEditor.api.clipboard.insertData(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/slate-runtime-provider-contract.test.tsx:1220:          clipboard as unknown as DataTransfer
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/slate-runtime-provider-contract.test.tsx:1229:  test('root-bound Slate clipboard API uses runtime extension handlers', async () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/slate-runtime-provider-contract.test.tsx:1233:    const clipboardExtension = defineEditorExtension({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/slate-runtime-provider-contract.test.tsx:1234:      name: 'custom-clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/slate-runtime-provider-contract.test.tsx:1235:      clipboard: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/slate-runtime-provider-contract.test.tsx:1252:        extensions: [clipboardExtension],
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/slate-runtime-provider-contract.test.tsx:1271:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/slate-runtime-provider-contract.test.tsx:1272:    clipboard.setData('text/plain', '!')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/slate-runtime-provider-contract.test.tsx:1281:        headerEditor.api.clipboard.insertData(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/slate-runtime-provider-contract.test.tsx:1282:          clipboard as unknown as DataTransfer
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts:272:  clipboard: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts:276:      // @ts-expect-error clipboard middleware gets state, not tx
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/input-state.ts:6:  | 'clipboard'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/projected-native-affordance.ts:12:  clipboard: ProjectedNativeAffordanceEntry
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/projected-native-affordance.ts:22:    clipboard: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/projected-native-affordance.ts:24:        'Model-owned projected selection writes text/plain, text/html, and Slate fragment payloads.',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:23:import { useRuntimeClipboardEvents } from '../src/editable/runtime-clipboard-events'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:387:  clipboardData: FakeClipboardData
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:390:    clipboardData,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:393:    nativeEvent: { clipboardData },
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:1975:test('plain text keydown does not flush deferred native text repair between characters', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:2034:test('plain text keydown does not import selection while native text repair is pending', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:2078:test('plain text keydown does not import selection while model owns text input', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:2126:test('plain text shortcut boundary keydown flushes deferred native text repair', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:2274:test('editable paste flushes pending native text before app paste callbacks', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:2281:  const clipboardData = new FakeClipboardData()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:2284:  clipboardData.setData('text/plain', ' pasted')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:2307:            ? 'paste:flushed'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:2308:            : 'paste:stale'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:2327:    result.current.onPaste(createRuntimeClipboardEvent(root, clipboardData))
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:2329:    expect(order).toEqual(['flush', 'paste:flushed'])
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:57:      clipboard: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:82:      clipboard: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:78:  clipboardData: {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:87:  fireEvent.paste(root, { clipboardData })
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:1150:test('Editable marks only default plain text as DOM-sync capable', async () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:2797:test('Editable domStrategy preserves multiline plain text over a full-document partial-dom-backed selection', async () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:2817:      id="dom-strategy-paste-full-doc"
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:2822:    '#dom-strategy-paste-full-doc'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:2858:test('Editable domStrategy preserves Slate fragment data for partial-dom-backed paste', async () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:2878:      id="dom-strategy-paste-fragment"
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:2883:    '#dom-strategy-paste-fragment'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:25:import { writeProjectedViewSelectionClipboardData } from './projected-clipboard'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:49:const clipboardResult = ({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:261:      DOMCoverage.materializeBoundary(editor, boundary.boundaryId, 'paste', {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:277:  const clipboardData =
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:278:    event.clipboardData ??
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:279:    (event.nativeEvent as globalThis.ClipboardEvent).clipboardData
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:282:    clipboardData &&
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:288:    if (writeProjectedViewSelectionClipboardData(editor, clipboardData)) {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:292:    editor.api.clipboard.writeSelection(clipboardData)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:307:  const clipboardData =
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:308:    event.clipboardData ??
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:309:    (event.nativeEvent as globalThis.ClipboardEvent).clipboardData
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:311:  if (clipboardData && readOnly) {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:313:    return clipboardResult({ command: null })
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:317:    clipboardData &&
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:330:        return clipboardResult({ command: null })
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:335:        writeProjectedViewSelectionClipboardData(editor, clipboardData)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:340:        return clipboardResult({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:355:    editor.api.clipboard.writeSelection(clipboardData)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:408:          return clipboardResult({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:433:          return clipboardResult({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:447:        return clipboardResult({ command })
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:457:        return clipboardResult({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:473:  return clipboardResult({ command: null })
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:586:    editor.api.clipboard.writeSelection(event.dataTransfer)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:607:    return clipboardResult({ command: null })
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:639:      return clipboardResult({ command: null })
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:668:      return clipboardResult({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:682:    return clipboardResult({ command })
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:685:  return clipboardResult({ command: null })
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:703:    return clipboardResult({ command: null })
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:710:  if (partialDOMBackedSelection && event.clipboardData && canHandlePaste) {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:714:      data: event.clipboardData,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:718:    return clipboardResult({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:728:      hasClipboardFiles(event.clipboardData) ||
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:735:    // when "paste without formatting" is used, so fallback. (2020/02/20)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:742:      data: event.clipboardData,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:747:    return clipboardResult({
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:753:  return clipboardResult({ command: null })
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/runtime-drag-events.ts:8:} from './clipboard-input-strategy'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts:273:    return 'clipboard'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts:365:    return 'clipboard'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts:394:  return 'clipboard'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:560:    "\\bfrom '../editable/clipboard-input-strategy'": {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:563:      owner: 'Runtime clipboard events',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:588:    "\\bfrom '../editable/runtime-clipboard-events'": {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:20:} from '../src/editable/clipboard-input-strategy'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:209:  clipboardData: FakeDataTransfer
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:212:    clipboardData,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:213:    nativeEvent: { clipboardData },
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:231:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:240:        event: createClipboardEvent(root, clipboard),
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:243:      expect(clipboard.getData('text/plain')).toBe('Hidden alpha')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:244:      expect(clipboard.getData('text/html')).toContain('Hidden alpha')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:245:      expect(clipboard.getData('text/html')).not.toContain('STALE')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:246:      expect(clipboard.getData('application/x-slate-fragment')).not.toBe('')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:253:  test('paste over a hidden native selection mutates the model without stale DOM', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:256:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:259:    clipboard.setData('text/plain', 'Pasted alpha')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:266:        event: createClipboardEvent(root, clipboard),
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:280:  test('drag start serializes hidden-range selections through the model-backed clipboard path', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:298:      expect(dataTransfer.getData('text/html')).toContain('Hidden alpha')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:328:  test('drop inserts plain text data at the resolved event range', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:377:  test('repeated external plain text drops preserve earlier inserted text', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:529:  test('paste is ignored when the editor is read-only', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:546:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:547:    const event = createClipboardEvent(root, clipboard)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:549:    clipboard.setData('text/plain', 'Pasted text')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:571:  test('read-only paste prevents native default even when custom handler returns handled', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:588:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:589:    const event = createClipboardEvent(root, clipboard)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:592:    clipboard.setData('text/plain', 'Pasted text')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:612:  test('paste is ignored when the application handler owns the event', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:629:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:630:    const event = createClipboardEvent(root, clipboard)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:632:    clipboard.setData('text/plain', 'Pasted text')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:655:  test('paste uses clipboard data mutated by an unhandled app paste callback', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:672:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:673:    const event = createClipboardEvent(root, clipboard)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:675:    clipboard.setData('text/plain', 'Old text')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:681:        onPaste: (pasteEvent) => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:682:          pasteEvent.clipboardData.setData('text/plain', 'New text')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:700:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:716:        event: createClipboardEvent(root, clipboard),
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:722:      expect(clipboard.getData('text/plain')).toBe('Pending omega')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:723:      expect(clipboard.getData('text/html')).toContain('Pending omega')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:724:      expect(clipboard.getData('text/html')).not.toContain('STALE')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:725:      expect(clipboard.getData('application/x-slate-fragment')).not.toBe('')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:732:  test('paste over a pending staged root group materializes before mutating the model', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:735:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:739:    clipboard.setData('text/plain', 'Pasted omega')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:752:        event: createClipboardEvent(root, clipboard),
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:758:        'rendering-staged:pending:paste:Pending omega',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:799:    const clipboard = new FakeDataTransfer()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:800:    const event = createClipboardEvent(root, clipboard)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:809:      const encoded = clipboard.getData('application/x-slate-fragment')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:350:      data: 'textarea-style paste text',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:689:    intent: 'clipboard',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:18:import { applyEditableCut } from '../src/editable/clipboard-input-strategy'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:22:} from '../src/editable/projected-clipboard'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:44:  name: 'projected-clipboard-test',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:196:  clipboardData: ReturnType<typeof createClipboardData>
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:199:    clipboardData,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:200:    nativeEvent: { clipboardData },
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:209:describe('projected clipboard', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:219:  it('writes plain text, html, and Slate fragment data from the projected model selection', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:221:    const clipboardData = createClipboardData()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:224:      writeProjectedViewSelectionClipboardData(editor, clipboardData)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:226:    expect(clipboardData.data.get('text/plain')).toBe('ore\nIn')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:227:    expect(clipboardData.data.get('text/html')).toContain(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:232:        clipboardData.data.get('application/x-slate-fragment')!
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:237:  it('uses the editor clipboard format key for projected Slate fragment data', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:239:    const clipboardData = createClipboardData()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:244:      writeProjectedViewSelectionClipboardData(editor, clipboardData)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:246:    expect(clipboardData.data.get('application/x-slate-fragment')).toBe(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:251:        clipboardData.data.get('application/x-custom-slate-fragment')!
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:254:    expect(clipboardData.data.get('text/html')).toContain(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:259:  it('uses the runtime clipboard format key when projected copy runs from a view editor', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:261:    const clipboardData = createClipboardData()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:269:      writeProjectedViewSelectionClipboardData(editor, clipboardData)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:271:    expect(clipboardData.data.get('application/x-slate-fragment')).toBe(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:276:        clipboardData.data.get('application/x-custom-slate-fragment')!
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:279:    expect(clipboardData.data.get('text/html')).toContain(
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:284:  it('serializes repeated content-root owners as visible clipboard fragments', () => {
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:286:    const clipboardData = createClipboardData()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:294:      writeProjectedViewSelectionClipboardData(editor, clipboardData)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:296:    expect(clipboardData.data.get('text/plain')).toBe('side\nBetween\nInsi')
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:299:        clipboardData.data.get('application/x-slate-fragment')!
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:306:    const clipboardData = createClipboardData()
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:308:    const event = createClipboardEvent(root, clipboardData)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projected-clipboard-contract.test.ts:326:      expect(clipboardData.data.size).toBe(0)
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/dom-repair-policy-contract.test.ts:1620:  const originalText = 'This is editable plain text'
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts:40:      { tag: ['history-push', 'paste'] }
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts:47:    assert.deepEqual(commit.tags, ['history-push', 'paste'])
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts:88:      'paste',
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/plugin/react-editor.ts:12:    clipboard: DOMClipboardApi
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts:89:      const { clipboard, ...domApi } = editor.dom
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts:98:          clipboard,
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts:119:  const { clipboardFormatKey, extensions, ...editorOptions } = options
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts:120:  const reactOptions = { clipboardFormatKey }

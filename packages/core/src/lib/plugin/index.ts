@@ -3,8 +3,8 @@
  */
 
 export * from './BasePlugin';
+export * from './EditorPlugin';
 export * from './HandlerReturnType';
-export * from './SlatePlugin';
-export * from './createSlatePlugin';
+export * from './createEditorPlugin';
 export * from './getEditorPlugin';
-export * from './getSlatePlugin';
+export * from './getEditorPluginInstance';

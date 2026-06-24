@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Nested wrapper stacks can be promoted once browser proof matches the contract layer
 tags:
-  - slate-v2
+  - plite
   - wrapper-stack
   - browser-proof
   - list-item
@@ -30,7 +30,7 @@ Until that happens, the shape is still a probe, not a settled capability.
 The promotion bar was simple:
 
 - add a real browser surface for the nested quote + list-item wrapper stack
-- prove copy/paste round-trip through the public `slate-browser` harness
+- prove copy/paste round-trip through the public `plite-browser` harness
 - make sure the browser result matches the existing contract-layer semantics
 
 Once that was green, the shape could finally move from “interesting probe” to

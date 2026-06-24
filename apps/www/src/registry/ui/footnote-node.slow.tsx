@@ -37,7 +37,7 @@ const withPluginEditor = <T extends Record<string, any>>(editor: T) => {
 
   const pluginEditor = Object.assign(editor, {
     api,
-    getApi: () => api,
+    getPluginApi: () => api,
     getTransforms: () => tf,
     tf,
   });
@@ -55,7 +55,7 @@ const PlateElementMock = mock(
   )
 );
 
-const SlateElementMock = mock(
+const PliteElementMock = mock(
   ({ children, as: Comp = 'div', attributes, className, ...props }: any) => (
     <Comp {...attributes} {...props} className={className}>
       {children}
@@ -84,7 +84,7 @@ mock.module('platejs/react', () => ({
     return selector({
       ...currentEditor,
       api,
-      getApi: () => api,
+      getPluginApi: () => api,
       getOption: currentEditor.getOption ?? (() => null),
       getTransforms: () => tf,
     });
@@ -103,7 +103,7 @@ mock.module('platejs/react', () => ({
 }));
 
 mock.module('platejs/static', () => ({
-  SlateElement: SlateElementMock,
+  PliteElement: PliteElementMock,
 }));
 
 mock.module('@/components/ui/hover-card', () => ({
@@ -186,7 +186,7 @@ describe('footnote node rendering', () => {
     editorSelectorEditor = undefined;
     lastPluginEditor = undefined;
     PlateElementMock.mockClear();
-    SlateElementMock.mockClear();
+    PliteElementMock.mockClear();
   });
 
   afterAll(() => {

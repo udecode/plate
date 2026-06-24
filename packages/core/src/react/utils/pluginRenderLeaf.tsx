@@ -1,12 +1,14 @@
 import React from 'react';
 
-import { NodeApi } from '@platejs/slate';
-
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
 import { getSlateClass } from '../../lib';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import {
+  getEditorNode,
+  isEditorSelectionCollapsed,
+} from '../../internal/utils/runtimeEditorQueries';
 import { type PlateLeafProps, PlateLeaf } from '../components/plate-nodes';
 import { useReadOnly } from '../slate-react';
 import { getRenderNodeProps } from './getRenderNodeProps';
@@ -20,13 +22,13 @@ const HARD_AFFINITY_SPACER_STYLE = {
 } as const;
 
 const isActiveHardAffinityBoundary = (editor: PlateEditor, text: any) => {
-  if (!editor.api.isCollapsed()) return false;
+  if (!isEditorSelectionCollapsed(editor)) return false;
 
   const focus = editor.selection?.focus;
 
   if (!focus) return false;
 
-  const selectedText = NodeApi.get(editor, focus.path);
+  const selectedText = getEditorNode(editor, focus.path)?.[0];
 
   if (selectedText !== text) return false;
 

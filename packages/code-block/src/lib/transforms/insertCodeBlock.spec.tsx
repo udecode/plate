@@ -1,13 +1,9 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import {
-  BaseParagraphPlugin,
-  createEditor,
-  createSlateEditor,
-  KEYS,
-} from 'platejs';
+import { type BasePlateEditor, BaseParagraphPlugin, KEYS } from 'platejs';
 
+import { createBasePlateEditor } from '../../../../core/src/lib/editor/withPlite';
 import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { insertCodeBlock } from './insertCodeBlock';
@@ -17,18 +13,16 @@ jsxt;
 describe('insert code block', () => {
   describe('when selection is at start of block', () => {
     it('turn line to code block', () => {
-      const input = createEditor(
-        (
-          <editor>
-            <hp>line 1</hp>
-            <hp>
-              <cursor />
-              line 2
-            </hp>
-            <hp>line 3</hp>
-          </editor>
-        ) as any
-      );
+      const input = (
+        <editor>
+          <hp>line 1</hp>
+          <hp>
+            <cursor />
+            line 2
+          </hp>
+          <hp>line 3</hp>
+        </editor>
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -43,13 +37,13 @@ describe('insert code block', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
       });
 
-      insertCodeBlock(editor);
+      insertCodeBlock(editor as unknown as BasePlateEditor);
 
       expect(editor.children).toEqual(output.children);
     });
@@ -57,18 +51,16 @@ describe('insert code block', () => {
 
   describe('when selection is not at start of block', () => {
     it('split line at selection and turn latter line to code block', () => {
-      const input = createEditor(
-        (
-          <editor>
-            <hp>line 1</hp>
-            <hp>
-              before <cursor />
-              after
-            </hp>
-            <hp>line 3</hp>
-          </editor>
-        ) as any
-      );
+      const input = (
+        <editor>
+          <hp>line 1</hp>
+          <hp>
+            before <cursor />
+            after
+          </hp>
+          <hp>line 3</hp>
+        </editor>
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -84,13 +76,13 @@ describe('insert code block', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
       });
 
-      insertCodeBlock(editor);
+      insertCodeBlock(editor as unknown as BasePlateEditor);
 
       expect(editor.children).toEqual(output.children);
     });
@@ -98,20 +90,18 @@ describe('insert code block', () => {
 
   describe('when selection is expanded', () => {
     it('keeps the editor unchanged for expanded selections', () => {
-      const input = createEditor(
-        (
-          <editor>
-            <hp>line 1</hp>
-            <hp>
-              before <anchor />
-              selection
-              <focus />
-              after
-            </hp>
-            <hp>line 3</hp>
-          </editor>
-        ) as any
-      );
+      const input = (
+        <editor>
+          <hp>line 1</hp>
+          <hp>
+            before <anchor />
+            selection
+            <focus />
+            after
+          </hp>
+          <hp>line 3</hp>
+        </editor>
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -126,65 +116,55 @@ describe('insert code block', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
       });
 
-      insertCodeBlock(editor);
+      insertCodeBlock(editor as unknown as BasePlateEditor);
 
       expect(editor.children).toEqual(output.children);
     });
   });
 
   it('does nothing when there is no selection', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
       value: [{ type: KEYS.p, children: [{ text: 'line 1' }] }],
     });
-    const insertBreak = spyOn(editor.tf, 'insertBreak');
-    const setNodes = spyOn(editor.tf, 'setNodes');
-    const wrapNodes = spyOn(editor.tf, 'wrapNodes');
+    const update = spyOn(editor, 'update');
 
-    insertCodeBlock(editor);
+    insertCodeBlock(editor as unknown as BasePlateEditor);
 
     expect(editor.children).toEqual([
       { type: KEYS.p, children: [{ text: 'line 1' }] },
     ]);
-    expect(insertBreak).not.toHaveBeenCalled();
-    expect(setNodes).not.toHaveBeenCalled();
-    expect(wrapNodes).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
   });
 
   it('does nothing when the selection is already in a code block', () => {
-    const input = createEditor(
-      (
-        <editor>
-          <hcodeblock>
-            <hcodeline>
-              before <cursor />
-              after
-            </hcodeline>
-          </hcodeblock>
-        </editor>
-      ) as any
-    );
-    const editor = createSlateEditor({
+    const input = (
+      <editor>
+        <hcodeblock>
+          <hcodeline>
+            before <cursor />
+            after
+          </hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as any as BasePlateEditor;
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
       selection: input.selection,
       value: input.children,
     });
     const before = editor.children;
-    const insertBreak = spyOn(editor.tf, 'insertBreak');
-    const setNodes = spyOn(editor.tf, 'setNodes');
-    const wrapNodes = spyOn(editor.tf, 'wrapNodes');
+    const update = spyOn(editor, 'update');
 
-    insertCodeBlock(editor);
+    insertCodeBlock(editor as unknown as BasePlateEditor);
 
     expect(editor.children).toBe(before);
-    expect(insertBreak).not.toHaveBeenCalled();
-    expect(setNodes).not.toHaveBeenCalled();
-    expect(wrapNodes).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
   });
 });

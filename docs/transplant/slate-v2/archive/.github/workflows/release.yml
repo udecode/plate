@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions: {}
+
+jobs:
+  release:
+    name: ${{ matrix.channel }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+
+    strategy:
+      max-parallel: 1
+      matrix:
+        channel: [latest, dev]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.12
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.17
+          # IMPORTANT: do NOT set registry-url here (avoid auth/.npmrc side effects)
+
+      - name: Upgrade npm (OIDC fixes ship in npm releases)
+        run: npm i -g npm@latest
+
+      - name: Configure npm registry (no token)
+        run: |
+          cat > ~/.npmrc <<'EOF'
+          registry=https://registry.npmjs.org/
+          EOF
+
+      - name: Debug npm auth config
+        run: |
+          npm -v
+          echo "=== user npmrc ==="
+          cat ~/.npmrc || true
+          echo "=== any auth/token config? ==="
+          npm config list -l | grep -iE 'auth|token|always-auth' || true
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Prepare release
+        run: bun run prerelease
+
+      # Version PR when changesets exist; when none remain, publish runs here and
+      # changesets/action pushes tags + creates GitHub Releases (unlike plain `bun changeset publish`).
+      - name: Create or update release PR / publish
+        if: matrix.channel == 'latest'
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: bun changesetversion
+          publish: bun release:publish:latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Release to @dev channel
+        if: matrix.channel == 'dev'
+        run: |
+          bunx changeset version --snapshot
+          bunx changeset publish --tag dev
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

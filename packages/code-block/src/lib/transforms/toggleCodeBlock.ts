@@ -1,10 +1,8 @@
-import type { SlateEditor, TElement } from 'platejs';
+import type { ElementEntry, BasePlateEditor } from 'platejs';
 
-import { KEYS } from 'platejs';
+import { ElementApi, KEYS } from 'platejs';
 
-import { unwrapCodeBlock } from './unwrapCodeBlock';
-
-export const toggleCodeBlock = (editor: SlateEditor) => {
+export const toggleCodeBlock = (editor: BasePlateEditor) => {
   if (!editor.selection) return;
 
   const codeBlockType = editor.getType(KEYS.codeBlock);
@@ -13,12 +11,31 @@ export const toggleCodeBlock = (editor: SlateEditor) => {
   const isActive = editor.api.some({
     match: { type: codeBlockType },
   });
+  const codeBlockEntries = Array.from(
+    editor.api.nodes({
+      at: editor.selection,
+      match: (node: unknown) =>
+        ElementApi.isElement(node) && node.type === codeBlockType,
+    })
+  ).reverse() as ElementEntry[];
 
-  editor.tf.withoutNormalizing(() => {
-    unwrapCodeBlock(editor);
-
+  editor.update((tx) => {
+    for (const [codeBlockNode, codeBlockPath] of codeBlockEntries) {
+      codeBlockNode.children.forEach((_, index) => {
+        tx.nodes.set(
+          { type: editor.getType(KEYS.p) },
+          { at: [...codeBlockPath, index] }
+        );
+      });
+      tx.nodes.unwrap({
+        at: codeBlockPath,
+        match: (node: unknown) =>
+          ElementApi.isElement(node) && node.type === codeBlockType,
+        split: true,
+      });
+    }
     if (!isActive) {
-      editor.tf.setNodes({
+      tx.nodes.set({
         type: codeLineType,
       });
 
@@ -27,7 +44,7 @@ export const toggleCodeBlock = (editor: SlateEditor) => {
         type: codeBlockType,
       };
 
-      editor.tf.wrapNodes<TElement>(codeBlock);
+      tx.nodes.wrap(codeBlock);
     }
   });
 };

@@ -1,4 +1,4 @@
-import type { Path, TElement, TText } from '@platejs/slate';
+import type { Element, Path, Text } from '@platejs/plite';
 import type { AnyObject } from '@udecode/utils';
 
 import clsx from 'clsx';
@@ -6,9 +6,10 @@ import clsx from 'clsx';
 import type { SlateRenderNodeProps } from '../types';
 
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
+import { findEditorPath } from '../../internal/utils/runtimeEditorQueries';
 import {
   type AnyEditorPlugin,
-  type SlateEditor,
+  type BasePlateEditor,
   getEditorPlugin,
   getPluginNodeProps,
   getSlateClass,
@@ -22,10 +23,10 @@ export const getRenderNodeStaticProps = ({
   plugin,
   props,
 }: {
-  editor: SlateEditor;
+  editor: BasePlateEditor;
   props: SlateRenderNodeProps;
   attributes?: AnyObject;
-  node?: TElement | TText;
+  node?: Element | Text;
   /** Pre-computed path to avoid expensive findPath traversal */
   path?: Path;
   plugin?: AnyEditorPlugin;
@@ -37,7 +38,6 @@ export const getRenderNodeStaticProps = ({
       : {
           api: editor.api,
           editor,
-          tf: editor.transforms,
         }),
   };
 
@@ -61,7 +61,7 @@ export const getRenderNodeStaticProps = ({
   newProps = pipeInjectNodeProps(
     editor,
     newProps,
-    path ? () => path : (node) => editor.api.findPath(node)!
+    path ? () => path : (node) => findEditorPath(editor, node)!
   );
 
   if (newProps.style && Object.keys(newProps.style).length === 0) {

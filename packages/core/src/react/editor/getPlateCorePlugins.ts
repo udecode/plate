@@ -3,14 +3,14 @@ import type { NavigationFeedbackConfig } from '../../lib/plugins/navigation-feed
 import { ParagraphPlugin, ReactPlugin } from '../plugins';
 import { EventEditorPlugin } from '../plugins/event-editor/EventEditorPlugin';
 import { NavigationFeedbackPlugin } from '../plugins/navigation-feedback/NavigationFeedbackPlugin';
-import { SlateReactExtensionPlugin } from '../plugins/SlateReactExtensionPlugin';
+import { PliteReactExtensionPlugin } from '../plugins/PliteReactExtensionPlugin';
 
 export const getPlateCorePlugins = ({
   navigationFeedback,
 }: {
   navigationFeedback?: NavigationFeedbackConfig['options'] | boolean;
 } = {}) => [
-  SlateReactExtensionPlugin,
+  PliteReactExtensionPlugin,
   ReactPlugin,
   EventEditorPlugin,
   NavigationFeedbackPlugin.configure({

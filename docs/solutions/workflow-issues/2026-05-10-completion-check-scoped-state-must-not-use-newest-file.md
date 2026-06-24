@@ -173,5 +173,5 @@ human operator the same session key.
 
 ## Related Issues
 
-- [Slate v2 deslop completion must prove sibling release discipline](2026-05-08-slate-v2-deslop-completion-must-prove-sibling-release-discipline.md)
-- [Slate v2 migration-backbone lanes need browser contracts before completion](../developer-experience/2026-04-28-slate-v2-migration-backbone-lanes-need-browser-contracts-before-completion.md)
+- [Plite deslop completion must prove sibling release discipline](2026-05-08-plite-deslop-completion-must-prove-sibling-release-discipline.md)
+- [Plite migration-backbone lanes need browser contracts before completion](../developer-experience/2026-04-28-plite-migration-backbone-lanes-need-browser-contracts-before-completion.md)

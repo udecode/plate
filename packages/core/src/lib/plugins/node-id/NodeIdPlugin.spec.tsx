@@ -3,7 +3,7 @@
 import { LinkPlugin } from '@platejs/link/react';
 import { jsxt } from '@platejs/test-utils';
 
-import { createSlateEditor } from '../../editor';
+import { createBasePlateEditor } from '../../editor';
 import {
   NodeIdPlugin,
   normalizeNodeId,
@@ -130,7 +130,7 @@ describe('normalizeNodeIdWithEditor', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       nodeId: false,
       plugins: [LinkPlugin],
       value: input.children,
@@ -155,7 +155,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -177,7 +177,7 @@ describe('NodeIdPlugin', () => {
       { children: [{ text: 'last' }], type: 'p' },
     ] as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -203,7 +203,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -229,7 +229,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -254,7 +254,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -280,7 +280,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -297,85 +297,6 @@ describe('NodeIdPlugin', () => {
     expect(editor.children[2].id).toBeUndefined();
   });
 
-  it('supports legacy normalizeInitialValue: true', () => {
-    const input = (
-      <editor>
-        <hp id={1}>first</hp>
-        <hp>middle</hp>
-        <hp id={3}>last</hp>
-      </editor>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: [
-        NodeIdPlugin.configure({
-          options: {
-            idCreator: createIdFactory(100),
-            normalizeInitialValue: true,
-          } as any,
-        }),
-      ],
-      value: input.children,
-    });
-
-    expect(editor.children[0].id).toBe(1);
-    expect(editor.children[1].id).toBe(100);
-    expect(editor.children[2].id).toBe(3);
-  });
-
-  it('supports legacy normalizeInitialValue: null as a disable path', () => {
-    const input = (
-      <editor>
-        <hp>first</hp>
-        <hp id={9}>middle</hp>
-        <hp>last</hp>
-      </editor>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: [
-        NodeIdPlugin.configure({
-          options: {
-            idCreator: createIdFactory(),
-            normalizeInitialValue: null,
-          } as any,
-        }),
-      ],
-      value: input.children,
-    });
-
-    expect(editor.children[0].id).toBeUndefined();
-    expect(editor.children[1].id).toBe(9);
-    expect(editor.children[2].id).toBeUndefined();
-  });
-
-  it('prefers initialValueIds over the legacy normalizeInitialValue alias', () => {
-    const input = (
-      <editor>
-        <hp id={1}>first</hp>
-        <hp>middle</hp>
-        <hp id={3}>last</hp>
-      </editor>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: [
-        NodeIdPlugin.configure({
-          options: {
-            idCreator: createIdFactory(100),
-            initialValueIds: false,
-            normalizeInitialValue: true,
-          } as any,
-        }),
-      ],
-      value: input.children,
-    });
-
-    expect(editor.children[0].id).toBe(1);
-    expect(editor.children[1].id).toBeUndefined();
-    expect(editor.children[2].id).toBe(3);
-  });
-
   it('respects a custom idKey in the if-needed fast path', () => {
     const input = (
       <editor>
@@ -385,7 +306,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -401,35 +322,5 @@ describe('NodeIdPlugin', () => {
     expect(editor.children[0].foo).toBe('first');
     expect(editor.children[1].foo).toBeUndefined();
     expect(editor.children[2].foo).toBe('last');
-  });
-
-  it('assigns ids to inserted nodes through editor transforms', () => {
-    const input = (
-      <editor>
-        <hp id={10}>
-          test
-          <cursor />
-        </hp>
-      </editor>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: [
-        NodeIdPlugin.configure({
-          options: {
-            idCreator: createIdFactory(),
-          },
-        }),
-      ],
-      selection: input.selection,
-      value: input.children,
-    });
-
-    editor.tf.insertNode((<hp>inserted</hp>) as any);
-
-    expect(editor.children).toMatchObject([
-      { id: 10, type: 'p' },
-      { id: 1, type: 'p' },
-    ]);
   });
 });

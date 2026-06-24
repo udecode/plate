@@ -1,7 +1,8 @@
 /** @jsx jsxt */
 
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
+import { createPlateRuntimeEditor } from 'platejs/react';
 
 import { BaseDatePlugin } from './BaseDatePlugin';
 
@@ -9,11 +10,11 @@ jsxt;
 
 describe('BaseDatePlugin', () => {
   it('configure date as void inline element', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseDatePlugin],
-    } as any);
+    });
 
-    const plugin = editor.getPlugin({ key: KEYS.date });
+    const plugin = editor.getPlugin(BaseDatePlugin);
 
     expect(plugin.node.isVoid).toBe(true);
     expect(plugin.node.isInline).toBe(true);
@@ -21,26 +22,56 @@ describe('BaseDatePlugin', () => {
   });
 
   it('does not force date elements to opt out of keyboard entry', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseDatePlugin],
-    } as any);
+    });
 
-    const plugin = editor.getPlugin({ key: KEYS.date });
+    const plugin = editor.getPlugin(BaseDatePlugin);
 
     expect(plugin.node.isSelectable).toBeUndefined();
   });
 
-  it('provide insert.date transform', () => {
-    const editor = createSlateEditor({
+  it('provides a typed date transaction command', () => {
+    const editor = createBasePlateEditor({
       plugins: [BaseDatePlugin],
-    } as any);
+    });
 
-    expect((editor.tf as any).insert.date).toBeDefined();
-    expect(typeof (editor.tf as any).insert.date).toBe('function');
+    editor.update((tx) => {
+      expect(tx.date.insert).toBeDefined();
+      expect(typeof tx.date.insert).toBe('function');
+    });
+  });
+
+  it('exposes an inferred date transaction group', () => {
+    const editor = createBasePlateEditor({
+      plugins: [BaseDatePlugin],
+      value: [
+        {
+          children: [{ text: 'x' }],
+          type: KEYS.p,
+        },
+      ],
+    });
+
+    editor.update((tx) =>
+      tx.date.insert({ at: [0, 1], date: 'Mon Mar 23 2026' })
+    );
+
+    expect(editor.children[0]).toMatchObject({
+      children: [
+        { text: 'x' },
+        {
+          date: '2026-03-23',
+          type: KEYS.date,
+        },
+        { text: ' ' },
+      ],
+      type: KEYS.p,
+    });
   });
 
   it('deleteBackward removes the adjacent date atom', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseDatePlugin],
       selection: {
         anchor: { offset: 0, path: [0, 2] },
@@ -60,9 +91,11 @@ describe('BaseDatePlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
-    editor.tf.deleteBackward('character');
+    editor.update((tx) => {
+      tx.text.deleteBackward({ unit: 'character' });
+    });
 
     expect(editor.children).toMatchObject([
       {
@@ -77,13 +110,8 @@ describe('BaseDatePlugin', () => {
   });
 
   it('deleteForward removes the next date atom', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseDatePlugin],
-      selection: {
-        anchor: { offset: 3, path: [0, 0] },
-        focus: { offset: 3, path: [0, 0] },
-      },
-      value: [
+    const editor = createPlateRuntimeEditor({
+      initialValue: [
         {
           children: [
             { text: 'hi ' },
@@ -97,9 +125,16 @@ describe('BaseDatePlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+      plugins: [BaseDatePlugin],
+      initialSelection: {
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+    });
 
-    editor.tf.deleteForward('character');
+    editor.update((tx) => {
+      tx.text.deleteForward({ unit: 'character' });
+    });
 
     expect(editor.children).toMatchObject([
       {
@@ -114,13 +149,12 @@ describe('BaseDatePlugin', () => {
   });
 
   it('moves right into the date child so the inline void stays keyboard-accessible', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseDatePlugin],
-      selection: {
+    const editor = createPlateRuntimeEditor({
+      initialSelection: {
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { text: 'hi ' },
@@ -134,9 +168,12 @@ describe('BaseDatePlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+      plugins: [BaseDatePlugin],
+    });
 
-    editor.tf.move({ distance: 1, unit: 'character' });
+    editor.update((tx) => {
+      tx.selection.move({ distance: 1, unit: 'character' });
+    });
 
     expect(editor.selection).toEqual({
       anchor: { offset: 0, path: [0, 1, 0] },
@@ -145,13 +182,8 @@ describe('BaseDatePlugin', () => {
   });
 
   it('moves left into the date child so the inline void stays keyboard-accessible', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseDatePlugin],
-      selection: {
-        anchor: { offset: 0, path: [0, 2] },
-        focus: { offset: 0, path: [0, 2] },
-      },
-      value: [
+    const editor = createPlateRuntimeEditor({
+      initialValue: [
         {
           children: [
             { text: 'hi ' },
@@ -165,9 +197,16 @@ describe('BaseDatePlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+      plugins: [BaseDatePlugin],
+      initialSelection: {
+        anchor: { offset: 0, path: [0, 2] },
+        focus: { offset: 0, path: [0, 2] },
+      },
+    });
 
-    editor.tf.move({ distance: 1, reverse: true, unit: 'character' });
+    editor.update((tx) => {
+      tx.selection.move({ distance: 1, reverse: true, unit: 'character' });
+    });
 
     expect(editor.selection).toEqual({
       anchor: { offset: 0, path: [0, 1, 0] },

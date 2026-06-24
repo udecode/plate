@@ -1,11 +1,12 @@
-import type { Path, SlateEditor, TIdElement, TNode } from 'platejs';
+import type { Path, BasePlateEditor, TIdElement } from 'platejs';
 
-import { BlockSelectionPlugin } from '../../react';
+import type { BlockSelectionConfig } from '../../react';
 
-export const selectBlocks = (editor: SlateEditor, at: Path | TNode) => {
-  const blockSelection = editor
-    .getApi(BlockSelectionPlugin)
-    .blockSelection.getNodes();
+export const selectBlocks = (editor: BasePlateEditor, at: Path) => {
+  const blockSelectionApi = (
+    editor.api as unknown as BlockSelectionConfig['api']
+  ).blockSelection;
+  const blockSelection = blockSelectionApi.getNodes();
 
   const entry = editor.api.node<TIdElement>(at);
 
@@ -16,13 +17,15 @@ export const selectBlocks = (editor: SlateEditor, at: Path | TNode) => {
   const selectedBlocks =
     blockSelection.length > 0
       ? blockSelection
-      : editor.api.blocks({
-          mode: 'lowest',
-          match: (_, p) => p.length === path.length,
-        });
+      : editor.read((state) => [
+          ...state.nodes.entries<TIdElement>({
+            mode: 'lowest',
+            match: (node, nodePath) =>
+              typeof (node as TIdElement).id === 'string' &&
+              nodePath.length === path.length,
+          }),
+        ]);
   const ids = selectedBlocks.map((block) => block[0].id as string);
 
-  editor
-    .getApi(BlockSelectionPlugin)
-    .blockSelection.set(ids.includes(element.id) ? ids : [element.id]);
+  blockSelectionApi.set(ids.includes(element.id) ? ids : [element.id]);
 };

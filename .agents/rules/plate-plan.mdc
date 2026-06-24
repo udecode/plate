@@ -1,6 +1,6 @@
 ---
-description: Define or update Plate editor-behavior specs with a pass-gated, evidence-scored plan. Use for behavior law, authority maps, protocol rows, parity gates, research-backed winner shifts, editor chrome contracts, and implementation-roadmap changes.
-argument-hint: '[behavior topic | spec path | feature family]'
+description: 'Define or execute Plate v2 architecture/API plans aligned with Slate v2: minimal breaking changes, Slate/Plate boundary, runtime/API conflict removal, product DX, performance, proof gates, and migration roadmap.'
+argument-hint: '[--quick|--standard|--deep] <Plate v2 architecture/API/boundary prompt | accepted plan path>'
 disable-model-invocation: true
 ---
 
@@ -8,744 +8,395 @@ disable-model-invocation: true
 
 Handle $ARGUMENTS.
 
-This is the Plate editor-behavior planning and law workflow. It turns behavior
-ideas, review findings, or spec drift into:
+Use this for Plate v2 "absolute best architecture/DX" planning where the bad
+outcome is incremental compatibility sludge: old Plate APIs fighting new Slate
+APIs, wrappers around wrappers, private runtime bridges leaking public, and
+breaking changes made without a crisp payoff.
 
-- a pass-gated plan under `docs/plans/`
-- updated editor-behavior law under `docs/editor-behavior/`
-- research updates under `docs/research/` when evidence is stale or thin
-- a goal-backed plan ledger that stays active until the plan is genuinely ready
+This is a two-phase lane skill.
 
-Use this when the failure mode is "we keep finding more Plate planning gaps later."
+Planning mode is the default. It creates or updates an execution-grade plan,
+scores it, and keeps the active goal open until every required pass, boundary
+row, API-conflict row, proof gate, objection row, and final handoff gate is
+closed. A high score never closes the goal by itself.
+
+Execution mode starts only after the user explicitly accepts a ready Plate Plan
+and invokes `plate-plan` again against that accepted plan. Execution mode uses a
+new execution-shaped goal. Do not implement a planning proposal under the
+planning goal.
 
 ## Use When
 
-- Adding or changing editor behavior law.
-- Reviewing current Plate editor-behavior architecture or DX.
-- Revising authority/winner maps.
-- Adding or splitting interaction families.
-- Updating protocol rows, parity gates, roadmap lanes, or reference audits.
-- Deciding permanent home for a behavior contract: core, shared package,
-  feature package, app/render layer, docs-only, or tests-only.
-- Formalizing browser/regression proof for editor behavior.
-- The user wants a plan before implementation.
+- Defining Plate v2 public API, plugin API, runtime, package, docs, examples,
+  registry, or migration architecture.
+- Deciding the minimal breaking changes needed to stop Plate APIs conflicting
+  with Slate APIs.
+- Auditing or redesigning Plate runtime accessors, plugin command surfaces,
+  transform namespaces, package bridges, legacy substrate imports, docs
+  examples, and runtime/default-route bridges that may overlap with Slate.
+- Reviewing whether a Plate feature belongs in Slate substrate, Plate product
+  APIs, a private migration bridge, docs/examples, or deletion.
+- Executing a user-accepted Plate Plan after a second explicit invocation names
+  the accepted plan.
+- The user asks for a harsh architecture call before continuing Plate package
+  migration.
 
 ## Do Not Use When
 
-- The user asks for a narrow bug fix without spec work.
-- The user asks for a normal code review of a diff.
-- The user asks to execute an already accepted Plate Plan.
-- The plan already has a passing Plate Plan score, completed pass schedule,
-  closed final gates, and the user says to build.
+- The user asks for one narrow bug fix with no architecture/API choice.
+- The user asks for a normal diff review; use `autoreview`.
+- The user asks for public GitHub issue/PR queue handling; use `maintainer`.
+- The user asks for already-applied current-tree closure; use `autoclosure`.
+- The work is pure Slate substrate design; use `slate-plan`.
 
 ## Hard Policy
 
-- This is a planning/review/spec-law lane first. Do not patch product code unless
-  the user explicitly asks for implementation.
-- Do not route to external interview or consensus-planning skills. This skill
-  owns the plan gate.
-- Evidence first. Vibes are not authority.
-- Treat silence as a gap, not fake agreement.
-- Lock node model and affinity before UX chrome.
-- Keep Plate core unopinionated enough for framework use. Opinionated product
-  behavior belongs in packages, kits, examples, or docs.
-- Prefer the best permanent architecture for performance and DX over the
-  nearest current file location.
-- If the best answer is a new authority lane, family split, or ownership move,
-  say that and plan it.
-- A behavior, API, or gate change needs an adoption story. "Cleaner" alone is
-  not a justification.
-- Intent, outcome, scope, non-goals, and decision boundaries must be explicit
-  before the plan can score as ready.
-- Major decisions need a decision brief: principles, top drivers, viable
-  options, rejected alternatives, and why the chosen option wins.
+- Requires `autogoal` as the lifecycle kernel and `--template plate-plan` as
+  the plan shell.
+- One scheduled pass per activation. Passes are rows in the active plan, not
+  separate goals.
+- Planning mode may edit only planning, research, behavior-law, migration,
+  issue/provenance, and reference artifacts it explicitly owns.
+- Execution mode may edit Plate implementation, tests, examples, docs, package
+  files, build config, and generated references only after explicit acceptance
+  of a ready plan.
+- User phrases like "go", "rewrite", "fix it", or "execute" do not override
+  planning mode while the plan is not ready for review.
+- Never write contradictory closeout state. If any accepted pass, proof row, or
+  handoff item is pending, the plan is pending.
+- Treat pasted reviews as context. The latest user request is the task.
+- Breaking changes are allowed when they produce the best long-term
+  architecture, DX, performance, testability, and agent-maintainability.
+- Minimal breaking change means the smallest public break set that achieves a
+  clean target architecture. It does not mean preserving aliases, shims, or old
+  names when those keep the conflict alive.
+- No public compatibility aliases. No public runtime shims. No docs for old API
+  names. Private temporary bridges are allowed only with an owner, deletion
+  trigger, proof gate, and no public export.
+- Slate API wins when a Plate API conflicts with the Slate substrate. Plate may
+  keep a distinct product-level API only when the plan proves a separate user
+  job, separate namespace, and no conceptual overlap.
 - Do not let a polished plan self-certify. Scores, verdicts, and keep/drop
-  decisions need cited evidence.
-- Score is not completion. A passing score with any pending pass, spec-law
-  output, verification gate, named next owner, or runnable next action stays
-  `pending`.
-- The top-level completion status is the lane status, not the current pass
-  status. Close a pass with `current_pass_status: complete`; do not use
-  top-level `done` unless the whole lane is closed.
-- Top-level `done` is legal only in the closure/final-gates pass, after the
-  active plan proves every earlier pass-state row is complete or explicitly
-  skipped with evidence.
-- For current Plate features, parity and protocol matter. For deferred features,
-  do not inflate the release gate.
-- Run applicable implementation-review lenses instead of trusting generic editor
-  intuition: `build-web-apps:shadcn` for UI/editor chrome,
-  `vercel-react-best-practices` for React/Next/runtime performance, and
-  `react-useeffect` for effects, derived state, subscriptions, and external
-  synchronization. Use `performance-oracle` for hot paths, algorithms, memory,
-  network, query, bundle, and scalability concerns. Use `tdd` for behavior
-  additions, bug fixes, and regression classes that need test-first proof. If a
-  lens is skipped, record why.
+  decisions need live source evidence.
+- Prefer inline implementation when used once. Extract helpers only when reuse,
+  readability, proof ownership, or public/internal API shape justifies it.
+- Docs describe the latest state only. Do not write migration/changelog prose
+  into reference docs.
+- If execution touches package exports or exported folders, require `pnpm brl`.
+- Workspace proof must run from the Plate repo root and use the owner command
+  for the changed package/app/docs surface.
+
+## Plate V2 Doctrine
+
+Plate v2 sits on top of Slate. Plate should become simpler because Slate owns
+more of the substrate cleanly.
+
+Default take:
+
+- Slate owns raw editor substrate.
+- Plate owns product composition.
+- Plate must not fork Slate concepts under Plate names.
+- Plate must not expose legacy Slate compatibility as a public beta promise.
+- Plate can break public APIs when the break removes overlap, improves DX,
+  improves performance, or makes behavior easier to test.
+- Plate should keep product ergonomics. Do not make app authors manually wire
+  low-level Slate primitives just to build common editor features.
+- The target is not "closest to old Plate." The target is "best Plate on top of
+  the new Slate."
+
+## Slate / Plate Boundary
+
+Use this ownership map before scoring any plan:
+
+| Surface | Owner | Rule |
+| --- | --- | --- |
+| Document model, nodes, operations, ranges, selection primitives | Slate | Plate consumes and specializes; it does not redefine core shape. |
+| `editor.read`, `editor.update`, transaction groups, operation replay | Slate | Plate product APIs may call them, but must not expose a competing core mutation layer. |
+| React editor runtime, root locality, DOM projection, browser selection bridge | Slate | Plate composes runtime behavior through supported hooks and extension points. |
+| Browser proof harness for editor behavior | Slate/browser proof infra | Plate uses it for product behavior proof; it does not turn proof helpers into app API. |
+| Yjs/collaboration substrate | Slate/Yjs substrate first | Plate owns product collab UI and package ergonomics. |
+| Product plugins, kits, UI, registry, docs, examples, templates | Plate | Opinionated editor features belong here. |
+| Product commands and feature workflows | Plate | Names must be product-level and must not collide with Slate core namespaces. |
+| App-level configuration and registry defaults | Plate | Keep it ergonomic; do not leak private runtime bridges. |
+
+If a surface is mixed, split it. Do not keep a shared owner because migration is
+awkward.
+
+## API Conflict Law
+
+Every Plate v2 API plan that touches runtime or plugins must include an API
+conflict ledger discovered from live source. The ledger must cover every public
+or exported Plate surface that can overlap with Slate-owned substrate:
+
+- editor runtime accessors
+- product command and transform namespaces
+- plugin API and option extension points
+- feature-package command surfaces
+- Slate transaction/read/update interaction points
+- runtime/default-route bridge APIs
+- package exports and declarations
+- docs/examples teaching public API
+- legacy substrate imports or package bridges
+
+Row verdicts:
+
+- `hard-cut`: remove the public API and update callers.
+- `rename`: keep the concept but move it to a distinct Plate product name.
+- `move-to-slate`: delete the Plate owner and consume Slate.
+- `move-to-plate-product`: keep as Plate product API with a non-conflicting
+  namespace and clear user job.
+- `private-bridge`: temporary internal scaffold, not public, with deletion gate.
+- `defer`: only when the plan names the missing proof and next owner.
+
+Source-discovered legacy accessors deserve special suspicion. They are useful
+only if they remain clearly Plate product surfaces. If they read like alternate
+Slate core APIs, cut or rename them.
+
+Typed escape hatches may be transitional only if the plan proves why normal
+typing cannot cover the caller yet. They cannot become the final Plate v2 story
+without an explicit keep decision.
 
 ## Required Artifacts
 
-- Plan file under `docs/plans/`.
-- Editor-behavior outputs under `docs/editor-behavior/` when law changes.
-- Research updates under `docs/research/` when the evidence lane is stale,
-  contradictory, or incomplete.
-- Objection ledger in the active plan. If it grows too large, split it to
-  `docs/plans/<same-slug>-objection-ledger.md` and link it from the plan.
-- Plan deltas from review in the active plan: what changed, what was dropped,
-  what was strengthened, and what stayed unchanged with reasons.
-- Intent/boundary record in the active plan: intent, outcome, in-scope,
-  non-goals, decision boundaries, and unresolved user-decision points.
-- Decision brief in the active plan: principles, decision drivers, viable
-  options, invalidated alternatives, consequences, and follow-ups.
-- Applicable implementation-skill review notes in the active plan: shadcn,
-  Vercel React, react-useeffect, performance-oracle, and tdd, each marked
-  `applied` or `skipped` with a concrete reason.
+- Plan file under `docs/plans/`, created from the Plate Plan template:
+
+  ```bash
+  node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
+    --template plate-plan \
+    --title "<short Plate Plan title>"
+  ```
+
+- Active planning goal: one short `create_goal` objective under 240 characters.
+  Put the full pass schedule, threshold, proof gates, and blocker state in the
+  plan file.
+- Active execution goal after user acceptance: a new goal that names the
+  accepted plan and implementation target.
+- API conflict ledger in the active plan.
+- Slate/Plate boundary map in the active plan.
+- Minimal breaking-change matrix in the active plan.
+- Public API target, private bridge target, and deletion gates in the active
+  plan.
+- Package/docs/examples/registry migration order in the active plan.
+- Verification matrix with focused commands for every touched package or app.
+- Objection ledger for every public API, package-boundary, runtime, or product
+  behavior change.
+- Applicable implementation-skill review notes: `architecture-cleanup`,
+  `performance`, `tdd`, `docs-creator`, `react`, `react-useeffect`,
+  `components`, `plate-ui`, and `autoreview`, each marked applied or skipped
+  with a concrete reason.
+- Editor-behavior outputs under `docs/editor-behavior/**` only when the plan
+  changes current Plate behavior law, protocol rows, parity gates, or roadmap.
+
+Allowed planning edit scope:
+
+- `docs/plans/**`
+- `docs/research/**`
+- `docs/vision/**`
+- `docs/editor-behavior/**` when behavior law changes
+- `docs/slate-v2/**` references only when the plan relies on Slate migration
+  evidence
+- `.agents/rules/plate-plan.mdc` only when self-repairing the skill
+
+Allowed execution edit scope:
+
+- The accepted plan's named package, app, docs, tests, examples, build, config,
+  and generated-reference owners.
 
 ## Goal Setup
 
-Before creating or resuming a Plate Plan:
+Plate Plan requires `autogoal`.
 
-- If a goal tool is available, call `get_goal` first. Call `create_goal()` only
-  when no goal exists; repeated `create_goal()` calls fail while a thread goal
-  exists.
-- Continue under a matching active goal, or resolve a mismatched active goal
-  before creating a new one.
-- Create the goal around the desired end state, not the execution plan.
-- Include constraints, scope, or verification details only when they materially
-  change what `done` means.
-- Use the goal or user-input tool to ask when the goal would otherwise be
-  unclear.
-- If no goal tool is available, ask the user to set the goal instead of
-  silently skipping goal setup.
-- Do not start the planning pass until the goal is set, verified as already
-  matching, or the user explicitly resolves the missing-goal path.
+- Template: `plate-plan`.
+- Planning flow mode: agent-led plan hardening.
+- Execution flow mode: one-shot execution after explicit acceptance.
+- Goal handle: `<lane outcome>; done when <short threshold>; plan
+  <docs/plans/path>`.
+- One pass per activation.
+- Autogoal owns goal conflict, completion, blocker semantics, and lifecycle.
+- Plate Plan owns plan shape, pass table, scorecard, conflict ledger,
+  boundary map, verification matrix, objection ledger, and final handoff.
+- If the goal tool is unavailable, record degraded state in the plan and stop
+  before autonomous pass work unless the user explicitly accepts that.
 
-Good goal:
+Good planning goal:
 
 ```txt
-Plate Plan proves the editor-behavior authority, node model, protocol rows,
-and proof gates are ready for user review. Execution starts only when the user
-accepts the plan and invokes Plate Plan again for that accepted plan.
+Close Plate v2 API conflict plan; done when Plate Plan gates pass; plan docs/plans/YYYY-MM-DD-plate-v2-api-conflicts.md.
+```
+
+Good execution goal:
+
+```txt
+Execute docs/plans/<accepted-plan>.md; done when Plate package gates pass; target packages/core.
 ```
 
 Bad goal:
 
 ```txt
-Run Plate Plan passes 1 through 9.
+Review Plate APIs a bit.
 ```
-
-Default plan path:
-
-```txt
-docs/plans/YYYY-MM-DD-plate-plan-review-plan.md
-```
-
-Reuse an active plan when the prompt names one, or when the active goal and plan
-both point at the same surface and the latest user request is clearly resuming
-that lane.
 
 ## Read First
 
-Always read only what is relevant, but start from these sources:
-
 1. Latest user request.
-2. Current goal state, if a goal tool exists.
-3. Active plan under `docs/plans/` if present.
-4. [docs/editor-behavior/README.md](docs/editor-behavior/README.md).
-5. [docs/editor-behavior/markdown-standards.md](docs/editor-behavior/markdown-standards.md).
-6. [docs/editor-behavior/markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md).
-7. [docs/editor-behavior/editor-protocol-matrix.md](docs/editor-behavior/editor-protocol-matrix.md).
-8. [docs/editor-behavior/markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md).
-9. [docs/editor-behavior/master-roadmap.md](docs/editor-behavior/master-roadmap.md).
-10. [docs/editor-behavior/markdown-editing-reference-audit.md](docs/editor-behavior/markdown-editing-reference-audit.md).
-11. [docs/research/README.md](docs/research/README.md), `docs/research/index.md`,
-    and `docs/research/log.md` when present.
-12. [docs/solutions/best-practices/markdown-editor-reference-audits-must-treat-silence-as-a-gap.md](docs/solutions/best-practices/markdown-editor-reference-audits-must-treat-silence-as-a-gap.md).
-13. [docs/solutions/best-practices/editor-behavior-specs-must-lock-node-model-and-affinity-before-ux.md](docs/solutions/best-practices/editor-behavior-specs-must-lock-node-model-and-affinity-before-ux.md).
+2. Current goal state.
+3. Active plan under `docs/plans/`, if present.
+4. Root `VISION.md`.
+5. Relevant `docs/vision/**` detail files.
+6. `.agents/rules/slate-plan.mdc` when methodology drift is suspected.
+7. Current Slate package APIs that Plate plans to consume:
+   - `packages/slate/**`
+   - `packages/slate-react/**`
+   - `packages/slate-dom/**`
+   - `packages/slate-history/**`
+   - `packages/slate-yjs/**`
+   - `packages/slate-layout/**`
+8. Current Plate package source affected by the plan:
+   - `packages/core/**`
+   - `packages/plate/**`
+   - feature packages under `packages/**`
+   - `apps/www/**`
+   - `content/docs/**`
+9. Existing tests and examples for the affected packages.
+10. Research or issue ledgers only when the plan relies on external evidence.
 
-Read when relevant:
+Do not treat old plans or chat as current-state proof. Re-read live source
+before saying what currently exists.
 
-- Intent/boundary pressure when intent, scope, non-goals, or decision
-  boundaries are unclear. Record the answer directly in this Plate Plan.
-- Steelman pressure when major decisions need maintainer/user objection rows.
-  Record the strongest fair objection, tradeoff tension, and adoption answer in
-  this Plate Plan.
-- High-risk deliberate pressure when a proposal changes public API, data model,
-  collaboration, runtime, browser behavior, migration, release gates, or package
-  boundaries. Record the pre-mortem and expanded proof plan in this Plate Plan.
-- [docs/editor-behavior/commands/README.md](docs/editor-behavior/commands/README.md)
-  when resuming or reconsolidating the lane.
-- [docs/research/systems/editor-behavior-architecture.md](docs/research/systems/editor-behavior-architecture.md)
-  for cross-family architecture questions.
-- [docs/analysis/editor-architecture-candidates.md](docs/analysis/editor-architecture-candidates.md)
-  for framework-facing architecture/runtime questions.
-- `../raw` when compiled research is missing, thin, stale, or contradictory.
-- `build-web-apps:shadcn` when UI, editor chrome, shadcn components, registry
-  components, overlays, command menus, inputs, forms, or styling are in scope.
-- [vercel-react-best-practices](.agents/skills/vercel-react-best-practices/SKILL.md)
-  when React/Next components, rendering, subscriptions, external stores,
-  client/server boundaries, bundle size, data fetching, or runtime performance
-  are in scope.
-- [react-useeffect](.agents/skills/react-useeffect/SKILL.md) when effects,
-  derived state, reset-on-prop, subscriptions, browser APIs, data fetching, or
-  state synchronization are in scope.
-- [performance-oracle](.agents/skills/performance-oracle/SKILL.md) when hot
-  paths, algorithms, memory, network, query, bundle, browser/editor runtime, or
-  scalability concerns are in scope.
-- [tdd](.agents/skills/tdd/SKILL.md) when behavior changes, bug fixes, public
-  interface changes, or regression classes need test-first acceptance criteria.
+## Live Source Grounding
 
-Use `research-wiki` when the compiled layer is stale, contradictory, or missing
-coverage. For framework evidence, inspect local official clones under `..` or
-normalized `../raw` before external docs.
+Current checkout wins.
 
-If the review depends on current Plate behavior, cite live source files, docs,
-examples, or tests. If it depends on external editor behavior, cite the compiled
-research page or local source read used for the claim.
+- Every "current API" claim needs a source pointer.
+- Every "docs currently say" claim needs a docs pointer.
+- Every "tests cover" claim needs a test name or file pointer.
+- Every "package export" claim needs package/export evidence.
+- Every "legacy dependency remains" claim needs import, package, or declaration
+  evidence.
 
-## Current-State Grounding
+If live source contradicts a prior plan, mark the prior plan stale and update
+the current plan. Do not preserve stale claims for continuity.
 
-Current Plate source, docs, tests, generated artifacts, and editor-behavior law
-win over old plans, stale research notes, generated handoffs, and memory.
+## Verification Workspace Gate
 
-Before any pass, score, protocol/parity row, authority-map decision, ledger row,
-migration/adoption answer, docs/example answer, proof row, implementation
-phase, final handoff, or user-facing explanation that relies on what currently
-exists:
+Plan verification uses source audits and template checks. Execution
+verification uses focused package/app commands.
 
-1. Re-read the live source, docs, examples, tests, generated artifact,
-   editor-behavior file, browser contract, or external reference that owns the
-   shape.
-2. State the exact current owner: file, docs section, test, route, generated
-   artifact, behavior-law row, research source, or explicit gap.
-3. Quote or summarize the current shape only if it exists in that source.
-4. Attach a file/line, docs section, test name, route, artifact path, behavior
-   row, benchmark, or source URL.
-5. If the current source already matches the proposed target, write
-   `already done in live source` and move the decision to docs/tests/spec
-   cleanup.
-6. If no source-backed current shape exists, write `decision: ...`,
-   `target shape: ...`, or `gap: ...` instead of inventing a current state.
+Common command families:
 
-Stale docs, old plans, audit history, and compiled research can explain why a
-decision exists, but they cannot prove current Plate behavior when live evidence
-is available.
+| Surface | Preferred proof |
+| --- | --- |
+| package source/type changes | `pnpm turbo typecheck --filter=./packages/<pkg>` |
+| package tests | `pnpm --filter <package-name> test` or owner script |
+| package build/public declarations | `pnpm --filter <package-name> build` |
+| exports/barrels | `pnpm brl` plus diff review |
+| docs/content | `pnpm --filter www check:docs` and browser proof when route changed |
+| Slate behavior used by Plate | focused `pnpm --filter slate test:slate-browser:chromium <file-or-grep>` |
+| full Slate release/deletion claim | `pnpm check:slate` |
+| broad Plate repo claim | the repo `check` command only when the plan explicitly needs it |
 
-For code/API/UI examples, grep the exact symbols first. For behavior-law claims,
-read the relevant `docs/editor-behavior/**` files and any linked tests or
-browser contracts first.
-
-This applies to every related step, not only final before/after summaries. A
-protocol row, parity row, objection, proof matrix row, migration answer,
-implementation phase, or final chat answer can be wrong in the same way if it
-uses a stale current state.
-
-## Goal And Plan State
-
-The active goal is the durable lane state. The plan is the durable evidence and
-pass-state ledger. Do not create hook state for Plate Plan work.
-
-Use the active plan for lightweight current-pass state:
-
-```md
-current_pass: current-state-read
-current_pass_status: in_progress
-next_pass: intent-boundary-and-decision-brief
-next_action: finish current pass and update the plan
-goal_status: active
-```
-
-Complete the goal only when all completion gates pass. Use `blocked` only when
-no autonomous progress is possible because evidence, tooling, access, or a user
-decision is missing.
-
-Allowed `current_pass_status` values:
-
-- `pending`
-- `in_progress`
-- `complete`
-- `revise`
-- `blocked`
-- `skipped`
-
-Single-pass completion is invalid by default:
-
-- one activation may complete at most one scheduled review/spec pass
-- a newly created or newly activated plan must stay `pending`
-- only the closure pass may set `done`
-- the closure pass is valid only after earlier pass-state rows are already
-  recorded as complete in the active plan
-- if the current activation creates, rewrites, or materially rescopes the plan,
-  record the next pass and keep status `pending`
-- ignore this only when the user explicitly asks for a single-pass review
-
-Before completing the goal, prove in the plan:
-
-- every scheduled pass row is `complete` or intentionally `skipped` with a
-  concrete reason and evidence
-- no pass row is `pending`, `in_progress`, `revise`, or `blocked` with a
-  runnable next move
-- `current_pass` is the closure/final-gates pass
-- `current_pass_status` is `complete`
-- `next_pass` is `none`
-- `next_action` is `none`
-- every completion threshold row below passes
-
-If any assertion fails, keep the goal active and name the earliest runnable
-`next_pass`.
+Do not run Playwright against `apps/www` by default. Browser editor behavior
+proof belongs in the owned Slate/browser lane unless the accepted plan names a
+Plate app route as the product behavior owner.
 
 ## Confidence Score
 
-Score every review pass from `0.00` to `1.00`.
-
-Weights:
+Score with evidence. Threshold: total score >= 0.92 and no dimension below
+0.85.
 
 | Dimension | Weight |
 | --- | ---: |
-| Evidence and authority strength | 0.18 |
-| Plate editor-behavior DX and product fit | 0.16 |
-| Node model, affinity, and permanent-home coherence | 0.16 |
-| Protocol, parity, and regression-proof testing | 0.20 |
-| Research freshness and completeness | 0.15 |
-| React/shadcn/effect implementation-review discipline | 0.10 |
-| Roadmap and implementation-handoff clarity | 0.05 |
+| Slate/Plate boundary correctness | 0.20 |
+| Plate API/DX quality | 0.20 |
+| Runtime, performance, and testability | 0.20 |
+| Minimal breaking-change strategy | 0.15 |
+| Product/plugin/docs/examples coherence | 0.15 |
+| Research, source evidence, and proof completeness | 0.10 |
 
-Score evidence rules:
+Automatic caps:
 
-- Every dimension score must cite concrete evidence: plan section, source file,
-  docs section, protocol/parity row, test/browser contract, research page, or
-  ledger row.
-- A dimension without cited evidence cannot score above `0.80`.
-- Research freshness cannot score above `0.85` without current citations for
-  external systems or local repos the review relies on.
-- Protocol/parity/regression cannot score above `0.80` without named
-  replayable browser/unit/stress/protocol contracts.
-- Permanent-home coherence cannot score above `0.85` if package ownership,
-  performance cost, DX, and future consumer impact are not answered.
-- Implementation-review discipline cannot score above `0.80` when an applicable
-  shadcn, Vercel React, react-useeffect, performance-oracle, or tdd lens is
-  missing.
-- Implementation-review discipline cannot score above `0.85` when a lens is
-  marked `applied` or `skipped` without findings, plan deltas, or a concrete
-  skip reason.
-- Any dimension affected by an unresolved intent, scope, non-goal, or decision
-  boundary gap cannot score above `0.85`.
-- A major decision with no viable-options comparison cannot score above `0.85`.
-- A major decision with only one surviving option cannot score above `0.85`
-  unless the invalidated alternatives are named and fairly rejected.
-
-Completion threshold:
-
-All rows are conjunctive. Passing score is necessary but never sufficient.
-
-- total score `>= 0.92`
-- no dimension below `0.85`
-- no unplanned P0/P1 issue
-- every dimension score has cited evidence
-- no unresolved contradiction in the research layer
-- no missing acceptance criteria for implementation
-- no public behavior/API surface left in "maybe" language
-- intent, outcome, in-scope, non-goals, and decision boundaries are explicit
-- every major decision has principles, top drivers, viable options, rejected
-  alternatives, consequences, and follow-ups
-- high-risk deliberate mode is complete when triggered
-- every major behavior/paradigm change has an accepted objection-ledger row
-- extension/plugin/package/data-model changes have ecosystem answers when
-  applicable
-- every applicable shadcn, Vercel React, react-useeffect, performance-oracle,
-  and tdd review is applied or explicitly skipped with a reason
-- no objection-ledger row is `unresolved`, `revise`, or `drop` without a
-  corresponding plan response
-- pass schedule is complete
-- pass-state ledger proves earlier passes completed before closure
-- plan deltas from review are recorded
-- final user-review handoff lists every accepted plan item/decision, with
-  before/after shape when applicable
-
-If any gate fails, status stays `pending`.
+- Any unresolved Slate/Plate owner overlap caps total at 0.84.
+- Any public compatibility alias or shim without an accepted hard reason caps
+  total at 0.80.
+- Any API conflict ledger missing required rows caps total at 0.78.
+- Any current-state claim without live source evidence caps the relevant
+  dimension at 0.75.
+- Any breaking API change without adoption answer, docs/example answer, and
+  proof route caps DX at 0.80.
+- Any execution plan without focused verification commands caps proof at 0.82.
+- Any private bridge without deletion gate caps boundary at 0.82.
+- Any final handoff that lists only highlights caps total at 0.85.
 
 ## Plan Shape
 
-The plan must include:
+Every Plate Plan should contain:
 
-1. Current verdict.
-2. Intent/boundary record.
-3. Decision brief.
-4. Confidence scorecard with evidence references.
-5. Source-backed behavior north star.
-6. Request classification and feature family.
-7. Current law/readiness state.
-8. Research freshness decision.
-9. Node model and affinity target.
-10. Permanent-home target.
-11. Standards/spec/protocol/parity/audit/roadmap change map.
-12. Applicable implementation-skill review matrix: shadcn, Vercel React,
-    react-useeffect, performance-oracle, and tdd.
-13. Browser stress / parity / regression strategy.
-14. High-risk deliberate-mode pre-mortem and proof plan when triggered.
-15. Hard cuts and rejected alternatives.
-16. Objection ledger with ecosystem answers when triggered.
-17. Pass schedule and pass-state ledger.
-18. Plan deltas from review.
-19. Open questions and what would change the decision.
-20. Implementation phases with owners.
-21. Fast driver gates.
-22. Final user-review handoff outline.
-23. Final completion gates.
+1. Verdict and confidence score.
+2. Intent, outcome, in-scope, non-goals, decision boundaries.
+3. Decision brief: principles, drivers, viable options, rejected alternatives,
+   chosen option, consequences.
+4. Slate/Plate boundary map.
+5. Current-source inventory.
+6. API conflict ledger.
+7. Minimal breaking-change matrix.
+8. Public API target.
+9. Private bridge and deletion-gate target.
+10. Runtime/default-route target.
+11. Plugin/feature package target.
+12. Docs/examples/registry target.
+13. Plate migration phases.
+14. Proof matrix.
+15. Research/ecosystem synthesis when used.
+16. Applicable implementation-skill review matrix.
+17. High-risk pre-mortem when triggered.
+18. Objection ledger.
+19. Hard cuts and rejected alternatives.
+20. Pass schedule.
+21. Plan deltas from review.
+22. Open questions and decision-changing evidence.
+23. Final handoff outline.
+24. Completion gates.
 
 ## Pass Schedule
 
-Run the review as passes, not one giant essay:
+Run one scheduled pass per activation unless the user explicitly asks for a
+full uninterrupted loop.
+
+Required passes:
 
 1. Current-state read and initial score.
-2. Intent/boundary and decision-brief pass; write the boundary record directly
-   when it is not already explicit.
-3. Research and live-source refresh.
-4. Authority, node-model, affinity, permanent-home, protocol, parity, roadmap,
-   shadcn, React performance, useEffect, performance-oracle, tdd, and
-   regression pressure passes.
-5. Plate maintainer objection ledger with steelman pressure for major decisions.
-6. High-risk deliberate-mode pass when triggered.
-7. Ecosystem maintainer pass when triggered.
-8. Revision pass that answers objections and updates the plan/spec stack.
-9. Closure score and final gates.
-
-The closure score and final gates are their own pass. Do not fold closure into
-the previous pass. The closure pass may start only when every earlier
-pass-state row is already `complete` or intentionally `skipped` with evidence.
-
-After each pass, update the active plan with pass status, evidence, changes,
-and next owner. Keep the active goal open while any pass or revision remains
-runnable.
-
-Pass-state ledger rows must include:
-
-- pass name
-- status: `pending`, `in_progress`, or `complete`
-- evidence added
-- plan delta
-- editor-behavior output delta
-- open issues
-- next owner
-
-Do not mark multiple major passes complete in one activation. Finish the current
-pass, refresh the active continuation prompt, keep status `pending`, and let the
-next activation run the next pass.
-
-## Editor-Behavior Outputs
-
-This workflow answers four questions:
-
-1. What is the authority?
-2. What is the readable law?
-3. What are the exhaustive scenarios?
-4. What is the current gate status?
-
-That maps to:
-
-- authority -> [markdown-standards.md](docs/editor-behavior/markdown-standards.md)
-- readable law -> [markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md)
-- exhaustive scenarios -> [editor-protocol-matrix.md](docs/editor-behavior/editor-protocol-matrix.md)
-- gate status -> [markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md)
-- evidence history -> [markdown-editing-reference-audit.md](docs/editor-behavior/markdown-editing-reference-audit.md)
-- implementation queue -> [master-roadmap.md](docs/editor-behavior/master-roadmap.md)
-
-For each output file, either patch it or state why it stayed unchanged. Do not
-leave a layer implicit.
-
-## Intake Classification
-
-Classify the request before editing:
-
-1. Update to existing current feature behavior.
-2. New interaction class for an existing current feature.
-3. New current feature family or newly formalized current surface.
-4. Deferred or future feature.
-5. New authority / winner shift.
-6. Architecture-only spec question.
-7. Regression-proofing / parity gate question.
-
-Classify the feature family:
-
-- markdown-native syntax
-- markdown mode architecture and note-linked navigation
-- block-editor-native elements
-- tables and linear document editing
-- collaboration / editor-only
-- styling / layout / editor chrome
-- cross-surface interaction
-
-Classify the evidence state:
-
-- evidence already sufficient
-- research update needed
-- architecture lane change
-- pure law/protocol update
-- parity/proof update
-
-## Intent Boundary Gate
-
-Before treating a plan as ready, record:
-
-- intent: why the user wants this change
-- desired outcome: what state should exist after implementation
-- in-scope behavior
-- non-goals
-- decision boundaries: what the plan may decide without asking the user again
-- unresolved user-decision points
-
-Gather repo facts before asking the user about internals. If one user answer is
-needed, ask exactly one high-leverage boundary question, not a questionnaire.
-
-Pressure-test weak answers with one of:
-
-1. concrete example, counterexample, or evidence signal
-2. hidden assumption or dependency
-3. explicit tradeoff, rejected boundary, or deferred scope
-4. root-cause reframing when the request describes only symptoms
-
-Do not score ready while non-goals or decision boundaries are vague.
-
-## Decision Brief
-
-For every major behavior, authority, package-boundary, API, protocol, or proof
-decision, record:
-
-- principles: three to five rules the decision must satisfy
-- top drivers: the three forces that most affect the decision
-- viable options: at least two, with bounded pros and cons
-- chosen option
-- rejected alternatives
-- consequences
-- follow-ups
-
-If only one option is viable, say which alternatives were considered and why
-they are invalid. "No alternative" is not a reason; it is usually a missed pass.
-
-## Research Decision
-
-Use the research layer before inventing new law.
-
-Use `research-wiki` for choosing and running the right research mode when:
-
-- the topic already exists in `docs/research` but needs refresh
-- compiled synthesis is contradictory or thin
-- raw evidence is missing or stale
-- the authority question spans multiple likely corpora
-- the surface is authority-sensitive and silence would be dangerous
-
-Do not skip the research layer and jump from a raw source into law unless the
-request is tiny and the evidence is already obvious.
-
-Do not call research "full" if one likely corpus stayed silent. Silence is a
-gap, not agreement.
-
-## Evidence Ladder
-
-Use:
-
-1. explicit reference docs or executable tests
-2. compatible but indirect evidence
-3. honest gap
-
-When recording evidence, use:
-
-- `agree`
-- `partial`
-- `gap`
-- `tension`
-- `diverge`
-
-Never mark behavior `locked` because it feels standard.
-
-Live source/docs/tests/generated artifacts and behavior-law files outrank
-compiled research and previous plans when describing the current state. If they
-disagree, record `stale research`, `stale plan`, or `stale audit history` and
-update the active plan from live evidence.
-
-## Node Model First
-
-Before writing UX law, lock:
-
-1. node model
-2. affinity class when relevant
-
-Node model classes:
-
-- `block non-void`
-- `block void atom`
-- `inline non-void span`
-- `inline void atom`
-- `leaf mark`
-- `text token`
-- `overlay / no node`
-
-Affinity classes:
-
-- `directional`
-- `hard`
-- `outward`
-- `none / n-a`
-
-Do not spec hover, click, backlink, toolbar, or popover behavior until the model
-is explicit.
-
-## Permanent-Home Test
-
-For any new shared contract or cross-surface rule, answer:
-
-1. What is the best permanent home if designed cleanly today?
-2. Which home minimizes repeated feature-local reimplementation?
-3. Which home keeps package ownership coherent?
-4. Which home gives the best performance characteristics?
-5. Which home gives the best DX and API discoverability?
-6. Which future consumers would reuse it?
-
-Candidate homes:
-
-- `@platejs/core`
-- existing shared package
-- new shared package
-- feature package
-- app/render layer only
-- docs/test contract only
-
-If the answer differs from current file placement, the spec should say so.
-
-## Required Edit Order
-
-Use this order unless the task is small enough that a subset is obviously
-enough. If a file stays unchanged, record why.
-
-### 1. Standards
-
-Patch [markdown-standards.md](docs/editor-behavior/markdown-standards.md) when:
-
-- the winner map changes
-- a new authority lane appears
-- a family split is needed
-- a stronger external reference replaces an older one
-- routing guidance changes
-
-### 2. Readable Law
-
-Patch [markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md)
-to define:
-
-- family-level behavior
-- node model
-- affinity
-- ownership rules
-- locked notes / exceptions
-- current vs deferred status
-
-If behavior includes editor chrome or navigation UI, define it in a way that is
-compatible with shadcn composition: popovers, commands, menus, triggers,
-truncation, keyboard composition, semantic styling, and no one-off overlay
-markup when a standard pattern exists.
-
-If behavior includes React rendering, subscriptions, overlays, server/client
-boundaries, data fetching, or editor runtime projections, define the performance
-shape explicitly: what subscribes, what stays static, what work is deferred, and
-which Vercel React rule family applies.
-
-If behavior includes effects, derived state, reset-on-prop behavior,
-subscriptions, browser APIs, external stores, or data synchronization, define why
-an effect is needed. Prefer render-time calculation, event handlers, keyed
-resets, `useMemo`, or `useSyncExternalStore` when they express the behavior.
-
-### 3. Protocol Rows
-
-Patch [editor-protocol-matrix.md](docs/editor-behavior/editor-protocol-matrix.md)
-to enumerate:
-
-- concrete scenarios
-- authority per row
-- spec IDs
-- status
-
-If a surface has different winners by scenario, split the rows. Do not keep one
-coarse row that lies.
-
-### 4. Parity Gate
-
-Patch [markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md)
-when:
-
-- an existing current feature family changed
-- the family authority map changed
-- gate status changed
-- node model / affinity summary changed
-- browser/protocol proof changed
-
-Do not inflate the parity matrix for speculative future product ideas that are
-not current Plate features.
-
-### 5. Roadmap
-
-Patch [master-roadmap.md](docs/editor-behavior/master-roadmap.md) when:
-
-- a new implementation lane appears
-- deferred implementation work should enter the queue
-- order of real remaining implementation lanes changes
-- a lane is narrowed, closed, re-cut, or split
-
-Do not strand implementation debt only in parity wording or a plan doc.
-
-### 6. Audit
-
-Patch [markdown-editing-reference-audit.md](docs/editor-behavior/markdown-editing-reference-audit.md)
-only when:
-
-- a new external reference disagreement matters
-- the evidence history needs a new entrypoint
-- a winner shift needs explicit audit history
-
-Do not treat the audit as current law.
-
-## Current Feature Vs Deferred Feature
-
-For current feature/current surface, update all affected layers:
-
-- standards
-- readable law
-- protocol rows
-- parity when the gate changed
-- roadmap when implementation work remains
-- audit when evidence history changed
-
-For deferred or future surfaces, usually update:
-
-- standards if a new lane is needed
-- readable law if the contract must exist now
-- protocol rows as `deferred` or `specified`
-
-Do not pretend deferred behavior is release-gated current behavior.
-
-## Applicable Implementation Reviews
-
-Before scoring above threshold, decide whether each review lens applies. Record
-the decision in the active plan even when skipped.
-
-Use this matrix:
-
-| Lens | Applies when | Must answer |
-| --- | --- | --- |
-| `build-web-apps:shadcn` | UI/editor chrome, components, registry components, menus, popovers, command palettes, inputs, forms, overlays, styling, or component composition are in scope | Are existing components used first? Are variants, semantic tokens, `gap-*`, `size-*`, `truncate`, `cn()`, accessible titles, grouped menu/select items, full Card composition, Button loading, and icon `data-icon` rules respected? |
-| `vercel-react-best-practices` | React/Next components, rendering, external-store subscriptions, data fetching, server/client boundaries, bundle size, or runtime performance are in scope | Are waterfalls avoided, bundles split sanely, server/client serialization minimized, global listeners deduped, subscriptions derived and narrow, expensive renders deferred, transient values kept in refs, and inline components avoided? |
-| `react-useeffect` | `useEffect`, `useState` for derived values, reset-on-prop, state synchronization, subscriptions, browser APIs, external systems, data fetching, or parent notifications are in scope | Is the effect actually synchronizing with an external system? Can the behavior be render calculation, `useMemo`, keyed reset, event handler, framework fetch, or `useSyncExternalStore` instead? |
-| `performance-oracle` | Hot paths, algorithms, large collections, memory lifetime, network/database I/O, bundle cost, editor runtime loops, browser event paths, or scalability are in scope | Is complexity bounded? Are allocations, subscriptions, listeners, network calls, and cache lifetimes controlled? What happens at 10x, 100x, and 1000x scale? |
-| `tdd` | Behavior additions, bug fixes, public interface changes, regression classes, or executable acceptance criteria are in scope | Is there a red-green-refactor slice through a public interface? Does the test verify behavior rather than implementation details? |
-
-For each applicable lens, record:
-
-- applicability: `applied` or `skipped`
-- reason
-- findings
-- plan delta or explicit no-change defense
-- proof pointer: plan section, source file, rule family, protocol row, or test
-  family
-
-Do not turn these lenses into generic busywork. If the plan is pure law with no
-UI, React, or effect surface, skip them with one sentence and keep moving.
+2. Intent, scope, boundary, and non-goals.
+3. Slate/Plate boundary audit.
+4. API conflict inventory.
+5. Minimal breaking-change strategy.
+6. Runtime/performance/testability pass.
+7. Docs/examples/registry pass.
+8. Research/ecosystem/live-source pass when external evidence is used.
+9. Objection and steelman pass.
+10. High-risk deliberate pass when triggered.
+11. Revision pass.
+12. Verification and final handoff gate.
+
+Each pass must either change the plan or explicitly defend no change with
+evidence. A rubber-stamp pass does not count.
+
+## Pressure Passes
+
+Before scoring above threshold, record these pass results:
+
+- Boundary pass: prove each surface has one owner.
+- API conflict pass: prove every required conflict row has a verdict.
+- DX pass: prove the target shape is easier for app authors and future agents.
+- Minimal-break pass: prove the public break set is the smallest clean set.
+- Hard-cut pass: remove aliases, shims, stale docs, and fake compatibility.
+- Runtime pass: prove runtime/default-route choices do not fight Slate.
+- Performance pass: prove hot-path and subscription choices are bounded.
+- Testability pass: prove the plan improves proofability, not just aesthetics.
+- Docs pass: prove latest-state docs and examples match the target API.
+- Simplicity pass: delete, inline, or merge before extracting.
+- Ecosystem pass: prove plugin authors, app authors, docs/test maintainers, and
+  package owners have a coherent path.
+- Plate maintainer pass: challenge the plan as if reviewing a public beta PR.
 
 ## High-Risk Deliberate Mode
 
@@ -753,245 +404,99 @@ Trigger this mode when a proposal changes:
 
 - public API
 - package boundary
+- runtime/default route
+- plugin or extension behavior
 - data model
-- extension/plugin behavior
-- collaboration or operation semantics
+- collaboration semantics
 - normalization
-- selection, focus, IME, or browser-runtime behavior
-- release gate or generated regression contract
+- selection, focus, IME, browser behavior
+- docs/examples that teach public API
+- release or generated contract
 
-When triggered, add to the active plan:
+When triggered, add:
 
-- pre-mortem: three realistic failure scenarios
-- expanded proof plan: unit, browser, parity, stress, migration, and docs/example
-  proof as applicable
-- blast-radius note: packages, examples, docs, tests, and downstream consumers
-- rollback or hard-cut answer: why the plan is still worth doing
-
-High-risk mode is not a separate workflow. It is one stricter pass inside this
-skill.
+- three realistic failure scenarios
+- blast-radius note
+- focused proof plan
+- rollback or hard-cut answer
+- adoption/docs/example answer
 
 ## Objection Ledger
 
-Simulate a skeptical Plate maintainer and serious downstream Plate user.
-The goal is to prevent "they changed things for no reason."
+Every major public API, package-boundary, runtime, docs, or behavior change
+needs a ledger row:
 
-For every major behavior, authority, API, package-boundary, protocol, or parity
-change, record:
-
-- Change: exact behavior/API/spec/test contract being changed.
-- Who feels pain: Plate user, plugin author, app author, docs maintainer,
-  test maintainer, package owner, design-system owner, or release owner.
-- Likely objection: strongest fair complaint in user language.
-- Steelman antithesis: the best argument for not making the change.
-- Tradeoff tension: what the chosen option makes worse or more expensive.
-- Why this is not change for change's sake: concrete payoff.
-- Evidence: repo fact, research fact, protocol row, parity row, browser
-  regression class, or reference limitation.
-- Rejected alternative: closest compatible option and why it is weaker.
-- Adoption answer: how a user or maintainer moves from old shape to new shape.
-- Docs/example answer: what public explanation or example proves the change.
-- Regression proof: unit, browser, protocol, parity, stress, or manual proof row.
-- Ecosystem answers, when triggered.
+- Change.
+- Who feels pain.
+- Likely objection.
+- Steelman antithesis.
+- Tradeoff tension.
+- Why this is worth it.
+- Evidence.
+- Rejected alternative.
+- Adoption answer.
+- Docs/example answer.
+- Regression proof.
 - Verdict: `keep`, `revise`, `drop`, or `unresolved`.
 
-Ledger rows are mandatory for changes like:
+Rows are not accepted if they say only "cleaner" or "better architecture."
+That is not a plan. That is a vibe.
 
-- new authority lane or winner shift
-- family split
-- node model or affinity change
-- permanent-home decision
-- core vs package vs app/render ownership change
-- shadcn/editor-chrome behavior contract
-- React runtime/rendering/subscription behavior contract
-- effect, derived-state, or external-synchronization contract
-- protocol/parity gate change
-- roadmap order change
-- hard cut of old docs/API behavior
-- generated browser or stress-test gate
+## Editor-Behavior Outputs
 
-Rules:
+Plate Plan may update `docs/editor-behavior/**`, but only when the plan changes
+current Plate behavior law, protocol rows, parity gates, or roadmap.
 
-- No major behavior/paradigm change may score above `0.85` in DX, authority, or
-  parity unless it has a ledger row with a convincing answer.
-- A ledger row is accepted only when its verdict is `keep` and every required
-  field is concrete: evidence, steelman antithesis, tradeoff tension, rejected
-  alternative, adoption answer, docs/example answer, regression proof, and
-  ecosystem answers when triggered.
-- A row is not accepted if a required field is missing, says `TBD`, says only
-  "cleaner", or lacks proof that a real user problem is solved.
-- If the best answer is only "cleaner", the verdict is `revise` or `drop`.
-- `unresolved`, `revise`, or `drop` rows must feed back into the plan before
-  completion can be `done`.
-- Reuse prior ledger rows when rerunning this skill, but revalidate them against
-  the latest plan.
-
-## Ecosystem Maintainer Pass
-
-Do not create separate full ledgers by default. Trigger this pass only when the
-proposal changes extension, plugin, package, rendering, collaboration,
-operation, identity, normalization, snapshot, or data-model behavior.
-
-For each triggered ledger row, add short answers:
-
-- Plugin maintainer: can packages expose this without wrapping every core call
-  or creating a compatibility junk drawer?
-- App author: can app code customize or opt out without bespoke wiring?
-- Docs/test maintainer: can docs, examples, protocol rows, and proof gates stay
-  coherent?
-- Collab/data maintainer, when relevant: do operations, identity, snapshots,
-  normalization, remote apply, and conflict behavior stay deterministic?
-
-For core API/data-model changes, also name:
-
-- exact affected extension points
-- package/plugin migration surface
-- data/collab contract affected
-- proof required before closure
-
-The pass catches ecosystem breakage. It does not veto every cleanup.
-
-## Plan Deltas From Review
-
-Every review pass must either change the plan or explicitly defend no change.
-
-Record:
-
-- added decisions
-- revised decisions
-- dropped decisions
-- strengthened acceptance criteria
-- new tests/proof rows
-- editor-behavior output file deltas
-- unresolved items moved to the next pass
-- no-change decisions with evidence
-
-If pressure passes produce no plan delta and no explicit no-change defense, the
-review is a rubber stamp and completion stays `pending`.
-
-## Pressure Passes
-
-Before raising the score above threshold, run these passes and record the result
-in the plan:
-
-- Authority pass: prove the winner map and family split are justified.
-- Intent/boundary pass: prove intent, outcome, scope, non-goals, and decision
-  boundaries are explicit.
-- Decision-brief pass: prove principles, drivers, options, rejected
-  alternatives, consequences, and follow-ups are recorded.
-- Node-model pass: prove model and affinity are locked before UX law.
-- Permanent-home pass: prove ownership belongs where the plan says it belongs.
-- DX pass: prove the shape is discoverable for Plate users and future agents.
-- Unopinionated-core pass: prove core does not absorb product-only opinion.
-- Regression pass: prove behavior is caught by protocol/parity/browser/stress
-  contracts, not example-by-example patching.
-- Research pass: prove compiled research was used as evidence, not decoration.
-- shadcn/UI pass: when applicable, prove editor chrome follows composable
-  shadcn patterns and record the applied/skipped result.
-- Vercel React pass: when applicable, prove React runtime/performance choices
-  follow the relevant Vercel rule families and record the applied/skipped result.
-- useEffect pass: when applicable, prove effects are external-system
-  synchronization, not derived-state or event-handler work in disguise.
-- Performance-oracle pass: when applicable, prove hot-path, complexity, memory,
-  network, bundle, and scalability claims are bounded or intentionally deferred.
-- TDD pass: when applicable, prove behavior changes and regression classes have
-  public-interface red-green-refactor acceptance criteria.
-- Simplicity pass: remove overbuilt props, aliases, shims, and speculative API
-  layers.
-- Plate maintainer pass: challenge every major behavior/paradigm change as if
-  reviewing a Plate PR; record objections and answers in the ledger.
-- Steelman pass: record the best antithesis and real tradeoff tension for each
-  major decision.
-- High-risk deliberate pass: when triggered, add the pre-mortem and expanded
-  proof plan before closure.
-- Ecosystem pass: only when triggered, add plugin/app/docs/test/data answers to
-  the same ledger row.
+Do not route every Plate v2 API plan through markdown behavior law. That was
+the stale shape. Editor-behavior docs are an output, not this skill's center.
 
 ## User Review And Execution Mode
 
-When the score is below threshold, any required pass remains open, or any
-completion gate has a runnable next move:
+When the score is below threshold, a required row remains open, or a proof gate
+has a runnable next move:
 
-1. Update the plan with the current score, evidence, rejected tactics, and next
-   owner.
+1. Update the plan with score, evidence, deltas, and next owner.
 2. Keep the active goal open.
 3. Continue the next review/refinement slice.
 
 When final gates pass, complete the planning goal and stop for user review.
-Implementation starts only after a later explicit execution request that invokes
-Plate Plan again against the accepted plan. That execution invocation must use a
-new execution-shaped goal, read the accepted plan, run the next implementation
-owner, record verification, and keep the goal active while any accepted owner
-remains runnable.
+Implementation starts only after a later explicit execution request invoking
+Plate Plan against the accepted plan.
 
 ## Done Handoff
 
-When setting completion to `done`, the final chat response must include a
-concise but exhaustive bullet list of every accepted plan item and decision so
-the user can review without opening the full plan.
+When setting completion to done, final chat must include a concise but complete
+list of accepted decisions so the user can review without opening the whole
+plan.
 
-Group bullets by surface when useful:
+Group by surface:
 
-- authority / winner map
-- intent / decision brief
-- node model / affinity
-- permanent home / package ownership
-- editor-behavior outputs
-- protocol / parity / roadmap / audit
-- UI/editor chrome and applicable shadcn review
-- React runtime/performance and applicable Vercel React review
-- effects/external synchronization and applicable react-useeffect review
-- hot-path/scalability and applicable performance-oracle review
-- behavior/regression proof and applicable tdd review
-- high-risk deliberate-mode pre-mortem when triggered
-- regression proof
-- hard cuts and rejected alternatives
-- implementation phases and gates
+- Slate/Plate boundary
+- public API target
+- API conflicts and verdicts
+- breaking changes
+- private bridges and deletion gates
+- runtime/default-route target
+- package/plugin target
+- docs/examples/registry target
+- proof gates
+- rejected alternatives
+- next execution owners
+- needs user attention
 
 Each bullet should include:
 
-- decision name or surface
-- before -> after shape when the plan changes an existing shape, with a source
-  pointer for the before
-- status: `add`, `keep`, `cut`, `rename`, `revise`, or `gate`
-- proof pointer when short enough: evidence row, ledger row, test/proof family,
-  spec section, or plan section
+- decision name
+- current -> target shape when changing live source
+- status: `keep`, `cut`, `rename`, `move`, `bridge`, `defer`, or `gate`
+- source/proof pointer when short enough
 
-Current-state / before-after rules:
-
-- Any claim about the current implementation, behavior law, docs state, example,
-  protocol row, parity row, or generated artifact must have a live evidence
-  pointer or be marked `gap`.
-- `before` must be copied from live source, docs, examples, tests, generated
-  artifacts, behavior-law rows, or authoritative reference material.
-- `after` must be an accepted target shape or `already done`.
-- If a previous plan, audit, or compiled research claims an old shape but live
-  evidence does not, do not use it in any step; record `stale claim`.
-- If a decision has no current source-backed before shape, write `decision: ...`
-  or `target shape: ...` instead of inventing one.
-
-Do not list only highlights. If the plan accepts twenty decisions, the handoff
-lists twenty bullets. Keep each bullet short; group them instead of omitting
-items.
+Do not list only highlights. If the plan accepts twenty decisions, list twenty
+short bullets.
 
 ## Final Response
 
-When the plan is still pending, say what score remains and what the next owner
-is.
+When the plan is still pending, say what score remains and the next owner.
 
-When the plan reaches `done`, use this shape:
-
-```md
-Plate Plan is ready for user review: [docs/plans/...](docs/plans/...)
-
-Decisions:
-- Authority: ...
-- Node model: ...
-- Editor-behavior outputs: ...
-- Protocol/parity: ...
-- Tests/proof: ...
-```
-
-Then tell the user to review the plan and invoke Plate Plan again with the
-accepted plan path to execute it. Do not paste the whole plan into chat. Do paste
-the exhaustive decision bullets.
+When the plan is ready, say it is ready for user review, list the decisions,
+and stop. Do not silently begin implementation.

@@ -8,7 +8,7 @@ import {
   useMarkToolbarButtonState,
 } from './useMarkToolbarButton';
 
-const createWrapper = (editor: ReturnType<typeof createPlateEditor>) =>
+const createWrapper = (editor: any) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <Plate editor={editor} suppressInstanceWarning>
@@ -20,10 +20,16 @@ const createWrapper = (editor: ReturnType<typeof createPlateEditor>) =>
 describe('useMarkToolbarButton', () => {
   it('derives pressed state from editor marks', () => {
     const editor = createPlateEditor({
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
-    const hasMarkSpy = spyOn(editor.api, 'hasMark');
-    (hasMarkSpy as any).mockReturnValue(true);
+
+    editor.update((tx) => {
+      tx.marks.add('bold', true);
+    });
 
     const { result } = renderHook(
       () => useMarkToolbarButtonState({ clear: 'italic', nodeType: 'bold' }),
@@ -37,15 +43,21 @@ describe('useMarkToolbarButton', () => {
       nodeType: 'bold',
       pressed: true,
     });
-    expect(hasMarkSpy).toHaveBeenCalledWith('bold');
   });
 
   it('toggles the mark and focuses the editor on click', () => {
     const editor = createPlateEditor({
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
-    const toggleMarkSpy = spyOn(editor.tf, 'toggleMark');
-    const focusSpy = spyOn(editor.tf, 'focus');
+
+    editor.update((tx) => {
+      tx.marks.add('italic', true);
+    });
+    const focusSpy = spyOn(editor.api.dom as any, 'focus');
 
     const { result } = renderHook(
       () =>
@@ -61,9 +73,8 @@ describe('useMarkToolbarButton', () => {
 
     result.current.props.onClick();
 
-    expect(toggleMarkSpy).toHaveBeenCalledWith('bold', {
-      remove: ['italic'],
-    });
+    expect((editor.api as any).hasMark('bold')).toBe(true);
+    expect((editor.api as any).hasMark('italic')).toBe(false);
     expect(focusSpy).toHaveBeenCalled();
   });
 

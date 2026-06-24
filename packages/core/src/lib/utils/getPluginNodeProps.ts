@@ -1,4 +1,4 @@
-import type { TElement, TText } from '@platejs/slate';
+import type { Element, Text } from '@platejs/plite';
 import type { AnyObject } from '@udecode/utils';
 
 import pick from 'lodash/pick.js';
@@ -16,7 +16,7 @@ export const getPluginNodeProps = ({
 }: {
   props: SlateRenderNodeProps;
   attributes?: AnyObject;
-  node?: TElement | TText;
+  node?: Element | Text;
   plugin?: AnyEditorPlugin;
 }): any => {
   const newProps: any = { ...props, attributes: { ...props.attributes } };

@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Nested mixed-inline containers can strip the wrapper path and reuse top-level mixed-inline transforms
 tags:
-  - slate-v2
+  - plite
   - range-ref
   - selection
   - nested-mixed-inline

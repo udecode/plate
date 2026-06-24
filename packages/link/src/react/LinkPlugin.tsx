@@ -34,7 +34,6 @@ export type LinkConfig = ExtendConfig<
       getAttributes: OmitFirst<typeof getLinkAttributes>;
     };
   },
-  {},
   {
     isOpen?: (editorId: string) => boolean;
   }

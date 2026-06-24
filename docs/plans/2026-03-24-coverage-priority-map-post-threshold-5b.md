@@ -56,7 +56,7 @@ That batch is:
 9. `core`: [getPlainText.tsx](packages/core/src/static/internal/getPlainText.tsx) — score `5`
 10. `dnd`: [onHoverNode.ts](packages/dnd/src/transforms/onHoverNode.ts) — score `5`
 11. `link`: [unwrapLink.ts](packages/link/src/lib/transforms/unwrapLink.ts) — score `5`
-12. `slate`: [isTargetInsideNonReadonlyVoid.ts](packages/slate/src/internal/dom-editor/isTargetInsideNonReadonlyVoid.ts) — score `5`
+12. `slate`: [isTargetInsideNonReadonlyVoid.ts](packages/plite/src/internal/dom-editor/isTargetInsideNonReadonlyVoid.ts) — score `5`
 13. `udecode/depset`: [get-package-manager.ts](packages/udecode/depset/src/utils/get-package-manager.ts) — score `5`
 14. `core`: [cleanHtmlTextNodes.ts](packages/core/src/lib/plugins/html/utils/cleanHtmlTextNodes.ts) — score `5`
 15. `core`: [deserializeHtmlNodeChildren.ts](packages/core/src/lib/plugins/html/utils/deserializeHtmlNodeChildren.ts) — score `5`
@@ -71,7 +71,7 @@ That batch is:
 1. `core` — package score `24`, top files `getPlainText.tsx:5; cleanHtmlTextNodes.ts:5; deserializeHtmlNodeChildren.ts:5; createStaticString.ts:5; pluginRenderTextStatic.tsx:4`
 2. `dnd` — package score `22`, top files `DndPlugin.tsx:7; onHoverNode.ts:5; onDropNode.ts:4; getHoverDirection.ts:3; getNewDirection.ts:3`
 3. `list` — package score `21`, top files `BaseListPlugin.tsx:6; getSiblingList.ts:6; areEqListStyleType.ts:5; withList.ts:4`
-4. `slate` — package score `21`, top files `isTargetInsideNonReadonlyVoid.ts:5; hasEditableTarget.ts:4; hasSelectableTarget.ts:4; hasTarget.ts:4; toSlatePoint.ts:4`
+4. `slate` — package score `21`, top files `isTargetInsideNonReadonlyVoid.ts:5; hasEditableTarget.ts:4; hasSelectableTarget.ts:4; hasTarget.ts:4; toPlitePoint.ts:4`
 5. `table` — package score `21`, top files `getSelectedCells.ts:5; deleteColumn.ts:4; insertTableColumn.ts:4; insertTableRow.ts:4; setBorderSize.ts:4`
 6. `markdown` — package score `19`, top files `listToMdastTree.ts:6; deserializeMd.ts:4; fontRules.ts:3; customMdxDeserialize.ts:3; splitIncompleteMdx.ts:3`
 7. `docx` — package score `17`, top files `getVShapes.ts:7; docxListToList.ts:4; cleanDocxImageElements.ts:3; cleanDocxListElementsToList.ts:3`

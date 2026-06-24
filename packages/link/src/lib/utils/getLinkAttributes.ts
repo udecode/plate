@@ -1,7 +1,7 @@
 import type React from 'react';
 
 import {
-  type SlateEditor,
+  type BasePlateEditor,
   type TLinkElement,
   type UnknownObject,
   KEYS,
@@ -10,7 +10,10 @@ import {
 
 import type { BaseLinkConfig } from '../BaseLinkPlugin';
 
-export const getLinkAttributes = (editor: SlateEditor, link: TLinkElement) => {
+export const getLinkAttributes = (
+  editor: BasePlateEditor,
+  link: TLinkElement
+) => {
   const { allowedSchemes, dangerouslySkipSanitization, defaultLinkAttributes } =
     editor.getOptions<BaseLinkConfig>({ key: KEYS.link });
 

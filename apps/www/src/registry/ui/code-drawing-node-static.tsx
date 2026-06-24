@@ -1,17 +1,17 @@
 import * as React from 'react';
 
-import type { TCodeDrawingElement } from '@platejs/code-drawing';
-import type { SlateElementProps } from 'platejs/static';
+import type { CodeDrawingElement } from '@platejs/code-drawing';
+import type { PliteElementProps } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
-import { SlateElement } from 'platejs/static';
+import { PliteElement } from 'platejs/static';
 
 export function CodeDrawingElementStatic({
   children,
   ...props
-}: SlateElementProps<TCodeDrawingElement>) {
+}: PliteElementProps<CodeDrawingElement>) {
   return (
-    <SlateElement className="my-4 flex w-full items-stretch" {...props}>
+    <PliteElement className="my-4 flex w-full items-stretch" {...props}>
       <div className={cn('flex w-full flex-col md:flex-row')}>
         <div className="relative h-full min-w-0 flex-1 rounded-md bg-muted/50 p-8 pr-4">
           <pre className="m-0 overflow-x-auto font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid">
@@ -28,6 +28,6 @@ export function CodeDrawingElementStatic({
         </div>
       </div>
       {children}
-    </SlateElement>
+    </PliteElement>
   );
 }

@@ -1,7 +1,7 @@
 # sync shadcn user review boundary
 
 Objective:
-Repair `sync-shadcn` so planning mode stops for user review like `slate-plan`.
+Repair `sync-shadcn` so planning mode stops for user review like `plite-plan`.
 Planning runs must write the range plan, update planned-state only, ask the
 user to review the plan, and stop. Implementation starts only on a later user
 instruction that accepts a named plan and slice.
@@ -19,7 +19,7 @@ Applied packs:
 - none
 
 Expectation:
-- user expectation: the plan should stop to ask for review, like `slate-plan`.
+- user expectation: the plan should stop to ask for review, like `plite-plan`.
 - observed miss: `sync-shadcn` asked before implementation but still allowed a
   plan/delegate flow inside the same skill activation.
 - owning skill/template/helper: `.agents/rules/sync-shadcn.mdc` and
@@ -59,7 +59,7 @@ Constraints:
 - Do not broaden the repair to unrelated skills/templates.
 
 Boundaries:
-- Source of truth: latest user correction plus the pasted `slate-plan`
+- Source of truth: latest user correction plus the pasted `plite-plan`
   user-review/execution-mode boundary.
 - Allowed edit scope: `.agents/rules/sync-shadcn.mdc`,
   `docs/plans/templates/sync-shadcn.md`, generated skill mirrors from
@@ -89,7 +89,7 @@ Current verdict:
 - verdict: repair required
 - confidence: high
 - next owner: sync-shadcn source rule/template
-- reason: `slate-plan` has an explicit user-review boundary; `sync-shadcn`
+- reason: `plite-plan` has an explicit user-review boundary; `sync-shadcn`
   needs the same shape before implementation.
 
 Completion rule:
@@ -104,9 +104,9 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Expectation restated | yes | User asked for plan to stop and ask for review like `slate-plan`. |
+| Expectation restated | yes | User asked for plan to stop and ask for review like `plite-plan`. |
 | Active goal checked | yes | `get_goal` returned no active goal; `create_goal` created this repair objective. |
-| Named plan or skill read | yes | User provided `slate-plan` body; current `sync-shadcn` rule/template and this plan were read. |
+| Named plan or skill read | yes | User provided `plite-plan` body; current `sync-shadcn` rule/template and this plan were read. |
 | Owning source selected | yes | Repair belongs to `.agents/rules/sync-shadcn.mdc` and `docs/plans/templates/sync-shadcn.md`. |
 | Repair classification selected | yes | Derived-skill two-phase planning/review/implementation boundary. |
 | Safety conflict checked | yes | No conflict: this prevents accidental implementation and strengthens review gating. |
@@ -150,14 +150,14 @@ Phase / pass table:
 
 Findings:
 - Current `sync-shadcn` already asked before implementation, but the wording was
-  weaker than `slate-plan`: it did not force a separate later activation for
+  weaker than `plite-plan`: it did not force a separate later activation for
   implementation.
-- `slate-plan` explicitly separates planning mode from execution mode and tells
+- `plite-plan` explicitly separates planning mode from execution mode and tells
   the user to invoke the skill again after reviewing the plan.
 
 Decisions and tradeoffs:
-- Mirror `slate-plan` only for the user-review boundary, not its full score/pass
-  machinery. Shadcn sync needs inventory accounting, not a Slate architecture
+- Mirror `plite-plan` only for the user-review boundary, not its full score/pass
+  machinery. Shadcn sync needs inventory accounting, not a Plite architecture
   scorecard.
 
 Repair patch notes:
@@ -166,7 +166,7 @@ Repair patch notes:
   asking for review and later invocation before implementation.
 
 Deliberate non-repairs:
-- Do not import Slate Plan scoring/pass schedule. That would be ceremony sludge
+- Do not import Plite Plan scoring/pass schedule. That would be ceremony sludge
   for shadcn sync.
 - Do not change `apps/www`; this is workflow repair only.
 
@@ -212,7 +212,7 @@ Reboot status:
 |----------|--------|
 | Where am I? | Intake |
 | Where am I going? | Target selection, patch, verification, closeout |
-| What is the goal? | Add a Slate Plan-style user-review stop to `sync-shadcn`. |
+| What is the goal? | Add a Plite Plan-style user-review stop to `sync-shadcn`. |
 | What have I learned? | The previous sync flow asked a question but did not make implementation a later activation. |
 | What have I done? | Patched source rule/template, regenerated skill, smoke-tested template, and verified source audits. |
 

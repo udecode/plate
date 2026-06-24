@@ -1,0 +1,632 @@
+[
+  {
+    "file": "content/docs/slate/api/locations/bookmark.mdx",
+    "lane": "API reference",
+    "lines": 36,
+    "firstH2": "NONE",
+    "openingSentences": 6,
+    "findings": "opening>6; untitled-code:10,22",
+    "headings": ""
+  },
+  {
+    "file": "content/docs/slate/api/locations/index.mdx",
+    "lane": "API reference",
+    "lines": 22,
+    "firstH2": "NONE",
+    "openingSentences": 2,
+    "findings": "none",
+    "headings": ""
+  },
+  {
+    "file": "content/docs/slate/api/locations/location.mdx",
+    "lane": "API reference",
+    "lines": 24,
+    "firstH2": "## Static methods",
+    "openingSentences": 2,
+    "findings": "none",
+    "headings": "## Static methods | ### Check methods | #### `LocationApi.isLocation(value: unknown) => value is Location`"
+  },
+  {
+    "file": "content/docs/slate/api/locations/path-ref.mdx",
+    "lane": "API reference",
+    "lines": 39,
+    "firstH2": "## Instance methods",
+    "openingSentences": 5,
+    "findings": "opening>5",
+    "headings": "## Instance methods | #### `unref() => Path | null` | ## Static methods | ### Transform methods | #### `PathRefApi.transform(ref: PathRef, op: Operation)`"
+  },
+  {
+    "file": "content/docs/slate/api/locations/path.mdx",
+    "lane": "API reference",
+    "lines": 134,
+    "firstH2": "## Static methods",
+    "openingSentences": 2,
+    "findings": "none",
+    "headings": "## Static methods | ### Retrieval methods | #### `PathApi.ancestors(path: Path, options: { reverse?: boolean } = {}) => Path[]` | #### `PathApi.common(path: Path, another: Path) => Path` | #### `PathApi.compare(path: Path, another: Path) => -1 | 0 | 1` | #### `PathApi.levels(path: Path, options?) => Path[]` | #### `PathApi.next(path: Path) => Path` | #### `PathApi.parent(path: Path) => Path` | #### `PathApi.previous(path: Path) => Path` | #### `PathApi.relative(path: Path, ancestor: Path) => Path` | ### Check methods | #### `PathApi.endsAfter(path: Path, another: Path) => boolean` | #### `PathApi.endsAt(path: Path, another: Path) => boolean` | #### `PathApi.endsBefore(path: Path, another: Path) => boolean` | #### `PathApi.equals(path: Path, another: Path) => boolean` | #### `PathApi.hasPrevious(path: Path) => boolean` | #### `PathApi.isAfter(path: Path, another: Path) => boolean` | #### `PathApi.isAncestor(path: Path, another: Path) => boolean` | #### `PathApi.isBefore(path: Path, another: Path) => boolean` | #### `PathApi.isChild(path: Path, another: Path) => boolean` | #### `PathApi.isCommon(path: Path, another: Path) => boolean` | #### `PathApi.isDescendant(path: Path, another: Path) => boolean` | #### `PathApi.isParent(path: Path, another: Path) => boolean` | #### `PathApi.isPath(value: unknown) => value is Path` | #### `PathApi.isSibling(path: Path, another: Path) => boolean` | #### `PathApi.operationCanTransformPath(operation: Operation) => operation is InsertNodeOperation | RemoveNodeOperation | MergeNodeOperation | SplitNodeOperation | MoveNodeOperation` | ### Transform method | #### `PathApi.transform(path: Path, operation: Operation, options?) => Path | null`"
+  },
+  {
+    "file": "content/docs/slate/api/locations/point-entry.mdx",
+    "lane": "API reference",
+    "lines": 11,
+    "firstH2": "NONE",
+    "openingSentences": 1,
+    "findings": "none",
+    "headings": ""
+  },
+  {
+    "file": "content/docs/slate/api/locations/point-ref.mdx",
+    "lane": "API reference",
+    "lines": 39,
+    "firstH2": "## Instance methods",
+    "openingSentences": 5,
+    "findings": "opening>5",
+    "headings": "## Instance methods | #### `unref() => Point | null` | ## Static methods | ### Transform methods | #### `PointRefApi.transform(ref: PointRef, op: Operation)`"
+  },
+  {
+    "file": "content/docs/slate/api/locations/point.mdx",
+    "lane": "API reference",
+    "lines": 59,
+    "firstH2": "## Static methods",
+    "openingSentences": 6,
+    "findings": "opening>6",
+    "headings": "## Static methods | ### Retrieval methods | #### `PointApi.compare(point: Point, another: Point) => -1 | 0 | 1` | ### Check methods | #### `PointApi.isAfter(point: Point, another: Point) => boolean` | #### `PointApi.isBefore(point: Point, another: Point) => boolean` | #### `PointApi.equals(point: Point, another: Point) => boolean` | #### `PointApi.isPoint(value: unknown) => value is Point` | ### Transform methods | #### `PointApi.transform(point: Point, op: Operation, options?) => Point | null`"
+  },
+  {
+    "file": "content/docs/slate/api/locations/range-ref.mdx",
+    "lane": "API reference",
+    "lines": 40,
+    "firstH2": "## Instance methods",
+    "openingSentences": 6,
+    "findings": "opening>6",
+    "headings": "## Instance methods | #### `unref() => Range | null` | ## Static methods | ### Transform methods | #### `RangeRefApi.transform(ref: RangeRef, op: Operation)`"
+  },
+  {
+    "file": "content/docs/slate/api/locations/range.mdx",
+    "lane": "API reference",
+    "lines": 95,
+    "firstH2": "## Static methods",
+    "openingSentences": 5,
+    "findings": "opening>5",
+    "headings": "## Static methods | ### Retrieval methods | #### `RangeApi.edges(range: Range, options?) => [Point, Point]` | #### `RangeApi.end(range: Range) => Point` | #### `RangeApi.intersection(range: Range, another: Range) => Range | null` | #### `RangeApi.points(range: Range) => Generator<PointEntry>` | #### `RangeApi.start(range: Range) => Point` | ### Check methods | #### `RangeApi.equals(range: Range, another: Range) => boolean` | #### `RangeApi.includes(range: Range, target: Path | Point | Range) => boolean` | #### `RangeApi.surrounds(range: Range, target: Range) => boolean` | #### `RangeApi.isBackward(range: Range) => boolean` | #### `RangeApi.isCollapsed(range: Range) => boolean` | #### `RangeApi.isExpanded(range: Range) => boolean` | #### `RangeApi.isForward(range: Range) => boolean` | #### `RangeApi.isRange(value: unknown) => value is Range` | ### Transform methods | #### `RangeApi.transform(range: Range, op: Operation, options) => Range | null`"
+  },
+  {
+    "file": "content/docs/slate/api/locations/span.mdx",
+    "lane": "API reference",
+    "lines": 22,
+    "firstH2": "## Static Methods",
+    "openingSentences": 1,
+    "findings": "none",
+    "headings": "## Static Methods | ### Check Methods | #### `SpanApi.isSpan(value: unknown) => value is Span`"
+  },
+  {
+    "file": "content/docs/slate/api/nodes/editor.mdx",
+    "lane": "API reference",
+    "lines": 380,
+    "firstH2": "## Creating an editor",
+    "openingSentences": 2,
+    "findings": "untitled-code:181",
+    "headings": "## Creating an editor | #### `createEditor(options?) => Editor` | ## Reading state | #### `editor.read(fn) => T` | ## Updating state | #### `editor.update(fn, options?) => void` | ## Document roots | ## Document state | ## Schema behavior | ## Runtime APIs | ## Subscribing to commits | #### `editor.subscribe(listener) => () => void` | #### `editor.subscribeCommit(listener) => () => void` | ## Extending the editor | #### `editor.extend(extension) => () => void` | ## Pure node and location helpers"
+  },
+  {
+    "file": "content/docs/slate/api/nodes/element.mdx",
+    "lane": "API reference",
+    "lines": 153,
+    "firstH2": "## Element Behavior Types",
+    "openingSentences": 2,
+    "findings": "untitled-code:55,84",
+    "headings": "## Element Behavior Types | ### Block vs. Inline | ### Void vs Not Void | #### Voids That Support Marks | #### Rendering Void Elements | ## Static methods | ### Retrieval methods | #### `ElementApi.matches(element: Element, props: Partial<Element>) => boolean` | ### Check methods | #### `ElementApi.isAncestor(value: unknown) => value is Ancestor` | #### `ElementApi.isElement(value: unknown) => value is Element` | #### `ElementApi.isElementList(value: unknown) => value is Element[]` | #### `ElementApi.isElementProps(props: unknown) => props is Partial<Element>` | #### `ElementApi.isElementType<T extends Element>(value: unknown, elementVal: string, elementKey: string = 'type'): value is T`"
+  },
+  {
+    "file": "content/docs/slate/api/nodes/index.mdx",
+    "lane": "API reference",
+    "lines": 20,
+    "firstH2": "NONE",
+    "openingSentences": 1,
+    "findings": "none",
+    "headings": ""
+  },
+  {
+    "file": "content/docs/slate/api/nodes/node-entry.mdx",
+    "lane": "API reference",
+    "lines": 13,
+    "firstH2": "NONE",
+    "openingSentences": 3,
+    "findings": "none",
+    "headings": ""
+  },
+  {
+    "file": "content/docs/slate/api/nodes/node.mdx",
+    "lane": "API reference",
+    "lines": 182,
+    "firstH2": "## Static methods",
+    "openingSentences": 0,
+    "findings": "none",
+    "headings": "## Static methods | ### Retrieval methods | #### `NodeApi.ancestor(root: Node, path: Path) => Ancestor` | #### `NodeApi.ancestors(root: Node, path: Path, options?) => Generator<NodeEntry<Ancestor>>` | #### `NodeApi.child(root: Node, index: number) => Descendant` | #### `NodeApi.children(root: Node, path: Path, options?) => Generator<NodeEntry<Descendant>>` | #### `NodeApi.common(root: Node, path: Path, another: Path) => NodeEntry` | #### `NodeApi.descendant(root: Node, path: Path) => Descendant` | #### `NodeApi.descendants(root: Node, options?) => Generator<NodeEntry<Descendant>>` | #### `NodeApi.elements(root: Node, options?) => Generator<ElementEntry>` | #### `NodeApi.extractProps(node: Node) => NodeProps` | #### `NodeApi.first(root: Node, path: Path) => NodeEntry` | #### `NodeApi.fragment(root: Node, range: Range) => Descendant[]` | #### `NodeApi.findTextRanges(root: Node | NodeTextRangeRoot, query: NodeTextRangeQuery, options?) => Range[]` | #### `NodeApi.get(root: Node, path: Path) => Node` | #### `NodeApi.getIf(root: Node, path: Path) => Node | undefined` | #### `NodeApi.last(root: Node, path: Path) => NodeEntry` | #### `NodeApi.leaf(root: Node, path: Path) => Text` | #### `NodeApi.levels(root: Node, path: Path, options?) => Generator<NodeEntry>` | #### `NodeApi.nodes(root: Node, options?) => Generator<NodeEntry>` | #### `NodeApi.parent(root: Node, path: Path) => Ancestor` | ### Text methods | #### `NodeApi.string(root: Node) => string` | #### `NodeApi.texts(root: Node, options?) => Generator<NodeEntry<Text>>` | ### Check methods | #### `NodeApi.has(root: Node, path: Path) => boolean` | #### `NodeApi.isAncestor(node: Node) => node is Ancestor` | #### `NodeApi.isEditor(node: Node) => node is Editor` | #### `NodeApi.isElement(node: Node) => node is Element` | #### `NodeApi.isNode(value: unknown) => value is Node` | #### `NodeApi.isNodeList(value: unknown) => value is Node[]` | #### `NodeApi.isText(node: Node) => node is Text` | #### `NodeApi.matches(root: Node, props: Partial<Node>) => boolean`"
+  },
+  {
+    "file": "content/docs/slate/api/nodes/text.mdx",
+    "lane": "API reference",
+    "lines": 57,
+    "firstH2": "## Static methods",
+    "openingSentences": 2,
+    "findings": "none",
+    "headings": "## Static methods | ### Retrieval methods | #### `TextApi.matches(text: Text, props: Partial<Text>) => boolean` | #### `TextApi.decorations(node: Text, decorations: DecoratedRange[]) => { leaf: Text; position?: LeafPosition }[]` | ### Check methods | #### `TextApi.equals(text: Text, another: Text, options?) => boolean` | #### `TextApi.isText(value: unknown) => value is Text` | #### `TextApi.isTextList(value: unknown): value is Text[]` | #### `TextApi.isTextProps(props: unknown) => props is Partial<Text>`"
+  },
+  {
+    "file": "content/docs/slate/api/operations/index.mdx",
+    "lane": "API reference",
+    "lines": 183,
+    "firstH2": "NONE",
+    "openingSentences": 13,
+    "findings": "opening>13",
+    "headings": "### Node Operations | ### Fragment Operations | ### Replace Children Operations | ### Text Operations | ### Selection Operation | ### Base Operation"
+  },
+  {
+    "file": "content/docs/slate/api/operations/operation.mdx",
+    "lane": "API reference",
+    "lines": 101,
+    "firstH2": "## Static methods",
+    "openingSentences": 9,
+    "findings": "opening>9",
+    "headings": "## Static methods | ### Manipulation methods | #### `OperationApi.inverse(op: Operation) => Operation` | ### Check methods | #### `OperationApi.isInsertNodeOperation(value: unknown) => boolean` | #### `OperationApi.isInsertTextOperation(value: unknown) => boolean` | #### `OperationApi.isMergeNodeOperation(value: unknown) => boolean` | #### `OperationApi.isMoveNodeOperation(value: unknown) => boolean` | #### `OperationApi.isNodeOperation(value: unknown) => boolean` | #### `OperationApi.isRemoveNodeOperation(value: unknown) => boolean` | #### `OperationApi.isRemoveTextOperation(value: unknown) => boolean` | #### `OperationApi.isReplaceChildrenOperation(value: unknown) => boolean` | #### `OperationApi.isReplaceFragmentOperation(value: unknown) => boolean` | #### `OperationApi.isOperation(value: unknown) => boolean` | #### `OperationApi.isOperationList(value: unknown) => boolean` | #### `OperationApi.isSelectionOperation(value: unknown) => boolean` | #### `OperationApi.isSetNodeOperation(value: unknown) => boolean` | #### `OperationApi.isSetSelectionOperation(value: unknown) => boolean` | #### `OperationApi.isSplitNodeOperation(value: unknown) => boolean` | #### `OperationApi.isTextOperation(value: unknown) => boolean`"
+  },
+  {
+    "file": "content/docs/slate/api/scrubber.mdx",
+    "lane": "API reference",
+    "lines": 37,
+    "firstH2": "## API",
+    "openingSentences": 4,
+    "findings": "opening>4",
+    "headings": "## API | #### `setDebugValueScrubber(scrubber?: DebugValueScrubber | null): void`"
+  },
+  {
+    "file": "content/docs/slate/api/transforms.mdx",
+    "lane": "API reference",
+    "lines": 384,
+    "firstH2": "## Node options",
+    "openingSentences": 1,
+    "findings": "none",
+    "headings": "## Node options | ## Node methods | #### `tx.nodes.insert(nodes: Node | Node[], options?)` | #### `tx.nodes.remove(options?)` | #### `tx.nodes.merge(options?)` | #### `tx.nodes.split(options?)` | #### `tx.nodes.wrap(element: Element, options?)` | #### `tx.nodes.unwrap(options?)` | #### `tx.nodes.set(props: Partial<Node>, options?)` | #### `tx.nodes.unset(props: string | string[], options?)` | #### `tx.nodes.lift(options?)` | #### `tx.nodes.move(options)` | ## Break methods | #### `tx.break.insert()` | #### `tx.break.insertSoft()` | ## Fragment methods | #### `tx.fragment.get(options?)` | #### `tx.fragment.insert(fragment: Node[], options?)` | #### `tx.fragment.delete(options?)` | ## Text methods | #### `tx.text.insert(text: string, options?)` | #### `tx.text.delete(options?)` | #### `tx.text.deleteBackward(options?)` | #### `tx.text.deleteForward(options?)` | ## Selection methods | #### `tx.selection.set(target: Location | null)` | #### `tx.selection.clear()` | #### `tx.selection.collapse(options?)` | #### `tx.selection.move(options?)` | #### `tx.selection.setPoint(props: Partial<Point>, options?)` | #### `tx.selection.setRange(props: Partial<Range>)` | ## Mark methods | #### `tx.marks.get()` | #### `tx.marks.add(key: string, value: unknown)` | #### `tx.marks.remove(key: string)` | #### `tx.marks.set(marks: Record<string, unknown> | null)` | #### `tx.marks.toggle(key: string, value?)` | ## Value and root methods | #### `tx.value.replace(input: SnapshotInput)` | #### `tx.roots.create(root: RootKey, children: Node[])` | #### `tx.roots.replace(root: RootKey, children: Node[])` | #### `tx.roots.delete(root: RootKey)` | ## State field methods | #### `tx.setField(field, value)` | #### `tx.statePatches.replay(statePatches)` | ## Normalization methods | #### `tx.normalize(options?)` | #### `tx.withoutNormalizing(fn)` | ## Operation methods | #### `tx.operations.replay(operations: Operation[], options?)`"
+  },
+  {
+    "file": "content/docs/slate/concepts/01-interfaces.mdx",
+    "lane": "Guide / system",
+    "lines": 113,
+    "firstH2": "## Text",
+    "openingSentences": 2,
+    "findings": "untitled-code:13,19,32,38,54,...",
+    "headings": "## Text | ## Element | ## Helper Namespaces | ## Domain Helpers"
+  },
+  {
+    "file": "content/docs/slate/concepts/02-nodes.mdx",
+    "lane": "Guide / system",
+    "lines": 169,
+    "firstH2": "## Element",
+    "openingSentences": 8,
+    "findings": "opening>8; untitled-code:16,33,50,59,75,...",
+    "headings": "## Element | ## Text | ## Blocks And Inlines | ## Voids | ## Node Tree Rules"
+  },
+  {
+    "file": "content/docs/slate/concepts/03-locations.mdx",
+    "lane": "Guide / system",
+    "lines": 176,
+    "firstH2": "## Path",
+    "openingSentences": 5,
+    "findings": "opening>5; untitled-code:17,24,35,43,54,...",
+    "headings": "## Path | ## Point | ## Range | ## Selection | ## Bookmarks"
+  },
+  {
+    "file": "content/docs/slate/concepts/04-transforms.mdx",
+    "lane": "Guide / system",
+    "lines": 250,
+    "firstH2": "## Selection",
+    "openingSentences": 6,
+    "findings": "opening>6",
+    "headings": "## Selection | ## Text | ## Nodes | ## Marks | ## Operations | ## The `at` Option | ## The `match` Option | ## Normalization"
+  },
+  {
+    "file": "content/docs/slate/concepts/05-operations.mdx",
+    "lane": "Guide / system",
+    "lines": 51,
+    "firstH2": "NONE",
+    "openingSentences": 9,
+    "findings": "opening>9",
+    "headings": ""
+  },
+  {
+    "file": "content/docs/slate/concepts/06-commands.mdx",
+    "lane": "Guide / system",
+    "lines": 80,
+    "firstH2": "## Custom Commands",
+    "openingSentences": 7,
+    "findings": "opening>7; untitled-code:39,51",
+    "headings": "## Custom Commands"
+  },
+  {
+    "file": "content/docs/slate/concepts/07-editor.mdx",
+    "lane": "Guide / system",
+    "lines": 203,
+    "firstH2": "## Reading State",
+    "openingSentences": 2,
+    "findings": "none",
+    "headings": "## Reading State | ## Writing State | ## Snapshots And Commits | ## Local Provenance | ## Preserving Ranges | ## Extending The Editor | ## Schema Behavior | ## Query Groups"
+  },
+  {
+    "file": "content/docs/slate/concepts/08-extensions.mdx",
+    "lane": "Guide / system",
+    "lines": 360,
+    "firstH2": "## Smallest Extension",
+    "openingSentences": 3,
+    "findings": "untitled-code:17,38,85,119,166,...",
+    "headings": "## Smallest Extension | ## Read And Write Helpers | ## Extension Order | ## Runtime Setup | ## Element Specs | ## Transform Middleware | ## Clipboard And Fragment Policy | ## Slot Reference | ## Advanced TypeScript | ## Helper Namespaces"
+  },
+  {
+    "file": "content/docs/slate/concepts/09-rendering.mdx",
+    "lane": "Guide / system",
+    "lines": 199,
+    "firstH2": "## Leaves",
+    "openingSentences": 7,
+    "findings": "opening>7; untitled-code:14,66,109,146,178",
+    "headings": "## Leaves | ## Texts | ## Decorations | ## Toolbars, Menus, Overlays, and more! | ## Editor Styling | ## Performance"
+  },
+  {
+    "file": "content/docs/slate/concepts/10-serializing.mdx",
+    "lane": "Guide / system",
+    "lines": 168,
+    "firstH2": "## Plain Text",
+    "openingSentences": 6,
+    "findings": "opening>6; untitled-code:12,25,40,91,160",
+    "headings": "## Plain Text | ## HTML | ## Deserializing HTML | ## Clipboard And Persistence"
+  },
+  {
+    "file": "content/docs/slate/concepts/11-normalizing.mdx",
+    "lane": "Guide / system",
+    "lines": 134,
+    "firstH2": "## Built-in Constraints",
+    "openingSentences": 2,
+    "findings": "untitled-code:30,50,96",
+    "headings": "## Built-in Constraints | ## Fix One Problem At A Time | ## Empty Children Run Early | ## Incorrect Fixes | ## Grouped Repairs | ## Extension Normalizers"
+  },
+  {
+    "file": "content/docs/slate/concepts/12-typescript.mdx",
+    "lane": "Guide / system",
+    "lines": 107,
+    "firstH2": "## Defining Element And Text Types",
+    "openingSentences": 2,
+    "findings": "untitled-code:48",
+    "headings": "## Defining Element And Text Types | ## Annotating Initial Values | ## Working With Nodes | ## Multiple Document Models"
+  },
+  {
+    "file": "content/docs/slate/concepts/13-roots.mdx",
+    "lane": "Guide / system",
+    "lines": 158,
+    "firstH2": "## Value Shape",
+    "openingSentences": 4,
+    "findings": "opening>4; untitled-code:19,28,51,58,73,...",
+    "headings": "## Value Shape | ## Reading And Writing Roots | ## Rendering Roots | ## Content Roots"
+  },
+  {
+    "file": "content/docs/slate/concepts/14-document-state.mdx",
+    "lane": "Guide / system",
+    "lines": 197,
+    "firstH2": "## Value Shape",
+    "openingSentences": 3,
+    "findings": "untitled-code:18,37,49,69,91,...",
+    "headings": "## Value Shape | ## Save The Document | ## Load The Document | ## State Fields | ## Persistent And Local Fields | ## Collaboration | ## Comments"
+  },
+  {
+    "file": "content/docs/slate/general/contributing.mdx",
+    "lane": "Guide / system",
+    "lines": 128,
+    "firstH2": "## On This Page",
+    "openingSentences": 2,
+    "findings": "none",
+    "headings": "## On This Page | ## What Fits | ## Bug Reports | ## Pull Requests | ## Local Setup | ## Slate Proof Lanes | ## Docs Changes | ## Release Authority"
+  },
+  {
+    "file": "content/docs/slate/general/docs-proof-map.mdx",
+    "lane": "Spec / law / behavior",
+    "lines": 65,
+    "firstH2": "## On This Page",
+    "openingSentences": 2,
+    "findings": "none",
+    "headings": "## On This Page | ## Package Owners | ## Runtime Claims | ## React And DOM Claims | ## Browser Proof Claims | ## Collaboration And Layout Claims | ## Docs And Release Claims"
+  },
+  {
+    "file": "content/docs/slate/general/faq.mdx",
+    "lane": "Guide / system",
+    "lines": 39,
+    "firstH2": "## Why Is Pasted Content Plain Text?",
+    "openingSentences": 1,
+    "findings": "none",
+    "headings": "## Why Is Pasted Content Plain Text? | ## What Browsers And Devices Does Slate Support? | ## Is This The Official Upstream Slate Release? | ## Should Apps Use `@platejs/browser`? | ## Where Should I Start?"
+  },
+  {
+    "file": "content/docs/slate/general/resources.mdx",
+    "lane": "Guide / system",
+    "lines": 38,
+    "firstH2": "## First-Party References",
+    "openingSentences": 2,
+    "findings": "none",
+    "headings": "## First-Party References | ## Source | ## Ecosystem Starting Points | ## Adjacent Editors"
+  },
+  {
+    "file": "content/docs/slate/index.mdx",
+    "lane": "Guide / system",
+    "lines": 148,
+    "firstH2": "## On This Page",
+    "openingSentences": 3,
+    "findings": "untitled-code:47,70,76",
+    "headings": "## On This Page | ## Install | ## Core Shape | ## Pick A First Path | ## Examples | ## Package Map | ## Proof Boundary | ## Read Next"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-browser.mdx",
+    "lane": "Guide / system",
+    "lines": 92,
+    "firstH2": "## Install",
+    "openingSentences": 4,
+    "findings": "opening>4; untitled-code:34",
+    "headings": "## Install | ## Imports | ## First Test | ## Proof Contracts | ## Transport Claims | ## Commands"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-dom.mdx",
+    "lane": "Guide / system",
+    "lines": 119,
+    "firstH2": "## Public Utility Groups",
+    "openingSentences": 4,
+    "findings": "opening>4; untitled-code:12,20,40,63",
+    "headings": "## Public Utility Groups | ## Public Type Groups | ## DOM Coverage | ## Internal Subpath | ## Related Docs"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-history/history-editor.mdx",
+    "lane": "Guide / system",
+    "lines": 76,
+    "firstH2": "## State API",
+    "openingSentences": 1,
+    "findings": "none",
+    "headings": "## State API | #### `state.history.get(): History` | #### `state.history.undos(): Batch[]` | #### `state.history.redos(): Batch[]` | ## Transaction API | #### `tx.history.undo(): void` | #### `tx.history.redo(): void` | ## Editor API | #### `editor.api.history.withMerging(fn: () => void): void` | #### `editor.api.history.withNewBatch(fn: () => void): void` | #### `editor.api.history.withoutMerging(fn: () => void): void` | #### `editor.api.history.withoutSaving(fn: () => void): void` | #### `editor.api.history.isMerging(): boolean | undefined` | #### `editor.api.history.isSaving(): boolean | undefined` | ## Types"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-history/history-extension-setup.mdx",
+    "lane": "Guide / system",
+    "lines": 49,
+    "firstH2": "NONE",
+    "openingSentences": 5,
+    "findings": "opening>5",
+    "headings": ""
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-history/history.mdx",
+    "lane": "Guide / system",
+    "lines": 126,
+    "firstH2": "## History Object",
+    "openingSentences": 1,
+    "findings": "untitled-code:110",
+    "headings": "## History Object | ## Static Methods | #### `History.isHistory(value: unknown): value is History` | ## Editor API | #### `state.history.get(): History` | #### `state.history.undos(): Batch[]` | #### `state.history.redos(): Batch[]` | #### `tx.history.undo(): void` | #### `tx.history.redo(): void` | #### `editor.api.history.withMerging(fn: () => void): void` | #### `editor.api.history.withNewBatch(fn: () => void): void` | #### `editor.api.history.withoutMerging(fn: () => void): void` | #### `editor.api.history.withoutSaving(fn: () => void): void` | #### `editor.api.history.isMerging(): boolean | undefined` | #### `editor.api.history.isSaving(): boolean | undefined` | ## Controlled Previews"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-history/index.mdx",
+    "lane": "Guide / system",
+    "lines": 12,
+    "firstH2": "NONE",
+    "openingSentences": 1,
+    "findings": "none",
+    "headings": ""
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-hyperscript.mdx",
+    "lane": "Guide / system",
+    "lines": 56,
+    "firstH2": "## Creator Helpers",
+    "openingSentences": 10,
+    "findings": "opening>10; untitled-code:9,35",
+    "headings": "## Creator Helpers"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-layout/index.mdx",
+    "lane": "Guide / system",
+    "lines": 105,
+    "firstH2": "## Page Layout",
+    "openingSentences": 4,
+    "findings": "opening>4; untitled-code:19,39",
+    "headings": "## Page Layout | ## React Usage | ## Headless And Static Use | ## Provider-Owned Boxes | ## Page Virtualization | ## Measurement Caveat | ## Related Docs"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/annotations.mdx",
+    "lane": "Guide / system",
+    "lines": 274,
+    "firstH2": "## Annotation Shape",
+    "openingSentences": 4,
+    "findings": "opening>4; untitled-code:18,42,58,79,96,...",
+    "headings": "## Annotation Shape | ## Local Bookmarks | ## External Comment Stores | ## Comment Channels | ## Widgets | ## External Anchor Adapter | ## Document-Embedded Ids | ## Performance Rules"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/dom-coverage-boundaries.mdx",
+    "lane": "Spec / law / behavior",
+    "lines": 110,
+    "firstH2": "## Render A Boundary",
+    "openingSentences": 4,
+    "findings": "opening>4; untitled-code:18",
+    "headings": "## Render A Boundary | ## Selection Policy | ## Copy Policy | ## Find Policy | ## Boundary Identity | ## Boundaries Versus Content Roots"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/editable.mdx",
+    "lane": "Guide / system",
+    "lines": 470,
+    "firstH2": "## Props",
+    "openingSentences": 2,
+    "findings": "untitled-code:8,72,93,114,129,...",
+    "headings": "## Props | ## Render Props | ## `renderElement` | ## `renderVoid` | ## `renderLeaf` | ## `renderText` | ## `decorate` | ## `renderSegment` | ## `placeholder` And `renderPlaceholder` | ## Event Props | ## Projection Sources | ## DOM Strategy | ## DOM Coverage Boundaries | ## Multiple Roots | ## Styling"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/event-handling.mdx",
+    "lane": "Guide / system",
+    "lines": 76,
+    "firstH2": "NONE",
+    "openingSentences": 5,
+    "findings": "opening>5; untitled-code:20,54",
+    "headings": ""
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/experimental-virtualized-rendering.mdx",
+    "lane": "Spec / law / behavior",
+    "lines": 121,
+    "firstH2": "## When To Use It",
+    "openingSentences": 3,
+    "findings": "untitled-code:40,79",
+    "headings": "## When To Use It | ## Usage | ## Native Behavior Limits | ## Metrics | ## Production Gate"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/hooks.mdx",
+    "lane": "Guide / system",
+    "lines": 390,
+    "firstH2": "## Editor Hooks",
+    "openingSentences": 2,
+    "findings": "untitled-code:68,80,108,176,211,...",
+    "headings": "## Editor Hooks | #### `useEditor(): Editor` | #### `useEditorComposing(): boolean` | #### `useEditorFocused(): boolean` | #### `useEditorReadOnly(): boolean` | #### `useEditorSelection(): Range | null` | #### `useEditorState<T>(selector, options?): T` | #### `useStateFieldValue<T>(field, options?): T` | #### `useSetStateField<T>(field): (value, options?) => void` | #### `useEditorSelector<T>(selector, equalityFn?, options?): T` | #### `useSlateHistory(options?): SlateHistoryController` | ## Runtime And Root Hooks | #### `useSlateRuntime(options?): SlateRuntimeValue` | #### `useSlateRuntimeState<T>(selector, options?): T` | #### `useSlateRootState<T>(root, selector, options?): T` | #### `useSlateActiveRoot(): RootKey | undefined` | #### `useSlateRootEditor(root?, options?): SlateRootEditor` | #### `useSlateActiveEditor(): SlateRootEditor` | #### `useSlateRootChrome(root?, options?): SlateRootChromeController` | #### `useSlateContentRoot(element?, options?): SlateContentRootController` | #### `useSlateChildRoot(element?, slot?): RootKey` | #### `useSlateRootEffect(effect, options?)` | #### `useSlateCommandCallback(callback, options?): (...args) => result` | #### `useElement(): Element` | #### `useElementPath(): Path | null` | #### `useElementSelected(options?: UseElementSelectedOptions): boolean` | #### `useSlateNodeRef(runtimeId, options?): (node) => void` | #### `useNodeSelector<T>(selector, equalityFn?, options?): T` | #### `useTextSelector<T>(selector, equalityFn?, options?): T` | #### `useDecorationSelector<T>(selector, equalityFn?, options?): T` | #### `useSlateProjectionEntries<T>(runtimeId): readonly SlateProjectionEntry<T>[]` | #### `useSlateDecorationSource<T>(editor, options): SlateDecorationSource<T>` | #### `useSlateRangeDecorationSource<T>(editor, options): SlateDecorationSource<T>` | #### `useDOMStrategyVirtualOffset(): number` | #### `useSlateAnnotationStore<TData, TProjection>(editor, annotationsOrOptions): SlateAnnotationStore<TData, TProjection>` | #### `useSlateAnnotations<TData, TProjection>(store?): SlateAnnotationSnapshot<TData, TProjection>` | #### `useSlateAnnotation<TData, TProjection>(id, store?): SlateResolvedAnnotation<TData, TProjection> | null` | #### `useSlateWidgetStore<TWidget, TAnnotation>(editor, widgetsOrOptions, annotationStore?): SlateWidgetStore<TWidget, TAnnotation>` | #### `useSlateWidgets<TWidget, TAnnotation>(store): SlateWidgetSnapshot<TWidget, TAnnotation>` | #### `useSlateWidget<TWidget, TAnnotation>(store, id): SlateResolvedWidget<TWidget, TAnnotation> | null`"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/index.mdx",
+    "lane": "Guide / system",
+    "lines": 64,
+    "firstH2": "## Stable Runtime Path",
+    "openingSentences": 2,
+    "findings": "untitled-code:13",
+    "headings": "## Stable Runtime Path | ## Runtime Boundaries | ## Advanced Lanes"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/react-editor-setup.mdx",
+    "lane": "Guide / system",
+    "lines": 64,
+    "firstH2": "NONE",
+    "openingSentences": 7,
+    "findings": "opening>7; untitled-code:9",
+    "headings": ""
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/react-editor.mdx",
+    "lane": "Guide / system",
+    "lines": 210,
+    "firstH2": "## Checks",
+    "openingSentences": 2,
+    "findings": "none",
+    "headings": "## Checks | #### `editor.api.react.isComposing(): boolean` | #### `editor.api.react.isFocused(): boolean` | #### `editor.api.react.isReadOnly(): boolean` | #### `editor.api.dom.isComposing(): boolean` | #### `editor.api.dom.isFocused(): boolean` | #### `editor.api.dom.isReadOnly(): boolean` | ## Focus And Selection | #### `editor.api.dom.blur(): void` | #### `editor.api.dom.focus(options?: { retries: number }): void` | #### `editor.api.dom.deselect(): void` | ## DOM Translation | #### `editor.api.dom.findKey(node: Node): Key` | #### `editor.api.dom.resolvePath(node: Node): Path | null` | #### `editor.api.dom.assertPath(node: Node): Path` | #### `editor.api.dom.hasDOMNode(target: DOMNode, options?: { editable?: boolean }): boolean` | #### `editor.api.dom.hasEditableTarget(target: EventTarget | null): target is DOMNode` | #### `editor.api.dom.hasSelectableTarget(target: EventTarget | null): boolean` | #### `editor.api.dom.hasTarget(target: EventTarget | null): target is DOMNode` | #### `editor.api.dom.assertDOMNode(node: Node): HTMLElement` | #### `editor.api.dom.resolveDOMNode(node: Node): HTMLElement | null` | #### `editor.api.dom.assertDOMPoint(point: Point): DOMPoint` | #### `editor.api.dom.resolveDOMPoint(point: Point): DOMPoint | null` | #### `editor.api.dom.assertDOMRange(range: Range): DOMRange` | #### `editor.api.dom.resolveDOMRange(range: Range): DOMRange | null` | #### `editor.api.dom.resolveRangeRect(range: Range): DOMRect | null` | #### `editor.api.dom.assertSlateNode(domNode: DOMNode): Node` | #### `editor.api.dom.resolveSlateNode(domNode: DOMNode): Node | null` | #### `editor.api.dom.assertEventRange(event: unknown): Range` | #### `editor.api.dom.resolveEventRange(event: unknown): Range | null` | #### `editor.api.dom.assertSlatePoint(domPoint: DOMPoint, options: { exactMatch: boolean; searchDirection?: 'backward' | 'forward' }): Point` | #### `editor.api.dom.resolveSlatePoint(domPoint: DOMPoint, options: { exactMatch: boolean; searchDirection?: 'backward' | 'forward' }): Point | null` | #### `editor.api.dom.assertSlateRange(domRange: DOMRange | DOMStaticRange | DOMSelection, options: { exactMatch: boolean }): Range` | #### `editor.api.dom.resolveSlateRange(domRange: DOMRange | DOMStaticRange | DOMSelection, options: { exactMatch: boolean }): Range | null` | ## DOM Environment | #### `editor.api.dom.findDocumentOrShadowRoot(): Document | ShadowRoot` | #### `editor.api.dom.getWindow(): Window` | #### `editor.api.dom.hasRange(range: Range): boolean` | #### `editor.api.dom.isTargetInsideNonReadonlyVoid(target: EventTarget | null): boolean` | ## DataTransfer | #### `editor.api.clipboard.insertData(data: DataTransfer): boolean` | #### `editor.api.clipboard.insertFragmentData(data: DataTransfer): boolean` | #### `editor.api.clipboard.insertTextData(data: DataTransfer): boolean` | #### `editor.api.clipboard.writeSelection(data: Pick<DataTransfer, 'getData' | 'setData'>): void`"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/slate.mdx",
+    "lane": "Guide / system",
+    "lines": 227,
+    "firstH2": "## Props",
+    "openingSentences": 2,
+    "findings": "untitled-code:9,58,79,93,117,...",
+    "headings": "## Props | ### `editor` | ### `children` | ### `onChange` | ### Saving Provider Root Changes | ### Selection Changes | ### `decorationSources` | ### `annotationStore`"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-yjs.mdx",
+    "lane": "Guide / system",
+    "lines": 102,
+    "firstH2": "## Install",
+    "openingSentences": 2,
+    "findings": "untitled-code:32,53,65",
+    "headings": "## Install | ## Create The Extension | ## React Hooks | ## Provider Boundary | ## Proof | ## Related Docs"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate.mdx",
+    "lane": "Guide / system",
+    "lines": 115,
+    "firstH2": "## Public Type Groups",
+    "openingSentences": 8,
+    "findings": "opening>8; untitled-code:12,30,38,83",
+    "headings": "## Public Type Groups | ## Extension Authoring | ## Helper Namespaces | ## Internal Subpath | ## Related Docs"
+  },
+  {
+    "file": "content/docs/slate/migration.mdx",
+    "lane": "Guide / system",
+    "lines": 784,
+    "firstH2": "## On This Page",
+    "openingSentences": 5,
+    "findings": "opening>5; untitled-code:121,137,154,162,184,...",
+    "headings": "## On This Page | ## Should You Migrate This Editor? | ## First Migration Slice | ## Before You Begin | ## Migration Map | ## Step 1: Install The Packages | ## Step 2: Create The Editor | ## Step 3: Move Reads And Writes Into The Runtime | ## Step 4: Migrate Custom Elements | ## Step 5: Migrate Leaves, Text, And Placeholders | ## Step 6: Migrate Event Handlers | ## Step 7: Migrate React Hooks | ## Step 8: Migrate DOM And React Editor Calls | ## Step 9: Migrate History | ## Step 10: Persist The Right Value | ## Step 11: Migrate Document State | ## Step 12: Migrate Extra Roots | ## Step 13: Migrate Hyperscript Tests | ## Step 14: Check Import Boundaries | ## Proof Before Deleting The Old Path | ## Validation Checklist | ## API Reference Links"
+  },
+  {
+    "file": "content/docs/slate/walkthroughs/01-installing-slate.mdx",
+    "lane": "Install / get-started",
+    "lines": 100,
+    "firstH2": "## Listening for changes",
+    "openingSentences": 12,
+    "findings": "opening>12; untitled-code:15,26,48,70",
+    "headings": "## Listening for changes | ## Next steps"
+  },
+  {
+    "file": "content/docs/slate/walkthroughs/02-adding-event-handlers.mdx",
+    "lane": "Guide / system",
+    "lines": 84,
+    "firstH2": "## Read The Native Event",
+    "openingSentences": 2,
+    "findings": "untitled-code:11,36,57",
+    "headings": "## Read The Native Event | ## Write Through The Editor"
+  },
+  {
+    "file": "content/docs/slate/walkthroughs/03-defining-custom-elements.mdx",
+    "lane": "Guide / system",
+    "lines": 172,
+    "firstH2": "## Render Elements",
+    "openingSentences": 1,
+    "findings": "untitled-code:12,45,70,99,132",
+    "headings": "## Render Elements | ## Toggle A Block Type"
+  },
+  {
+    "file": "content/docs/slate/walkthroughs/04-applying-custom-formatting.mdx",
+    "lane": "Guide / system",
+    "lines": 156,
+    "firstH2": "## Toggle A Mark",
+    "openingSentences": 3,
+    "findings": "untitled-code:11,26,84,101",
+    "headings": "## Toggle A Mark | ## Render Marks"
+  },
+  {
+    "file": "content/docs/slate/walkthroughs/05-executing-commands.mdx",
+    "lane": "Guide / system",
+    "lines": 242,
+    "firstH2": "## Extracting Commands",
+    "openingSentences": 4,
+    "findings": "opening>4; untitled-code:17,62,96,210",
+    "headings": "## Extracting Commands | ## Using Commands From Editor Events | ## Using Commands From UI | ## Extension Commands"
+  },
+  {
+    "file": "content/docs/slate/walkthroughs/06-saving-to-a-database.mdx",
+    "lane": "Guide / system",
+    "lines": 218,
+    "firstH2": "## Save The Full Document",
+    "openingSentences": 3,
+    "findings": "untitled-code:18,78,95,116,130,...",
+    "headings": "## Save The Full Document | ## Single-Root Shortcut | ## Load Extra Roots | ## Replace Saved Content | ## Store Comments Separately"
+  },
+  {
+    "file": "content/docs/slate/walkthroughs/07-operation-replay-substrate.mdx",
+    "lane": "Guide / system",
+    "lines": 340,
+    "firstH2": "## Start with a local editor",
+    "openingSentences": 3,
+    "findings": "untitled-code:15,42,86,108,135,...",
+    "headings": "## Start with a local editor | ## Export operations | ## Import remote operations | ## Subscribe to commits | ## Commit metadata | ## Runtime ids are local | ## Adapter ownership | ## Hocuspocus transport | ## Extension helpers | ## What this page does not cover"
+  },
+  {
+    "file": "content/docs/slate/walkthroughs/09-performance.mdx",
+    "lane": "Guide / system",
+    "lines": 125,
+    "firstH2": "## Optimizing Slate Core",
+    "openingSentences": 18,
+    "findings": "opening>18; untitled-code:64",
+    "headings": "## Optimizing Slate Core | ## Optimizing React | ### Reduce Renders | ### DOM Strategy | ## Optimizing DOM Painting"
+  },
+  {
+    "file": "content/docs/slate/why-this-fork.mdx",
+    "lane": "Spec / law / behavior",
+    "lines": 277,
+    "firstH2": "## On This Page",
+    "openingSentences": 3,
+    "findings": "untitled-code:69,98,104,125,148",
+    "headings": "## On This Page | ## The Main Fork | ## Who It Is For | ## What Stays Slate | ## Runtime Shape | ## Document Shape | ## Extension Model | ## React Runtime | ## Overlay Model | ## Browser Proof | ## Package Ownership | ## Current Boundaries | ## Complete Change Map | ## Read Next"
+  }
+]

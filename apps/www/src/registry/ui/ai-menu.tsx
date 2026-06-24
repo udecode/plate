@@ -31,7 +31,8 @@ import {
 } from 'lucide-react';
 import {
   type NodeEntry,
-  type SlateEditor,
+  type BasePlateEditor,
+  ElementApi,
   isHotkey,
   KEYS,
   NodeApi,
@@ -113,7 +114,11 @@ export function AIMenu() {
 
   useEditorChat({
     onOpenBlockSelection: (blocks: NodeEntry[]) => {
-      show(editor.api.toDOMNode(blocks.at(-1)![0])!);
+      const block = blocks.at(-1);
+
+      if (!block || !ElementApi.isElement(block[0])) return;
+
+      show(editor.api.toDOMNode(block[0])!);
     },
     onOpenChange: (open) => {
       if (!open) {
@@ -126,7 +131,7 @@ export function AIMenu() {
 
       if (!editor.api.isAt({ end: true }) && !editor.api.isEmpty(ancestor)) {
         editor
-          .getApi(BlockSelectionPlugin)
+          .getPluginApi(BlockSelectionPlugin)
           .blockSelection.set(ancestor.id as string);
       }
 
@@ -157,7 +162,7 @@ export function AIMenu() {
 
     if (!anchorNode) {
       anchorNode = editor
-        .getApi(BlockSelectionPlugin)
+        .getPluginApi(BlockSelectionPlugin)
         .blockSelection.getNodes({ selectionFallback: true, sort: true })
         .at(-1);
     }
@@ -298,7 +303,7 @@ const aiChatItems = {
     label: 'Comment',
     value: 'comment',
     onSelect: ({ editor, input }) => {
-      editor.getApi(AIChatPlugin).aiChat.submit(input, {
+      editor.getPluginApi(AIChatPlugin).aiChat.submit(input, {
         mode: 'insert',
         prompt:
           'Please comment on the following content and provide reasonable and meaningful feedback.',
@@ -317,7 +322,7 @@ const aiChatItems = {
 
       const isEmpty = NodeApi.string(ancestorNode[0]).trim().length === 0;
 
-      void editor.getApi(AIChatPlugin).aiChat.submit(input, {
+      void editor.getPluginApi(AIChatPlugin).aiChat.submit(input, {
         mode: 'insert',
         prompt: isEmpty
           ? `<Document>
@@ -336,7 +341,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'discard',
     onSelect: ({ editor }) => {
       editor.getTransforms(AIPlugin).ai.undo();
-      editor.getApi(AIChatPlugin).aiChat.hide();
+      editor.getPluginApi(AIChatPlugin).aiChat.hide();
     },
   },
   emojify: {
@@ -344,7 +349,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Emojify',
     value: 'emojify',
     onSelect: ({ editor, input }) => {
-      void editor.getApi(AIChatPlugin).aiChat.submit(input, {
+      void editor.getPluginApi(AIChatPlugin).aiChat.submit(input, {
         prompt:
           'Add a small number of contextually relevant emojis within each block only. You may insert emojis, but do not remove, replace, or rewrite existing text, and do not modify Markdown syntax, links, or line breaks.',
         toolName: 'edit',
@@ -356,7 +361,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Explain',
     value: 'explain',
     onSelect: ({ editor, input }) => {
-      void editor.getApi(AIChatPlugin).aiChat.submit(input, {
+      void editor.getPluginApi(AIChatPlugin).aiChat.submit(input, {
         prompt: {
           default: 'Explain {editor}',
           selecting: 'Explain',
@@ -370,7 +375,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Fix spelling & grammar',
     value: 'fixSpelling',
     onSelect: ({ editor, input }) => {
-      void editor.getApi(AIChatPlugin).aiChat.submit(input, {
+      void editor.getPluginApi(AIChatPlugin).aiChat.submit(input, {
         prompt:
           'Fix spelling, grammar, and punctuation errors within each block only, without changing meaning, tone, or adding new information.',
         toolName: 'edit',
@@ -382,7 +387,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Generate Markdown sample',
     value: 'generateMarkdownSample',
     onSelect: ({ editor, input }) => {
-      void editor.getApi(AIChatPlugin).aiChat.submit(input, {
+      void editor.getPluginApi(AIChatPlugin).aiChat.submit(input, {
         prompt: 'Generate a markdown sample',
         toolName: 'generate',
       });
@@ -393,7 +398,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Generate MDX sample',
     value: 'generateMdxSample',
     onSelect: ({ editor, input }) => {
-      void editor.getApi(AIChatPlugin).aiChat.submit(input, {
+      void editor.getPluginApi(AIChatPlugin).aiChat.submit(input, {
         prompt: 'Generate a mdx sample',
         toolName: 'generate',
       });
@@ -404,7 +409,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Improve writing',
     value: 'improveWriting',
     onSelect: ({ editor, input }) => {
-      void editor.getApi(AIChatPlugin).aiChat.submit(input, {
+      void editor.getPluginApi(AIChatPlugin).aiChat.submit(input, {
         prompt:
           'Improve the writing for clarity and flow, without changing meaning or adding new information.',
         toolName: 'edit',
@@ -427,7 +432,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Make longer',
     value: 'makeLonger',
     onSelect: ({ editor, input }) => {
-      void editor.getApi(AIChatPlugin).aiChat.submit(input, {
+      void editor.getPluginApi(AIChatPlugin).aiChat.submit(input, {
         prompt:
           'Make the content longer by elaborating on existing ideas within each block only, without changing meaning or adding new information.',
         toolName: 'edit',
@@ -439,7 +444,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Make shorter',
     value: 'makeShorter',
     onSelect: ({ editor, input }) => {
-      void editor.getApi(AIChatPlugin).aiChat.submit(input, {
+      void editor.getPluginApi(AIChatPlugin).aiChat.submit(input, {
         prompt:
           'Make the content shorter by reducing verbosity within each block only, without changing meaning or removing essential information.',
         toolName: 'edit',
@@ -459,7 +464,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Simplify language',
     value: 'simplifyLanguage',
     onSelect: ({ editor, input }) => {
-      void editor.getApi(AIChatPlugin).aiChat.submit(input, {
+      void editor.getPluginApi(AIChatPlugin).aiChat.submit(input, {
         prompt:
           'Simplify the language by using clearer and more straightforward wording within each block only, without changing meaning or adding new information.',
         toolName: 'edit',
@@ -471,7 +476,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Add a summary',
     value: 'summarize',
     onSelect: ({ editor, input }) => {
-      void editor.getApi(AIChatPlugin).aiChat.submit(input, {
+      void editor.getPluginApi(AIChatPlugin).aiChat.submit(input, {
         mode: 'insert',
         prompt: {
           default: 'Summarize {editor}',
@@ -486,7 +491,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Try again',
     value: 'tryAgain',
     onSelect: ({ editor }) => {
-      void editor.getApi(AIChatPlugin).aiChat.reload();
+      void editor.getPluginApi(AIChatPlugin).aiChat.reload();
     },
   },
 } satisfies Record<
@@ -504,7 +509,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
       editor,
       input,
     }: {
-      aiEditor: SlateEditor;
+      aiEditor: BasePlateEditor;
       editor: PlateEditor;
       input: string;
     }) => void;

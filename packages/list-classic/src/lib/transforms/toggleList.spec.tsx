@@ -2,7 +2,9 @@
 
 import { BaseImagePlugin } from '@platejs/media';
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, KEYS, createSlateEditor } from 'platejs';
+import type { BasePlateEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
+import { createListClassicTestEditor as createBasePlateEditor } from '../__tests__/createListClassicTestEditor';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 import { toggleList, toggleTaskList } from './toggleList';
@@ -10,11 +12,11 @@ import { toggleList, toggleTaskList } from './toggleList';
 jsxt;
 
 const runToggleList = (
-  input: SlateEditor,
+  input: BasePlateEditor,
   plugins: any[] = [BaseListPlugin],
   type: string = KEYS.ulClassic
 ) => {
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins,
     selection: input.selection,
     value: input.children,
@@ -29,7 +31,7 @@ const runToggleList = (
 
 describe('toggleList', () => {
   it('does nothing when the editor has no selection', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       value: [{ children: [{ text: 'plain' }], type: KEYS.p }],
     });
@@ -49,7 +51,7 @@ describe('toggleList', () => {
             1<cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = runToggleList(input);
 
@@ -80,7 +82,7 @@ describe('toggleList', () => {
             <focus />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = runToggleList(input);
 
@@ -115,7 +117,7 @@ describe('toggleList', () => {
             </htext>
           </himg>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = runToggleList(input, [
         BaseListPlugin.configure({
@@ -148,8 +150,8 @@ describe('toggleList', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
-      const editor = createSlateEditor({
+      ) as any as BasePlateEditor;
+      const editor = createBasePlateEditor({
         plugins: [BaseListPlugin],
         selection: input.selection,
         value: input.children,
@@ -192,7 +194,7 @@ describe('toggleList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = runToggleList(input);
 
@@ -225,7 +227,7 @@ describe('toggleList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = runToggleList(input);
 
@@ -267,7 +269,7 @@ describe('toggleList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = runToggleList(input, [BaseListPlugin], KEYS.olClassic);
 
@@ -305,7 +307,7 @@ describe('toggleList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = runToggleList(input, [BaseListPlugin], KEYS.olClassic);
 
@@ -345,7 +347,7 @@ describe('toggleList', () => {
             <focus />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = runToggleList(input, [BaseListPlugin], KEYS.olClassic);
 

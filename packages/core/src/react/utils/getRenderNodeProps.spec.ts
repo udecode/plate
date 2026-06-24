@@ -1,4 +1,4 @@
-import { createSlatePlugin } from '../../lib';
+import { createEditorPlugin } from '../../lib';
 import { createPlateEditor } from '../editor/withPlate';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
@@ -34,15 +34,15 @@ describe('getRenderNodeProps', () => {
 
     expect(result.api).toBe(editor.api);
     expect(result.editor).toBe(editor);
-    expect(result.tf).toBe(editor.transforms);
-    expect(result.attributes?.className).toContain('slate-p');
+    expect('tf' in result).toBe(false);
+    expect(result.attributes?.className).toContain('plite-p');
     expect(result.attributes?.className).toContain('attr-class');
     expect(result.attributes?.className).toContain('user-class');
     expect(result.attributes?.style).toBeUndefined();
   });
 
   it('keeps plugin props, allowed attrs, and injected node props on the full path', () => {
-    const ParagraphPlugin = createSlatePlugin({
+    const ParagraphPlugin = createEditorPlugin({
       key: 'p',
       node: {
         dangerouslyAllowAttributes: ['target'],
@@ -54,7 +54,7 @@ describe('getRenderNodeProps', () => {
         type: 'p',
       },
     });
-    const AlignPlugin = createSlatePlugin({
+    const AlignPlugin = createEditorPlugin({
       inject: {
         nodeProps: {
           nodeKey: 'align',
@@ -79,7 +79,7 @@ describe('getRenderNodeProps', () => {
 
     const result = getRenderNodeProps({
       attributes: {
-        'data-slate-align': 'center',
+        'data-plite-align': 'center',
         ignored: 'nope',
         target: '_blank',
       },
@@ -101,8 +101,8 @@ describe('getRenderNodeProps', () => {
     });
     expect(result.attributes?.ignored).toBeUndefined();
     expect(result.attributes?.title).toBeUndefined();
-    expect(result.attributes?.className).toContain('slate-p');
+    expect(result.attributes?.className).toContain('plite-p');
     expect(result.attributes?.className).toContain('user-class');
-    expect(result.attributes?.className).toContain('slate-align-center');
+    expect(result.attributes?.className).toContain('plite-align-center');
   });
 });

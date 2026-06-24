@@ -1,8 +1,8 @@
 import { serializeMd } from '@platejs/markdown';
+import type { Descendant, Element } from '@platejs/plite';
 import { getTableGridAbove } from '@platejs/table';
 import {
-  type SlateEditor,
-  type TElement,
+  type BasePlateEditor,
   type TTableCellElement,
   type TTableElement,
   KEYS,
@@ -15,13 +15,13 @@ import type { MarkdownType } from './replacePlaceholders';
  * joined with <br/>.
  */
 const serializeCellContent = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   cell: TTableCellElement
 ): string => {
   const parts: string[] = [];
 
   for (const child of cell.children) {
-    const md = serializeMd(editor, { value: [child as TElement] }).trim();
+    const md = serializeMd(editor, { value: [child as Element] }).trim();
     if (md) {
       parts.push(md);
     }
@@ -35,7 +35,7 @@ const serializeCellContent = (
  * Returns the table markdown and a map of cell IDs to their cells.
  */
 const serializeTableWithCellRefs = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   table: TTableElement,
   selectedCellIds: Set<string>
 ): {
@@ -89,14 +89,14 @@ const serializeTableWithCellRefs = (
  * table markdown structure.
  */
 const serializeCellBlocks = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   cells: Array<{ cell: TTableCellElement; id: string }>
 ): string => {
   const blocks: string[] = [];
 
   for (const { cell, id } of cells) {
     const content = serializeMd(editor, {
-      value: cell.children as TElement[],
+      value: cell.children as Element[],
     }).trim();
 
     blocks.push(`<Cell id="${id}">\n${content}\n</Cell>`);
@@ -107,7 +107,7 @@ const serializeCellBlocks = (
 
 // Internal
 export const getMarkdown = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     type,
   }: {
@@ -121,7 +121,11 @@ export const getMarkdown = (
   }
 
   if (type === 'block' || type === 'blockWithBlockId') {
-    const blocks = editor.api.blocks({ mode: 'lowest' }).map(([node]) => node);
+    const blocks = editor.read((state) =>
+      [...state.nodes.entries<Element>({ mode: 'lowest' })].map(
+        ([node]) => node
+      )
+    ) as Descendant[];
 
     return serializeMd(editor, {
       value: blocks,
@@ -130,11 +134,11 @@ export const getMarkdown = (
   }
 
   if (type === 'blockSelection' || type === 'blockSelectionWithBlockId') {
-    const fragment = editor.api.fragment<TElement>();
+    const fragment = editor.read((state) => state.fragment.get()) as Element[];
 
     // Remove any block formatting
     if (fragment.length === 1) {
-      const modifiedFragment = [
+      const modifiedFragment: Descendant[] = [
         {
           children: fragment[0].children,
           type: KEYS.p,
@@ -173,10 +177,16 @@ export const getMarkdown = (
     }
 
     // Get the table containing the selection
-    const tableEntry = editor.api.block({
-      at: editor.selection!,
-      match: { type: KEYS.table },
-    });
+    const tableEntry = editor.read((state) =>
+      state.nodes.above<TTableElement>({
+        at: editor.selection!,
+        match: (node: unknown) =>
+          typeof node === 'object' &&
+          node !== null &&
+          'type' in node &&
+          node.type === KEYS.table,
+      } as any)
+    );
 
     if (!tableEntry) {
       return '';

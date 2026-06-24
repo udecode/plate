@@ -1,13 +1,11 @@
-import { createSlatePlugin, KEYS } from 'platejs';
+import { createEditorPlugin, KEYS } from 'platejs';
 
-import { withColumn } from './withColumn';
-
-export const BaseColumnItemPlugin = createSlatePlugin({
+export const BaseColumnItemPlugin = createEditorPlugin({
   key: KEYS.column,
   node: { isContainer: true, isElement: true, isStrictSiblings: true },
-}).overrideEditor(withColumn);
+});
 
-export const BaseColumnPlugin = createSlatePlugin({
+export const BaseColumnPlugin = createEditorPlugin({
   key: KEYS.columnGroup,
   node: { isContainer: true, isElement: true },
   plugins: [BaseColumnItemPlugin],

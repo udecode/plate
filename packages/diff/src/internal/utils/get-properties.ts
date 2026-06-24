@@ -3,13 +3,13 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type { TText } from 'platejs';
+import type { Text } from '@platejs/plite';
 
 // Get object that will set the properties of before
 // to equal the properties of node, in terms of the
 // slatejs set_node operation.  If before is not given,
 // just gives all the non-text propers of goal.
-export function getProperties(goal: TText, before?: TText): any {
+export function getProperties(goal: Text, before?: Text): any {
   const props: any = {};
 
   for (const x in goal) {

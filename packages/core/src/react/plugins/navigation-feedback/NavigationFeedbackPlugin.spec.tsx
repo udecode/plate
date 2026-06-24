@@ -31,7 +31,7 @@ describe('NavigationFeedbackPlugin', () => {
     );
 
     const getHighlightedElement = () =>
-      getByText('one').closest('[data-slate-node="element"]') as HTMLElement;
+      getByText('one').closest('[data-plite-node="element"]') as HTMLElement;
 
     expect(
       getHighlightedElement().getAttribute('data-nav-highlight')
@@ -44,11 +44,13 @@ describe('NavigationFeedbackPlugin', () => {
     expect(typeof editor.api.redecorate).toBe('function');
 
     act(() => {
-      editor.tf.navigation.flashTarget({
-        target: {
-          path: [0],
-          type: 'node',
-        },
+      editor.update((tx) => {
+        tx.navigation.flashTarget({
+          target: {
+            path: [0],
+            type: 'node',
+          },
+        });
       });
     });
 
@@ -63,7 +65,9 @@ describe('NavigationFeedbackPlugin', () => {
     expect(getHighlightedElement().getAttribute('data-nav-pulse')).toBe('1');
 
     act(() => {
-      editor.tf.navigation.clear();
+      editor.update((tx) => {
+        tx.navigation.clear();
+      });
     });
     expect(editor.api.navigation.activeTarget()).toBeNull();
 

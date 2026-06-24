@@ -1,10 +1,25 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import { BaseFontWeightPlugin } from './BaseFontWeightPlugin';
 
+const runAddMarkTx = (value: string) => {
+  const add = mock();
+  const extension = (BaseFontWeightPlugin as any).__txExtensions[0];
+  const groups = extension({
+    plugin: BaseFontWeightPlugin,
+    type: KEYS.fontWeight,
+  });
+
+  groups[BaseFontWeightPlugin.key]({
+    marks: { add },
+  }).set(value);
+
+  return add;
+};
+
 describe('BaseFontWeightPlugin', () => {
   it('parses html font-weight styles into leaf marks', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFontWeightPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseFontWeightPlugin);
@@ -25,17 +40,7 @@ describe('BaseFontWeightPlugin', () => {
     });
   });
 
-  it('forwards addMark through the editor mark transform', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseFontWeightPlugin],
-    } as any);
-    const addMarks = mock();
-
-    (editor as any).tf.addMarks = addMarks;
-    (editor as any).tf.fontWeight.addMark('bold');
-
-    expect(addMarks).toHaveBeenCalledWith({
-      [KEYS.fontWeight]: 'bold',
-    });
+  it('registers set as a transaction mark add', () => {
+    expect(runAddMarkTx('bold')).toHaveBeenCalledWith(KEYS.fontWeight, 'bold');
   });
 });

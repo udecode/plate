@@ -1,13 +1,46 @@
-import { type TElement, createSlatePlugin, KEYS } from 'platejs';
+import type {
+  EditorExtensionInput,
+  EditorUpdateTransaction,
+  Element,
+} from '@platejs/plite';
+import { createEditorPlugin } from '@platejs/core';
+import { defineEditorExtension } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { getTodoListItemEntry } from './queries';
 import { insertTodoListItem } from './transforms';
 
-export interface TTodoListItemElement extends TElement {
+export interface TodoListItemElement extends Element {
   checked?: boolean;
 }
 
-export const BaseTodoListPlugin = createSlatePlugin({
+const isElementOfType = (node: unknown, type: string) =>
+  typeof node === 'object' &&
+  node !== null &&
+  'children' in node &&
+  (node as { type?: unknown }).type === type;
+
+const createTodoListClassicExtension = (
+  editor: {
+    selection: unknown;
+  } & Parameters<typeof getTodoListItemEntry>[0]
+): EditorExtensionInput =>
+  defineEditorExtension({
+    name: 'plate:todo-list-classic',
+    transforms: {
+      insertBreak({ next }) {
+        if (!editor.selection) return next();
+
+        const res = getTodoListItemEntry(editor);
+
+        if (res && insertTodoListItem(editor)) return true;
+
+        return next();
+      },
+    },
+  });
+
+export const BaseTodoListPlugin = createEditorPlugin({
   key: KEYS.listTodoClassic,
   node: { isElement: true },
   options: {
@@ -15,30 +48,15 @@ export const BaseTodoListPlugin = createSlatePlugin({
     inheritCheckStateOnLineStartBreak: false,
   },
 })
-  .overrideEditor(({ editor, tf: { insertBreak } }) => ({
-    transforms: {
-      insertBreak() {
-        const insertBreakTodoList = () => {
-          if (!editor.selection) return;
-
-          const res = getTodoListItemEntry(editor);
-
-          // If selection is in a todo li
-          if (res) {
-            const inserted = insertTodoListItem(editor);
-
-            if (inserted) return true;
-          }
-        };
-
-        if (insertBreakTodoList()) return;
-
-        insertBreak();
-      },
-    },
+  .extend(({ editor }) => ({
+    editorExtensions: [createTodoListClassicExtension(editor)],
   }))
-  .extendTransforms(({ editor, type }) => ({
+  .extendTx(({ editor, type }) => (tx: EditorUpdateTransaction) => ({
     toggle: () => {
-      editor.tf.toggleBlock(type);
+      const isActive = tx.nodes.some({
+        match: (node: unknown) => isElementOfType(node, type),
+      });
+
+      tx.nodes.set({ type: isActive ? editor.getType(KEYS.p) : type });
     },
   }));

@@ -36,7 +36,7 @@
 
 - refreshed
   [tanstack-virtual-and-github-large-surface-virtualization.md](docs/research/sources/editor-architecture/tanstack-virtual-and-github-large-surface-virtualization.md)
-  against the live `.tmp/slate-v2` TanStack-backed implementation
+  against the live `Plate repo root` TanStack-backed implementation
 - replaced the stale "dependency absent / fixed segment" gap with the current
   decoupling gap: virtualized option types, render branch, materialization,
   metrics, shell fallback, and keyboard classification are still spread through
@@ -416,7 +416,7 @@
 
 ## [2026-04-27] maintain | Slate v2 architecture verdict after live runtime review
 
-- rechecked the live `.tmp/slate-v2` runtime and proof surface against the
+- rechecked the live `Plate repo root` runtime and proof surface against the
   React 19.2, DX, legacy-regression, and Lexical/ProseMirror/Tiptap criteria
 - recorded the stronger current fact:
   `Editable` and `EditableTextBlocks` no longer carry generic
@@ -481,7 +481,7 @@
 
 - refreshed
   [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md)
-  against live `.tmp/slate-v2` source, tests, docs, and examples
+  against live `Plate repo root` source, tests, docs, and examples
 - recorded the current split:
   `state` / `tx` exists and is tested, but author-facing docs/examples still
   teach primitive `editor.*` writes inside `editor.update`
@@ -505,7 +505,7 @@
 
 - refreshed
   [slate-v2-local-proof-substrate.md](docs/research/sources/editor-architecture/slate-v2-local-proof-substrate.md)
-  against current `.tmp/slate-v2` projection, annotation, widget, hook, test, and
+  against current `Plate repo root` projection, annotation, widget, hook, test, and
   benchmark files during the decoration/annotation rewrite review
 - removed stale `decoration-sources.ts` source references because live source
   still routes decoration sources through `projection-store.ts`
@@ -534,7 +534,7 @@
   [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md)
   for the public `Editor` value hard-cut decision
 - recorded `tx.value.replace(input)` as the public whole-document replacement
-  target and called out that live `.tmp/slate-v2` still needs to implement it
+  target and called out that live `Plate repo root` still needs to implement it
 - updated
   [slate-v2-read-update-runtime-architecture.md](docs/research/decisions/slate-v2-read-update-runtime-architecture.md)
   so its public API target includes transaction-owned value replacement
@@ -584,7 +584,7 @@
 
 - refreshed the non-node editor state ralplan against existing compiled
   editor-architecture research, local raw ProseMirror/Lexical/Tiptap evidence,
-  current `.tmp/slate-v2` source, and Context7 official-doc checks
+  current `Plate repo root` source, and Context7 official-doc checks
 - kept the architecture conclusion unchanged:
   document title/settings should be transaction-owned document stores beside
   `children`, not hidden nodes, RootNode metadata, or React controlled `value`

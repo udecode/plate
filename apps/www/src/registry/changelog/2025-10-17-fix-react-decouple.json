@@ -182,7 +182,7 @@
       "diagnostics": []
     },
     {
-      "name": "slate-to-html",
+      "name": "plite-to-html",
       "files": ["apps/www/src/registry/components/editor/slate-to-html.tsx"],
       "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
       "diagnostics": []
@@ -253,7 +253,7 @@
         "media-video-node",
         "mention-node",
         "paragraph-node",
-        "slate-to-html",
+        "plite-to-html",
         "suggestion-kit",
         "suggestion-node",
         "table-node",

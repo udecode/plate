@@ -1,74 +1,45 @@
-import { KEYS } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
-import * as setListNodeModule from './setListNode';
 import { setListNodes } from './setListNodes';
 
 describe('setListNodes', () => {
-  afterEach(() => {
-    mock.restore();
-  });
-
   it('increments indent for non-list blocks before applying list metadata', () => {
-    const setListNodeSpy = spyOn(
-      setListNodeModule,
-      'setListNode'
-    ).mockImplementation(() => {});
-    const setIndentTodoNodeSpy = spyOn(
-      setListNodeModule,
-      'setIndentTodoNode'
-    ).mockImplementation(() => {});
-    const unsetNodes = mock();
-    const editor = {
-      tf: {
-        unsetNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
-    } as any;
+    const editor = createBasePlateEditor({
+      value: [{ [KEYS.indent]: 1, children: [{ text: 'Item' }], type: KEYS.p }],
+    });
 
-    setListNodes(editor, [[{ [KEYS.indent]: 1, type: KEYS.p }, [0]]] as any, {
+    setListNodes(editor, [[editor.children[0], [0]]] as any, {
       listStyleType: 'decimal',
     });
 
-    expect(unsetNodes).toHaveBeenCalledWith(KEYS.listChecked, { at: [0] });
-    expect(setListNodeSpy).toHaveBeenCalledWith(editor, {
-      at: [0],
-      indent: 2,
-      listStyleType: 'decimal',
+    expect(editor.children[0]).toMatchObject({
+      [KEYS.indent]: 2,
+      [KEYS.listType]: 'decimal',
+      type: KEYS.p,
     });
-    expect(setIndentTodoNodeSpy).not.toHaveBeenCalled();
   });
 
   it('uses todo helpers when the target style is todo', () => {
-    const setListNodeSpy = spyOn(
-      setListNodeModule,
-      'setListNode'
-    ).mockImplementation(() => {});
-    const setIndentTodoNodeSpy = spyOn(
-      setListNodeModule,
-      'setIndentTodoNode'
-    ).mockImplementation(() => {});
-    const unsetNodes = mock();
-    const editor = {
-      tf: {
-        unsetNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
-    } as any;
+    const editor = createBasePlateEditor({
+      value: [
+        {
+          [KEYS.indent]: 3,
+          [KEYS.listChecked]: true,
+          children: [{ text: 'Todo' }],
+          type: KEYS.p,
+        },
+      ],
+    });
 
-    setListNodes(
-      editor,
-      [
-        [{ [KEYS.indent]: 3, [KEYS.listChecked]: true, type: KEYS.p }, [2]],
-      ] as any,
-      { listStyleType: 'todo' }
-    );
-
-    expect(unsetNodes).toHaveBeenCalledWith(KEYS.listType, { at: [2] });
-    expect(setIndentTodoNodeSpy).toHaveBeenCalledWith(editor, {
-      at: [2],
-      indent: 3,
+    setListNodes(editor, [[editor.children[0], [0]]] as any, {
       listStyleType: 'todo',
     });
-    expect(setListNodeSpy).not.toHaveBeenCalled();
+
+    expect(editor.children[0]).toMatchObject({
+      [KEYS.indent]: 3,
+      [KEYS.listChecked]: false,
+      [KEYS.listType]: 'todo',
+      type: KEYS.p,
+    });
   });
 });

@@ -1,50 +1,56 @@
 import {
   ElementApi,
   type NodeEntry,
-  type Point,
-  type SlateEditor,
-  type TElement,
-  type TLocation,
+  type BasePlateEditor,
   type TSuggestionElement,
   type TSuggestionText,
   nanoid,
 } from 'platejs';
+import type { Element, Location, Point } from '@platejs/plite';
 
-import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData, isCurrentUserSuggestion } from '../utils';
+import { getSuggestionApi } from '../utils/getSuggestionApi';
 
 export const findSuggestionProps = (
-  editor: SlateEditor,
-  { at, type }: { at: TLocation; type: 'insert' | 'remove' | 'update' }
+  editor: BasePlateEditor,
+  { at, type }: { at: Location; type: 'insert' | 'remove' | 'update' }
 ): { id: string; createdAt: number } => {
   const defaultProps = {
     id: nanoid(),
     createdAt: Date.now(),
   };
 
-  const api = editor.getApi(BaseSuggestionPlugin);
+  const suggestionApi = getSuggestionApi(editor);
 
   const getInlineElementEntry = (point: Point) =>
-    editor.api.above<TElement>({
+    editor.api.above<Element>({
       at: point,
       match: (node) =>
         ElementApi.isElement(node) &&
         editor.api.isInline(node) &&
-        !!api.suggestion.nodeId(node),
+        !!suggestionApi.nodeId(node),
     });
 
-  let entry = api.suggestion.node({
+  let entry = suggestionApi.node({
     at,
     isText: true,
   }) as NodeEntry<TSuggestionText> | undefined;
-  let inlineEntry: NodeEntry<TElement> | undefined;
+  let inlineEntry: NodeEntry<Element> | undefined;
 
   if (!entry) {
     let start: Point;
     let end: Point;
 
     try {
-      [start, end] = editor.api.edges(at)!;
+      const rangesApi = editor.api as typeof editor.api & {
+        ranges?: { edges?: NonNullable<typeof editor.api.edges> };
+      };
+
+      const edges = editor.api.edges?.(at) ?? rangesApi.ranges?.edges?.(at);
+
+      if (!edges) return defaultProps;
+
+      [start, end] = edges;
     } catch {
       return defaultProps;
     }
@@ -52,7 +58,7 @@ export const findSuggestionProps = (
     const nextPoint = editor.api.after(end);
 
     if (nextPoint) {
-      entry = api.suggestion.node({
+      entry = suggestionApi.node({
         at: nextPoint,
         isText: true,
       }) as NodeEntry<TSuggestionText> | undefined;
@@ -66,7 +72,7 @@ export const findSuggestionProps = (
       const prevPoint = editor.api.before(start);
 
       if (prevPoint) {
-        entry = api.suggestion.node({
+        entry = suggestionApi.node({
           at: prevPoint,
           isText: true,
         }) as NodeEntry<TSuggestionText> | undefined;
@@ -104,21 +110,21 @@ export const findSuggestionProps = (
     isCurrentUserSuggestion(editor, entry[0])
   ) {
     return {
-      id: api.suggestion.nodeId(entry[0]) ?? nanoid(),
+      id: suggestionApi.nodeId(entry[0]) ?? nanoid(),
       createdAt: getInlineSuggestionData(entry[0])?.createdAt ?? Date.now(),
     };
   }
 
   const inlineSuggestionData =
-    inlineEntry && api.suggestion.suggestionData(inlineEntry[0]);
+    inlineEntry && suggestionApi.suggestionData(inlineEntry[0]);
 
   if (
     inlineEntry &&
     inlineSuggestionData?.type === type &&
-    isCurrentUserSuggestion(editor, inlineEntry[0] as any)
+    isCurrentUserSuggestion(editor, inlineEntry[0])
   ) {
     return {
-      id: api.suggestion.nodeId(inlineEntry[0]) ?? nanoid(),
+      id: suggestionApi.nodeId(inlineEntry[0]) ?? nanoid(),
       createdAt: inlineSuggestionData.createdAt ?? Date.now(),
     };
   }

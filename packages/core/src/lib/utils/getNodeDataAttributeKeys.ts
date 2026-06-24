@@ -1,7 +1,7 @@
-import { type TElement, type TText, TextApi } from '@platejs/slate';
+import { type Element, type Text, TextApi } from '@platejs/plite';
 import kebabCase from 'lodash/kebabCase.js';
 
-export const getNodeDataAttributeKeys = (node: TElement | TText) =>
+export const getNodeDataAttributeKeys = (node: Element | Text) =>
   Object.keys(node)
     .filter(
       (key) =>
@@ -11,4 +11,4 @@ export const getNodeDataAttributeKeys = (node: TElement | TText) =>
     .map((key) => keyToDataAttribute(key));
 
 export const keyToDataAttribute = (key: string) =>
-  `data-slate-${kebabCase(key)}`;
+  `data-plite-${kebabCase(key)}`;

@@ -1,0 +1,623 @@
+import type { EditorUpdateTransaction, Value } from '@platejs/plite';
+
+import { createCurrentRuntimeEditor as createEditor } from '../../internal/currentRuntimeBridge';
+import { ParagraphPlugin, ReactPlugin } from '../../react';
+import { withPlate } from '../../react/editor/withPlate';
+import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
+import { getPlugin } from '../../react/plugin/getPlugin';
+import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorPlugin';
+import { InputRulesPlugin } from '../plugins/input-rules/internal/InputRulesPlugin';
+import type { PluginTx } from '../plugin/EditorPlugin';
+import {
+  type EditorPlugin,
+  AffinityPlugin,
+  AstPlugin,
+  ChunkingPlugin,
+  createEditorPlugin,
+  DebugPlugin,
+  DOMPlugin,
+  HistoryPlugin,
+  HtmlPlugin,
+  LengthPlugin,
+  NavigationFeedbackPlugin,
+  OverridePlugin,
+  ParserPlugin,
+  PliteExtensionPlugin,
+  withPlite,
+} from '../index';
+
+const coreKeys = [
+  'root',
+  DebugPlugin.key,
+  PliteExtensionPlugin.key,
+  DOMPlugin.key,
+  NavigationFeedbackPlugin.key,
+  HistoryPlugin.key,
+  InputRulesPlugin.key,
+  OverridePlugin.key,
+  ParserPlugin.key,
+  LengthPlugin.key,
+  HtmlPlugin.key,
+  AstPlugin.key,
+  AffinityPlugin.key,
+  ParagraphPlugin.key,
+  ChunkingPlugin.key,
+  EventEditorPlugin.key,
+];
+
+type TxPluginTransaction = EditorUpdateTransaction & {
+  txPlugin: {
+    bold: () => void;
+  };
+};
+
+const TestBoldPlugin = createEditorPlugin({
+  key: 'bold',
+  node: { isLeaf: true },
+  parsers: {
+    html: {
+      deserializer: {
+        rules: [{ validNodeName: ['STRONG', 'B'] }],
+      },
+    },
+  },
+});
+
+describe('withPlate', () => {
+  describe('when default plugins', () => {
+    it('have core plugins', () => {
+      const editor = withPlate(createEditor(), {
+        id: '1',
+      });
+
+      expect(editor.id).toBe('1');
+      expect(editor.history).toBeDefined();
+      expect(editor.meta.key).toBeDefined();
+      expect(editor.meta.pluginList.map((plugin) => plugin.key)).toEqual(
+        coreKeys
+      );
+      expect(editor.meta.pluginList.map((plugin) => plugin.node.type)).toEqual(
+        coreKeys
+      );
+      expect(Object.keys(editor.plugins)).toEqual(coreKeys);
+      expect(
+        (editor.getPlugin(PliteExtensionPlugin).handlers as any).onKeyDown
+      ).toBeDefined();
+
+      expect(editor.read((state) => state.value.root())).toEqual([
+        { children: [{ text: '' }], type: 'p' },
+      ]);
+      expect(editor.dom.prevSelection).toBeNull();
+    });
+
+    it('executes tx-backed plugin commands through update on the current editor runtime', () => {
+      const TxPlugin = createEditorPlugin({
+        key: 'txPlugin',
+      }).extendTx(() => (tx: EditorUpdateTransaction) => ({
+        bold: () => tx.marks.add('bold', true),
+      }));
+      const editor = withPlate(createEditor(), {
+        plugins: [TxPlugin],
+        selection: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 4, path: [0, 0] },
+        },
+        value: [{ children: [{ text: 'text' }], type: 'p' }],
+      });
+
+      editor.update<PluginTx<'txPlugin', TxPluginTransaction['txPlugin']>>(
+        (tx) => tx.txPlugin.bold()
+      );
+
+      expect(editor.children[0].children[0]).toMatchObject({
+        bold: true,
+        text: 'text',
+      });
+    });
+
+    it('runs update callbacks through the current Plite runtime', () => {
+      const editor = withPlate(createEditor(), {
+        selection: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 4, path: [0, 0] },
+        },
+        value: [{ children: [{ text: 'text' }], type: 'p' }],
+      });
+
+      editor.update((tx, context) => {
+        tx.marks.add('italic', true);
+
+        expect(() => context.afterCommit(() => {})).not.toThrow();
+      });
+
+      expect(editor.children[0].children[0]).toMatchObject({
+        italic: true,
+        text: 'text',
+      });
+    });
+
+    it('installs plugin node flags before tx groups insert inline nodes', () => {
+      const InlineTxPlugin = createEditorPlugin({
+        key: 'mention',
+        node: {
+          isElement: true,
+          isInline: true,
+          isVoid: true,
+          type: 'mention',
+        },
+      }).extendTx(({ type }) => (tx: EditorUpdateTransaction) => ({
+        insert: () => {
+          tx.nodes.insert([{ children: [{ text: '' }], type }, { text: ' ' }]);
+        },
+      }));
+      const editor = withPlate(createEditor(), {
+        plugins: [InlineTxPlugin],
+        selection: {
+          anchor: { offset: 2, path: [0, 0] },
+          focus: { offset: 2, path: [0, 0] },
+        },
+        value: [{ children: [{ text: 'hello' }], type: 'p' }],
+      });
+
+      editor.update(
+        (
+          tx: EditorUpdateTransaction & {
+            mention: { insert: () => void };
+          }
+        ) => {
+          tx.mention.insert();
+        }
+      );
+
+      expect(editor.children[0]).toMatchObject({
+        children: [
+          { text: 'he' },
+          { children: [{ text: '' }], type: 'mention' },
+          { text: ' ' },
+          { text: 'llo' },
+        ],
+        type: 'p',
+      });
+    });
+  });
+
+  describe('when plugins is an array', () => {
+    it('add custom plugins to core plugins', () => {
+      const customPlugin = createEditorPlugin({ key: 'custom' });
+      const editor = withPlate(createEditor(), {
+        id: '1',
+        override: {
+          components: {},
+          enabled: {},
+        },
+        plugins: [customPlugin],
+      });
+
+      expect(editor.meta.pluginList.map((plugin) => plugin.key)).toEqual([
+        ...coreKeys,
+        'custom',
+      ]);
+      expect(editor.getPlugin({ key: 'custom' })).toBeDefined();
+    });
+  });
+
+  describe('when plugins is an empty array', () => {
+    it('only have core plugins', () => {
+      const editor = withPlate<Value, EditorPlugin>(createEditor(), {
+        id: '1',
+        plugins: [],
+      });
+
+      expect(editor.meta.pluginList.map((plugin) => plugin.key)).toEqual(
+        coreKeys
+      );
+    });
+  });
+
+  describe('when extending nested plugins', () => {
+    it('correctly merge and extend nested plugins', () => {
+      const parentPlugin = createEditorPlugin({
+        key: 'parent',
+        node: { type: 'parentOriginal' },
+        plugins: [
+          createEditorPlugin({
+            key: 'child',
+            node: { type: 'childOriginal' },
+          }),
+        ],
+      });
+
+      const editor = withPlate(createEditor(), {
+        id: '1',
+        plugins: [
+          parentPlugin
+            .extend({
+              node: { type: 'parentExtended' },
+            })
+            .extendPlugin(
+              { key: 'child' },
+              {
+                node: { type: 'childExtended' },
+              }
+            )
+            .extendPlugin(
+              { key: 'newChild' },
+              {
+                node: { type: 'newChildType' },
+              }
+            ),
+        ],
+      });
+
+      const parent = editor.getPlugin({ key: 'parent' });
+      const child = editor.getPlugin({ key: 'child' });
+      const newChild = editor.getPlugin({ key: 'newChild' });
+
+      expect(parent.node.type).toBe('parentExtended');
+      expect(child.node.type).toBe('childExtended');
+      expect(newChild.node.type).toBe('newChildType');
+    });
+  });
+
+  describe('when using override', () => {
+    it('merge components', () => {
+      const HeadingPlugin = createPlatePlugin({ key: 'h1' });
+      const customComponent = () => null;
+
+      const editor = withPlate(createEditor(), {
+        id: '1',
+        override: {
+          components: {
+            h1: customComponent,
+          },
+        },
+        plugins: [HeadingPlugin],
+      });
+
+      const h1Plugin = editor.getPlugin({ key: 'h1' });
+      expect(h1Plugin.render.node).toBe(customComponent);
+    });
+
+    it('respect priority when overriding existing components', () => {
+      const originalComponent = () => null;
+      const overrideComponent = () => null;
+      const HeadingPlugin = createPlatePlugin({
+        key: 'h1',
+        priority: 100,
+        render: { node: originalComponent },
+      });
+
+      // Test with low priority override
+      let editor = withPlate(createEditor(), {
+        id: '1',
+        plugins: [HeadingPlugin],
+      });
+
+      let h1Plugin = editor.getPlugin(HeadingPlugin);
+      expect(h1Plugin.render.node).toBe(originalComponent);
+
+      // Test with high priority override
+      editor = withPlate(createEditor(), {
+        id: '1',
+        override: {
+          components: {
+            h1: overrideComponent,
+          },
+        },
+        plugins: [HeadingPlugin],
+      });
+
+      h1Plugin = getPlugin<typeof h1Plugin>(editor, { key: 'h1' }) as any;
+      expect(h1Plugin.render.node).toBe(overrideComponent);
+    });
+  });
+
+  describe('when using override.plugins', () => {
+    it('override plugin properties', () => {
+      const CustomPlugin = createEditorPlugin({
+        key: 'custom',
+        node: { type: 'originalType' },
+      });
+
+      const editor = withPlate(createEditor(), {
+        id: '1',
+        override: {
+          plugins: {
+            custom: {
+              node: { type: 'overriddenType' },
+            },
+          },
+        },
+        plugins: [CustomPlugin],
+      });
+
+      const customPlugin = editor.getPlugin({ key: 'custom' });
+      expect(customPlugin.node.type).toBe('overriddenType');
+    });
+  });
+
+  describe('when replacing core plugins', () => {
+    it('replace core plugins with custom plugins, maintain order, and add additional plugins', () => {
+      const additionalPlugin = createEditorPlugin({
+        key: 'additional',
+        node: { type: 'additional' },
+      });
+
+      const editor = withPlate(createEditor(), {
+        id: '1',
+        plugins: [ParagraphPlugin, ReactPlugin, additionalPlugin],
+      });
+
+      const pluginCache = editor.meta.pluginList.map((plugin) => plugin.key);
+      const pluginTypes = editor.meta.pluginList.map(
+        (plugin) => plugin.node.type
+      );
+
+      // Check if ReactPlugin replaced DOMPlugin
+      expect(pluginCache).toContain(ReactPlugin.key);
+      expect(pluginTypes).toContain(ReactPlugin.node.type);
+
+      // Check if ParagraphPlugin is present
+      expect(pluginCache).toContain(ParagraphPlugin.key);
+      expect(pluginTypes).toContain(ParagraphPlugin.node.type);
+
+      // Check if additional plugin is added
+      expect(pluginCache).toContain('additional');
+      expect(pluginTypes).toContain('additional');
+
+      // Check if the order is correct
+      const reactIndex = pluginCache.indexOf(ReactPlugin.key);
+      const paragraphIndex = pluginCache.indexOf(ParagraphPlugin.key);
+      const additionalIndex = pluginCache.indexOf('additional');
+
+      expect(reactIndex).toBeLessThan(paragraphIndex);
+      expect(paragraphIndex).toBeLessThan(additionalIndex);
+
+      // Check if other core plugins are still present (e.g., HistoryPlugin)
+      expect(pluginCache).toContain('history');
+
+      // Ensure the total number of plugins is correct
+      // This number should be the sum of:
+      // 1. Number of core plugins
+      // 2. Number of replacing plugins (ReactPlugin, ParagraphPlugin)
+      // 3. Number of additional plugins (additionalPlugin)
+      // Minus the number of replaced plugins (DOMPlugin)
+      const expectedPluginCount = editor.meta.pluginList.length;
+      expect(pluginCache).toHaveLength(expectedPluginCount);
+    });
+  });
+
+  describe('when editor already has plugins', () => {
+    it('does not duplicate core plugins', () => {
+      const existingEditor = createEditor();
+      existingEditor.plugins = [
+        createEditorPlugin({ key: 'dom' }),
+        createEditorPlugin({ key: 'history' }),
+      ];
+
+      const editor = withPlate(existingEditor, { id: '1' });
+
+      const pluginCache = editor.meta.pluginList.map((plugin) => plugin.key);
+      expect(pluginCache.filter((key) => key === 'dom')).toHaveLength(1);
+      expect(pluginCache.filter((key) => key === 'history')).toHaveLength(1);
+    });
+
+    it('add missing core plugins', () => {
+      const existingEditor = createEditor();
+      existingEditor.pluginList = [
+        createEditorPlugin({ key: 'dom' }),
+        createEditorPlugin({ key: 'history' }),
+      ];
+
+      const editor = withPlate(existingEditor, { id: '1' });
+
+      const pluginCache = editor.meta.pluginList.map((plugin) => plugin.key);
+      coreKeys.forEach((key) => {
+        expect(pluginCache).toContain(key);
+      });
+    });
+
+    it('does not preserve custom plugins', () => {
+      const customPlugin = createEditorPlugin({ key: 'custom' });
+      const existingEditor = createEditor();
+      existingEditor.plugins = [
+        createEditorPlugin({ key: 'dom' }),
+        createEditorPlugin({ key: 'history' }),
+        customPlugin,
+      ];
+
+      const editor = withPlate(existingEditor, { id: '1' });
+
+      expect(editor.meta.pluginList.map((plugin) => plugin.key)).not.toContain(
+        'custom'
+      );
+    });
+  });
+
+  describe('when using override.enabled', () => {
+    it('disable specified core plugins', () => {
+      const editor = withPlate(createEditor(), {
+        id: '1',
+        override: {
+          enabled: {
+            eventEditor: false,
+            history: false,
+          },
+        },
+      });
+
+      const pluginCache = editor.meta.pluginList.map((plugin) => plugin.key);
+      expect(pluginCache).not.toContain('history');
+      expect(pluginCache).not.toContain('eventEditor');
+      expect(pluginCache).toHaveLength(coreKeys.length - 2);
+    });
+
+    it('disable specified custom plugins', () => {
+      const customPlugin1 = createEditorPlugin({ key: 'custom1' });
+      const customPlugin2 = createEditorPlugin({ key: 'custom2' });
+
+      const editor = withPlate(createEditor(), {
+        id: '1',
+        override: {
+          enabled: {
+            custom1: false,
+          },
+        },
+        plugins: [customPlugin1, customPlugin2],
+      });
+
+      const pluginCache = editor.meta.pluginList.map((plugin) => plugin.key);
+      expect(pluginCache).not.toContain('custom1');
+      expect(pluginCache).toContain('custom2');
+    });
+
+    it('does not affect plugins not specified in override.enabled', () => {
+      const editor = withPlate(createEditor(), {
+        id: '1',
+        override: {
+          enabled: {
+            history: false,
+          },
+        },
+      });
+
+      const pluginCache = editor.meta.pluginList.map((plugin) => plugin.key);
+      coreKeys.forEach((key) => {
+        if (key !== 'history') {
+          expect(pluginCache).toContain(key);
+        }
+      });
+    });
+  });
+
+  describe('when configuring core plugins', () => {
+    it('correctly configure the length plugin', () => {
+      const editor = withPlite(createEditor(), {
+        id: '1',
+        rootPlugin: (plugin) =>
+          plugin.configurePlugin(LengthPlugin, {
+            options: {
+              maxLength: 100,
+            },
+          }),
+      });
+
+      const options = editor.getOptions(LengthPlugin);
+      expect(options.maxLength).toBe(100);
+    });
+  });
+
+  it('handle value, selection, and autoSelect options correctly', () => {
+    const editor = createEditor();
+    const value = [{ children: [{ text: 'Hello' }], type: 'paragraph' }];
+    const selection = {
+      anchor: { offset: 2, path: [0, 0] },
+      focus: { offset: 4, path: [0, 0] },
+    };
+
+    const result = withPlite(editor, {
+      selection,
+      shouldNormalizeEditor: true,
+      value,
+    });
+
+    expect(result.children).toEqual(value);
+    expect(result.selection).toEqual(selection);
+
+    // Test autoSelect start
+    const editorWithAutoSelectStart = withPlite(createEditor(), {
+      autoSelect: 'start',
+      value,
+    });
+    const expectedStartSelection = {
+      anchor: editorWithAutoSelectStart.api.start([]),
+      focus: editorWithAutoSelectStart.api.start([]),
+    };
+    expect(editorWithAutoSelectStart.selection as any).toEqual(
+      expectedStartSelection
+    );
+
+    // Test autoSelect end
+    const editorWithAutoSelectEnd = withPlite(createEditor(), {
+      autoSelect: 'end',
+      value,
+    });
+    const expectedEndSelection = {
+      anchor: editorWithAutoSelectEnd.api.end([]),
+      focus: editorWithAutoSelectEnd.api.end([]),
+    };
+    expect(editorWithAutoSelectEnd.selection as any).toEqual(
+      expectedEndSelection
+    );
+
+    // Test empty children
+    const editorWithEmptyChildren = withPlite(createEditor());
+    expect(editorWithEmptyChildren.children).toEqual([
+      { children: [{ text: '' }], type: 'p' },
+    ]);
+
+    // Test pipeNormalizeInitialValue and normalizeEditor
+    const editor2 = withPlite(createEditor(), {
+      shouldNormalizeEditor: true,
+      value: [],
+    });
+
+    expect(editor2.children).toMatchObject([
+      {
+        children: [
+          {
+            text: '',
+          },
+        ],
+        type: 'p',
+      },
+    ]);
+  });
+
+  describe('when value is a string', () => {
+    it('deserialize HTML string into Plite value', () => {
+      const htmlString = '<p>Hello, <b>world!</b></p>';
+
+      const editor = withPlite(createEditor(), {
+        id: '1',
+        plugins: [TestBoldPlugin],
+        value: htmlString,
+      });
+
+      expect(editor.children).toEqual([
+        {
+          children: [{ text: 'Hello, ' }, { bold: true, text: 'world!' }],
+          type: 'p',
+        },
+      ]);
+    });
+  });
+
+  describe('when the previous editor has an id', () => {
+    it('reuses that id', () => {
+      const oldEditor = withPlite(createEditor());
+      oldEditor.id = 'old';
+      const editor = withPlite(oldEditor);
+      expect(editor.id).toBe('old');
+    });
+  });
+
+  describe('when the id option is provided', () => {
+    it('uses the provided id', () => {
+      const oldEditor = withPlite(createEditor());
+      oldEditor.id = 'old';
+      const editor = withPlite(oldEditor, { id: 'new' });
+      expect(editor.id).toBe('new');
+    });
+  });
+
+  describe('when no id is provided', () => {
+    it('use a unique id for each editor', () => {
+      const id1 = withPlite(createEditor()).id;
+      const id2 = withPlite(createEditor()).id;
+      expect(id1).toBeTruthy();
+      expect(id2).toBeTruthy();
+      expect(id1).not.toEqual(id2);
+    });
+  });
+});

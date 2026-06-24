@@ -1,12 +1,14 @@
-import { type SlateEditor, type TElement, KEYS } from 'platejs';
+import type { Element } from '@platejs/plite';
+import type { BasePlateEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 export type GetPropsIfTaskListLiNodeOptions = {
-  liNode: TElement;
+  liNode: Element;
   inherit?: boolean;
 };
 
 export const getPropsIfTaskListLiNode = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { inherit = false, liNode: node }: GetPropsIfTaskListLiNodeOptions
 ) =>
   editor.getType(KEYS.li) === node.type && 'checked' in node
@@ -14,7 +16,7 @@ export const getPropsIfTaskListLiNode = (
     : undefined;
 
 export const getPropsIfTaskList = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   type: string,
   partial: { checked?: boolean } = {}
 ) =>

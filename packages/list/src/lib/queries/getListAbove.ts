@@ -1,17 +1,16 @@
-import {
-  type Editor,
-  type EditorAboveOptions,
-  type ElementOf,
-  type NodeEntry,
-  isDefined,
-  KEYS,
-} from 'platejs';
+import type { Element, NodeEntry } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
-export const getListAbove = <N extends ElementOf<E>, E extends Editor = Editor>(
-  editor: E,
-  options?: Omit<EditorAboveOptions, 'match'>
+import { isDefined, KEYS } from 'platejs';
+
+export const getListAbove = <N extends Element = Element>(
+  editor: BasePlateEditor,
+  options?: Omit<
+    NonNullable<Parameters<BasePlateEditor['api']['above']>[0]>,
+    'match'
+  >
 ): NodeEntry<N> | undefined =>
   editor.api.above({
     ...options,
-    match: (node) => isDefined(node[KEYS.listType]),
-  });
+    match: (node: any) => isDefined(node[KEYS.listType]),
+  }) as NodeEntry<N> | undefined;

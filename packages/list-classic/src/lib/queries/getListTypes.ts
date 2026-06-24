@@ -1,8 +1,8 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from '@platejs/core';
 
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
-export const getListTypes = (editor: SlateEditor) => [
+export const getListTypes = (editor: BasePlateEditor) => [
   editor.getType(KEYS.olClassic),
   editor.getType(KEYS.ulClassic),
   editor.getType(KEYS.taskList),

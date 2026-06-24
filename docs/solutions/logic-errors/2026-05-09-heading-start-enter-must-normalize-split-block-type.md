@@ -3,17 +3,17 @@ title: Heading start Enter must normalize the split block type
 date: 2026-05-09
 last_updated: 2026-05-18
 category: docs/solutions/logic-errors
-module: Slate v2 markdown shortcuts
+module: Plite markdown shortcuts
 problem_type: logic_error
 component: testing_framework
 symptoms:
   - Lexical TextEntry expects Enter at the start of a heading to create a paragraph before the heading.
-  - Slate markdown-shortcuts split the heading but kept the empty split block as a heading.
+  - Plite markdown-shortcuts split the heading but kept the empty split block as a heading.
   - The browser proof found no paragraph before the heading.
 root_cause: logic_error
 resolution_type: code_fix
 severity: medium
-tags: [slate-v2, lexical-harvest, markdown-shortcuts, heading, enter]
+tags: [plite, lexical-harvest, markdown-shortcuts, heading, enter]
 ---
 
 # Heading start Enter must normalize the split block type
@@ -23,7 +23,7 @@ tags: [slate-v2, lexical-harvest, markdown-shortcuts, heading, enter]
 Lexical's `TextEntry.spec.mjs` has a useful row: create a heading, move to the
 start of it, press Enter, and get a paragraph before the heading.
 
-Slate v2's markdown-shortcuts example created the heading correctly, but native
+Plite's markdown-shortcuts example created the heading correctly, but native
 Enter at the heading start inherited the heading type for the empty split block.
 
 ## Symptoms
@@ -109,10 +109,10 @@ and tests.
   separately.
 - When splitting a semantic block at offset `0`, assert the type of the empty
   block, not just text content.
-- If behavior maps to a Slate transform name, put it in extension
+- If behavior maps to a Plite transform name, put it in extension
   `transforms`, not raw `Editable onKeyDown`.
 - Keep product markdown parser behavior separate from raw block split behavior.
 
 ## Related Issues
 
-- [Slate transform middleware defaults need an alias depth guard](../developer-experience/2026-05-16-slate-transform-middleware-defaults-need-alias-depth-guard.md)
+- [Plite transform middleware defaults need an alias depth guard](../developer-experience/2026-05-16-slate-transform-middleware-defaults-need-alias-depth-guard.md)

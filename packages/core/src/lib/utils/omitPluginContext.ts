@@ -1,8 +1,20 @@
-import type { AnySlatePlugin, SlatePluginContext } from '../plugin';
+import type { AnyEditorPlugin, EditorPluginContext } from '../plugin';
 
-export const omitPluginContext = <T extends SlatePluginContext<AnySlatePlugin>>(
+export const omitPluginContext = <
+  T extends EditorPluginContext<AnyEditorPlugin>,
+>(
   ctx: T
-) => {
+): Omit<
+  T,
+  | 'api'
+  | 'editor'
+  | 'getOption'
+  | 'getOptions'
+  | 'plugin'
+  | 'setOption'
+  | 'setOptions'
+  | 'type'
+> => {
   const {
     api,
     editor,
@@ -11,10 +23,19 @@ export const omitPluginContext = <T extends SlatePluginContext<AnySlatePlugin>>(
     plugin,
     setOption,
     setOptions,
-    tf,
     type,
     ...rest
   } = ctx;
 
-  return rest;
+  return rest as Omit<
+    T,
+    | 'api'
+    | 'editor'
+    | 'getOption'
+    | 'getOptions'
+    | 'plugin'
+    | 'setOption'
+    | 'setOptions'
+    | 'type'
+  >;
 };

@@ -1,12 +1,11 @@
+import type { EditorUpdateTransaction, Path } from '@platejs/plite';
 import type {
-  Path,
-  SetNodesOptions,
-  SlateEditor,
+  BasePlateEditor,
   TTableCellBorder,
   TTableCellElement,
 } from 'platejs';
 
-import { ElementApi } from 'platejs';
+import { ElementApi } from '@platejs/plite';
 
 import type { BorderDirection } from '../types';
 
@@ -14,8 +13,22 @@ import { getLeftTableCell } from '../queries/getLeftTableCell';
 import { getTopTableCell } from '../queries/getTopTableCell';
 import { getCellTypes } from '../utils/index';
 
+type TableSetNodesOptions = NonNullable<
+  Parameters<EditorUpdateTransaction['nodes']['set']>[1]
+>;
+
+const setTableCellBorders = (
+  editor: BasePlateEditor,
+  borders: TTableCellElement['borders'],
+  options: TableSetNodesOptions
+) => {
+  editor.update((tx) => {
+    tx.nodes.set({ borders } satisfies Partial<TTableCellElement>, options);
+  });
+};
+
 export const setBorderSize = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   size: number,
   {
     at,
@@ -42,8 +55,8 @@ export const setBorderSize = (
     size,
   };
 
-  const setNodesOptions: SetNodesOptions = {
-    match: (n) =>
+  const setNodesOptions: TableSetNodesOptions = {
+    match: (n: unknown) =>
       ElementApi.isElement(n) && getCellTypes(editor).includes(n.type),
   };
 
@@ -56,13 +69,10 @@ export const setBorderSize = (
         top: borderStyle,
       };
 
-      editor.tf.setNodes<TTableCellElement>(
-        { borders: newBorders },
-        {
-          at: cellPath,
-          ...setNodesOptions,
-        }
-      );
+      setTableCellBorders(editor, newBorders, {
+        at: cellPath,
+        ...setNodesOptions,
+      });
 
       return;
     }
@@ -79,13 +89,10 @@ export const setBorderSize = (
     };
 
     // Update the bottom border of the cell above
-    editor.tf.setNodes<TTableCellElement>(
-      { borders: newBorders },
-      {
-        at: cellAbovePath,
-        ...setNodesOptions,
-      }
-    );
+    setTableCellBorders(editor, newBorders, {
+      at: cellAbovePath,
+      ...setNodesOptions,
+    });
   } else if (border === 'bottom') {
     const newBorders: TTableCellElement['borders'] = {
       ...cellNode.borders,
@@ -93,13 +100,10 @@ export const setBorderSize = (
     };
 
     // Update the bottom border of the current cell
-    editor.tf.setNodes<TTableCellElement>(
-      { borders: newBorders },
-      {
-        at: cellPath,
-        ...setNodesOptions,
-      }
-    );
+    setTableCellBorders(editor, newBorders, {
+      at: cellPath,
+      ...setNodesOptions,
+    });
   }
   if (border === 'left') {
     const isFirstCell = cellIndex === 0;
@@ -110,13 +114,10 @@ export const setBorderSize = (
         left: borderStyle,
       };
 
-      editor.tf.setNodes<TTableCellElement>(
-        { borders: newBorders },
-        {
-          at: cellPath,
-          ...setNodesOptions,
-        }
-      );
+      setTableCellBorders(editor, newBorders, {
+        at: cellPath,
+        ...setNodesOptions,
+      });
 
       return;
     }
@@ -133,13 +134,10 @@ export const setBorderSize = (
     };
 
     // Update the bottom border of the cell above
-    editor.tf.setNodes<TTableCellElement>(
-      { borders: newBorders },
-      {
-        at: prevCellPath,
-        ...setNodesOptions,
-      }
-    );
+    setTableCellBorders(editor, newBorders, {
+      at: prevCellPath,
+      ...setNodesOptions,
+    });
   } else if (border === 'right') {
     const newBorders: TTableCellElement['borders'] = {
       ...cellNode.borders,
@@ -147,20 +145,15 @@ export const setBorderSize = (
     };
 
     // Update the right border of the current cell
-    editor.tf.setNodes<TTableCellElement>(
-      { borders: newBorders },
-      {
-        at: cellPath,
-        ...setNodesOptions,
-      }
-    );
+    setTableCellBorders(editor, newBorders, {
+      at: cellPath,
+      ...setNodesOptions,
+    });
   }
   if (border === 'all') {
-    editor.tf.withoutNormalizing(() => {
-      setBorderSize(editor, size, { at, border: 'top' });
-      setBorderSize(editor, size, { at, border: 'bottom' });
-      setBorderSize(editor, size, { at, border: 'left' });
-      setBorderSize(editor, size, { at, border: 'right' });
-    });
+    setBorderSize(editor, size, { at, border: 'top' });
+    setBorderSize(editor, size, { at, border: 'bottom' });
+    setBorderSize(editor, size, { at, border: 'left' });
+    setBorderSize(editor, size, { at, border: 'right' });
   }
 };

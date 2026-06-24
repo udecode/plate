@@ -1,17 +1,16 @@
-import type { Editor, ElementEntryOf, ElementOf, NodeEntry } from 'platejs';
+import type { Element, NodeEntry } from '@platejs/plite';
+import { NodeApi, PathApi } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
-import { isDefined, KEYS, NodeApi, PathApi } from 'platejs';
+import { isDefined, KEYS } from 'platejs';
 
 /**
  * Get all list items that are children of the current list item (have bigger
  * indent). Stops when encountering an item with equal or lower indent.
  */
-export const getListChildren = <
-  N extends ElementOf<E>,
-  E extends Editor = Editor,
->(
-  editor: E,
-  entry: ElementEntryOf<E>
+export const getListChildren = <N extends Element = Element>(
+  editor: BasePlateEditor,
+  entry: NodeEntry<Element>
 ): NodeEntry<N>[] => {
   const children: NodeEntry<N>[] = [];
   const [node, path] = entry;
@@ -29,7 +28,7 @@ export const getListChildren = <
     const nextPath = PathApi.next(currentPath);
     if (!nextPath) break;
 
-    const nextNode = NodeApi.get<N>(editor, nextPath);
+    const nextNode = NodeApi.getIf(editor as any, nextPath) as N | undefined;
     if (!nextNode) break;
 
     const nextIndent = (nextNode as any)[KEYS.indent] as number;
@@ -47,7 +46,7 @@ export const getListChildren = <
     }
 
     // This is a child item (bigger indent)
-    children.push([nextNode, nextPath]);
+    children.push([nextNode, nextPath] as NodeEntry<N>);
     currentPath = nextPath;
   }
 

@@ -13,6 +13,10 @@ import {
   getLocalizedNavTitle,
   normalizeDocsHref,
 } from '@/lib/docs-nav-metadata';
+import {
+  getDocsRootFromPathname,
+  getSidebarNavForDocsRoot,
+} from '@/lib/docs-root-nav';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
 import {
@@ -52,7 +56,13 @@ function isNavItemActive(item: SidebarNavItem, pathname: string): boolean {
     const href = normalizeDocsHref(item.href);
 
     if (href === pathname) return true;
-    if (href !== '/docs' && pathname.startsWith(`${href}/`)) return true;
+    if (
+      href !== '/docs' &&
+      href !== '/docs/plite' &&
+      pathname.startsWith(`${href}/`)
+    ) {
+      return true;
+    }
   }
 
   return item.items?.some((child) => isNavItemActive(child, pathname)) ?? false;
@@ -71,7 +81,7 @@ function getSectionTitle(
 }
 
 const docsNavItemButtonClassName =
-  'relative h-[30px] w-fit border border-transparent text-[0.8rem] font-medium data-[active=true]:border-accent data-[active=true]:bg-accent 3xl:fixed:w-full 3xl:fixed:max-w-48';
+  'relative h-[30px] w-fit max-w-full overflow-hidden border border-transparent text-[0.8rem] font-medium whitespace-nowrap data-[active=true]:border-accent data-[active=true]:bg-accent 3xl:fixed:w-full 3xl:fixed:max-w-48';
 
 function getNavItemKey(item: SidebarNavItem, index: number, depth: number) {
   return item.href ?? `${depth}:${index}:${String(item.title)}`;
@@ -152,9 +162,14 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
   const locale = useLocale();
   const pathname = usePathname();
   const normalizedPathname = normalizeDocsHref(pathname ?? '');
+  const docsRoot = getDocsRootFromPathname(normalizedPathname);
+  const rootSidebarNav = React.useMemo(
+    () => getSidebarNavForDocsRoot(sidebarNav, docsRoot),
+    [docsRoot, sidebarNav]
+  );
   const navSections = React.useMemo(
-    () => foldMatchingSectionsIntoItems(sidebarNav),
-    [sidebarNav]
+    () => foldMatchingSectionsIntoItems(rootSidebarNav),
+    [rootSidebarNav]
   );
   const activeSectionKey = React.useMemo(
     () => getActiveSectionKey(navSections, normalizedPathname),
@@ -175,31 +190,76 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
   return navSections.length > 0 ? (
     <Sidebar
       aria-label={locale === 'cn' ? '文档导航' : 'Docs navigation'}
-      className="sticky top-[var(--header-height)] z-30 hidden h-[calc(100svh-var(--header-height))] overscroll-none bg-transparent [--sidebar-menu-width:--spacing(56)] lg:flex"
+      className="sticky top-[calc(var(--header-height)+0.6rem)] z-30 hidden h-[calc(100svh-10rem)] overscroll-none bg-transparent [--sidebar-menu-width:--spacing(56)] lg:flex"
       collapsible="none"
     >
-      <SidebarContent className="no-scrollbar h-full w-(--sidebar-menu-width) gap-1 overflow-hidden px-2.5 py-6">
-        {navSections.map((section, index) => {
-          const sectionKey = getSectionKey(section, index);
+      <div className="h-9" />
+      <SidebarContent className="no-scrollbar w-(--sidebar-menu-width) overflow-x-hidden px-2.5">
+        {docsRoot === 'slate'
+          ? navSections.map((section, index) => (
+              <DocsNavStaticGroup
+                key={getSectionKey(section, index)}
+                index={index}
+                pathname={normalizedPathname}
+                section={section}
+              />
+            ))
+          : navSections.map((section, index) => {
+              const sectionKey = getSectionKey(section, index);
 
-          return (
-            <DocsNavGroup
-              key={sectionKey}
-              index={index}
-              open={openSectionKey === sectionKey}
-              pathname={normalizedPathname}
-              section={section}
-              onOpenChange={(open) => {
-                setOpenSection({
-                  key: open ? sectionKey : undefined,
-                  pathname: normalizedPathname,
-                });
-              }}
-            />
-          );
-        })}
+              return (
+                <DocsNavGroup
+                  key={sectionKey}
+                  index={index}
+                  open={openSectionKey === sectionKey}
+                  pathname={normalizedPathname}
+                  section={section}
+                  onOpenChange={(open) => {
+                    setOpenSection({
+                      key: open ? sectionKey : undefined,
+                      pathname: normalizedPathname,
+                    });
+                  }}
+                />
+              );
+            })}
+        <div className="sticky -bottom-1 z-10 h-16 shrink-0 bg-linear-to-t from-background via-background/80 to-background/50 blur-xs" />
       </SidebarContent>
     </Sidebar>
+  ) : null;
+}
+
+function DocsNavStaticGroup({
+  index,
+  pathname,
+  section,
+}: {
+  index: number;
+  pathname: string;
+  section: SidebarNavItem;
+}) {
+  const locale = useLocale();
+  const sectionTitle = getSectionTitle(section, index, locale);
+  const standalone =
+    section.items?.length === 1 && section.items[0]?.title === section.title;
+
+  return section.items?.length ? (
+    <SidebarGroup
+      className={cn('shrink-0', index === 0 && sectionTitle && 'pt-6')}
+    >
+      {standalone || !sectionTitle ? null : (
+        <SidebarGroupLabel className="font-medium text-muted-foreground">
+          {sectionTitle}
+        </SidebarGroupLabel>
+      )}
+      <SidebarGroupContent>
+        <DocsNavItems
+          dense={!standalone && index > 0}
+          items={section.items}
+          pathname={pathname}
+        />
+      </SidebarGroupContent>
+    </SidebarGroup>
   ) : null;
 }
 
@@ -222,7 +282,11 @@ function DocsNavGroup({
 
   return (
     <SidebarGroup
-      className={cn('min-h-0 p-0', open && scrollable ? 'flex-1' : 'shrink-0')}
+      className={cn(
+        'min-h-0',
+        index === 0 && 'pt-6',
+        open && scrollable ? 'flex-1' : 'shrink-0'
+      )}
     >
       {section.items?.length ? (
         <Collapsible
@@ -260,7 +324,6 @@ function DocsNavGroup({
           >
             <SidebarGroupContent
               className={cn(
-                'pr-1',
                 scrollable
                   ? 'no-scrollbar min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain'
                   : 'overflow-visible'
@@ -381,7 +444,7 @@ function DocsNavItemContent({
   return (
     <>
       <span className="absolute inset-0 flex bg-transparent" />
-      {title}
+      <span className="min-w-0 truncate">{title}</span>
 
       {statusLabel ? (
         <span

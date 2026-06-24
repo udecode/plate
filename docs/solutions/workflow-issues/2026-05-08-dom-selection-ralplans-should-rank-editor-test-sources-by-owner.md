@@ -2,7 +2,7 @@
 title: DOM Selection Ralplans Should Rank Editor Test Sources By Owner
 date: 2026-05-08
 category: docs/solutions/workflow-issues
-module: slate-v2-ralplan
+module: plite-ralplan
 problem_type: workflow_issue
 component: development_workflow
 symptoms:
@@ -11,7 +11,7 @@ symptoms:
 root_cause: missing_workflow_step
 resolution_type: workflow_improvement
 severity: low
-tags: [slate-v2, ralplan, dom-selection, test-harvest, ecosystem]
+tags: [plite, ralplan, dom-selection, test-harvest, ecosystem]
 ---
 
 # DOM Selection Ralplans Should Rank Editor Test Sources By Owner
@@ -25,7 +25,7 @@ reasons.
 ## Symptoms
 
 - The plan says "steal ecosystem tests" without naming exact source rows.
-- Tiptap command tests start looking like Slate API proposals.
+- Tiptap command tests start looking like Plite API proposals.
 - IME, clipboard, table, focus, and DOM bridge rows get mixed into one lane.
 
 ## What Didn't Work
@@ -35,7 +35,7 @@ reasons.
 - Treating Tiptap as an architecture source: useful focus timing pressure, but
   mostly ProseMirror command wrapping and product/demo tests.
 - Copying ProseMirror shape wholesale: its view-desc and integer position model
-  are not Slate's model.
+  are not Plite's model.
 
 ## Solution
 
@@ -48,17 +48,17 @@ Rank sources by the owner they actually prove:
   shape, honest transport, explicit skip reasons, and mobile/table deferrals.
 - Tiptap `focus.ts` is pressure for focus timing only: mobile direct focus,
   Safari `preventScroll`, and React RAF. It does not justify copying Tiptap's
-  command API into Slate.
+  command API into Plite.
 
-Then classify each row as `steal`, `reject`, or `defer`, with a Slate owner:
-`slate-dom`, `slate-react`, `slate` core, or another lane.
+Then classify each row as `steal`, `reject`, or `defer`, with a Plite owner:
+`plite-dom`, `plite-react`, `slate` core, or another lane.
 
 ## Why This Works
 
 It preserves the portable behavior invariant without importing another editor's
 framework shape. The source ranking also prevents closure lies: jsdom renderer
 composition does not prove mobile IME, clipboard transform tests do not prove a
-DOM selection bridge, and whole-table selection does not become a raw Slate
+DOM selection bridge, and whole-table selection does not become a raw Plite
 requirement just because Lexical owns it.
 
 ## Prevention
@@ -67,12 +67,12 @@ requirement just because Lexical owns it.
   demos.
 - Use Lexical harvests to shape browser proof and skip discipline.
 - Keep Tiptap evidence narrow unless the source is a browser behavior file.
-- Every copied test row needs: source path, behavior invariant, Slate owner,
+- Every copied test row needs: source path, behavior invariant, Plite owner,
   action, and verification route.
 
 ## Related Issues
 
-- `docs/plans/2026-05-08-slate-v2-dom-selection-focus-bridge-ralplan.md`
+- `docs/plans/2026-05-08-plite-dom-selection-focus-bridge-ralplan.md`
 - `docs/editor-test-harvester/lexical/report.md`
-- `docs/solutions/test-failures/2026-04-22-slate-browser-selectionchange-proof-must-separate-traceability-from-programmatic-import.md`
+- `docs/solutions/test-failures/2026-04-22-plite-browser-selectionchange-proof-must-separate-traceability-from-programmatic-import.md`
 - `docs/solutions/logic-errors/2026-05-06-slate-react-foreign-dom-selections-must-be-ignored-before-import.md`

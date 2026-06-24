@@ -1,7 +1,8 @@
-import { type SlateEditor, KEYS } from 'platejs';
+import { type BasePlateEditor, ElementApi, KEYS } from 'platejs';
 
-export const someToggle = (editor: SlateEditor) =>
+export const someToggle = (editor: BasePlateEditor) =>
   !!editor.selection &&
   editor.api.some({
-    match: (n: any) => n.type === KEYS.toggle,
+    match: (node: unknown) =>
+      ElementApi.isElement(node) && node.type === KEYS.toggle,
   });

@@ -1,22 +1,22 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type Descendant, type SlateEditor, createSlateEditor } from 'platejs';
+import type { Descendant } from '@platejs/plite';
+import type { BasePlateEditor } from '@platejs/core';
+import { createListClassicRuntimeTestEditor as createBasePlateEditor } from './__tests__/createListClassicRuntimeTestEditor';
 
 import { BaseListPlugin } from './BaseListPlugin';
-import { withInsertFragmentList } from './withInsertFragmentList';
-import { KEYS } from 'platejs';
 
 jsxt;
 
 const editorTest = (input: any, fragment: any, expected: any) => {
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  editor.tf.insertFragment(fragment);
+  editor.update((tx) => tx.fragment.insert(fragment));
 
   expect(editor.children).toEqual(expected.children);
 };
@@ -43,7 +43,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const fragment = (
         <fragment>
@@ -80,7 +80,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -105,7 +105,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const fragment = (
         <fragment>
@@ -146,7 +146,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -175,7 +175,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const fragment = (
         <fragment>
@@ -216,7 +216,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -240,7 +240,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const fragment = (
         <fragment>
@@ -278,7 +278,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -303,7 +303,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const fragment = (
         <fragment>
@@ -344,7 +344,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -367,7 +367,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const fragment = (
         <fragment>
@@ -396,7 +396,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -419,7 +419,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const fragment = (
         <fragment>
@@ -452,7 +452,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -475,7 +475,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const fragment = (
         <fragment>
@@ -504,7 +504,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -529,7 +529,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const fragment = (
         <fragment>
@@ -554,7 +554,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -578,7 +578,7 @@ describe('when pasting ul > 2 li fragment', () => {
             <focus offset={3} path={[0, 1, 0, 0]} />
           </selection>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const fragment = (
         <fragment>
@@ -600,7 +600,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -624,7 +624,7 @@ describe('when pasting ul > 2 li fragment', () => {
             <focus offset={3} path={[0, 1, 0, 0]} />
           </selection>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const fragment = (
         <fragment>
@@ -657,7 +657,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -681,7 +681,7 @@ describe('when pasting ul > 2 li fragment', () => {
             <focus offset={5} path={[0, 1, 0, 0]} />
           </selection>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const fragment = (
         <fragment>
@@ -723,7 +723,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -738,7 +738,7 @@ describe('when pasting ul > 2 li fragment', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const fragment = (
         <fragment>
@@ -762,7 +762,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -775,7 +775,7 @@ describe('when pasting ul > 2 li fragment', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const fragment = (
         <fragment>
@@ -805,7 +805,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -820,7 +820,7 @@ describe('when pasting ul > 2 li fragment', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const fragment = (
         <fragment>
@@ -860,80 +860,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       editorTest(input, fragment, expected);
     });
-  });
-});
-
-describe('withInsertFragmentList fallbacks', () => {
-  it('delegates directly when insertion does not start inside a list item', () => {
-    const insertFragment = mock();
-    const fragment = [{ children: [], type: KEYS.ulClassic }] as any;
-    const plugin = withInsertFragmentList({
-      editor: {
-        api: {
-          node: mock(() => {}),
-        },
-        getType: (key: string) => key,
-      },
-      tf: { insertFragment },
-    } as any) as any;
-
-    plugin.transforms.insertFragment(fragment);
-
-    expect(insertFragment).toHaveBeenCalledWith([{ text: '' }, ...fragment]);
-  });
-
-  it('delegates after deletion when the active list item disappears', () => {
-    const insertFragment = mock();
-    const fragment = [{ children: [], type: KEYS.ulClassic }] as any;
-    const apiNode = mock()
-      .mockReturnValueOnce([{ type: KEYS.li }, [0]])
-      .mockReturnValueOnce(undefined);
-    const plugin = withInsertFragmentList({
-      editor: {
-        api: {
-          node: apiNode,
-        },
-        getType: (key: string) => key,
-      },
-      tf: { insertFragment },
-    } as any) as any;
-
-    plugin.transforms.insertFragment(fragment);
-
-    expect(insertFragment).toHaveBeenNthCalledWith(1, [{ text: '' }]);
-    expect(insertFragment).toHaveBeenNthCalledWith(2, [
-      { text: '' },
-      ...fragment,
-    ]);
-  });
-
-  it('delegates when the list item content entry cannot be found', () => {
-    const insertFragment = mock();
-    const fragment = [{ children: [], type: KEYS.ulClassic }] as any;
-    const apiNode = mock()
-      .mockReturnValueOnce([{ type: KEYS.li }, [0]])
-      .mockReturnValueOnce([{ type: KEYS.li }, [0]])
-      .mockReturnValueOnce(undefined);
-    const plugin = withInsertFragmentList({
-      editor: {
-        api: {
-          node: apiNode,
-        },
-        getType: (key: string) => key,
-      },
-      tf: { insertFragment },
-    } as any) as any;
-
-    plugin.transforms.insertFragment(fragment);
-
-    expect(insertFragment).toHaveBeenNthCalledWith(1, [{ text: '' }]);
-    expect(insertFragment).toHaveBeenNthCalledWith(2, [
-      { text: '' },
-      ...fragment,
-    ]);
   });
 });

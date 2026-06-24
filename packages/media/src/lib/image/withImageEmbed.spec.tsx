@@ -1,21 +1,20 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createEditor } from 'platejs';
-import { createSlateEditor } from 'platejs';
 
+import { getCurrentRuntimeTransforms } from '../../../../core/src/internal/currentRuntimeBridge';
+import { InputRulesPlugin } from '../../../../core/src/lib/plugins/input-rules/internal/InputRulesPlugin';
+import { createPlateRuntimeEditor } from '../../../../core/src/react/editor/createPlateRuntimeEditor';
 import { BaseImagePlugin } from './BaseImagePlugin';
 
 jsxt;
 
-describe('withImageEmbed', () => {
-  const input = createEditor(
-    (
-      <editor>
-        <hp>test</hp>
-      </editor>
-    ) as any
-  );
+describe('ImageRules.embed', () => {
+  const input = (
+    <editor>
+      <hp>test</hp>
+    </editor>
+  ) as any;
 
   const output = (
     <editor>
@@ -27,15 +26,16 @@ describe('withImageEmbed', () => {
   ) as any;
 
   it('insert image from the text', () => {
-    const editor = createSlateEditor({
-      editor: input,
-      plugins: [BaseImagePlugin],
+    const editor = createPlateRuntimeEditor({
+      initialSelection: input.selection,
+      initialValue: input.children,
+      plugins: [InputRulesPlugin, BaseImagePlugin],
     });
 
     const data = {
       getData: () => 'https://i.imgur.com/removed.png',
     };
-    editor.tf.insertData(data as any);
+    getCurrentRuntimeTransforms(editor).insertData(data as any);
 
     expect(editor.children).toEqual(output.children);
   });

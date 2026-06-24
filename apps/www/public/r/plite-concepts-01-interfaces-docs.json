@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plite-concepts-01-interfaces-docs",
+  "title": "Interfaces",
+  "description": "Understand the plain JSON interfaces that make up Plite documents.",
+  "files": [
+    {
+      "path": "../../content/docs/plite/concepts/01-interfaces.mdx",
+      "content": "---\ntitle: \"Interfaces\"\ndescription: \"Understand the plain JSON interfaces that make up Plite documents.\"\n---\n\nPlite documents are plain JSON objects with a small set of structural\ninterfaces. Your app owns the product-specific fields.\n\n## Text\n\nText nodes contain text plus optional mark properties.\n\n```ts\ninterface Text {\n  text: string;\n}\n```\n\n```ts\nconst text = {\n  text: \"Bold\",\n  bold: true,\n};\n```\n\nPlite treats `bold` as your data. The editor only requires the `text` string.\n\n## Element\n\nElements contain child nodes and any product fields your schema needs.\n\n```ts\ninterface Element {\n  children: Node[];\n}\n```\n\n```ts\nconst paragraph = {\n  type: \"paragraph\",\n  children: [{ text: \"Body\" }],\n};\n\nconst link = {\n  type: \"link\",\n  url: \"https://example.com\",\n  children: [{ text: \"Example\" }],\n};\n```\n\nThe `type` and `url` fields are your API. Plite sees them, preserves them, and\npasses them to renderers and transforms, but your app decides what they mean.\n\n```tsx\nconst LinkElement = ({ attributes, children, element }) => {\n  return (\n    <a {...attributes} href={element.url}>\n      {children}\n    </a>\n  );\n};\n```\n\n## Helper Namespaces\n\nRuntime values use plain objects. Static helper functions live on `*Api`\nnamespaces such as `NodeApi`, `ElementApi`, `TextApi`, `PathApi`, `PointApi`,\nand `RangeApi`.\n\n```ts\nimport { ElementApi, NodeApi, RangeApi } from \"@platejs/slate\";\n\nconst string = NodeApi.string(element);\nconst isElement = ElementApi.isElement(value);\nconst collapsed = RangeApi.isCollapsed(range);\n```\n\nUse the helper namespace when you need structural checks, path math, range\ndirection, or text extraction outside an editor read/update callback.\n\nInside `editor.read(...)` and `editor.update(...)`, prefer the grouped runtime\nhelpers because they understand the current root, schema, and transaction.\n\n```ts\nconst linkEntry = editor.read((state) =>\n  state.nodes.above({\n    match: (node) => ElementApi.isElement(node) && node.type === \"link\",\n  })\n);\n```\n\n## Domain Helpers\n\nKeep domain helpers as normal functions or expose them from an extension when\nthey need editor state.\n\n```ts\nimport { ElementApi, type Element } from \"@platejs/slate\";\n\ntype ImageElement = Element & {\n  type: \"image\";\n  url: string;\n};\n\nconst isImageElement = (value: unknown): value is ImageElement =>\n  ElementApi.isElement(value) &&\n  value.type === \"image\" &&\n  typeof value.url === \"string\";\n```\n\nUse [Extensions](08-extensions) when a helper should become a typed `state`,\n`tx`, or `api` namespace installed on the editor.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plite/concepts/01-interfaces.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

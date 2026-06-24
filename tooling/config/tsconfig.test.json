@@ -10,6 +10,29 @@
       "@/registry/*": ["apps/www/src/registry/*"],
       "@/styles/*": ["apps/www/src/styles/*"],
       "@/types/*": ["apps/www/src/types/*"],
+      "@platejs/browser/browser": ["packages/browser/src/browser/index.ts"],
+      "@platejs/browser/core": ["packages/browser/src/core/index.ts"],
+      "@platejs/browser/playwright": [
+        "packages/browser/src/playwright/index.ts"
+      ],
+      "@platejs/browser/transports": [
+        "packages/browser/src/transports/index.ts"
+      ],
+      "@platejs/plite": ["packages/plite/src/index.ts"],
+      "@platejs/plite/internal": ["packages/plite/src/internal/index.ts"],
+      "@platejs/plite-dom": ["packages/plite-dom/src/index.ts"],
+      "@platejs/plite-dom/internal": [
+        "packages/plite-dom/src/internal/index.ts"
+      ],
+      "@platejs/plite-history": ["packages/plite-history/src/index.ts"],
+      "@platejs/plite-hyperscript": ["packages/plite-hyperscript/src/index.ts"],
+      "@platejs/plite-layout": ["packages/plite-layout/src/index.ts"],
+      "@platejs/plite-layout/react": ["packages/plite-layout/src/react.tsx"],
+      "@platejs/plite-react": ["packages/plite-react/src/index.ts"],
+      "@platejs/yjs": ["packages/yjs/src/index.ts"],
+      "@platejs/yjs/core": ["packages/yjs/src/core/index.ts"],
+      "@platejs/yjs/internal": ["packages/yjs/src/internal/index.ts"],
+      "@platejs/yjs/react": ["packages/yjs/src/react/index.ts"],
       "www/*": ["apps/www/*"]
     }
   },

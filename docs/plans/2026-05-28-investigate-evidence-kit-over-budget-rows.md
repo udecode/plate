@@ -2,7 +2,7 @@
 
 Objective:
 Investigate the active Evidence Kit over-budget rows, trace their artifact and
-registered command, refresh the owning Slate v2 benchmark, fix the control-plane
+registered command, refresh the owning Plite benchmark, fix the control-plane
 rerun command if needed, regenerate Evidence Kit outputs, and verify the
 over-budget next action is either still actionable with an owner or removed with
 evidence.
@@ -24,7 +24,7 @@ Task source:
 - id / link: current Codex thread
 - title: Investigate Evidence Kit over-budget rows
 - acceptance criteria: exact over-budget rows identified, source artifact and
-  threshold traced, current benchmark rerun performed from `.tmp/slate-v2`,
+  threshold traced, current benchmark rerun performed from `Plate repo root`,
   control-plane registry corrected when needed, Evidence Kit health/docs
   refreshed, and goal plan check passes.
 
@@ -41,8 +41,8 @@ Completion threshold:
   `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-28-investigate-evidence-kit-over-budget-rows.md` passes.
 
 Verification surface:
-- `SLATE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 SLATE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun run bench:core:clipboard-large-payload:local`
-  from `/Users/zbeyens/git/plate-2/.tmp/slate-v2`
+- `PLITE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 PLITE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun run bench:core:clipboard-large-payload:local`
+  from `/Users/zbeyens/git/plate-2/Plate repo root`
 - `npm run evidence:refresh` from `/Users/zbeyens/git/plate-2/benchmarks/editor`
 - `npm run docs:perf:check` from `/Users/zbeyens/git/plate-2/benchmarks/editor`
 - `node -e "JSON.parse(...benchmark-registry.json...)"`
@@ -58,16 +58,16 @@ Constraints:
 
 Boundaries:
 - Source of truth: active benchmark registry, latest health/result JSON, and the
-  Slate v2 clipboard benchmark artifact.
+  Plite clipboard benchmark artifact.
 - Allowed edit scope: `benchmarks/editor/research/benchmark-registry.json`,
-  `benchmarks/editor/iterations/**`, generated benchmark/docs outputs, Slate v2
-  benchmark artifact under `.tmp/slate-v2/tmp`, and this plan.
+  `benchmarks/editor/iterations/**`, generated benchmark/docs outputs, Plite
+  benchmark artifact under `Plate repo root/tmp`, and this plan.
 - Browser surface: generated static perf index only.
 - Tracker sync: N/A, no issue tracker target.
-- Non-goals: no Slate v2 runtime optimization, no non-Slate adapter work, no PR.
+- Non-goals: no Plite runtime optimization, no non-Plite adapter work, no PR.
 
 Blocked condition:
-Blocked only if the Slate v2 clipboard benchmark command cannot run or the
+Blocked only if the Plite clipboard benchmark command cannot run or the
 health report still reports over-budget rows after a fresh issue-shaped rerun
 without enough source data to assign an owner.
 
@@ -100,7 +100,7 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | Used autogoal for measurable benchmark-control-plane work. |
 | Active goal checked or created | yes | `get_goal` returned none; created this investigation goal. |
-| Source of truth read before edits | yes | Read health JSON, rich-text rows, registry entry, Slate v2 benchmark source, and prior iteration notes. |
+| Source of truth read before edits | yes | Read health JSON, rich-text rows, registry entry, Plite benchmark source, and prior iteration notes. |
 | Tracker comments and attachments read | N/A | No external tracker link. |
 | Video transcript evidence required | N/A | No video or screen recording input. |
 | `docs/solutions` checked for non-trivial existing-code work | N/A | Benchmark control-plane task; relevant prior notes are under `benchmarks/editor/iterations` and docs plans. |
@@ -145,12 +145,12 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | Fresh issue-shaped clipboard benchmark passed; Evidence Kit refresh/docs checks passed. |
 | Bug reproduced before fix | N/A | Record failing test/repro or N/A with reason | Not a product bug; this was benchmark health triage. |
-| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | Reran the exact `.tmp/slate-v2` clipboard issue-target benchmark. |
+| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | Reran the exact `Plate repo root` clipboard issue-target benchmark. |
 | TypeScript or typed config changed | N/A | Run relevant typecheck | No TypeScript or typed config changed. |
 | Package exports or file layout changed | N/A | Run `pnpm brl` before final verification and keep generated barrel updates | No package exports or file layout changed. |
 | Package manifests, lockfile, or install graph changed | N/A | Run `pnpm install` and relevant package checks | No package manifest or lockfile changed. |
 | Agent rules or skills changed | N/A | Run `pnpm install` and verify generated skill sync | No agent rule changed in this task. |
-| Workspace authority proof | yes | Run verification in owning repo/package/app/route/tool and record cwd | Clipboard benchmark ran from `.tmp/slate-v2`; Evidence Kit refresh ran from `benchmarks/editor`. |
+| Workspace authority proof | yes | Run verification in owning repo/package/app/route/tool and record cwd | Clipboard benchmark ran from `Plate repo root`; Evidence Kit refresh ran from `benchmarks/editor`. |
 | Browser surface changed | yes | Capture Browser Use proof or record explicit waiver/blocker | Static index smoke via served URL returned 200 and no over-budget action. |
 | Browser final proof | yes | Attach screenshot or exact browser verification caveat when browser proof applies | Node fetch of `http://127.0.0.1:8765/index.html` verified generated page content. |
 | CI-controlled template output changed | N/A | Restore generated template output or record why intentionally kept | No CI-controlled template output changed. |
@@ -179,8 +179,8 @@ Phase / pass table:
 
 Findings:
 - Over-budget rows were `cutTwoBlocksEditMsP50` and `cutTwoBlocksMsP50` from
-  `slate-clipboard-large-payload-threshold`.
-- They came from `.tmp/slate-v2/tmp/slate-clipboard-large-payload-benchmark.json`
+  `plite-clipboard-large-payload-threshold`.
+- They came from `tmp/slate-clipboard-large-payload-benchmark.json`
   and the registered `clipboard-large-payload` artifact.
 - The registry command used default mode, which does not reproduce the
   issue-shaped 50,000-block threshold artifact.
@@ -188,7 +188,7 @@ Findings:
   `250ms`, `operationCount=1`.
 
 Decisions and tradeoffs:
-- Treat this as stale artifact plus weak registry command, not as current Slate
+- Treat this as stale artifact plus weak registry command, not as current Plite
   runtime debt.
 - Keep the strict thresholds. The right fix is reproducible refresh command, not
   loosening budgets.
@@ -208,7 +208,7 @@ Error attempts:
 | None yet | 0 | | |
 
 Verification evidence:
-- `.tmp/slate-v2`: `SLATE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 SLATE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun run bench:core:clipboard-large-payload:local` passed.
+- `Plate repo root`: `PLITE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 PLITE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun run bench:core:clipboard-large-payload:local` passed.
 - Fresh thresholds: `cutTwoBlocksEditMsP50=145.74ms < 150ms`, `cutTwoBlocksMsP50=147.1ms < 250ms`, `operationCount=1`.
 - `benchmarks/editor`: `npm run evidence:refresh` passed and reported `nextActions=9`.
 - `benchmarks/editor`: `npm run docs:perf:check` passed.
@@ -225,7 +225,7 @@ Final handoff contract:
   - Verified: fresh issue-shaped rerun and Evidence Kit refresh removed over-budget rows.
 - Browser check: served static index smoke passed.
 - Outcome: over-budget action is gone; next action is adapter coverage.
-- Caveat: no Slate runtime optimization was done because current issue-shaped
+- Caveat: no Plite runtime optimization was done because current issue-shaped
   rerun passes.
 - Design:
   - Chosen boundary: registry command and iteration note.

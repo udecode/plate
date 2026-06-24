@@ -7,12 +7,12 @@ topic: editor-global-systems-objective
 
 ## Purpose
 
-This doc answers a bigger question than “what should `slate-browser` do next?”
+This doc answers a bigger question than “what should `plite-browser` do next?”
 
 It answers:
 
 - what should the whole future system look like if we steal the best ideas from
-  the strongest local references without turning Slate into a stitched-together
+  the strongest local references without turning Plite into a stitched-together
   mess?
 
 This is the objective.
@@ -47,7 +47,7 @@ The best references all punish that kind of slop:
 
 Owner:
 
-- `slate-v2`
+- `plite`
 
 Target:
 
@@ -64,7 +64,7 @@ Primary references:
 - Lexical immutable editor state and update discipline:
   [LexicalEditorState.ts](/Users/zbeyens/git/lexical/packages/lexical/src/LexicalEditorState.ts)
 - current locked v2 docs:
-  [final-synthesis.md](/Users/zbeyens/git/plate-2/docs/slate-v2/archive/final-synthesis.md)
+  [final-synthesis.md](/Users/zbeyens/git/plate-2/docs/plite/archive/final-synthesis.md)
 
 Rule:
 
@@ -75,7 +75,7 @@ Rule:
 
 Owner:
 
-- `slate-react-v2`
+- `plite-react-v2`
 
 Target:
 
@@ -90,7 +90,7 @@ Primary references:
 - Lexical update metadata and dirty discipline:
   [LexicalUpdates.ts](/Users/zbeyens/git/lexical/packages/lexical/src/LexicalUpdates.ts)
 - current runtime rules:
-  [Part IV. React Runtime Spec](/Users/zbeyens/git/plate-2/docs/slate-v2/references/architecture-contract.md#part-iv-react-runtime-spec)
+  [Part IV. React Runtime Spec](/Users/zbeyens/git/plate-2/docs/plite/references/architecture-contract.md#part-iv-react-runtime-spec)
 
 Rule:
 
@@ -101,7 +101,7 @@ Rule:
 
 Owner:
 
-- `slate-browser`
+- `plite-browser`
 
 Target:
 
@@ -121,10 +121,10 @@ Primary references:
   [vitest.config.ts](/Users/zbeyens/git/rich-textarea/vitest.config.ts)
 - Premirror lane governance:
   [testing-strategy.md](/Users/zbeyens/git/premirror/docs/testing-strategy.md)
-- current `slate-browser` direction:
-  [overview.md](/Users/zbeyens/git/plate-2/docs/slate-browser/overview.md)
+- current `plite-browser` direction:
+  [overview.md](/Users/zbeyens/git/plate-2/docs/plite-browser/overview.md)
   and
-  [next-system-move.md](/Users/zbeyens/git/plate-2/docs/slate-browser/next-system-move.md)
+  [next-system-move.md](/Users/zbeyens/git/plate-2/docs/plite-browser/next-system-move.md)
 
 Rule:
 
@@ -148,11 +148,11 @@ Primary references:
 - TanStack DB normalized collections and live queries:
   [README.md](/Users/zbeyens/git/db/README.md)
 - existing architecture read:
-  [slate-v2-plate-v2-architecture-research.md](/Users/zbeyens/git/plate-2/docs/analysis/slate-v2-plate-v2-architecture-research.md)
+  [plite-plate-v2-architecture-research.md](/Users/zbeyens/git/plate-2/docs/analysis/plite-plate-v2-architecture-research.md)
 
 Rule:
 
-- editor truth stays in `slate-v2`
+- editor truth stays in `plite`
 - semantic projections and relation-aware views live above it
 
 ## 5. Execution Pipeline Plane
@@ -210,14 +210,14 @@ Rule:
 
 - semantic services should speak documents, positions, edits, diagnostics, and
   capabilities
-- they should not speak Slate internals
+- they should not speak Plite internals
 
 ## 7. Layout And Measurement Plane
 
 Owner:
 
 - future `plate-v2`
-- narrowly, selective planning support in `slate-react-v2`
+- narrowly, selective planning support in `plite-react-v2`
 
 Target:
 
@@ -263,7 +263,7 @@ Primary references:
 
 Rule:
 
-- do not force full Slate onto tiny text problems
+- do not force full Plite onto tiny text problems
 
 ## 9. Productization Plane
 
@@ -291,10 +291,10 @@ Rule:
 
 If this goes right, the future system should feel like this:
 
-1. `slate-v2` owns document truth and transactions.
-2. `slate-dom-v2` owns browser transport and DOM bridges.
-3. `slate-react-v2` owns subscriptions, rendering posture, and runtime policy.
-4. `slate-browser` proves browser-facing truth with layered lanes.
+1. `plite` owns document truth and transactions.
+2. `plite-dom-v2` owns browser transport and DOM bridges.
+3. `plite-react-v2` owns subscriptions, rendering posture, and runtime policy.
+4. `plite-browser` proves browser-facing truth with layered lanes.
 5. future `plate-v2` owns projections, services, product extensions, and
    layout-aware experiences.
 6. lightweight native surfaces stay out of the full editor stack when they can.
@@ -307,10 +307,10 @@ Do not aim for:
 
 - Lexical’s whole engine model
 - ProseMirror’s whole ontology
-- Tiptap’s product layer inside Slate core
+- Tiptap’s product layer inside Plite core
 - Premirror’s layout engine inside active editing runtime
 - TanStack DB as the editor source of truth
-- urql exchanges shoved directly into `slate-v2`
+- urql exchanges shoved directly into `plite`
 - VS Code extension hosting inside core editor packages
 - LSP-style protocols for browser-local editing primitives
 
@@ -320,10 +320,10 @@ Those are all category errors.
 
 Because this is the target stack, the next work should stay disciplined:
 
-1. `slate-browser`:
+1. `plite-browser`:
    strengthen `openExample(...)` readiness and prove the zero-width / IME /
    empty-state gauntlet.
-2. `slate-v2` / `slate-react-v2`:
+2. `plite` / `plite-react-v2`:
    keep cashing out renderer/input-policy seams and later dirty-signal
    discipline.
 3. future `plate-v2` research:

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { TFootnoteElement } from '@platejs/footnote';
+import type { FootnoteElement } from '@platejs/footnote';
 import { PathApi, type Path } from 'platejs';
 import { FootnoteReferencePlugin } from '@platejs/footnote/react';
 import type { PlateEditor, PlateElementProps } from 'platejs/react';
@@ -46,7 +46,7 @@ import {
 const NUMERIC_FOOTNOTE_QUERY = /^\d+$/;
 
 const getNavigationAttributes = (
-  attributes: PlateElementProps<TFootnoteElement>['attributes'],
+  attributes: PlateElementProps<FootnoteElement>['attributes'],
   navigationHighlight: ReturnType<typeof useNavigationHighlight>
 ) => ({
   ...attributes,
@@ -97,11 +97,11 @@ const getReferenceContextLabel = (
 };
 
 export function FootnoteReferenceElement(
-  props: PlateElementProps<TFootnoteElement>
+  props: PlateElementProps<FootnoteElement>
 ) {
   const { editor, element } = props;
   const identifier = element.identifier ?? '';
-  const footnoteApi = editor.getApi(FootnoteReferencePlugin).footnote;
+  const footnoteApi = editor.getPluginApi(FootnoteReferencePlugin).footnote;
   const footnoteTransforms = editor.getTransforms(
     FootnoteReferencePlugin
   ).footnote;
@@ -224,11 +224,11 @@ export function FootnoteReferenceElement(
 }
 
 export function FootnoteDefinitionElement(
-  props: PlateElementProps<TFootnoteElement>
+  props: PlateElementProps<FootnoteElement>
 ) {
   const { editor, element } = props;
   const identifier = element.identifier ?? '';
-  const footnoteApi = editor.getApi(FootnoteReferencePlugin).footnote;
+  const footnoteApi = editor.getPluginApi(FootnoteReferencePlugin).footnote;
   const footnoteTransforms = editor.getTransforms(
     FootnoteReferencePlugin
   ).footnote;
@@ -395,7 +395,7 @@ export function FootnoteDefinitionElement(
 export function FootnoteInputElement(props: PlateElementProps) {
   const { editor, element } = props;
   const [search, setSearch] = React.useState('');
-  const footnoteApi = editor.getApi(FootnoteReferencePlugin).footnote;
+  const footnoteApi = editor.getPluginApi(FootnoteReferencePlugin).footnote;
   const insertTransforms = editor.getTransforms(FootnoteReferencePlugin).insert;
 
   const identifiers = footnoteApi.identifiers?.() ?? [];

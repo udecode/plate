@@ -5,8 +5,8 @@ component: documentation
 root_cause: logic_error
 title: V2 mixed-inline clipboard proofs should span top-level blocks before broader tree shapes
 tags:
-  - slate-v2
-  - slate-dom-v2
+  - plite
+  - plite-dom-v2
   - clipboard
   - mixed-inline
   - multiblock
@@ -33,12 +33,12 @@ That missing case was:
 
 The proof expanded one step, not ten:
 
-- `slate-v2` mixed-inline fragment extraction now spans multiple top-level
+- `plite` mixed-inline fragment extraction now spans multiple top-level
   blocks when each touched block still matches the current proved mixed-inline
   shape
 - mixed-inline fragment insertion now accepts multi-block fragments into the
   current proved mixed-inline target shape
-- `slate-dom-v2` clipboard boundary proof now round-trips that fragment
+- `plite-dom-v2` clipboard boundary proof now round-trips that fragment
 - the browser suite now proves the same case in Chromium with a dedicated
   two-block route
 
@@ -65,7 +65,7 @@ Only the first one needed to be solved now.
 
 ## Reusable rule
 
-When expanding `slate-v2` proof scope:
+When expanding `plite` proof scope:
 
 - move from one proved shape to the next real document pressure case
 - do not skip directly to arbitrary tree support unless the narrower document
@@ -76,5 +76,5 @@ boundary,” do that before inventing a bigger abstraction story.
 
 ## Related issues
 
-- [2026-04-03-slate-v2-clipboard-boundary-proof-must-split-fragment-semantics-and-dom-transport.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-03-slate-v2-clipboard-boundary-proof-must-split-fragment-semantics-and-dom-transport.md)
+- [2026-04-03-plite-clipboard-boundary-proof-must-split-fragment-semantics-and-dom-transport.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-03-plite-clipboard-boundary-proof-must-split-fragment-semantics-and-dom-transport.md)
 - [2026-04-04-v2-editable-blocks-need-structure-preserving-dom-reconciliation-for-mixed-inline-editing.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-04-v2-editable-blocks-need-structure-preserving-dom-reconciliation-for-mixed-inline-editing.md)

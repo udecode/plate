@@ -166,11 +166,11 @@ const handleClickOutside = (event: MouseEvent) => {
 
 ### Selection Area
 
-Style the selection area by targeting the `.slate-selection-area` class, which is added to the editor container.
+Style the selection area by targeting the `.plite-selection-area` class, which is added to the editor container.
 
 ```css
 /* Example using Tailwind CSS utility classes */
-'[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
+'[&_.plite-selection-area]:border [&_.plite-selection-area]:border-primary [&_.plite-selection-area]:bg-primary/10'
 ```
 
 ### Selected Element
@@ -182,7 +182,7 @@ Plate UI renders this component for all selectable blocks using `render.belowRoo
 ```tsx
 render: {
   belowRootNodes: (props) => {
-    if (!props.className?.includes('slate-selectable')) return null;
+    if (!props.className?.includes('plite-selectable')) return null;
 
     return <BlockSelection />;
   },
@@ -204,8 +204,8 @@ Plugin for block selection functionality.
 {
   boundaries: [`#${editor.meta.uid}`],
   container: [`#${editor.meta.uid}`],
-  selectables: [`#${editor.meta.uid} .slate-selectable`],
-  selectionAreaClass: 'slate-selection-area',
+  selectables: [`#${editor.meta.uid} .plite-selectable`],
+  selectionAreaClass: 'plite-selection-area',
 }
 ```
     
@@ -233,7 +233,7 @@ Plugin for block selection functionality.
     (Internal) The ID of the anchor block in the current selection. Used for shift-based selection.
     - **Default:** `null`
   </APIItem>
-  <APIItem name="isSelectable" type="(element: TElement, path: Path) => boolean" optional>
+  <APIItem name="isSelectable" type="(element: Element, path: Path) => boolean" optional>
     Function to determine if a block element is selectable.
     - **Default:** `() => true`
   </APIItem>
@@ -322,7 +322,7 @@ Checks if a block at a given path is selectable based on the `isSelectable` plug
 
 <API name="isSelectable">
   <APIParameters>
-    <APIItem name="element" type="TElement">
+    <APIItem name="element" type="Element">
       Block element to check.
     </APIItem>
     <APIItem name="path" type="Path">
@@ -413,10 +413,10 @@ Sets properties on the selected nodes.
 
 <API name="setNodes">
   <APIParameters>
-    <APIItem name="props" type="Partial<NodeProps<TElement>>">
+    <APIItem name="props" type="Partial<NodeProps<Element>>">
       Properties to set on selected nodes.
     </APIItem>
-    <APIItem name="options" type="SetNodesOptions" optional>
+    <APIItem name="options" type="object" optional>
       Options for setting nodes.
     </APIItem>
   </APIParameters>
@@ -428,10 +428,10 @@ Sets text properties on the selected nodes.
 
 <API name="setTexts">
   <APIParameters>
-    <APIItem name="props" type="Partial<NodeProps<TText>>">
+    <APIItem name="props" type="Partial<NodeProps<Text>>">
       Text properties to set on selected nodes.
     </APIItem>
-    <APIItem name="options" type="Omit<SetNodesOptions, 'at'>" optional>
+    <APIItem name="options" type="Omit<object, 'at'>" optional>
       Options for setting text nodes, excluding the 'at' property.
     </APIItem>
   </APIParameters>
@@ -450,7 +450,7 @@ A hook that provides props for making a block element selectable, including cont
       <APISubList>
         <APISubListItem parent="props" name="className" type="string">
           Required class for selection functionality. - **Default:**
-          `'slate-selectable'`
+          `'plite-selectable'`
         </APISubListItem>
         <APISubListItem
           parent="props"

@@ -1,36 +1,41 @@
-import type { Path } from 'platejs';
+import type { Path, Value } from 'platejs';
 
-import { createSlateEditor } from 'platejs';
+import { createPlateRuntimeEditor } from '../../../../core/src/react/editor/createPlateRuntimeEditor';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
+import type { ColumnEditor } from './ColumnEditor';
 import { setColumns } from './setColumns';
 
+type ColumnTestEditor = ColumnEditor & { children: Value };
+
+const createColumnTestEditor = (value: Value): ColumnTestEditor =>
+  createPlateRuntimeEditor({
+    initialValue: value,
+    plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
+  }) as unknown as ColumnTestEditor;
+
 describe('setColumns', () => {
-  let editor: ReturnType<typeof createSlateEditor>;
+  let editor: ColumnTestEditor;
   let columnGroupPath: Path;
 
   beforeEach(() => {
-    editor = createSlateEditor({
-      plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
-      // Initial value: a column_group with 2 columns
-      value: [
-        {
-          children: [
-            {
-              children: [{ children: [{ text: 'Column 1 text' }], type: 'p' }],
-              type: 'column',
-              width: '50%',
-            },
-            {
-              children: [{ children: [{ text: 'Column 2 text' }], type: 'p' }],
-              type: 'column',
-              width: '50%',
-            },
-          ],
-          type: 'column_group',
-        },
-      ],
-    });
+    editor = createColumnTestEditor([
+      {
+        children: [
+          {
+            children: [{ children: [{ text: 'Column 1 text' }], type: 'p' }],
+            type: 'column',
+            width: '50%',
+          },
+          {
+            children: [{ children: [{ text: 'Column 2 text' }], type: 'p' }],
+            type: 'column',
+            width: '50%',
+          },
+        ],
+        type: 'column_group',
+      },
+    ]);
     columnGroupPath = [0];
   });
 
@@ -76,7 +81,7 @@ describe('setColumns', () => {
 
   it('merge columns and remove extras if targetCount < currentCount', () => {
     // Setup initial state with 3 columns
-    editor.children = [
+    editor = createColumnTestEditor([
       {
         children: [
           {
@@ -97,7 +102,7 @@ describe('setColumns', () => {
         ],
         type: 'column_group',
       },
-    ];
+    ]);
 
     // Now reduce to 2 columns
     setColumns(editor, {
@@ -188,12 +193,14 @@ describe('setColumns', () => {
     expect(node.children[2].width).toBe('34%');
 
     // Add some new content in the third column
-    editor.tf.insertNodes(
-      { children: [{ text: 'Column 3 text' }], type: 'p' },
-      {
-        at: [0, 2, 1],
-      }
-    );
+    editor.update((tx) => {
+      tx.nodes.insert(
+        { children: [{ text: 'Column 3 text' }], type: 'p' },
+        {
+          at: [0, 2, 1],
+        }
+      );
+    });
 
     // Toggle back to 2 columns
     setColumns(editor, { at: columnGroupPath, widths: ['50%', '50%'] });
@@ -228,7 +235,7 @@ describe('setColumns', () => {
 
   it('append content to the end when merging columns', () => {
     // Setup initial state with 3 columns
-    editor.children = [
+    editor = createColumnTestEditor([
       {
         children: [
           {
@@ -258,7 +265,7 @@ describe('setColumns', () => {
         ],
         type: 'column_group',
       },
-    ];
+    ]);
 
     // Reduce to 2 columns
     setColumns(editor, {
@@ -283,7 +290,7 @@ describe('setColumns', () => {
 
   it('correctly merge multiple columns when reducing from 4 to 2', () => {
     // Setup initial state with 4 columns
-    editor.children = [
+    editor = createColumnTestEditor([
       {
         children: [
           {
@@ -318,7 +325,7 @@ describe('setColumns', () => {
         ],
         type: 'column_group',
       },
-    ];
+    ]);
 
     // Reduce to 2 columns
     setColumns(editor, {

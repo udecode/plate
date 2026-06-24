@@ -15,7 +15,9 @@ describe('getSelectionRects', () => {
   it('returns an empty array when the editor cannot create a DOM range', () => {
     const editor = {
       api: {
-        toDOMRange: mock(() => null),
+        dom: {
+          resolveDOMRange: mock(() => null),
+        },
       },
     } as any;
 
@@ -35,14 +37,16 @@ describe('getSelectionRects', () => {
     const textNode = { text: 'a' };
     const editor = {
       api: {
+        dom: {
+          resolveDOMNode: mock(() => ({ parentElement: null })),
+          resolveDOMRange: mock(() => ({
+            endContainer: {},
+            endOffset: 0,
+            startContainer: {},
+            startOffset: 0,
+          })),
+        },
         nodes: mock(() => [[textNode, [0, 0]]]),
-        toDOMNode: mock(() => ({ parentElement: null })),
-        toDOMRange: mock(() => ({
-          endContainer: {},
-          endOffset: 0,
-          startContainer: {},
-          startOffset: 0,
-        })),
       },
     } as any;
 
@@ -85,23 +89,25 @@ describe('getSelectionRects', () => {
 
     const editor = {
       api: {
+        dom: {
+          resolveDOMNode: mock((node: any) => {
+            if (node === startText) return startDomNode;
+            if (node === middleText) return middleDomNode;
+
+            return endDomNode;
+          }),
+          resolveDOMRange: mock(() => ({
+            endContainer: {},
+            endOffset: 1,
+            startContainer: {},
+            startOffset: 0,
+          })),
+        },
         nodes: mock(() => [
           [startText, [0, 0]],
           [middleText, [0, 1]],
           [endText, [0, 2]],
         ]),
-        toDOMNode: mock((node: any) => {
-          if (node === startText) return startDomNode;
-          if (node === middleText) return middleDomNode;
-
-          return endDomNode;
-        }),
-        toDOMRange: mock(() => ({
-          endContainer: {},
-          endOffset: 1,
-          startContainer: {},
-          startOffset: 0,
-        })),
       },
     } as any;
 

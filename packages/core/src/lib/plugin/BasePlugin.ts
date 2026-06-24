@@ -1,21 +1,19 @@
-import type {
-  EditorApi,
-  EditorTransforms,
-  TElement,
-  TText,
-} from '@platejs/slate';
+import type { Element, Path, Text } from '@platejs/plite';
 import type { AnyObject, Nullable } from '@udecode/utils';
 import type { Draft } from 'mutative';
 import type { TStateApi } from 'zustand-x';
 
-import type { CorePluginApi, CorePluginTransforms } from '../plugins';
+import type { CurrentRuntimeEditorApi as EditorApi } from '../../internal/currentRuntimeBridge';
+import type { CorePluginApi } from '../plugins';
+
+export type AnyPluginTx = Record<string, unknown>;
 
 export type AnyPluginConfig = {
   key: any;
   api: any;
   options: any;
   selectors: any;
-  transforms: any;
+  tx: AnyPluginTx;
 };
 
 export type BaseDeserializer = AnyObject & {
@@ -145,16 +143,16 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
   priority: number;
   render: Nullable<{
     /**
-     * Renders a component above the `Editable` component but within the `Slate`
+     * Renders a component above the `Editable` component but within the `Plite`
      * wrapper. Useful for adding UI elements that should appear above the
      * editable area.
      */
     aboveEditable?: React.FC<{ children: React.ReactNode }>;
     /**
-     * Renders a component above the `Slate` wrapper. This is the outermost
+     * Renders a component above the `Plite` wrapper. This is the outermost
      * render position in the editor structure.
      */
-    aboveSlate?: React.FC<{ children: React.ReactNode }>;
+    abovePlite?: React.FC<{ children: React.ReactNode }>;
     /**
      * Specifies the HTML tag name to use when rendering the node component.
      * Only used when no custom `component` is provided for the plugin.
@@ -206,8 +204,6 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
   };
   /** Selectors for the plugin. */
   selectors: InferSelectors<C>;
-  /** Transforms (state-modifying operations) that can be applied to the editor. */
-  transforms: InferTransforms<C>;
   /**
    * Configures edit-only behavior for various plugin functionalities.
    *
@@ -241,7 +237,6 @@ export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
       | ((state: Draft<Partial<InferOptions<C>>>) => void)
       | Partial<InferOptions<C>>
   ) => void;
-  tf: C['transforms'] & EditorTransforms & CorePluginTransforms;
   type: string;
   getOption: <
     K extends keyof InferOptions<C> | keyof InferSelectors<C> | 'state',
@@ -360,7 +355,7 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
   isMetadataProp?: (
     options: BasePluginContext<C> & {
       key: string;
-      node: TElement;
+      node: Element;
       value: unknown;
     }
   ) => boolean;
@@ -388,7 +383,7 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * element.
    */
   toDataAttributes?: (
-    options: BasePluginContext<C> & { node: TElement }
+    options: BasePluginContext<C> & { node: Element }
   ) => AnyObject | undefined;
 };
 
@@ -403,7 +398,7 @@ export type BaseTransformOptions = GetInjectNodePropsOptions & {
 
 export type BreakRules = {
   /** Action when Enter is pressed in an empty block. */
-  empty?: 'default' | 'deleteExit' | 'exit' | 'lift' | 'reset';
+  empty?: 'default' | 'deleteExit' | 'exit' | 'lift' | 'none' | 'reset';
   /**
    * Action when Enter is pressed at the end of an empty line. This is typically
    * used with `default: 'lineBreak'`.
@@ -418,8 +413,11 @@ export type BreakRules = {
    * ```
    */
   emptyLineEnd?: 'default' | 'deleteExit' | 'exit';
-  /** Default action when Enter is pressed. Defaults to splitting the block. */
-  default?: 'default' | 'deleteExit' | 'exit' | 'lineBreak';
+  /**
+   * Default action when Enter is pressed. Defaults to splitting the block.
+   * Use `'none'` to handle Enter without changing the document.
+   */
+  default?: 'default' | 'deleteExit' | 'exit' | 'lineBreak' | 'none';
   /** If true, the new block after splitting will be reset to the default type. */
   splitReset?: boolean;
 };
@@ -462,7 +460,7 @@ export type SelectionRules = {
    *   apply the mark to new text.
    * - `hard`: Creates a 'hard' edge that requires two key presses to move across.
    *   Uses offset-based navigation.
-   * - `default`: Uses Slate's default behavior.
+   * - `default`: Uses Plite's default behavior.
    */
   affinity?: 'default' | 'directional' | 'hard' | 'outward';
 };
@@ -516,14 +514,14 @@ export type ExtendConfig<
   C extends PluginConfig,
   EO = {},
   EA = {},
-  ET = {},
   ES = {},
+  ETx extends AnyPluginTx = {},
 > = {
   key: C['key'];
   api: C['api'] & EA;
   options: C['options'] & EO;
   selectors: C['selectors'] & ES;
-  transforms: C['transforms'] & ET;
+  tx: C['tx'] & ETx;
 };
 
 export type GetInjectNodePropsOptions = {
@@ -531,13 +529,16 @@ export type GetInjectNodePropsOptions = {
   className?: string;
 
   /** Style value or className key. */
-  element?: TElement;
+  element?: Element;
+
+  /** Current node path when the node is rendered with path context. */
+  path?: Path;
 
   /** Existing style. */
   style?: CSSStyleDeclaration;
 
   /** Style value or className key. */
-  text?: TText;
+  text?: Text;
 };
 
 export type GetInjectNodePropsReturnType = AnyObject & {
@@ -549,16 +550,26 @@ export type InferKey<P> = P extends PluginConfig ? P['key'] : never;
 
 export type InferApi<P> = P extends PluginConfig ? P['api'] : never;
 
+export type InferPluginApi<P extends AnyPluginConfig> =
+  InferApi<P> extends Record<P['key'], infer TApi> ? TApi : {};
+
 export type InferOptions<P> = P extends PluginConfig ? P['options'] : never;
 
 export type InferSelectors<P> = P extends PluginConfig ? P['selectors'] : never;
 
-export type InferTransforms<P> = P extends PluginConfig
-  ? P['transforms']
-  : never;
+export type InferTx<P> = P extends PluginConfig ? P['tx'] : never;
+
+export type InferPluginTx<P extends AnyPluginConfig> =
+  InferTx<P> extends Record<P['key'], infer TTx> ? TTx : {};
+
+export type InferTxFromExtensions<ETx extends Record<PropertyKey, unknown>> = {
+  [K in keyof ETx]: NonNullable<ETx[K]> extends (...args: any[]) => infer TGroup
+    ? TGroup
+    : never;
+};
 
 /**
- * Renders a component for Slate Nodes (elements if `isElement: true` or leaves
+ * Renders a component for Plite Nodes (elements if `isElement: true` or leaves
  * if `isLeaf: true`) that match this plugin's type. This is the primary render
  * method for plugin-specific node content.
  *
@@ -578,16 +589,18 @@ export type PluginConfig<
   K extends string = any,
   O = {},
   A = {},
-  T = {},
+  _T = {},
   S = {},
-> = { key: K; api: A; options: O; selectors: S; transforms: T };
+  Tx extends AnyPluginTx = {},
+> = { key: K; api: A; options: O; selectors: S; tx: Tx };
 
 export type WithAnyKey<C extends AnyPluginConfig = PluginConfig> = PluginConfig<
   any,
   InferOptions<C>,
   InferApi<C>,
-  InferTransforms<C>,
-  InferSelectors<C>
+  {},
+  InferSelectors<C>,
+  InferTx<C>
 >;
 
 export type WithRequiredKey<P = {}> =

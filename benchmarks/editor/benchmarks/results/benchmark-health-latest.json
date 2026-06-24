@@ -5,25 +5,25 @@
     {
       "id": "refresh-core-node-transforms",
       "priority": 4,
-      "reason": "Active artifact is 15.0 days old: ../../.tmp/slate-v2/tmp/slate-node-transform-benchmark.json",
+      "reason": "Active artifact is 15.0 days old: ../../tmp/slate-node-transform-benchmark.json",
       "title": "Refresh core-node-transforms"
     },
     {
       "id": "refresh-core-text-selection",
       "priority": 4,
-      "reason": "Active artifact is 15.0 days old: ../../.tmp/slate-v2/tmp/slate-text-selection-benchmark.json",
+      "reason": "Active artifact is 15.0 days old: ../../tmp/slate-text-selection-benchmark.json",
       "title": "Refresh core-text-selection"
     },
     {
       "id": "optional-core-transaction-current",
       "priority": 5,
-      "reason": "Optional active artifact is missing: ../../.tmp/slate-v2/tmp/slate-transaction-benchmark.json",
+      "reason": "Optional active artifact is missing: ../../tmp/slate-transaction-benchmark.json",
       "title": "Decide whether core-transaction-current should stay optional"
     },
     {
       "id": "optional-history-retained-memory",
       "priority": 5,
-      "reason": "Optional active artifact is missing: ../../.tmp/slate-v2/tmp/slate-history-retained-memory-benchmark.json",
+      "reason": "Optional active artifact is missing: ../../tmp/slate-history-retained-memory-benchmark.json",
       "title": "Decide whether history-retained-memory should stay optional"
     },
     {
@@ -38,41 +38,41 @@
     "activeArtifacts": 23,
     "discardedUnregisteredArtifacts": 62,
     "ignoredUnregisteredArtifacts": [
-      "../../.tmp/slate-v2/packages/slate-react/tmp/slate-react-runtime-node-fanout-benchmark.json",
-      "../../.tmp/slate-v2/tmp/slate-pagination-virtualized-char-burst-benchmark.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-20-iters-1-ops-3.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-5000-iters-1-ops-10.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-5000-iters-3-ops-10.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-20-iters-1-ops-3.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-1-ops-10.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-1-ops-3.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-5-ops-10.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-virtualized-blocks-5000-iters-3-ops-10.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-stagedDomPresent-blocks-20-iters-1-ops-3.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-stagedDomPresent-blocks-5000-iters-1-ops-10.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-stagedDomPresent-blocks-5000-iters-3-ops-10.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-20-iters-1-ops-3.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-20000-iters-1-ops-10.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-0-ops-10.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-1-ops-1.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-1-ops-10.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-1-ops-3.json",
-      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-3-ops-10.json"
+      "../../packages/slate-react/tmp/slate-react-runtime-node-fanout-benchmark.json",
+      "../../tmp/slate-pagination-virtualized-char-burst-benchmark.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-20-iters-1-ops-3.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-5000-iters-1-ops-10.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-5000-iters-3-ops-10.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-20-iters-1-ops-3.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-1-ops-10.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-1-ops-3.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-5-ops-10.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-virtualized-blocks-5000-iters-3-ops-10.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-stagedDomPresent-blocks-20-iters-1-ops-3.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-stagedDomPresent-blocks-5000-iters-1-ops-10.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-stagedDomPresent-blocks-5000-iters-3-ops-10.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-20-iters-1-ops-3.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-20000-iters-1-ops-10.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-0-ops-10.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-1-ops-1.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-1-ops-10.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-1-ops-3.json",
+      "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-3-ops-10.json"
     ],
     "missingOptionalArtifacts": [
       {
         "ageDays": null,
         "command": "bun run bench:core:transaction:local",
-        "cwd": "../../.tmp/slate-v2",
+        "cwd": "../..",
         "id": "core-transaction-current",
-        "path": "../../.tmp/slate-v2/tmp/slate-transaction-benchmark.json"
+        "path": "../../tmp/slate-transaction-benchmark.json"
       },
       {
         "ageDays": null,
         "command": "bun run bench:core:history-retained-memory:local",
-        "cwd": "../../.tmp/slate-v2",
+        "cwd": "../..",
         "id": "history-retained-memory",
-        "path": "../../.tmp/slate-v2/tmp/slate-history-retained-memory-benchmark.json"
+        "path": "../../tmp/slate-history-retained-memory-benchmark.json"
       }
     ],
     "missingRequiredArtifacts": [],
@@ -83,16 +83,16 @@
       {
         "ageDays": 15,
         "command": "bun run bench:core:node-transforms:local",
-        "cwd": "../../.tmp/slate-v2",
+        "cwd": "../..",
         "id": "core-node-transforms",
-        "path": "../../.tmp/slate-v2/tmp/slate-node-transform-benchmark.json"
+        "path": "../../tmp/slate-node-transform-benchmark.json"
       },
       {
         "ageDays": 15,
         "command": "bun run bench:core:text-selection:local",
-        "cwd": "../../.tmp/slate-v2",
+        "cwd": "../..",
         "id": "core-text-selection",
-        "path": "../../.tmp/slate-v2/tmp/slate-text-selection-benchmark.json"
+        "path": "../../tmp/slate-text-selection-benchmark.json"
       }
     ]
   },

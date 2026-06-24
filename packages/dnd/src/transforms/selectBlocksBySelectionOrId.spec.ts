@@ -6,20 +6,18 @@ describe('selectBlocksBySelectionOrId', () => {
   it('returns early when the editor has no selection', () => {
     const editor = {
       api: {
+        dom: { focus: mock() },
         nodesRange: mock(),
       },
       selection: null,
-      tf: {
-        focus: mock(),
-        select: mock(),
-      },
+      update: mock(),
     } as any;
 
     selectBlocksBySelectionOrId(editor, 'block-1');
 
     expect(editor.api.nodesRange).not.toHaveBeenCalled();
-    expect(editor.tf.select).not.toHaveBeenCalled();
-    expect(editor.tf.focus).not.toHaveBeenCalled();
+    expect(editor.update).not.toHaveBeenCalled();
+    expect(editor.api.dom.focus).not.toHaveBeenCalled();
   });
 
   it('selects the range of currently selected blocks when the target id is already selected', () => {
@@ -36,26 +34,26 @@ describe('selectBlocksBySelectionOrId', () => {
       selectBlockByIdModule,
       'selectBlockById'
     ).mockImplementation(() => {});
+    const setSelection = mock();
+    const tx = { selection: { set: setSelection } };
     const editor = {
       api: {
+        dom: { focus: mock() },
         nodesRange: mock(() => selectionRange),
       },
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
-      tf: {
-        focus: mock(),
-        select: mock(),
-      },
+      update: mock((fn) => fn(tx)),
     } as any;
 
     selectBlocksBySelectionOrId(editor, 'block-2');
 
     expect(getBlocksSpy).toHaveBeenCalledWith(editor, { at: editor.selection });
     expect(editor.api.nodesRange).toHaveBeenCalledWith(blockEntries);
-    expect(editor.tf.select).toHaveBeenCalledWith(selectionRange);
-    expect(editor.tf.focus).toHaveBeenCalled();
+    expect(setSelection).toHaveBeenCalledWith(selectionRange);
+    expect(editor.api.dom.focus).toHaveBeenCalled();
     expect(selectBlockByIdSpy).not.toHaveBeenCalled();
 
     getBlocksSpy.mockRestore();
@@ -73,23 +71,21 @@ describe('selectBlocksBySelectionOrId', () => {
     ).mockImplementation(() => {});
     const editor = {
       api: {
+        dom: { focus: mock() },
         nodesRange: mock(),
       },
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      tf: {
-        focus: mock(),
-        select: mock(),
-      },
+      update: mock(),
     } as any;
 
     selectBlocksBySelectionOrId(editor, 'block-2');
 
     expect(selectBlockByIdSpy).toHaveBeenCalledWith(editor, 'block-2');
     expect(editor.api.nodesRange).not.toHaveBeenCalled();
-    expect(editor.tf.select).not.toHaveBeenCalled();
+    expect(editor.update).not.toHaveBeenCalled();
 
     getBlocksSpy.mockRestore();
     selectBlockByIdSpy.mockRestore();

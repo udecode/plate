@@ -1,14 +1,15 @@
-import { withHistory } from '@platejs/slate';
+import { type ExtendEditor, createEditorPlugin } from '../plugin';
+import { withCurrentRuntimeHistory } from '../../internal/currentRuntimeBridge';
 
-import type { SlateEditor } from '../editor';
+export const withPlateHistory: ExtendEditor = ({ editor }) => {
+  withCurrentRuntimeHistory(
+    editor as unknown as Parameters<typeof withCurrentRuntimeHistory>[0]
+  );
 
-import { type ExtendEditor, createSlatePlugin } from '../plugin';
+  return editor;
+};
 
-export const withPlateHistory: ExtendEditor = ({ editor }) =>
-  withHistory(editor as any) as any as SlateEditor;
-
-/** @see {@link withHistory} */
-export const HistoryPlugin = createSlatePlugin({
+export const HistoryPlugin = createEditorPlugin({
   key: 'history',
   extendEditor: withPlateHistory,
 });

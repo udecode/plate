@@ -4,12 +4,12 @@ import { render } from '@testing-library/react';
 import { afterAll, describe, expect, it, mock } from 'bun:test';
 
 mock.module('platejs/static', () => ({
-  SlateElement: ({ children, className, ...props }: any) => (
-    <div className={className} data-testid="slate-element" {...props}>
+  PliteElement: ({ children, className, ...props }: any) => (
+    <div className={className} data-testid="plite-element" {...props}>
       {children}
     </div>
   ),
-  SlateLeaf: ({ children, className }: any) => (
+  PliteLeaf: ({ children, className }: any) => (
     <span className={className}>{children}</span>
   ),
 }));

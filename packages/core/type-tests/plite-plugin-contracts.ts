@@ -1,0 +1,81 @@
+import {
+  type PluginConfig,
+  createBasePlateEditor,
+  createEditorPlugin,
+} from '@platejs/core';
+
+const BoldPlugin = createEditorPlugin({
+  key: 'bold',
+  options: {
+    enabled: true as const,
+    hotkey: 'mod+b',
+  },
+}).extendEditorApi(({ getOptions }) => ({
+  toggleBold: () => getOptions().hotkey,
+}));
+
+type CalloutConfig = PluginConfig<
+  'callout',
+  {
+    dismissible?: boolean;
+    variant: 'info' | 'warning';
+  },
+  {
+    setVariant: (variant: 'info' | 'warning') => void;
+  }
+>;
+
+const CalloutPlugin = createEditorPlugin<CalloutConfig>({
+  key: 'callout',
+  options: {
+    dismissible: false,
+    variant: 'info',
+  },
+}).extendEditorApi(({ plugin }) => ({
+  setVariant: (variant) => {
+    plugin.options.variant = variant;
+  },
+}));
+
+const ConfiguredCalloutPlugin = CalloutPlugin.configure({
+  options: {
+    variant: 'warning',
+  },
+}).extend({
+  options: {
+    dismissible: true,
+  },
+});
+
+const basePlateEditor = createBasePlateEditor({
+  plugins: [BoldPlugin, ConfiguredCalloutPlugin],
+});
+
+const boldHotkey: string = basePlateEditor.api.toggleBold();
+const boldEnabled: true = basePlateEditor.getOptions(BoldPlugin).enabled;
+const calloutVariant: 'info' | 'warning' = basePlateEditor.getOptions(
+  ConfiguredCalloutPlugin
+).variant;
+const calloutDismissible: boolean | undefined = basePlateEditor.getOptions(
+  ConfiguredCalloutPlugin
+).dismissible;
+
+basePlateEditor.api.setVariant('info');
+basePlateEditor.api.setVariant('warning');
+
+void boldEnabled;
+void boldHotkey;
+void calloutDismissible;
+void calloutVariant;
+
+// @ts-expect-error invalid configured option value
+CalloutPlugin.configure({ options: { variant: 'danger' } });
+
+// @ts-expect-error invalid merged editor api
+basePlateEditor.api.notReal();
+
+// @ts-expect-error wrong argument type for merged api
+basePlateEditor.api.setVariant('danger');
+
+// @ts-expect-error boolean option must stay boolean
+basePlateEditor.getOptions(BoldPlugin).enabled = 'yes';

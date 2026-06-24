@@ -191,7 +191,7 @@ Completion Gates:
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/4985-ordered-list-heading-paragraph-numbering.md` | To run after this evidence update. |
 | Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | `rg` audit of package index/normalizer exports showed no export surface change; runtime behavior change only. |
 | Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Published package runtime behavior fix for `@platejs/list`. |
-| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | `.changeset/fix-list-heading-paragraph-start.md` contains only `"@platejs/list": patch`. |
+| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | `.changeset/fix-list-heading-paragraph-start.md` contains only `"@platejs/list": patch`. |
 | Registry changelog | no | If the change is registry-only under `apps/www/src/registry/**`, update `tooling/data/plate-ui-changelog.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, and do not add a package changeset | N/A: not registry-only work. |
 | No release artifact | no | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | N/A: release artifact required and added. |
 | Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | `pnpm --filter @platejs/list test isSameListSequence`; `pnpm test:slow packages/list/src/lib/normalizers/normalizeListStart.slow.tsx`; `pnpm --filter @platejs/list test toggleList`; `pnpm turbo typecheck --filter=./packages/list` passed. |
@@ -256,7 +256,7 @@ Review fixes:
 - Autoreview P2 accepted: raw element-type boundary over-split non-heading
   mixed ordered lists. Narrowed the predicate to heading-vs-non-heading tracks
   and added non-heading blockquote controls.
-- Autoreview P2 accepted: public normalizer callers can pass plain Slate
+- Autoreview P2 accepted: public normalizer callers can pass plain Plite
   editors without `editor.getType`. Added fallback to raw heading keys.
 - Autoreview P2 accepted: using only a query could skip numbered headings and
   resume an earlier paragraph track. Moved heading/paragraph transitions into a

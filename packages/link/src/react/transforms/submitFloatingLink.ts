@@ -1,13 +1,14 @@
-import { type SlateEditor, getEditorPlugin } from 'platejs';
+import { type BasePlateEditor, getEditorPlugin } from 'platejs';
 
 import { upsertLink, validateUrl } from '../../lib';
 import { LinkPlugin } from '../LinkPlugin';
+import { focusEditorAtSelection } from '../utils';
 
 /**
  * Insert link if url is valid. Text is url if empty. Close floating link. Focus
  * editor.
  */
-export const submitFloatingLink = (editor: SlateEditor) => {
+export const submitFloatingLink = (editor: BasePlateEditor) => {
   if (!editor.selection) return;
 
   const { api, getOptions } = getEditorPlugin(editor, LinkPlugin);
@@ -36,7 +37,7 @@ export const submitFloatingLink = (editor: SlateEditor) => {
   });
 
   setTimeout(() => {
-    editor.tf.focus({ at: editor.selection! });
+    focusEditorAtSelection(editor);
   }, 0);
 
   return true;

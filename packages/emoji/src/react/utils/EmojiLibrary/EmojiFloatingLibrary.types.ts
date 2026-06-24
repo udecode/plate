@@ -1,8 +1,5 @@
-import type {
-  EmojiCategoryList,
-  FrequentEmojis,
-  IEmojiLibrary,
-} from '../../../lib';
+import type { EmojiCategoryList, FrequentEmojis } from '../../../lib/types';
+import type { IEmojiLibrary } from '../../../lib/utils/EmojiLibrary/EmojiLibrary.types';
 import type { EmojiFloatingGridType } from './EmojiFloatingGrid';
 
 export type FrequentEmojiStorageProps = {

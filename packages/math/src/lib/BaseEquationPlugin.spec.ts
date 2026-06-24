@@ -1,23 +1,25 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import { BaseEquationPlugin } from './BaseEquationPlugin';
 
 describe('BaseEquationPlugin', () => {
-  it('configures equation as a void element and exposes insert.equation', () => {
-    const editor = createSlateEditor({
+  it('configures equation as a void element and exposes tx.equation.insert', () => {
+    const editor = createBasePlateEditor({
       plugins: [BaseEquationPlugin],
-    } as any);
+    });
     const plugin = editor.getPlugin(BaseEquationPlugin);
 
     expect(plugin.node).toMatchObject({
       isElement: true,
       isVoid: true,
     });
-    expect(typeof (editor as any).tf.insert.equation).toBe('function');
+    editor.update((tx) => {
+      expect(typeof tx.equation.insert).toBe('function');
+    });
   });
 
   it('deleteBackward from the next block selects the equation instead of deleting through it', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseEquationPlugin],
       selection: {
         anchor: { offset: 0, path: [1, 0] },
@@ -34,14 +36,31 @@ describe('BaseEquationPlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
-    editor.tf.deleteBackward('character');
+    editor.update((tx) => {
+      tx.text.deleteBackward({ unit: 'character' });
+    });
 
     expect(editor.children).toHaveLength(2);
     expect(editor.selection).toEqual({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
+    });
+  });
+
+  it('exposes an inferred equation transaction group', () => {
+    const editor = createBasePlateEditor({
+      plugins: [BaseEquationPlugin],
+      value: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+
+    editor.update((tx) => tx.equation.insert({ at: [1] }));
+
+    expect(editor.children[1]).toMatchObject({
+      children: [{ text: '' }],
+      texExpression: '',
+      type: KEYS.equation,
     });
   });
 });

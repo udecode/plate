@@ -1,10 +1,14 @@
 import React from 'react';
 
-import { type TRange } from '@platejs/slate';
+import type { Range, Value } from '@platejs/plite';
 
 import { act, renderHook } from '@testing-library/react';
 
 import { createPlateEditor } from '../../editor';
+import {
+  createPlateRuntimeEditor,
+  type PlateRuntimeEditor,
+} from '../../editor/createPlateRuntimeEditor';
 import {
   PlateStoreProvider,
   useEditorComposing,
@@ -33,13 +37,12 @@ describe('createPlateStore', () => {
   const createScopedWrapper = () => {
     const editor = createPlateEditor({
       id: 'scoped-editor',
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      } as Range,
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
-
-    editor.selection = {
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 0, path: [0, 0] },
-    } as TRange;
 
     const containerRef = { current: document.createElement('div') };
     const scrollRef = { current: document.createElement('section') };
@@ -141,14 +144,16 @@ describe('createPlateStore', () => {
     expect(result.current.valueVersion).toBe(1);
 
     act(() => {
-      editor.selection = {
-        anchor: { offset: 1, path: [0, 0] },
-        focus: { offset: 1, path: [0, 0] },
-      } as TRange;
-      editor.children = [
-        ...editor.children,
-        { children: [{ text: 'two' }], type: 'p' },
-      ];
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 1, path: [0, 0] },
+        } as Range);
+        tx.nodes.insert(
+          { children: [{ text: 'two' }], type: 'p' },
+          { at: [1] }
+        );
+      });
       result.current.store.set('versionEditor', 2);
       result.current.store.set('versionSelection', 2);
       result.current.store.set('versionValue', 2);
@@ -172,5 +177,42 @@ describe('createPlateStore', () => {
     expect(result.current.store.get('versionSelection')).toBe(2);
     expect(result.current.store.get('versionValue')).toBe(2);
     expect(result.current.store.get('versionDecorate')).toBe(2);
+  });
+
+  it('reads a v2 runtime editor through typed Plate store hooks', () => {
+    const value: Value = [{ children: [{ text: 'runtime' }], type: 'p' }];
+    const editor = createPlateRuntimeEditor({
+      id: 'runtime-store-editor',
+      initialValue: value,
+    });
+
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <PlateStoreProvider editor={editor} scope="runtime">
+        {children}
+      </PlateStoreProvider>
+    );
+
+    const { result } = renderHook(
+      () => ({
+        editor: useEditorState<PlateRuntimeEditor<Value>>('runtime'),
+        editorRef: useEditorRef<PlateRuntimeEditor<Value>>('runtime'),
+      }),
+      { wrapper }
+    );
+
+    result.current.editorRef.update((tx) => {
+      tx.selection.set({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      });
+    });
+
+    expect(result.current.editor).toBe(editor);
+    expect(result.current.editorRef).toBe(editor);
+    expect(result.current.editorRef.store).toBeDefined();
+    expect(editor.read((state) => state.selection.get())).toEqual({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
   });
 });
