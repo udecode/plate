@@ -57,7 +57,14 @@
     "@udecode/react-utils": "52.3.4",
     "@udecode/utils": "52.3.4",
     "@platejs/utils": "53.1.2",
-    "@platejs/yjs": "53.2.0"
+    "@platejs/yjs": "53.2.0",
+    "plite": "0.0.0-private",
+    "@platejs/browser": "54.0.0-beta.0",
+    "@platejs/plite-dom": "54.0.0-beta.0",
+    "@platejs/plite-history": "54.0.0-beta.0",
+    "@platejs/plite-hyperscript": "54.0.0-beta.0",
+    "@platejs/plite-layout": "54.0.0-beta.0",
+    "@platejs/plite-react": "54.0.0-beta.0"
   },
   "changesets": [
     "auto-main-to-next-sync-platejs-ai",
@@ -65,7 +72,9 @@
     "auto-main-to-next-sync-platejs-markdown",
     "auto-main-to-next-sync-platejs-utils",
     "auto-main-to-next-sync-platejs",
+    "plite-yjs-attribute-keys",
     "prepare-v54-beta-core",
-    "prepare-v54-beta-plite"
+    "prepare-v54-beta-plite",
+    "slate-browser-proof-lane"
   ]
 }
