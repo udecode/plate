@@ -163,6 +163,7 @@ export const withNodeId: OverrideEditor<NodeIdConfig> = ({
 
               if (!disableInsertOverrides && isDefined(entryNode._id)) {
                 const id = entryNode._id;
+                // biome-ignore lint/performance/noDelete: deleting _id is intentional here
                 delete entryNode._id;
 
                 if (!hasIdInEditor(id)) {
