@@ -261,7 +261,6 @@ lock.
 - `tdd`: bugs and feature work where behavior-level automated coverage is sane.
 - `learnings-researcher`: non-trivial repeated domains with documented
   solutions.
-- `debug`: fuzzy failures after the first repro pass or failing test.
 - `video-transcripts`: tracker evidence contains a video or screen recording.
 - If requirements remain ambiguous after source and local context, ask the
   smallest clarifying question or switch to a planning goal when the user wants
@@ -284,7 +283,8 @@ lock.
   claims. Use `--template docs` when docs dominate. Use `--with docs` and still
   load `docs-creator` when docs are a supporting touched surface under a normal
   or major task. Tiny typo/link-only edits may skip it with an explicit reason.
-- `git-commit-push-pr`: verified code should ship as a PR.
+- Git/PR shipping: when verified code should ship and repo policy permits it,
+  use normal `git`/`gh` commands directly. The `task` skill owns the PR body.
 - Review skills: load only for risky, large, user-facing, or
   architecture-sensitive changes.
 - `agent-native-reviewer`: changes touch `.agents/**`, `.claude/**`,
@@ -433,9 +433,9 @@ Keep verification mandatory and proportional.
 ## Task-Style PR Body
 
 When a `task` run creates or updates a PR, the PR description must mirror the
-task final handoff. Do not use a generic `Summary` / `Verification` PR body, an
-adaptive prose body from `git-commit-push-pr`, or a generated badge footer
-unless the caller or repo template explicitly asks for it.
+task final handoff. Do not use a generic `Summary` / `Verification` PR body,
+generic git-helper prose, or a generated badge footer unless the caller or repo
+template explicitly asks for it.
 
 Use the accepted task PR format from kitcn PR #270. The shape is not optional:
 

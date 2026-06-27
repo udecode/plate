@@ -93,15 +93,25 @@ test('formats a synthetic changeset for one auto-bumped package', () => {
   assert.match(content, /Updated `@platejs\/core`, `@platejs\/utils`\./);
 });
 
-test('uses the release branch as the changeset status base in CI', () => {
+test('does not use the release branch as the changeset status base in CI', () => {
+  assert.deepEqual(
+    getChangesetStatusArgs({
+      env: { GITHUB_REF_NAME: 'main' },
+      outputPath: '.tmp/status.json',
+    }),
+    ['exec', 'changeset', 'status', '--output=.tmp/status.json']
+  );
+
   assert.deepEqual(
     getChangesetStatusArgs({
       env: { GITHUB_REF_NAME: 'next' },
       outputPath: '.tmp/status.json',
     }),
-    ['exec', 'changeset', 'status', '--output=.tmp/status.json', '--since=next']
+    ['exec', 'changeset', 'status', '--output=.tmp/status.json']
   );
+});
 
+test('uses an explicit changeset status base override', () => {
   assert.deepEqual(
     getChangesetStatusArgs({
       env: { PLATE_CHANGESET_STATUS_BASE: 'release/v53' },

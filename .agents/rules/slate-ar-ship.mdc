@@ -84,7 +84,7 @@ Run this pre-commit path:
 4. fix accepted P0/P1 findings that are in scope, then rerun the focused proof;
 5. only after review/proof is clean or blocked with accepted residual risk,
    print `READY TO COMMIT` and pause;
-6. after confirmation, delegate commit mechanics to `git-commit`;
+6. after confirmation, use normal repo `git` commands directly;
 7. after commit, rerun `slate-ar-finalize current-tree` as a preview only so
    readiness sees a clean, exact `HEAD`.
 
@@ -100,7 +100,7 @@ DX. Treat it the same as a post-pause commit confirmation.
   artifacts (`autoresearch.*`, `autoresearch.research/**`, dashboard exports,
   generated finalization scratch). Finalization excludes session artifacts by
   default.
-- Delegate actual commit mechanics to `git-commit` after the user confirms.
+- Use normal repo `git` commands directly after the user confirms.
 - Commit the reviewed current-tree work. Do not include AR session artifacts
   unless the user explicitly asks to include session artifacts.
 - If uncommitted session artifacts would keep the source branch dirty after the
