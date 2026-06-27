@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [ $# -lt 2 ]; then
+  echo "Usage: get-thread-for-comment PR_NUMBER COMMENT_NODE_ID [OWNER/REPO]"
+  echo "Example: get-thread-for-comment 378 PRRC_kwDOP_gZVc6ySv89"
+  exit 1
+fi
+
+PR_NUMBER=$1
+COMMENT_NODE_ID=$2
+
+if [ -n "$3" ]; then
+  OWNER=$(echo "$3" | cut -d/ -f1)
+  REPO=$(echo "$3" | cut -d/ -f2)
+else
+  # Keep the friendly error reachable when this runs outside a git repo.
+  OWNER=$(gh repo view --json owner -q .owner.login 2>/dev/null || true)
+  REPO=$(gh repo view --json name -q .name 2>/dev/null || true)
+fi
+
+if [ -z "$OWNER" ] || [ -z "$REPO" ]; then
+  echo "Error: could not resolve owner/repo. Run from inside the target git repository, or pass OWNER/REPO as the third argument." >&2
+  exit 1
+fi
+
+threads_pages=$(gh api graphql --paginate --slurp \
+  -f owner="$OWNER" -f repo="$REPO" -F pr="$PR_NUMBER" \
+  -f query='
+query Threads($owner: String!, $repo: String!, $pr: Int!, $endCursor: String) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $pr) {
+      reviewThreads(first: 100, after: $endCursor) {
+        nodes {
+          id
+          isResolved
+          isOutdated
+          path
+          line
+          originalLine
+          startLine
+          originalStartLine
+          comments(first: 100) {
+            nodes {
+              id
+              author { login __typename }
+              body
+              createdAt
+              url
+            }
+          }
+        }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  }
+}')
+
+echo "$threads_pages" | jq -e --arg cid "$COMMENT_NODE_ID" '
+  [.[].data.repository.pullRequest.reviewThreads.nodes[]
+   | select(.comments.nodes | map(.id) | index($cid))]
+  | if length == 0 then error("No thread found for comment \($cid)") else .[0] end
+'

@@ -24,6 +24,14 @@ bash .agents/skills/video-transcripts/scripts/generate_video_transcript.sh \
   --title "Slash menu loses selection after confirm"
 ```
 
+Or for a Screencastify watch page:
+
+```bash
+bash .agents/skills/video-transcripts/scripts/generate_video_transcript.sh \
+  "https://app.screencastify.com/watch/..." \
+  --title "Bulk send expands filtered recipients"
+```
+
 Or for a local file:
 
 ```bash
@@ -39,6 +47,7 @@ For auth-gated Linear uploads, the helper automatically retries with cookies fro
 - A GitHub or Linear issue, PR, or comment includes a screen recording.
 - An attachment URL points to `uploads.linear.app`.
 - An attachment URL points to a GitHub attachment or private GitHub asset host.
+- A tracker links to a public Screencastify watch page.
 - You need timeline-style transcript lines, not a vague summary.
 - You want the result in this exact XML shape:
 
@@ -73,7 +82,7 @@ For auth-gated Linear uploads, the helper automatically retries with cookies fro
    `[[Transcript](...)]` source link plus timestamp lines for each video.
 10. Do not hand-write or paraphrase video behavior when the helper can run. Use the actual transcript output.
 11. Link `[[Transcript](...)]` to the video URL when available. If the video URL is not available or is unstable, link to the source comment that contains the video.
-12. For signed tracker-hosted URLs like `uploads.linear.app`, strip the query string so a new signature does not invalidate an otherwise valid cache entry.
+12. For signed tracker-hosted URLs like `uploads.linear.app`, strip the query string so a new signature does not invalidate an otherwise valid cache entry. For Screencastify, cache against the stable `https://app.screencastify.com/watch/<id>` URL, not the signed `dash-assets` HLS URLs.
 13. Do not add decorative metadata like `title` to cached transcript entries unless a later workflow truly needs it.
 14. Before re-transcribing for tracked work, match cache entries by source container first:
     - one cache comment for issue or PR body videos
@@ -118,6 +127,8 @@ bash .agents/skills/video-transcripts/scripts/generate_video_transcript.sh ... \
 - The helper accepts a local file path or remote URL.
 - For `uploads.linear.app` URLs, it first tries `LINEAR_COOKIE_HEADER`, then `LINEAR_COOKIES_DB`, then falls back to the local Linear desktop cookie store at `~/Library/Application Support/Linear/Cookies`.
 - For GitHub asset URLs, it first tries `GITHUB_TOKEN`, then `GH_TOKEN`, then `gh auth token`, then falls back to an unauthenticated download.
+- For Screencastify watch URLs, it calls `https://umbrella.svc.screencastify.com/api/umbrellaService/watch/<id>`, resolves the signed HLS manifest, rewrites child playlists so segments keep the signature, and remuxes the recording with `ffmpeg`.
+- Screencastify URL support requires `ffmpeg`.
 - It looks for `GEMINI_API_KEY`, then `GOOGLE_API_KEY`.
 - If neither is set, it tries `~/.bash_profile` before failing.
 - Use `--debug-dir <dir>` when you want request and response artifacts saved.

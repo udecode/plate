@@ -204,6 +204,18 @@ class AutoreviewHardeningTests(unittest.TestCase):
         self.assertIn("--allow-tool=web_fetch", captured[-1])
         self.assertIn("--allow-all-urls", captured[-1])
 
+    def test_self_test_shortcut_runs_deterministic_checks(self) -> None:
+        result = subprocess.run(
+            [str(SCRIPT), "--self-test"],
+            check=False,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("autoreview engine isolation self-test: ok", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

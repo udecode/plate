@@ -9,6 +9,9 @@ Goal plan:
 Template:
 {{TEMPLATE_PATH}}
 
+Linked plans:
+- None.
+
 Expected behavior:
 - TODO: State the user expectation or governing workflow rule.
 

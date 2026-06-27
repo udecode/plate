@@ -9,6 +9,9 @@ Goal plan:
 Template:
 {{TEMPLATE_PATH}}
 
+Linked plans:
+- None.
+
 Major source:
 - type: pending
 - id / link: pending
