@@ -1,18 +1,18 @@
 import type React from 'react';
 
-import type { Path, TElement } from '@platejs/slate';
+import type { Element, Path } from '@platejs/plite';
 
 export type RenderElementFn = (
   props: RenderElementProps
 ) => React.ReactElement<any>;
 
-export type RenderElementProps<N extends TElement = TElement> = {
+export type RenderElementProps<N extends Element = Element> = {
   attributes: {
-    'data-slate-node': 'element';
+    'data-plite-node': 'element';
     ref: any;
     className?: string;
-    'data-slate-inline'?: true;
-    'data-slate-void'?: true;
+    'data-plite-inline'?: true;
+    'data-plite-void'?: true;
     dir?: 'rtl';
     style?: React.CSSProperties;
   };

@@ -1,12 +1,12 @@
 import type { AnyObject, Nullable } from '@udecode/utils';
 
-import type { SlateEditor } from '../../../editor';
-import type { HtmlDeserializer } from '../../../plugin/SlatePlugin';
+import type { BaseEditor } from '../../../editor';
+import type { HtmlDeserializer } from '../../../plugin/BasePlugin';
 
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
 export const pipeDeserializeHtmlElement = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   element: HTMLElement
 ) => {
   let result: (Nullable<HtmlDeserializer> & { node: AnyObject }) | undefined;

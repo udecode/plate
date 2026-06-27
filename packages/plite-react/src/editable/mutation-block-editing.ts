@@ -132,7 +132,7 @@ export const applyBackspaceAtLeadingInlineVoidBlockBoundary = (
           return false;
         }
 
-        const [node] = state.nodes.get(location);
+        const [node] = state.nodes.get(location, { required: true });
 
         return (
           NodeApi.isElement(node) &&
@@ -170,7 +170,9 @@ export const applyBackspaceAtLeadingInlineVoidBlockBoundary = (
 
     const [blockNode] = block;
     const previousBlockPath = PathApi.previous(blockPath);
-    const [previousBlockNode] = state.nodes.get(previousBlockPath);
+    const [previousBlockNode] = state.nodes.get(previousBlockPath, {
+      required: true,
+    });
 
     if (
       !NodeApi.isElement(blockNode) ||

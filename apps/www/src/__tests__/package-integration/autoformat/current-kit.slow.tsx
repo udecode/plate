@@ -2,7 +2,7 @@
 
 import { BaseHighlightPlugin } from '@platejs/basic-nodes';
 import { BaseCodeBlockPlugin } from '@platejs/code-block';
-import { createBasePlateEditor } from 'platejs';
+import { createBaseEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 
 import { AutoformatKit } from '@/registry/components/editor/plugins/autoformat-kit';
@@ -18,7 +18,7 @@ const createCurrentKitEditor = ({
   selection?: any;
   value: any;
 }) =>
-  createBasePlateEditor({
+  createBaseEditor({
     plugins: [...plugins, ...AutoformatKit],
     selection,
     value,

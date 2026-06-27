@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { createBasePlateEditor, createEditorPlugin } from 'platejs';
+import { createBaseEditor, createBasePlugin } from 'platejs';
 import { serializeHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
@@ -9,7 +9,7 @@ import { createStaticEditor } from './create-static-editor';
 
 describe('core static serializeHtml custom render hooks', () => {
   it('renders belowNodes output around children', async () => {
-    const renderBelowPlugin = createEditorPlugin({
+    const renderBelowPlugin = createBasePlugin({
       key: 'test-list',
       render: {
         belowNodes: (_injectProps: any) =>
@@ -23,7 +23,7 @@ describe('core static serializeHtml custom render hooks', () => {
       },
     });
 
-    const editor = createBasePlateEditor({
+    const editor = createBaseEditor({
       plugins: [...BaseEditorKit, renderBelowPlugin],
       value: [
         {
@@ -74,7 +74,7 @@ describe('core static serializeHtml custom render hooks', () => {
   });
 
   it('applies both node and leaf renderers', async () => {
-    const testPlugin = createEditorPlugin({
+    const testPlugin = createBasePlugin({
       key: 'test',
       node: {
         isDecoration: false,
@@ -90,7 +90,7 @@ describe('core static serializeHtml custom render hooks', () => {
       },
     });
 
-    const editor = createBasePlateEditor({
+    const editor = createBaseEditor({
       plugins: [...BaseEditorKit, testPlugin],
       value: [
         {
@@ -116,7 +116,7 @@ describe('core static serializeHtml custom render hooks', () => {
   });
 
   it('applies a component renderer to decoration leaves', async () => {
-    const testPlugin = createEditorPlugin({
+    const testPlugin = createBasePlugin({
       key: 'test',
       node: {
         isDecoration: true,
@@ -124,7 +124,7 @@ describe('core static serializeHtml custom render hooks', () => {
       },
     });
 
-    const editor = createBasePlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         testPlugin.withComponent(({ children }) => (
           <span data-plite-test="node-wrapper">{children}</span>
@@ -154,7 +154,7 @@ describe('core static serializeHtml custom render hooks', () => {
   });
 
   it('applies a component renderer to non-decoration leaves', async () => {
-    const testPlugin = createEditorPlugin({
+    const testPlugin = createBasePlugin({
       key: 'test',
       node: {
         isDecoration: false,
@@ -162,7 +162,7 @@ describe('core static serializeHtml custom render hooks', () => {
       },
     });
 
-    const editor = createBasePlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         testPlugin.withComponent(({ children }) => (
           <span data-plite-test="node-wrapper">{children}</span>

@@ -1,7 +1,7 @@
 import {
   BaseParagraphPlugin,
   TrailingBlockPlugin,
-  createBasePlateEditor,
+  createBaseEditor,
 } from 'platejs';
 import {
   BaseBlockquotePlugin,
@@ -55,7 +55,7 @@ const createEditor = ({
   plugins: any[];
   text: string;
 }) =>
-  createBasePlateEditor({
+  createBaseEditor({
     plugins,
     selection: {
       anchor: { offset: offset ?? text.length, path: [0, 0] },

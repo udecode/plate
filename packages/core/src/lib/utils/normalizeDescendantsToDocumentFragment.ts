@@ -1,18 +1,13 @@
-import {
-  type Descendant,
-  type Editor,
-  ElementApi,
-  TextApi,
-} from '@platejs/slate';
+import { type Descendant, ElementApi, TextApi } from '@platejs/plite';
 
-import type { SlateEditor } from '../editor';
+import type { BaseEditor } from '../editor';
 import type { WithRequiredKey } from '../plugin';
 
 import { BaseParagraphPlugin } from '../plugins';
 
-const isInlineNode = (editor: Editor) => (node: Descendant) =>
+const isInlineNode = (editor: BaseEditor) => (node: Descendant) =>
   TextApi.isText(node) ||
-  (ElementApi.isElement(node) && editor.api.isInline(node));
+  (ElementApi.isElement(node) && editor.read.schema.isInline(node));
 
 const makeBlockLazy = (type: string) => (): Descendant => ({
   children: [],
@@ -119,7 +114,7 @@ const normalize = (
 
 /** Normalize the descendants to a valid document fragment. */
 export const normalizeDescendantsToDocumentFragment = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   {
     defaultElementPlugin = BaseParagraphPlugin,
     descendants,

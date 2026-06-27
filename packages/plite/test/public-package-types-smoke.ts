@@ -20,8 +20,33 @@ type PublicPackageModules = [
 type PublicPackageNamedExports = [
   typeof import('@platejs/plite').createEditor,
   typeof import('@platejs/plite').createEditorRuntime,
+  typeof import('@platejs/plite').above,
+  typeof import('@platejs/plite').after,
+  typeof import('@platejs/plite').before,
   import('@platejs/plite').EditorCommit,
+  typeof import('@platejs/plite').edges,
+  typeof import('@platejs/plite').end,
+  typeof import('@platejs/plite').first,
+  typeof import('@platejs/plite').fragment,
+  typeof import('@platejs/plite').isBlock,
+  typeof import('@platejs/plite').isEdge,
   typeof import('@platejs/plite').isEditor,
+  typeof import('@platejs/plite').isEmpty,
+  typeof import('@platejs/plite').isEnd,
+  typeof import('@platejs/plite').isInline,
+  typeof import('@platejs/plite').isSelectable,
+  typeof import('@platejs/plite').isStart,
+  typeof import('@platejs/plite').isVoid,
+  typeof import('@platejs/plite').last,
+  typeof import('@platejs/plite').next,
+  typeof import('@platejs/plite').parent,
+  typeof import('@platejs/plite').pathRef,
+  typeof import('@platejs/plite').pointRef,
+  typeof import('@platejs/plite').previous,
+  typeof import('@platejs/plite').range,
+  typeof import('@platejs/plite').start,
+  typeof import('@platejs/plite').string,
+  typeof import('@platejs/plite').unhangRange,
   typeof import('@platejs/yjs').createYjsExtension,
   typeof import('@platejs/yjs/core').createYjsAwarenessSelection,
   typeof import('@platejs/yjs/react').useYjsRemoteCursors,
@@ -35,7 +60,17 @@ type PublicPackageNamedExports = [
   typeof import('@platejs/browser/transports').resolveBrowserMobileSurface,
   typeof import('@platejs/plite-dom').DOMCoverage,
   typeof import('@platejs/plite-dom').Hotkeys,
+  typeof import('@platejs/plite-dom').getElements,
+  typeof import('@platejs/plite-dom').getNodeDataAttributeKeys,
   typeof import('@platejs/plite-dom').isDOMNode,
+  typeof import('@platejs/plite-dom').isEditor,
+  typeof import('@platejs/plite-dom').isElement,
+  typeof import('@platejs/plite-dom').isLeaf,
+  typeof import('@platejs/plite-dom').isNode,
+  typeof import('@platejs/plite-dom').isString,
+  typeof import('@platejs/plite-dom').isText,
+  typeof import('@platejs/plite-dom').isVoid,
+  typeof import('@platejs/plite-dom').keyToDataAttribute,
   typeof import('@platejs/plite-dom/internal').DOMEditor,
   typeof import('@platejs/plite-dom/internal').installDOM,
   typeof import('@platejs/plite-history').History,
@@ -55,6 +90,10 @@ type PublicPackageNamedTypeExports = [
   import('@platejs/plite').Descendant,
   import('@platejs/plite').Editor,
   import('@platejs/plite').EditorCommit,
+  import('@platejs/plite').EditorRead,
+  import('@platejs/plite').EditorReadMethods,
+  import('@platejs/plite').EditorUpdate,
+  import('@platejs/plite').EditorUpdateMethods,
   import('@platejs/plite').Element,
   import('@platejs/plite').Node,
   import('@platejs/plite').Operation,
@@ -115,6 +154,19 @@ type IsUnknownPredicateInput<T> =
         ? true
         : false;
 type ExpectTrue<T extends true> = T;
+type ExpectAssignable<TExpected, _TActual extends TExpected> = true;
+declare const editor: import('@platejs/plite').Editor;
+type _PublicEditorLifecycleMethods = [
+  ExpectAssignable<string, ReturnType<typeof editor.read.text.string>>,
+  ExpectAssignable<
+    import('@platejs/plite').Selection,
+    ReturnType<typeof editor.read.selection.get>
+  >,
+  ExpectAssignable<boolean, ReturnType<typeof editor.read.schema.isBlock>>,
+  ExpectAssignable<void, ReturnType<typeof editor.update.text.insert>>,
+  ExpectAssignable<void, ReturnType<typeof editor.update.nodes.insert>>,
+  ExpectAssignable<void, ReturnType<typeof editor.update.marks.toggle>>,
+];
 type PublicUnknownPredicateInputs = [
   ExpectTrue<
     IsUnknownPredicateInput<

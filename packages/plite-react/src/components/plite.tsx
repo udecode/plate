@@ -50,7 +50,11 @@ import {
   type PliteRuntimeValue,
   useOptionalPliteRuntimeContext,
 } from '../hooks/use-plite-runtime';
-import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import {
+  ReactEditor,
+  type ReactRuntimeEditor,
+  toReactRuntimeEditor,
+} from '../plugin/react-editor';
 import type {
   ReactEditorContextValue,
   ReactEditor as ReactEditorType,
@@ -227,7 +231,7 @@ const PliteRuntimeView = <
 
     return viewEditor;
   }, [getView, readOnly, root, runtimeContext.runtime.editor]);
-  const reactEditor = editor as unknown as ReactRuntimeEditor<V>;
+  const reactEditor = editor;
   const viewRoot = editor.read((state) => state.view.root());
   const isFocused = ReactEditor.isFocused(reactEditor);
   useIsomorphicLayoutEffect(
@@ -257,7 +261,7 @@ const PliteRuntimeView = <
       <ProjectionContext.Provider value={projectionContextValue}>
         <PliteAnnotationStoreContext.Provider value={annotationStore}>
           <EditorContext.Provider
-            value={editor as ReactEditorContextValue<any>}
+            value={reactEditor as ReactEditorContextValue<any>}
           >
             <ReadOnlyContext.Provider value={readOnly}>
               <FocusedContext.Provider value={isFocused}>
@@ -400,7 +404,7 @@ const PliteSingleEditor = <
     throw new Error('[Plite] editor is invalid!');
   }
 
-  const reactEditor = editor as unknown as ReactRuntimeEditor<V>;
+  const reactEditor = toReactRuntimeEditor<V>(editor);
   const { selectorContext, onChange: handleSelectorChange } =
     useEditorSelectorContext();
   const onChangeRef = useRef(onChange);
@@ -832,7 +836,7 @@ const PliteSingleEditor = <
         <PliteAnnotationStoreContext.Provider value={annotationStore}>
           <PliteRuntimeContext.Provider value={runtimeContextValue as any}>
             <EditorContext.Provider
-              value={editor as ReactEditorContextValue<any>}
+              value={reactEditor as ReactEditorContextValue<any>}
             >
               <ReadOnlyContext.Provider value={readOnly}>
                 <FocusedContext.Provider value={isFocused}>

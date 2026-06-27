@@ -1,6 +1,17 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import {
+  elementReadOnly as editorElementReadOnly,
+  getOperations as editorGetOperations,
+  getSnapshot as editorGetSnapshot,
+  path as editorPath,
+  positions as editorPositions,
+  replace as editorReplace,
+  shouldMergeNodesRemovePrevNode as editorShouldMergeNodesRemovePrevNode,
+  string as editorString,
+} from '@platejs/plite/internal';
+
 import { createEditor, type Descendant, defineEditorExtension } from '../src';
 
 const children: Descendant[] = [

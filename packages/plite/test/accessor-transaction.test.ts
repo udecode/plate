@@ -10,7 +10,12 @@ import {
   subscribe as editorSubscribe,
 } from '@platejs/plite/internal';
 
-import { createEditor, type Descendant, type Operation } from '../src';
+import {
+  createEditor,
+  defineEditorExtension,
+  type Descendant,
+  type Operation,
+} from '../src';
 import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
 
 const runEditorTransaction = (
@@ -77,6 +82,44 @@ const getVisibleState = (editor: ReturnType<typeof createEditor>) => {
 };
 
 describe('plite public accessor + transaction boundary', () => {
+  it('exposes direct read methods for schema, point, and runtime state', () => {
+    const editor = createEditor({
+      extensions: [
+        defineEditorExtension({
+          name: 'test-schema',
+          elements: [
+            {
+              inline: true,
+              type: 'mention',
+            },
+            {
+              type: 'caption',
+              void: 'block',
+              selectable: false,
+            },
+          ],
+        }),
+      ],
+    });
+    const value = [
+      paragraph('one'),
+      { type: 'caption', children: [{ text: '' }] },
+    ] as Descendant[];
+
+    replaceChildren(editor, value);
+
+    const mention = { type: 'mention', children: [{ text: '' }] };
+    const caption = value[1];
+    const start = editor.read.points.start([]);
+    const runtimeId = editor.read.runtime.idAt([0]);
+
+    assert.equal(editor.read.schema.isInline(mention), true);
+    assert.equal(editor.read.schema.isVoid(caption), true);
+    assert.equal(editor.read.schema.isSelectable(caption), false);
+    assert.equal(editor.read.points.isEnd(start, []), false);
+    assert.deepEqual(editor.read.runtime.pathOf(runtimeId!), [0]);
+  });
+
   it('read and replace are the public snapshot state path', () => {
     const editor = createEditor();
     const value = [paragraph('one')];

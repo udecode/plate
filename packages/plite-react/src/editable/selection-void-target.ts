@@ -40,7 +40,9 @@ export const resolveEditableClickTarget = (
     }
 
     if (editorHasPath(editor, path)) {
-      const [node] = editor.read((state) => state.nodes.get(path));
+      const [node] = editor.read((state) =>
+        state.nodes.get(path, { required: true })
+      );
       return { node, path };
     }
   }
@@ -121,7 +123,9 @@ export const selectEditableVoidPath = ({
     return null;
   }
 
-  const [node] = editor.read((state) => state.nodes.get(path));
+  const [node] = editor.read((state) =>
+    state.nodes.get(path, { required: true })
+  );
 
   if (!NodeApi.isElement(node) || !editorIsVoid(editor, node)) {
     return null;

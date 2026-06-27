@@ -388,7 +388,7 @@ export const applyEditableCut = ({
           editorHasPath(editor, inlinePath) &&
           (() => {
             const [inlineNode] = editor.read((state) =>
-              state.nodes.get(inlinePath)
+              state.nodes.get(inlinePath, { required: true })
             );
             return (
               NodeApi.isElement(inlineNode) &&

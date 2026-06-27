@@ -33,7 +33,7 @@ DOM, but lifecycle timing could leave bridge maps behind the mounted DOM.
   paragraph.
 - The console/page error was `Cannot resolve a Plite node from DOM node`.
 - The dev-safety checker also logged `omitted editable child without a DOM
-  coverage boundary` for ordinary paragraph children.
+coverage boundary` for ordinary paragraph children.
 - Inspecting the iframe DOM showed `data-plite-node="element"` and
   `data-plite-node="text"` without `data-plite-path` or runtime metadata.
 
@@ -75,18 +75,18 @@ Representative bridge shape:
 ```ts
 const fallbackPath =
   domEl && DOMEditor.hasDOMNode(editor, domEl)
-    ? parseSlateDOMPath(domEl.getAttribute('data-plite-path'))
-    : null
+    ? parseSlateDOMPath(domEl.getAttribute("data-plite-path"))
+    : null;
 
 if (fallbackPath && Editor.hasPath(editor, fallbackPath)) {
-  const [fallbackNode] = editor.read((state) => state.nodes.get(fallbackPath))
-  const key = DOMEditor.findKey(editor, fallbackNode)
+  const [fallbackNode] = editor.read((state) => state.nodes.get(fallbackPath));
+  const key = DOMEditor.findKey(editor, fallbackNode);
 
-  keyToElement.set(key, domEl)
-  ELEMENT_TO_NODE.set(domEl, fallbackNode)
-  NODE_TO_ELEMENT.set(fallbackNode, domEl)
+  keyToElement.set(key, domEl);
+  ELEMENT_TO_NODE.set(domEl, fallbackNode);
+  NODE_TO_ELEMENT.set(fallbackNode, domEl);
 
-  return fallbackNode
+  return fallbackNode;
 }
 ```
 
@@ -96,10 +96,10 @@ the caller already resolved the model path:
 ```ts
 const el =
   DOMEditor.toDOMNode(editor, text, { suppressThrow: true }) ??
-  findMountedDOMNodeByPath(editor, resolvedPoint.path)
+  findMountedDOMNodeByPath(editor, resolvedPoint.path);
 
 if (!el) {
-  throw new Error(`Cannot resolve a DOM node from Plite node: ${text}`)
+  throw new Error(`Cannot resolve a DOM node from Plite node: ${text}`);
 }
 ```
 

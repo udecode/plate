@@ -1,23 +1,18 @@
-import { type Node, RangeApi } from '@platejs/plite';
+import { type Value, RangeApi } from '@platejs/plite';
 import { getSelection } from '@platejs/plite-dom';
 import { IS_FOCUSED } from '@platejs/plite-dom/internal';
 
 import { readModelSelectionDOMPreference } from '../editable/model-selection-dom-preference';
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
+import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { readPliteViewSelection } from '../view-selection';
 import { schedulePliteReactFocus } from './focus-scheduler';
 
-type PliteEditableFocusEditor = {
-  api: {
-    dom: {
-      assertDOMNode: (node: Node) => HTMLElement;
-      focus: (options?: { retries: number }) => void;
-    };
-  };
-} & Node;
-
-const syncPreferredModelSelectionToDOM = (
-  editor: PliteEditableFocusEditor,
+const syncPreferredModelSelectionToDOM = <
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+>(
+  editor: ReactRuntimeEditor<V, TExtensions>,
   element: HTMLElement
 ) => {
   try {
@@ -71,7 +66,12 @@ const syncPreferredModelSelectionToDOM = (
   }
 };
 
-export const focusPliteEditable = (editor: PliteEditableFocusEditor) => {
+export const focusPliteEditable = <
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+>(
+  editor: ReactRuntimeEditor<V, TExtensions>
+) => {
   let element: HTMLElement | null = null;
 
   try {
@@ -103,8 +103,11 @@ export const focusPliteEditable = (editor: PliteEditableFocusEditor) => {
   }
 };
 
-export const focusPliteEditableAfterEventFrame = (
-  editor: PliteEditableFocusEditor
+export const focusPliteEditableAfterEventFrame = <
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+>(
+  editor: ReactRuntimeEditor<V, TExtensions>
 ) => {
   focusPliteEditable(editor);
   schedulePliteReactFocus(() => {

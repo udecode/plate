@@ -162,6 +162,81 @@ test('beforeinput ignores stale backward target range while model owns insert', 
   }
 });
 
+test('beforeinput preserves model selection for projected text target ranges', () => {
+  const editor = createReactEditor();
+  const root = document.createElement('div');
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('Premirror Milestone 1 test document');
+  const targetRange = document.createRange();
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  textHost.setAttribute('data-plite-node', 'text');
+  textHost.setAttribute('data-plite-path', '0,0');
+  textHost.setAttribute('data-plite-dom-sync-reason', 'projection');
+  textHost.setAttribute('data-plite-projected-dom-sync', 'true');
+  string.setAttribute('data-plite-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+  document.body.append(root);
+
+  editorReplace(editor, {
+    children: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'Premirror Milestone 1 test document' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'This abcdefmixed block carries rich text.' }],
+      },
+    ],
+    selection: {
+      anchor: { path: [1, 0], offset: 'This abcdef'.length },
+      focus: { path: [1, 0], offset: 'This abcdef'.length },
+    },
+  });
+
+  const modelSelection = editorGetSelection(editor);
+
+  try {
+    targetRange.setStart(text, 1);
+    targetRange.setEnd(text, 1);
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(root, 0, root, 0);
+    vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: 'g',
+      editor,
+      editorElement: root,
+      event: {
+        getTargetRanges: () => [targetRange],
+      } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: true,
+      preferModelSelectionForInput: false,
+      root: document,
+      selection: modelSelection,
+    });
+
+    expect(result.native).toBe(false);
+    expect(result.selection).toEqual(modelSelection);
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
+  } finally {
+    root.remove();
+    domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
 test('mouse down clears stale model-owned text input guards without reclassifying the click', () => {
   const editor = createReactEditor();
   const inputController = createEditableInputController({

@@ -35,7 +35,11 @@ import {
   setEditorRuntime,
   getLastCommit as editorGetLastCommit,
 } from '../editable/runtime-editor-api';
-import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import {
+  ReactEditor,
+  type ReactRuntimeEditor,
+  toReactRuntimeEditor,
+} from '../plugin/react-editor';
 import {
   type CreateReactEditorOptions,
   createReactEditor,
@@ -226,12 +230,17 @@ const createReactRuntime = <
   });
 };
 
+export type ReactRuntimeViewEditor<
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+> = ReactRuntimeEditor<V> & EditorView<V, TExtensions>;
+
 export const createReactRuntimeViewEditor = <
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly unknown[],
 >(
   view: EditorView<V, TExtensions>
-): EditorView<V, TExtensions> => {
+): ReactRuntimeViewEditor<V, TExtensions> => {
   const runtime = getEditorRuntime(view as any);
   const {
     api: _api,
@@ -249,11 +258,11 @@ export const createReactRuntimeViewEditor = <
   inheritEditorTransformRegistry(editor as any, view as any);
 
   const { clipboard, ...domApi } = createDOMEditorCapability(
-    editor as unknown as ReactRuntimeEditor<V>
+    toReactRuntimeEditor<V>(editor)
   );
   const reactApi = createReactApi(domApi);
-  const baseApi = view.api as ReactRuntimeEditor<V>['api'];
-  const viewApi = new Proxy(baseApi as Record<PropertyKey, unknown>, {
+  const baseApi = view.api as Record<PropertyKey, unknown>;
+  const viewApi = new Proxy(baseApi, {
     get(target, property, receiver) {
       if (property === 'clipboard') {
         return clipboard;
@@ -288,7 +297,7 @@ export const createReactRuntimeViewEditor = <
     },
   });
 
-  return Object.freeze(editor);
+  return Object.freeze(editor) as ReactRuntimeViewEditor<V, TExtensions>;
 };
 
 const isTextOperation = (operation: Operation) =>
@@ -398,7 +407,7 @@ export function PliteRuntime<
   const lastCommitVersionRef = useRef(
     editorGetLastCommit(runtime.editor)?.version ?? 0
   );
-  const reactEditor = runtime.editor as unknown as ReactRuntimeEditor<V>;
+  const reactEditor = toReactRuntimeEditor<V>(runtime.editor);
   const mountedViewEditorsRef = useRef(
     new Map<RootKey, Set<ReactRuntimeEditor<V>>>()
   );
@@ -868,7 +877,7 @@ export type PliteRootEditor<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
 > = ReactEditorType<V, TExtensions> &
-  ReactRuntimeEditor<V> &
+  ReactRuntimeEditor<V, TExtensions> &
   Omit<EditorView<V, TExtensions>, 'api' | 'getApi' | 'read' | 'update'>;
 
 /**

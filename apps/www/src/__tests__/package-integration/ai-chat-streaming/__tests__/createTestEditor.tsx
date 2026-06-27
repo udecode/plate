@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 import { jsxt } from '@platejs/test-utils';
-import { KEYS, createBasePlateEditor, type BasePlateEditor } from 'platejs';
+import { KEYS, createBaseEditor, type BaseEditor } from 'platejs';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -62,9 +62,9 @@ export const createTestEditor = () => {
         <cursor />
       </hp>
     </editor>
-  ) as any as BasePlateEditor;
+  ) as any as BaseEditor;
 
-  const editor = createBasePlateEditor({
+  const editor = createBaseEditor({
     plugins: defaultPlugins,
     selection: input.selection,
     value: input.children,

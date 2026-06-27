@@ -16,9 +16,11 @@ Primary template:
 docs/plans/templates/slate-plan.md
 
 Applied packs:
+
 - slate-plan
 
 Completion threshold:
+
 - Plite Plan closure is legal only when score >= 0.92, no dimension is below
   0.85, every pass row is complete or intentionally skipped with evidence,
   issue/reference sync rows are closed, final handoff is emitted, and
@@ -28,6 +30,7 @@ Completion threshold:
   explicit `plite-plan` execution invocation.
 
 Verification surface:
+
 - Planning checks run in `plate-2`.
 - Plite source/runtime/API claims cite and verify the live `Plate repo root`
   workspace.
@@ -39,6 +42,7 @@ Verification surface:
   packages.
 
 Constraints:
+
 - Planning mode may edit only `docs/plans/**`, `docs/research/**`,
   `docs/plite-issues/**`, `docs/plite/ledgers/**`, and
   `docs/plite/references/**`.
@@ -50,6 +54,7 @@ Constraints:
   only when they explain the API, not when they hide it.
 
 Boundaries:
+
 - In scope: `plite-layout` layout provider protocol, derived fragments, page
   projection, `PagedEditable` layout consumption, `/examples/pagination`
   multi-page table fixture, robust TDD plan, page-level virtualization
@@ -63,11 +68,13 @@ Boundaries:
   `../tiptap-docs`, and compiled research under `docs/research/**`.
 
 Blocked condition:
+
 - Block only if the same missing external/user decision prevents progress for
   three consecutive goal turns and no source read, research pass, issue-ledger
   pass, objection pass, or plan-hardening move remains runnable.
 
 Plite Plan lane state:
+
 - slate_plan_lane_status: complete
 - current_pass: closure-score-and-final-gates
 - current_pass_status: complete
@@ -77,6 +84,7 @@ Plite Plan lane state:
 - final_handoff_status: complete
 
 Current verdict:
+
 - verdict: user-review-ready plan; execute only after explicit acceptance
 - confidence: 0.93 after closure score and final gates
 - keep / cut / revise call: keep `plite-layout`, `usePliteLayout`,
@@ -89,6 +97,7 @@ Current verdict:
   table row pagination needs provider-owned measured units/fragments.
 
 Completion rule:
+
 - Do not call `update_goal(status: complete)` while any required checklist item
   remains unchecked. If an item does not apply, check it and add
   `N/A: <reason>`.
@@ -107,6 +116,7 @@ Start Gates:
 | Live `Plate repo root` grounding needed for current-state claims | complete | `bun --filter ./packages/plite-layout test` passed in `Plate repo root` |
 
 Work Checklist:
+
 - [x] Objective includes lane outcome, full pass schedule, one-pass-per-
       activation policy, completion threshold, verification surface,
       constraints, boundaries, and blocked condition.
@@ -183,6 +193,7 @@ Current weighted score after issue sync accounting: 0.894
 Final weighted score after closure gates: 0.927
 
 Source-backed architecture north star:
+
 - target shape: `plite-layout` owns derived node layout plans and page
   fragments; app/Plate providers own measurement and split policy for tables,
   media, callouts, figures, and other structured boxes; `plite-react` consumes
@@ -237,6 +248,7 @@ slate-yjs migration-backbone target:
 | Fragment identity | stable fragment ids include source path/unit key/version/profile | remote cursors/export can refer to derived fragments without changing AST | collaborative table layout conflict policy in raw Plite | execution proof | add |
 
 Intent / boundary record:
+
 - intent: make pagination a derived layout substrate that can handle structured
   nodes, not a line-count trick and not a product table package.
 - outcome:
@@ -287,6 +299,7 @@ Intent / boundary record:
   requires explicit user acceptance of the final plan.
 
 Decision brief:
+
 - principles:
   - keep the AST semantic and collaboration-friendly
   - make layout derived, cacheable, and disposable
@@ -362,6 +375,7 @@ Issue accounting:
 | `#6034` table last-node ArrowDown | Existing Fixes unchanged | do not broaden | exact table-edge regression floor, not pagination/table-fragment coverage | unchanged | existing Fixes row covers | unchanged |
 
 Issue-ledger sync status:
+
 - ClawSweeper related-issue pass: complete by reuse, not rerun. Existing
   2026-05-25 Pretext Pagination / Page Virtualization Feedback rows already
   cover `#5944`, `#790`, `#5924`, `#4141`, `#5131`, `#2051`, `#2793`,
@@ -378,6 +392,7 @@ Issue-ledger sync status:
   already says generic provider/split protocols and no fixed/improved claim.
 
 Issue-ledger pass result:
+
 - Issue coverage matrix evidence:
   `docs/plite/ledgers/issue-coverage-matrix.md:302-324` already records
   generic provider/split protocols for table/media/BFC pagination, keeps
@@ -387,7 +402,7 @@ Issue-ledger pass result:
 - DOM/table warning evidence:
   `docs/plite/ledgers/issue-coverage-matrix.md:434-437` keeps `#5550` and
   `#5551` not claimed, and keeps `#5924` not claimed.
-Final issue sync accounting result:
+  Final issue sync accounting result:
 - Issue matrix evidence:
   `docs/plite/ledgers/issue-coverage-matrix.md:362-387` records a
   2026-05-26 no-claim planning sync for `nodeLayout`,
@@ -420,6 +435,7 @@ Ecosystem strategy synthesis:
 | Premirror | Pretext pagination research | derived pages/fragments over semantic doc | AST page mutation | snapshot -> measure -> compose -> render | product API cloning | derived fragment plan | partial inspiration |
 
 Research/ecosystem/live-source refresh result:
+
 - Pretext source refresh:
   - `../pretext/src/layout.ts:668-682` confirms `prepare()` segments text and
     measures segments through canvas-backed width caches.
@@ -488,6 +504,7 @@ Research/ecosystem/live-source refresh result:
     overflow policy, fragment ids, and renderer lookup.
 
 Pressure pass result:
+
 - Performance/DX hard calls:
   - `nodeLayout` is safe only if provider evaluation happens once per relevant
     top-level element per layout snapshot, then the result is cached by editor
@@ -616,6 +633,7 @@ High-risk deliberate-mode pre-mortem:
 | Accessibility overclaim | virtualized/page chrome | screen readers see partial document while API implies full native surface | Virtualized paged mode is explicit degraded/native-incomplete until a11y proof exists. Page chrome must not masquerade as editable content. | release guard, not first execution claim | accepted guardrail |
 
 High-risk deliberate-mode result:
+
 - Hard decision: no duplicate editable DOM for the same Plite source path in the
   first execution slice. Repeated table headers are explicitly out of that slice.
   Later header repeat must be clone-free or inert decoration, not editable Plite
@@ -648,6 +666,7 @@ Ecosystem maintainer pass:
 | Premirror / Pretext pagination | "Do not over-copy a product demo or assume its constraints match Plite." | Accepted. The useful mechanism is derived pages/fragments over a semantic document, not a product API clone. | Adopt snapshot -> measure -> compose -> render as architecture language; keep raw Plite unopinionated. | Derived-fragment language kept; product cloning rejected. |
 
 Ecosystem maintainer pass result:
+
 - Pretext: strongest caveat survives. Plite can default to Pretext while being
   honest that `prepare()` currently depends on canvas measurement and browser
   profile behavior. The API must not promise cross-client/server break identity
@@ -664,6 +683,7 @@ Ecosystem maintainer pass result:
   Tiptap Pages as failed architecture.
 
 Revision pass result:
+
 - Final API wording:
   - `usePliteLayout(editor, { page, root, typography, nodeLayout, pageBreaks })`
     remains the user-facing layout entrypoint.
@@ -713,6 +733,7 @@ Plite maintainer objection ledger:
 | Pretext remains the text engine target | "Pretext is not fully headless; canvas measurement drift weakens the architecture." | Correct caveat, not a blocker. Use Pretext for text layout now, keep `measurementProfile`, and keep strict page-break authority opt-in. | No byte-for-byte cross-client/export promise until headless measurement exists or an authoritative writer/server provides breaks. | Memory/research notes and current plan keep canvas drift explicit. | keep with caveat |
 
 Maintainer objection pass result:
+
 - Strongest accepted revision: rename the provider context from ambiguous
   current-page `page` to `pageSettings` plus `measurementProfile`. Providers
   describe node layout; the core pager owns placement.
@@ -735,6 +756,7 @@ Hard cuts and rejected alternatives:
 | Existing `boxes` as final API | revise | useful seed, not enough for row/unit fragments | alpha hard cut | live source and maintainer objections | issue sync complete |
 
 Plan deltas from review:
+
 - Created Plite Plan artifact from template.
 - Grounded current state in live `plite-layout`, `PagedEditable`, and
   `/examples/pagination` source.
@@ -811,6 +833,7 @@ Fast driver gates:
 | high-risk planning React gate | Plate repo root | `bun --filter ./packages/plite-react test:vitest -- test/dom-strategy-page-virtualization.test.tsx test/dom-coverage-native-bridge-contract.test.ts` | current virtualized/degraded DOM and model-backed coverage guards | passed in closure rerun |
 
 Final user-review handoff outline:
+
 - accepted plan items: `nodeLayout`, provider-owned units/fragments,
   `usePliteLayoutFragments()`, explicit `layout.getFragments(path)`,
   page/spread virtualization in paged mode, and opt-in `pageBreaks`
@@ -841,6 +864,7 @@ Final completion gates:
 | `check-complete` passes | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-plite-provider-owned-page-layout-fragments.md` | complete |
 
 Findings:
+
 - Current source already models box kind and split vocabulary, including
   `table`, `table-cell`, and `split: 'row'`, but row splitting is not consumed
   by the pager.
@@ -851,6 +875,7 @@ Findings:
 - Prior solution notes already forbid raw Plite Markdown/table product packages.
 
 Decisions and tradeoffs:
+
 - Choose generic node layout plans and unit/page fragments.
 - Keep page/spread virtualization as the paged-mode repeated unit.
 - Keep strict page-break authority opt-in.
@@ -863,6 +888,7 @@ Error attempts:
 | None in this pass | 0 | | |
 
 External/browser findings:
+
 - Tiptap Pages evidence is treated as failure taxonomy and product-approach
   contrast, not a system to copy. Official local docs confirm CSS
   float/BFC/table limitations and a separate heavily modified Pages TableKit.
@@ -872,6 +898,7 @@ External/browser findings:
   Plite keeps DOM coverage, selection, IME/mobile, and a11y policy.
 
 Timeline:
+
 - 2026-05-26 Plite Plan goal plan created.
 - 2026-05-26 Current-state pass completed with live source and focused
   `plite-layout` verification.
@@ -906,6 +933,7 @@ Timeline:
   no-new-claim boundary.
 
 Verification evidence:
+
 - `cwd=/Users/zbeyens/git/plate-2/Plate repo root`
 - Closure rerun: `bun --filter ./packages/plite-layout test`
 - Result: pass, 31 tests, 0 fail, 108 expects.
@@ -924,6 +952,7 @@ Verification evidence:
   passed in the closure run.
 
 Execution evidence:
+
 - `cwd=/Users/zbeyens/git/plate-2/Plate repo root`
 - Implemented `nodeLayout` provider-owned text/box/unit plans in
   `packages/plite-layout/src/index.ts`; public `boxes` option is cut in favor
@@ -955,7 +984,7 @@ Execution evidence:
   `../../.agents/skills/autoreview/scripts/autoreview --mode local --engine claude --no-tools`
   completed clean after the coordinate-space finding was fixed. Final
   structured result: `autoreview clean: no accepted/actionable findings
-  reported`.
+reported`.
 
 Reboot status:
 | Question | Answer |
@@ -967,6 +996,7 @@ Reboot status:
 | What have I done? | Created and populated the plan, reran focused `Plate repo root` layout and React high-risk tests, closed related issue discovery, issue-ledger, intent/decision, research/live-source, pressure, maintainer-objection, high-risk, ecosystem maintainer, revision, issue-sync, and closure passes. |
 
 Open risks:
+
 - Planning risks: none blocking user review.
 - Execution risks: duplicate DOM for repeated header/table fragments,
   browser-native behavior under page/spread virtualization, IME/composition in

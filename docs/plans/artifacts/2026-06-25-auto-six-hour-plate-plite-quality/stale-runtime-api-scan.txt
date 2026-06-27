@@ -1,0 +1,218 @@
+content/docs/plite/migration.mdx:405:const path = ReactEditor.findPath(editor, element);
+content/docs/migration/v48.cn.mdx:158:    editor.getPluginApi(YjsPlugin).yjs.init({
+content/docs/migration/v48.cn.mdx:165:      editor.getPluginApi(YjsPlugin).yjs.destroy();
+content/docs/migration/v48.cn.mdx:266:              .getPluginApi(SuggestionPlugin)
+content/docs/migration/index.cn.mdx:41:    -   将 `editor.api.fragment` 选项 `structuralTypes` 替换为 `unwrap`。
+content/docs/migration/index.cn.mdx:45:        editor.api.fragment(editor.selection, { structuralTypes: ['table'] });
+content/docs/migration/index.cn.mdx:48:        editor.api.fragment(editor.selection, { unwrap: ['table'] });
+content/docs/migration/index.cn.mdx:54:    -   `editor.tf.insertSoftBreak` 现在插入软换行而非硬换行。
+content/docs/migration/index.cn.mdx:124:        -   由 `editor.tf.insertExitBreak` 功能用于确定嵌套结构中的适当退出点。
+content/docs/migration/index.cn.mdx:135:        -   `editor.tf.escape`: 处理 Escape 键事件。如果事件被处理则返回 `true`。
+content/docs/migration/index.cn.mdx:136:        -   `editor.tf.moveLine`: 处理 ArrowDown 和 ArrowUp 键事件，`reverse` 选项用于方向。如果事件被处理则返回 `true`。
+content/docs/migration/index.cn.mdx:137:        -   `editor.tf.selectAll`: 处理 Ctrl/Cmd+A 键事件以选择所有内容。如果事件被处理则返回 `true`。
+content/docs/migration/index.cn.mdx:138:        -   `editor.tf.tab`: 处理 Tab 和 Shift+Tab 键事件，`reverse` 选项用于 Shift+Tab。如果事件被处理则返回 `true`。
+content/docs/migration/index.cn.mdx:194:        -   `editor.api.copilot.accept` 现在为 `editor.tf.copilot.accept`。
+content/docs/migration/index.cn.mdx:195:        -   `editor.api.copilot.acceptNextWord` 现在为 `editor.tf.copilot.acceptNextWord`。
+content/docs/migration/index.cn.mdx:264:        editor.tf.textAlign.setNodes(newValue as Alignment);
+content/docs/migration/index.cn.mdx:265:        editor.tf.focus();
+content/docs/installation/node.cn.mdx:80:// 现在可以使用editor.children、editor.api、editor.tf等
+content/docs/installation/node.cn.mdx:121:  editor.tf.setNodes(
+content/docs/installation/node.cn.mdx:127:  editor.tf.insertNodes(
+content/docs/installation/node.cn.mdx:165:-   **[`editor.tf`](/docs/api/plite/editor-transforms)**: 使用转换函数修改编辑器内容：
+content/docs/installation/node.cn.mdx:166:    -   `editor.tf.insertNodes(nodes, opts)`: 插入新节点
+content/docs/installation/node.cn.mdx:167:    -   `editor.tf.removeNodes(opts)`: 删除节点
+content/docs/installation/node.cn.mdx:168:    -   `editor.tf.setNodes(props, opts)`: 更新现有节点属性
+content/docs/installation/node.cn.mdx:169:    -   `editor.tf.normalize({ force: true })`: 规范化编辑器
+content/docs/migration/v48.mdx:167:    editor.getPluginApi(YjsPlugin).yjs.init({
+content/docs/migration/v48.mdx:174:      editor.getPluginApi(YjsPlugin).yjs.destroy();
+content/docs/migration/v48.mdx:275:              .getPluginApi(SuggestionPlugin)
+content/docs/migration/v48.mdx:484:  - **Editor methods have moved** to `editor.tf` and `editor.api`. They still exist at the top level for **slate backward compatibility**, but are no longer redundantly typed. If you truly need the top-level method types, extend your editor type with `LegacyEditorMethods` (e.g. `editor as Editor & LegacyEditorMethods`). Since these methods can be overridden by `extendEditor`, `with...`, or slate plugins, consider migrating to the following approaches:
+content/docs/migration/v48.mdx:504:  This was previously done in `extendEditor` using top-level methods, which still works but now throws a type error due to the move to `editor.tf/editor.api`. A workaround is to extend your editor with `LegacyEditorMethods`.
+content/docs/migration/v48.mdx:728:  - `createEditor` now returns an editor (`Editor`) with all queries under `editor.api` and transforms under `editor.tf`. You can see or override them at a glance. For example, we now use `editor.tf.setNodes` instead of importing `setNodes`. This marks the completion of generic typing and the removal of error throws from `slate`, `plite-dom`, and `plite-history` queries/transforms, without forking implementations. We’ve also reduced the number of queries/transforms by merging a bunch of them.
+content/docs/migration/v48.mdx:778:    - `editor.tf.toggle.block({ type, ...options })` -> `editor.tf.toggleBlock(type, options)`
+content/docs/migration/v48.mdx:779:    - `editor.tf.toggle.mark({ key, clear })` -> `editor.tf.toggleMark(key, { remove: clear })`
+content/docs/migration/v48.mdx:783:    - `addMark` -> `editor.tf.addMark`
+content/docs/migration/v48.mdx:784:    - `addRangeMarks` -> `editor.tf.setNodes(props, { at, marks: true })`
+content/docs/migration/v48.mdx:785:    - `blurEditor` -> `editor.tf.blur`
+content/docs/migration/v48.mdx:786:    - `collapseSelection` -> `editor.tf.collapse`
+content/docs/migration/v48.mdx:792:    - `deleteBackward({ unit })` -> `editor.tf.deleteBackward(unit)`
+content/docs/migration/v48.mdx:793:    - `deleteForward({ unit })` -> `editor.tf.deleteForward(unit)`
+content/docs/migration/v48.mdx:794:    - `deleteFragment` -> `editor.tf.deleteFragment`
+content/docs/migration/v48.mdx:795:    - `deleteText` -> `editor.tf.delete`
+content/docs/migration/v48.mdx:796:    - `deselect` -> `editor.tf.deselect`
+content/docs/migration/v48.mdx:797:    - `deselectEditor` -> `editor.tf.deselectDOM`
+content/docs/migration/v48.mdx:798:    - `duplicateBlocks` -> `editor.tf.duplicateNodes({ nodes })`
+content/docs/migration/v48.mdx:804:    - `findNodePath` -> `editor.api.findPath`
+content/docs/migration/v48.mdx:805:    - `findPath` -> `editor.api.findPath`
+content/docs/migration/v48.mdx:806:    - `focusEditor` -> `editor.tf.focus({ at })`
+content/docs/migration/v48.mdx:807:    - `focusEditorEdge` -> `editor.tf.focus({ at, edge: 'startEditor' | 'endEditor' })`
+content/docs/migration/v48.mdx:818:    - `getFragment` -> `editor.api.fragment`
+content/docs/migration/v48.mdx:848:    - `getSelectionFragment` -> `editor.api.fragment(editor.selection, { structuralTypes })`
+content/docs/migration/v48.mdx:859:    - `insertBreak` -> `editor.tf.insertBreak`
+content/docs/migration/v48.mdx:860:    - `insertData` -> `editor.tf.insertData`
+content/docs/migration/v48.mdx:861:    - `insertElements` -> `editor.tf.insertNodes<Element>`
+content/docs/migration/v48.mdx:862:    - `insertEmptyElement` -> `editor.tf.insertNodes(editor.api.create.block({ type }))`
+content/docs/migration/v48.mdx:863:    - `insertFragment` -> `editor.tf.insertFragment`
+content/docs/migration/v48.mdx:864:    - `insertNode` -> `editor.tf.insertNode`
+content/docs/migration/v48.mdx:865:    - `insertNodes` -> `editor.tf.insertNodes`
+content/docs/migration/v48.mdx:866:    - `insertText` -> `editor.tf.insertText({ at })` or `editor.tf.insertText({ marks: false })` without `at`
+content/docs/migration/v48.mdx:898:    - `liftNodes` -> `editor.tf.liftNodes`
+content/docs/migration/v48.mdx:899:    - `mergeNodes` -> `editor.tf.mergeNodes`
+content/docs/migration/v48.mdx:900:    - `moveChildren` -> `editor.tf.moveNodes({ at, to, children: true, fromIndex, match: (node, path) => boolean })`
+content/docs/migration/v48.mdx:901:    - `moveNodes` -> `editor.tf.moveNodes`
+content/docs/migration/v48.mdx:902:    - `moveSelection` -> `editor.tf.move`
+content/docs/migration/v48.mdx:903:    - `normalizeEditor` -> `editor.tf.normalize`
+content/docs/migration/v48.mdx:904:    - `removeEditorMark` -> `editor.tf.removeMark`
+content/docs/migration/v48.mdx:905:    - `removeEditorText` -> `editor.tf.removeNodes({ text: true, empty: false })`
+content/docs/migration/v48.mdx:906:    - `removeEmptyPreviousBlock` -> `editor.tf.removeNodes({ previousEmptyBlock: true })`
+content/docs/migration/v48.mdx:907:    - `removeMark(options)` -> `editor.tf.removeMarks(keys, options)`
+content/docs/migration/v48.mdx:908:    - `removeNodeChildren` -> `editor.tf.removeNodes({ at, children: true })`
+content/docs/migration/v48.mdx:909:    - `removeNodes` -> `editor.tf.removeNodes`
+content/docs/migration/v48.mdx:910:    - `removeSelectionMark` -> `editor.tf.removeMarks()`
+content/docs/migration/v48.mdx:911:    - `replaceNode(editor, { nodes, insertOptions, removeOptions })` -> `editor.tf.replaceNodes(nodes, { removeNodes, ...insertOptions })`
+content/docs/migration/v48.mdx:912:    - `select` -> `editor.tf.select`
+content/docs/migration/v48.mdx:913:    - `selectEndOfBlockAboveSelection` -> `editor.tf.select(editor.selection, { edge: 'end' })`
+content/docs/migration/v48.mdx:914:    - `selectNodes` -> `editor.tf.select(editor.api.nodesRange(nodes))`
+content/docs/migration/v48.mdx:915:    - `setFragmentData` -> `editor.tf.setFragmentData`
+content/docs/migration/v48.mdx:916:    - `setMarks(marks, clear)` -> `editor.tf.addMarks(marks, { remove: string | string[] })`
+content/docs/migration/v48.mdx:917:    - `setNodes` -> `editor.tf.setNodes`
+content/docs/migration/v48.mdx:918:    - `setPoint` -> `editor.tf.setPoint`
+content/docs/migration/v48.mdx:919:    - `setSelection` -> `editor.tf.setSelection`
+content/docs/migration/v48.mdx:921:    - `splitNodes` -> `editor.tf.splitNodes`
+content/docs/migration/v48.mdx:925:    - `toggleWrapNodes` -> `editor.tf.toggleBlock(type, { wrap: true })`
+content/docs/migration/v48.mdx:931:    - `unsetNodes` -> `editor.tf.unsetNodes`
+content/docs/migration/v48.mdx:932:    - `unwrapNodes` -> `editor.tf.unwrapNodes`
+content/docs/migration/v48.mdx:933:    - `withoutNormalizing` -> `editor.tf.withoutNormalizing`
+content/docs/migration/v48.mdx:934:    - `wrapNodeChildren` -> `editor.tf.wrapNodes(element, { children: true })`
+content/docs/migration/v48.mdx:935:    - `wrapNodes` -> `editor.tf.wrapNodes`
+content/docs/migration/v48.mdx:936:    - `replaceNodeChildren` -> `editor.tf.replaceNodes({ at, children: true })`
+content/docs/migration/v48.mdx:937:    - `resetEditor` -> `editor.tf.reset`
+content/docs/migration/v48.mdx:938:    - `resetEditorChildren` -> `editor.tf.reset({ children: true })`
+content/docs/migration/v48.mdx:939:    - `selectEditor` -> `editor.tf.select([], { focus, edge })`
+content/docs/migration/v48.mdx:940:    - `selectSiblingNodePoint` -> `editor.tf.select(at, { next, previous })`
+content/docs/migration/v48.mdx:1029:  - Replace `NodeOf` type with `DescendantOf` in `editor.tf.setNodes` `editor.tf.unsetNodes`, `editor.api.previous`, `editor.api.node`, `editor.api.nodes`, `editor.api.last`
+content/docs/migration/v48.mdx:1030:  - Enhanced `editor.tf.setNodes`:
+content/docs/migration/v48.mdx:1412:          editor.tf.toggle.block({ type });
+content/docs/migration/v48.mdx:1424:  - `toggleParagraph` is now a shortcut for `editor.tf.toggle.block({ type: 'p' })` for the given keys
+content/docs/migration/v48.mdx:1643:    - NEW `editor.tf.toggle.block`
+content/docs/migration/v48.mdx:1644:    - NEW `editor.tf.toggle.mark`
+content/docs/migration/v48.mdx:1703:  - Move `reset` to `editor.tf.reset`
+content/docs/migration/v48.mdx:1740:  editor.tf.insert.tableRow(); // table plugin is automatically inferred
+content/docs/installation/react.cn.mdx:307:          onClick={() => editor.tf.setValue(initialValue)}
+content/docs/installation/manual.cn.mdx:348:          onClick={() => editor.tf.setValue(initialValue)}
+content/docs/installation/manual.cn.mdx:378:  - 重置按钮使用`editor.tf.setValue()`恢复初始值
+content/docs/installation/next.cn.mdx:315:          onClick={() => editor.tf.setValue(initialValue)}
+content/docs/(guides)/editor-methods.cn.mdx:114:const path = editor.findPath(node);
+content/docs/(guides)/editor-methods.cn.mdx:117:### getPluginApi
+content/docs/(guides)/editor-methods.cn.mdx:122:const api = editor.getPluginApi(TablePlugin);
+content/docs/installation/rsc.cn.mdx:83:// 您现在可以使用editor.children, editor.api, editor.tf等
+content/docs/installation/rsc.cn.mdx:110:-   **[`editor.tf`](/docs/api/plite/editor-transforms)**: 使用转换函数修改编辑器内容。例如：
+content/docs/installation/rsc.cn.mdx:111:    -   `editor.tf.insertNodes(nodes, opts)`: 插入新节点
+content/docs/installation/rsc.cn.mdx:112:    -   `editor.tf.removeNodes(opts)`: 删除节点
+content/docs/installation/rsc.cn.mdx:113:    -   `editor.tf.setNodes(props, opts)`: 更新现有节点属性
+content/docs/installation/rsc.cn.mdx:114:    -   `editor.tf.normalize({ force: true })`: 规范化编辑器
+content/docs/api/plite/editor-transforms.cn.mdx:479:editor.tf.addMarks({ bold: true, italic: true })
+content/docs/api/plite/editor-transforms.cn.mdx:480:editor.tf.addMarks({ bold: subscript }, { remove: 'superscript' })
+content/docs/api/plite/editor-transforms.cn.mdx:481:editor.tf.addMarks({ bold: true }, { remove: ['italic', 'underline'] })
+content/docs/api/plite/editor-transforms.cn.mdx:524:editor.tf.removeMarks()             // remove all marks
+content/docs/api/plite/editor-transforms.cn.mdx:525:editor.tf.removeMarks('bold')       // remove the 'bold' mark
+content/docs/api/plite/editor-transforms.cn.mdx:526:editor.tf.removeMarks(['bold','italic'])
+content/docs/api/plite/editor-transforms.cn.mdx:527:editor.tf.removeMarks('bold', { at: range })
+content/docs/api/plite/editor-transforms.cn.mdx:566:editor.tf.toggleMark('bold')                                // Toggle bold on/off
+content/docs/api/plite/editor-transforms.cn.mdx:567:editor.tf.toggleMark('subscript', { remove: 'superscript'}) // Remove superscript before adding subscript
+content/docs/api/plite/editor-transforms.cn.mdx:630:editor.tf.select(at)
+content/docs/api/plite/editor-transforms.cn.mdx:631:editor.tf.select(at, { edge: 'end' })
+content/docs/api/plite/editor-transforms.cn.mdx:632:editor.tf.select(at, { edge: 'start' })
+content/docs/api/plite/editor-transforms.cn.mdx:705:editor.tf.focus()
+content/docs/api/plite/editor-transforms.cn.mdx:706:editor.tf.focus({ edge: 'end' })
+content/docs/api/plite/editor-transforms.cn.mdx:707:editor.tf.focus({ edge: 'endEditor' })
+content/docs/api/plite/editor-transforms.cn.mdx:982:        editor.tf.outdent();
+content/docs/api/plite/editor-transforms.cn.mdx:985:        editor.tf.indent();
+content/docs/api/plite/editor-transforms.cn.mdx:1015:        editor.tf.select(blockEntry[1]);
+content/docs/api/plite/editor-transforms.cn.mdx:1045:        editor.tf.exitSpecialMode();
+content/docs/(guides)/controlled.cn.mdx:14:鉴于这些挑战，通常建议将 Plate 作为非受控输入使用。但如果需要从外部更改编辑器内容，可以使用 `editor.tf.setValue(value)` 函数。
+content/docs/(guides)/controlled.cn.mdx:17:  使用 `editor.tf.setValue` 会在每次调用时重新渲染所有节点，因此应谨慎使用。
+content/docs/(guides)/controlled.cn.mdx:21:或者，您可以使用 `editor.tf.reset()` 来重置编辑器状态，这将同时重置选区(selection)和历史记录(history)。
+content/docs/(guides)/controlled.cn.mdx:25:您可以使用 `skipInitialization` 延迟编辑器初始化，直到异步数据准备就绪。然后调用 `editor.tf.init` 并传入您的值：
+content/docs/(guides)/controlled.cn.mdx:50:      editor.tf.init({ value: initialValue, autoSelect: 'end' });
+content/docs/(guides)/plugin-shortcuts.cn.mdx:34:    editor.tf.normalize({ force: true });
+content/docs/(guides)/plugin-shortcuts.cn.mdx:112:其他插件，如 `CodePlugin`、`StrikethroughPlugin` 等，提供可以轻松链接到快捷键的 transform（例如，`toggle` 快捷键将链接到 `editor.tf.<pluginKey>.toggle()`），但您需要为它们明确定义快捷键 `keys`。
+content/docs/(guides)/plugin-shortcuts.cn.mdx:127:  // 假设存在 transform 如 editor.tf.myFormatting.applyHeader
+content/docs/(guides)/plugin-shortcuts.cn.mdx:128:  // 和 editor.tf.myFormatting.applyCodeStyle。
+content/docs/api/core/plate-editor.cn.mdx:73:  <APIItem name="getPluginApi" type="(plugin: PlatePlugin) => PlateEditor['api'] & PlatePlugin['api']">
+content/docs/api/core/plate-editor.cn.mdx:145:  <APIItem name="editor.tf.reset" type="() => void">
+content/docs/api/core/plate-editor.cn.mdx:161:  <APIItem name="editor.tf.setValue" type="(value: Value) => void">
+content/docs/(guides)/unit-testing.cn.mdx:85:  editor.tf.toggleMark('bold');
+content/docs/(guides)/unit-testing.cn.mdx:118:  editor.tf.deleteBackward();
+content/docs/(guides)/unit-testing.cn.mdx:219:    editor.tf.insertTable({ rows: 2, columns: 2 });
+content/docs/(guides)/unit-testing.cn.mdx:264:    editor.tf.insertData({
+content/docs/(guides)/editor.cn.mdx:48:如果需要异步获取初始值（例如从API），可以使用`skipInitialization`选项并在数据就绪后调用`editor.tf.init`：
+content/docs/(guides)/editor.cn.mdx:73:      editor.tf.init({ value: initialValue });
+content/docs/(guides)/editor.cn.mdx:313:editor.tf.insert.tableRow()
+content/docs/(guides)/form.cn.mdx:174:editor.tf.setValue(formStateValue);
+content/docs/(guides)/form.cn.mdx:220:          editor.tf.reset();
+content/docs/(guides)/form.cn.mdx:233:- **重置** -> 同时调用 `editor.tf.reset()` 和 `form.reset()` 以保持一致性
+content/docs/(guides)/form.cn.mdx:421:- 对于受控值，适度使用 `editor.tf.setValue(formStateValue)`。
+content/docs/(guides)/form.cn.mdx:426:2. **最小化替换**：避免过于频繁地调用 `editor.tf.setValue`，这可能会破坏选择、历史记录或降低性能。  
+content/docs/(guides)/form.cn.mdx:428:4. **同时重置**：如果重置表单，调用 `editor.tf.reset()` 以保持同步。
+content/docs/(plugins)/(collaboration)/yjs.cn.mdx:162:    editor.getPluginApi(YjsPlugin).yjs.init({
+content/docs/(plugins)/(collaboration)/yjs.cn.mdx:169:      editor.getPluginApi(YjsPlugin).yjs.destroy();
+content/docs/(plugins)/(functionality)/toolbar.cn.mdx:137:        editor.tf.insertText('自定义文本');
+content/docs/(plugins)/(functionality)/navigation-feedback.cn.mdx:60:`editor.tf.navigation.flashTarget(...)`：
+content/docs/(plugins)/(functionality)/navigation-feedback.cn.mdx:63:editor.tf.navigation.flashTarget({
+content/docs/(plugins)/(functionality)/navigation-feedback.cn.mdx:74:editor.tf.navigation.flashTarget({
+content/docs/(plugins)/(functionality)/navigation-feedback.cn.mdx:93:那就使用 `editor.tf.navigation.navigate(...)`：
+content/docs/(plugins)/(functionality)/navigation-feedback.cn.mdx:96:editor.tf.navigation.navigate({
+content/docs/(plugins)/(functionality)/navigation-feedback.cn.mdx:111:editor.tf.navigation.navigate({
+content/docs/(plugins)/(functionality)/(combobox)/combobox.cn.mdx:131:                editor.tf.insertNodes({
+content/docs/(plugins)/(elements)/media.cn.mdx:325:      editor.tf.replace.placeholder({
+packages/media/CHANGELOG.md:212:- [#3644](https://github.com/udecode/plate/pull/3644) by [@felixfeng33](https://github.com/felixfeng33) – Add `editor.tf.insert.audioPlaceholder`, `editor.tf.insert.filePlaceholder`, `editor.tf.insert.imagePlaceholder`, `editor.tf.insert.videoPlaceholder`
+content/docs/(plugins)/(serializing)/html.cn.mdx:195:    editor.tf.setValue(slateValue);
+content/docs/(plugins)/(serializing)/docx-io.cn.mdx:43:  editor.tf.insertNodes(result.nodes);
+content/docs/(plugins)/(serializing)/markdown.cn.mdx:154:    editor.getPluginApi(MarkdownPlugin).markdown.deserialize(markdownString),
+content/docs/(plugins)/(serializing)/markdown.cn.mdx:451:// editor.tf.setValue(slateValue); // 可以设置编辑器内容
+content/docs/(plugins)/(serializing)/markdown.cn.mdx:1028:    editor.tf.reset(); // 清空先前内容
+content/docs/(plugins)/(serializing)/markdown.cn.mdx:1029:    editor.tf.setValue(
+content/docs/(plugins)/(serializing)/markdown.cn.mdx:1030:      editor.getPluginApi(MarkdownPlugin).markdown.deserialize(children)
+content/docs/(plugins)/(ai)/ai.cn.mdx:157:          editor.tf.withoutSaving(() => {
+content/docs/(plugins)/(ai)/ai.cn.mdx:158:            editor.tf.insertNodes(
+content/docs/(plugins)/(ai)/ai.cn.mdx:171:          editor.tf.withoutSaving(() => {
+content/docs/(plugins)/(ai)/ai.cn.mdx:174:            editor.tf.withScrolling(() => {
+content/docs/(plugins)/(ai)/ai.cn.mdx:308:editor.getPluginApi(AIChatPlugin).aiChat.submit('', {
+content/docs/(plugins)/(ai)/ai.cn.mdx:329:editor.getPluginApi(AIChatPlugin).aiChat.submit('Improve tone', {
+content/docs/(plugins)/(ai)/ai.cn.mdx:725:    void editor.getPluginApi(AIChatPlugin).aiChat.submit('', {
+content/docs/(plugins)/(ai)/ai.cn.mdx:750:    void editor.getPluginApi(AIChatPlugin).aiChat.submit('', {
+packages/callout/CHANGELOG.md:89:- [#3644](https://github.com/udecode/plate/pull/3644) by [@felixfeng33](https://github.com/felixfeng33) – Add `editor.tf.insert.callout`
+packages/math/CHANGELOG.md:103:- [#3644](https://github.com/udecode/plate/pull/3644) by [@felixfeng33](https://github.com/felixfeng33) – Add `editor.tf.insert.equation`, `editor.tf.insert.inlineEquation`
+packages/docx-io/CHANGELOG.md:63:  - `DocxExportPlugin`: Plugin with `editor.api.docxExport` and `editor.tf.docxExport` methods
+packages/list-classic/CHANGELOG.md:63:  editor.tf.toggle.list({ listType: "taskList" });
+packages/ai/CHANGELOG.md:340:    - `editor.api.copilot.accept` is now `editor.tf.copilot.accept`.
+packages/ai/CHANGELOG.md:341:    - `editor.api.copilot.acceptNextWord` is now `editor.tf.copilot.acceptNextWord`.
+packages/ai/CHANGELOG.md:519:  - Fix `editor.tf.replaceSelection`:
+packages/core/CHANGELOG.md:85:  Pass pre-computed path through PlateStatic component tree instead of calling `editor.api.findPath()` per node. For 1,872 nodes: paragraph-only 593ms → 68.6ms (8.6x), full plugins 1,661ms → 892ms (1.9x).
+packages/core/CHANGELOG.md:338:  - Added `editor.tf.nodeId.normalize()` API to manually normalize node IDs in the document.
+packages/core/CHANGELOG.md:342:    editor.tf.nodeId.normalize();
+packages/core/CHANGELOG.md:577:    - Used by `editor.tf.insertExitBreak` functionality to determine appropriate exit points in nested structures.
+packages/core/CHANGELOG.md:588:    - `editor.tf.escape`: Handle Escape key events. Returns `true` if the event is handled.
+packages/core/CHANGELOG.md:589:    - `editor.tf.moveLine`: Handle ArrowDown and ArrowUp key events with `reverse` option for direction. Returns `true` if the event is handled.
+packages/core/CHANGELOG.md:590:    - `editor.tf.selectAll`: Handle Ctrl/Cmd+A key events for selecting all content. Returns `true` if the event is handled.
+packages/core/CHANGELOG.md:591:    - `editor.tf.tab`: Handle Tab and Shift+Tab key events with `reverse` option for Shift+Tab. Returns `true` if the event is handled.
+packages/core/CHANGELOG.md:596:  - Fixed an issue where `editor.api` and `editor.tf` (transforms) were not consistently available in the props passed to default element components when no custom component was provided for a plugin.
+packages/core/CHANGELOG.md:680:  - New transform `editor.tf.init`: initialize `editor.children`, `editor.selection`, normalizing the initial value. Use it when `skipInitialization` is `true`.
+packages/core/CHANGELOG.md:701:- [`f4996e3`](https://github.com/udecode/plate/commit/f4996e3c3e606cb1dc0f6f66dc54364330a1655a) by [@felixfeng33](https://github.com/felixfeng33) – Extend `DomPlugin` to support `editor.tf.withScrolling`.
+packages/core/CHANGELOG.md:931:  - **Editor methods have moved** to `editor.tf` and `editor.api`. They still exist at the top level for **slate backward compatibility**, but are no longer redundantly typed. If you truly need the top-level method types, extend your editor type with `LegacyEditorMethods` (e.g. `editor as Editor & LegacyEditorMethods`). Since these methods can be overridden by `extendEditor`, `with...`, or slate plugins, consider migrating to the following approaches:
+packages/core/CHANGELOG.md:951:  This was previously done in `extendEditor` using top-level methods, which still works but now throws a type error due to the move to `editor.tf/editor.api`. A workaround is to extend your editor with `LegacyEditorMethods`.
+packages/core/CHANGELOG.md:1298:  - Add `editor.tf.setValue` to replace the editor value
+packages/core/CHANGELOG.md:1299:  - Fix: move `editor.api.reset` to `editor.tf.reset`
+packages/core/CHANGELOG.md:1400:          editor.tf.toggle.block({ type });
+packages/core/CHANGELOG.md:1412:  - `toggleParagraph` is now a shortcut for `editor.tf.toggle.block({ type: 'p' })` for the given keys
+packages/core/CHANGELOG.md:1595:  - NEW `extendTransforms` method to extend the plugin transforms. The transforms is then merged into `editor.transforms[plugin.key]`.
+packages/core/CHANGELOG.md:1597:  - NEW `extendEditorTransforms` method to extend the editor transforms. The transforms is then merged into `editor.transforms`.
+packages/core/CHANGELOG.md:1632:    - NEW `editor.tf.toggle.block`
+packages/core/CHANGELOG.md:1633:    - NEW `editor.tf.toggle.mark`
+packages/core/CHANGELOG.md:1692:  - Move `reset` to `editor.tf.reset`
+packages/core/CHANGELOG.md:1699:  - NEW `getTransforms()` to get the editor transforms
+packages/core/CHANGELOG.md:1729:  editor.tf.insert.tableRow(); // table plugin is automatically inferred
+packages/markdown/CHANGELOG.md:76:- [#4926](https://github.com/udecode/plate/pull/4926) by [@zbeyens](https://github.com/zbeyens) – Fix ordered markdown lists starting above `1` losing their numbering after `editor.tf.setValue()`
+packages/basic-nodes/CHANGELOG.md:14:  2. Expect `editor.tf.blockquote.toggle()` to wrap or unwrap blocks instead of retagging one text block in place.
+packages/selection/CHANGELOG.md:298:  - Add `editor.tf.setBlockSelectionIndent` `editor.tf.insertBlocksAndSelect`

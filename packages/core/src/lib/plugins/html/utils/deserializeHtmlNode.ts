@@ -1,7 +1,8 @@
-import type { SlateEditor } from '../../../editor';
+import { isNode } from '@platejs/plite-dom/internal';
+
+import type { BaseEditor } from '../../../editor';
 import type { DeserializeHtmlNodeReturnType } from '../types';
 
-import { isSlateNode } from '../../../utils';
 import { htmlBodyToFragment } from './htmlBodyToFragment';
 import { htmlBrToNewLine } from './htmlBrToNewLine';
 import { htmlElementToElement } from './htmlElementToElement';
@@ -64,7 +65,7 @@ const shouldBrBecomeEmptyParagraph = (node: Element): boolean => {
 
 /** Deserialize HTML element or child node. */
 export const deserializeHtmlNode =
-  (editor: SlateEditor) =>
+  (editor: BaseEditor) =>
   (node: ChildNode | HTMLElement): DeserializeHtmlNodeReturnType => {
     const textNode = htmlTextNodeToString(node);
 
@@ -101,7 +102,7 @@ export const deserializeHtmlNode =
     const element = htmlElementToElement(
       editor,
       node as HTMLElement,
-      isSlateNode(node as HTMLElement)
+      isNode(node as HTMLElement)
     );
 
     if (element) return element;

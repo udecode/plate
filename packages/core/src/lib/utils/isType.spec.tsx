@@ -1,22 +1,10 @@
-/** @jsx jsxt */
-import { createEditor } from '@platejs/slate';
-import { jsxt } from '@platejs/test-utils';
-
-import { createSlateEditor } from '../editor';
+import { createBaseEditor } from '../editor';
 import { isType } from './isType';
 
-jsxt;
-
-const editor = createEditor(
-  (
-    <editor>
-      <hp>test</hp>
-    </editor>
-  ) as any
-);
+const editor = createBaseEditor({
+  value: [{ children: [{ text: 'test' }], type: 'p' }],
+});
 
 it('returns true when type matches', () => {
-  expect(
-    isType(createSlateEditor({ editor }), editor.children[0], 'p')
-  ).toEqual(true);
+  expect(isType(editor, editor.children[0], 'p')).toEqual(true);
 });

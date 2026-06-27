@@ -2,14 +2,43 @@ export { defineEditorExtension } from './core/editor-extension';
 export { elementProperty } from './core/element-property';
 export { defineStateField } from './core/state-field';
 export { createEditor } from './create-editor';
-export { isEditor } from './editor/is-editor';
 export { createEditorRuntime, createEditorView } from './editor-runtime-view';
+export { end } from './editor/end';
+export { start } from './editor/start';
+export {
+  above,
+  after,
+  before,
+  edges,
+  first,
+  fragment,
+  isBlock,
+  isEdge,
+  isEditor,
+  isEmpty,
+  isEnd,
+  isInline,
+  isSelectable,
+  isStart,
+  isVoid,
+  last,
+  next,
+  parent,
+  pathRef,
+  pointRef,
+  previous,
+  range,
+  string,
+  unhangRange,
+} from './interfaces/editor';
 export * from './interfaces/bookmark';
 export type {
   BaseEditor,
   CreateEditorOptions,
   DirtyRegion,
   Editor,
+  EditorAboveOptions,
+  EditorBlockOptions,
   EditorCanonicalUpdateTag,
   EditorCollaborationUpdateMetadata,
   EditorCommit,
@@ -46,12 +75,15 @@ export type {
   EditorOperationApplyHandler,
   EditorOperationDirtinessOptions,
   EditorOperationReplayOptions,
+  EditorNodesOptions,
   EditorPublicTransformMiddlewareKey,
   EditorQueryGroup,
   EditorQueryMiddlewareArgs,
   EditorQueryMiddlewareContext,
   EditorQueryMiddlewareMap,
   EditorQueryMiddlewareResult,
+  EditorRead,
+  EditorReadMethods,
   EditorRuntime,
   EditorRuntimeOptions,
   EditorSchemaApi,
@@ -91,6 +123,8 @@ export type {
   EditorTxExtensionGroups,
   EditorUpdateContext,
   EditorUpdateMetadata,
+  EditorUpdate,
+  EditorUpdateMethods,
   EditorUpdateOptions,
   EditorUpdateTag,
   EditorUpdateTagInput,
@@ -98,6 +132,7 @@ export type {
   EditorView,
   EditorViewOptions,
   InitialValue,
+  NodeMatch,
   ProjectedRangeSegment,
   RootKey,
   RuntimeId,

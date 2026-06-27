@@ -90,7 +90,10 @@ import {
  * A DOM-specific version of the `Editor` interface.
  */
 
-export interface DOMEditor<V extends Value = Value> extends EditorType<V> {
+export interface DOMEditor<
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+> extends EditorType<V, TExtensions> {
   dom: DOMEditorCapability;
 }
 
@@ -1231,7 +1234,9 @@ export const DOMEditor: DOMEditorInterface = {
     const resolvedPoint = editorVoid(editor, { at: point })
       ? { path: point.path, offset: 0 }
       : point;
-    const [node] = editor.read((state) => state.nodes.get(resolvedPoint.path));
+    const [node] = editor.read((state) =>
+      state.nodes.get(resolvedPoint.path, { required: true })
+    );
     const resolvedElement = DOMEditor.resolveDOMNode(editor, node);
     const fallbackElement =
       resolvedElement ?? findMountedDOMNodeByPath(editor, resolvedPoint.path);
@@ -1319,7 +1324,7 @@ export const DOMEditor: DOMEditorInterface = {
 
     if (editorHasPath(editor, resolvedPoint.path)) {
       const [node] = editor.read((state) =>
-        state.nodes.get(resolvedPoint.path)
+        state.nodes.get(resolvedPoint.path, { required: true })
       );
       const domNode =
         DOMEditor.resolveDOMNode(editor, node) ??
@@ -1446,7 +1451,7 @@ export const DOMEditor: DOMEditorInterface = {
       }
 
       const [mountedNode] = editor.read((state) =>
-        state.nodes.get(mountedPath)
+        state.nodes.get(mountedPath, { required: true })
       );
 
       cachePliteDOMNode(editor, mountedNode, domEl as HTMLElement);
@@ -1456,7 +1461,7 @@ export const DOMEditor: DOMEditorInterface = {
 
     if (mountedPath) {
       const [fallbackNode] = editor.read((state) =>
-        state.nodes.get(mountedPath)
+        state.nodes.get(mountedPath, { required: true })
       );
 
       cachePliteDOMNode(editor, fallbackNode, domEl as HTMLElement);
@@ -1738,7 +1743,7 @@ export const DOMEditor: DOMEditorInterface = {
       : null;
     const path = mountedPath ?? resolvedPath;
     const pointNode = path
-      ? editor.read((state) => state.nodes.get(path))[0]
+      ? editor.read((state) => state.nodes.get(path, { required: true }))[0]
       : pliteNode;
 
     if (!pointNode || !path) {
@@ -1748,7 +1753,7 @@ export const DOMEditor: DOMEditorInterface = {
 
       if (fallbackPath && editorHasPath(editor, fallbackPath)) {
         const [fallbackNode] = editor.read((state) =>
-          state.nodes.get(fallbackPath)
+          state.nodes.get(fallbackPath, { required: true })
         );
         const point = resolvePliteTextPoint({
           editor,

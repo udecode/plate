@@ -244,14 +244,16 @@ export const installDOM = <
           }
 
           for (const [path, key] of matches) {
-            const [node] = e.read((state) => state.nodes.get(path));
+            const [node] = e.read((state) =>
+              state.nodes.get(path, { required: true })
+            );
             NODE_TO_KEY.set(node, key);
           }
 
           for (const [pathRef, key] of pathRefMatches) {
             if (pathRef.current) {
               const [node] = e.read((state) =>
-                state.nodes.get(pathRef.current!)
+                state.nodes.get(pathRef.current!, { required: true })
               );
               NODE_TO_KEY.set(node, key);
             }

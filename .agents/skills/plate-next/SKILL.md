@@ -1,0 +1,222 @@
+---
+description: 'Plate Next cleanup supervisor: deeply review and migrate Plate surfaces to be Plite-perfect, hard-cut old Slate/Plate compatibility sludge, route plans vs implementation, and run auto-style timed/full loops.'
+argument-hint: '[specific API|path|package|current tree|hours|full-loop|batch-loop]'
+disable-model-invocation: true
+name: plate-next
+metadata:
+  skiller:
+    source: .agents/rules/plate-next.mdc
+---
+
+# Plate Next
+
+Handle $ARGUMENTS.
+
+Use this when the user wants Codex to do the review they keep doing manually:
+open a migrated Plate file/API, ask why every compatibility helper exists, and
+cut or move it until Plate is a clean product layer on top of Plite.
+
+This is a wrapper skill, not a new execution engine. It uses `autogoal` for
+state, `plate-plan` for public API forks, `architecture-cleanup` for source
+shape/deslop, and `auto` for implementation/proof loops. Its distinct job is
+the Plate Next review lens: make Plate Plite-perfect and stop old Slate/Plate
+compatibility from becoming the final API.
+
+## Use When
+
+- The user invokes `plate-next`.
+- The user asks "why is this file/helper here?" during Plate migration.
+- The user wants a file-by-file or API-by-API Plate v2 cleanup pass.
+- The target is Core, Plate runtime, plugin API, package migration, docs/API
+  mismatch, or old Slate compatibility in Plate.
+- The user gives no target and expects autopilot to find the next Plate cleanup
+  risk.
+- The user gives a duration such as `1h`, `8h`, or `overnight`.
+
+## Do Not Use When
+
+- The target is pure Plite substrate design: use `plite-plan`.
+- The target is public GitHub issue/PR/security queue: use `maintainer`.
+- The target is already-applied current-tree closure before commit: use
+  `autoclosure`.
+- The task is one ordinary local patch with no Plate/Plite boundary question:
+  use `task`.
+
+## Invocation
+
+Same user-facing shape as `auto`:
+
+- `plate-next`
+- `plate-next editor.api`
+- `plate-next packages/core/src/lib/utils/isType.ts`
+- `plate-next packages/table`
+- `plate-next current tree`
+- `plate-next 2h`
+- `plate-next all core packages full-loop`
+
+No argument means autopilot: scan the highest-risk Plate Next surfaces and pick
+the next cleanup packet without asking.
+
+`sweep`, `all core`, `full-loop`, `full review`, and similar broad Core
+requests are not autopilot sampling. They mean full Core file review. Do not
+close one of those runs after a narrow packet unless every Core source file has
+a drift score and the score gate passes.
+
+## Core Law
+
+Plate Next means:
+
+- Plite owns editor substrate: nodes, operations, selection, read/update,
+  transactions, schema, history substrate, DOM/runtime primitives, and editor
+  extension installation.
+- Plate owns product composition: plugins, UI, registry, kits, product command
+  ergonomics, docs/examples, and app-facing defaults.
+- Core must not wrap Plite editor APIs under Plate names.
+- Plate product APIs may compose Plite APIs, but they must not mirror Plite
+  namespaces or create a second mutation/read layer.
+- No public compat aliases, old Slate shims, or docs for old API names.
+- Private bridges are allowed only with owner, deletion gate, and proof.
+- If a helper exists only because the migration was hard, cut it.
+
+## Review Matrix
+
+Every inspected file/API/helper gets one verdict:
+
+- `move-to-plite`: generic editor substrate belongs in Plite, with Plite tests.
+- `keep-in-plate`: product-level behavior with a distinct Plate user job.
+- `hard-cut`: old Slate/Plate compat, alias, wrapper, or duplicate API dies.
+- `private-bridge`: temporary internal scaffold with deletion gate and no
+  public export.
+- `defer-with-owner`: real but unsafe to do in this packet; name owner/proof.
+
+Default suspicion list:
+
+- `with*` wrappers that just install a Plite extension or call another helper.
+- `extendEditor` callback semantics, `extendTransforms`, `editor.tf`,
+  `editor.transforms`, `plugin.transforms`, `getTransforms`, `getPluginApi`,
+  old `getApi` surfaces, and command fallbacks that compete with
+  `editor.read`, `editor.api`, or `editor.update`.
+- helpers in `packages/core` that are really generic node/range/selection/
+  schema/runtime behavior.
+- `any`/`unknown` casts hiding type loss from migration.
+- duplicate Plate helpers around Plite APIs.
+- docs/examples that teach legacy compatibility instead of latest state.
+
+## Full Core Sweep Law
+
+When the target is broad Core review, use full-manifest mode:
+
+- Enumerate every file under `packages/core/src/**/*.{ts,tsx,mts,cts}`.
+- Include `packages/core/type-tests/**/*.{ts,tsx,mts,cts}` when public type
+  surfaces, plugin typing, package API, or runtime typing are in scope.
+- Create `docs/plans/artifacts/<plan-slug>/core-drift-ledger.tsv`.
+- Every file in the manifest gets one row. No sampling, no "highest-risk only",
+  no closing after a representative packet.
+- Every row needs `path`, `drift_score`, `verdict`, `owner`, `evidence`, and
+  `next`.
+- Drift score rubric:
+  - `0`: clean/current owner, no action.
+  - `1`: tiny naming/style smell, no architecture risk.
+  - `2`: moderate drift; owner and next action required.
+  - `3`: real Plate/Plite boundary risk; fix or defer with owner/proof.
+  - `4`: major compatibility sludge, duplicate runtime/API, or migration hack;
+    cannot be kept without explicit owner and deletion gate.
+  - `5`: public API/runtime blocker; stop broad execution and route to
+    `plate-plan` or the owning API plan.
+- Score gate:
+  - the autogoal plan's Core drift ledger must record the manifest command,
+    expected row count, actual row count, missing/extra row count, and top drift
+    rows before closure.
+  - Any score `>=2` needs an owner, evidence, and next action.
+  - Any score `>=4` cannot close as `keep-in-plate`; it must be fixed,
+    hard-cut, moved, quarantined, or deferred with owner/proof.
+  - The final handoff must list the top drift rows and next owner.
+
+This rule exists because a targeted parser sweep missed
+`packages/core/src/lib/plugins/affinity/AffinityPlugin.ts`. A future sweep must
+prove it looked at that file and every peer, even when the first packet is
+green.
+
+## Loop
+
+Use the dedicated Plate Next plan template unless a public API design fork
+requires `plate-plan` first:
+
+```bash
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template plate-next \
+  --title "plate-next <surface>"
+```
+
+Checkpoint zero must copy the user's exact target, duration, non-goals, stop
+rules, and final-handoff expectations into the plan.
+
+Then loop:
+
+1. Read `VISION.md`, `docs/vision/plate.md`, `docs/vision/common.md`, and the
+   target source/tests/docs.
+2. Build the right source map:
+   - named file/API: public API, internal bridge, caller graph, tests,
+     docs/examples, package exports;
+   - broad Core sweep: full Core manifest plus drift ledger for every file.
+3. Fill the review matrix for every relevant helper/API in the target. For
+   broad Core sweep, every Core file gets a drift score before any closure
+   claim.
+4. If the next choice is a public API fork, route to `plate-plan` and stop
+   implementation until the plan is accepted.
+5. If the smell is source shape, route to `architecture-cleanup`.
+6. If the decision is safe, implement the smallest cleanup packet.
+7. Run focused proof: package typecheck/test/build when needed, plus `pnpm brl`
+   if exports/barrels changed.
+8. Run source audits for removed legacy names.
+9. For full Core sweep, close the autogoal template's drift-ledger score gate.
+10. Keep/revert/quarantine the packet in the plan.
+11. Pick the next packet. In timed mode, keep going until the minimum runtime
+    elapsed, then finish or quarantine the active packet.
+
+## Autopilot Priority
+
+When no target is provided, inspect in this order:
+
+1. Core public API/runtime files touched by the Plate migration.
+2. `packages/core/src/react/editor/createPlateRuntimeEditor.ts`.
+3. Core plugin API types and plugin resolver/installers.
+4. Old Slate compatibility surfaces in Core/package exports.
+5. Plate packages still importing or wrapping legacy substrate behavior.
+6. Docs/examples teaching old APIs.
+7. Tests with fake compatibility assertions instead of current behavior.
+
+## Proof
+
+For Core/Plite boundary cleanup, prefer:
+
+```bash
+pnpm check:core
+pnpm turbo typecheck --filter=./packages/<touched-package>
+pnpm --filter @platejs/<touched-package> test
+pnpm --filter @platejs/<touched-package> build
+```
+
+Use focused tests first. Run broader gates only before closing a risky packet.
+For broad Core sweeps, the Plate Next autogoal template owns the drift ledger,
+manifest count, score gate, and top-drift handoff. Keep this template-only.
+
+If a source audit is the proof, make it exact and small:
+
+```bash
+rg -n 'oldName|old\\.api|legacyHelper' packages/core/src packages/*/src --glob '!**/dist/**'
+```
+
+## Final Handoff
+
+Report:
+
+- target surface and mode;
+- files/APIs reviewed;
+- verdict matrix: move-to-plite, keep-in-plate, hard-cut, private-bridge,
+  defer-with-owner;
+- changes made;
+- tests/proof commands;
+- old compatibility names audited;
+- anything that still needs the user's taste review;
+- next best Plate Next packet.

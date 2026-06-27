@@ -1,8 +1,8 @@
 import React from 'react';
 
-import type { AnyEditorPlugin, RenderElementProps, SlateEditor } from '../lib';
+import type { AnyBasePlugin, RenderElementProps, BaseEditor } from '../lib';
 
-import { SlateElement } from './components/slate-nodes';
+import { PliteElement } from './components/plite-nodes';
 import { getPluginDataAttributes } from './utils';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
@@ -11,14 +11,14 @@ export type SlateRenderElement = (
 ) => React.ReactElement<any> | undefined;
 
 export const pluginRenderElementStatic = (
-  editor: SlateEditor,
-  plugin: AnyEditorPlugin
+  editor: BaseEditor,
+  plugin: AnyBasePlugin
 ): SlateRenderElement =>
   function render(nodeProps) {
     const element = nodeProps.element;
 
     const Component = editor.meta.components?.[plugin.key] as any;
-    const Element = Component ?? SlateElement;
+    const Element = Component ?? PliteElement;
 
     let { children } = nodeProps;
 

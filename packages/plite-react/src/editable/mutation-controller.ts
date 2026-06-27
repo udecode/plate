@@ -420,7 +420,7 @@ const applyProjectedViewSelectionDataCommand = ({
       } else {
         withProjectedMutationRoot(runtimeEditor, target.start.root, () => {
           (
-            runtimeEditor.api as {
+            runtimeEditor.api as unknown as {
               clipboard: { insertTextData: (data: DataTransfer) => boolean };
             }
           ).clipboard.insertTextData(data);
@@ -546,7 +546,9 @@ const applyRootLocalSelectionMoveCommand = ({
   writePliteViewSelection(editor, null);
   editor.update((tx) => {
     if (command.axis === 'document') {
-      const point = command.reverse ? tx.points.start([]) : tx.points.end([]);
+      const point = command.reverse
+        ? tx.points.start([], { required: true })
+        : tx.points.end([], { required: true });
 
       tx.selection.set(
         command.extend
@@ -750,7 +752,7 @@ export const applyEditableCommand = ({
 
       editor.update(() => {
         (
-          editor.api as {
+          editor.api as unknown as {
             clipboard: { insertData: (data: DataTransfer) => boolean };
           }
         ).clipboard.insertData(command.data);
@@ -786,8 +788,8 @@ export const applyEditableCommand = ({
           command.kind === 'select'
             ? command.selection
             : {
-                anchor: tx.points.start([]),
-                focus: tx.points.end([]),
+                anchor: tx.points.start([], { required: true }),
+                focus: tx.points.end([], { required: true }),
               };
         tx.selection.set(nextSelection);
       });

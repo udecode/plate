@@ -374,7 +374,7 @@ const getRuntimeIdsForIndexedTopLevelRange = (
 const getTopLevelOrderNodeImpactRuntimeIds = (
   operations: readonly Operation[],
   previousIndex: RuntimeIndexLike,
-  nextIndex: RuntimeIndexLike
+  _nextIndex: RuntimeIndexLike
 ): RuntimeId[] =>
   uniqRuntimeIds(
     operations.flatMap((operation) => {

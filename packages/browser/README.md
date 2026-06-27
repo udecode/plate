@@ -100,21 +100,21 @@ The package is subpath-only. Import exactly the layer you need:
 ## First Playwright Test
 
 ```ts
-import { expect, test } from '@playwright/test'
-import { openExample } from '@platejs/browser/playwright'
+import { expect, test } from "@playwright/test";
+import { openExample } from "@platejs/browser/playwright";
 
-test('types through the Plite browser path', async ({ page }) => {
-  const editor = await openExample(page, 'plaintext', {
-    ready: { editor: 'visible' },
-  })
+test("types through the Plite browser path", async ({ page }) => {
+  const editor = await openExample(page, "plaintext", {
+    ready: { editor: "visible" },
+  });
 
-  await editor.focus()
-  await editor.type('Hello from @platejs/browser')
+  await editor.focus();
+  await editor.type("Hello from @platejs/browser");
 
-  await editor.assert.text('Hello from @platejs/browser')
-  await editor.assert.noDoubleSelectionHighlight()
-  expect(await editor.get.selectedText()).toBe('')
-})
+  await editor.assert.text("Hello from @platejs/browser");
+  await editor.assert.noDoubleSelectionHighlight();
+  expect(await editor.get.selectedText()).toBe("");
+});
 ```
 
 ## Proof Style
@@ -164,100 +164,104 @@ import {
   startPliteBrowserNativeEventTrace,
   stopPliteBrowserNativeEventTrace,
   takePliteBrowserNativeEventTrace,
-} from '@platejs/browser/playwright'
+} from "@platejs/browser/playwright";
 
-const editor = await openExample(page, 'placeholder', {
+const editor = await openExample(page, "placeholder", {
   ready: {
-    editor: 'visible',
-    placeholder: 'visible',
+    editor: "visible",
+    placeholder: "visible",
   },
-})
+});
 
-await editor.focus()
-await editor.type('Hello Plite Browser')
+await editor.focus();
+await editor.type("Hello Plite Browser");
 await editor.selection.select({
   anchor: { path: [0, 0], offset: 0 },
   focus: { path: [0, 0], offset: 5 },
-})
-await editor.dom.waitForTextPath([0, 0])
-await editor.dom.collapseAtTextPath({ path: [0, 0], offset: 5 })
+});
+await editor.dom.waitForTextPath([0, 0]);
+await editor.dom.collapseAtTextPath({ path: [0, 0], offset: 5 });
 
-await editor.assert.text('Hello Plite Browser')
-await editor.assert.blockTexts(['Hello Plite Browser'])
-expect(await editor.get.selectedText()).toBe('Hello')
-expect((await editor.selection.displayed()).source).toBe('native')
-await editor.assert.noDoubleSelectionHighlight()
-await attachPageScreenshot(page, testInfo, 'selection-proof.png')
+await editor.assert.text("Hello Plite Browser");
+await editor.assert.blockTexts(["Hello Plite Browser"]);
+expect(await editor.get.selectedText()).toBe("Hello");
+expect((await editor.selection.displayed()).source).toBe("native");
+await editor.assert.noDoubleSelectionHighlight();
+await attachPageScreenshot(page, testInfo, "selection-proof.png");
 
-await startPliteBrowserNativeEventTrace(editor.root)
-await editor.type('!')
-const nativeTrace = await takePliteBrowserNativeEventTrace(editor.root)
-expect(nativeTrace.entries.some((entry) => entry.type === 'beforeinput')).toBe(
-  true
-)
-await stopPliteBrowserNativeEventTrace(editor.root)
+await startPliteBrowserNativeEventTrace(editor.root);
+await editor.type("!");
+const nativeTrace = await takePliteBrowserNativeEventTrace(editor.root);
+expect(nativeTrace.entries.some((entry) => entry.type === "beforeinput")).toBe(
+  true,
+);
+await stopPliteBrowserNativeEventTrace(editor.root);
 
-await editor.assert.htmlContains('data-plite-string="true"')
+await editor.assert.htmlContains('data-plite-string="true"');
 await editor.assert.selection({
   anchor: { path: [0, 0], offset: [0, 1] },
   focus: { path: [0, 0], offset: [4, 5] },
-})
+});
 await editor.assert.collapsedModelDOMSelection({
   offset: [4, 5],
   path: [0, 0],
-  text: 'Hello Plite Browser',
-})
+  text: "Hello Plite Browser",
+});
 await editor.assert.htmlEquals(
   '<div data-plite-node="element"><span data-plite-node="text"><span data-plite-leaf="true"><span data-plite-string="true">Hello Plite Browser</span></span></span></div>',
-  { ignoreClasses: true, ignoreInlineStyles: true, ignoreDir: true }
-)
+  { ignoreClasses: true, ignoreInlineStyles: true, ignoreDir: true },
+);
 
-const snapshot = await editor.snapshot()
-expect(snapshot.selection).not.toBeNull()
-await attachPliteBrowserJsonArtifact(testInfo, 'editor-snapshot-proof', snapshot)
+const snapshot = await editor.snapshot();
+expect(snapshot.selection).not.toBeNull();
+await attachPliteBrowserJsonArtifact(
+  testInfo,
+  "editor-snapshot-proof",
+  snapshot,
+);
 
-const secondBlock = editor.locator.block([1])
-await secondBlock.click({ clickCount: 3 })
+const secondBlock = editor.locator.block([1]);
+await secondBlock.click({ clickCount: 3 });
 await editor.selection.doubleClickDragTextRange({
-  doubleClickOffset: 'This is edit'.length,
-  endOffset: 'This is editable plain'.length,
-  text: 'This is editable plain text, just like a <textarea>!',
-})
+  doubleClickOffset: "This is edit".length,
+  endOffset: "This is editable plain".length,
+  text: "This is editable plain text, just like a <textarea>!",
+});
 await editor.selection.dragTextRange({
   endOffset: 5,
-  endText: ' text, ',
+  endText: " text, ",
   startOffset: 8,
-  text: 'This is editable ',
-})
+  text: "This is editable ",
+});
 await editor.selection.dragTextRange({
-  direction: 'backward',
-  endOffset: 'hyperlink'.length,
+  direction: "backward",
+  endOffset: "hyperlink".length,
   startOffset: 0,
-  text: 'hyperlink',
-})
+  text: "hyperlink",
+});
 await editor.scenario.run([
   {
     expectation: {
       domSelection: {
-        anchorNodeText: 'This is editable ',
+        anchorNodeText: "This is editable ",
         anchorOffset: 8,
-        focusNodeText: ' text, ',
+        focusNodeText: " text, ",
         focusOffset: 5,
       },
       noDoubleSelectionHighlight: true,
-      selectedText: 'editable rich text',
+      selectedText: "editable rich text",
     },
-    kind: 'assertSelectionContract',
+    kind: "assertSelectionContract",
   },
-])
+]);
 
-const bookmark = await editor.selection.capture({ affinity: 'inward' })
-await editor.selection.restore(bookmark)
-await editor.selection.unref(bookmark)
+const bookmark = await editor.selection.capture({ affinity: "inward" });
+await editor.selection.restore(bookmark);
+await editor.selection.unref(bookmark);
 
-await editor.clipboard.pasteText('more')
-await editor.clipboard.copy()
-expect(await editor.clipboard.readText()).toContain('more')
+await editor.clipboard.pasteText("more");
+await editor.clipboard.copy();
+expect(await editor.clipboard.readText()).toContain("more");
 ```
 
 For Tab-away or blur proof, use `editor.assert.noVisibleCaretInRoot()` after

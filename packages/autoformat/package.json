@@ -4,8 +4,7 @@
   "description": "Deprecated autoformat compatibility plugin for Plate",
   "keywords": [
     "plate",
-    "plugin",
-    "slate"
+    "plugin"
   ],
   "homepage": "https://platejs.org",
   "bugs": {

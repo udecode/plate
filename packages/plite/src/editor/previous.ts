@@ -8,10 +8,12 @@ import {
 import type { EditorStaticApi } from '../interfaces/editor';
 import { LocationApi, type Span } from '../interfaces/location';
 import { NodeApi } from '../interfaces/node';
+import { PathApi } from '../interfaces/path';
+import { node as editorNode } from './node';
 import { nodes } from './nodes';
 
 export const previous: EditorStaticApi['previous'] = (editor, options = {}) => {
-  const { mode = 'lowest', voids = false } = options;
+  const { from = 'before', mode = 'lowest', voids = false } = options;
   let { match, at = editorGetSnapshot(editor).selection } = options;
 
   if (!at) {
@@ -22,17 +24,59 @@ export const previous: EditorStaticApi['previous'] = (editor, options = {}) => {
     return;
   }
 
-  const pointBeforeLocation = editorBefore(editor, at, { voids });
+  if (options.sibling) {
+    if (!LocationApi.isPath(at)) {
+      return;
+    }
 
-  if (!pointBeforeLocation) {
+    if (!PathApi.hasPrevious(at)) {
+      return;
+    }
+
+    const previousPath = PathApi.previous(at);
+
+    if (!NodeApi.has(editor, previousPath)) {
+      return;
+    }
+
+    return editorNode(editor, previousPath) as any;
+  }
+
+  let start: Span[0] | undefined;
+
+  if (from === 'parent' && LocationApi.isPath(at) && at.length > 1) {
+    start = at;
+
+    const baseMatch = match;
+    match = (node, path) =>
+      !PathApi.isAfter(path, at) &&
+      !PathApi.equals(path, at) &&
+      (baseMatch?.(node, path) ?? true);
+  }
+
+  const pointBeforeLocation = start
+    ? undefined
+    : editorBefore(editor, at, { voids });
+
+  if (!start) {
+    if (!pointBeforeLocation) {
+      return;
+    }
+
+    start = pointBeforeLocation.path;
+  }
+
+  const firstEntry = editorFirst(editor, []);
+
+  if (!firstEntry) {
     return;
   }
 
-  const [, to] = editorFirst(editor, []);
+  const [, to] = firstEntry;
 
   // The search location is from the start of the document to the path of
-  // the point before the location passed in
-  const span: Span = [pointBeforeLocation.path, to];
+  // the point before the location passed in.
+  const span: Span = [start, to];
 
   if (match == null) {
     if (LocationApi.isPath(at)) {

@@ -1,24 +1,24 @@
-import { createSlateEditor } from '../editor';
-import { createSlatePlugin } from '../plugin';
+import { createBaseEditor } from '../editor';
+import { createBasePlugin } from '../plugin';
 import { getInjectMatch } from './getInjectMatch';
 
-const ParagraphPlugin = createSlatePlugin({
+const ParagraphPlugin = createBasePlugin({
   key: 'paragraph',
   node: { isElement: true, type: 'p' },
 });
 
-const QuotePlugin = createSlatePlugin({
+const QuotePlugin = createBasePlugin({
   key: 'quote',
   node: { isElement: true, type: 'quote' },
 });
 
-const LinkPlugin = createSlatePlugin({
+const LinkPlugin = createBasePlugin({
   key: 'link',
   node: { isElement: true, isInline: true, type: 'a' },
 });
 
-const createMatchEditor = (plugin: ReturnType<typeof createSlatePlugin>) =>
-  createSlateEditor({
+const createMatchEditor = (plugin: ReturnType<typeof createBasePlugin>) =>
+  createBaseEditor({
     plugins: [ParagraphPlugin, QuotePlugin, LinkPlugin, plugin],
     value: [
       {
@@ -30,15 +30,15 @@ const createMatchEditor = (plugin: ReturnType<typeof createSlatePlugin>) =>
 
 describe('getInjectMatch', () => {
   it('respects isElement, isBlock, and isLeaf filters', () => {
-    const elementPlugin = createSlatePlugin({
+    const elementPlugin = createBasePlugin({
       inject: { isElement: true },
       key: 'elementFilter',
     });
-    const blockPlugin = createSlatePlugin({
+    const blockPlugin = createBasePlugin({
       inject: { isBlock: true },
       key: 'blockFilter',
     });
-    const leafPlugin = createSlatePlugin({
+    const leafPlugin = createBasePlugin({
       inject: { isLeaf: true },
       key: 'leafFilter',
     });
@@ -74,11 +74,11 @@ describe('getInjectMatch', () => {
   });
 
   it('respects targetPlugins and excludePlugins', () => {
-    const targetPlugin = createSlatePlugin({
+    const targetPlugin = createBasePlugin({
       inject: { targetPlugins: ['paragraph'] },
       key: 'targetFilter',
     });
-    const excludePlugin = createSlatePlugin({
+    const excludePlugin = createBasePlugin({
       inject: { excludePlugins: ['quote'] },
       key: 'excludeFilter',
     });
@@ -109,7 +109,7 @@ describe('getInjectMatch', () => {
   });
 
   it('respects excludeBelowPlugins and maxLevel', () => {
-    const plugin = createSlatePlugin({
+    const plugin = createBasePlugin({
       inject: {
         excludeBelowPlugins: ['quote'],
         maxLevel: 1,

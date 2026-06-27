@@ -22,19 +22,30 @@ packages need multiple root-scoped editor views over one committed editor
 runtime. App UI should normally use framework helpers, such as
 `usePliteEditor` in `plite-react`.
 
-Read committed state with `editor.read(...)`.
+Read committed state with `editor.read(...)`. Use direct read methods for
+one-shot reads and the callback form when several reads must share one state
+view.
 
 ```ts
-const value = editor.read((state) => state.value.get())
-const selection = editor.read((state) => state.selection.get())
+const value = editor.read.value.get()
+const selection = editor.read.selection.get()
+
+const info = editor.read((state) => ({
+  text: state.text.string([]),
+  value: state.value.get(),
+}))
 ```
 
 Write document, selection, mark, root, state-field, and operation changes inside
-`editor.update(...)`.
+`editor.update(...)`. Use direct update methods for one-shot writes and the
+callback form when a command groups related writes into one commit.
 
 ```ts
+editor.update.text.insert('Hello')
+
 editor.update((tx) => {
-  tx.text.insert('Hello')
+  tx.text.insert(' ')
+  tx.text.insert('world')
 })
 ```
 
@@ -47,7 +58,9 @@ operation apply handlers, and debug value scrubbers for advanced library code.
 
 Pure data helpers live on namespaces such as `ElementApi`, `NodeApi`,
 `PathApi`, `PointApi`, `RangeApi`, `SpanApi`, and `TextApi`. Inside a live
-editor, prefer grouped `state.*` reads and `tx.*` writes.
+editor, prefer `editor.read.<group>.<method>()` for one-shot reads, grouped
+`state.*` reads for custom read logic, `editor.update.<group>.<method>()` for
+one-shot writes, and grouped `tx.*` writes for composed commands.
 
 The `/internal` package subpath is reserved for sibling Plite packages in this repo.
 Applications, extension libraries, and framework adapters outside this

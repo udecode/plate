@@ -1,4 +1,8 @@
 import {
+  createEditorReadApi,
+  createEditorUpdateApi,
+} from './core/editor-lifecycle-api';
+import {
   getEditorRuntime,
   type InternalEditorRuntime,
   setEditorRuntime,
@@ -30,7 +34,6 @@ import type {
   EditorStateViewApi,
   EditorTransformRegistry,
   EditorUpdateContext,
-  EditorUpdateOptions,
   EditorUpdateTransaction,
   EditorView,
   EditorViewOptions,
@@ -40,7 +43,7 @@ import type {
 } from './interfaces/editor';
 import type { Location } from './interfaces/location';
 import type { Point } from './interfaces/point';
-import type { Range } from './interfaces/range';
+import { RangeApi, type Range } from './interfaces/range';
 import {
   getRangeRoot,
   stripImplicitRangeRoots,
@@ -363,6 +366,7 @@ const withRootChildren = <T extends EditorStateView<any, any>>(
     next: rootMethod(editor, viewState, state.nodes.next),
     parent: rootMethod(editor, viewState, state.nodes.parent),
     path: rootMethod(editor, viewState, state.nodes.path),
+    pathOf: rootMethod(editor, viewState, state.nodes.pathOf),
     previous: rootMethod(editor, viewState, state.nodes.previous),
     some: rootMethod(editor, viewState, state.nodes.some),
     toArray: rootMethod(editor, viewState, state.nodes.toArray),
@@ -473,6 +477,15 @@ const withViewState = <T extends EditorStateView<any, any>>(
           viewState,
           getCurrentSelectionRoot(editor)
         ),
+      isCollapsed: () => {
+        const selection = withViewSelection(
+          state.selection.get(),
+          viewState,
+          getCurrentSelectionRoot(editor)
+        );
+
+        return !!selection && RangeApi.isCollapsed(selection);
+      },
     }),
     text: Object.freeze({
       ...state.text,
@@ -837,6 +850,24 @@ export const createEditorView = <
     viewState,
     () => viewEditor
   );
+  const viewRead = createEditorReadApi<V, TExtensions>((fn) =>
+    viewRuntime.read((state) => fn(state as EditorStateView<V, TExtensions>))
+  );
+  const viewUpdate = createEditorUpdateApi<V, TExtensions>(
+    (fn, updateOptions) => {
+      if (viewState.readOnly) {
+        throw new Error('Cannot update a read-only editor view.');
+      }
+
+      viewRuntime.update(
+        fn as (
+          transaction: EditorUpdateTransaction<V>,
+          context: EditorUpdateContext<Editor<V>>
+        ) => void,
+        updateOptions
+      );
+    }
+  );
 
   const view = {
     api: runtime.editor.api,
@@ -855,31 +886,12 @@ export const createEditorView = <
       viewState.focused = true;
     },
     getApi: runtime.editor.getApi,
-    read: <T>(fn: (state: EditorStateView<V, TExtensions>) => T) =>
-      viewRuntime.read(fn as (state: EditorStateView<V>) => T),
+    read: viewRead,
     root: viewState.root,
     runtime,
     subscribe: viewRuntime.subscribe,
     subscribeCommit: viewRuntime.subscribeCommit,
-    update: (
-      fn: (
-        transaction: EditorUpdateTransaction<V, TExtensions>,
-        context: EditorUpdateContext<Editor<V, TExtensions>>
-      ) => void,
-      updateOptions?: EditorUpdateOptions
-    ) => {
-      if (viewState.readOnly) {
-        throw new Error('Cannot update a read-only editor view.');
-      }
-
-      viewRuntime.update(
-        fn as (
-          transaction: EditorUpdateTransaction<V>,
-          context: EditorUpdateContext<Editor<V>>
-        ) => void,
-        updateOptions
-      );
-    },
+    update: viewUpdate,
   };
 
   viewEditor = view as unknown as typeof runtime.editor;

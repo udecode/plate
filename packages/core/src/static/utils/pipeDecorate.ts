@@ -1,27 +1,23 @@
-import type { NodeEntry, TRange } from '@platejs/slate';
+import type { NodeEntry, Range } from '@platejs/plite';
 
-import {
-  type EditableProps,
-  type SlateEditor,
-  getEditorPlugin,
-} from '../../lib';
+import { type EditableProps, type BaseEditor, getBasePlugin } from '../../lib';
 
 /**
  * @see {@link Decorate} .
  * Optimization: return undefined if empty list so Editable uses a memo.
  */
 export const pipeDecorate = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   decorateProp?:
-    | ((ctx: { editor: SlateEditor; entry: NodeEntry }) => TRange[] | undefined)
+    | ((ctx: { editor: BaseEditor; entry: NodeEntry }) => Range[] | undefined)
     | null
 ): EditableProps['decorate'] => {
   if (editor.meta.pluginCache.decorate.length === 0 && !decorateProp) return;
 
   return (entry: NodeEntry) => {
-    let ranges: TRange[] = [];
+    let ranges: Range[] = [];
 
-    const addRanges = (newRanges?: TRange[]) => {
+    const addRanges = (newRanges?: Range[]) => {
       if (newRanges?.length) ranges = [...ranges, ...newRanges];
     };
 
@@ -29,7 +25,7 @@ export const pipeDecorate = (
       const plugin = editor.getPlugin({ key });
       addRanges(
         plugin.decorate!({
-          ...(getEditorPlugin(editor, plugin) as any),
+          ...(getBasePlugin(editor, plugin) as any),
           entry,
         })
       );

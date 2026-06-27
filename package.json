@@ -37,6 +37,7 @@
     "build:tw": "pnpm --filter www build:tw",
     "build:watch": "ROARR_LOG=true turbowatch ./tooling/config/turbowatch.config.ts | roarr",
     "check": "pnpm lint && pnpm typecheck && pnpm test:all && pnpm test:slowest",
+    "check:core": "node tooling/scripts/check-core.mjs",
     "check:push": "pnpm lint && pnpm typecheck && pnpm test:all",
     "check:plite": "pnpm plite:typecheck && pnpm test:plite && pnpm --filter plite test:plite-browser:chromium",
     "check:plite:browser-matrix": "pnpm plite:browser:install && pnpm --filter plite test:plite-browser",

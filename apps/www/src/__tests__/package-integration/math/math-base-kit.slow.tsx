@@ -1,10 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  type Value,
-  BaseParagraphPlugin,
-  createBasePlateEditor,
-} from 'platejs';
+import { type Value, BaseParagraphPlugin, createBaseEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 
 import { BaseMathKit } from '@/registry/components/editor/plugins/math-base-kit';
@@ -14,7 +10,7 @@ jsxt;
 const mathPlugins = [BaseParagraphPlugin, ...BaseMathKit] as const;
 
 const createMathEditor = (value: Value) =>
-  createBasePlateEditor({
+  createBaseEditor({
     plugins: mathPlugins,
     value,
   });

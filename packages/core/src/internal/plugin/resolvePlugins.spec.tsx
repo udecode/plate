@@ -1,6 +1,6 @@
-import { createSlateEditor, type SlateEditor } from '../../lib/editor';
+import { createBaseEditor, type BaseEditor } from '../../lib/editor';
 
-import { createSlatePlugin } from '../../lib/plugin/createSlatePlugin';
+import { createBasePlugin } from '../../lib/plugin/createBasePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { createPlateEditor } from '../../react/editor/withPlate';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
@@ -13,8 +13,8 @@ import {
   resolvePlugins,
 } from './resolvePlugins';
 
-const createEditor = (options?: Parameters<typeof createSlateEditor>[0]) =>
-  createSlateEditor(options);
+const createEditor = (options?: Parameters<typeof createBaseEditor>[0]) =>
+  createBaseEditor(options);
 
 const getResolvedKeys = (plugins: any[]) => {
   const editor = createEditor();
@@ -34,20 +34,20 @@ describe('resolvePlugins', () => {
   it('initialize plugins with correct order based on priority', () => {
     expect(
       getResolvedKeys([
-        createSlatePlugin({ key: 'a', priority: 1 }),
-        createSlatePlugin({ key: 'b', priority: 3 }),
-        createSlatePlugin({ key: 'c', priority: 2 }),
+        createBasePlugin({ key: 'a', priority: 1 }),
+        createBasePlugin({ key: 'b', priority: 3 }),
+        createBasePlugin({ key: 'c', priority: 2 }),
       ])
     ).toEqual(['b', 'c', 'a']);
   });
 
   it('handle nested plugins', () => {
     const pluginKeys = getResolvedKeys([
-      createSlatePlugin({
+      createBasePlugin({
         key: 'parent',
         plugins: [
-          createSlatePlugin({ key: 'child1' }),
-          createSlatePlugin({ key: 'child2' }),
+          createBasePlugin({ key: 'child1' }),
+          createBasePlugin({ key: 'child2' }),
         ],
       }),
     ]);
@@ -59,8 +59,8 @@ describe('resolvePlugins', () => {
 
   it('does not include disabled plugins', () => {
     const pluginKeys = getResolvedKeys([
-      createSlatePlugin({ key: 'enabled' }),
-      createSlatePlugin({ key: 'disabled', enabled: false }),
+      createBasePlugin({ key: 'enabled' }),
+      createBasePlugin({ key: 'disabled', enabled: false }),
     ]);
 
     expect(pluginKeys).toContain('enabled');
@@ -70,7 +70,7 @@ describe('resolvePlugins', () => {
   it('apply overrides correctly', () => {
     const editor = createEditor();
     const plugins = [
-      createSlatePlugin({
+      createBasePlugin({
         key: 'a',
         node: { type: 'original' },
         override: {
@@ -79,7 +79,7 @@ describe('resolvePlugins', () => {
           },
         },
       }),
-      createSlatePlugin({ key: 'b', node: { type: 'original' } }),
+      createBasePlugin({ key: 'b', node: { type: 'original' } }),
     ];
 
     resolvePlugins(editor, plugins);
@@ -90,11 +90,11 @@ describe('resolvePlugins', () => {
   it('merge all plugin APIs into editor.api', () => {
     const editor = createEditor({
       plugins: [
-        createSlatePlugin({
+        createBasePlugin({
           key: 'plugin1',
           api: { methodA: () => 'A' },
         }),
-        createSlatePlugin({
+        createBasePlugin({
           key: 'plugin2',
           api: { methodB: () => 'B' },
         }),
@@ -110,11 +110,11 @@ describe('resolvePlugins', () => {
   it('overwrite API methods with the same name', () => {
     const editor = createEditor({
       plugins: [
-        createSlatePlugin<'plugin1'>({
+        createBasePlugin<'plugin1'>({
           key: 'plugin1',
           api: { method: (_: string) => 'first' },
         }),
-        createSlatePlugin({
+        createBasePlugin({
           key: 'plugin2',
           api: { method: (_: number) => 'second' },
         }),
@@ -127,7 +127,7 @@ describe('resolvePlugins', () => {
   it('fills plugin cache buckets for node, render, hook, rule, and handler metadata', () => {
     const editor = createEditor({
       plugins: [
-        createSlatePlugin({
+        createBasePlugin({
           key: 'cachey',
           decorate: () => [],
           handlers: {
@@ -146,7 +146,7 @@ describe('resolvePlugins', () => {
           render: {
             aboveEditable: () => null,
             aboveNodes: () => null,
-            aboveSlate: () => null,
+            abovePlite: () => null,
             afterContainer: () => null,
             afterEditable: () => null,
             beforeContainer: () => null,
@@ -174,7 +174,7 @@ describe('resolvePlugins', () => {
     expect(editor.meta.pluginCache.transformInitialValue).toContain('cachey');
     expect(editor.meta.pluginCache.render.aboveEditable).toContain('cachey');
     expect(editor.meta.pluginCache.render.aboveNodes).toContain('cachey');
-    expect(editor.meta.pluginCache.render.aboveSlate).toContain('cachey');
+    expect(editor.meta.pluginCache.render.abovePlite).toContain('cachey');
     expect(editor.meta.pluginCache.render.afterContainer).toContain('cachey');
     expect(editor.meta.pluginCache.render.afterEditable).toContain('cachey');
     expect(editor.meta.pluginCache.render.beforeContainer).toContain('cachey');
@@ -185,22 +185,20 @@ describe('resolvePlugins', () => {
     expect(editor.meta.pluginCache.useHooks).toContain('cachey');
   });
 
-  it('creates a shortcut handler from plugin-specific transforms', () => {
+  it('creates a shortcut handler from plugin-specific tx commands', () => {
     const toggle = mock();
     const editor = createEditor({
       plugins: [
-        createSlatePlugin({
-          key: 'shortcutTransforms',
+        createBasePlugin({
+          key: 'shortcutTx',
           shortcuts: {
             toggle: { keys: 'mod+k' },
           },
-        }).extendTransforms(() => ({
-          toggle,
-        })),
+        }).extendTx(() => () => ({ toggle })),
       ],
     });
 
-    editor.meta.shortcuts['shortcutTransforms.toggle']?.handler?.({} as any);
+    editor.meta.shortcuts['shortcutTx.toggle']?.handler?.({} as any);
 
     expect(toggle).toHaveBeenCalledTimes(1);
   });
@@ -209,7 +207,7 @@ describe('resolvePlugins', () => {
     const toggle = mock();
     const editor = createEditor({
       plugins: [
-        createSlatePlugin({
+        createBasePlugin({
           key: 'shortcutApi',
           shortcuts: {
             toggle: { keys: 'mod+k' },
@@ -229,10 +227,10 @@ describe('resolvePlugins', () => {
     expect(() =>
       createEditor({
         plugins: [
-          createSlatePlugin({
+          createBasePlugin({
             key: 'autoformat',
           }),
-          createSlatePlugin({
+          createBasePlugin({
             key: 'marks',
           }).configure({
             inputRules: [
@@ -252,7 +250,7 @@ describe('resolvePlugins', () => {
     expect(() =>
       createEditor({
         plugins: [
-          createSlatePlugin({
+          createBasePlugin({
             key: 'marks',
           }).configure({
             inputRules: { markdown: true } as any,
@@ -269,20 +267,20 @@ describe('resolveAndSortPlugins', () => {
       expected: ['b', 'c', 'a'],
       name: 'resolve and sort plugins correctly',
       plugins: () => [
-        createSlatePlugin({ key: 'a', priority: 1 }),
-        createSlatePlugin({ key: 'b', priority: 3 }),
-        createSlatePlugin({ key: 'c', priority: 2 }),
+        createBasePlugin({ key: 'a', priority: 1 }),
+        createBasePlugin({ key: 'b', priority: 3 }),
+        createBasePlugin({ key: 'c', priority: 2 }),
       ],
     },
     {
       expected: ['parent', 'child1', 'child2'],
       name: 'handle nested plugins',
       plugins: () => [
-        createSlatePlugin({
+        createBasePlugin({
           key: 'parent',
           plugins: [
-            createSlatePlugin({ key: 'child1', priority: 2 }),
-            createSlatePlugin({ key: 'child2', priority: 1 }),
+            createBasePlugin({ key: 'child1', priority: 2 }),
+            createBasePlugin({ key: 'child2', priority: 1 }),
           ],
         }),
       ],
@@ -291,47 +289,47 @@ describe('resolveAndSortPlugins', () => {
       expected: ['c', 'b', 'a'],
       name: 'order plugins based on dependencies',
       plugins: () => [
-        createSlatePlugin({ key: 'a', priority: 1 }),
-        createSlatePlugin({ key: 'b', dependencies: ['c'], priority: 3 }),
-        createSlatePlugin({ key: 'c', priority: 2 }),
+        createBasePlugin({ key: 'a', priority: 1 }),
+        createBasePlugin({ key: 'b', dependencies: ['c'], priority: 3 }),
+        createBasePlugin({ key: 'c', priority: 2 }),
       ],
     },
     {
       expected: ['b', 'c', 'a'],
       name: 'handle multiple dependencies',
       plugins: () => [
-        createSlatePlugin({ key: 'a', dependencies: ['b', 'c'], priority: 3 }),
-        createSlatePlugin({ key: 'b', priority: 2 }),
-        createSlatePlugin({ key: 'c', priority: 1 }),
+        createBasePlugin({ key: 'a', dependencies: ['b', 'c'], priority: 3 }),
+        createBasePlugin({ key: 'b', priority: 2 }),
+        createBasePlugin({ key: 'c', priority: 1 }),
       ],
     },
     {
       expected: ['c', 'b', 'a'],
       name: 'handle nested dependencies',
       plugins: () => [
-        createSlatePlugin({ key: 'a', dependencies: ['b'], priority: 3 }),
-        createSlatePlugin({ key: 'b', dependencies: ['c'], priority: 2 }),
-        createSlatePlugin({ key: 'c', priority: 1 }),
+        createBasePlugin({ key: 'a', dependencies: ['b'], priority: 3 }),
+        createBasePlugin({ key: 'b', dependencies: ['c'], priority: 2 }),
+        createBasePlugin({ key: 'c', priority: 1 }),
       ],
     },
     {
       expected: ['a', 'c', 'b'],
       name: 'maintain priority order when no dependencies conflict',
       plugins: () => [
-        createSlatePlugin({ key: 'a', priority: 3 }),
-        createSlatePlugin({ key: 'b', dependencies: ['c'], priority: 2 }),
-        createSlatePlugin({ key: 'c', priority: 1 }),
+        createBasePlugin({ key: 'a', priority: 3 }),
+        createBasePlugin({ key: 'b', dependencies: ['c'], priority: 2 }),
+        createBasePlugin({ key: 'c', priority: 1 }),
       ],
     },
     {
       expected: ['parent', 'child2', 'child1'],
       name: 'handle dependencies with nested plugins',
       plugins: () => [
-        createSlatePlugin({
+        createBasePlugin({
           key: 'parent',
           plugins: [
-            createSlatePlugin({ key: 'child1', dependencies: ['child2'] }),
-            createSlatePlugin({ key: 'child2' }),
+            createBasePlugin({ key: 'child1', dependencies: ['child2'] }),
+            createBasePlugin({ key: 'child2' }),
           ],
         }),
       ],
@@ -342,8 +340,8 @@ describe('resolveAndSortPlugins', () => {
 
   it('handle circular dependencies gracefully', () => {
     const pluginKeys = getSortedKeys([
-      createSlatePlugin({ key: 'a', dependencies: ['b'] }),
-      createSlatePlugin({ key: 'b', dependencies: ['a'] }),
+      createBasePlugin({ key: 'a', dependencies: ['b'] }),
+      createBasePlugin({ key: 'b', dependencies: ['a'] }),
     ]);
 
     expect(pluginKeys).toContain('a');
@@ -365,7 +363,7 @@ describe('resolveAndSortPlugins', () => {
     });
 
     resolveAndSortPlugins(editor, [
-      createSlatePlugin({
+      createBasePlugin({
         key: 'dependent',
         dependencies: ['missing'],
       }),
@@ -384,8 +382,8 @@ describe('applyPluginsToEditor', () => {
     const editor = createEditor();
 
     const plugins = [
-      createSlatePlugin({ key: 'a', node: { type: 'typeA' } }),
-      createSlatePlugin({ key: 'b', node: { type: 'typeB' } }),
+      createBasePlugin({ key: 'a', node: { type: 'typeA' } }),
+      createBasePlugin({ key: 'b', node: { type: 'typeB' } }),
     ];
 
     applyPluginsToEditor(editor, plugins);
@@ -397,12 +395,10 @@ describe('applyPluginsToEditor', () => {
 
   it('update existing plugins', () => {
     const editor = createEditor({
-      plugins: [createSlatePlugin({ key: 'a', node: { type: 'oldType' } })],
+      plugins: [createBasePlugin({ key: 'a', node: { type: 'oldType' } })],
     });
 
-    const plugins = [
-      createSlatePlugin({ key: 'a', node: { type: 'newType' } }),
-    ];
+    const plugins = [createBasePlugin({ key: 'a', node: { type: 'newType' } })];
 
     applyPluginsToEditor(editor, plugins);
 
@@ -415,7 +411,7 @@ describe('applyPluginOverrides', () => {
   it('apply overrides correctly', () => {
     const editor = createEditor({
       plugins: [
-        createSlatePlugin({
+        createBasePlugin({
           key: 'a',
           node: { type: 'originalA' },
           override: {
@@ -424,7 +420,7 @@ describe('applyPluginOverrides', () => {
             },
           },
         }),
-        createSlatePlugin({ key: 'b', node: { type: 'originalB' } }),
+        createBasePlugin({ key: 'b', node: { type: 'originalB' } }),
       ],
     });
 
@@ -435,10 +431,10 @@ describe('applyPluginOverrides', () => {
   });
 
   it('handle nested overrides', () => {
-    const editor = createEditor() as SlateEditor;
+    const editor = createEditor() as BaseEditor;
 
     resolvePlugins(editor, [
-      createSlatePlugin({
+      createBasePlugin({
         key: 'parent',
         override: {
           plugins: {
@@ -446,7 +442,7 @@ describe('applyPluginOverrides', () => {
           },
         },
         plugins: [
-          createSlatePlugin({ key: 'child', node: { type: 'originalChild' } }),
+          createBasePlugin({ key: 'child', node: { type: 'originalChild' } }),
         ],
       }),
     ]);
@@ -457,7 +453,7 @@ describe('applyPluginOverrides', () => {
   it('apply multiple overrides in correct order', () => {
     const editor = createEditor({
       plugins: [
-        createSlatePlugin({
+        createBasePlugin({
           key: 'a',
           node: { type: 'originalA' },
           override: {
@@ -466,7 +462,7 @@ describe('applyPluginOverrides', () => {
             },
           },
         }),
-        createSlatePlugin({
+        createBasePlugin({
           key: 'b',
           node: { type: 'originalB' },
           override: {
@@ -475,7 +471,7 @@ describe('applyPluginOverrides', () => {
             },
           },
         }),
-        createSlatePlugin({ key: 'c', node: { type: 'originalC' } }),
+        createBasePlugin({ key: 'c', node: { type: 'originalC' } }),
       ],
     });
 
@@ -509,7 +505,7 @@ describe('applyPluginOverrides', () => {
           priority: 3,
           render: { node: OriginalComponent },
         }),
-        createSlatePlugin({
+        createBasePlugin({
           key: 'c',
           priority: 1,
         }),
@@ -559,7 +555,7 @@ describe('applyPluginOverrides', () => {
 
   describe('targetPlugins', () => {
     it('correctly apply targetPluginToInject and merge with existing plugins', () => {
-      const plugin = createSlatePlugin({
+      const plugin = createBasePlugin({
         key: 'testPlugin',
         inject: {
           plugins: {
@@ -639,12 +635,12 @@ describe('applyPluginOverrides', () => {
 
     const editor = createEditor({
       plugins: [
-        createSlatePlugin({
+        createBasePlugin({
           key: 'a',
           api: { method: originalLogger },
         }),
         // This should replace the previous plugin
-        createSlatePlugin({
+        createBasePlugin({
           key: 'a',
           api: { method: replacementLogger },
         }),
@@ -710,9 +706,9 @@ describe('applyPluginOverrides', () => {
     const editor = createEditor({
       override,
       plugins: [
-        createSlatePlugin({ key: 'a' }),
-        createSlatePlugin({ key: 'b' }),
-        createSlatePlugin({ key: 'c' }),
+        createBasePlugin({ key: 'a' }),
+        createBasePlugin({ key: 'b' }),
+        createBasePlugin({ key: 'c' }),
       ],
     });
 
@@ -727,7 +723,7 @@ describe('applyPluginOverrides', () => {
 describe('mergePlugins behavior in resolvePlugins', () => {
   it('does not deeply clone options object', () => {
     const nestedOptions = { value: 'original' };
-    const plugin = createSlatePlugin({
+    const plugin = createBasePlugin({
       key: 'test',
       options: { nested: nestedOptions },
     });
@@ -744,7 +740,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
   });
 
   it('shallow clone the options object', () => {
-    const plugin = createSlatePlugin({
+    const plugin = createBasePlugin({
       key: 'test',
       options: { value: 'original' },
     });
@@ -761,7 +757,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
   });
 
   it('merges options from plugin extensions', () => {
-    const plugin = createSlatePlugin({
+    const plugin = createBasePlugin({
       key: 'test',
       options: { value: 'original' },
     }).extend(({ getOptions }) => ({
@@ -787,8 +783,8 @@ describe('resolvePlugins with keyless plugins', () => {
   it('does not add a plugin without a key to the editor', () => {
     const editor = createEditor();
     const plugins = [
-      createSlatePlugin({ node: { type: 'no-key-plugin' } } as any), // Simulate a plugin without a key
-      createSlatePlugin({ key: 'keyedPlugin', node: { type: 'keyed-type' } }),
+      createBasePlugin({ node: { type: 'no-key-plugin' } } as any), // Simulate a plugin without a key
+      createBasePlugin({ key: 'keyedPlugin', node: { type: 'keyed-type' } }),
     ];
 
     resolvePlugins(editor, plugins);
@@ -804,23 +800,23 @@ describe('resolvePlugins with keyless plugins', () => {
   it('process child plugins of a keyless plugin', () => {
     const editor = createEditor();
     const plugins = [
-      createSlatePlugin({
+      createBasePlugin({
         // No key for the parent
         node: { type: 'parent-no-key' },
         plugins: [
-          createSlatePlugin({
+          createBasePlugin({
             key: 'childKey1',
             node: { type: 'child1-type' },
             priority: 2,
           }),
-          createSlatePlugin({
+          createBasePlugin({
             key: 'childKey2',
             node: { type: 'child2-type' },
             priority: 1,
           }),
         ],
       } as any),
-      createSlatePlugin({
+      createBasePlugin({
         key: 'anotherPlugin',
         node: { type: 'another-type' },
         priority: 3,

@@ -20,7 +20,7 @@ import { ImagePlugin, MediaEmbedPlugin } from '@platejs/media/react';
 import { TablePlugin } from '@platejs/table/react';
 import { getHtmlDocument, jsxt } from '@platejs/test-utils';
 
-import { createBasePlateEditor } from '../../../../../../packages/core/src/lib/editor';
+import { createBaseEditor } from '../../../../../../packages/core/src/lib/editor';
 import { BaseParagraphPlugin } from '../../../../../../packages/core/src/lib/plugins/paragraph';
 import { deserializeHtml } from '../../../../../../packages/core/src/lib/plugins/html/utils/deserializeHtml';
 import { deserializeHtmlElement } from '../../../../../../packages/core/src/lib/plugins/html/utils/deserializeHtmlElement';
@@ -34,7 +34,7 @@ describe('when collapseWhitespace is false', () => {
   const expectedOutput = [{ text: 'test \n code' }];
 
   it('preserves line breaks', () => {
-    const convertedDocumentFragment = deserializeHtml(createBasePlateEditor(), {
+    const convertedDocumentFragment = deserializeHtml(createBaseEditor(), {
       collapseWhiteSpace: false,
       element,
     });
@@ -55,7 +55,7 @@ describe('when element is a div', () => {
 
   it('returns a text fragment', () => {
     expect(
-      deserializeHtml(createBasePlateEditor(), {
+      deserializeHtml(createBaseEditor(), {
         element,
       })
     ).toEqual(output);
@@ -73,7 +73,7 @@ describe('when element is 2 p', () => {
   it('returns two paragraph nodes', () => {
     expect(
       deserializeHtml(
-        createBasePlateEditor({
+        createBaseEditor({
           plugins: [BaseParagraphPlugin],
         }),
         {
@@ -96,7 +96,7 @@ describe('when html is a text without tags', () => {
 
   it('returns a text fragment', () => {
     expect(
-      deserializeHtml(createBasePlateEditor(), {
+      deserializeHtml(createBaseEditor(), {
         element,
       })
     ).toEqual(output);
@@ -193,7 +193,7 @@ describe('when deserializing all plugins', () => {
   it('deserializes all configured plugin outputs', () => {
     expect(
       deserializeHtmlElement(
-        createBasePlateEditor({
+        createBaseEditor({
           plugins: [
             BlockquotePlugin,
             HeadingPlugin.configure({ options: { levels: 1 } }),

@@ -16,7 +16,7 @@ broadly, while the underlying data was only strong for the simpler docs harness.
 ### Public docs harness
 
 The public numbers in
-[performance.mdx](/Users/zbeyens/git/plate-2/content/(guides)/performance.mdx)
+[performance.mdx](</Users/zbeyens/git/plate-2/content/(guides)/performance.mdx>)
 come from:
 
 - [editor-perf/page.tsx](/Users/zbeyens/git/plate-2/apps/www/src/app/dev/editor-perf/page.tsx)
@@ -97,25 +97,25 @@ It proves the public benchmark was narrower.
 
 We now have decomposition rows from the standalone lab:
 
-| Lane | Plate | Plite | Read |
-| --- | ---: | ---: | --- |
-| `41_mount-10k-plain-core` | `215.20 ms` | `197.90 ms` | same class, Plate somewhat slower |
-| `42_mount-10k-plain-basic` | `212.60 ms` | `193.40 ms` | same class, Plate somewhat slower |
-| `43_mount-10k-blockquote-core` | `163.90 ms` | `403.00 ms` | Plate faster |
-| `44_mount-10k-blockquote-basic` | `524.10 ms` | `447.30 ms` | Plate clearly slower |
-| `45_mount-10k-code-core` | `102.20 ms` | `387.70 ms` | Plate faster |
-| `46_mount-10k-code-basic` | `129.80 ms` | `384.00 ms` | Plate faster |
-| `47_mount-10k-marks-core` | `1227.50 ms` | `925.50 ms` | both expensive, Plate worse |
-| `48_mount-10k-marks-basic` | `1299.80 ms` | `889.50 ms` | Plate much worse |
-| `49_mount-10k-list-markdown` | `890.40 ms` | `630.10 ms` | Plate much worse |
-| `86_mount-10k-bold-basic` | `585.90 ms` | `375.90 ms` | Plate much worse |
-| `87_mount-10k-italic-basic` | `622.10 ms` | `345.30 ms` | Plate much worse |
-| `88_mount-10k-underline-basic` | `591.40 ms` | `332.00 ms` | Plate much worse |
-| `89_mount-10k-strikethrough-basic` | `580.70 ms` | `334.40 ms` | Plate worst in this set |
-| `90_mount-10k-bold-single` | `424.50 ms` | `343.20 ms` | single-plugin helps, still red |
-| `91_mount-10k-italic-single` | `422.60 ms` | `339.80 ms` | single-plugin helps, still red |
-| `92_mount-10k-underline-single` | `428.00 ms` | `345.60 ms` | single-plugin helps, still red |
-| `93_mount-10k-strikethrough-single` | `450.10 ms` | `384.80 ms` | single-plugin helps, still worst |
+| Lane                                |        Plate |       Plite | Read                              |
+| ----------------------------------- | -----------: | ----------: | --------------------------------- |
+| `41_mount-10k-plain-core`           |  `215.20 ms` | `197.90 ms` | same class, Plate somewhat slower |
+| `42_mount-10k-plain-basic`          |  `212.60 ms` | `193.40 ms` | same class, Plate somewhat slower |
+| `43_mount-10k-blockquote-core`      |  `163.90 ms` | `403.00 ms` | Plate faster                      |
+| `44_mount-10k-blockquote-basic`     |  `524.10 ms` | `447.30 ms` | Plate clearly slower              |
+| `45_mount-10k-code-core`            |  `102.20 ms` | `387.70 ms` | Plate faster                      |
+| `46_mount-10k-code-basic`           |  `129.80 ms` | `384.00 ms` | Plate faster                      |
+| `47_mount-10k-marks-core`           | `1227.50 ms` | `925.50 ms` | both expensive, Plate worse       |
+| `48_mount-10k-marks-basic`          | `1299.80 ms` | `889.50 ms` | Plate much worse                  |
+| `49_mount-10k-list-markdown`        |  `890.40 ms` | `630.10 ms` | Plate much worse                  |
+| `86_mount-10k-bold-basic`           |  `585.90 ms` | `375.90 ms` | Plate much worse                  |
+| `87_mount-10k-italic-basic`         |  `622.10 ms` | `345.30 ms` | Plate much worse                  |
+| `88_mount-10k-underline-basic`      |  `591.40 ms` | `332.00 ms` | Plate much worse                  |
+| `89_mount-10k-strikethrough-basic`  |  `580.70 ms` | `334.40 ms` | Plate worst in this set           |
+| `90_mount-10k-bold-single`          |  `424.50 ms` | `343.20 ms` | single-plugin helps, still red    |
+| `91_mount-10k-italic-single`        |  `422.60 ms` | `339.80 ms` | single-plugin helps, still red    |
+| `92_mount-10k-underline-single`     |  `428.00 ms` | `345.60 ms` | single-plugin helps, still red    |
+| `93_mount-10k-strikethrough-single` |  `450.10 ms` | `384.80 ms` | single-plugin helps, still worst  |
 
 The `90..93` rows are from targeted direct standalone probes, not yet from the
 main frozen batch artifact.
@@ -235,11 +235,11 @@ The earlier trace was useful, but it hid one important thing:
 
 The next direct lower-bound rows made that clearer:
 
-| Lane | Plate | Plite | Read |
-| --- | ---: | ---: | --- |
-| `86_mount-10k-bold-basic` | `678.10 ms` | `458.20 ms` | full basic-marks bundle still clearly red |
+| Lane                       |       Plate |       Plite | Read                                                |
+| -------------------------- | ----------: | ----------: | --------------------------------------------------- |
+| `86_mount-10k-bold-basic`  | `678.10 ms` | `458.20 ms` | full basic-marks bundle still clearly red           |
 | `90_mount-10k-bold-single` | `496.40 ms` | `463.90 ms` | single bold plugin is much better, but still slower |
-| `94_mount-10k-bold-direct` | `436.10 ms` | `468.40 ms` | direct `renderLeaf` lower bound is already fine |
+| `94_mount-10k-bold-direct` | `436.10 ms` | `468.40 ms` | direct `renderLeaf` lower bound is already fine     |
 
 That split is the real answer:
 

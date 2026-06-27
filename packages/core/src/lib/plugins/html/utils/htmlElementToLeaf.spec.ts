@@ -1,10 +1,10 @@
-import { createSlateEditor, createSlatePlugin } from '../../../index';
+import { createBaseEditor, createBasePlugin } from '../../../index';
 import { parseHtmlElement } from './parseHtmlElement';
 import { htmlElementToLeaf } from './htmlElementToLeaf';
 
 describe('htmlElementToLeaf', () => {
   it('merges outer leaf marks into descendant text nodes and preserves nested leaf marks', () => {
-    const ParagraphPlugin = createSlatePlugin({
+    const ParagraphPlugin = createBasePlugin({
       key: 'p',
       node: { isElement: true, type: 'p' },
       parsers: {
@@ -15,7 +15,7 @@ describe('htmlElementToLeaf', () => {
         },
       },
     });
-    const BoldPlugin = createSlatePlugin({
+    const BoldPlugin = createBasePlugin({
       key: 'bold',
       node: { isLeaf: true },
       parsers: {
@@ -26,7 +26,7 @@ describe('htmlElementToLeaf', () => {
         },
       },
     });
-    const ItalicPlugin = createSlatePlugin({
+    const ItalicPlugin = createBasePlugin({
       key: 'italic',
       node: { isLeaf: true },
       parsers: {
@@ -37,7 +37,7 @@ describe('htmlElementToLeaf', () => {
         },
       },
     });
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [ParagraphPlugin, BoldPlugin, ItalicPlugin],
     });
 

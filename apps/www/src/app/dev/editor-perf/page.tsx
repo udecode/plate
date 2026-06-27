@@ -46,7 +46,7 @@ import {
   createAtomStore,
   createZustandStore,
   createPlateEditor,
-  getEditorPlugin,
+  getBasePlugin,
   getRenderNodeProps,
   pluginRenderElement,
   pluginRenderLeaf,
@@ -1198,7 +1198,7 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
   },
   {
     description:
-      'PlateElement with just the resolved plugin ref and Plite class injection, but no full getEditorPlugin context and no getRenderNodeProps. This isolates whether the plugin object alone is enough for the plain fast path.',
+      'PlateElement with just the resolved plugin ref and Plite class injection, but no full getBasePlugin context and no getRenderNodeProps. This isolates whether the plugin object alone is enough for the plain fast path.',
     id: 'editable-element-plate-element-plugin-only-no-provider',
     label: 'Editable + PlateElement + plugin',
   },
@@ -3020,7 +3020,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plate-element-plugin-context-no-provider') {
         const pluginContext = elementPlugin
-          ? getEditorPlugin(editor as any, elementPlugin as any)
+          ? getBasePlugin(editor as any, elementPlugin as any)
           : { api: editor.api, editor, tf: editor.transforms };
 
         return (
@@ -3136,7 +3136,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'render-as-provider') {
         const pluginContext = elementPlugin
-          ? getEditorPlugin(editor as any, elementPlugin as any)
+          ? getBasePlugin(editor as any, elementPlugin as any)
           : { api: editor.api, editor, tf: editor.transforms };
         const ctxProps = {
           ...props,
@@ -3303,7 +3303,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-render-node-hooks') {
         const pluginContext = elementPlugin
-          ? getEditorPlugin(editor as any, elementPlugin as any)
+          ? getBasePlugin(editor as any, elementPlugin as any)
           : { api: editor.api, editor, tf: editor.transforms };
         const ctxProps = getRenderNodeProps({
           attributes: element.attributes as any,
@@ -3340,7 +3340,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-render-node-hooks-plain-context') {
         const pluginContext = elementPlugin
-          ? getEditorPlugin(editor as any, elementPlugin as any)
+          ? getBasePlugin(editor as any, elementPlugin as any)
           : { api: editor.api, editor, tf: editor.transforms };
         const ctxProps = getRenderNodeProps({
           attributes: element.attributes as any,
@@ -3379,7 +3379,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-render-node-hooks-jotai-provider') {
         const pluginContext = elementPlugin
-          ? getEditorPlugin(editor as any, elementPlugin as any)
+          ? getBasePlugin(editor as any, elementPlugin as any)
           : { api: editor.api, editor, tf: editor.transforms };
         const ctxProps = getRenderNodeProps({
           attributes: element.attributes as any,
@@ -3417,7 +3417,7 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'plugin-render-node-hooks-jotai-hydrate-only'
       ) {
         const pluginContext = elementPlugin
-          ? getEditorPlugin(editor as any, elementPlugin as any)
+          ? getBasePlugin(editor as any, elementPlugin as any)
           : { api: editor.api, editor, tf: editor.transforms };
         const ctxProps = getRenderNodeProps({
           attributes: element.attributes as any,
@@ -3455,7 +3455,7 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'plugin-render-node-hooks-jotai-hydrate-sync'
       ) {
         const pluginContext = elementPlugin
-          ? getEditorPlugin(editor as any, elementPlugin as any)
+          ? getBasePlugin(editor as any, elementPlugin as any)
           : { api: editor.api, editor, tf: editor.transforms };
         const ctxProps = getRenderNodeProps({
           attributes: element.attributes as any,
@@ -3491,7 +3491,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-render-node-selector') {
         const pluginContext = elementPlugin
-          ? getEditorPlugin(editor as any, elementPlugin as any)
+          ? getBasePlugin(editor as any, elementPlugin as any)
           : { api: editor.api, editor, tf: editor.transforms };
         const ctxProps = getRenderNodeProps({
           attributes: element.attributes as any,
@@ -3530,7 +3530,7 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'plugin-render-node-selector-plain-context'
       ) {
         const pluginContext = elementPlugin
-          ? getEditorPlugin(editor as any, elementPlugin as any)
+          ? getBasePlugin(editor as any, elementPlugin as any)
           : { api: editor.api, editor, tf: editor.transforms };
         const ctxProps = getRenderNodeProps({
           attributes: element.attributes as any,
@@ -3571,7 +3571,7 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'plugin-render-node-selector-jotai-provider'
       ) {
         const pluginContext = elementPlugin
-          ? getEditorPlugin(editor as any, elementPlugin as any)
+          ? getBasePlugin(editor as any, elementPlugin as any)
           : { api: editor.api, editor, tf: editor.transforms };
         const ctxProps = getRenderNodeProps({
           attributes: element.attributes as any,
@@ -3607,7 +3607,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-precomputed-fast-node-props') {
         const pluginContext = elementPlugin
-          ? getEditorPlugin(editor as any, elementPlugin as any)
+          ? getBasePlugin(editor as any, elementPlugin as any)
           : { api: editor.api, editor, tf: editor.transforms };
         const ctxProps = {
           ...props,
@@ -3635,7 +3635,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plain-context-plugin-fast-node-props') {
         const pluginContext = elementPlugin
-          ? getEditorPlugin(editor as any, elementPlugin as any)
+          ? getBasePlugin(editor as any, elementPlugin as any)
           : { api: editor.api, editor, tf: editor.transforms };
         const ctxProps = {
           ...props,
@@ -3665,7 +3665,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'jotai-provider-plugin-fast-node-props') {
         const pluginContext = elementPlugin
-          ? getEditorPlugin(editor as any, elementPlugin as any)
+          ? getBasePlugin(editor as any, elementPlugin as any)
           : { api: editor.api, editor, tf: editor.transforms };
         const ctxProps = {
           ...props,
@@ -3694,7 +3694,7 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'jotai-hydrate-only-plugin-fast-node-props'
       ) {
         const pluginContext = elementPlugin
-          ? getEditorPlugin(editor as any, elementPlugin as any)
+          ? getBasePlugin(editor as any, elementPlugin as any)
           : { api: editor.api, editor, tf: editor.transforms };
         const ctxProps = {
           ...props,
@@ -3723,7 +3723,7 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'jotai-hydrate-sync-plugin-fast-node-props'
       ) {
         const pluginContext = elementPlugin
-          ? getEditorPlugin(editor as any, elementPlugin as any)
+          ? getBasePlugin(editor as any, elementPlugin as any)
           : { api: editor.api, editor, tf: editor.transforms };
         const ctxProps = {
           ...props,
@@ -3750,7 +3750,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'zustand-provider-plugin-fast-node-props') {
         const pluginContext = elementPlugin
-          ? getEditorPlugin(editor as any, elementPlugin as any)
+          ? getBasePlugin(editor as any, elementPlugin as any)
           : { api: editor.api, editor, tf: editor.transforms };
         const ctxProps = {
           ...props,

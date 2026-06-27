@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import {
+  getChildren as editorGetChildren,
+  getLastCommit as editorGetLastCommit,
+  getSelection as editorGetSelection,
+  getSnapshot as editorGetSnapshot,
+  string as editorString,
+} from '@platejs/plite/internal';
+
 import { createEditor, type Descendant } from '../src';
 import { replaceEditorValue } from './support/snapshot';
 

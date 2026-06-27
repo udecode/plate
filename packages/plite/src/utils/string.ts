@@ -207,24 +207,26 @@ const isHighSurrogate = (charCode: number) =>
 const isLowSurrogate = (charCode: number) =>
   charCode >= 0xdc_00 && charCode <= 0xdf_ff;
 
-enum CodepointType {
-  None = 0,
-  Extend = 1 << 0,
-  ZWJ = 1 << 1,
-  RI = 1 << 2,
-  Prepend = 1 << 3,
-  SpacingMark = 1 << 4,
-  L = 1 << 5,
-  V = 1 << 6,
-  T = 1 << 7,
-  LV = 1 << 8,
-  LVT = 1 << 9,
-  ExtPict = 1 << 10,
-  CR = 1 << 11,
-  LF = 1 << 12,
-  Control = 1 << 13,
-  Any = 1 << 14,
-}
+const CodepointType = {
+  None: 0,
+  Extend: 1 << 0,
+  ZWJ: 1 << 1,
+  RI: 1 << 2,
+  Prepend: 1 << 3,
+  SpacingMark: 1 << 4,
+  L: 1 << 5,
+  V: 1 << 6,
+  T: 1 << 7,
+  LV: 1 << 8,
+  LVT: 1 << 9,
+  ExtPict: 1 << 10,
+  CR: 1 << 11,
+  LF: 1 << 12,
+  Control: 1 << 13,
+  Any: 1 << 14,
+} as const;
+
+type CodepointType = number;
 
 const reExtend = /^[\p{Gr_Ext}\p{EMod}]$/u;
 const rePrepend =

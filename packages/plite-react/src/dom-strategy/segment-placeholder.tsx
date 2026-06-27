@@ -220,7 +220,7 @@ export const DOMStrategySegmentPlaceholder = React.memo(
           const node =
             (readRuntimeNode(editorValue, path) as Descendant | undefined) ??
             (editorValue.read(
-              (state) => state.nodes.get(path)[0]
+              (state) => state.nodes.get(path, { required: true })[0]
             ) as Descendant);
 
           if (!node) {

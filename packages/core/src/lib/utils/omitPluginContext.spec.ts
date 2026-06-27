@@ -1,6 +1,6 @@
 import { omitPluginContext } from './omitPluginContext';
 
-describe('omitPluginContext (slate)', () => {
+describe('omitPluginContext (base)', () => {
   it('removes the plugin context keys and keeps the rest', () => {
     const ctx = {
       api: { remove: true },
@@ -12,7 +12,6 @@ describe('omitPluginContext (slate)', () => {
       plugin: { key: 'plugin' },
       setOption: () => {},
       setOptions: () => {},
-      tf: { insert: true },
       type: 'plugin',
     };
 

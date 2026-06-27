@@ -29,6 +29,18 @@ export {
   getPliteStringLength,
   getPliteStringLineEdgeTextOffset,
 } from '../plugin/plite-string-coordinate-placement';
+export {
+  getNodeDataAttributeKeys,
+  getElements,
+  isEditor,
+  isElement,
+  isLeaf,
+  isNode,
+  isString,
+  isText,
+  isVoid,
+  keyToDataAttribute,
+} from '../utils/plite-dom-markers';
 export { installDOM } from '../plugin/with-dom';
 export {
   EDITOR_TO_ELEMENT,

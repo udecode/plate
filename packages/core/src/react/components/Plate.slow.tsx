@@ -10,7 +10,7 @@ import { useAtomStoreValue } from 'jotai-x';
 import type { PlatePlugins } from '../plugin';
 import type { PlateElementProps, PlateLeafProps } from './plate-nodes';
 
-import { createEditorPlugin } from '../../lib';
+import { createBasePlugin } from '../../lib';
 import { createPlateEditor, usePlateEditor } from '../editor';
 import { createPlatePlugin } from '../plugin/createPlatePlugin';
 import {
@@ -127,7 +127,7 @@ describe('Plate', () => {
 
   describe('useEditorRef().plugins', () => {
     it('uses the plugins already attached to the editor', () => {
-      const _plugins = [createEditorPlugin({ key: 'test' })];
+      const _plugins = [createBasePlugin({ key: 'test' })];
       const editor = createPlateEditor({ plugins: _plugins });
 
       const wrapper = ({ children }: any) => (
@@ -278,7 +278,7 @@ describe('Plate', () => {
       const fn = mock();
 
       const plugins = [
-        createEditorPlugin({
+        createBasePlugin({
           editorExtensions: [
             defineEditorExtension({
               name: 'test:path-normalizer',

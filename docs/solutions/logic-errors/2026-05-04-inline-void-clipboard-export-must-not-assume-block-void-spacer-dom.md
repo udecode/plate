@@ -49,29 +49,29 @@ void DOM:
 ```ts
 if (startVoid) {
   attach =
-    contents.querySelector('[data-plite-spacer]') ??
+    contents.querySelector("[data-plite-spacer]") ??
     contents.querySelector(
-      '[data-plite-node="element"], [data-plite-node="text"], [data-plite-string], [data-plite-zero-width]'
+      '[data-plite-node="element"], [data-plite-node="text"], [data-plite-string], [data-plite-zero-width]',
     ) ??
-    attach
+    attach;
 }
 
-let attachElement: Element
+let attachElement: Element;
 
 if (isDOMElement(attach)) {
-  attachElement = attach
+  attachElement = attach;
 } else {
-  const span = contents.ownerDocument.createElement('span')
+  const span = contents.ownerDocument.createElement("span");
 
   if (attach) {
-    span.appendChild(attach)
+    span.appendChild(attach);
   }
 
-  contents.appendChild(span)
-  attachElement = span
+  contents.appendChild(span);
+  attachElement = span;
 }
 
-attachElement.setAttribute('data-plite-fragment', encoded)
+attachElement.setAttribute("data-plite-fragment", encoded);
 ```
 
 The regression should select the inline void through its empty text child and

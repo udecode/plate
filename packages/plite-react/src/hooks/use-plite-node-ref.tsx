@@ -455,7 +455,9 @@ export const syncTextOperationsToDOM = (
         return;
       }
 
-      const [node] = editor.read((state) => state.nodes.get(path));
+      const [node] = editor.read((state) =>
+        state.nodes.get(path, { required: true })
+      );
 
       return 'text' in node && typeof node.text === 'string' ? node.text : null;
     });
@@ -551,10 +553,14 @@ const bindPliteNodeElement = ({
     return null;
   }
 
-  const pliteNode = (providedPliteNode ??
-    editor.read((state) => state.nodes.get(path))[0]) as PliteNode;
+  const pliteNode =
+    providedPliteNode ?? editor.read((state) => state.nodes.get(path)?.[0]);
+
+  if (!pliteNode) {
+    return null;
+  }
   const key = (
-    (editor as DOMEditor).api as { dom: DOMEditor['dom'] }
+    (editor as DOMEditor).api as unknown as { dom: DOMEditor['dom'] }
   ).dom.findKey(pliteNode);
   const keyToElement = EDITOR_TO_KEY_TO_ELEMENT.get(editor) ?? new WeakMap();
 

@@ -30,6 +30,9 @@ Public root exports are grouped around:
   `getActiveElement`, `getDefaultView`, `getSelection`, `hasShadowRoot`,
   `isDOMElement`, `isDOMNode`, `isDOMSelection`, `isDOMText`,
   `isPlainTextOnlyPaste`, `isTrackedMutation`, and `normalizeDOMPoint`.
+- Plite DOM marker helpers such as `getElements`, `getNodeDataAttributeKeys`,
+  `isEditor`, `isElement`, `isLeaf`, `isNode`, `isString`, `isText`, `isVoid`,
+  and `keyToDataAttribute`.
 - Text-diff utilities such as `applyStringDiff`, `mergeStringDiffs`,
   `normalizePoint`, `normalizeRange`, `normalizeStringDiff`, `targetRange`, and
   `verifyDiffState`.

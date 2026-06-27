@@ -219,8 +219,8 @@ const isFullDocumentSelection = (
   try {
     const [start, end] = RangeApi.edges(selection);
     const [documentStart, documentEnd] = editor.read((state) => [
-      state.points.start([]),
-      state.points.end([]),
+      state.points.start([], { required: true }),
+      state.points.end([], { required: true }),
     ]);
 
     return (

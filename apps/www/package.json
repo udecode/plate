@@ -88,7 +88,6 @@
     "@platejs/math": "workspace:^",
     "@platejs/media": "workspace:^",
     "@platejs/mention": "workspace:^",
-    "@platejs/playwright": "workspace:^",
     "@platejs/plite": "workspace:^",
     "@platejs/plite-dom": "workspace:^",
     "@platejs/plite-history": "workspace:^",

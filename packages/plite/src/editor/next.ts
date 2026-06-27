@@ -8,10 +8,15 @@ import {
 import type { EditorStaticApi } from '../interfaces/editor';
 import { LocationApi, type Span } from '../interfaces/location';
 import { NodeApi } from '../interfaces/node';
+import { PathApi } from '../interfaces/path';
 import { nodes } from './nodes';
 
 export const next: EditorStaticApi['next'] = (editor, options = {}) => {
-  const { mode = 'lowest', voids = false } = options;
+  const {
+    from = 'after',
+    mode = from === 'child' ? 'all' : 'lowest',
+    voids = false,
+  } = options;
   let { match, at = editorGetSnapshot(editor).selection } = options;
 
   if (!at) {
@@ -22,13 +27,41 @@ export const next: EditorStaticApi['next'] = (editor, options = {}) => {
     return;
   }
 
-  const pointAfterLocation = editorAfter(editor, at, { voids });
+  let start: Span[0] | undefined;
 
-  if (!pointAfterLocation) return;
+  if (from === 'child' && LocationApi.isPath(at)) {
+    const childPath = at.concat(0);
 
-  const [, to] = editorLast(editor, []);
+    if (NodeApi.has(editor, childPath)) {
+      start = childPath;
 
-  const span: Span = [pointAfterLocation.path, to];
+      const baseMatch = match;
+      match = (node, path) =>
+        !PathApi.isAncestor(path, at) &&
+        !PathApi.equals(path, at) &&
+        (baseMatch?.(node, path) ?? true);
+    }
+  }
+
+  const pointAfterLocation = start
+    ? undefined
+    : editorAfter(editor, at, { voids });
+
+  if (!start) {
+    if (!pointAfterLocation) return;
+
+    start = pointAfterLocation.path;
+  }
+
+  const lastEntry = editorLast(editor, []);
+
+  if (!lastEntry) {
+    return;
+  }
+
+  const [, to] = lastEntry;
+
+  const span: Span = [start, to];
 
   if (match == null) {
     if (LocationApi.isPath(at)) {

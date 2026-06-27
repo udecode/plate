@@ -26,7 +26,7 @@ const readRuntimeNodeFromView = (editor: Editor, path: Path): Node | null =>
       return null;
     }
 
-    const [node] = state.nodes.get(path);
+    const [node] = state.nodes.get(path, { required: true });
 
     return node;
   });

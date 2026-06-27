@@ -91,9 +91,7 @@ export const createEditorTransformRegistry = <V extends Value>(
     key: TKey,
     args: EditorTransformMiddlewareArgs<V>[TKey],
     applyDefault: (args: EditorTransformMiddlewareArgs<V>[TKey]) => void
-  ) => {
-    executeTransformMiddleware(getEditor(), key, args, applyDefault);
-  };
+  ) => executeTransformMiddleware(getEditor(), key, args, applyDefault);
 
   return Object.freeze({
     addMark: (key, value) =>

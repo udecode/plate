@@ -1,4 +1,4 @@
-import { createSlateEditor } from '../../lib/editor';
+import { createBaseEditor } from '../../lib/editor';
 import { getSelectedDomFragment } from './getSelectedDomFragment';
 
 const selectText = (node: Text, start: number, end: number) => {
@@ -20,9 +20,9 @@ describe('getSelectedDomFragment', () => {
 
   it('returns fully selected top-level blocks without deserializing them again', () => {
     document.body.innerHTML =
-      '<div data-slate-id="block-1" data-slate-node="element">hello</div>';
+      '<div data-plite-id="block-1" data-plite-node="element">hello</div>';
     const blockElement = document.querySelector(
-      '[data-slate-id="block-1"]'
+      '[data-plite-id="block-1"]'
     ) as HTMLElement;
     const range = document.createRange();
     const selection = window.getSelection()!;
@@ -31,11 +31,10 @@ describe('getSelectedDomFragment', () => {
     selection.removeAllRanges();
     selection.addRange(range);
 
-    const editor = createSlateEditor();
-    const block = { children: [{ text: 'hello' }], type: 'p' };
+    const editor = createBaseEditor();
+    const block = { children: [{ text: 'hello' }], id: 'block-1', type: 'p' };
 
-    editor.api.node = mock().mockReturnValue([block, [0]]) as any;
-    editor.api.isVoid = mock().mockReturnValue(false) as any;
+    editor.children = [block];
     editor.api.html.deserialize = mock() as any;
 
     expect(getSelectedDomFragment(editor)).toEqual([block]);
@@ -44,12 +43,12 @@ describe('getSelectedDomFragment', () => {
 
   it('deserializes partial edge blocks for non-void selections', () => {
     document.body.innerHTML = [
-      '<div data-slate-id="block-1" data-slate-node="element">hello world</div>',
-      '<div data-slate-id="block-2" data-slate-node="element">omega</div>',
+      '<div data-plite-id="block-1" data-plite-node="element">hello world</div>',
+      '<div data-plite-id="block-2" data-plite-node="element">omega</div>',
     ].join('');
 
     selectText(
-      document.querySelector('[data-slate-id="block-1"]')!.firstChild as Text,
+      document.querySelector('[data-plite-id="block-1"]')!.firstChild as Text,
       1,
       5
     );
@@ -57,23 +56,25 @@ describe('getSelectedDomFragment', () => {
       .getSelection()!
       .getRangeAt(0)
       .setEnd(
-        document.querySelector('[data-slate-id="block-2"]')!.firstChild as Text,
+        document.querySelector('[data-plite-id="block-2"]')!.firstChild as Text,
         5
       );
 
-    const editor = createSlateEditor();
+    const editor = createBaseEditor();
     const blockOne = { children: [{ text: 'hello world' }], type: 'p' };
     const blockTwo = { children: [{ text: 'omega' }], type: 'p' };
     const partialOne = { children: [{ text: 'ello world' }], type: 'p' };
 
-    editor.api.node = mock(({ id }) => {
-      if (id === 'block-1') return [blockOne, [0]];
-      if (id === 'block-2') return [blockTwo, [1]];
-    }) as any;
-    editor.api.isVoid = mock().mockReturnValue(false) as any;
+    editor.children = [
+      { ...blockOne, id: 'block-1' },
+      { ...blockTwo, id: 'block-2' },
+    ];
     editor.api.html.deserialize = mock().mockReturnValue([partialOne]) as any;
 
-    expect(getSelectedDomFragment(editor)).toEqual([partialOne, blockTwo]);
+    expect(getSelectedDomFragment(editor)).toEqual([
+      partialOne,
+      { ...blockTwo, id: 'block-2' },
+    ]);
     expect(editor.api.html.deserialize).toHaveBeenCalledTimes(1);
   });
 });

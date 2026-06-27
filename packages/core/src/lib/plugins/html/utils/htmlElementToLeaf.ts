@@ -1,7 +1,7 @@
-import { type Descendant, ElementApi, TextApi } from '@platejs/slate';
-import { jsx } from 'slate-hyperscript';
+import { type Descendant, ElementApi, TextApi } from '@platejs/plite';
+import { jsx } from '@platejs/plite-hyperscript';
 
-import type { SlateEditor } from '../../../editor';
+import type { BaseEditor } from '../../../editor';
 
 import { mergeDeepToNodes } from '../../../utils';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
@@ -11,10 +11,7 @@ import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
  * Deserialize HTML to Descendant[] with marks on Text. Build the leaf from the
  * leaf deserializers of each plugin.
  */
-export const htmlElementToLeaf = (
-  editor: SlateEditor,
-  element: HTMLElement
-) => {
+export const htmlElementToLeaf = (editor: BaseEditor, element: HTMLElement) => {
   const node = pipeDeserializeHtmlLeaf(editor, element);
 
   return deserializeHtmlNodeChildren(editor, element).reduce(

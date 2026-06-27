@@ -2,14 +2,14 @@
 import { BaseLinkPlugin } from '@platejs/link';
 import { jsxt } from '@platejs/test-utils';
 
-import { createSlateEditor, createSlatePlugin } from '../../lib';
+import { createBaseEditor, createBasePlugin } from '../../lib';
 import { normalizeDescendantsToDocumentFragment } from './index';
 
 jsxt;
 
 describe('normalizeDescendantsToDocumentFragment()', () => {
   it('returns a blank text node when descendants are empty', () => {
-    const editor = createSlateEditor();
+    const editor = createBaseEditor();
 
     expect(
       normalizeDescendantsToDocumentFragment(editor, {
@@ -45,7 +45,7 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
     input,
     output,
   }: any) => {
-    const editor = createSlateEditor();
+    const editor = createBaseEditor();
 
     const result = normalizeDescendantsToDocumentFragment(editor, {
       descendants: input,
@@ -113,7 +113,7 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
     input,
     output,
   }: any) => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseLinkPlugin],
     });
 
@@ -187,12 +187,12 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
     input,
     output,
   }: any) => {
-    const BaseBlockquotePlugin = createSlatePlugin({
+    const BaseBlockquotePlugin = createBasePlugin({
       key: 'blockquote',
       node: { isElement: true },
     });
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseLinkPlugin],
     });
 

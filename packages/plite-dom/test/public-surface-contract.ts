@@ -23,6 +23,23 @@ const pliteDomDocsPath = fileURLToPath(
   new URL('../../../docs/libraries/plite-dom.md', import.meta.url)
 );
 
+const typePrefixPattern = /^type\s+/;
+const exportAliasSplitPattern = /\s+as\s+/;
+const immediateJsdocPattern = /\/\*\*[\s\S]*?\*\/\s*$/;
+const readmeDomFocusPattern = /editor\.api\.dom\.focus\(\)/;
+const readmeClipboardPattern = /editor\.api\.clipboard\.insertTextData/;
+const readmeRootImportPattern =
+  /import \{ DOMCoverage, Hotkeys, isDOMNode \} from '@platejs\/plite-dom'/;
+const readmeCoveragePattern = /DOM coverage boundaries model same-root content/;
+const readmeBridgeOwnerPattern = /Framework packages own bridge installation/;
+const tsdownRootEntryPattern = /index:\s*'src\/index\.ts'/;
+const tsdownInternalEntryPattern =
+  /'internal\/index':\s*'src\/internal\/index\.ts'/;
+const defaultHotkeysAliasPattern = /default as Hotkeys/;
+const hotkeysNamedExportPattern = /export const Hotkeys =/;
+const defaultExportPattern = /export default/;
+const tryPrefixPattern = /^try/i;
+
 const extractDocumentedCapabilityMethods = (
   source: string,
   capability: 'clipboard' | 'dom'
@@ -56,6 +73,8 @@ const expectedPliteDOMRuntimeRootExports = [
   'dom',
   'getActiveElement',
   'getDefaultView',
+  'getElements',
+  'getNodeDataAttributeKeys',
   'getSelection',
   'hasShadowRoot',
   'isAfter',
@@ -64,11 +83,19 @@ const expectedPliteDOMRuntimeRootExports = [
   'isDOMNode',
   'isDOMSelection',
   'isDOMText',
+  'isEditor',
+  'isElement',
   'isElementDecorationsEqual',
   'isHotkey',
+  'isLeaf',
+  'isNode',
   'isPlainTextOnlyPaste',
+  'isString',
+  'isText',
   'isTextDecorationsEqual',
   'isTrackedMutation',
+  'isVoid',
+  'keyToDataAttribute',
   'mergeStringDiffs',
   'normalizeDOMPoint',
   'normalizePoint',
@@ -104,8 +131,8 @@ describe('plite-dom public surface contract', () => {
       for (const rawName of rawNames.split(',')) {
         const name = rawName
           .trim()
-          .replace(/^type\s+/, '')
-          .split(/\s+as\s+/)[0]
+          .replace(typePrefixPattern, '')
+          .split(exportAliasSplitPattern)[0]
           ?.trim();
 
         if (!name) {
@@ -129,7 +156,7 @@ describe('plite-dom public surface contract', () => {
           declarationIndex
         );
 
-        if (!/\/\*\*[\s\S]*?\*\/\s*$/.test(beforeDeclaration)) {
+        if (!immediateJsdocPattern.test(beforeDeclaration)) {
           missing.push(`${name}: missing immediate source JSDoc`);
         }
       }
@@ -144,14 +171,11 @@ describe('plite-dom public surface contract', () => {
       'utf8'
     );
 
-    assert.match(readme, /editor\.api\.dom\.focus\(\)/);
-    assert.match(readme, /editor\.api\.clipboard\.insertTextData/);
-    assert.match(
-      readme,
-      /import \{ DOMCoverage, Hotkeys, isDOMNode \} from '@platejs\/plite-dom'/
-    );
-    assert.match(readme, /DOM coverage boundaries model same-root content/);
-    assert.match(readme, /Framework packages own bridge installation/);
+    assert.match(readme, readmeDomFocusPattern);
+    assert.match(readme, readmeClipboardPattern);
+    assert.match(readme, readmeRootImportPattern);
+    assert.match(readme, readmeCoveragePattern);
+    assert.match(readme, readmeBridgeOwnerPattern);
   });
 
   it('keeps grouped root utility exports named in package docs', () => {
@@ -179,6 +203,8 @@ describe('plite-dom public surface contract', () => {
       'containsShadowAware',
       'getActiveElement',
       'getDefaultView',
+      'getElements',
+      'getNodeDataAttributeKeys',
       'getSelection',
       'hasShadowRoot',
       'isAfter',
@@ -187,8 +213,16 @@ describe('plite-dom public surface contract', () => {
       'isDOMNode',
       'isDOMSelection',
       'isDOMText',
+      'isEditor',
+      'isElement',
       'isPlainTextOnlyPaste',
+      'isLeaf',
+      'isNode',
+      'isString',
+      'isText',
       'isTrackedMutation',
+      'isVoid',
+      'keyToDataAttribute',
       'normalizeDOMPoint',
       'applyStringDiff',
       'mergeStringDiffs',
@@ -266,11 +300,8 @@ describe('plite-dom public surface contract', () => {
   it('keeps exported package subpaths backed by build entries', () => {
     const tsdownConfig = readFileSync(tsdownConfigPath, 'utf8');
 
-    assert.match(tsdownConfig, /index:\s*'src\/index\.ts'/);
-    assert.match(
-      tsdownConfig,
-      /'internal\/index':\s*'src\/internal\/index\.ts'/
-    );
+    assert.match(tsdownConfig, tsdownRootEntryPattern);
+    assert.match(tsdownConfig, tsdownInternalEntryPattern);
   });
 
   it('keeps the internal DOMEditor static namespace out of the public root at runtime', () => {
@@ -434,9 +465,9 @@ describe('plite-dom public surface contract', () => {
 
     assert.equal(typeof PliteDOM.Hotkeys, 'object');
     assert.equal(typeof PliteDOM.Hotkeys.isUndo, 'function');
-    assert.doesNotMatch(rootSource, /default as Hotkeys/);
-    assert.match(hotkeySource, /export const Hotkeys =/);
-    assert.doesNotMatch(hotkeySource, /export default/);
+    assert.doesNotMatch(rootSource, defaultHotkeysAliasPattern);
+    assert.match(hotkeySource, hotkeysNamedExportPattern);
+    assert.doesNotMatch(hotkeySource, defaultExportPattern);
   });
 
   it('treats nodes from torn down DOM views as non-DOM values', () => {
@@ -475,7 +506,7 @@ describe('plite-dom public surface contract', () => {
 
     for (const name of Object.keys(editor.api.dom)) {
       assert.equal(
-        /^try/i.test(name),
+        tryPrefixPattern.test(name),
         false,
         `${name} must not use try* naming`
       );

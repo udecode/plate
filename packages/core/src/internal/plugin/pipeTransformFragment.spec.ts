@@ -1,12 +1,12 @@
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/plite';
 
-import { createSlateEditor } from '../../lib/editor';
-import { createSlatePlugin } from '../../lib/plugin';
+import { createBaseEditor } from '../../lib/editor';
+import { createBasePlugin } from '../../lib/plugin';
 import { pipeTransformFragment } from './pipeTransformFragment';
 
 const createParserEditor = (
-  plugins: Parameters<typeof createSlateEditor>[0]['plugins']
-) => createSlateEditor({ plugins });
+  plugins: Parameters<typeof createBaseEditor>[0]['plugins']
+) => createBaseEditor({ plugins });
 
 const createParagraph = (text: string): Descendant => ({
   children: [{ text }],
@@ -17,7 +17,7 @@ describe('pipeTransformFragment', () => {
   it('pipes transformed fragments through parser plugins in order', () => {
     const calls: string[] = [];
 
-    const firstPlugin = createSlatePlugin({
+    const firstPlugin = createBasePlugin({
       key: 'first',
       parser: {
         transformFragment: ({ fragment }) => {
@@ -27,7 +27,7 @@ describe('pipeTransformFragment', () => {
       },
     });
 
-    const secondPlugin = createSlatePlugin({
+    const secondPlugin = createBasePlugin({
       key: 'second',
       parser: {
         transformFragment: ({ fragment }) => {

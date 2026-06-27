@@ -3,13 +3,10 @@
  */
 
 export * from './applyDeepToNodes';
-export * from './checkUtils';
 export * from './defaultsDeepToNodes';
 export * from './getInjectMatch';
 export * from './getInjectedPlugins';
-export * from './getNodeDataAttributeKeys';
 export * from './getPluginNodeProps';
-export * from './getSlateClass';
 export * from './hotkeys';
 export * from './isType';
 export * from './mergeDeepToNodes';
@@ -19,3 +16,5 @@ export * from './overridePluginsByKey';
 export * from './pipeInsertDataQuery';
 export * from './pipeOnNodeChange';
 export * from './pipeOnTextChange';
+export * from './pluginNodeClass';
+export * from './queryNode';

@@ -18,26 +18,26 @@ export function EditorHotkeysEffect({
 
   return (
     <>
-      {Object.entries(editor.meta.shortcuts).map(
-        ([hotkeyString, hotkeyConfig]) => {
-          if (
-            !hotkeyConfig ||
-            !isDefined(hotkeyConfig.keys) ||
-            !hotkeyConfig.handler
-          ) {
-            return null;
-          }
-
-          return (
-            <HotkeyEffect
-              id={id}
-              key={hotkeyString}
-              editableRef={editableRef}
-              hotkeyConfig={hotkeyConfig}
-            />
-          );
+      {Object.entries(
+        editor.meta.shortcuts as Record<string, Shortcut | null | undefined>
+      ).map(([hotkeyString, hotkeyConfig]) => {
+        if (
+          !hotkeyConfig ||
+          !isDefined(hotkeyConfig.keys) ||
+          !hotkeyConfig.handler
+        ) {
+          return null;
         }
-      )}
+
+        return (
+          <HotkeyEffect
+            id={id}
+            key={hotkeyString}
+            editableRef={editableRef}
+            hotkeyConfig={hotkeyConfig}
+          />
+        );
+      })}
     </>
   );
 }

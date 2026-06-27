@@ -1,6 +1,8 @@
 import { NodeApi } from '../interfaces';
 import {
   above as editorAbove,
+  after as editorAfter,
+  before as editorBefore,
   isBlock as editorIsBlock,
   point as editorPoint,
   void as editorVoid,
@@ -15,7 +17,36 @@ export const unhangRange: EditorStaticApi['unhangRange'] = (
   range,
   options = {}
 ) => {
-  const { voids = false } = options;
+  const { character = false, unhang = true, voids = false } = options;
+
+  if (character) {
+    let [start, end] = RangeApi.edges(range);
+
+    if (PathApi.equals(start.path, end.path)) {
+      return range;
+    }
+
+    if (end.offset === 0) {
+      const pointAfter = editorAfter(editor, start, { voids });
+
+      if (pointAfter) {
+        end = pointAfter;
+      }
+    } else {
+      const pointBefore = editorBefore(editor, end, { voids });
+
+      if (pointBefore) {
+        start = pointBefore;
+      }
+    }
+
+    return { anchor: start, focus: end };
+  }
+
+  if (!unhang) {
+    return range;
+  }
+
   let [start, end] = RangeApi.edges(range);
 
   // PERF: exit early if we can guarantee that the range isn't hanging.

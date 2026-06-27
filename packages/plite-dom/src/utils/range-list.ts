@@ -134,6 +134,10 @@ export const splitDecorationsByChild = (
   const level = path.length;
   const ancestorRange = editor.read((state) => state.ranges.get(path));
 
+  if (!ancestorRange) {
+    return decorationsByChild;
+  }
+
   const cachedChildRanges = new Array<Range | undefined>(children.length);
 
   const getChildRange = (index: number) => {
@@ -159,6 +163,8 @@ export const splitDecorationsByChild = (
       if (!ds) continue;
 
       const childRange = getChildRange(i);
+      if (!childRange) continue;
+
       const childDecorationRange = RangeApi.intersection(
         childRange,
         decoration

@@ -1,0 +1,1133 @@
+apps/www/src/__tests__/package-integration/playground/playground-rules.slow.tsx:112:      expect(editor.children[0]).toMatchObject({
+apps/www/src/__tests__/package-integration/playground/playground-rules.slow.tsx:116:      expect(editor.selection).toEqual({
+apps/www/src/__tests__/package-integration/playground/playground-rules.slow.tsx:127:      expect(editor.children[0]).toMatchObject({
+apps/www/src/__tests__/package-integration/playground/playground-rules.slow.tsx:131:      expect(editor.selection).toEqual({
+apps/www/src/__tests__/package-integration/playground/playground-rules.slow.tsx:145:      expect(editor.children).toMatchObject([
+apps/www/src/__tests__/package-integration/playground/playground-rules.slow.tsx:201:      expect(editor.children[0]).toMatchObject({
+apps/www/src/__tests__/package-integration/playground/playground-rules.slow.tsx:264:      expect(editor.children[0]).toMatchObject(expectedNode);
+apps/www/src/__tests__/package-integration/playground/playground-rules.slow.tsx:265:      expect(editor.children[0]).toMatchObject({
+apps/www/src/__tests__/package-integration/playground/playground-rules.slow.tsx:268:      expect(editor.selection).toEqual({
+apps/www/src/__tests__/package-integration/playground/playground-rules.slow.tsx:295:      expect(editor.children[0]).toMatchObject({
+apps/www/src/__tests__/package-integration/playground/playground-rules.slow.tsx:327:      expect(editor.children[0]).toMatchObject({
+apps/www/src/__tests__/package-integration/playground/playground-rules.slow.tsx:340:      expect(editor.selection).toEqual({
+apps/www/src/__tests__/package-integration/code-block/current-kit.slow.tsx:33:    expect(editor.children).toMatchObject([
+apps/www/src/__tests__/package-integration/code-block/current-kit.slow.tsx:39:    expect(editor.selection).toEqual({
+packages/tabbable/src/lib/findTabDestination.ts:94:  const selectionPath = editor.selection?.anchor?.path || [];
+apps/www/src/__tests__/package-integration/suggestion-link.spec.tsx:75:    const linkNode = editor.children[0].children[1] as any;
+apps/www/src/__tests__/package-integration/suggestion-link.spec.tsx:81:    expect(editor.children[0].children[0]).toEqual(
+apps/www/src/__tests__/package-integration/suggestion-link.spec.tsx:92:    expect(editor.children[0].children[2]).toEqual(
+apps/www/src/__tests__/package-integration/suggestion-link.spec.tsx:95:    expect(editor.selection).toEqual(output.selection);
+apps/www/src/__tests__/package-integration/suggestion-link.spec.tsx:126:    editor.selection = {
+apps/www/src/__tests__/package-integration/suggestion-link.spec.tsx:136:    expect(editor.children).toEqual(output.children);
+apps/www/src/__tests__/package-integration/suggestion-link.spec.tsx:174:    expect(editor.children).toEqual(output.children);
+packages/media/src/react/media/FloatingMedia/submitFloatingMedia.spec.ts:43:      element: editor.children[0] as any,
+packages/media/src/react/media/FloatingMedia/submitFloatingMedia.spec.ts:48:    expect(editor.children[0]).toMatchObject({
+packages/media/src/react/media/FloatingMedia/submitFloatingMedia.spec.ts:85:      element: editor.children[0] as any,
+packages/media/src/react/media/FloatingMedia/submitFloatingMedia.spec.ts:90:    expect(editor.children[0]).toMatchObject({
+packages/media/src/react/media/FloatingMedia/submitFloatingMedia.spec.ts:128:      element: editor.children[0] as any,
+packages/media/src/react/media/FloatingMedia/submitFloatingMedia.spec.ts:133:    expect(editor.children[0]).toMatchObject({
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamHistory.slow.tsx:28:  const initialSelection = JSON.parse(JSON.stringify(editor.selection));
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamHistory.slow.tsx:29:  const initialValue = JSON.parse(JSON.stringify(editor.children));
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamHistory.slow.tsx:53:        at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamHistory.slow.tsx:83:    expect(editor.history.undos).toHaveLength(0);
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamHistory.slow.tsx:89:    expect(editor.children).toEqual(initialValue);
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamHistory.slow.tsx:90:    expect(editor.history.undos).toHaveLength(0);
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamHistory.slow.tsx:99:    expect(editor.history.undos).toHaveLength(1);
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamHistory.slow.tsx:100:    expect(editor.history.undos[0].operations.length).toBeLessThan(
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamHistory.slow.tsx:126:    expect(editor.children).toEqual(initialValue);
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamHistory.slow.tsx:127:    expect(editor.selection).toEqual(initialSelection);
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamHistory.slow.tsx:135:    expect(editor.selection).toEqual({
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamHistory.slow.tsx:148:    expect(editor.selection).toEqual({
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx:43:      expect(editor.children).toEqual(output);
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx:72:      expect(editor.children).toEqual(output);
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx:96:      expect(editor.children).toEqual(output);
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx:123:      expect(editor.children).toEqual(output);
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx:136:      expect(editor.children).toEqual([
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx:164:      expect(editor.children).toEqual([
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx:197:      expect(editor.children).toEqual(output);
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx:222:      expect(editor.children).toEqual(output);
+apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx:307:      expect(editor.children).toEqual(expected);
+packages/tabbable/src/lib/findTabDestination.spec.tsx:40:  const voidPliteNode1 = (editor.children[1] as any)!;
+packages/tabbable/src/lib/findTabDestination.spec.tsx:44:  const voidPliteNode2 = (editor.children[4] as any)!;
+packages/tabbable/src/lib/findTabDestination.spec.tsx:49:  const voidPliteNode3 = (editor.children[5] as any)!;
+apps/www/src/__tests__/package-integration/core-html/HtmlPlugin.slow.tsx:76:      expect(editor.children).toEqual(expected.children);
+apps/www/src/__tests__/package-integration/core-html/HtmlPlugin.slow.tsx:109:      expect(editor.children).toEqual(expected.children);
+apps/www/src/__tests__/package-integration/core-html/HtmlPlugin.slow.tsx:149:      expect(editor.children).toEqual(expected.children);
+apps/www/src/__tests__/package-integration/core-html/HtmlPlugin.slow.tsx:189:    expect(editor.children).toEqual(output.children);
+apps/www/src/__tests__/package-integration/core-html/HtmlPlugin.slow.tsx:230:    expect(editor.children).toEqual(output.children);
+apps/www/src/__tests__/package-integration/core-html/HtmlPlugin.slow.tsx:274:    expect(editor.children).toEqual(output.children);
+apps/www/src/__tests__/package-integration/core-html/HtmlPlugin.slow.tsx:320:    expect(editor.children).toEqual(output.children);
+apps/www/src/__tests__/package-integration/blockquote/basic-blocks-kit.slow.tsx:42:    expect(editor.children[0]).toMatchObject({
+apps/www/src/__tests__/package-integration/blockquote/basic-blocks-kit.slow.tsx:46:    expect(editor.selection).toEqual({
+apps/www/src/app/dev/editor-perf/page.tsx:2456:  consume(editor.children.length);
+apps/www/src/app/dev/editor-perf/page.tsx:2470:  const blockCount = useEditorSelector((editor) => editor.children.length, [], {
+apps/www/src/app/dev/editor-perf/page.tsx:2504:    editor.children.length,
+apps/www/src/app/dev/editor-perf/page.tsx:2714:  if (!editor.children || editor.children.length === 0) {
+apps/www/src/app/dev/editor-perf/page.tsx:2796:    () => buildElementPathMap((editor.children ?? []) as Value),
+apps/www/src/__tests__/package-integration/ai-utils/findTextRangeInBlock.spec.tsx:22:      block: editor.api.node([0])!,
+apps/www/src/__tests__/package-integration/ai-utils/findTextRangeInBlock.spec.tsx:48:      block: editor.api.node([0])!,
+apps/www/src/__tests__/package-integration/ai-utils/findTextRangeInBlock.spec.tsx:69:      block: editor.api.node([0])!,
+apps/www/src/__tests__/package-integration/ai-utils/findTextRangeInBlock.spec.tsx:90:      block: editor.api.node([0])!,
+apps/www/src/__tests__/package-integration/ai-utils/findTextRangeInBlock.spec.tsx:151:      block: editor.api.node([0])!,
+apps/www/src/__tests__/package-integration/ai-utils/findTextRangeInBlock.spec.tsx:216:      block: editor.api.node([0])!,
+apps/www/src/__tests__/package-integration/link/link-automd.slow.tsx:41:    expect(editor.children[0]).toMatchObject({
+apps/www/src/__tests__/package-integration/link/link-automd.slow.tsx:53:    expect(editor.selection).toEqual({
+apps/www/src/__tests__/package-integration/math/math-base-kit.slow.tsx:66:    expect(editor.children).toMatchObject([
+packages/media/src/react/placeholder/transforms/insertMedia.ts:29:  const location = at ?? editor.selection;
+packages/test-utils/src/jsx.spec.ts:28:    expect(editor.children).toEqual([{ children: [{ text: 'A' }], type: 'p' }]);
+apps/www/src/__tests__/package-integration/plite-contracts.slow.tsx:350:      expect(editor.children).toEqual(output.children);
+apps/www/src/__tests__/package-integration/plite-contracts.slow.tsx:379:      expect(editor.children).toEqual(output.children);
+apps/www/src/__tests__/package-integration/plite-contracts.slow.tsx:407:      expect(editor.children).toEqual(output.children);
+apps/www/src/__tests__/package-integration/plite-contracts.slow.tsx:422:        expect(editor.children).toEqual(output.children);
+apps/www/src/__tests__/package-integration/plite-contracts.slow.tsx:423:        expect(editor.selection).toEqual(output.selection);
+apps/www/src/__tests__/package-integration/list/ListPlugin.slow.tsx:81:    expect(editor.children).toEqual([
+apps/www/src/__tests__/package-integration/list/ListPlugin.slow.tsx:183:    expect(editor.children).toEqual([
+packages/test-utils/src/internals/creators.ts:201:    editor.children = descendants;
+packages/test-utils/src/internals/creators.ts:202:    editor.selection = null;
+packages/test-utils/src/internals/creators.ts:229:      editor.selection = selectionChild;
+packages/test-utils/src/internals/creators.ts:231:      editor.selection = selection;
+apps/www/src/registry/lib/block-discussion-index.spec.tsx:40:  editor.children.forEach((child: any, index: number) => {
+apps/www/src/__tests__/package-integration/list/current-kit.slow.tsx:24:    expect(editor.children).toMatchObject([
+apps/www/src/__tests__/package-integration/list/current-kit.slow.tsx:32:    expect(editor.children[0]).toHaveProperty('id');
+apps/www/src/__tests__/package-integration/list/current-kit.slow.tsx:33:    expect(editor.selection).toEqual({
+packages/math/src/lib/transforms/insertInlineEquation.spec.ts:24:    expect(editor.children).toMatchObject([
+packages/math/src/lib/transforms/insertInlineEquation.spec.ts:61:    expect(editor.children).toMatchObject([
+packages/core/src/react/editor/createPlateRuntimeEditor.spec.ts:1965:    expect(editor.operations).toEqual([]);
+packages/core/src/react/editor/createPlateRuntimeEditor.spec.ts:1971:    expect(editor.operations).toEqual([
+packages/core/src/react/editor/createPlateRuntimeEditor.spec.ts:1975:      editor.operations.some((operation) => operation.type === 'insert_text')
+packages/math/src/lib/transforms/insertEquation.spec.ts:24:    expect(editor.children).toMatchObject([
+packages/math/src/lib/transforms/insertEquation.spec.ts:58:    expect(editor.children).toMatchObject([
+packages/media/src/react/placeholder/utils/history.spec.ts:29:    expect(editor.history.undos[0].operations[0].node).toEqual({
+packages/core/src/react/hooks/useNodePath.spec.tsx:22:    const node = editor.children[0] as any;
+packages/docx-io/src/lib/docx-export-plugin.tsx:472: * const blob = await exportToDocx(editor.children, {
+packages/docx-io/src/lib/docx-export-plugin.tsx:546: * const blob = await exportToDocx(editor.children);
+packages/docx-io/src/lib/docx-export-plugin.tsx:575: * await exportEditorToDocx(editor.children, 'my-document', {
+packages/docx-io/src/lib/docx-export-plugin.tsx:640: * const blob = await exportToDocx(editor.children, { orientation: 'portrait' });
+packages/docx-io/src/lib/docx-export-plugin.tsx:671:        value: editor.children,
+packages/media/src/react/placeholder/utils/history.ts:25:  const history = editor.history as { undos?: UploadHistoryBatch[] };
+packages/math/src/lib/transforms/insertInlineEquation.ts:26:  const selection = editor.selection;
+apps/www/src/registry/components/editor/use-chat.ts:1586:      : editor.children;
+apps/www/src/registry/components/editor/use-chat.ts:1646:        at: editor.selection ?? undefined,
+packages/math/src/lib/BaseInlineEquationPlugin.spec.ts:51:    expect(editor.selection).toEqual({
+packages/math/src/lib/BaseInlineEquationPlugin.spec.ts:84:    expect(editor.selection).toEqual({
+packages/math/src/lib/BaseInlineEquationPlugin.spec.ts:100:    expect(editor.children[0]).toMatchObject({
+apps/www/src/registry/components/editor/transforms.spec.ts:32:    expect(editor.children).toMatchObject([
+apps/www/src/registry/components/editor/transforms.spec.ts:39:    expect(editor.selection).toEqual({
+apps/www/src/registry/components/editor/transforms.spec.ts:50:    expect(editor.children).toMatchObject([
+apps/www/src/registry/components/editor/transforms.spec.ts:57:    expect(editor.selection).toEqual({
+apps/www/src/registry/components/editor/transforms.spec.ts:68:    expect(editor.children).toMatchObject([
+apps/www/src/registry/components/editor/transforms.spec.ts:76:    expect(editor.selection).toEqual({
+apps/www/src/registry/components/editor/transforms.spec.ts:96:    expect(editor.children).toMatchObject([
+apps/www/src/registry/components/editor/transforms.spec.ts:103:    expect(editor.selection).toEqual({
+packages/core/src/react/hooks/useEditableProps.spec.tsx:35:      const entry = [editor.children[0], [0]] as any;
+packages/math/src/lib/BaseEquationPlugin.ts:41:        const selection = editor.selection;
+apps/www/src/registry/app/api/ai/command/utils.ts:211:  if (!editor.selection) return;
+apps/www/src/registry/app/api/ai/command/utils.ts:213:    const [start, end] = RangeApi.edges(editor.selection);
+apps/www/src/registry/app/api/ai/command/utils.ts:236:    const [_, end] = RangeApi.edges(editor.selection!);
+apps/www/src/registry/app/api/ai/command/utils.ts:282:  if (!editor.selection) return false;
+apps/www/src/registry/app/api/ai/command/utils.ts:286:      at: editor.selection!,
+apps/www/src/registry/app/api/ai/command/utils.ts:296:  const selection = editor.selection;
+packages/math/src/lib/BaseEquationPlugin.spec.ts:45:    expect(editor.children).toHaveLength(2);
+packages/math/src/lib/BaseEquationPlugin.spec.ts:46:    expect(editor.selection).toEqual({
+packages/math/src/lib/BaseEquationPlugin.spec.ts:60:    expect(editor.children[1]).toMatchObject({
+packages/math/src/lib/BaseInlineEquationPlugin.ts:43:          const selection = editor.selection;
+packages/markdown/src/lib/serializer/serializeMd.spec.ts:8:    editor.children = [
+packages/plite-history/src/history-selection.ts:114:  batch.operations.length > 0 &&
+packages/plite-history/src/history-selection.ts:124:    batch.operations.length > 0 &&
+packages/core/src/react/components/PlateContent.tsx:163:    if (!editor.children || editor.children.length === 0) {
+packages/toc/src/lib/transforms/insertToc.spec.ts:20:    expect(editor.children).toMatchObject([
+packages/toc/src/lib/transforms/insertToc.spec.ts:45:    expect(editor.children[1]).toMatchObject({
+packages/core/src/react/components/Plate.slow.tsx:101:        editor.children = [{ children: [{ text: 'value' }], type: 'p' }];
+packages/core/src/react/components/Plate.slow.tsx:108:        expect(result.current).toBe(editor.children);
+packages/core/src/react/components/Plate.slow.tsx:317:      expect(editor.children).not.toStrictEqual([
+packages/plite-history/src/history-extension.ts:112:    batch.operations.length === 0 && batch.statePatches.length > 0;
+packages/core/src/react/components/PlateContent.spec.tsx:128:    expect(editor.selection).toEqual({
+packages/core/src/react/components/PlateContent.spec.tsx:193:    expect(editor.selection).toEqual({
+packages/plite-history/test/generic-history-contract.ts:62:  editor.history;
+apps/www/src/registry/components/editor/plugins/ai-kit.tsx:66:                  at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
+packages/markdown/src/lib/serializer/utils/getMergedOptionsSerialize.ts:47:    value: options?.value ?? editor.children,
+packages/media/src/lib/media-embed/BaseMediaEmbedPlugin.spec.ts:58:    expect(editor.children[1]).toMatchObject({
+apps/www/src/registry/components/editor/plugins/comment-kit.tsx:54:      const commentingBlock = editor.selection?.focus.path.slice(0, 1) ?? null;
+packages/markdown/src/lib/serializer/serializeMention.spec.ts:9:    editor.children = [
+packages/markdown/src/lib/serializer/serializeMention.spec.ts:31:    editor.children = [
+packages/markdown/src/lib/serializer/serializeMention.spec.ts:61:    editor.children = [
+packages/markdown/src/lib/serializer/serializeMention.spec.ts:83:    editor.children = [
+packages/markdown/src/lib/serializer/serializeMention.spec.ts:108:    editor.children = value;
+packages/markdown/src/lib/serializer/serializeMention.spec.ts:118:    editor.children = [
+apps/www/src/registry/ui/export-toolbar-button.tsx:112:      value: editor.children,
+apps/www/src/registry/ui/export-toolbar-button.tsx:161:    const blob = await exportToDocx(editor.children, {
+packages/media/src/lib/media-embed/transforms/insertMediaEmbed.ts:22:  const selection = editor.selection;
+packages/core/src/react/utils/pipeOnChange.spec.ts:22:    expect(pipeOnChange(editor, editor.children)).toBe(false);
+packages/core/src/react/utils/pipeOnChange.spec.ts:53:    expect(pipeOnChange(editor, editor.children)).toBe(true);
+packages/core/src/react/utils/pipeOnChange.spec.ts:58:      value: editor.children,
+packages/markdown/src/lib/deserializer/deserializeMdList.spec.tsx:58:    expect(editor.children).toMatchObject([
+packages/core/src/react/utils/inputRules.spec.tsx:260:    expect(editor.children).toMatchObject([
+packages/core/src/react/utils/inputRules.spec.tsx:365:    expect(editor.children).toMatchObject([
+packages/plite-history/test/integrity-contract.ts:84:    assert.equal(getHistory(editor).undos[0]?.operations.length, 2);
+packages/plite-history/test/integrity-contract.ts:115:    assert.equal(getHistory(editor).undos[0]?.operations.length, 1);
+packages/plite-history/test/integrity-contract.ts:116:    assert.equal(getHistory(editor).undos[1]?.operations.length, 2);
+packages/core/src/react/utils/pluginRenderLeaf.spec.tsx:159:  const text = editor.children[0].children[0] as any;
+apps/www/src/registry/ui/font-color-toolbar-button.tsx:89:    (editor) => !!editor.selection,
+apps/www/src/registry/ui/font-color-toolbar-button.tsx:148:        if (editor.selection) {
+apps/www/src/registry/ui/font-color-toolbar-button.tsx:160:      if (editor.selection) {
+apps/www/src/registry/ui/font-color-toolbar-button.tsx:165:          tx.selection.set(editor.selection!);
+apps/www/src/registry/ui/font-color-toolbar-button.tsx:182:    if (editor.selection) {
+apps/www/src/registry/ui/font-color-toolbar-button.tsx:184:        tx.selection.set(editor.selection!);
+packages/core/src/react/utils/pluginRenderElement.spec.tsx:26:  const element = editor.children[0] as any;
+packages/media/src/lib/placeholder/BasePlaceholderPlugin.spec.ts:25:    expect(editor.children[1]).toMatchObject({
+packages/media/src/lib/placeholder/BasePlaceholderPlugin.spec.ts:39:    expect(editor.children[1]).toMatchObject({
+packages/core/src/react/utils/shortcuts.spec.tsx:52:  expect(editor.children).toEqual(output.children);
+apps/www/src/registry/ui/import-toolbar-button.tsx:84:        tx.nodes.insert(result.nodes as typeof editor.children);
+packages/core/src/react/utils/pipeRenderElement.spec.tsx:35:  const element = editor.children[0] as any;
+packages/core/src/react/utils/pipeRenderElement.spec.tsx:55:  const element = editor.children[0] as any;
+packages/core/src/react/utils/pipeRenderElement.spec.tsx:223:    const element = editor.children[0] as any;
+packages/core/src/react/utils/pipeRenderElement.spec.tsx:283:    const element = editor.children[0] as any;
+packages/core/src/react/utils/getRenderNodeProps.spec.ts:17:    const element = editor.children[0] as any;
+packages/core/src/react/utils/getRenderNodeProps.spec.ts:78:    const element = editor.children[0] as any;
+apps/www/src/registry/ui/footnote-node.tsx:440:      const selection = editor.selection;
+packages/media/src/lib/placeholder/transforms/setMediaNode.spec.ts:27:    expect(editor.children[0]).toMatchObject({
+packages/media/src/lib/BaseMediaPluginContracts.spec.ts:76:    expect(editor.children).toHaveLength(2);
+packages/media/src/lib/BaseMediaPluginContracts.spec.ts:77:    expect(editor.selection).toEqual({
+apps/www/src/registry/examples/markdown-streaming-demo.tsx:379:  // eslint-disable-next-line react-hooks/immutability -- Static editor demo intentionally mutates editor.children during playback.
+apps/www/src/registry/examples/markdown-streaming-demo.tsx:504:            // eslint-disable-next-line react-hooks/immutability -- Static editor playback mutates editor.children through onStreamingStatic.
+packages/media/src/lib/image/withImageEmbed.spec.tsx:40:    expect(editor.children).toEqual(output.children);
+packages/basic-styles/src/lib/BaseTextAlignPlugin.spec.ts:119:    expect(editor.children[0]).toMatchObject({
+packages/media/src/lib/image/transforms/insertImage.ts:14:  const location = at ?? editor.selection;
+packages/comment/src/react/hooks/useCommentId.ts:7:    if (!editor.selection) return;
+packages/core/src/static/editor/withStatic.spec.tsx:85:      expect(editor.children).toEqual(value.children);
+packages/core/src/static/editor/withStatic.spec.tsx:95:      expect(editor.children).toEqual([
+packages/core/src/static/editor/withStatic.spec.tsx:124:      expect(editor.selection).toEqual(selection);
+packages/core/src/static/editor/withStatic.spec.tsx:148:      expect(editor.selection as any).toEqual(expectedSelection);
+packages/core/src/static/editor/withStatic.spec.tsx:170:      expect(editor.selection as any).toEqual(expectedSelection);
+packages/core/src/static/editor/withStatic.spec.tsx:205:      expect(editor.history).toBeDefined(); // from HistoryPlugin
+packages/core/src/static/editor/withStatic.spec.tsx:271:      expect(editor.children as any).toEqual([
+packages/comment/src/lib/BaseCommentPlugin.ts:72:      return regex.test(JSON.stringify(editor.children));
+packages/core/src/react/stores/plate/PlateStore.ts:56:    /** Version incremented on each editor.selection change. */
+packages/core/src/react/stores/plate/PlateStore.ts:58:    /** Version incremented on each editor.children change. */
+packages/core/src/react/stores/plate/PlateStore.ts:69:    /** Controlled callback called when the editor.selection changes. */
+packages/core/src/react/stores/plate/PlateStore.ts:79:    /** Controlled callback called when the editor.children changes. */
+packages/core/src/react/stores/plate/createPlateStore.spec.tsx:140:    expect(result.current.selection).toEqual(editor.selection);
+packages/core/src/react/stores/plate/createPlateStore.spec.tsx:141:    expect(result.current.value).toEqual(editor.children);
+packages/core/src/react/stores/plate/createPlateStore.spec.tsx:162:    expect(result.current.selection).toEqual(editor.selection);
+packages/core/src/react/stores/plate/createPlateStore.spec.tsx:163:    expect(result.current.value).toEqual(editor.children);
+packages/basic-styles/src/lib/BaseTextIndentPlugin.spec.ts:64:    expect((editor.children[0] as any)[nodeKey]).toBe(2);
+packages/basic-styles/src/lib/BaseTextIndentPlugin.spec.ts:69:    expect((editor.children[0] as any)[nodeKey]).toBeUndefined();
+packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.spec.tsx:25:    const initialSelection = editor.selection;
+packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.spec.tsx:57:    expect(editor.selection).toEqual(initialSelection);
+packages/media/src/lib/image/withImageUpload.spec.tsx:43:      expect(editor.children).toEqual(output.children);
+packages/media/src/lib/image/withImageUpload.spec.tsx:76:      expect(editor.children).toEqual(output.children);
+packages/media/src/lib/image/withImageUpload.spec.tsx:108:      expect(editor.children).toEqual(output.children);
+packages/indent/src/lib/transforms/setIndent.spec.ts:35:    expect(editor.children).toMatchObject([
+packages/indent/src/lib/transforms/setIndent.spec.ts:65:    expect(editor.children[0]).toEqual({
+packages/indent/src/lib/transforms/setIndent.spec.ts:83:    expect((editor.children[0] as any).indent).toBe(2);
+packages/indent/src/lib/transforms/setIndent.spec.ts:86:    expect((editor.children[0] as any).indent).toBe(1);
+apps/www/src/app/(app)/examples/plite/_examples/huge-document.tsx:480:      if (change.operations.length) {
+packages/core/src/static/components/PlateStatic.spec.tsx:119:    // Re-render with the **same** editor.children reference:
+packages/core/src/static/components/PlateStatic.spec.tsx:172:    editor.children[0].children[1].text = 'New text';
+packages/core/src/static/components/PlateStatic.spec.tsx:191:    editor.children[1] = {
+packages/core/src/static/components/PlateStatic.spec.tsx:192:      ...editor.children[1],
+packages/core/src/static/components/PlateStatic.spec.tsx:194:        editor.children[1].children[0],
+packages/core/src/static/components/PlateStatic.spec.tsx:195:        editor.children[1].children[1],
+packages/core/src/static/components/PlateStatic.spec.tsx:208:    editor.children[1] = {
+packages/core/src/static/components/PlateStatic.spec.tsx:209:      ...editor.children[1],
+packages/core/src/static/components/PlateStatic.spec.tsx:211:        editor.children[1].children[0],
+packages/core/src/static/components/PlateStatic.spec.tsx:212:        editor.children[1].children[1],
+packages/core/src/static/components/PlateStatic.spec.tsx:214:        { ...editor.children[1].children[2], text: 'Modified' },
+packages/core/src/static/components/PlateStatic.spec.tsx:229:    editor.children.push({
+packages/core/src/static/components/PlateStatic.spec.tsx:239:    editor.children.pop();
+packages/core/src/static/components/PlateStatic.spec.tsx:249:    editor.children[0]._memo = 'memo-value';
+packages/core/src/static/components/PlateStatic.spec.tsx:254:    editor.children[0] = {
+packages/core/src/static/components/PlateStatic.spec.tsx:255:      ...editor.children[0],
+packages/core/src/static/components/PlateStatic.spec.tsx:272:    editor.children[0]._memo = 'memo-value';
+packages/core/src/static/components/PlateStatic.spec.tsx:277:    editor.children[0] = {
+packages/core/src/static/components/PlateStatic.spec.tsx:278:      ...editor.children[0],
+packages/core/src/internal/plugin/pipeTransformInitialValue.ts:25:      value: editor.children,
+packages/core/src/internal/plugin/pipeTransformInitialValue.ts:37:      editor.children = nextValue;
+packages/core/src/internal/plugin/pipeTransformInitialValue.ts:44:      editor.children = nextValue;
+packages/comment/src/lib/BaseCommentPlugin.spec.ts:16:) => editor.children[0].children[index] as TCommentText;
+packages/comment/src/lib/BaseCommentPlugin.spec.ts:80:    editor.selection = {
+packages/comment/src/lib/BaseCommentPlugin.spec.ts:87:    expect(editor.children[0].children[0]).toMatchObject({
+packages/comment/src/lib/BaseCommentPlugin.spec.ts:111:    expect(editor.children[0].children[0]).toMatchObject({
+packages/comment/src/lib/BaseCommentPlugin.spec.ts:116:    expect(editor.children[0].children[0]).not.toHaveProperty('comment_one');
+packages/comment/src/lib/BaseCommentPlugin.spec.ts:135:    expect(editor.children[0].children[0]).toEqual({ text: 'a' });
+packages/core/src/static/components/PlateStatic.tsx:212:  /** Controlled value. Alias to `editor.children`. */
+packages/core/src/static/components/PlateStatic.tsx:220:    editor.children = value;
+packages/core/src/static/components/PlateStatic.tsx:264:        {editor.children}
+packages/core/src/internal/plugin/pipeNormalizeInitialValue.spec.tsx:142:        expect(editor.selection).toEqual(selection);
+packages/core/src/internal/plugin/pipeNormalizeInitialValue.spec.tsx:151:        expect(editor.selection).toEqual({
+packages/core/src/internal/plugin/pipeNormalizeInitialValue.spec.tsx:163:        expect(editor.selection).toEqual({
+packages/core/src/internal/plugin/pipeNormalizeInitialValue.spec.tsx:184:    editor.children = [
+packages/core/src/internal/plugin/pipeNormalizeInitialValue.spec.tsx:190:    expect(editor.children).toEqual([
+packages/core/src/internal/plugin/pipeNormalizeInitialValue.spec.tsx:206:    editor.children = [
+packages/core/src/internal/plugin/pipeNormalizeInitialValue.spec.tsx:212:    expect(editor.children).toEqual([
+packages/core/src/internal/plugin/pipeNormalizeInitialValue.spec.tsx:227:    editor.children = [{ children: [{ text: '' }], type: 'p' }] as any;
+packages/code-block/src/lib/transforms/unwrapCodeBlock.ts:6:  if (!editor.selection) return;
+packages/code-block/src/lib/transforms/unwrapCodeBlock.ts:13:      at: editor.selection as Location,
+packages/core/src/internal/plugin/pipeInsertFragment.spec.ts:59:    expect(editor.children).toEqual(fragment);
+packages/code-block/src/lib/transforms/insertCodeLine.ts:7:  if (editor.selection) {
+packages/core/src/static/utils/getSelectedDomFragment.spec.tsx:37:    editor.children = [block];
+packages/core/src/static/utils/getSelectedDomFragment.spec.tsx:68:    editor.children = [
+packages/utils/src/react/hooks/useSelection.ts:21:      !!editor.selection &&
+packages/utils/src/react/hooks/useSelection.ts:23:        const anchor = state.nodes.block({ at: editor.selection!.anchor });
+packages/utils/src/react/hooks/useSelection.ts:24:        const focus = state.nodes.block({ at: editor.selection!.focus });
+packages/utils/src/react/hooks/useSelection.ts:35:      !!editor.selection &&
+packages/utils/src/react/hooks/useSelection.ts:37:        const anchor = state.nodes.block({ at: editor.selection!.anchor });
+packages/utils/src/react/hooks/useSelection.ts:38:        const focus = state.nodes.block({ at: editor.selection!.focus });
+packages/code-block/src/lib/transforms/setCodeBlockContent.spec.tsx:28:    const element = editor.children[0] as TCodeBlockElement;
+packages/code-block/src/lib/transforms/setCodeBlockContent.spec.tsx:43:    expect((editor.children[0] as TCodeBlockElement).children).toEqual([
+packages/plite-dom/src/plugin/dom-editor.ts:1136:            // this is the core logic that lets you know you got the right editor.selection instead of null when editor is contenteditable="false"(readOnly)
+packages/code-block/src/lib/transforms/insertEmptyCodeBlock.ts:27:  const selection = editor.selection;
+packages/utils/src/react/hooks/useSelectionFragment.ts:84:    if (!editor.selection) return [];
+packages/utils/src/react/hooks/useSelectionFragment.ts:87:      state.fragment.get({ at: editor.selection! })
+packages/utils/src/react/hooks/useSelectionFragment.ts:97:    if (!editor.selection) return options.defaultValue;
+packages/utils/src/react/hooks/useSelectionFragment.ts:100:      editor.read((state) => state.fragment.get({ at: editor.selection! })),
+packages/code-block/src/lib/transforms/indentCodeLine.spec.tsx:53:      expect(editor.children).toEqual(output.children);
+packages/code-block/src/lib/transforms/indentCodeLine.spec.tsx:99:        expect(editor.children).toEqual(output.children);
+packages/code-block/src/lib/transforms/indentCodeLine.spec.tsx:144:        expect(editor.children).toEqual(output.children);
+packages/core/src/static/plugins/ViewPlugin.spec.ts:31:      editor.children = [
+packages/code-block/src/lib/transforms/insertCodeBlock.ts:19:  const selection = editor.selection;
+packages/utils/src/react/hooks/useRemoveNodeButton.spec.tsx:25:    const element = editor.children[0] as any;
+packages/utils/src/react/hooks/useRemoveNodeButton.spec.tsx:33:    expect(editor.children).toEqual([
+packages/core/src/static/utils/getRenderNodeStaticProps.spec.ts:38:    const element = editor.children[0] as any;
+packages/core/src/lib/editor/withPlite.spec.ts:74:      expect(editor.history).toBeDefined();
+packages/core/src/lib/editor/withPlite.spec.ts:112:      expect(editor.children[0].children[0]).toMatchObject({
+packages/core/src/lib/editor/withPlite.spec.ts:133:      expect(editor.children[0].children[0]).toMatchObject({
+packages/core/src/lib/editor/withPlite.spec.ts:172:      expect(editor.children[0]).toMatchObject({
+packages/core/src/lib/editor/withPlite.spec.ts:633:    expect(editor.selection).toEqual({
+packages/core/src/lib/editor/withPlite.spec.ts:649:      expect(editor.children).toEqual([
+packages/code-block/src/lib/transforms/indentCodeLine.ts:29:    const cursor = editor.selection?.anchor;
+packages/code-block/src/lib/transforms/indentCodeLine.ts:37:        tx.text.insert(indent, { at: editor.selection! });
+packages/code-block/src/lib/formatter/formatter.spec.ts:87:    const element = editor.children[0] as TCodeBlockElement;
+packages/code-block/src/lib/formatter/formatter.spec.ts:100:      (editor.children[0] as TCodeBlockElement).children.map(
+packages/code-block/src/lib/formatter/formatter.spec.ts:135:    const element = editor.children[0] as TCodeBlockElement;
+packages/code-block/src/lib/formatter/formatter.spec.ts:148:      (editor.children[0] as TCodeBlockElement).children.map(
+packages/code-block/src/lib/formatter/formatter.spec.ts:153:      (editor.children[0] as TCodeBlockElement).children.every(
+packages/basic-styles/src/lib/BaseFontSizePlugin.spec.ts:70:    expect(editor.children[0].children[0]).toMatchObject({
+packages/code-block/src/lib/transforms/insertEmptyCodeBlock.spec.tsx:43:    expect(editor.children).toEqual(output.children);
+packages/code-block/src/lib/transforms/insertEmptyCodeBlock.spec.tsx:77:    expect(editor.children).toEqual(output.children);
+packages/code-block/src/lib/transforms/insertEmptyCodeBlock.spec.tsx:120:    expect(editor.children).toEqual(output.children);
+packages/code-block/src/lib/transforms/toggleCodeBlock.ts:6:  if (!editor.selection) return;
+packages/code-block/src/lib/transforms/toggleCodeBlock.ts:11:  const selection = editor.selection;
+packages/utils/src/react/plugins/BlockPlaceholderPlugin.tsx:49:    !editor.selection ||
+packages/utils/src/react/plugins/BlockPlaceholderPlugin.tsx:66:  const firstNode = editor.children[0] as Element;
+packages/utils/src/react/plugins/BlockPlaceholderPlugin.tsx:68:    editor.children.length === 1 &&
+packages/code-block/src/lib/transforms/insertCodeBlock.spec.tsx:48:      expect(editor.children).toEqual(output.children);
+packages/code-block/src/lib/transforms/insertCodeBlock.spec.tsx:87:      expect(editor.children).toEqual(output.children);
+packages/code-block/src/lib/transforms/insertCodeBlock.spec.tsx:127:      expect(editor.children).toEqual(output.children);
+packages/code-block/src/lib/transforms/insertCodeBlock.spec.tsx:140:    expect(editor.children).toEqual([
+packages/code-block/src/lib/transforms/insertCodeBlock.spec.tsx:162:    const before = editor.children;
+packages/code-block/src/lib/transforms/insertCodeBlock.spec.tsx:167:    expect(editor.children).toBe(before);
+packages/code-block/src/lib/transforms/outdentCodeLine.spec.tsx:47:      expect(editor.children).toEqual(output.children);
+packages/code-block/src/lib/transforms/outdentCodeLine.spec.tsx:84:      expect(editor.children).toEqual(output.children);
+packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx:81:    const firstNode = editor.children[0] as any;
+packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx:82:    const secondNode = editor.children[1] as any;
+packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx:101:      getPlaceholder(editor, editor.children[0] as any, [0])
+packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx:115:      getPlaceholder(editor, editor.children[0] as any, [0])
+packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx:133:    const firstNode = editor.children[0] as any;
+packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx:168:      getPlaceholder(editor, editor.children[0] as any, [0])
+packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx:181:      getPlaceholder(editor, editor.children[0] as any, [0])
+packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx:194:      getPlaceholder(editor, editor.children[0] as any, [0])
+packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx:210:      getPlaceholder(editor, editor.children[0] as any, [0])
+packages/code-block/src/lib/BaseCodeBlockPlugin.spec.ts:106:    expect(editor.children).toEqual([
+packages/code-block/src/lib/BaseCodeBlockPlugin.spec.ts:120:    expect(editor.children).toEqual([
+packages/code-block/src/lib/transforms/insertCodeLine.spec.tsx:45:    expect(editor.children).toEqual(output.children);
+packages/utils/src/lib/plugins/ExitBreakPlugin.ts:63:      !editor.selection ||
+packages/code-block/src/lib/queries/getCodeLineEntry.ts:7:  { at = editor.selection }: { at?: Location | null } = {}
+packages/code-block/src/lib/transforms/toggleCodeBlock.spec.tsx:45:    expect(editor.children).toEqual(output.children);
+packages/code-block/src/lib/transforms/toggleCodeBlock.spec.tsx:79:    expect(editor.children).toEqual(output.children);
+packages/code-block/src/lib/transforms/toggleCodeBlock.spec.tsx:119:    expect(editor.children).toEqual(output.children);
+packages/code-block/src/lib/transforms/unwrapCodeBlock.spec.tsx:46:    expect(editor.children).toEqual(output.children);
+packages/code-block/src/lib/transforms/unwrapCodeBlock.spec.tsx:94:    expect(editor.children).toEqual(output.children);
+packages/code-block/src/lib/transforms/unwrapCodeBlock.spec.tsx:137:      expect(editor.children).toEqual(output.children);
+packages/utils/src/lib/plugins/trailing-block/TrailingBlockPlugin.spec.tsx:143:    expect(editor.children).toEqual(output.children);
+packages/core/src/lib/plugins/length/LengthPlugin.spec.ts:33:      expect(editor.children).toEqual([
+packages/core/src/lib/plugins/length/LengthPlugin.spec.ts:42:      expect(editor.children).toEqual([
+packages/core/src/lib/plugins/length/LengthPlugin.spec.ts:53:      expect(editor.children).toEqual([
+packages/core/src/lib/plugins/length/LengthPlugin.spec.ts:67:      expect(editor.children).toEqual([
+packages/core/src/lib/plugins/length/LengthPlugin.spec.ts:80:      expect(editor.children).toEqual([
+packages/core/src/lib/plugins/length/LengthPlugin.spec.ts:93:      expect(editor.children).toEqual([
+packages/plate/src/type.spec.ts:6:  expect(isType(editor, editor.children[0], 'p')).toEqual(true);
+packages/core/src/lib/plugins/navigation-feedback/NavigationFeedbackPlugin.spec.ts:126:    expect(editor.selection).toEqual({
+packages/core/src/lib/utils/isType.spec.tsx:9:  expect(isType(editor, editor.children[0], 'p')).toEqual(true);
+packages/utils/src/lib/plugins/normalize-types/NormalizeTypesPlugin.spec.tsx:124:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/insertBreakSuggestion.spec.tsx:63:    const data = editor.children[0][
+packages/suggestion/src/lib/insertBreakSuggestion.spec.tsx:67:    expect(editor.children).toHaveLength(2);
+packages/suggestion/src/lib/insertBreakSuggestion.spec.tsx:96:    const data = getInlineSuggestionData(editor.children[1].children[0] as any);
+packages/suggestion/src/lib/insertBreakSuggestion.spec.tsx:136:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/insertBreakSuggestion.spec.tsx:170:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/insertBreakSuggestion.spec.tsx:196:      editor.children[0] as any
+packages/suggestion/src/lib/insertBreakSuggestion.spec.tsx:198:      ? (editor.children[0].suggestion as TSuggestionElement)
+packages/suggestion/src/lib/insertBreakSuggestion.spec.tsx:202:      editor.children[1].children[0] as any
+packages/suggestion/src/lib/insertBreakSuggestion.spec.tsx:208:    expect(editor.children[1].children[0].text).toBe('test2');
+packages/suggestion/src/lib/insertBreakSuggestion.spec.tsx:244:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/insertBreakSuggestion.spec.tsx:278:    expect(editor.children).toEqual(output.children);
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:169:    expect(editor.children[0].id).toBe(1);
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:170:    expect(editor.children[1].id).toBe(9);
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:171:    expect(editor.children[2].id).toBe(2);
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:191:    expect(editor.children[0].id).toBe(1);
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:192:    expect(editor.children[1].id).toBe(2);
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:219:    expect(editor.children[0].id).toBe(1);
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:220:    expect((editor.children[0] as any).children[1].id).toBe(2);
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:244:    expect(editor.children[0].id).toBe(1);
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:245:    expect((editor.children[0] as any).children[1].id).toBeUndefined();
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:269:    expect(editor.children[0].id).toBe(1);
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:270:    expect(editor.children[1].id).toBe(100);
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:271:    expect(editor.children[2].id).toBe(3);
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:295:    expect(editor.children[0].id).toBeUndefined();
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:296:    expect(editor.children[1].id).toBe(9);
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:297:    expect(editor.children[2].id).toBeUndefined();
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:322:    expect(editor.children[0].foo).toBe('first');
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:323:    expect(editor.children[1].foo).toBeUndefined();
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx:324:    expect(editor.children[2].foo).toBe('last');
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.ts:375:        editor.children.forEach((node, index) => {
+packages/core/src/lib/plugins/node-id/NodeIdPlugin.ts:405:      editor.children.forEach((node, index) => {
+packages/suggestion/src/lib/transforms/addMarkSuggestion.spec.tsx:49:      editor.children[0].children[0] as any
+packages/suggestion/src/lib/transforms/addMarkSuggestion.spec.tsx:52:    expect(editor.children[0].children[0].bold).toBe(true);
+packages/suggestion/src/lib/transforms/addMarkSuggestion.spec.tsx:53:    expect(editor.children[0].children[0][BaseSuggestionPlugin.key]).toBe(true);
+packages/suggestion/src/lib/transforms/addMarkSuggestion.spec.tsx:94:      editor.children[0].children[1] as any
+packages/suggestion/src/lib/transforms/addMarkSuggestion.spec.tsx:134:    const node = editor.children[0].children[0] as any;
+packages/ai/src/react/ai-chat/withAIChat.ts:72:            !editor.selection ||
+packages/ai/src/react/ai-chat/withAIChat.ts:81:            const before = state.points.before(editor.selection!);
+packages/ai/src/react/ai-chat/withAIChat.ts:84:              ? state.text.string(state.ranges.get(before, editor.selection!))
+packages/suggestion/src/lib/transforms/removeNodesSuggestion.ts:15:    at: editor.selection!,
+packages/core/src/lib/plugins/input-rules/createTextSubstitutionInputRule.spec.ts:36:    expect(editor.children).toEqual([{ children: [{ text: '→' }], type: 'p' }]);
+packages/core/src/lib/plugins/input-rules/createTextSubstitutionInputRule.spec.ts:47:    expect(editor.children).toEqual([{ children: [{ text: '-' }], type: 'p' }]);
+packages/core/src/lib/plugins/input-rules/createTextSubstitutionInputRule.spec.ts:60:    expect(editor.children).toEqual([{ children: [{ text: '©' }], type: 'p' }]);
+packages/core/src/lib/plugins/input-rules/createTextSubstitutionInputRule.spec.ts:74:    expect(editor.children).toEqual([
+packages/core/src/lib/plugins/input-rules/createTextSubstitutionInputRule.spec.ts:90:    expect(editor.children).toEqual([
+packages/date/src/lib/transforms/insertDate.spec.tsx:24:    expect(editor.children).toMatchObject([
+packages/date/src/lib/transforms/insertDate.spec.tsx:38:    expect(editor.selection).toEqual({
+packages/date/src/lib/transforms/insertDate.spec.tsx:61:    expect(editor.children[0]).toMatchObject({
+packages/date/src/lib/transforms/insertDate.spec.tsx:94:    expect(editor.children).toMatchObject([
+packages/date/src/lib/transforms/insertDate.spec.tsx:128:    expect(editor.children[0]).toMatchObject({
+packages/core/src/lib/plugins/input-rules/createInputRules.ts:269:        !editor.selection ||
+packages/core/src/lib/plugins/input-rules/createInputRules.ts:300:      if (match.beforeEndMatchPoint !== editor.selection?.anchor) {
+packages/core/src/lib/plugins/input-rules/createInputRules.ts:304:            focus: editor.selection!.anchor,
+packages/core/src/lib/plugins/input-rules/createInputRules.ts:757:  const selection = editor.selection;
+packages/core/src/lib/plugins/input-rules/createInputRules.ts:809:      if (!editor.selection || !hasCollapsedSelection(editor)) return;
+packages/suggestion/src/lib/transforms/rejectSuggestion.spec.tsx:56:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/transforms/rejectSuggestion.spec.tsx:95:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/transforms/rejectSuggestion.spec.tsx:137:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/transforms/rejectSuggestion.spec.tsx:173:    expect(editor.children).toEqual([
+packages/suggestion/src/lib/transforms/rejectSuggestion.spec.tsx:217:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/transforms/rejectSuggestion.spec.tsx:252:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/transforms/rejectSuggestion.spec.tsx:304:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/transforms/rejectSuggestion.spec.tsx:339:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/transforms/rejectSuggestion.spec.tsx:373:    expect(editor.children).toEqual(output.children);
+packages/ai/src/react/ai-chat/hooks/useAIChatEditor.ts:11: * `editor.children` with block-level memoization.
+packages/ai/src/react/ai-chat/hooks/useAIChatEditor.ts:34:  editor.children = children;
+packages/suggestion/src/lib/transforms/insertTextSuggestion.ts:21:      at: editor.selection!,
+packages/suggestion/src/lib/transforms/insertTextSuggestion.ts:42:          at: editor.selection!,
+packages/suggestion/src/lib/transforms/insertFragmentSuggestion.ts:26:      at: editor.selection!,
+packages/date/src/lib/BaseDatePlugin.spec.tsx:60:    expect(editor.children[0]).toMatchObject({
+packages/date/src/lib/BaseDatePlugin.spec.tsx:100:    expect(editor.children).toMatchObject([
+packages/date/src/lib/BaseDatePlugin.spec.tsx:106:    expect(editor.selection).toEqual({
+packages/date/src/lib/BaseDatePlugin.spec.tsx:139:    expect(editor.children).toMatchObject([
+packages/date/src/lib/BaseDatePlugin.spec.tsx:145:    expect(editor.selection).toEqual({
+packages/date/src/lib/BaseDatePlugin.spec.tsx:178:    expect(editor.selection).toEqual({
+packages/date/src/lib/BaseDatePlugin.spec.tsx:211:    expect(editor.selection).toEqual({
+packages/suggestion/src/lib/transforms/acceptSuggestion.spec.tsx:64:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/transforms/acceptSuggestion.spec.tsx:103:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/transforms/acceptSuggestion.spec.tsx:149:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/transforms/acceptSuggestion.spec.tsx:185:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/transforms/acceptSuggestion.spec.tsx:220:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/transforms/acceptSuggestion.spec.tsx:240:    const lineBreakData = (editor.children[0] as any).suggestion;
+packages/suggestion/src/lib/transforms/acceptSuggestion.spec.tsx:247:    expect(editor.children).toEqual(
+packages/suggestion/src/lib/transforms/acceptSuggestion.spec.tsx:305:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/transforms/acceptSuggestion.spec.tsx:339:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/transforms/acceptSuggestion.spec.tsx:374:    expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/transforms/setSuggestionNodes.ts:71:    ) ?? editor.selection;
+packages/date/src/lib/queries/isPointNextToNode.ts:20:    at = editor.selection?.anchor;
+packages/suggestion/src/lib/transforms/deleteFragmentSuggestion.ts:22:    const selection = at ?? editor.selection!;
+packages/suggestion/src/lib/transforms/setSuggestionNodes.spec.ts:10:      entries: editor.api.nodes,
+packages/suggestion/src/lib/transforms/setSuggestionNodes.spec.ts:13:      isInline: editor.api.isInline,
+packages/emoji/src/lib/transforms/insertEmoji.spec.ts:26:    expect(editor.children).toMatchObject([
+packages/emoji/src/lib/transforms/insertEmoji.spec.ts:63:    expect(editor.children).toMatchObject([
+packages/ai/src/react/ai-chat/hooks/useAIChatEditor.slow.tsx:73:    expect(editor.children).toEqual(result.current);
+packages/browser/test/core/keyboard-oracle-audit.test.ts:427:          '  await editor.selection.select({',
+packages/footnote/src/lib/BaseFootnoteReferencePlugin.ts:235:            const definitionPath = [editor.children.length];
+packages/footnote/src/lib/BaseFootnoteReferencePlugin.ts:342:        if (!editor.selection) return;
+packages/footnote/src/lib/BaseFootnoteReferencePlugin.ts:344:        const selectionBefore = structuredClone(editor.selection);
+packages/footnote/src/lib/BaseFootnoteReferencePlugin.ts:346:        const selection = editor.selection;
+packages/footnote/src/lib/BaseFootnoteReferencePlugin.ts:358:          editor.children.length,
+packages/suggestion/src/lib/transforms/deleteSuggestion.spec.ts:58:      editor.selection = undefined;
+packages/suggestion/src/lib/transforms/deleteSuggestion.spec.ts:115:      editor.selection = {
+packages/suggestion/src/lib/transforms/deleteSuggestion.spec.ts:121:      editor.selection = undefined;
+packages/ai/src/react/ai-chat/transforms/acceptAIChat.ts:19:  editor.children.forEach((node: Value[number], index) => {
+packages/plite-layout/src/index.ts:3123:      change.operations.length === 0 &&
+packages/excalidraw/src/lib/transforms/insertExcalidraw.ts:16:  const selection = editor.selection;
+packages/suggestion/src/lib/transforms/removeNodesSuggestion.spec.ts:19:    expect(editor.children).toEqual([{ ...editor.children[0] }]);
+packages/suggestion/src/lib/transforms/removeNodesSuggestion.spec.ts:42:      [editor.children[0], [0]],
+packages/suggestion/src/lib/transforms/removeNodesSuggestion.spec.ts:43:      [editor.children[1], [1]],
+packages/suggestion/src/lib/transforms/removeNodesSuggestion.spec.ts:48:    const firstSuggestion = (editor.children[0] as any).suggestion;
+packages/suggestion/src/lib/transforms/removeNodesSuggestion.spec.ts:49:    const secondSuggestion = (editor.children[1] as any).suggestion;
+packages/ai/src/react/ai-chat/transforms/insertBelowAIChat.ts:117:    const [, end] = RangeApi.edges(editor.selection!);
+packages/suggestion/src/lib/transforms/removeMarkSuggestion.spec.tsx:51:      editor.children[0].children[0] as any
+packages/suggestion/src/lib/transforms/removeMarkSuggestion.spec.tsx:54:    expect(editor.children[0].children[0].bold).toBeUndefined();
+packages/suggestion/src/lib/transforms/removeMarkSuggestion.spec.tsx:55:    expect(editor.children[0].children[0][BaseSuggestionPlugin.key]).toBe(true);
+packages/suggestion/src/lib/transforms/removeMarkSuggestion.spec.tsx:96:      editor.children[0].children[0] as any
+packages/suggestion/src/lib/transforms/removeMarkSuggestion.spec.tsx:136:    const node = editor.children[0].children[0] as any;
+packages/dnd/src/transforms/onHoverNode.spec.ts:132:    editor.selection = {
+packages/ai/src/react/ai-chat/transforms/replaceSelectionAIChat.ts:69:  const selection = editor.selection;
+packages/dnd/src/transforms/selectBlocksBySelectionOrId.spec.ts:61:    expect(getBlocksSpy).toHaveBeenCalledWith(editor, { at: editor.selection });
+packages/dnd/src/transforms/selectBlocksBySelectionOrId.ts:15:  if (!editor.selection) return;
+packages/dnd/src/transforms/selectBlocksBySelectionOrId.ts:17:  const blockEntries = getBlocksWithId(editor, { at: editor.selection });
+packages/excalidraw/src/lib/transforms/insertExcalidraw.spec.ts:15:    editor.selection = {
+packages/suggestion/src/lib/transforms/deleteSuggestion.ts:124:      pointCurrent = editor.selection?.anchor;
+packages/suggestion/src/lib/transforms/deleteSuggestion.ts:393:      if (PointApi.equals(pointCurrent, editor.selection!.anchor)) {
+packages/ai/src/react/ai-chat/streaming/utils/getListNode.ts:16:        at: editor.selection?.focus,
+packages/suggestion/src/lib/SuggestionExtension.ts:156:        const selection = editor.selection!;
+packages/suggestion/src/lib/SuggestionExtension.ts:228:          const selection = editor.selection!;
+packages/suggestion/src/lib/SuggestionExtension.ts:304:            at: editor.selection!,
+packages/yjs/src/core/controller.ts:84:  const operations = new Array<Operation>(commit.operations.length);
+packages/yjs/src/core/controller.ts:89:  while (index < commit.operations.length) {
+packages/tag/src/lib/BaseTagPlugin.spec.tsx:25:    const children = editor.children[0].children;
+packages/tag/src/lib/BaseTagPlugin.spec.tsx:44:    expect(editor.children[0]).toMatchObject({
+packages/plite-react/src/editable/selection-reconciler.ts:163:  // `editor.selection` to be overwritten in some circumstances.
+packages/ai/src/react/ai-chat/streaming/streamInsertChunk.ts:340:    editor.selection?.focus.path.slice(0, 1);
+packages/ai/src/react/ai-chat/streaming/streamSerializeMd.ts:114:    optionsValue ?? editor.children
+packages/ai/src/lib/transforms/removeAIMarks.spec.tsx:23:    expect(editor.children).toEqual([
+packages/ai/src/lib/transforms/removeAIMarks.spec.tsx:45:    expect(editor.children as any).toEqual([
+packages/ai/src/lib/transforms/withAIBatch.spec.ts:66:    expect(editor.history.undos).toEqual([]);
+packages/ai/src/lib/transforms/insertAINodes.spec.tsx:27:    const before = JSON.parse(JSON.stringify(editor.children));
+packages/ai/src/lib/transforms/insertAINodes.spec.tsx:31:    expect(editor.children).toEqual(before);
+packages/ai/src/lib/transforms/insertAINodes.spec.tsx:32:    expect(editor.selection).toBeNull();
+packages/ai/src/lib/transforms/insertAINodes.spec.tsx:48:    expect(editor.children).toEqual([
+packages/ai/src/lib/transforms/insertAINodes.spec.tsx:54:    expect(editor.selection).toEqual({
+packages/ai/src/lib/transforms/insertAINodes.spec.tsx:74:    expect(editor.children).toEqual([
+packages/ai/src/lib/transforms/insertAINodes.spec.tsx:84:    expect(editor.selection).toEqual({
+packages/toggle/src/react/queries/getLastEntryEnclosedInToggle.ts:14:  const toggleIndex = buildToggleIndex(editor.children);
+packages/toggle/src/react/queries/getLastEntryEnclosedInToggle.ts:15:  const entriesInToggle = editor.children
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:74:    editor.history.undos.push({ operations: [{}] });
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:77:    editor.selection = null;
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:80:    editor.children = value;
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:112:              editor.children,
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:114:              options.at ?? [editor.children.length]
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:119:              editor.children = editor.children.filter(
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:126:            removeNodeAtPath(editor.children, options.at);
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:133:              unsetNodeProps(editor.children[path[0]], keys, options.match);
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:138:            editor.children.forEach((node: any) => {
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:146:            editor.selection = selection;
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:162:    const initialValue = structuredClone(editor.children);
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:163:    const initialSelection = structuredClone(editor.selection);
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:164:    const originalBlocks = [structuredClone(editor.children[0])];
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:168:    editor.children = [
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:176:    editor.selection = {
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:183:    expect(editor.children).toEqual(initialValue);
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:184:    expect(editor.selection).toEqual(initialSelection);
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:203:    editor.children = [
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:206:    editor.selection = null;
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:210:    expect(editor.children).toEqual([
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:213:    expect(editor.selection).toBeNull();
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:219:    editor.selection = null;
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:221:      originalBlocks: [structuredClone(editor.children[0])],
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:223:    editor.selection = {
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:227:    editor.children = [
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:238:    expect(editor.selection).toBeNull();
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:243:    const initialSelection = structuredClone(editor.selection);
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:246:      originalBlocks: [structuredClone(editor.children[0])],
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:248:    editor.children = [
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:260:    expect(editor.children).toEqual([
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:265:    expect(editor.history.undos.at(-1)?.selectionBefore).toEqual(
+packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts:317:    expect(editor.children).toEqual([
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:80:        expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:106:            editor.children[0].children[1][BaseSuggestionPlugin.key]
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:110:            editor.children[0].children[1] as any
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:156:          expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:200:        expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:241:        expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:281:        expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:282:        expect(editor.selection).toEqual(output.selection);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:325:      const mentionNode = editor.children[0].children[1] as any;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:326:      const leftText = editor.children[0].children[0] as any;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:327:      const rightText = editor.children[0].children[2] as any;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:335:      expect(editor.selection).toEqual(output.selection);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:362:      const dateNode = editor.children[0].children[1] as any;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:398:      const dateNode = editor.children[0].children[1] as any;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:434:      const paragraphChildren = editor.children[0].children as any[];
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:470:      const lineBreakSuggestion = (editor.children[0] as any).suggestion;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:472:      expect(editor.children).toEqual(
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:491:      expect(editor.selection).toEqual(
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:534:      const voidSuggestion = (editor.children[0] as any).suggestion;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:536:      expect(editor.children).toEqual(
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:556:      expect(editor.selection).toEqual(
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:599:    const data = getInlineSuggestionData(editor.children[0].children[1] as any);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:606:    expect(editor.children[0].children[0].text).toBe('tes');
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:635:      editor.children[0].children[0] as any
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:638:      editor.children[0].children[1] as any
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:666:    const data = getInlineSuggestionData(editor.children[0].children[0] as any);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:697:    const data = getInlineSuggestionData(editor.children[0].children[1] as any);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:699:    expect(editor.children[0].children[0].text).toBe('o');
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:700:    expect(editor.children[0].children[2].text).toBe('e');
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:729:    const data = getInlineSuggestionData(editor.children[0].children[0] as any);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:731:    expect(editor.children[0].children[0].text).toBe('one');
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:736:    expect(editor.selection).toEqual({
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:788:    expect(editor.children[0].children).toHaveLength(
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:792:    const leftText = editor.children[0].children[0] as any;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:793:    const removeTextNode = editor.children[0].children[1] as any;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:794:    const mentionNode = editor.children[0].children[2] as any;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:795:    const removeTrailingTextNode = editor.children[0].children[3] as any;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:796:    const trailingText = editor.children[0].children[4] as any;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:820:    expect(editor.selection).toEqual(output.selection);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:859:      expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:895:      expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:935:      expect(editor.children).toEqual(output.children);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:962:    expect(editor.children[0].children).toHaveLength(2);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:964:    const removedNode = editor.children[0].children[0];
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:966:    const insertedNode = editor.children[0].children[1];
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:1023:    expect(editor.children[0].children).toHaveLength(
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:1027:    const leftText = editor.children[0].children[0] as any;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:1028:    const removeTextNode = editor.children[0].children[1] as any;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:1029:    const mentionNode = editor.children[0].children[2] as any;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:1030:    const removeTrailingTextNode = editor.children[0].children[3] as any;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:1031:    const insertedNode = editor.children[0].children[4] as any;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:1032:    const trailingText = editor.children[0].children[5] as any;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:1063:    expect(editor.selection).toEqual(output.selection);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:1088:    const inserted = ((editor.children[0] as any).children[0] as any)
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:1124:    expect((editor.children[1] as any).suggestion).toMatchObject({
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:1154:    expect(editor.children[1]).toMatchObject({
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:1158:    expect((editor.children[1] as any).suggestion).toBeUndefined();
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:1191:    const firstSuggestion = (editor.children[0] as any).suggestion;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:1192:    const secondSuggestion = (editor.children[1] as any).suggestion;
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:1223:    expect(editor.children).toHaveLength(1);
+packages/suggestion/src/lib/SuggestionExtension.spec.tsx:1224:    expect(editor.children[0]).toMatchObject({
+packages/toggle/src/react/toggleIndexAtom.ts:81:  buildToggleIndex(get(editorAtom).editor.children)
+packages/ai/src/lib/transforms/removeAINodes.spec.tsx:19:    expect(editor.children).toEqual([
+packages/ai/src/lib/transforms/removeAINodes.spec.tsx:38:    expect(editor.children as any).toEqual([
+packages/suggestion/src/lib/queries/findSuggestionProps.spec.ts:51:        at: editor.selection!,
+packages/suggestion/src/lib/queries/findSuggestionProps.spec.ts:61:        at: editor.selection!,
+packages/suggestion/src/lib/queries/findSuggestionProps.spec.ts:101:        at: editor.selection!,
+packages/suggestion/src/lib/queries/findSuggestionProps.spec.ts:150:        at: editor.selection!,
+packages/ai/src/react/ai-chat/AIChatPlugin.ts:207:          blocks.length > 0 ? getNodesRange(editor, blocks) : editor.selection;
+packages/ai/src/react/ai-chat/AIChatPlugin.ts:210:          children: editor.children,
+packages/ai/src/lib/transforms/insertAINodes.ts:13:  if (!target && !editor.selection?.focus.path) return;
+packages/ai/src/lib/transforms/insertAINodes.ts:23:        state.points.end(target || editor.selection!.focus.path)
+packages/ai/src/lib/transforms/undoAI.spec.ts:30:    expect(editor.history.redos.pop).not.toHaveBeenCalled();
+packages/ai/src/lib/transforms/undoAI.spec.ts:45:    expect(editor.history.redos.pop).not.toHaveBeenCalled();
+packages/ai/src/lib/transforms/undoAI.spec.ts:62:    expect(editor.history.redos.pop).toHaveBeenCalledTimes(1);
+packages/ai/src/lib/transforms/undoAI.spec.ts:93:              editor.children.splice(
+packages/ai/src/lib/transforms/undoAI.spec.ts:94:                options.at?.[0] ?? editor.children.length,
+packages/ai/src/lib/transforms/undoAI.spec.ts:101:                editor.children = editor.children.filter(
+packages/ai/src/lib/transforms/undoAI.spec.ts:108:              editor.children.splice(options.at[0], 1);
+packages/ai/src/lib/transforms/undoAI.spec.ts:113:              editor.selection = null;
+packages/ai/src/lib/transforms/undoAI.spec.ts:116:              editor.selection = selection;
+packages/ai/src/lib/transforms/undoAI.spec.ts:127:    editor.children = [
+packages/ai/src/lib/transforms/undoAI.spec.ts:139:    expect(editor.children).toEqual([
+packages/ai/src/lib/transforms/undoAI.spec.ts:144:    expect(editor.history.redos.pop).not.toHaveBeenCalled();
+packages/ai/src/lib/transforms/aiStreamSnapshot.ts:62:  editor.children.forEach((node: DecoratedNode, index) => {
+packages/ai/src/lib/transforms/aiStreamSnapshot.ts:148:  const blocks = cloneDeep(editor.children.slice(range.start, range.end + 1));
+packages/ai/src/lib/transforms/aiStreamSnapshot.ts:181:    selectionBefore: cloneDeep(editor.selection),
+packages/suggestion/src/lib/BaseSuggestionPlugin.spec.ts:73:    expect(api.nodeId(editor.children[0].children[0] as any)).toBe('inline');
+packages/suggestion/src/lib/BaseSuggestionPlugin.spec.ts:74:    expect(api.nodeId(editor.children[1] as any)).toBe('block');
+packages/suggestion/src/lib/BaseSuggestionPlugin.spec.ts:92:    expect(api.suggestionData(editor.children[0].children[0] as any)).toEqual(
+packages/suggestion/src/lib/BaseSuggestionPlugin.spec.ts:95:    expect(api.suggestionData(editor.children[1] as any)).toEqual(
+packages/toggle/src/lib/queries/someToggle.ts:4:  !!editor.selection &&
+packages/ai/src/lib/utils/getMarkdown.ts:182:        at: editor.selection!,
+packages/ai/src/react/ai-chat/utils/applyTableCellSuggestion.ts:85:        editor.children,
+packages/ai/src/lib/internal/history.ts:16:  editor.history as EditorHistory;
+packages/combobox/src/react/hooks/useComboboxInput.ts:147:        const history = editor.history as {
+packages/ai/src/react/ai-chat/utils/submitAIChat.ts:72:  const selection = blocks.length > 0 ? blocksRange : editor.selection;
+packages/ai/src/react/ai-chat/utils/submitAIChat.ts:97:  setOption('chatSelection', blocks.length > 0 ? null : editor.selection);
+packages/ai/src/react/ai-chat/utils/submitAIChat.ts:104:    children: editor.children,
+packages/list-classic/src/react/hooks/useListToolbarButton.ts:12:      !!editor.selection &&
+packages/callout/src/lib/BaseCalloutPlugin.spec.ts:29:    expect(editor.children.at(-1)).toMatchObject({
+packages/callout/src/lib/BaseCalloutPlugin.spec.ts:47:    expect(editor.children.at(-1)).toMatchObject({
+packages/list-classic/src/lib/withDeleteFragmentList.spec.tsx:40:    expect(editor.children).toEqual(expected.children);
+packages/list-classic/src/lib/withDeleteFragmentList.spec.tsx:82:    expect(editor.children).toEqual(expected.children);
+packages/list-classic/src/lib/withDeleteFragmentList.spec.tsx:126:    expect(editor.children).toEqual(expected.children);
+packages/ai/src/react/copilot/withCopilot.ts:180:          editor.selection &&
+packages/ai/src/react/copilot/withCopilot.ts:182:            !RangeApi.equals(prevSelection, editor.selection)) &&
+packages/ai/src/react/copilot/withCopilot.ts:189:        prevSelection = editor.selection;
+packages/list-classic/src/lib/transforms/toggleList.spec.tsx:39:    const before = JSON.stringify(editor.children);
+packages/list-classic/src/lib/transforms/toggleList.spec.tsx:43:    expect(JSON.stringify(editor.children)).toBe(before);
+packages/list-classic/src/lib/transforms/toggleList.spec.tsx:58:      expect(editor.children).toEqual(
+packages/list-classic/src/lib/transforms/toggleList.spec.tsx:89:      expect(editor.children).toEqual(
+packages/list-classic/src/lib/transforms/toggleList.spec.tsx:130:      expect(editor.children).toEqual(
+packages/list-classic/src/lib/transforms/toggleList.spec.tsx:162:      expect(editor.children).toMatchObject([
+packages/list-classic/src/lib/transforms/toggleList.spec.tsx:201:      expect(editor.children).toEqual(
+packages/list-classic/src/lib/transforms/toggleList.spec.tsx:234:      expect(editor.children).toEqual(
+packages/list-classic/src/lib/transforms/toggleList.spec.tsx:276:      expect(editor.children).toEqual(
+packages/list-classic/src/lib/transforms/toggleList.spec.tsx:314:      expect(editor.children).toEqual(
+packages/list-classic/src/lib/transforms/toggleList.spec.tsx:354:      expect(editor.children).toEqual(
+packages/table/src/react/onKeyDownTable.spec.tsx:60:    expect(editor.selection).toEqual({
+packages/table/src/react/onKeyDownTable.spec.tsx:89:    const initialSelection = editor.selection;
+packages/table/src/react/onKeyDownTable.spec.tsx:96:    expect(editor.selection).toEqual(initialSelection);
+packages/table/src/react/onKeyDownTable.spec.tsx:125:    expect(editor.selection).toEqual({
+packages/table/src/react/onKeyDownTable.spec.tsx:159:    expect(editor.selection).toEqual({
+packages/table/src/react/onKeyDownTable.spec.tsx:191:    expect(editor.selection).toEqual({
+packages/table/src/react/onKeyDownTable.spec.tsx:229:    expect(editor.selection).toEqual({
+packages/link/src/react/transforms/submitFloatingLink.ts:12:  if (!editor.selection) return;
+packages/list-classic/src/lib/transforms/moveListItems.ts:29:    at = editor.selection ?? undefined,
+packages/list-classic/src/lib/withInsertFragmentList.spec.tsx:21:  expect(editor.children).toEqual(expected.children);
+packages/list-classic/src/lib/queries/isAcrossListItems.ts:9:  at: Range | null = editor.selection
+packages/list-classic/src/lib/withDeleteForwardList.spec.tsx:45:    expect(editor.children).toEqual(expected.children);
+packages/list-classic/src/lib/withDeleteForwardList.spec.tsx:79:    expect(editor.children).toEqual(expected.children);
+packages/list-classic/src/lib/withDeleteForwardList.spec.tsx:119:    expect(editor.children).toEqual(expected.children);
+packages/list-classic/src/lib/withDeleteForwardList.spec.tsx:175:    expect(editor.children).toEqual(expected.children);
+packages/list-classic/src/lib/withDeleteForwardList.spec.tsx:232:    expect(editor.children).toEqual(expected.children);
+packages/list-classic/src/lib/withDeleteForwardList.spec.tsx:281:    expect(editor.children).toEqual(expected.children);
+packages/list-classic/src/lib/withDeleteForwardList.spec.tsx:342:    expect(editor.children).toEqual(expected.children);
+packages/list-classic/src/lib/BaseListInputRules.spec.tsx:33:    expect(editor.children).toEqual([
+packages/list-classic/src/lib/BaseListInputRules.spec.tsx:75:    expect(editor.children).toEqual([
+packages/list-classic/src/lib/BaseListInputRules.spec.tsx:142:    expect(editor.children).toEqual([
+packages/list-classic/src/lib/BaseListInputRules.spec.tsx:190:    expect(editor.children).toEqual([
+packages/link/src/lib/transforms/wrapLink.spec.tsx:36:    expect(editor.children).toEqual(
+packages/ai/src/react/copilot/CopilotPlugin.tsx:141:      const selection = editor.selection;
+packages/ai/src/react/copilot/CopilotPlugin.tsx:175:      const selection = editor.selection;
+packages/link/src/lib/transforms/upsertLink.ts:68:  const at = editor.selection;
+packages/link/src/lib/transforms/upsertLink.ts:140:  const path = editor.selection?.focus.path;
+packages/list-classic/src/lib/queries/getListItemEntry.ts:16:  { at = editor.selection }: { at?: Location | null } = {}
+packages/list-classic/src/lib/transforms/toggleList.ts:29:      if (!editor.selection) {
+packages/list-classic/src/lib/transforms/toggleList.ts:51:                at: editor.selection,
+packages/list-classic/src/lib/transforms/toggleList.ts:99:        const [startPoint, endPoint] = RangeApi.edges(editor.selection!);
+packages/list-classic/src/lib/transforms/toggleList.ts:115:              at: RangeApi.start(editor.selection),
+packages/list-classic/src/lib/transforms/toggleList.ts:122:              at: RangeApi.end(editor.selection),
+packages/list-classic/src/lib/transforms/toggleList.ts:136:                at: editor.selection,
+packages/link/src/lib/transforms/unwrapLink.ts:19:    const at = options?.at ?? editor.selection ?? undefined;
+packages/link/src/lib/transforms/unwrapLink.ts:27:          at: editor.selection?.anchor,
+packages/link/src/lib/transforms/unwrapLink.ts:35:          at: editor.selection?.anchor,
+packages/link/src/lib/transforms/unwrapLink.ts:39:          at: editor.selection?.anchor,
+packages/link/src/lib/transforms/unwrapLink.ts:48:          at: editor.selection?.focus,
+packages/link/src/lib/transforms/unwrapLink.ts:58:          at: editor.selection?.focus,
+packages/table/src/react/onKeyDownTable.ts:24:  const context = getTableMoveSelectionContext(editor, editor.selection?.focus);
+packages/table/src/react/onKeyDownTable.ts:114:          at: editor.selection!,
+packages/link/src/lib/LinkRules.ts:52:  !!editor.selection && RangeApi.isCollapsed(editor.selection);
+packages/link/src/lib/LinkRules.ts:60:      at: editor.selection ?? undefined,
+packages/list-classic/src/lib/transforms/moveListItemUp.ts:25:      ? editor.children.length
+packages/list-classic/src/lib/queries/getTodoListItemEntry.ts:17:  { at = editor.selection }: { at?: Location | null } = {}
+packages/link/src/lib/transforms/upsertLinkText.spec.tsx:43:    expect(editor.children).toEqual(
+packages/link/src/lib/transforms/upsertLinkText.spec.tsx:77:    expect(editor.children).toEqual(input.children);
+packages/link/src/lib/transforms/upsertLinkText.spec.tsx:98:    expect(editor.children).toEqual(input.children);
+packages/list-classic/src/lib/withDeleteBackwardList.spec.tsx:46:    expect(editor.children).toEqual(expected.children);
+packages/list-classic/src/lib/withDeleteBackwardList.spec.tsx:87:    expect(editor.children).toEqual(expected.children);
+packages/list-classic/src/lib/withDeleteBackwardList.spec.tsx:148:    expect(editor.children).toEqual(expected.children);
+packages/link/src/react/components/FloatingLink/useFloatingLinkEdit.ts:110:      editor.selection &&
+packages/list-classic/src/lib/withNormalizeList.spec.tsx:20:  expect(editor.children).toEqual(output.children);
+packages/list-classic/src/lib/ListClassicExtension.ts:90:    state.points.start(editor.selection as Range)
+packages/list-classic/src/lib/ListClassicExtension.ts:304:    state.points.after(editor.selection!.focus)
+packages/list-classic/src/lib/ListClassicExtension.ts:317:    at: editor.selection!.anchor,
+packages/list-classic/src/lib/ListClassicExtension.ts:415:      state.points.after(editor.selection!.focus)
+packages/list-classic/src/lib/ListClassicExtension.ts:421:        anchor: editor.selection!.anchor,
+packages/list-classic/src/lib/ListClassicExtension.ts:634:          const listItemStart = editor.selection
+packages/list-classic/src/lib/ListClassicExtension.ts:638:            !!editor.selection &&
+packages/list-classic/src/lib/ListClassicExtension.ts:640:            RangeApi.isCollapsed(editor.selection) &&
+packages/list-classic/src/lib/ListClassicExtension.ts:641:            PointApi.equals(editor.selection.focus, listItemStart);
+packages/list-classic/src/lib/ListClassicExtension.ts:661:                state.points.before(editor.selection!.focus)
+packages/list-classic/src/lib/ListClassicExtension.ts:670:                  anchor: editor.selection!.anchor,
+packages/list-classic/src/lib/ListClassicExtension.ts:742:            state.points.end(editor.selection as Range)
+packages/list-classic/src/lib/ListClassicExtension.ts:831:        if (!editor.selection) return next();
+packages/list-classic/src/lib/transforms/unwrapList.spec.tsx:56:    expect(editor.children).toEqual(output.children);
+packages/list-classic/src/lib/transforms/unwrapList.spec.tsx:96:    expect(editor.children).toEqual(output.children);
+packages/list-classic/src/lib/transforms/unwrapList.spec.tsx:139:    expect(editor.children).toEqual(output.children);
+packages/list-classic/src/lib/transforms/unwrapList.spec.tsx:188:    expect(editor.children).toEqual(output.children);
+packages/list-classic/src/lib/transforms/unwrapList.spec.tsx:194:      editor.selection = null;
+packages/list-classic/src/lib/BaseTodoListPlugin.spec.ts:32:    expect(editor.children).toEqual([
+packages/list-classic/src/lib/BaseTodoListPlugin.spec.ts:44:    expect(editor.selection).toEqual({
+packages/list-classic/src/lib/BaseTodoListPlugin.spec.ts:62:    expect(editor.children).toEqual([
+packages/list-classic/src/lib/BaseTodoListPlugin.spec.ts:72:    expect(editor.selection).toEqual({
+packages/list-classic/src/lib/BaseTodoListPlugin.spec.ts:93:    expect(editor.children[0]).toMatchObject({
+packages/list-classic/src/lib/BaseTodoListPlugin.spec.ts:99:    expect(editor.children[0]).toMatchObject({
+packages/link/src/lib/transforms/upsertLink.spec.tsx:57:        expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:84:        expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:111:        expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:141:        expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:171:        expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:202:        expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:238:        expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:267:        expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:297:        expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:327:        expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:355:        expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:387:        expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:415:        expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:442:        expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:476:        expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:504:      expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:533:      expect(editor.children).toEqual(output.children);
+packages/link/src/lib/transforms/upsertLink.spec.tsx:547:      editor.selection = null;
+packages/link/src/lib/transforms/upsertLink.spec.tsx:550:      expect(editor.children).toEqual([
+packages/link/src/lib/transforms/upsertLink.spec.tsx:590:      expect(editor.children).toEqual(output.children);
+packages/list-classic/src/lib/withInsertBreakList.spec.tsx:44:    expect(editor.children).toEqual(expected.children);
+packages/list-classic/src/lib/withInsertBreakList.spec.tsx:45:    expect(editor.selection).toEqual(expected.selection);
+packages/list-classic/src/lib/withInsertBreakList.spec.tsx:70:    expect(editor.children).toEqual(expected.children);
+packages/list-classic/src/lib/withInsertBreakList.spec.tsx:71:    expect(editor.selection).toEqual(expected.selection);
+packages/list-classic/src/lib/withInsertBreakList.spec.tsx:106:    expect(editor.children).toEqual(expected.children);
+packages/list-classic/src/lib/withInsertBreakList.spec.tsx:107:    expect(editor.selection).toEqual(expected.selection);
+packages/list-classic/src/lib/withInsertBreakList.spec.tsx:133:    expect(editor.children).toEqual(expected.children);
+packages/list-classic/src/lib/withInsertBreakList.spec.tsx:134:    expect(editor.selection).toEqual(expected.selection);
+packages/list-classic/src/lib/transforms/moveListItemsToList.spec.tsx:69:  expect(editor.children).toEqual(output.children);
+packages/list-classic/src/lib/normalizers/normalizeNestedList.spec.tsx:73:    expect(editor.children).toEqual([
+packages/list-classic/src/lib/queries/getListRoot.ts:11:  at: Path | Point | Range | null = editor.selection
+packages/link/src/react/utils/triggerFloatingLinkInsert.ts:29:  const selection = editor.selection;
+packages/table/src/react/components/TableCellElement/setSelectedCellsBorder.integration.spec.tsx:64:    expect(editor.children).toMatchObject(
+packages/table/src/react/components/TableCellElement/setSelectedCellsBorder.integration.spec.tsx:149:    expect(editor.children).toMatchObject(
+packages/table/src/react/components/TableCellElement/setSelectedCellsBorder.integration.spec.tsx:214:    expect(editor.children).toMatchObject(
+packages/table/src/react/components/TableCellElement/setSelectedCellsBorder.integration.spec.tsx:275:    expect(editor.children).toMatchObject(
+packages/table/src/react/components/TableCellElement/setSelectedCellsBorder.integration.spec.tsx:335:    const table = editor.children[0] as any;
+packages/table/src/react/components/TableCellElement/setSelectedCellsBorder.integration.spec.tsx:342:    expect(editor.children).toMatchObject(
+packages/list-classic/src/lib/normalizers/normalizeListItem.spec.tsx:45:    expect(editor.children).toEqual(output.children);
+packages/list-classic/src/lib/transforms/removeListItem.spec.tsx:103:  expect(editor.children).toEqual(output.children);
+packages/list-classic/src/lib/internal/editorQueries.ts:77:  at: Range | null = editor.selection
+packages/list-classic/src/lib/internal/editorQueries.ts:100:  !!editor.selection &&
+packages/list-classic/src/lib/internal/editorQueries.ts:103:      at: editor.selection!.focus,
+packages/list-classic/src/lib/internal/editorQueries.ts:107:    return !!block && state.points.isEnd(editor.selection!.focus, block[1]);
+packages/list-classic/src/lib/internal/editorQueries.ts:111:  !!editor.selection &&
+packages/list-classic/src/lib/internal/editorQueries.ts:114:      at: editor.selection!,
+packages/table/src/lib/transforms/insertTableColumn.spec.tsx:80:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTableColumn.spec.tsx:81:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/transforms/insertTableColumn.spec.tsx:114:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTableColumn.spec.tsx:115:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/transforms/insertTableColumn.spec.tsx:147:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTableColumn.spec.tsx:148:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/transforms/insertTableColumn.spec.tsx:182:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTableColumn.spec.tsx:183:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/transforms/insertTableColumn.spec.tsx:226:        expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTableColumn.spec.tsx:268:        expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTableColumn.spec.tsx:308:        expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTableColumn.spec.tsx:350:        expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTableColumn.spec.tsx:390:        expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTableColumn.spec.tsx:431:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTableColumn.spec.tsx:482:      const table = editor.children[0] as Element;
+packages/link/src/react/utils/focusEditorAtSelection.ts:4:  if (editor.selection) {
+packages/link/src/react/utils/focusEditorAtSelection.ts:6:      tx.selection.set(editor.selection!);
+packages/list-classic/src/lib/transforms/insertListItem.ts:24:  if (!editor.selection) {
+packages/list-classic/src/lib/transforms/insertListItem.ts:59:        editor.selection!.focus,
+packages/list-classic/src/lib/transforms/insertListItem.ts:91:            anchor: editor.selection!.focus,
+packages/list-classic/src/lib/transforms/unwrapList.ts:27:    if (!at && editor.selection) {
+packages/list-classic/src/lib/transforms/unwrapList.ts:31:          editor.selection.anchor.path,
+packages/list-classic/src/lib/transforms/unwrapList.ts:32:          editor.selection.focus.path
+packages/list-classic/src/lib/BaseTodoListPlugin.ts:32:        if (!editor.selection) return next();
+packages/list-classic/src/lib/transforms/moveListSiblingsAfterCursor.spec.tsx:43:    expect(editor.children).toEqual([
+packages/list-classic/src/lib/transforms/moveListSiblingsAfterCursor.spec.tsx:97:    expect(editor.children).toEqual(input.children);
+packages/list-classic/src/lib/transforms/insertTodoListItem.ts:19:  if (!editor.selection) {
+packages/list-classic/src/lib/transforms/insertTodoListItem.ts:43:        editor.selection!.focus,
+packages/list-classic/src/lib/transforms/insertTodoListItem.ts:65:        isEditorPointEnd(editor, editor.selection!.focus, paragraphPath) ||
+packages/list-classic/src/lib/transforms/insertTodoListItem.ts:68:            anchor: editor.selection!.focus,
+packages/list-classic/src/lib/transforms/moveListItemSublistItemsToListItemSublist.spec.tsx:85:    expect(editor.children).toEqual(output.children);
+packages/list-classic/src/lib/transforms/moveListItemSublistItemsToListItemSublist.spec.tsx:105:    expect(editor.children).toEqual(
+packages/list-classic/src/lib/transforms/moveListItemSublistItemsToListItemSublist.spec.tsx:195:    expect(editor.children).toEqual(output.children);
+packages/table/src/lib/transforms/tableSelectionAndSizing.spec.tsx:56:      expect(editor.children).toMatchObject([
+packages/table/src/lib/transforms/tableSelectionAndSizing.spec.tsx:87:      expect(editor.children).toMatchObject([
+packages/table/src/lib/transforms/tableSelectionAndSizing.spec.tsx:128:      expect(editor.children).toMatchObject([
+packages/table/src/lib/transforms/tableSelectionAndSizing.spec.tsx:195:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/transforms/tableSelectionAndSizing.spec.tsx:261:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/transforms/tableSelectionAndSizing.spec.tsx:303:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/transforms/tableSelectionAndSizing.spec.tsx:345:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/transforms/tableSelectionAndSizing.spec.tsx:392:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/react/components/TableElement/useSelectedCells.ts:53:        selectedContent: selectedCellIds ? editor.children : null,
+packages/table/src/lib/utils/findTableNodePath.ts:49:  return findInChildren(editor.children);
+packages/table/src/lib/transforms/deleteTable.spec.tsx:43:    expect(editor.children).toMatchObject([
+packages/table/src/lib/transforms/deleteTable.spec.tsx:63:    expect(editor.children).toMatchObject(input.children);
+packages/table/src/lib/transforms/deleteColumn.spec.tsx:51:    expect(editor.children).toMatchObject([
+packages/table/src/lib/transforms/deleteColumn.spec.tsx:114:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/deleteColumn.spec.tsx:172:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/deleteColumn.spec.tsx:230:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/deleteColumn.spec.tsx:296:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/deleteColumn.spec.tsx:336:    expect(editor.children).toMatchObject([
+packages/table/src/lib/transforms/setBorderSize.spec.tsx:82:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/setBorderSize.spec.tsx:104:      expect(editor.children).toMatchObject(
+packages/table/src/lib/transforms/setBorderSize.spec.tsx:185:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/setBorderSize.spec.tsx:245:        expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/setBorderSize.spec.tsx:307:          expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/setBorderSize.spec.tsx:368:          expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/setBorderSize.spec.tsx:428:            expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/setBorderSize.spec.tsx:490:          expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/utils/computeCellIndices.ts:73:    tableNode ??= findTableNodeByCellId(editor, editor.children, cellNode.id);
+packages/table/src/lib/transforms/deleteRow.spec.tsx:122:    expect((editor.children[0] as any).children).toHaveLength(1);
+packages/table/src/lib/transforms/deleteRow.spec.tsx:146:    expect(editor.children).toMatchObject(input.children);
+packages/table/src/lib/transforms/insertTable.ts:48:        if (editor.selection) {
+packages/mention/src/lib/BaseMentionPlugin.spec.tsx:64:    const children = editor.children[0].children;
+packages/mention/src/lib/BaseMentionPlugin.spec.tsx:259:    expect(editor.children[0]).toMatchObject({
+packages/floating/src/utils/getSelectionBoundingClientRect.ts:12:    return getRangeBoundingClientRect(editor, editor.selection);
+packages/table/src/lib/transforms/insertTable.spec.tsx:70:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTable.spec.tsx:71:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/transforms/insertTable.spec.tsx:136:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTable.spec.tsx:137:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/transforms/insertTable.spec.tsx:208:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTable.spec.tsx:209:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/transforms/insertTable.spec.tsx:288:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTable.spec.tsx:289:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/transforms/insertTable.spec.tsx:360:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTable.spec.tsx:361:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/transforms/moveSelectionFromCell.spec.tsx:38:    const initialSelection = editor.selection;
+packages/table/src/lib/transforms/moveSelectionFromCell.spec.tsx:41:    expect(editor.selection).toEqual(initialSelection);
+packages/table/src/lib/transforms/moveSelectionFromCell.spec.tsx:68:    expect(editor.selection).toEqual({
+packages/table/src/lib/transforms/moveSelectionFromCell.spec.tsx:100:    expect(editor.selection).toEqual({
+packages/table/src/lib/transforms/moveSelectionFromCell.spec.tsx:132:    expect(editor.selection).toEqual({
+packages/table/src/lib/transforms/moveSelectionFromCell.spec.tsx:155:    const initialSelection = editor.selection;
+packages/table/src/lib/transforms/moveSelectionFromCell.spec.tsx:160:    expect(editor.selection).toEqual(initialSelection);
+packages/table/src/lib/transforms/insertTableRow.spec.tsx:90:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTableRow.spec.tsx:91:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/transforms/insertTableRow.spec.tsx:172:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/transforms/insertTableRow.spec.tsx:173:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/transforms/insertTableRow.spec.tsx:254:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/queries/getTableCellSize.spec.tsx:30:    const element = editor.children[0] as any;
+packages/table/src/lib/queries/getTableCellSize.spec.tsx:55:    const element = ((editor.children[0] as any).children[0] as any)
+packages/table/src/lib/queries/getTableCellSize.spec.tsx:81:    const element = ((editor.children[0] as any).children[0] as any)
+packages/table/src/lib/transforms/setCellBackground.spec.tsx:28:    const table = editor.children[0];
+packages/table/src/lib/transforms/setTableMarginLeft.spec.tsx:48:    expect(editor.children).toMatchObject([
+packages/table/src/lib/transforms/setTableMarginLeft.spec.tsx:68:    expect(editor.children).toMatchObject(input.children);
+packages/table/src/lib/transforms/shouldMoveSelectionFromCell.ts:21:  point = editor.selection?.anchor
+packages/plite/test/slate-helper-loss-contract.ts:634:    assert.equal(getCurrentIsEmptyAfter(editor, editor.selection), true);
+packages/selection/src/react/hooks/useBlockSelectable.ts:42:  if (editor.selection?.focus && disabledWhenFocused) {
+packages/selection/src/react/CursorOverlayPlugin.tsx:64:        if (!editor.selection) return;
+packages/selection/src/react/CursorOverlayPlugin.tsx:72:          selection: editor.selection,
+packages/table/src/lib/queries/getTopTableCell.spec.tsx:58:    editor.selection = {
+packages/table/src/lib/queries/getTopTableCell.spec.tsx:63:      at: editor.selection.anchor.path,
+packages/table/src/lib/queries/getTableEntries.ts:28:  { at = editor.selection }: { at?: Location | null } = {}
+packages/selection/src/react/queries/cursorOverlayQueries.spec.ts:173:      const textNode = editor.children[0].children[0];
+packages/basic-nodes/src/lib/BaseBlockquoteInputRules.spec.tsx:71:    expect(editor.children).toMatchObject([
+packages/basic-nodes/src/lib/BaseBlockquoteInputRules.spec.tsx:82:    expect(editor.selection).toEqual({
+packages/basic-nodes/src/lib/BaseBlockquoteInputRules.spec.tsx:105:    expect(editor.children).toMatchObject([
+packages/list/src/lib/queries/expandListItemsWithChildren.spec.tsx:15:    selection: editor.selection,
+packages/list/src/lib/queries/expandListItemsWithChildren.spec.tsx:16:    value: editor.children,
+packages/selection/src/react/utils/selectionBlocks.spec.ts:101:      expect(editor.children[1]).toMatchObject({
+packages/selection/src/react/utils/selectionBlocks.spec.ts:105:      expect(editor.selection).toEqual({
+packages/selection/src/react/utils/copySelectedBlocks.ts:46:          state.points.after(editor.selection!)
+packages/selection/src/react/hooks/useSelectionArea.ts:37:    if (editor.selection) {
+packages/table/src/lib/queries/isTableBorderHidden.spec.tsx:73:    editor.selection = {
+packages/table/src/lib/queries/isTableBorderHidden.spec.tsx:83:    editor.selection = {
+packages/floating/src/utils/getBoundingClientRect.ts:13:    if (!at) return [editor.selection].filter(Boolean) as Range[];
+packages/selection/src/react/utils/selectInsertedBlocks.ts:11:  editor.operations.forEach((op) => {
+packages/plite/test/state-tx-public-api-contract.ts:195:    assert.equal(state.operations.length, 0);
+packages/plite/test/state-tx-public-api-contract.ts:297:    assert.equal(state.lastCommit?.operations.length, 0);
+packages/plite/test/state-tx-public-api-contract.ts:708:    assert.equal(editorGetLastCommit(editor)?.operations.length, 1);
+packages/table/src/lib/queries/getTableRowIndex.spec.tsx:39:    const cellNode = ((editor.children[0] as any).children[1] as any)
+packages/list/src/lib/inputRules.spec.tsx:45:    expect(editor.children[0]).toMatchObject({
+packages/list/src/lib/inputRules.spec.tsx:51:    expect(editor.selection).toEqual({
+packages/list/src/lib/inputRules.spec.tsx:62:    expect(editor.children[0]).toMatchObject({
+packages/list/src/lib/inputRules.spec.tsx:70:    expect(editor.selection).toEqual({
+packages/list/src/lib/inputRules.spec.tsx:81:    expect(editor.children[0]).toMatchObject({
+packages/list/src/lib/inputRules.spec.tsx:88:    expect(editor.selection).toEqual({
+packages/plite/test/write-boundary-contract.ts:68:    assert.equal(commit.operations.length, 1);
+packages/selection/src/react/BlockSelectionPlugin.tsx:328:              at: editor.selection ?? [],
+packages/selection/src/react/utils/copySelectedBlocks.spec.tsx:104:      // Mock editor.api.string() to return the text content of each block
+packages/selection/src/react/utils/copySelectedBlocks.spec.tsx:107:      editor.api.string = mock(() => stringResults[stringCallIndex++]);
+packages/selection/src/react/utils/copySelectedBlocks.spec.tsx:204:      editor.api.string = mock(() => stringResults[stringCallIndex++]);
+packages/table/src/lib/queries/getSelectedCellsBorders.spec.tsx:153:      editor.selection = null;
+packages/table/src/lib/queries/getSelectedCellsBorders.spec.tsx:184:      editor.selection = {
+packages/list/src/lib/transforms/setListSiblingNodes.spec.ts:22:      [editor.children[0], [0]],
+packages/list/src/lib/transforms/setListSiblingNodes.spec.ts:23:      [editor.children[1], [1]],
+packages/list/src/lib/transforms/setListSiblingNodes.spec.ts:32:    expect(editor.children).toMatchObject([
+packages/list/src/lib/transforms/setListSiblingNodes.spec.ts:43:      [editor.children[0], [0]],
+packages/list/src/lib/transforms/setListSiblingNodes.spec.ts:50:    expect(editor.children[0]).toMatchObject({
+packages/table/src/lib/queries/getTableGridAbove.ts:34:  const at = (options.at ?? editor.selection) as Location | null;
+packages/table/src/lib/queries/getTableGridAbove.ts:74:  const at = options.at ?? editor.selection;
+packages/selection/src/react/transforms/selectBlockSelectionNodes.spec.ts:36:    expect(editor.selection).toEqual({
+packages/selection/src/react/components/BlockSelectionAfterEditable.tsx:66:      if (editor.children.length === 0) {
+packages/list/src/lib/transforms/toggleList.spec.tsx:106:        expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:132:          expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:160:        expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:237:        expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:281:        expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:317:          expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:373:          expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:419:          expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:475:          expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:517:          expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:558:          expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:605:          expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:640:          expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:684:        expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:725:        expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:766:        expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:810:        expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:864:        expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:910:          expect(editor.children).toEqual(output.children);
+packages/list/src/lib/transforms/toggleList.spec.tsx:962:          expect(editor.children).toEqual(output.children);
+packages/selection/src/react/transforms/blockSelectionDocumentTransforms.spec.ts:58:    expect(editor.children.map((node: any) => node.id)).toEqual([
+packages/selection/src/react/transforms/blockSelectionDocumentTransforms.spec.ts:74:    expect(editor.children.map((node: any) => node.id)).toEqual(['block2']);
+packages/selection/src/react/transforms/blockSelectionDocumentTransforms.spec.ts:86:    expect(editor.children[0].align).toBe('center');
+packages/selection/src/react/transforms/blockSelectionDocumentTransforms.spec.ts:87:    expect(editor.children[1].align).toBeUndefined();
+packages/selection/src/react/transforms/blockSelectionDocumentTransforms.spec.ts:100:    expect(editor.children[0].indent).toBe(0);
+packages/selection/src/react/transforms/blockSelectionDocumentTransforms.spec.ts:112:    expect(editor.children[0].children[0].bold).toBe(true);
+packages/selection/src/react/transforms/blockSelectionDocumentTransforms.spec.ts:113:    expect(editor.children[1].children[0].bold).toBeUndefined();
+packages/table/src/lib/queries/getTableCellBorders.spec.tsx:30:    const element = editor.children[0] as any;
+packages/table/src/lib/queries/getTableCellBorders.spec.tsx:55:    const element = (editor.children[0] as any).children[0] as any;
+packages/table/src/lib/queries/getTableCellBorders.spec.tsx:98:    const element = ((editor.children[0] as any).children[0] as any)
+packages/table/src/lib/queries/getTableCellBorders.spec.tsx:139:    const element = ((editor.children[0] as any).children[1] as any)
+packages/table/src/lib/queries/getSelectedCells.ts:21:  const operationsLength = editor.operations.length;
+packages/list/src/lib/transforms/toggleListUnset.spec.ts:27:      toggleListUnset(editor, [editor.children[0], [0]] as any, {
+packages/list/src/lib/transforms/toggleListUnset.spec.ts:32:    expect(editor.children[0]).not.toHaveProperty(KEYS.listChecked);
+packages/list/src/lib/transforms/toggleListUnset.spec.ts:50:      toggleListUnset(editor, [editor.children[0], [0]] as any, {
+packages/list/src/lib/transforms/toggleListUnset.spec.ts:55:    expect(editor.children[0]).not.toHaveProperty(KEYS.listType);
+packages/list/src/lib/transforms/toggleListUnset.spec.ts:77:      toggleListUnset(editor, [editor.children[0], [0]] as any, {
+packages/list/src/lib/transforms/toggleListUnset.spec.ts:82:    expect(editor.children[0]).toHaveProperty(KEYS.listType, 'circle');
+packages/list/src/lib/queries/someList.ts:6:  !!editor.selection &&
+packages/selection/src/internal/transforms/selectBlocks.spec.tsx:226:      editor.selection = {
+packages/selection/src/internal/transforms/selectBlocks.spec.tsx:239:      editor.selection = {
+packages/selection/src/internal/transforms/selectBlocks.spec.tsx:252:      editor.selection = {
+packages/list/src/lib/queries/getListSiblings.spec.tsx:15:    selection: editor.selection,
+packages/list/src/lib/queries/getListSiblings.spec.tsx:16:    value: editor.children,
+packages/list/src/lib/transforms/toggleList.ts:142:      state.points.start(editor.selection!)
+packages/selection/src/react/transforms/duplicateBlockSelectionNodes.spec.ts:36:    expect(editor.children).toEqual([
+packages/plite/test/update-after-commit-contract.ts:45:        assert.equal(commit.operations.length, 1);
+packages/list/src/lib/transforms/setListNodes.spec.ts:11:    setListNodes(editor, [[editor.children[0], [0]]] as any, {
+packages/list/src/lib/transforms/setListNodes.spec.ts:15:    expect(editor.children[0]).toMatchObject({
+packages/list/src/lib/transforms/setListNodes.spec.ts:34:    setListNodes(editor, [[editor.children[0], [0]]] as any, {
+packages/list/src/lib/transforms/setListNodes.spec.ts:38:    expect(editor.children[0]).toMatchObject({
+packages/list/src/lib/queries/getListChildren.spec.tsx:15:    selection: editor.selection,
+packages/list/src/lib/queries/getListChildren.spec.tsx:16:    value: editor.children,
+packages/table/src/lib/queries/getTableColumnIndex.spec.tsx:40:    const cellNode = ((editor.children[0] as any).children[0] as any)
+packages/table/src/lib/queries/getTableColumnIndex.spec.tsx:64:      ((editor.children[0] as any).children[0] as any).children[1]
+packages/list/src/lib/transforms/toggleListByPath.spec.ts:19:    toggleListByPath(editor, [editor.children[0], [0]], 'decimal');
+packages/list/src/lib/transforms/toggleListByPath.spec.ts:21:    expect(editor.children).toEqual([
+packages/list/src/lib/transforms/toggleListByPath.spec.ts:41:    toggleListByPath(editor, [editor.children[0], [0]], 'circle');
+packages/list/src/lib/transforms/toggleListByPath.spec.ts:43:    expect(editor.children[0]).toMatchObject({
+packages/list/src/lib/transforms/toggleListByPath.spec.ts:62:    toggleListByPathUnSet(editor, [editor.children[0], [0]]);
+packages/list/src/lib/transforms/toggleListByPath.spec.ts:64:    expect(editor.children).toEqual([
+packages/plite/test/apply-onchange-hard-cut-contract.ts:102:        events.push(`subscribe:${commit.operations.length}`);
+packages/plite/test/apply-onchange-hard-cut-contract.ts:106:      events.push(`commit:${commit.operations.length}`);
+packages/list/src/lib/queries/someTodoList.ts:8:      at: editor.selection!,
+packages/list/src/lib/transforms/setListNode.spec.ts:22:    expect(editor.children[0]).toMatchObject({
+packages/list/src/lib/transforms/setListNode.spec.ts:43:    expect(editor.children[0]).toMatchObject({
+packages/list/src/lib/transforms/setListNode.spec.ts:62:    expect(editor.children[0]).toMatchObject({
+packages/list/src/lib/transforms/setListNode.spec.ts:83:    expect(editor.children[0]).toMatchObject({
+packages/table/src/lib/merge/insertTableColumn.spec.tsx:52:    expect((editor.children[0] as any).children[0].children).toHaveLength(3);
+packages/table/src/lib/merge/insertTableColumn.spec.tsx:53:    expect((editor.children[0] as any).children[1].children).toHaveLength(3);
+packages/table/src/lib/merge/insertTableColumn.spec.tsx:84:    expect(editor.children).toMatchObject([
+packages/plite/test/interfaces-contract.ts:270:    editor.operations = [
+packages/table/src/lib/merge/insertTableRow.spec.tsx:52:    expect((editor.children[0] as any).children).toHaveLength(3);
+packages/table/src/lib/merge/insertTableRow.spec.tsx:83:    expect(editor.children).toMatchObject([
+packages/table/src/lib/merge/deleteRow.spec.tsx:57:    expect(editor.children).toMatchObject([
+packages/table/src/lib/merge/deleteRow.spec.tsx:120:    expect(editor.children).toMatchObject([
+packages/table/src/lib/merge/deleteRow.spec.tsx:193:    expect(editor.children).toMatchObject([
+packages/table/src/lib/merge/deleteRow.spec.tsx:243:    expect(editor.children).toEqual([]);
+packages/plite/test/clipboard-contract.ts:597:      editor.read((state) => state.history.undos()[0]?.operations.length),
+packages/list/src/lib/normalizers/normalizeListNotIndented.spec.tsx:36:      normalizeListNotIndented(editor, [editor.children[0], [0]]);
+packages/list/src/lib/normalizers/normalizeListNotIndented.spec.tsx:38:      expect(editor.children).toEqual(output.children);
+packages/code-drawing/src/lib/transforms/insertCodeDrawing.spec.ts:27:    expect(editor.children).toMatchObject([
+packages/code-drawing/src/lib/transforms/insertCodeDrawing.spec.ts:70:    expect(editor.children).toMatchObject([
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:145:  const before = editor.children;
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:147:  expect(editor.children).toBe(before);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:190:      expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:206:      expect(editor.children).toEqual(input);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:225:      expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:248:      expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:272:      expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:294:      expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:316:      expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:340:      expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:363:      expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:385:      expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:410:      expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:437:      expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:464:      expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:499:      expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:532:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:560:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:592:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:627:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:654:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:681:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:706:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:731:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:766:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:797:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:826:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:855:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:884:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:913:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:939:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:963:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:990:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:1019:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:1046:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:1073:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:1100:        expect(editor.children).toEqual(output);
+packages/list/src/lib/normalizers/normalizeListStart.slow.tsx:1129:        expect(editor.children).toEqual(output);
+packages/table/src/lib/merge/deleteRowWhenExpanded.spec.ts:58:    deleteRowWhenExpanded(editor, [editor.children[0] as any, [0]] as any);
+packages/plite/test/transaction-contract.ts:508:      assert.equal(transaction.operations.length, 1);
+packages/plite/test/transaction-contract.ts:552:    assert.equal(commit.operations.length, 1);
+packages/plite/test/transaction-contract.ts:655:      assert.equal(transaction.operations.length, 1);
+packages/table/src/lib/merge/deleteColumn.spec.tsx:93:    expect(editor.children).toMatchObject([
+packages/table/src/lib/merge/deleteColumnWhenExpanded.ts:18:  const [start, end] = RangeApi.edges(editor.selection!);
+packages/table/src/lib/merge/tableMergeBehavior.slow.tsx:68:      const table = editor.children[0] as any;
+packages/table/src/lib/merge/tableMergeBehavior.slow.tsx:80:      expect(editor.selection).toEqual({
+packages/table/src/lib/merge/tableMergeBehavior.slow.tsx:140:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/merge/tableMergeBehavior.slow.tsx:141:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/merge/tableMergeBehavior.slow.tsx:172:      const table = editor.children[0] as any;
+packages/table/src/lib/merge/tableMergeBehavior.slow.tsx:238:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/merge/tableMergeBehavior.slow.tsx:239:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/merge/tableMergeBehavior.slow.tsx:276:      expect(editor.children).toMatchObject(input.children);
+packages/table/src/lib/merge/tableMergeBehavior.slow.tsx:277:      expect(editor.selection).toEqual(input.selection);
+packages/table/src/lib/merge/tableMergeBehavior.slow.tsx:339:      expect(editor.children).toMatchObject(output.children);
+packages/table/src/lib/merge/tableMergeBehavior.slow.tsx:340:      expect(editor.selection).toEqual(output.selection);
+packages/table/src/lib/merge/tableMergeBehavior.slow.tsx:377:      expect(editor.children).toMatchObject(input.children);
+packages/table/src/lib/merge/tableMergeBehavior.slow.tsx:378:      expect(editor.selection).toEqual(input.selection);
+packages/code-drawing/src/lib/transforms/insertCodeDrawing.ts:21:  const at = options.at ?? editor.selection ?? undefined;
+packages/table/src/lib/merge/getTableGridByRange.spec.tsx:53:      at: editor.selection!,
+packages/table/src/lib/merge/getTableGridByRange.spec.tsx:101:      at: editor.selection!,
+packages/table/src/lib/TableExtension.ts:363:    ...editor.selection,
+packages/table/src/lib/TableExtension.ts:608:    editor.selection &&
+packages/table/src/lib/TableExtension.ts:609:    RangeApi.equals(editor.selection, tableRange)
+packages/table/src/lib/TableExtension.ts:859:          !editor.selection ||
+packages/table/src/lib/TableExtension.ts:918:              at: editor.selection?.anchor,
+packages/table/src/lib/TableExtension.ts:959:              at: editor.selection?.anchor,
+packages/table/src/lib/TableExtension.ts:966:              at: editor.selection?.anchor,
+packages/table/src/lib/TableExtension.ts:1014:              at: editor.selection?.anchor,
+packages/table/src/lib/TableExtension.ts:1057:              RangeApi.equals(editor.selection!, {
+packages/table/src/lib/TableExtension.ts:1089:          !editor.selection ||
+packages/table/src/lib/TableExtension.ts:1125:          !editor.selection ||
+packages/plite/test/transforms/move/emojis/keycap.tsx:8:  editor.selection.move();
+packages/plite/test/transforms/setNodes/basic-structure/invert-after-serialization.tsx:13:  editor.operations.replay([inverted]);
+packages/plite/test/transforms/move/emojis/tag-reverse.tsx:8:  editor.selection.move({ reverse: true });
+packages/plite/test/transforms/move/emojis/zwj.tsx:8:  editor.selection.move();
+packages/plite/test/transforms/move/emojis/zwj-reverse.tsx:8:  editor.selection.move({ reverse: true });
+packages/plite/test/transforms/deselect/basic.tsx:8:  editor.selection.clear();
+packages/plite/test/transforms/move/end/to-backward-reverse.tsx:8:  editor.selection.move({ edge: 'end', reverse: true, distance: 6 });
+packages/plite/test/transforms/move/end/expanded.tsx:8:  editor.selection.move({ edge: 'end' });
+packages/plite/test/transforms/move/end/backward.tsx:8:  editor.selection.move({ edge: 'end' });
+packages/plite/test/transforms/select/range.tsx:8:  editor.selection.set({
+packages/plite/test/transforms/move/end/backward-reverse.tsx:8:  editor.selection.move({ edge: 'end', reverse: true });
+packages/plite/test/transforms/select/point.tsx:8:  editor.selection.set({
+packages/plite/test/transforms/move/end/distance.tsx:8:  editor.selection.move({ edge: 'end', distance: 3 });
+packages/plite/test/transforms/select/path.tsx:8:  editor.selection.set([0, 0]);
+packages/plite/test/transforms/setNodes/marks/mark-void-range.tsx:20:  editor.marks.add('bold', true);
+packages/plite/test/transforms/move/end/expanded-reverse.tsx:8:  editor.selection.move({ edge: 'end', reverse: true });
+packages/plite/test/transforms/setNodes/marks/mark-void-range-hanging.tsx:20:  editor.marks.add('bold', true);
+packages/plite/test/transforms/move/end/from-backward-reverse.tsx:8:  editor.selection.move({ edge: 'end', reverse: true, distance: 7 });
+packages/plite/test/transforms/setPoint/default-both.tsx:8:  editor.selection.setPoint({ offset: 0 });
+packages/plite/test/transforms/setNodes/marks/mark-void-collapsed.tsx:20:  editor.marks.add('bold', true);
+packages/plite/test/transforms/move/end/collapsed-reverse.tsx:8:  editor.selection.move({ edge: 'end', reverse: true });
+packages/plite/test/transforms/setNodes/marks/mark-across-range.tsx:10:  editor.marks.add('bold', true);
+packages/plite/test/transforms/move/end/distance-reverse.tsx:8:  editor.selection.move({ edge: 'end', reverse: true, distance: 3 });
+packages/plite/test/transforms/move/focus/to-backward-reverse.tsx:8:  editor.selection.move({ edge: 'focus', reverse: true, distance: 10 });
+packages/plite/test/transforms/move/emojis/ri.tsx:8:  editor.selection.move();
+packages/plite/test/transforms/move/emojis/tag.tsx:8:  editor.selection.move();
+packages/plite/test/transforms/move/emojis/keycap-reverse.tsx:8:  editor.selection.move({ reverse: true });
+packages/plite/test/transforms/move/emojis/ri-reverse.tsx:8:  editor.selection.move({ reverse: true });
+packages/plite/test/transforms/setPoint/offset.tsx:8:  editor.selection.move();
+packages/plite/test/transforms/setPoint/offset.tsx:9:  editor.selection.setPoint({ offset: 0 }, { edge: 'focus' });
+packages/plite/test/transforms/move/focus/expanded.tsx:8:  editor.selection.move({ edge: 'focus' });
+packages/plite/test/transforms/move/focus/backward.tsx:8:  editor.selection.move({ edge: 'focus', distance: 7 });
+packages/plite/test/transforms/move/focus/distance.tsx:8:  editor.selection.move({ edge: 'focus', distance: 4 });
+packages/plite/test/transforms/move/focus/expanded-reverse.tsx:8:  editor.selection.move({ edge: 'focus', reverse: true });
+packages/plite/test/transforms/move/focus/collapsed-reverse.tsx:8:  editor.selection.move({ edge: 'focus', reverse: true });
+packages/plite/test/transforms/move/focus/distance-reverse.tsx:8:  editor.selection.move({ edge: 'focus', reverse: true, distance: 6 });
+packages/plite/test/transforms/move/anchor/reverse-distance.tsx:8:  editor.selection.move({ edge: 'anchor', reverse: true, distance: 3 });
+packages/plite/test/transforms/move/start/expanded.tsx:8:  editor.selection.move({ edge: 'start' });
+packages/plite/test/transforms/move/start/backward.tsx:8:  editor.selection.move({ edge: 'start' });
+packages/plite/test/transforms/move/start/backward-reverse.tsx:8:  editor.selection.move({ edge: 'start', reverse: true });
+packages/plite/test/transforms/normalization/split_node-and-insert_node.tsx:56:    editor.operations.replay(operations);
+packages/plite/test/transforms/move/start/to-backward.tsx:8:  editor.selection.move({ edge: 'start', distance: 8 });
+packages/plite/test/transforms/move/start/from-backward.tsx:8:  editor.selection.move({ edge: 'start', distance: 7 });
+packages/plite/test/transforms/move/start/distance.tsx:8:  editor.selection.move({ edge: 'start', distance: 3 });
+packages/plite/test/transforms/move/anchor/backward.tsx:8:  editor.selection.move({ edge: 'anchor' });
+packages/plite/test/transforms/move/anchor/basic.tsx:8:  editor.selection.move({ edge: 'anchor' });
+packages/plite/test/transforms/move/anchor/collapsed.tsx:8:  editor.selection.move({ edge: 'anchor' });
+packages/plite/test/transforms/move/anchor/reverse-backward.tsx:8:  editor.selection.move({ edge: 'anchor', reverse: true });
+packages/plite/test/transforms/move/anchor/distance.tsx:8:  editor.selection.move({ edge: 'anchor', distance: 3 });
+packages/plite/test/transforms/move/anchor/reverse-basic.tsx:8:  editor.selection.move({ edge: 'anchor', reverse: true });
+packages/plite/test/transforms/move/start/distance-reverse.tsx:8:  editor.selection.move({ edge: 'start', reverse: true, distance: 3 });
+packages/plite/test/transforms/move/start/expanded-reverse.tsx:8:  editor.selection.move({ edge: 'start', reverse: true });
+packages/plite/test/transforms/move/both/expanded.tsx:8:  editor.selection.move();
+packages/plite/test/transforms/move/both/distance.tsx:8:  editor.selection.move({ distance: 6 });
+packages/plite/test/transforms/move/both/unit-word.tsx:8:  editor.selection.move({ unit: 'word' });
+packages/plite/test/transforms/move/both/backward.tsx:8:  editor.selection.move();
+packages/plite/test/transforms/move/both/unit-word-reverse.tsx:8:  editor.selection.move({ reverse: true, unit: 'word' });
+packages/plite/test/transforms/move/both/basic-reverse.tsx:8:  editor.selection.move({ reverse: true });
+packages/plite/test/transforms/move/both/expanded-reverse.tsx:8:  editor.selection.move({ reverse: true });
+packages/plite/test/transforms/move/both/backward-reverse.tsx:8:  editor.selection.move({ reverse: true });
+packages/plite/test/transforms/move/both/distance-reverse.tsx:8:  editor.selection.move({ reverse: true, distance: 6 });
+packages/plite/test/transforms/move/both/collapsed.tsx:8:  editor.selection.move();

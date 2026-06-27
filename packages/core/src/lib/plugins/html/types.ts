@@ -1,4 +1,4 @@
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/plite';
 
 export type DeserializeHtmlChildren = ChildNode | Descendant | string | null;
 

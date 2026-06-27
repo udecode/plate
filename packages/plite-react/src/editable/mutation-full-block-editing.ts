@@ -70,7 +70,7 @@ const getConsistentTextMarksInBlocks = (
     let sawText = false;
 
     for (const blockPath of blockPaths) {
-      const [block] = state.nodes.get(blockPath);
+      const [block] = state.nodes.get(blockPath, { required: true });
 
       for (const [node] of NodeApi.texts(block)) {
         if (node.text.length === 0) {
@@ -117,7 +117,7 @@ const createTextReplacementNode = (
   }
 
   return editor.read((state) => {
-    const [block] = state.nodes.get(blockPaths[0]!);
+    const [block] = state.nodes.get(blockPaths[0]!, { required: true });
     const { schema } = state;
 
     if (
@@ -160,13 +160,13 @@ const isPlainTextLeafStart = ({
       return false;
     }
 
-    const [node] = state.nodes.get(path);
+    const [node] = state.nodes.get(path, { required: true });
 
     if (!isUnmarkedTextNode(node)) {
       return false;
     }
 
-    const [block] = state.nodes.get([path[0]!]);
+    const [block] = state.nodes.get([path[0]!], { required: true });
     const targetRelativePath = path.slice(1);
     let previousTextNode: Node | null = null;
 
@@ -200,7 +200,7 @@ const canUseExplicitCollapsedTextInsert = ({
   }
 
   return editor.read((state) => {
-    const [node] = state.nodes.get(selection.anchor.path);
+    const [node] = state.nodes.get(selection.anchor.path, { required: true });
 
     return isUnmarkedTextNode(node);
   });
@@ -220,7 +220,7 @@ export const canUseCachedCollapsedTextInsert = ({
   }
 
   const unmarkedTextNode = editor.read((state) => {
-    const [node] = state.nodes.get(selection.anchor.path);
+    const [node] = state.nodes.get(selection.anchor.path, { required: true });
 
     return isUnmarkedTextNode(node);
   });
@@ -299,7 +299,7 @@ const getFullySelectedBlockPaths = (
         return state.nodes.children().length;
       }
 
-      const [parentNode] = state.nodes.get(parentPath);
+      const [parentNode] = state.nodes.get(parentPath, { required: true });
 
       return NodeApi.isAncestor(parentNode) &&
         'children' in parentNode &&
@@ -352,7 +352,7 @@ const getFullySelectedBlockPaths = (
       return state.nodes.children().length;
     }
 
-    const [parentNode] = state.nodes.get(parentPath);
+    const [parentNode] = state.nodes.get(parentPath, { required: true });
 
     return NodeApi.isAncestor(parentNode) &&
       'children' in parentNode &&

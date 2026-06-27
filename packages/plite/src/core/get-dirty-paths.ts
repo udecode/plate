@@ -19,7 +19,7 @@ const getInsertedChildrenDirtyPaths = (
 /**
  * Get the "dirty" paths generated from an operation.
  */
-export const getDirtyPaths = (editor: Editor, op: Operation): Path[] => {
+export const getDirtyPaths = (_editor: Editor, op: Operation): Path[] => {
   switch (op.type) {
     case 'insert_text':
     case 'remove_text':

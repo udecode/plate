@@ -1,16 +1,16 @@
-import { createSlateEditor } from '../../lib/editor';
-import { createSlatePlugin } from '../../lib/plugin';
+import { createBaseEditor } from '../../lib/editor';
+import { createBasePlugin } from '../../lib/plugin';
 import { pipeTransformData } from './pipeTransformData';
 
 const createParserEditor = (
-  plugins: Parameters<typeof createSlateEditor>[0]['plugins']
-) => createSlateEditor({ plugins });
+  plugins: Parameters<typeof createBaseEditor>[0]['plugins']
+) => createBaseEditor({ plugins });
 
 describe('pipeTransformData', () => {
   it('pipes transformed data through parser plugins in order', () => {
     const calls: string[] = [];
 
-    const firstPlugin = createSlatePlugin({
+    const firstPlugin = createBasePlugin({
       key: 'first',
       parser: {
         transformData: ({ data }) => {
@@ -20,7 +20,7 @@ describe('pipeTransformData', () => {
       },
     });
 
-    const secondPlugin = createSlatePlugin({
+    const secondPlugin = createBasePlugin({
       key: 'second',
       parser: {
         transformData: ({ data }) => {
@@ -43,13 +43,13 @@ describe('pipeTransformData', () => {
   });
 
   it('skips plugins without transformData', () => {
-    const activePlugin = createSlatePlugin({
+    const activePlugin = createBasePlugin({
       key: 'active',
       parser: {
         transformData: ({ data }) => `${data}-done`,
       },
     });
-    const passivePlugin = createSlatePlugin({ key: 'passive' });
+    const passivePlugin = createBasePlugin({ key: 'passive' });
 
     const editor = createParserEditor([passivePlugin, activePlugin]);
 

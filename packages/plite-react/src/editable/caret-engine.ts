@@ -419,8 +419,8 @@ export const applyEditableCaretMovement = ({
       editor,
       move: (tx) => {
         const point = documentBoundaryMove.reverse
-          ? tx.points.start([])
-          : tx.points.end([]);
+          ? tx.points.start([], { required: true })
+          : tx.points.end([], { required: true });
 
         tx.selection.set(
           documentBoundaryMove.extend

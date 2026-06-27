@@ -764,7 +764,7 @@ describe('plite-dom clipboard boundary', () => {
     });
   });
 
-  it('preserves the target empty text block for the first pasted text block and promotes the tail', () => {
+  it('preserves the copied first text block over a single empty target block and promotes the tail', () => {
     withDom((document) => {
       const copySelection: Range = {
         anchor: { path: [0, 0], offset: 0 },
@@ -812,7 +812,7 @@ describe('plite-dom clipboard boundary', () => {
 
       expect(editorGetSnapshot(target).children).toEqual([
         {
-          type: 'block-quote',
+          type: 'paragraph',
           children: [{ text: 'Hello world' }],
         },
         {

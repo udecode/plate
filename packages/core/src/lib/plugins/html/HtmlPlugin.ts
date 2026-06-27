@@ -1,13 +1,13 @@
 import { bindFirst } from '@udecode/utils';
 
-import { createSlatePlugin } from '../../plugin';
+import { createBasePlugin } from '../../plugin';
 import { deserializeHtml, parseHtmlDocument } from './utils';
 
 /**
- * Enables support for deserializing inserted content from HTML format to Slate
- * format and serializing Slate content to HTML format.
+ * Enables support for deserializing inserted content from HTML format to Plite
+ * format and serializing Plite content to HTML format.
  */
-export const HtmlPlugin = createSlatePlugin({
+export const HtmlPlugin = createBasePlugin({
   key: 'html',
 })
   .extendApi(({ editor }) => ({

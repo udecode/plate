@@ -4,8 +4,8 @@ import { BoldPlugin, ItalicPlugin } from '@platejs/basic-nodes/react';
 import { ListPlugin } from '@platejs/list-classic/react';
 import { jsxt } from '@platejs/test-utils';
 
-import { createBasePlateEditor } from '../../../../../../packages/core/src/lib/editor';
-import { createEditorPlugin } from '../../../../../../packages/core/src/lib/plugin';
+import { createBaseEditor } from '../../../../../../packages/core/src/lib/editor';
+import { createBasePlugin } from '../../../../../../packages/core/src/lib/plugin';
 import { BaseParagraphPlugin } from '../../../../../../packages/core/src/lib/plugins/paragraph';
 import { htmlElementToLeaf } from '../../../../../../packages/core/src/lib/plugins/html/utils/htmlElementToLeaf';
 import { parseHtmlElement } from '../../../../../../packages/core/src/lib/plugins/html/utils/parseHtmlElement';
@@ -22,7 +22,7 @@ describe('when children is a text', () => {
   it('set the mark on the text', () => {
     expect(
       htmlElementToLeaf(
-        createBasePlateEditor({
+        createBaseEditor({
           plugins: [BoldPlugin],
         }),
         parseHtmlElement('<strong>test</strong>')
@@ -37,8 +37,8 @@ describe('when there is no plugins', () => {
   it('keeps the text leaf unchanged', () => {
     expect(
       htmlElementToLeaf(
-        createBasePlateEditor({
-          plugins: [createEditorPlugin({ key: 'a' })],
+        createBaseEditor({
+          plugins: [createBasePlugin({ key: 'a' })],
         }),
         parseHtmlElement('<strong>test</strong>')
       )
@@ -61,7 +61,7 @@ describe('when there is a mark above multiple elements', () => {
   it('set the mark to all children leaves', () => {
     expect(
       htmlElementToLeaf(
-        createBasePlateEditor({
+        createBaseEditor({
           plugins: [BaseParagraphPlugin, ListPlugin, BoldPlugin, ItalicPlugin],
         }),
         parseHtmlElement('<strong><li><p>test</p>test</li></strong>')

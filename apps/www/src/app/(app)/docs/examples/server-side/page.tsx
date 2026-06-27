@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 import { DocxPlugin } from '@platejs/docx';
 import {
-  createBasePlateEditor,
+  createBaseEditor,
   ExitBreakPlugin,
   TrailingBlockPlugin,
 } from 'platejs';
@@ -50,7 +50,7 @@ export default function RSCPage() {
     // ... other necessary properties
   };
 
-  const editor = createBasePlateEditor({
+  const editor = createBaseEditor({
     plugins: [
       ...BaseEditorKit,
 
@@ -77,7 +77,7 @@ export default function RSCPage() {
       <H3>Creating a Server-Side Editor</H3>
       <P>
         To use Plate on the server, you can leverage the{' '}
-        <Code>createBasePlateEditor</Code>
+        <Code>createBaseEditor</Code>
         function. This allows you to create and manipulate Plate documents
         without a DOM environment.
       </P>

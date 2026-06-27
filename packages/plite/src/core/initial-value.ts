@@ -62,7 +62,7 @@ const cloneInitialExtraRoots = (
   return roots;
 };
 
-export const normalizeInitialValue = (
+export const normalizeEditorValue = (
   input: unknown
 ): NormalizedInitialValue => {
   if (input === undefined) {

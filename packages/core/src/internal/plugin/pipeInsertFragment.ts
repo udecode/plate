@@ -1,27 +1,27 @@
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/plite';
 
-import type { SlateEditor } from '../../lib/editor';
-import type { ParserOptions } from '../../lib/plugin/BasePlugin';
-import type { AnyEditorPlugin } from '../../lib/plugin/SlatePlugin';
+import type { BaseEditor } from '../../lib/editor';
+import type { ParserOptions } from '../../lib/plugin/PluginBase';
+import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 
-import { getEditorPlugin } from '../../lib/plugin';
+import { getBasePlugin } from '../../lib/plugin';
 
 /** Pipe preInsert then insertFragment. */
 export const pipeInsertFragment = (
-  editor: SlateEditor,
-  injectedPlugins: Partial<AnyEditorPlugin>[],
+  editor: BaseEditor,
+  injectedPlugins: Partial<AnyBasePlugin>[],
   { fragment, ...options }: ParserOptions & { fragment: Descendant[] }
 ) => {
-  editor.tf.withoutNormalizing(() => {
+  editor.update((tx) => {
     injectedPlugins.some(
       (p) =>
         p.parser?.preInsert?.({
-          ...getEditorPlugin(editor, p as any),
+          ...getBasePlugin(editor, p as any),
           fragment,
           ...options,
         }) === true
     );
 
-    editor.tf.insertFragment(fragment);
+    tx.fragment.insert(fragment);
   });
 };

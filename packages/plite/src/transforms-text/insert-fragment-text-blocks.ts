@@ -63,10 +63,7 @@ export const getSingleEmptyBlockFragmentReplacement = (
       return null;
     }
 
-    const firstBlock = {
-      ...onlyEditorNode,
-      children: firstFragmentNode.children.map(cloneDescendant),
-    };
+    const firstBlock = cloneDescendant(firstFragmentNode);
 
     return {
       children: [

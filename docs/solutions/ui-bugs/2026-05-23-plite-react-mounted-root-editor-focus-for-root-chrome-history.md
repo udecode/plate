@@ -58,9 +58,9 @@ Store mounted root editors in the Plite React runtime context and let hooks use
 that mounted editor for DOM focus:
 
 ```ts
-const focusEditor = getMountedViewEditor(root) ?? editor
+const focusEditor = getMountedViewEditor(root) ?? editor;
 
-focusSlateEditable(focusEditor)
+focusSlateEditable(focusEditor);
 ```
 
 Keep history mutations on the root view editor, but restore focus through the
@@ -68,20 +68,20 @@ mounted root editor:
 
 ```ts
 editor.update((tx) => {
-  tx.history.undo()
-})
+  tx.history.undo();
+});
 
 scheduleSlateReactFocus(() => {
-  const focusEditor = getMountedViewEditor(root) ?? editor
-  focusSlateEditable(focusEditor)
-})
+  const focusEditor = getMountedViewEditor(root) ?? editor;
+  focusSlateEditable(focusEditor);
+});
 ```
 
 Make `DOMEditor.focus` treat the DOM active element as decisive:
 
 ```ts
 if (IS_FOCUSED.get(editor) && root.activeElement === el) {
-  return
+  return;
 }
 ```
 
@@ -91,10 +91,10 @@ restore so the browser's click-coordinate caret does not leak into the model:
 
 ```ts
 if (target instanceof HTMLElement && isEditableRootTarget(target)) {
-  target.focus({ preventScroll: true })
+  target.focus({ preventScroll: true });
 }
 
-focusRoot({ forceSelection: true })
+focusRoot({ forceSelection: true });
 ```
 
 ## Why This Works
@@ -123,7 +123,7 @@ native editable descendant, just like `[data-plite-string]` and
 
 ```ts
 const NATIVE_EDITABLE_TARGET =
-  '[data-plite-string], [data-plite-zero-width], [data-plite-leaf], [data-plite-node="text"], [data-plite-node="element"]'
+  '[data-plite-string], [data-plite-zero-width], [data-plite-leaf], [data-plite-node="text"], [data-plite-node="element"]';
 ```
 
 Native text clicks still need a narrow recovery path. After scrolling a sibling
@@ -135,20 +135,20 @@ focused:
 
 ```ts
 if (isNativeEditableTarget(event.currentTarget, target)) {
-  const editableRoot = findEditableRootTarget(event.currentTarget, target)
+  const editableRoot = findEditableRootTarget(event.currentTarget, target);
 
   if (editableRoot && !isAlreadyFocusedEditableRoot(editableRoot)) {
-    pendingNativeEditableClickRef.current = true
+    pendingNativeEditableClickRef.current = true;
   }
 
-  return
+  return;
 }
 
 // mouseup
 if (pendingNativeEditableClickRef.current) {
-  pendingNativeEditableClickRef.current = false
-  recoverNativeEditableClick(event)
-  return
+  pendingNativeEditableClickRef.current = false;
+  recoverNativeEditableClick(event);
+  return;
 }
 ```
 
@@ -157,33 +157,33 @@ focus the mounted root editor. That keeps the fallback equivalent to the native
 text-click contract instead of reusing blank-root restore behavior:
 
 ```ts
-const focusEditor = getMountedViewEditor(root) ?? editor
-const range = focusEditor.api.dom.resolveEventRange(event.nativeEvent)
+const focusEditor = getMountedViewEditor(root) ?? editor;
+const range = focusEditor.api.dom.resolveEventRange(event.nativeEvent);
 
 if (range) {
   focusEditor.update((tx) => {
-    tx.selection.set(range)
-  })
+    tx.selection.set(range);
+  });
 }
 
-focusSlateEditable(focusEditor)
+focusSlateEditable(focusEditor);
 ```
 
 The same event-range-first policy should be used for direct editable-root
 targets:
 
 ```ts
-const range = focusEditor.api.dom.resolveEventRange(event.nativeEvent)
+const range = focusEditor.api.dom.resolveEventRange(event.nativeEvent);
 
 if (range) {
   focusEditor.update((tx) => {
-    tx.selection.set(range)
-  })
-  focusSlateEditable(focusEditor)
-  return
+    tx.selection.set(range);
+  });
+  focusSlateEditable(focusEditor);
+  return;
 }
 
-restoreRoot()
+restoreRoot();
 ```
 
 The regression should click header text, type, click the body paragraph line
@@ -191,25 +191,25 @@ box, then assert DOM focus, DOM selection root, exact body caret offset, and
 follow-up typing:
 
 ```ts
-await page.mouse.click(headerBox.x + 230, headerBox.y + 24)
-await page.keyboard.type('Header native ')
+await page.mouse.click(headerBox.x + 230, headerBox.y + 24);
+await page.keyboard.type("Header native ");
 
-await page.mouse.click(mainBox.x + mainBox.width - 16, mainBox.y + 24)
+await page.mouse.click(mainBox.x + mainBox.width - 16, mainBox.y + 24);
 
 await expect
-  .poll(() => readNativeSelection(page, 'multi-root-main'))
+  .poll(() => readNativeSelection(page, "multi-root-main"))
   .toMatchObject({
-    activeElementId: 'multi-root-main',
+    activeElementId: "multi-root-main",
     insideRoot: true,
-    text: 'The body root carries the document content.',
-  })
+    text: "The body root carries the document content.",
+  });
 await expect
   .poll(async () => {
-    const selection = await readNativeSelection(page, 'multi-root-main')
+    const selection = await readNativeSelection(page, "multi-root-main");
 
-    return selection.anchorOffset
+    return selection.anchorOffset;
   })
-  .toBe('The body root carries the document content.'.length)
+  .toBe("The body root carries the document content.".length);
 ```
 
 ## Prevention

@@ -1,13 +1,13 @@
 import type { Value } from 'platejs';
-import { createBasePlateEditor } from 'platejs';
+import { createBaseEditor } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 
 export const createStaticEditor = (
   value: Value,
-  options?: Partial<Parameters<typeof createBasePlateEditor>[0]>
+  options?: Partial<Parameters<typeof createBaseEditor>[0]>
 ) =>
-  createBasePlateEditor({
+  createBaseEditor({
     ...options,
     plugins: BaseEditorKit,
     value,

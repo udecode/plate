@@ -1,36 +1,37 @@
 import { type AnyObject, type Nullable, isDefined } from '@udecode/utils';
+import { isNode } from '@platejs/plite-dom/internal';
 import castArray from 'lodash/castArray.js';
 
-import type { SlateEditor } from '../../../editor';
+import type { BaseEditor } from '../../../editor';
 import type {
-  AnyEditorPlugin,
+  AnyBasePlugin,
   HtmlDeserializer,
-} from '../../../plugin/SlatePlugin';
+} from '../../../plugin/BasePlugin';
 
-import { getEditorPlugin } from '../../../plugin';
-import { isSlateNode } from '../../../utils/checkUtils';
+import { getBasePlugin } from '../../../plugin';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
+import { getPluginNodeClass } from '../../../utils/pluginNodeClass';
 import { getDataNodeProps } from './getDataNodeProps';
 
 /**
  * Get a deserializer and add default rules for deserializing plate static
  * elements
  */
-const getDeserializedWithStaticRules = (plugin: AnyEditorPlugin) => {
+const getDeserializedWithStaticRules = (plugin: AnyBasePlugin) => {
   let deserializer = plugin.parsers?.html?.deserializer;
 
   const rules = deserializer?.rules ?? [];
 
-  // Check if rules already contain slate-xxx className
+  // Check if rules already contain the plugin node class.
   const hasSlateRule = rules.some((rule) =>
-    rule.validClassName?.includes(`slate-${plugin.key}`)
+    rule.validClassName?.includes(getPluginNodeClass(plugin.key))
   );
 
   const staticRules = hasSlateRule
     ? rules
     : [
         {
-          validClassName: `slate-${plugin.key}`,
+          validClassName: getPluginNodeClass(plugin.key),
           validNodeName: '*',
         },
         ...rules,
@@ -45,8 +46,8 @@ const getDeserializedWithStaticRules = (plugin: AnyEditorPlugin) => {
 
 /** Get a deserializer by type, node names, class names and styles. */
 export const pluginDeserializeHtml = (
-  editor: SlateEditor,
-  plugin: AnyEditorPlugin,
+  editor: BaseEditor,
+  plugin: AnyBasePlugin,
   {
     deserializeLeaf,
     element: el,
@@ -143,7 +144,7 @@ export const pluginDeserializeHtml = (
   }
   if (
     query &&
-    !query({ ...(getEditorPlugin(editor, plugin) as any), element: el })
+    !query({ ...(getBasePlugin as any)(editor, plugin), element: el })
   ) {
     return;
   }
@@ -157,13 +158,13 @@ export const pluginDeserializeHtml = (
     }
 
   const parsedNode = (() => {
-    if (isSlateNode(el)) {
+    if (isNode(el)) {
       return {};
     }
 
     return (
       parse({
-        ...(getEditorPlugin(editor, plugin) as any),
+        ...(getBasePlugin as any)(editor, plugin),
         element: el,
         node: {},
       }) ?? {}
@@ -187,12 +188,12 @@ export const pluginDeserializeHtml = (
 
   injectedPlugins.forEach((injectedPlugin) => {
     const res = injectedPlugin.parsers?.html?.deserializer?.parse?.({
-      ...(getEditorPlugin(editor, plugin) as any),
+      ...(getBasePlugin as any)(editor, plugin),
       element: el,
       node,
     });
 
-    if (res && !isSlateNode(el)) {
+    if (res && !isNode(el)) {
       node = {
         ...node,
         ...res,
@@ -217,5 +218,7 @@ export const pluginDeserializeHtml = (
     }
   }
 
-  return { ...deserializer, node };
+  return { ...deserializer, node } as Nullable<HtmlDeserializer> & {
+    node: AnyObject;
+  };
 };

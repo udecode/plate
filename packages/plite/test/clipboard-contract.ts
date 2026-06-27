@@ -1503,6 +1503,60 @@ describe('plite clipboard contract', () => {
     });
   });
 
+  it('insertFragment preserves copied text-block props over a single empty document block', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ text: '' }],
+        },
+      ],
+      selection: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      },
+      marks: null,
+    });
+
+    editorInsertFragment(editor, [
+      {
+        type: 'paragraph',
+        indent: 1,
+        listStyleType: 'disc',
+        children: [{ text: 'one' }],
+      },
+      {
+        type: 'paragraph',
+        indent: 2,
+        listStyleType: 'disc',
+        children: [{ text: 'two' }],
+      },
+    ]);
+
+    const snapshot = editorGetSnapshot(editor);
+
+    assert.deepEqual(snapshot.children, [
+      {
+        type: 'paragraph',
+        indent: 1,
+        listStyleType: 'disc',
+        children: [{ text: 'one' }],
+      },
+      {
+        type: 'paragraph',
+        indent: 2,
+        listStyleType: 'disc',
+        children: [{ text: 'two' }],
+      },
+    ]);
+    assert.deepEqual(snapshot.selection, {
+      anchor: { path: [1, 0], offset: 'two'.length },
+      focus: { path: [1, 0], offset: 'two'.length },
+    });
+  });
+
   it('insertFragment preserves copied block void attributes over an empty target block', () => {
     const editor = createEditor();
     const image = {

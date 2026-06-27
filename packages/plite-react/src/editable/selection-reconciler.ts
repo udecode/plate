@@ -98,6 +98,25 @@ const clampDOMSelectionPoint = (
   Math.max(0, Math.min(offset, getDOMSelectionOffsetLimit(node))),
 ];
 
+const getTextHostForDOMPoint = (node: globalThis.Node | null) => {
+  const element = isDOMText(node)
+    ? node.parentElement
+    : isDOMElement(node)
+      ? node
+      : null;
+
+  return element?.closest('[data-plite-node="text"]') ?? null;
+};
+
+const isProjectedTextHost = (textHost: Element | null | undefined) =>
+  textHost?.getAttribute('data-plite-dom-sync-reason') === 'projection' ||
+  textHost?.getAttribute('data-plite-projected-dom-sync') === 'true';
+
+const isProjectedTextRange = (range: StaticRange | null) =>
+  !!range &&
+  (isProjectedTextHost(getTextHostForDOMPoint(range.startContainer)) ||
+    isProjectedTextHost(getTextHostForDOMPoint(range.endContainer)));
+
 export type EditableSelectionReconcilerState = {
   isUpdatingSelection: boolean;
   latestElement: DOMElement | null;
@@ -532,19 +551,7 @@ export const syncSelectionForBeforeInput = ({
   const domSelectionTextHost =
     domSelectionAnchorElement?.closest('[data-plite-node="text"]') ?? null;
   const domSelectionUsesProjectedTextHost =
-    type === 'insertText' &&
-    domSelectionTextHost?.getAttribute('data-plite-dom-sync-reason') ===
-      'projection';
-  const shouldPreferModelSelectionForInput =
-    preferModelSelectionForInput ||
-    forceModelOwnedTextInput ||
-    domSelectionUsesProjectedTextHost;
-  if (
-    type === 'insertText' &&
-    (forceModelOwnedTextInput || domSelectionUsesProjectedTextHost)
-  ) {
-    nextNative = false;
-  }
+    type === 'insertText' && isProjectedTextHost(domSelectionTextHost);
   const domSelectionBelongsToEditor =
     !domSelection ||
     domSelection.rangeCount === 0 ||
@@ -562,7 +569,9 @@ export const syncSelectionForBeforeInput = ({
   if (
     allowDOMSelectionImport &&
     type === 'insertText' &&
-    !shouldPreferModelSelectionForInput &&
+    !preferModelSelectionForInput &&
+    !forceModelOwnedTextInput &&
+    !domSelectionUsesProjectedTextHost &&
     domSelection &&
     domSelectionBelongsToEditor &&
     pendingNativeTextInputRepairPathKey &&
@@ -587,14 +596,30 @@ export const syncSelectionForBeforeInput = ({
     };
   }
 
+  const targetRanges = getInputEventTargetRanges(event);
+  const targetRange = targetRanges.length === 1 ? targetRanges[0] : null;
+  const targetRangeUsesProjectedTextHost =
+    type === 'insertText' && isProjectedTextRange(targetRange);
+  const shouldPreferModelSelectionForInput =
+    preferModelSelectionForInput ||
+    forceModelOwnedTextInput ||
+    domSelectionUsesProjectedTextHost ||
+    targetRangeUsesProjectedTextHost;
+  if (
+    type === 'insertText' &&
+    (forceModelOwnedTextInput ||
+      domSelectionUsesProjectedTextHost ||
+      targetRangeUsesProjectedTextHost)
+  ) {
+    nextNative = false;
+  }
+
   // Most deleting forward/backward input types can derive the target from the
   // current selection, but IME/focus cleanup can provide an expanded
   // beforeinput target range that must become the model delete range.
   let didUseBeforeInputTargetRange = false;
   if (allowDOMSelectionImport) {
     const nodeMapDirty = IS_NODE_MAP_DIRTY.get(editor);
-    const targetRanges = getInputEventTargetRanges(event);
-    const targetRange = targetRanges.length === 1 ? targetRanges[0] : null;
     const textHostRange = targetRange
       ? resolvePliteRangeFromDOMTextRange(editor, targetRange, {
           requireCurrentRuntimeBinding: nodeMapDirty,

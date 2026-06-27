@@ -1,18 +1,18 @@
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/plite';
 
-import { jsx } from 'slate-hyperscript';
+import { isVoid } from '@platejs/plite-dom/internal';
+import { jsx } from '@platejs/plite-hyperscript';
 
-import type { SlateEditor } from '../../../editor';
+import type { BaseEditor } from '../../../editor';
 
-import { isSlateVoid } from '../../../utils/checkUtils';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 import { pipeDeserializeHtmlElement } from './pipeDeserializeHtmlElement';
 
 /** Deserialize HTML to Element. */
 export const htmlElementToElement = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   element: HTMLElement,
-  isSlate = false
+  isPlite = false
 ) => {
   const deserialized = pipeDeserializeHtmlElement(editor, element);
 
@@ -21,9 +21,9 @@ export const htmlElementToElement = (
 
     let descendants =
       node.children ??
-      (deserializeHtmlNodeChildren(editor, element, isSlate) as Descendant[]);
+      (deserializeHtmlNodeChildren(editor, element, isPlite) as Descendant[]);
 
-    if (descendants.length === 0 || withoutChildren || isSlateVoid(element)) {
+    if (descendants.length === 0 || withoutChildren || isVoid(element)) {
       descendants = [{ text: '' }];
     }
 

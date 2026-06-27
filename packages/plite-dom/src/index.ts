@@ -93,6 +93,19 @@ export {
 export { Key } from './utils/key';
 
 export {
+  getElements,
+  getNodeDataAttributeKeys,
+  isEditor,
+  isElement,
+  isLeaf,
+  isNode,
+  isString,
+  isText,
+  isVoid,
+  keyToDataAttribute,
+} from './utils/plite-dom-markers';
+
+export {
   isElementDecorationsEqual,
   isTextDecorationsEqual,
   splitDecorationsByChild,

@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { BaseParagraphPlugin, createBasePlateEditor } from 'platejs';
+import { BaseParagraphPlugin, createBaseEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 
 import { CodeBlockKit } from '@/registry/components/editor/plugins/code-block-kit';
@@ -8,7 +8,7 @@ import { CodeBlockKit } from '@/registry/components/editor/plugins/code-block-ki
 jsxt;
 
 const createEditor = (text: string, offset = text.length) =>
-  createBasePlateEditor({
+  createBaseEditor({
     plugins: [BaseParagraphPlugin, ...CodeBlockKit],
     selection: {
       anchor: { offset, path: [0, 0] },

@@ -39,13 +39,16 @@ import type {
   EditorAboveOptions,
   EditorLevelsOptions,
   EditorNextOptions,
+  EditorPathReadOptions,
   EditorPreviousOptions,
   Location,
   Node,
   NodeEntry,
+  Path,
   Point,
   Range,
   Span,
+  Text,
   Value,
 } from '../interfaces';
 import { RangeApi } from '../interfaces';
@@ -182,18 +185,24 @@ export const createEditorQueryRuntime = <V extends Value>(
       }
     ),
   edges: (at) =>
-    executeQueryMiddleware(editor, 'ranges', 'edges', { at }, ({ at }) => {
-      const root = getQueryRoot(editor, [at]);
+    executeQueryMiddleware(
+      editor,
+      'ranges',
+      'edges',
+      { at, options: { required: true } },
+      ({ at }) => {
+        const root = getQueryRoot(editor, [at]);
 
-      return withQueryRoot(editor, [at], () => {
-        const [start, end] = edges(editor, at);
+        return withQueryRoot(editor, [at], () => {
+          const [start, end] = edges(editor, at);
 
-        return [
-          withExplicitPointRoot(start, root),
-          withExplicitPointRoot(end, root),
-        ] as [Point, Point];
-      });
-    }),
+          return [
+            withExplicitPointRoot(start, root),
+            withExplicitPointRoot(end, root),
+          ] as [Point, Point];
+        });
+      }
+    ) as [Point, Point],
   elementReadOnly: (options) =>
     executeQueryMiddleware(
       editor,
@@ -209,9 +218,13 @@ export const createEditorQueryRuntime = <V extends Value>(
         )
     ),
   first: (at) =>
-    executeQueryMiddleware(editor, 'nodes', 'first', { at }, ({ at }) =>
-      withQueryRoot(editor, [at], () => first(editor, at))
-    ),
+    executeQueryMiddleware(
+      editor,
+      'nodes',
+      'first',
+      { at, options: { required: true } },
+      ({ at }) => withQueryRoot(editor, [at], () => first(editor, at))
+    ) as NodeEntry,
   fragment: (at) => {
     const root = getQueryRoot(editor, [at]);
     const fragmentRange = withQueryRoot(editor, [at], () =>
@@ -306,19 +319,24 @@ export const createEditorQueryRuntime = <V extends Value>(
       ({ at, point }) =>
         withQueryRoot(editor, [point, at], () => isStart(editor, point, at))
     ),
-  last: (at) =>
-    executeQueryMiddleware(editor, 'nodes', 'last', { at }, ({ at }) =>
-      withQueryRoot(editor, [at], () => last(editor, at))
+  last: (at, options) =>
+    executeQueryMiddleware(
+      editor,
+      'nodes',
+      'last',
+      { at, options },
+      ({ at, options }) =>
+        withQueryRoot(editor, [at], () => last(editor, at, options))
     ),
   leaf: (at, options) =>
     executeQueryMiddleware(
       editor,
       'nodes',
       'leaf',
-      { at, options },
+      { at, options: { ...options, required: true } },
       ({ at, options }) =>
         withQueryRoot(editor, [at], () => leaf(editor, at, options))
-    ),
+    ) as NodeEntry<Text>,
   levels: <T extends Node>(options?: EditorLevelsOptions<T>) =>
     executeQueryMiddleware(
       editor,
@@ -349,25 +367,28 @@ export const createEditorQueryRuntime = <V extends Value>(
       editor,
       'nodes',
       'parent',
-      { at, options },
+      { at, options: { ...options, required: true } },
       ({ at, options }) =>
         withQueryRoot(editor, [at], () => parent(editor, at, options))
-    ),
-  path: (at, options) =>
-    executeQueryMiddleware(
+    ) as NodeEntry<Ancestor>,
+  path: (at, options) => {
+    const queryOptions: EditorPathReadOptions = { ...options, required: true };
+
+    return executeQueryMiddleware(
       editor,
       'nodes',
       'path',
-      { at, options },
+      { at, options: queryOptions },
       ({ at, options }) =>
         withQueryRoot(editor, [at], () => path(editor, at, options))
-    ),
+    ) as Path;
+  },
   point: (at, options) =>
     executeQueryMiddleware(
       editor,
       'points',
       'get',
-      { at, options },
+      { at, options: { ...options, required: true } },
       ({ at, options }) => {
         const root = getQueryRoot(editor, [at]);
 
@@ -375,7 +396,7 @@ export const createEditorQueryRuntime = <V extends Value>(
           withExplicitPointRoot(point(editor, at, options), root)
         );
       }
-    ),
+    ) as Point,
   positions: (options) =>
     executeQueryMiddleware(
       editor,
@@ -424,15 +445,18 @@ export const createEditorQueryRuntime = <V extends Value>(
       editor,
       'ranges',
       'get',
-      { at, to },
-      ({ at, to }) => {
+      { at, options: { required: true }, toOrOptions: to },
+      ({ at, toOrOptions }) => {
         const root = getQueryRoot(editor, [at, to]);
 
         return withQueryRoot(editor, [at, to], () =>
-          withExplicitRangeRoot(range(editor, at, to), root)
+          withExplicitRangeRoot(
+            range(editor, at, toOrOptions as Location | undefined),
+            root
+          )
         );
       }
-    ),
+    ) as Range,
   shouldMergeNodesRemovePrevNode: (previous, current) =>
     executeQueryMiddleware(
       editor,

@@ -2,7 +2,7 @@
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
 import { BaseListPlugin } from '@platejs/list-classic';
 import { jsxt } from '@platejs/test-utils';
-import { createBasePlateEditor } from 'platejs';
+import { createBaseEditor } from 'platejs';
 
 import { createTestEditor } from '../../../../../../packages/markdown/src/lib/__tests__/createTestEditor';
 import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
@@ -10,7 +10,7 @@ import { deserializeMd } from '../../../../../../packages/markdown/src/lib/deser
 jsxt;
 
 const editor = createTestEditor();
-const listEditor = createBasePlateEditor({
+const listEditor = createBaseEditor({
   plugins: [BaseListPlugin, MarkdownPlugin],
 });
 

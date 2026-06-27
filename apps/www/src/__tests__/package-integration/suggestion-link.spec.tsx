@@ -7,15 +7,15 @@ import {
   rejectSuggestion,
 } from '@platejs/suggestion';
 import { jsxt } from '@platejs/test-utils';
-import type { BasePlateEditor } from 'platejs';
-import { createBasePlateEditor } from 'platejs';
+import type { BaseEditor } from 'platejs';
+import { createBaseEditor } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 
 jsxt;
 
-const createEditor = (input: BasePlateEditor) =>
-  createBasePlateEditor({
+const createEditor = (input: BaseEditor) =>
+  createBaseEditor({
     plugins: BaseEditorKit,
     selection: input.selection,
     value: input.children,
@@ -34,7 +34,7 @@ describe('suggestion link integration', () => {
           </htext>
         </hp>
       </editor>
-    ) as any as BasePlateEditor;
+    ) as any as BaseEditor;
 
     const output = (
       <editor>
@@ -57,7 +57,7 @@ describe('suggestion link integration', () => {
           <htext>{' after'}</htext>
         </hp>
       </editor>
-    ) as any as BasePlateEditor;
+    ) as any as BaseEditor;
 
     const editor = createEditor(input);
     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
@@ -107,13 +107,13 @@ describe('suggestion link integration', () => {
           </ha>
         </hp>
       </editor>
-    ) as any as BasePlateEditor;
+    ) as any as BaseEditor;
 
     const output = (
       <editor>
         <hp>before </hp>
       </editor>
-    ) as any as BasePlateEditor;
+    ) as any as BaseEditor;
 
     const editor = createEditor(input);
     editor.selection = {
@@ -147,7 +147,7 @@ describe('suggestion link integration', () => {
           after
         </hp>
       </editor>
-    ) as any as BasePlateEditor;
+    ) as any as BaseEditor;
 
     const output = (
       <editor>
@@ -155,7 +155,7 @@ describe('suggestion link integration', () => {
           before <ha url="https://example.com">link</ha> after
         </hp>
       </editor>
-    ) as any as BasePlateEditor;
+    ) as any as BaseEditor;
 
     const editor = createEditor(input);
 

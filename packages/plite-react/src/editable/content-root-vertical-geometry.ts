@@ -34,13 +34,9 @@ export const getPathElement = (
   editor: ReactRuntimeEditor,
   path: Path
 ): HTMLElement | null => {
-  const node = editor.read((state) => {
-    try {
-      return state.nodes.get(path)[0] as Descendant;
-    } catch {
-      return null;
-    }
-  });
+  const node = editor.read(
+    (state) => state.nodes.get(path)?.[0] as Descendant | undefined
+  );
 
   return node ? editor.api.dom.resolveDOMNode(node as PliteNode) : null;
 };
@@ -149,7 +145,7 @@ export const resolveVerticalNavigationPoint = ({
 
   if (!targetPoint) {
     const emptyFallback = targetEditor.read((state) => {
-      const [node] = state.nodes.get(fallbackPoint.path);
+      const [node] = state.nodes.get(fallbackPoint.path, { required: true });
 
       return NodeApi.isText(node) && node.text.length === 0;
     });

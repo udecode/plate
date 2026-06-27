@@ -161,7 +161,8 @@
         "**/*.spec.*",
         "**/*.test.*",
         "**/*.slow.*",
-        "**/*-value.tsx"
+        "**/*-value.tsx",
+        "packages/plite/test/**"
       ],
       "linter": {
         "rules": {
@@ -181,6 +182,20 @@
           },
           "a11y": "off",
           "performance": "off"
+        }
+      }
+    },
+    {
+      "includes": ["packages/plite/test/**"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedFunctionParameters": "off"
+          },
+          "suspicious": {
+            "noEvolvingTypes": "off",
+            "noImplicitAnyLet": "off"
+          }
         }
       }
     },

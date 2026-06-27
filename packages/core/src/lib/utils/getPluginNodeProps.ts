@@ -1,12 +1,12 @@
-import type { TElement, TText } from '@platejs/slate';
+import type { Element, Text } from '@platejs/plite';
 import type { AnyObject } from '@udecode/utils';
 
 import pick from 'lodash/pick.js';
 
-import type { SlateRenderNodeProps } from '../../static/types';
-import type { AnyEditorPlugin } from '../plugin';
+import type { PliteRenderNodeProps } from '../../static/types';
+import type { AnyBasePlugin } from '../plugin';
 
-import { getNodeDataAttributeKeys } from './getNodeDataAttributeKeys';
+import { getNodeDataAttributeKeys } from '@platejs/plite-dom/internal';
 
 export const getPluginNodeProps = ({
   attributes: nodeAttributes,
@@ -14,10 +14,10 @@ export const getPluginNodeProps = ({
   plugin,
   props,
 }: {
-  props: SlateRenderNodeProps;
+  props: PliteRenderNodeProps;
   attributes?: AnyObject;
-  node?: TElement | TText;
-  plugin?: AnyEditorPlugin;
+  node?: Element | Text;
+  plugin?: AnyBasePlugin;
 }): any => {
   const newProps: any = { ...props, attributes: { ...props.attributes } };
 
@@ -43,7 +43,7 @@ export const getPluginNodeProps = ({
          * application vulnerable to cross-site scripting (XSS) or information
          * exposure attacks.
          *
-         * @see {@link BasePluginNode.dangerouslyAllowAttributes}
+         * @see {@link PluginBaseNode.dangerouslyAllowAttributes}
          */
         ...(plugin.node.dangerouslyAllowAttributes ?? []),
         [...(node ? getNodeDataAttributeKeys(node) : [])]

@@ -1,6 +1,27 @@
 import { NodeApi } from '../interfaces';
 import type { Editor, EditorFragmentReadOptions } from '../interfaces/editor';
+import type { Descendant } from '../interfaces/node';
 import { getLiveSelection } from './public-state';
+
+const unwrapFragmentNodes = (
+  nodes: Descendant[],
+  types: readonly string[],
+  result: Descendant[] = []
+) => {
+  for (const node of nodes) {
+    if (
+      NodeApi.isElement(node) &&
+      typeof node.type === 'string' &&
+      types.includes(node.type)
+    ) {
+      unwrapFragmentNodes(node.children as Descendant[], types, result);
+    } else {
+      result.push(node);
+    }
+  }
+
+  return result;
+};
 
 export const getFragment = (
   editor: Editor,
@@ -9,7 +30,13 @@ export const getFragment = (
   const selection = options.at ?? getLiveSelection(editor);
 
   if (selection) {
-    return NodeApi.fragment(editor, selection);
+    const fragment = NodeApi.fragment(editor, selection);
+
+    if (options.unwrap && options.unwrap.length > 0) {
+      return unwrapFragmentNodes(fragment, options.unwrap);
+    }
+
+    return fragment;
   }
   return [];
 };

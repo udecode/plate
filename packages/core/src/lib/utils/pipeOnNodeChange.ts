@@ -1,9 +1,15 @@
-import type { Descendant, NodeOperation } from '@platejs/slate';
+import type { Descendant, NodeOperation } from '@platejs/plite';
 
-import type { SlateEditor } from '../editor/SlateEditor';
+import type { BaseEditor } from '../editor/BaseEditor';
+import type { AnyBasePlugin } from '../plugin';
+import { getBasePlugin } from '../plugin/getBasePlugin';
+
+type OnNodeChangeContext = Parameters<
+  NonNullable<NonNullable<AnyBasePlugin['handlers']>['onNodeChange']>
+>[0];
 
 export const pipeOnNodeChange = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   node: Descendant,
   prevNode: Descendant,
   operation: NodeOperation
@@ -23,13 +29,15 @@ export const pipeOnNodeChange = (
 
     // The custom event handler may return a boolean to specify whether the event
     // shall be treated as being handled or not.
-    const shouldTreatEventAsHandled = handler({
+    const context: OnNodeChangeContext = {
+      ...getBasePlugin(editor, plugin),
       editor,
       node,
       operation,
       plugin,
       prevNode,
-    } as any);
+    };
+    const shouldTreatEventAsHandled = handler(context);
 
     if (shouldTreatEventAsHandled != null) {
       return shouldTreatEventAsHandled;

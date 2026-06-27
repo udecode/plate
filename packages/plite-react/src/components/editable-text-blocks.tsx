@@ -1410,16 +1410,11 @@ const EditableInner = <T, TElement extends PliteElementNode>({
       return;
     }
 
-    try {
-      const [node] = editor.read((state) => state.nodes.get(anchorPath));
+    const node = editor.read((state) => state.nodes.get(anchorPath)?.[0]);
 
-      if (node && editor.api.dom.resolveDOMNode(node as PliteNode)) {
-        lastVirtualizedScrollPathKeyRef.current = anchorPathKey;
-        return;
-      }
-    } catch {
-      // If the path is not mounted or temporarily invalid, fall through to
-      // page-aware scrolling.
+    if (node && editor.api.dom.resolveDOMNode(node as PliteNode)) {
+      lastVirtualizedScrollPathKeyRef.current = anchorPathKey;
+      return;
     }
 
     if (lastVirtualizedScrollPathKeyRef.current === anchorPathKey) {

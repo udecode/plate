@@ -1,6 +1,9 @@
 export * from '@platejs/core';
+export { createBaseEditor } from '@platejs/core';
+export { queryNode, type QueryNodeOptions } from '@platejs/core';
 
-export * from '@platejs/slate';
+export * from '@platejs/plite';
+export type { BaseEditor } from '@platejs/core';
 
 export * from '@platejs/utils';
 

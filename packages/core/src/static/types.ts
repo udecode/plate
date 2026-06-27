@@ -1,4 +1,4 @@
-import type { TElement, TText } from '@platejs/slate';
+import type { Element, Text } from '@platejs/plite';
 import type { AnyObject } from '@udecode/utils';
 
 import type {
@@ -7,32 +7,32 @@ import type {
   RenderElementProps,
   RenderLeafProps,
   RenderTextProps,
-  SlatePluginContext,
+  BasePluginContext,
 } from '..';
 
 export type BoxStaticProps = React.ComponentProps<'div'> & {
   as?: React.ElementType;
 };
 
-export type SlateRenderElementProps<
-  N extends TElement = TElement,
+export type PliteRenderElementProps<
+  N extends Element = Element,
   C extends AnyPluginConfig = PluginConfig,
-> = SlateRenderNodeProps<C> & RenderElementProps<N>;
+> = PliteRenderNodeProps<C> & RenderElementProps<N>;
 
-export type SlateRenderLeafProps<
-  N extends TText = TText,
+export type PliteRenderLeafProps<
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
-> = SlateRenderNodeProps<C> & RenderLeafProps<N>;
+> = PliteRenderNodeProps<C> & RenderLeafProps<N>;
 
-export type SlateRenderNodeProps<C extends AnyPluginConfig = PluginConfig> =
-  SlatePluginContext<C> & {
+export type PliteRenderNodeProps<C extends AnyPluginConfig = PluginConfig> =
+  BasePluginContext<C> & {
     attributes?: AnyObject;
     className?: string;
     /** @see {@link NodeProps} */
     nodeProps?: AnyObject;
   };
 
-export type SlateRenderTextProps<
-  N extends TText = TText,
+export type PliteRenderTextProps<
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
-> = SlateRenderNodeProps<C> & RenderTextProps<N>;
+> = PliteRenderNodeProps<C> & RenderTextProps<N>;

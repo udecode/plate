@@ -644,7 +644,7 @@ const resolvePliteStringPlacementRange = ({
       return null;
     }
 
-    return state.nodes.get(path)[0];
+    return state.nodes.get(path, { required: true })[0];
   });
 
   if (!node) {
@@ -1083,7 +1083,9 @@ export const useRootInteractionController = ({
         state.selection.get()
       );
       const getEndSelection = (): Range => {
-        const point = focusEditor.read((state) => state.points.end([]));
+        const point = focusEditor.read((state) =>
+          state.points.end([], { required: true })
+        );
 
         return { anchor: point, focus: point };
       };

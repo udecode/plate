@@ -54,7 +54,7 @@ describe('PlateElement', () => {
       value: [createElement()],
     });
     const { container } = render(<PlateElement {...createProps(editor)} />);
-    const element = container.querySelector('[data-slate-node="element"]');
+    const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toBeInTheDocument();
     expect(element).not.toHaveAttribute('data-block-id');
@@ -76,13 +76,13 @@ describe('PlateElement', () => {
       value: [createElement('block-1')],
     });
     const { container } = renderWithStore({ editor, isMounted: true });
-    const element = container.querySelector('[data-slate-node="element"]');
+    const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toBeInTheDocument();
     expect(element).toHaveAttribute('data-block-id', 'block-1');
   });
 
-  it('keeps the Slate attributes ref on the fast path', () => {
+  it('keeps the Plite attributes ref on the fast path', () => {
     const editor = createPlateEditor({
       value: [createElement()],
     });

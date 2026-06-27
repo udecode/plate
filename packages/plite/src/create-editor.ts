@@ -9,6 +9,10 @@ import {
 } from './core';
 import { createEditorQueryRuntime } from './core/editor-query-runtime';
 import {
+  createEditorReadApi,
+  createEditorUpdateApi,
+} from './core/editor-lifecycle-api';
+import {
   type InternalEditorExtensionRuntime,
   type InternalEditorRefRuntime,
   type InternalEditorRuntime,
@@ -198,27 +202,27 @@ export function createEditor<
     return capability;
   };
 
+  const read = createEditorReadApi<V, TExtensions>((fn) =>
+    readEditor(editor, fn)
+  );
+  const update = createEditorUpdateApi<V, TExtensions>((fn, options) =>
+    updateEditor(
+      editor,
+      fn as (
+        transaction: EditorUpdateTransaction<V>,
+        context: EditorUpdateContext<Editor<V>>
+      ) => void,
+      options
+    )
+  );
+
   const baseEditor: Editor<V, TExtensions> = {
     api,
     getApi: getApi as Editor<V, TExtensions>['getApi'],
-    read: (fn) => readEditor(editor, fn),
+    read,
     subscribe: (listener) => subscribe(editor, listener),
     subscribeCommit: (listener) => subscribeCommit(editor, listener),
-    update: (
-      fn: (
-        transaction: EditorUpdateTransaction<V, TExtensions>,
-        context: EditorUpdateContext<Editor<V, TExtensions>>
-      ) => void,
-      options
-    ) =>
-      updateEditor(
-        editor,
-        fn as (
-          transaction: EditorUpdateTransaction<V>,
-          context: EditorUpdateContext<Editor<V>>
-        ) => void,
-        options
-      ),
+    update,
     extend: (extension) => extendEditor(editor, extension),
   };
 
