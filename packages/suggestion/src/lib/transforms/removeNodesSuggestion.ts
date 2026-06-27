@@ -2,6 +2,7 @@ import type { NodeEntry, SlateEditor, TElement, Text } from 'platejs';
 
 import { KEYS } from 'platejs';
 
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from '../queries';
 
 export const removeNodesSuggestion = (
@@ -22,6 +23,7 @@ export const removeNodesSuggestion = (
           id,
           createdAt,
           type: 'remove',
+          userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
         },
       },
       { at: blockPath }
