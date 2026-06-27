@@ -208,7 +208,7 @@ export function getChangesetStatusArgs({
   outputPath = statusOutputPath,
 } = {}) {
   const args = ['exec', 'changeset', 'status', `--output=${outputPath}`];
-  const since = env.PLATE_CHANGESET_STATUS_BASE ?? env.GITHUB_REF_NAME;
+  const since = env.PLATE_CHANGESET_STATUS_BASE;
 
   if (since) {
     args.push(`--since=${since}`);
