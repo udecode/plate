@@ -1,5 +1,11 @@
 # @platejs/suggestion
 
+## 53.2.3
+
+### Patch Changes
+
+- [#5042](https://github.com/udecode/plate/pull/5042) by [@bbyiringiro](https://github.com/bbyiringiro) – Fix block removal suggestions missing `userId` metadata
+
 ## 53.0.3
 
 ### Patch Changes
