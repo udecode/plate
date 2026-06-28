@@ -55,9 +55,19 @@
     "ai": "^7.0.0"
   },
   "peerDependencies": {
+    "@ai-sdk/react": "^4.0.0",
+    "ai": "^7.0.0",
     "platejs": ">=53.0.7",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@ai-sdk/react": {
+      "optional": true
+    },
+    "ai": {
+      "optional": true
+    }
   },
   "publishConfig": {
     "access": "public"
