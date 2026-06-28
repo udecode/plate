@@ -173,15 +173,15 @@ Completion Gates:
 | Agent-native review for agent/tooling changes | no | N/A | No agent source/action tooling changed in this commit. |
 | Local install corruption suspected | yes | Record repair | Runtime pnpm 11 caused trust-policy/no-TTY failures and removed root `node_modules`; Corepack pnpm install restored deps, then checks passed. |
 | Autoreview for non-trivial implementation changes | no | N/A | Waived per prior user instruction in this thread to cut autoreview; full `pnpm check` passed. |
-| PR create or update | yes | Commit/push/update body | In progress after plan checker. |
-| Task-style PR body verified | yes | Verify body after update | To be filled after `gh pr edit` and readback. |
+| PR create or update | yes | Commit/push/update body | Commit `28690ee883` pushed to `templates/release-sync-failure`; PR body updated. |
+| Task-style PR body verified | yes | Verify body after update | `gh pr view 5045 --repo udecode/plate --json body` read back the emoji task-style body. |
 | PR proof image hosting | no | N/A | No browser proof image. |
-| Tracker sync-back | yes | PR body/readback | To be filled after PR update. |
+| Tracker sync-back | yes | PR body/readback | PR #5045 body updated and read back; no separate issue tracker. |
 | Final handoff contract | yes | Fill contract | Final response will include PR, branch, tests, caveat, and pushed commit. |
 | Final lint | yes | Run lint fixer | `PATH="$(dirname "$(command -v corepack)"):$PATH" pnpm lint:fix` passed; no fixes applied. |
 | Output budget discipline | yes | Record recovery | One broad `rg` streamed too much output; subsequent searches were narrowed to AI registry/template paths. |
 | Timed checkpoint | no | N/A | No timed checkpoint. |
-| Goal plan complete | yes | Run checker | To be filled after final PR readback. |
+| Goal plan complete | yes | Run checker | Final checker run recorded after this plan update. |
 | Agent source / generated sync | no | N/A | No `.agents/rules/**` source changed. |
 | Agent action discoverability | no | N/A | No agent action source changed. |
 | Agent-native review | no | N/A | No agent-action source changed. |
@@ -231,6 +231,9 @@ Verification evidence:
 - `PATH="$(dirname "$(command -v corepack)"):$PATH" pnpm --filter www typecheck` -> passed.
 - `PATH="$(dirname "$(command -v corepack)"):$PATH" pnpm lint:fix` -> passed, no fixes applied.
 - `PATH="$(dirname "$(command -v corepack)"):$PATH" pnpm check` -> passed.
+- `git push origin HEAD:templates/release-sync-failure` -> pushed commit `28690ee883`.
+- `gh pr view 5045 --repo udecode/plate --json body,commits,statusCheckRollup` -> body read back; commit `28690ee883` present.
+- `gh pr checks 5045 --repo udecode/plate` -> all current checks green or intentionally skipped: template builds passed, Validate Registry passed, Verify Changesets passed.
 
 Final handoff contract:
 - PR line: PR #5045 updated.
@@ -247,14 +250,14 @@ Final handoff contract:
   - Why not quick patch: only changing template package would let the next sync reintroduce the bad dependency.
   - Why not broader change: no need to migrate the AI route beyond the SDK-compatible array-stream API.
 - Verified: see Verification evidence.
-- PR body verified: to be filled after push/readback.
+- PR body verified: read back with `gh pr view --json body`.
 
 Task-style PR body contract:
 - PR #5045 body must preserve concise task-style status and avoid linking the PR to itself.
 - Proof is `gh pr view --json body` readback after update.
 
 Final handoff / sync:
-- PR: to be filled after push.
+- PR: https://github.com/udecode/plate/pull/5045 updated and pushed.
 - Issue / tracker: PR #5045.
 - Browser proof: N/A.
 - Caveats: generated registry output not committed.
