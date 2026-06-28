@@ -49,10 +49,10 @@
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
-    "@ai-sdk/react": "^3.0.0",
+    "@ai-sdk/react": "^4.0.0",
     "@plate/scripts": "workspace:*",
     "platejs": "workspace:^",
-    "ai": "^6.0.0"
+    "ai": "^7.0.0"
   },
   "peerDependencies": {
     "platejs": ">=53.0.7",

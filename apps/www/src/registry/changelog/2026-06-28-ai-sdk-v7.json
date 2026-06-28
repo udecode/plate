@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-06-28-ai-sdk-v7",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-06-28-ai-sdk-v7.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-06-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Use AI SDK v7 for copied AI registry code",
+  "targets": [
+    {
+      "name": "ai-api",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for ai-api."
+        }
+      ]
+    },
+    {
+      "name": "copilot-api",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for copilot-api."
+        }
+      ]
+    },
+    {
+      "name": "use-chat",
+      "files": ["apps/www/src/registry/components/editor/use-chat.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "markdown-joiner-transform",
+      "files": ["apps/www/src/registry/lib/markdown-joiner-transform.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-lib.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/ui/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-06-28-ai-api-sdk-v7-registry-code-0979893f",
+      "kind": "wiring",
+      "summary": "Use AI SDK v7 for copied AI routes, chat transport, and markdown streaming.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "ai-api",
+        "copilot-api",
+        "use-chat",
+        "markdown-joiner-transform",
+        "ai-menu"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-06-28",
+          "entry": "2026-06-28-ai-sdk-v7",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

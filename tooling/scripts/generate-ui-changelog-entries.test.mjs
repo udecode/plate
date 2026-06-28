@@ -595,23 +595,27 @@ test('current entry files generate registry changelog indexes', () => {
   });
   const { components, index } = buildRegistryChangelogIndexes(outputs);
 
-  assert.equal(sources.length, 21);
-  assert.equal(outputs.length, 21);
+  assert.equal(sources.length, 22);
+  assert.equal(outputs.length, 22);
   assert.deepEqual(
     index.events.slice(0, 4).map((event) => event.id),
     [
+      '2026-06-28-ai-sdk-v7',
       '2026-06-15-editor-fix-preserved-space-wrapping',
       '2026-06-14-fix-shadcn-editor-kit-install-paths',
       '2026-06-13-show-code-block-language-labels-read-only-mode',
-      '2026-06-10-attach-column-drop-target-ref',
     ]
   );
   assert.equal(
     index.events[0].href,
-    '/registry/changelog/2026-06-15-editor-fix-preserved-space-wrapping.json'
+    '/registry/changelog/2026-06-28-ai-sdk-v7.json'
   );
   assert.equal(
     index.events[1].href,
+    '/registry/changelog/2026-06-15-editor-fix-preserved-space-wrapping.json'
+  );
+  assert.equal(
+    index.events[2].href,
     '/registry/changelog/2026-06-14-fix-shadcn-editor-kit-install-paths.json'
   );
   assert.equal(

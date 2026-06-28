@@ -62,10 +62,10 @@ Copilot 需要一个服务器端 API 端点来与 AI 模型通信。添加预配
 
 ### 配置环境
 
-确保您的 OpenAI API 密钥已设置在环境变量中：
+确保您的 AI Gateway 密钥已设置在环境变量中：
 
 ```bash title=".env.local"
-OPENAI_API_KEY="您的-api-密钥"
+AI_GATEWAY_API_KEY="您的-api-密钥"
 ```
 
 </Steps>
@@ -164,36 +164,35 @@ const plugins = [
 ```tsx title="app/api/ai/copilot/route.ts"
 import type { NextRequest } from 'next/server';
 
-import { createOpenAI } from '@ai-sdk/openai';
-import { generateText } from 'ai';
+import { createGateway, generateText } from 'ai';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   const {
     apiKey: key,
+    instructions,
     model = 'gpt-4o-mini',
     prompt,
-    system,
   } = await req.json();
 
-  const apiKey = key || process.env.OPENAI_API_KEY;
+  const apiKey = key || process.env.AI_GATEWAY_API_KEY;
 
   if (!apiKey) {
     return NextResponse.json(
-      { error: '缺少 OpenAI API 密钥。' },
+      { error: '缺少 AI Gateway API 密钥。' },
       { status: 401 }
     );
   }
 
-  const openai = createOpenAI({ apiKey });
+  const gateway = createGateway({ apiKey });
 
   try {
     const result = await generateText({
       abortSignal: req.signal,
-      maxTokens: 50,
-      model: openai(model),
+      instructions,
+      maxOutputTokens: 50,
+      model: gateway(`openai/${model}`),
       prompt: prompt,
-      system,
       temperature: 0.7,
     });
 
@@ -211,11 +210,11 @@ export async function POST(req: NextRequest) {
 }
 ```
 
-然后，在 `.env.local` 中设置您的 `OPENAI_API_KEY`。
+然后，在 `.env.local` 中设置您的 `AI_GATEWAY_API_KEY`。
 
-### 系统提示词
+### Instructions
 
-系统提示词定义了 AI 的角色和行为。修改 `completeOptions` 中的 `body.system` 属性：
+Instructions 定义 AI 的角色和行为。修改 `completeOptions` 中的 `body.instructions` 属性：
 
 ```tsx
 CopilotPlugin.configure(({ api }) => ({
@@ -223,8 +222,7 @@ CopilotPlugin.configure(({ api }) => ({
     completeOptions: {
       api: '/api/ai/copilot',
       body: {
-        system: {
-          system: `您是一个高级 AI 写作助手，类似于 VSCode Copilot，但适用于通用文本。您的任务是根据给定上下文预测并生成文本的下一部分。
+        instructions: `您是一个高级 AI 写作助手，类似于 VSCode Copilot，但适用于通用文本。您的任务是根据给定上下文预测并生成文本的下一部分。
 
 规则：
 - 自然地继续文本直到下一个标点符号（., ,, ;, :, ? 或 !）。
@@ -235,7 +233,6 @@ CopilotPlugin.configure(({ api }) => ({
 - 关键：始终以标点符号结尾。
 - 关键：避免开始新块。不要使用块格式化如 >, #, 1., 2., - 等。建议应继续在与上下文相同的块中。
 - 如果未提供上下文或无法生成延续，返回 "0" 而不解释。`,
-        },
       },
       // ... 其他选项
     },
@@ -283,34 +280,22 @@ ${prompt}
 在 API 路由中配置不同的 AI 模型和 provider：
 
 ```tsx title="app/api/ai/copilot/route.ts"
-import { createOpenAI } from '@ai-sdk/openai';
-import { createAnthropic } from '@ai-sdk/anthropic';
+import { createGateway, generateText } from 'ai';
 
 export async function POST(req: NextRequest) {
-  const { 
-    model = 'gpt-4o-mini', 
-    provider = 'openai',
+  const {
+    instructions,
+    model = 'openai/gpt-4o-mini',
     prompt,
-    system 
   } = await req.json();
 
-  let aiProvider;
-  
-  switch (provider) {
-    case 'anthropic':
-      aiProvider = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-      break;
-    case 'openai':
-    default:
-      aiProvider = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
-      break;
-  }
+  const gateway = createGateway({ apiKey: process.env.AI_GATEWAY_API_KEY });
 
   const result = await generateText({
-    model: aiProvider(model),
+    instructions,
+    maxOutputTokens: 50,
+    model: gateway(model),
     prompt,
-    system,
-    maxTokens: 50,
     temperature: 0.7,
   });
 
@@ -326,9 +311,8 @@ CopilotPlugin.configure(({ api }) => ({
     completeOptions: {
       api: '/api/ai/copilot',
       body: {
-        model: 'claude-3-haiku-20240307', // 用于补全的快速模型
-        provider: 'anthropic',
-        system: '您的系统提示词...',
+        instructions: 'Continue the current paragraph in the same tone.',
+        model: 'anthropic/claude-3-haiku-20240307',
       },
     },
     // ... 其他选项
@@ -376,7 +360,7 @@ CopilotPlugin.configure(({ api }) => ({
 
 ```tsx title="app/api/ai/copilot/route.ts"
 export async function POST(req: NextRequest) {
-  const { prompt, system } = await req.json();
+  const { instructions, prompt } = await req.json();
 
   // 验证提示词长度
   if (!prompt || prompt.length > 1000) {

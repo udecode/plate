@@ -33,7 +33,7 @@ export const registryLib: Registry['items'] = [
     type: 'registry:hook',
   },
   {
-    dependencies: ['ai@6'],
+    dependencies: ['ai@7'],
     files: [
       {
         path: 'lib/markdown-joiner-transform.ts',

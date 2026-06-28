@@ -4,12 +4,7 @@ import { registryKits } from './registry-kits';
 
 const registryApi: Registry['items'] = [
   {
-    dependencies: [
-      '@ai-sdk/gateway@3',
-      '@ai-sdk/react@3',
-      'ai@6',
-      'dedent@1.0.0',
-    ],
+    dependencies: ['@ai-sdk/react@4', 'ai@7', 'dedent@1.0.0'],
     files: [
       {
         path: 'app/api/ai/command/route.ts',
@@ -65,7 +60,7 @@ const registryApi: Registry['items'] = [
     type: 'registry:file',
   },
   {
-    dependencies: ['ai@6'],
+    dependencies: ['ai@7'],
     files: [
       {
         path: 'app/api/ai/copilot/route.ts',
@@ -115,7 +110,7 @@ export const registryComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@ai-sdk/react@3', '@faker-js/faker'],
+    dependencies: ['@ai-sdk/react@4', '@faker-js/faker'],
     files: [
       {
         path: 'components/editor/use-chat.ts',

@@ -4,16 +4,17 @@ import type {
 } from '@/registry/components/editor/use-chat';
 import type { NextRequest } from 'next/server';
 
-import { createGateway } from '@ai-sdk/gateway';
 import {
   type LanguageModel,
   type UIMessageStreamWriter,
+  createGateway,
   createUIMessageStream,
   createUIMessageStreamResponse,
   generateText,
   Output,
   streamText,
   tool,
+  toUIMessageStream,
 } from 'ai';
 import { NextResponse } from 'next/server';
 import { type SlateEditor, createSlateEditor, nanoid } from 'platejs';
@@ -86,23 +87,25 @@ export async function POST(req: NextRequest) {
           toolName = AIToolName;
         }
 
-        const stream = streamText({
+        const tools = {
+          comment: getCommentTool(editor, {
+            messagesRaw,
+            model: gatewayProvider(model || 'google/gemini-2.5-flash'),
+            writer,
+          }),
+          table: getTableTool(editor, {
+            messagesRaw,
+            model: gatewayProvider(model || 'google/gemini-2.5-flash'),
+            writer,
+          }),
+        };
+
+        const result = streamText({
           experimental_transform: markdownJoinerTransform(),
           model: gatewayProvider(model || 'openai/gpt-4o-mini'),
           // Not used
           prompt: '',
-          tools: {
-            comment: getCommentTool(editor, {
-              messagesRaw,
-              model: gatewayProvider(model || 'google/gemini-2.5-flash'),
-              writer,
-            }),
-            table: getTableTool(editor, {
-              messagesRaw,
-              model: gatewayProvider(model || 'google/gemini-2.5-flash'),
-              writer,
-            }),
-          },
+          tools,
           prepareStep: async (step) => {
             if (toolName === 'comment') {
               return {
@@ -163,7 +166,13 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        writer.merge(stream.toUIMessageStream({ sendFinish: false }));
+        writer.merge(
+          toUIMessageStream({
+            sendFinish: false,
+            stream: result.stream,
+            tools,
+          })
+        );
       },
     });
 
