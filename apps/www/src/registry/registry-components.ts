@@ -4,7 +4,12 @@ import { registryKits } from './registry-kits';
 
 const registryApi: Registry['items'] = [
   {
-    dependencies: ['@ai-sdk/react@3', 'ai@6', 'dedent@1.0.0'],
+    dependencies: [
+      '@ai-sdk/gateway@3',
+      '@ai-sdk/react@3',
+      'ai@6',
+      'dedent@1.0.0',
+    ],
     files: [
       {
         path: 'app/api/ai/command/route.ts',

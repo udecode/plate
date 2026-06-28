@@ -204,32 +204,25 @@ const getCommentTool = (
           ),
       });
 
-      const { partialOutputStream } = streamText({
+      const { elementStream } = streamText({
         model,
-        output: Output.array({ element: commentSchema }),
+        output: Output.array<z.infer<typeof commentSchema>>({
+          element: commentSchema,
+        }),
         prompt: getCommentPrompt(editor, {
           messages: messagesRaw,
         }),
       });
 
-      let lastLength = 0;
-
-      for await (const partialArray of partialOutputStream) {
-        for (let i = lastLength; i < partialArray.length; i++) {
-          const comment = partialArray[i];
-          const commentDataId = nanoid();
-
-          writer.write({
-            id: commentDataId,
-            data: {
-              comment,
-              status: 'streaming',
-            },
-            type: 'data-comment',
-          });
-        }
-
-        lastLength = partialArray.length;
+      for await (const comment of elementStream) {
+        writer.write({
+          id: nanoid(),
+          data: {
+            comment,
+            status: 'streaming',
+          },
+          type: 'data-comment',
+        });
       }
 
       writer.write({
@@ -269,29 +262,23 @@ const getTableTool = (
         id: z.string().describe('The id of the table cell to update.'),
       });
 
-      const { partialOutputStream } = streamText({
+      const { elementStream } = streamText({
         model,
-        output: Output.array({ element: cellUpdateSchema }),
+        output: Output.array<z.infer<typeof cellUpdateSchema>>({
+          element: cellUpdateSchema,
+        }),
         prompt: buildEditTableMultiCellPrompt(editor, messagesRaw),
       });
 
-      let lastLength = 0;
-
-      for await (const partialArray of partialOutputStream) {
-        for (let i = lastLength; i < partialArray.length; i++) {
-          const cellUpdate = partialArray[i];
-
-          writer.write({
-            id: nanoid(),
-            data: {
-              cellUpdate,
-              status: 'streaming',
-            },
-            type: 'data-table',
-          });
-        }
-
-        lastLength = partialArray.length;
+      for await (const cellUpdate of elementStream) {
+        writer.write({
+          id: nanoid(),
+          data: {
+            cellUpdate,
+            status: 'streaming',
+          },
+          type: 'data-table',
+        });
       }
 
       writer.write({
