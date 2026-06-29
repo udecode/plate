@@ -2,6 +2,30 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-06-28-ai-sdk-v7",
+      "href": "/registry/changelog/2026-06-28-ai-sdk-v7.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Use AI SDK v7 for copied AI registry code",
+      "change": {
+        "type": "source",
+        "date": "2026-06-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "ai-api",
+        "copilot-api",
+        "use-chat",
+        "markdown-joiner-transform",
+        "ai-menu"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-06-15-editor-fix-preserved-space-wrapping",
       "href": "/registry/changelog/2026-06-15-editor-fix-preserved-space-wrapping.json",
       "status": "draft",

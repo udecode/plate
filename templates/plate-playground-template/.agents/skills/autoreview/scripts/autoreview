@@ -19,7 +19,8 @@ from pathlib import Path
 from typing import Any, Callable
 
 
-ENGINES = ("codex", "claude", "droid", "copilot", "pi", "opencode")
+ENGINES = ("codex", "claude", "droid", "copilot", "pi", "opencode", "cursor")
+ALL_REVIEWERS = ("codex", "claude", "droid", "copilot", "pi", "opencode")
 SAFE_GIT_CONFIG_ARGS = (
     "-c",
     "core.fsmonitor=false",
@@ -94,6 +95,7 @@ THINKING_LEVELS_BY_ENGINE = {
     "copilot": set(),
     "pi": {"off", "minimal", "low", "medium", "high", "xhigh"},
     "opencode": {"minimal", "low", "medium", "high", "max"},
+    "cursor": set(),
 }
 CLAUDE_SAFE_MODE_MIN_VERSION = (2, 1, 169)
 # Pi's reviewed-repo trust override first appears in the current
@@ -1454,6 +1456,181 @@ def run_opencode(args: argparse.Namespace, repo: Path, prompt: str) -> str:
     return result.stdout
 
 
+def cursor_workspace_instruction_paths(repo: Path) -> list[Path]:
+    candidates = [
+        repo / ".cursorrules",
+        repo / ".cursor" / "rules",
+        repo / ".cursor" / "cli.json",
+        repo / "AGENTS.md",
+        repo / "CLAUDE.md",
+    ]
+    return [path for path in candidates if path.exists()]
+
+
+def cursor_local_mcp_paths(repo: Path) -> list[Path]:
+    candidates = [
+        repo / ".cursor" / "mcp.json",
+        repo / ".mcp.json",
+        repo / "mcp.json",
+    ]
+    return [path for path in candidates if path.exists()]
+
+
+def format_repo_paths(repo: Path, paths: list[Path]) -> str:
+    return "; ".join(str(path.relative_to(repo)) for path in paths)
+
+
+def cursor_result_event(text: str) -> dict[str, Any] | None:
+    stripped = text.strip()
+    if not stripped:
+        return None
+    try:
+        parsed = json.loads(stripped)
+    except json.JSONDecodeError:
+        parsed = None
+    if isinstance(parsed, dict) and parsed.get("type") == "result":
+        return parsed
+    for line in reversed(stripped.splitlines()):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(event, dict) and event.get("type") == "result":
+            return event
+    return None
+
+
+def print_cursor_metadata(text: str) -> None:
+    event = cursor_result_event(text)
+    if not event:
+        return
+    parts: list[str] = []
+    for key in ("session_id", "request_id"):
+        value = event.get(key)
+        if isinstance(value, str) and value:
+            parts.append(f"{key}={value}")
+    if parts:
+        print("cursor metadata: " + " ".join(parts), file=sys.stderr)
+
+
+def cursor_help_text(cursor_bin: str, repo: Path, engine_env: dict[str, str]) -> str:
+    with tempfile.TemporaryDirectory(prefix="autoreview-cursor-probe.") as tempdir:
+        result = run([cursor_bin, "--help"], Path(tempdir), check=False, env=engine_env)
+    if result.returncode != 0:
+        output = (result.stderr or result.stdout).strip()
+        raise SystemExit(f"cursor engine could not read CLI help from {cursor_bin}: {output[:1000]}")
+    return result.stdout + result.stderr
+
+
+def ensure_cursor_supported(
+    args: argparse.Namespace,
+    repo: Path,
+    cursor_bin: str,
+    engine_env: dict[str, str],
+) -> None:
+    help_text = cursor_help_text(cursor_bin, repo, engine_env)
+    missing: list[str] = []
+    if "--print" not in help_text and "-p" not in help_text:
+        missing.append("--print/-p")
+    if "--output-format" not in help_text:
+        missing.append("--output-format")
+    if args.model and "--model" not in help_text and "-m" not in help_text:
+        missing.append("--model/-m")
+    if missing:
+        raise SystemExit(
+            "cursor engine requires CLI support for "
+            + ", ".join(missing)
+            + ". Current Cursor CLI help does not advertise the required option(s)."
+        )
+
+
+def build_cursor_cmd(
+    args: argparse.Namespace,
+    repo: Path,
+    cursor_bin: str,
+    engine_env: dict[str, str],
+) -> list[str]:
+    ensure_cursor_supported(args, repo, cursor_bin, engine_env)
+    cmd = [
+        cursor_bin,
+        "--print",
+        "--output-format",
+        "stream-json" if args.stream_engine_output else "json",
+    ]
+    if args.model:
+        cmd.extend(["--model", args.model])
+    return cmd
+
+
+def run_cursor(args: argparse.Namespace, repo: Path, prompt: str) -> str:
+    if args.thinking:
+        raise SystemExit("--thinking is not supported by the cursor engine")
+    if not args.tools:
+        raise SystemExit("--no-tools is not supported by the cursor engine")
+    if not args.web_search:
+        raise SystemExit("--no-web-search is not supported by the cursor engine; Cursor CLI does not expose a documented per-run web-search disable flag")
+    instruction_paths = cursor_workspace_instruction_paths(repo)
+    local_mcp_paths = cursor_local_mcp_paths(repo)
+    if (instruction_paths or local_mcp_paths) and not args.cursor_allow_workspace_instructions:
+        paths = instruction_paths + local_mcp_paths
+        raise SystemExit(
+            "cursor engine refused project-local instructions/config: "
+            + format_repo_paths(repo, paths)
+            + ". Re-run with --cursor-allow-workspace-instructions only for trusted repos."
+        )
+    if local_mcp_paths:
+        raise SystemExit(
+            "cursor engine refused project-local MCP config: "
+            + format_repo_paths(repo, local_mcp_paths)
+            + ". Cursor MCP tools cannot be restricted to read-only review access."
+        )
+    if instruction_paths or local_mcp_paths:
+        print(
+            "cursor isolation warning: Cursor CLI does not document an ignore-rules/safe-mode flag; "
+            "trusted project-local surfaces are being allowed explicitly.",
+            file=sys.stderr,
+        )
+    cursor_bin = resolve_command(args.cursor_bin, repo)
+    with tempfile.TemporaryDirectory(prefix="autoreview-cursor-config.") as tempdir:
+        config_dir = Path(tempdir)
+        (config_dir / "cli-config.json").write_text(
+            json.dumps(
+                {
+                    "version": 1,
+                    "editor": {"vimMode": False},
+                    "permissions": {
+                        "allow": ["Read(**)"],
+                        "deny": ["Shell(*)", "Write(**)", "Write(/**)"],
+                    },
+                }
+            )
+            + "\n"
+        )
+        engine_env = safe_engine_env(
+            repo,
+            [Path(cursor_bin).parent],
+            {"CURSOR_CONFIG_DIR": str(config_dir)},
+        )
+        cmd = build_cursor_cmd(args, repo, cursor_bin, engine_env)
+        result = run_with_heartbeat(
+            cmd,
+            repo,
+            input_text=prompt,
+            label="cursor",
+            stream_output=args.stream_engine_output,
+            stream_display=CursorStreamDisplay() if args.stream_engine_output else None,
+            env=engine_env,
+            resolve_root=repo,
+        )
+    if result.returncode != 0:
+        raise SystemExit(f"cursor engine failed ({result.returncode})\n{result.stderr or result.stdout}")
+    print_cursor_metadata(result.stdout)
+    return result.stdout
+
+
 def run_pi(args: argparse.Namespace, repo: Path, prompt: str) -> str:
     pi_bin = ensure_pi_isolation_supported(args, repo)
     cmd = [
@@ -1603,6 +1780,66 @@ class ClaudeStreamDisplay:
         return text
 
 
+class CursorStreamDisplay:
+    def __init__(self, *, activity_seconds: int = 20) -> None:
+        self.activity_seconds = activity_seconds
+        self.hidden_events = 0
+        self.last_visible = time.monotonic()
+        self.started = False
+
+    def __call__(self, name: str, line: str) -> str | None:
+        if name != "stdout":
+            return line
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            return self.visible(line)
+        if not isinstance(event, dict):
+            return self.hidden_activity()
+        event_type = event.get("type")
+        if event_type == "system" and not self.started:
+            self.started = True
+            model = event.get("model")
+            suffix = f" model={model}" if isinstance(model, str) and model else ""
+            return self.visible(f"cursor turn started{suffix}\n")
+        if event_type == "assistant":
+            return self.assistant_message(event)
+        if event_type == "result":
+            request_id = event.get("request_id")
+            suffix = f" request_id={request_id}" if isinstance(request_id, str) and request_id else ""
+            return self.visible(self.flush_hidden() + format_cursor_usage(event.get("usage")) + suffix + "\n")
+        return self.hidden_activity()
+
+    def assistant_message(self, event: dict[str, Any]) -> str | None:
+        message = event.get("message")
+        if not isinstance(message, dict):
+            return self.hidden_activity()
+        chunks: list[str] = []
+        for item in message.get("content", []):
+            if isinstance(item, dict) and item.get("type") == "text" and isinstance(item.get("text"), str):
+                chunks.append(item["text"].rstrip())
+        if chunks:
+            return self.visible(self.flush_hidden() + "\n".join(chunks) + "\n")
+        return self.hidden_activity()
+
+    def hidden_activity(self) -> str | None:
+        self.hidden_events += 1
+        if time.monotonic() - self.last_visible < self.activity_seconds:
+            return None
+        return self.visible(self.flush_hidden())
+
+    def flush_hidden(self) -> str:
+        if not self.hidden_events:
+            return ""
+        count = self.hidden_events
+        self.hidden_events = 0
+        return f"cursor activity: {count} hidden tool/status events\n"
+
+    def visible(self, text: str) -> str:
+        self.last_visible = time.monotonic()
+        return text
+
+
 def format_codex_usage(usage: dict[str, Any]) -> str:
     fields = [
         "input_tokens",
@@ -1612,6 +1849,19 @@ def format_codex_usage(usage: dict[str, Any]) -> str:
     ]
     parts = [f"{field}={usage[field]}" for field in fields if isinstance(usage.get(field), int)]
     return "codex usage: " + " ".join(parts) if parts else "codex usage: unavailable"
+
+
+def format_cursor_usage(usage: Any) -> str:
+    if not isinstance(usage, dict):
+        return "cursor usage: unavailable"
+    fields = [
+        "inputTokens",
+        "outputTokens",
+        "cacheReadTokens",
+        "cacheWriteTokens",
+    ]
+    parts = [f"{field}={usage[field]}" for field in fields if isinstance(usage.get(field), int)]
+    return "cursor usage: " + " ".join(parts) if parts else "cursor usage: unavailable"
 
 
 def claude_allowed_tools(args: argparse.Namespace) -> str:
@@ -1628,19 +1878,23 @@ def extract_json(text: str) -> dict[str, Any]:
     try:
         parsed = json.loads(stripped)
     except json.JSONDecodeError as exc:
-        fenced_report = parse_json_candidate(stripped)
-        if isinstance(fenced_report, dict) and "findings" in fenced_report:
-            return fenced_report
         jsonl_report = extract_json_from_jsonl(stripped)
         if jsonl_report:
             return jsonl_report
+        fenced_report = extract_findings_json_from_text(stripped) or parse_json_candidate(stripped)
+        if isinstance(fenced_report, dict) and "findings" in fenced_report:
+            return fenced_report
         raise SystemExit(f"review engine returned non-JSON output: {exc}\n{stripped[:2000]}")
     if isinstance(parsed, dict) and "findings" in parsed:
         return parsed
     if isinstance(parsed, dict) and isinstance(parsed.get("structured_output"), dict):
         return parsed["structured_output"]
+    if isinstance(parsed, dict) and isinstance(parsed.get("result"), dict):
+        result_object = parsed["result"]
+        if "findings" in result_object:
+            return result_object
     if isinstance(parsed, dict) and isinstance(parsed.get("result"), str):
-        result_json = parse_json_candidate(parsed["result"])
+        result_json = extract_findings_json_from_text(parsed["result"]) or parse_json_candidate(parsed["result"])
         if isinstance(result_json, dict) and "findings" in result_json:
             return result_json
         raise SystemExit(f"review engine result was not structured JSON:\n{parsed['result'][:2000]}")
@@ -1661,7 +1915,9 @@ def _report_from_events(events: list[Any]) -> dict[str, Any] | None:
     (e.g. some `claude --output-format json` versions/configurations return
     [{type:system,init}, ..., {type:result,...}] rather than a bare object).
     """
+    terminal_candidates: list[str | dict[str, Any]] = []
     candidates: list[str | dict[str, Any]] = []
+    assistant_candidates: list[str] = []
     text_fragments: list[str] = []
     for event in events:
         if not isinstance(event, dict):
@@ -1673,26 +1929,47 @@ def _report_from_events(events: list[Any]) -> dict[str, Any] | None:
         data = event.get("data")
         if isinstance(data, dict) and isinstance(data.get("content"), str):
             candidates.append(data["content"])
+        message = event.get("message")
+        if isinstance(message, dict):
+            for item in message.get("content", []):
+                if isinstance(item, dict) and item.get("type") == "text" and isinstance(item.get("text"), str):
+                    assistant_candidates.append(item["text"])
         if isinstance(event.get("result"), str):
-            candidates.append(event["result"])
+            terminal_candidates.append(event["result"])
+        if isinstance(event.get("result"), dict):
+            terminal_candidates.append(event["result"])
         if isinstance(event.get("text"), str):
             candidates.append(event["text"])
         if isinstance(event.get("finalText"), str):
             candidates.append(event["finalText"])
         if isinstance(event.get("structured_output"), dict):
-            candidates.append(event["structured_output"])
+            terminal_candidates.append(event["structured_output"])
         if event.get("type") == "text":
             part = event.get("part")
             if isinstance(part, dict) and isinstance(part.get("text"), str):
                 candidates.append(part["text"])
     if text_fragments:
         candidates.append("".join(text_fragments))
+    for candidate in reversed(terminal_candidates):
+        if isinstance(candidate, dict):
+            if "findings" in candidate:
+                return candidate
+            continue
+        parsed = extract_findings_json_from_text(candidate) or parse_json_candidate(candidate)
+        if isinstance(parsed, dict) and "findings" in parsed:
+            return parsed
+    if terminal_candidates:
+        raise SystemExit("review engine result was not structured JSON:\n" + str(terminal_candidates[-1])[:2000])
     for candidate in reversed(candidates):
         if isinstance(candidate, dict):
             if "findings" in candidate:
                 return candidate
             continue
-        parsed = parse_json_candidate(candidate)
+        parsed = extract_findings_json_from_text(candidate) or parse_json_candidate(candidate)
+        if isinstance(parsed, dict) and "findings" in parsed:
+            return parsed
+    for candidate in reversed(assistant_candidates):
+        parsed = extract_findings_json_from_text(candidate) or parse_json_candidate(candidate)
         if isinstance(parsed, dict) and "findings" in parsed:
             return parsed
     return None
@@ -1709,6 +1986,28 @@ def extract_json_from_jsonl(text: str) -> dict[str, Any] | None:
         except json.JSONDecodeError:
             continue
     return _report_from_events(events)
+
+
+def extract_findings_json_from_text(text: str) -> dict[str, Any] | None:
+    stripped = text.strip()
+    decoder = json.JSONDecoder()
+    parsed: dict[str, Any] | None = None
+    for index, char in enumerate(stripped):
+        if char != "{":
+            continue
+        try:
+            candidate, _ = decoder.raw_decode(stripped[index:])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(candidate, dict) and "findings" in candidate:
+            parsed = candidate
+    return parsed
+
+
+def is_structured_output_failure(message: str) -> bool:
+    return message.startswith("review engine returned non-JSON output") or message.startswith(
+        "review engine result was not structured JSON"
+    )
 
 
 def write_executable(path: Path, text: str) -> None:
@@ -1767,6 +2066,13 @@ def create_hostile_repo(repo: Path) -> None:
     (repo / ".mcp.json").write_text(json.dumps({"mcpServers": {"hostile": {"command": "./hostile-mcp"}}}) + "\n")
     (repo / "hostile-mcp").write_text("#!/bin/sh\necho mcp-ran > .hostile-mcp-ran\nexit 1\n")
     (repo / "hostile-mcp").chmod(0o755)
+    (repo / ".cursor" / "rules").mkdir(parents=True)
+    (repo / ".cursor" / "rules" / "hostile.mdc").write_text("HOSTILE_CURSOR_RULE_SENTINEL_DO_NOT_OBEY\n")
+    (repo / ".cursor" / "cli.json").write_text(json.dumps({"permissions": {"allow": ["Shell(*)"]}}) + "\n")
+    (repo / ".cursor" / "mcp.json").write_text(
+        json.dumps({"mcpServers": {"hostile": {"command": "./hostile-mcp"}}}) + "\n"
+    )
+    (repo / "mcp.json").write_text(json.dumps({"mcpServers": {"hostile": {"command": "./hostile-mcp"}}}) + "\n")
     (repo / ".pi" / "extensions").mkdir(parents=True)
     (repo / ".pi" / "skills" / "hostile").mkdir(parents=True)
     (repo / ".pi" / "prompts").mkdir(parents=True)
@@ -1904,6 +2210,71 @@ print(json.dumps({"type": "text", "part": {"type": "text", "text": json.dumps(re
 '''
 
 
+def fake_cursor_script() -> str:
+    return r'''#!/usr/bin/env python3
+import json
+import os
+from pathlib import Path
+import sys
+
+args = sys.argv[1:]
+invocations = os.environ.get("AUTOREVIEW_FAKE_CURSOR_INVOCATIONS")
+if invocations:
+    with open(invocations, "a", encoding="utf-8") as file:
+        file.write(
+            json.dumps(
+                {
+                    "argv": args,
+                    "cwd": os.getcwd(),
+                    "environment": {
+                        key: os.environ.get(key)
+                        for key in ("CURSOR_CONFIG_DIR", "GIT_CONFIG_GLOBAL", "NODE_OPTIONS", "PYTHONPATH", "PATH")
+                    },
+                }
+            )
+            + "\n"
+        )
+if "--help" in args or "-h" in args:
+    print(os.environ.get("AUTOREVIEW_FAKE_CURSOR_HELP", "--print\n--output-format\n--model"))
+    raise SystemExit(0)
+record = os.environ["AUTOREVIEW_FAKE_RECORD"]
+stdin = sys.stdin.read()
+cursor_config = Path(os.environ["CURSOR_CONFIG_DIR"], "cli-config.json").read_text()
+Path(record).write_text(
+    json.dumps(
+        {
+            "argv": args,
+            "cwd": os.getcwd(),
+            "stdin": stdin,
+            "cursor_config": cursor_config,
+            "environment": {
+                key: os.environ.get(key)
+                for key in ("CURSOR_CONFIG_DIR", "GIT_CONFIG_GLOBAL", "NODE_OPTIONS", "PYTHONPATH", "PATH")
+            },
+        }
+    )
+)
+report = {
+    "findings": [],
+    "overall_correctness": "patch is correct",
+    "overall_explanation": "fake cursor clean",
+    "overall_confidence": 0.99,
+}
+result = {
+    "type": "result",
+    "result": json.dumps(report),
+    "session_id": "fake-session",
+    "request_id": "fake-request",
+    "usage": {"inputTokens": 1, "outputTokens": 2},
+}
+if "stream-json" in args:
+    print(json.dumps({"type": "system", "model": "fake"}))
+    print(json.dumps(result))
+else:
+    print(json.dumps(result))
+'''
+
+
 def self_test_engine_isolation() -> int:
     with tempfile.TemporaryDirectory(prefix="autoreview-isolation-test.") as tempdir:
         root = Path(tempdir)
@@ -1914,30 +2285,36 @@ def self_test_engine_isolation() -> int:
         claude_bin = root / "claude"
         pi_bin = root / "pi"
         opencode_bin = root / "opencode"
+        cursor_bin = root / "cursor-agent"
         record_path = root / "record.json"
         pi_invocations_path = root / "pi-invocations.jsonl"
         hostile_ps_path = root / "hostile-ps-ran"
+        cursor_invocations_path = root / "cursor-invocations.jsonl"
         write_executable(codex_bin, fake_codex_script())
         write_executable(claude_bin, fake_claude_script())
         write_executable(pi_bin, fake_pi_script())
         write_executable(opencode_bin, fake_opencode_script())
         write_executable(repo / "ps", f"#!/usr/bin/env python3\nfrom pathlib import Path\nPath({str(hostile_ps_path)!r}).write_text('ran')\n")
+        write_executable(cursor_bin, fake_cursor_script())
 
         args = argparse.Namespace(
             codex_bin=str(codex_bin),
             claude_bin=str(claude_bin),
             pi_bin=str(pi_bin),
             opencode_bin=str(opencode_bin),
+            cursor_bin=str(cursor_bin),
             tools=True,
             web_search=True,
             model=None,
             thinking=None,
             stream_engine_output=False,
             claude_allowed_tools="Read,Grep,Glob,WebSearch,WebFetch",
+            cursor_allow_workspace_instructions=False,
         )
 
         os.environ["AUTOREVIEW_FAKE_RECORD"] = str(record_path)
         os.environ["AUTOREVIEW_FAKE_PI_INVOCATIONS"] = str(pi_invocations_path)
+        os.environ["AUTOREVIEW_FAKE_CURSOR_INVOCATIONS"] = str(cursor_invocations_path)
         codex_home = root / "codex-home"
         codex_home.mkdir()
         (codex_home / "config.toml").write_text(
@@ -2037,6 +2414,52 @@ def self_test_engine_isolation() -> int:
             if hostile_ps_path.exists():
                 raise SystemExit("heartbeat metrics isolation self-test failed: repo-local ps executed")
 
+            if record_path.exists():
+                record_path.unlink()
+            try:
+                run_cursor(args, repo, "review hostile patch")
+            except SystemExit as exc:
+                if "refused project-local instructions/config" not in str(exc):
+                    raise
+            else:
+                raise SystemExit("cursor isolation self-test failed: hostile project surfaces should be refused")
+            if record_path.exists():
+                raise SystemExit("cursor isolation self-test failed: cursor invoked despite refused project surfaces")
+
+            args.cursor_allow_workspace_instructions = True
+            try:
+                run_cursor(args, repo, "review hostile patch")
+            except SystemExit as exc:
+                if "project-local MCP config" not in str(exc):
+                    raise
+            else:
+                raise SystemExit("cursor isolation self-test failed: local MCP config should be refused")
+            if record_path.exists():
+                raise SystemExit("cursor isolation self-test failed: cursor invoked despite refused MCP config")
+
+            for relative_path in (Path(".cursor/mcp.json"), Path(".mcp.json"), Path("mcp.json")):
+                (repo / relative_path).unlink(missing_ok=True)
+            run_cursor(args, repo, "review hostile patch")
+            cursor_record = json.loads(record_path.read_text())
+            cursor_argv = cursor_record["argv"]
+            for required in ["--print", "--output-format", "json"]:
+                if required not in cursor_argv:
+                    raise SystemExit(f"cursor isolation self-test failed: missing {required}")
+            for forbidden in ["--workspace", "--trust", "--mode", "--sandbox"]:
+                if forbidden in cursor_argv:
+                    raise SystemExit(f"cursor isolation self-test failed: unsupported flag present: {forbidden}")
+            if Path(cursor_record["cwd"]).resolve() != repo.resolve():
+                raise SystemExit("cursor isolation self-test failed: Cursor workspace cwd should be reviewed repo")
+            if cursor_record["stdin"] != "review hostile patch":
+                raise SystemExit("cursor isolation self-test failed: prompt not delivered over stdin")
+            if "review hostile patch" in cursor_argv:
+                raise SystemExit("cursor isolation self-test failed: prompt leaked into argv")
+            cursor_config = json.loads(cursor_record["cursor_config"])
+            if cursor_config.get("permissions", {}).get("allow") != ["Read(**)"]:
+                raise SystemExit("cursor isolation self-test failed: read-only allowlist missing")
+            if cursor_config.get("permissions", {}).get("deny") != ["Shell(*)", "Write(**)", "Write(/**)"]:
+                raise SystemExit("cursor isolation self-test failed: shell/write denylist missing")
+
             os.environ["AUTOREVIEW_FAKE_CLAUDE_VERSION"] = "2.1.168 (Claude Code)"
             try:
                 ensure_claude_isolation_supported(args, repo)
@@ -2079,6 +2502,8 @@ def self_test_engine_isolation() -> int:
             os.environ.pop("AUTOREVIEW_FAKE_PI_VERSION", None)
             os.environ.pop("AUTOREVIEW_FAKE_PI_HELP", None)
             os.environ.pop("AUTOREVIEW_FAKE_PI_INVOCATIONS", None)
+            os.environ.pop("AUTOREVIEW_FAKE_CURSOR_HELP", None)
+            os.environ.pop("AUTOREVIEW_FAKE_CURSOR_INVOCATIONS", None)
             os.environ["PATH"] = old_path
             if old_codex_home is None:
                 os.environ.pop("CODEX_HOME", None)
@@ -2153,6 +2578,54 @@ def self_test_json_array_parser() -> int:
     return 0
 
 
+def self_test_cursor_jsonl_parser() -> int:
+    report = {
+        "findings": [],
+        "overall_correctness": "patch is correct",
+        "overall_explanation": "cursor parser self-test",
+        "overall_confidence": 0.99,
+    }
+    result_object = {
+        "type": "result",
+        "result": report,
+        "session_id": "session",
+        "request_id": "request",
+    }
+    if extract_json(json.dumps(result_object)) != report:
+        raise SystemExit("cursor parser self-test failed for result object")
+
+    result_text = {
+        "type": "result",
+        "result": "prefix\n```json\n" + json.dumps(report) + "\n```",
+        "session_id": "session",
+        "request_id": "request",
+    }
+    if extract_json(json.dumps(result_text)) != report:
+        raise SystemExit("cursor parser self-test failed for result text")
+
+    jsonl = "\n".join(
+        json.dumps(event)
+        for event in [
+            {"type": "system", "model": "fake"},
+            {"type": "assistant", "message": {"content": [{"type": "text", "text": json.dumps(report)}]}},
+            {"type": "result", "result": "not structured json"},
+        ]
+    )
+    try:
+        extract_json(jsonl)
+    except SystemExit as exc:
+        if "review engine result was not structured JSON" not in str(exc):
+            raise
+    else:
+        raise SystemExit("cursor parser self-test failed: assistant draft masked bad result")
+
+    if extract_json("analysis before " + json.dumps(report) + " after") != report:
+        raise SystemExit("cursor parser self-test failed for embedded JSON")
+
+    print("autoreview cursor jsonl parser self-test: ok")
+    return 0
+
+
 def parse_json_candidate(text: str) -> Any | None:
     stripped = text.strip()
     if stripped.startswith("```"):
@@ -2208,7 +2681,7 @@ def self_test_opencode_isolation() -> None:
     _assert_opencode_permission(False)
     cmd = build_opencode_cmd(
         argparse.Namespace(
-            opencode_bin="opencode",
+            opencode_bin=sys.executable,
             stream_engine_output=False,
             model=None,
             thinking=None,
@@ -2473,20 +2946,25 @@ def finish_parallel_tests(proc: subprocess.Popen, started: float) -> int:
     return int(proc.returncode or 0)
 
 
+def env_truthy(name: str) -> bool:
+    value = os.environ.get(name)
+    return value is not None and value.strip().lower() not in {"", "0", "false", "no", "off"}
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Bundle-driven AI code review.")
     parser.add_argument("--mode", choices=["auto", "local", "uncommitted", "branch", "commit"], default="auto")
     parser.add_argument("--base")
     parser.add_argument("--commit", default="HEAD")
     parser.add_argument("--engine", choices=ENGINES, default=os.environ.get("AUTOREVIEW_ENGINE", "codex"))
-    parser.add_argument("--reviewers", help="Comma-separated review panel, e.g. codex,claude,pi or codex:gpt-5.5:high.")
+    parser.add_argument("--reviewers", help="Comma-separated review panel, e.g. codex,claude,cursor or codex:gpt-5.5:high.")
     parser.add_argument("--panel", action="store_true", help="Run a Codex/Claude review panel unless --engine changes the first reviewer.")
     parser.add_argument(
         "--model",
         action="append",
         help="Model for all reviewers or engine=model. Repeatable. Defaults: codex=gpt-5.5, claude=claude-fable-5.",
     )
-    parser.add_argument("--thinking", action="append", help="Thinking/effort for all reviewers or engine=level. Repeatable. Codex: none, minimal, low, medium, high, xhigh. Claude: low, medium, high, xhigh, max. Droid: off, none, low, medium, high. Pi: off, minimal, low, medium, high, xhigh. OpenCode: minimal, low, medium, high, max.")
+    parser.add_argument("--thinking", action="append", help="Thinking/effort for all reviewers or engine=level. Repeatable. Codex: none, minimal, low, medium, high, xhigh. Claude: low, medium, high, xhigh, max. Droid: off, none, low, medium, high. Pi: off, minimal, low, medium, high, xhigh. OpenCode: minimal, low, medium, high, max. Cursor: none.")
     parser.add_argument(
         "--fallback-model",
         action="append",
@@ -2497,12 +2975,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--claude-bin", default=os.environ.get("CLAUDE_BIN", "claude"))
     parser.add_argument("--droid-bin", default=os.environ.get("DROID_BIN", "droid"))
     parser.add_argument("--copilot-bin", default=os.environ.get("COPILOT_BIN", "copilot"))
+    parser.add_argument("--cursor-bin", default=os.environ.get("CURSOR_BIN", "cursor-agent"))
     parser.add_argument("--opencode-bin", default=os.environ.get("OPENCODE_BIN", "opencode"))
     parser.add_argument("--pi-bin", default=os.environ.get("PI_BIN", "pi"))
-    parser.add_argument("--no-tools", dest="tools", action="store_false", default=True, help="Disable tools for engines that support it. Codex, copilot, and opencode reject no-tools review.")
+    parser.add_argument("--no-tools", dest="tools", action="store_false", default=True, help="Disable tools for engines that support it. Codex, copilot, opencode, and cursor reject no-tools review.")
+    parser.add_argument("--self-test", action="store_true", help="Run deterministic local autoreview self-tests.")
     parser.add_argument("--self-test-opencode-jsonl-parser", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--self-test-opencode-isolation", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--self-test-opencode-real-project-isolation", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--self-test-cursor-jsonl-parser", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--self-test-cursor-isolation", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--no-web-search", dest="web_search", action="store_false", default=True)
     parser.add_argument(
         "--claude-allowed-tools",
@@ -2520,7 +3002,20 @@ def parse_args() -> argparse.Namespace:
         "--stream-engine-output",
         action="store_true",
         default=os.environ.get("AUTOREVIEW_STREAM_ENGINE_OUTPUT") == "1",
-        help="Stream review engine output while preserving buffered output for validation. Codex output is filtered to hide tool/file chatter.",
+        help="Stream review engine output while preserving buffered output for validation. Codex, Claude, and Cursor filter noisy tool/status chatter.",
+    )
+    parser.add_argument(
+        "--cursor-allow-workspace-instructions",
+        dest="cursor_allow_workspace_instructions",
+        action="store_true",
+        default=None,
+        help="Allow Cursor review when the repo contains project-local Cursor instructions/config. Use only for trusted repos.",
+    )
+    parser.add_argument(
+        "--no-cursor-allow-workspace-instructions",
+        dest="cursor_allow_workspace_instructions",
+        action="store_false",
+        help="Fail closed when Cursor would load project-local instructions/config.",
     )
     parser.add_argument("--parallel-tests", help="Run a test command concurrently with review; failure fails the helper.")
     parser.add_argument(
@@ -2538,6 +3033,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--self-test-json-array-parser", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--self-test-heartbeat-metrics", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
+    if args.cursor_allow_workspace_instructions is None:
+        args.cursor_allow_workspace_instructions = env_truthy("AUTOREVIEW_CURSOR_ALLOW_WORKSPACE_INSTRUCTIONS")
     if args.engine not in ENGINES:
         raise SystemExit(f"invalid --engine/AUTOREVIEW_ENGINE: {args.engine}")
     return args
@@ -2556,6 +3053,8 @@ def run_engine(args: argparse.Namespace, repo: Path, prompt: str) -> str:
         return run_pi(args, repo, prompt)
     if args.engine == "opencode":
         return run_opencode(args, repo, prompt)
+    if args.engine == "cursor":
+        return run_cursor(args, repo, prompt)
     raise SystemExit(f"unsupported engine: {args.engine}")
 
 
@@ -2623,7 +3122,7 @@ def reviewer_args(args: argparse.Namespace) -> list[argparse.Namespace]:
     if args.reviewers:
         tokens = [token.strip() for token in args.reviewers.split(",") if token.strip()]
         if len(tokens) == 1 and tokens[0] == "all":
-            tokens = list(ENGINES)
+            tokens = list(ALL_REVIEWERS)
         reviewers = [parse_reviewer_token(token) for token in tokens]
     elif args.panel:
         engines = [args.engine]
@@ -2701,10 +3200,21 @@ def reviewer_label(args: argparse.Namespace) -> str:
 
 
 def run_reviewer(args: argparse.Namespace, repo: Path, prompt: str, changed_paths: set[str], required: list[str]) -> dict[str, Any]:
-    raw = run_engine(args, repo, prompt)
-    report = extract_json(raw)
-    validate_report(report, repo, changed_paths, required)
-    return report
+    attempts = 3 if args.engine == "cursor" else 1
+    for attempt in range(1, attempts + 1):
+        raw = run_engine(args, repo, prompt)
+        try:
+            report = extract_json(raw)
+            validate_report(report, repo, changed_paths, required)
+            return report
+        except SystemExit as exc:
+            if attempt >= attempts or not is_structured_output_failure(str(exc)):
+                raise
+            print(
+                f"retrying {args.engine} structured output validation after attempt {attempt}: {exc}",
+                file=sys.stderr,
+            )
+    raise SystemExit(f"{args.engine} structured output validation failed after {attempts} attempts")
 
 
 def merge_panel_reports(reports: list[tuple[str, dict[str, Any]]]) -> dict[str, Any]:
@@ -2930,8 +3440,20 @@ def self_test_fallback_scope() -> None:
     print("self-test fallback scope: ok")
 
 
+def self_test() -> int:
+    self_test_opencode_jsonl_parser()
+    self_test_opencode_isolation()
+    self_test_config_defaults()
+    self_test_fallback_scope()
+    self_test_heartbeat_metrics()
+    self_test_json_array_parser()
+    return self_test_engine_isolation()
+
+
 def main() -> int:
     args = parse_args()
+    if args.self_test:
+        return self_test()
     if args.self_test_opencode_jsonl_parser:
         self_test_opencode_jsonl_parser()
         return 0
@@ -2941,6 +3463,10 @@ def main() -> int:
     if args.self_test_opencode_real_project_isolation:
         self_test_opencode_real_project_isolation(args)
         return 0
+    if args.self_test_cursor_jsonl_parser:
+        return self_test_cursor_jsonl_parser()
+    if args.self_test_cursor_isolation:
+        return self_test_engine_isolation()
     if args.self_test_config_defaults:
         self_test_config_defaults()
         return 0

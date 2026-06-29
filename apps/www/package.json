@@ -45,10 +45,9 @@
     ]
   },
   "dependencies": {
-    "@ai-sdk/gateway": "^3.0.0",
-    "@ai-sdk/google": "^3.0.0",
-    "@ai-sdk/openai": "^3.0.0",
-    "@ai-sdk/react": "^3.0.0",
+    "@ai-sdk/google": "^4.0.0",
+    "@ai-sdk/openai": "^4.0.0",
+    "@ai-sdk/react": "^4.0.0",
     "@ariakit/react": "0.4.17",
     "@emoji-mart/data": "1.2.1",
     "@excalidraw/excalidraw": "0.18.0",
@@ -129,7 +128,7 @@
     "@udecode/cn": "workspace:^",
     "@uploadthing/react": "7.3.1",
     "agentation": "^3.0.2",
-    "ai": "^6.0.0",
+    "ai": "^7.0.0",
     "babel-plugin-react-compiler": "1.0.0",
     "class-variance-authority": "0.7.1",
     "clsx": "^2.1.1",
@@ -186,7 +185,7 @@
     "uploadthing": "7.7.2",
     "use-file-picker": "2.1.2",
     "y-webrtc": "10.3.0",
-    "zod": "3.25.61"
+    "zod": "3.25.76"
   },
   "devDependencies": {
     "@shikijs/compat": "1.1.7",

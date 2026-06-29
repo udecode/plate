@@ -1,6 +1,27 @@
 {
   "schemaVersion": 1,
   "components": {
+    "ai-api": [
+      "2026-06-28-ai-sdk-v7",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite",
+      "2025-10-21-add-rejectaisuggestions"
+    ],
+    "copilot-api": ["2026-06-28-ai-sdk-v7", "2025-11-20-biome-ultracite"],
+    "use-chat": [
+      "2026-06-28-ai-sdk-v7",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite"
+    ],
+    "markdown-joiner-transform": [
+      "2026-06-28-ai-sdk-v7",
+      "2025-11-20-biome-ultracite"
+    ],
+    "ai-menu": [
+      "2026-06-28-ai-sdk-v7",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite"
+    ],
     "editor": [
       "2026-06-15-editor-fix-preserved-space-wrapping",
       "2025-11-20-biome-ultracite",
@@ -202,19 +223,6 @@
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-11-20-biome-ultracite"
     ],
-    "ai-api": [
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
-      "2025-11-20-biome-ultracite",
-      "2025-10-21-add-rejectaisuggestions"
-    ],
-    "ai-menu": [
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
-      "2025-11-20-biome-ultracite"
-    ],
-    "use-chat": [
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
-      "2025-11-20-biome-ultracite"
-    ],
     "cursor-overlay": [
       "2026-01-09-support-using-ai-features-tables-improve-prompts",
       "2025-11-20-biome-ultracite"
@@ -225,11 +233,9 @@
       "2025-11-20-biome-ultracite"
     ],
     "mention-kit": ["2025-12-15-add-option-editor-collaborative-features"],
-    "copilot-api": ["2025-11-20-biome-ultracite"],
     "block-placeholder-kit": ["2025-11-20-biome-ultracite"],
     "block-selection-kit": ["2025-11-20-biome-ultracite"],
     "tabbable-kit": ["2025-11-20-biome-ultracite"],
-    "markdown-joiner-transform": ["2025-11-20-biome-ultracite"],
     "block-draggable": ["2025-11-20-biome-ultracite"],
     "code-node": [
       "2025-11-20-biome-ultracite",

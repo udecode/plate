@@ -62,9 +62,11 @@ Goal plans are composable, but only through static materialization.
 The model is:
 
 1. one active goal
-2. one concrete `docs/plans` plan file
+2. one root `docs/plans` plan file
 3. one primary template
 4. optional materialized packs
+5. optional linked child `docs/plans` plan files for independently owned
+   sub-tasks
 
 The primary template is chosen by dominant risk: `task` for normal execution,
 `docs` for docs-dominant work, `major-task` for heavyweight architecture or
@@ -76,8 +78,8 @@ parents:
 - `docs`: docs are touched but not the dominant deliverable
 - `agent-native`: agent instructions, skills, hooks, commands, prompts, or
   user-action tooling changed
-- `browser`: real browser, route, UI, console, network, or interaction proof
-  is required
+- `browser`: real browser, route, UI, native browser/OS, console, network, or
+  interaction proof is required
 - `package-api`: package exports, public API, release artifacts, package
   boundaries, or package-level checks changed
 
@@ -90,6 +92,13 @@ Do not create runtime inheritance between templates. The helper copies pack rows
 into the generated plan's `Start Gates`, `Work Checklist`, and
 `Completion Gates`. After creation, the generated plan is the truth; the checker
 validates that materialized plan only.
+
+Linked child plans are different from packs. Use them when one parent goal
+supervises multiple independently owned task plans, such as one PRD/full-loop
+plan linking one task plan per issue. The parent records the child links and
+rollup status; each child owns its own source, proof, review, and closeout
+packet. `check-complete.mjs` on the parent must fail while any linked child plan
+is missing or incomplete.
 
 The generated plan is the dedicated plan shell. Fill that exact file
 immediately after generation: replace placeholders, resolve every gate row, and
@@ -410,13 +419,14 @@ Use the hybrid rule for every goal:
 2. The `docs/plans` goal plan records the verification surface, constraints,
    boundaries, blocked condition, fresh evidence, and completion threshold.
 3. `node .agents/skills/autogoal/scripts/check-complete.mjs <docs/plans/path>` is
-   the final mechanical gate before `update_goal(status: complete)`.
+   the final mechanical gate before `update_goal(status: complete)`. If that
+   plan links child plans, the checker recursively validates them too.
 
 The checker validates that the goal plan has no unchecked required checklist
 items, no unresolved gate rows, no open phase/pass rows, concrete verification
-evidence, current reboot status, and recorded risks. It does not replace tests,
-browser proof, source audits, benchmark output, or other named verification
-evidence.
+evidence, current reboot status, recorded risks, and no incomplete linked child
+plans. It does not replace tests, browser proof, source audits, benchmark
+output, or other named verification evidence.
 
 ## Evidence Type Contract
 
@@ -612,29 +622,38 @@ Gate closure rules:
 5. Choose the title, template, and `docs/plans` path needed by the objective.
    If the helper is the only reliable way to know the path, create only the
    static plan shell before `create_goal`.
-6. If no active goal exists and the user or governing skill asked for a goal,
+6. If `docs/plans/templates/` does not exist, initialize the generic templates
+   before creating or selecting a plan:
+
+   ```bash
+   node .agents/skills/autogoal/scripts/init-templates.mjs
+   ```
+
+   Existing project templates must be kept. Do not continue with only built-in
+   fallback templates when the project template directory is missing.
+7. If no active goal exists and the user or governing skill asked for a goal,
    create one with a short `create_goal.objective` handle under 240 characters.
-7. If an active goal already matches the desired end state, continue under it.
-8. If an active goal exists but points at a different objective, do not overwrite
+8. If an active goal already matches the desired end state, continue under it.
+9. If an active goal exists but points at a different objective, do not overwrite
    it. Resolve the current goal honestly before starting another one. If the
    tool does not allow that transition, report the mismatch and ask for the
    smallest decision needed. A governing lane goal may proceed only when it can
    honestly complete or fit within the current active goal.
-9. Ensure the `docs/plans` goal plan exists before substantive work.
-10. Fill the generated plan itself before substantive work: write the objective,
+10. Ensure the `docs/plans` goal plan exists before substantive work.
+11. Fill the generated plan itself before substantive work: write the objective,
    threshold, verification surface, constraints, boundaries, blocked condition,
    flow mode, and goal plan path; resolve generated gates as yes/no/N/A instead
    of deleting or replacing the template output.
-11. Record the output-budget strategy before exploratory commands: which
+12. Record the output-budget strategy before exploratory commands: which
     searches or reads are allowed, which high-volume paths are excluded, and
     how large results will be capped, counted, or saved as artifacts instead of
     streamed into the goal context.
-12. Record timed-checkpoint semantics when the prompt includes a duration. If
+13. Record timed-checkpoint semantics when the prompt includes a duration. If
     the duration is not explicitly a hard stop, treat it as minimum active work
     and add the initial scorecard when no concrete metric exists.
-13. Use that exact path for
+14. Use that exact path for
    `check-complete.mjs`.
-14. Do not start durable work until the goal is set, verified as already matching,
+15. Do not start durable work until the goal is set, verified as already matching,
    or the user explicitly resolves the missing-goal path.
 
 Set or verify the goal before mutable lane state when the workflow depends on a
@@ -656,17 +675,20 @@ docs/plans/templates/goal-repair.md
 docs/plans/templates/packs/<pack>.md
 ```
 
-When `docs/plans/templates/goal.md` or another generic template is missing,
-initialize the generic set before creating a goal plan:
+When `docs/plans/templates/` is absent, or when `docs/plans/templates/goal.md`
+or another generic template is missing, initialize the generic set before
+creating a goal plan:
 
 ```bash
 node .agents/skills/autogoal/scripts/init-templates.mjs
 ```
 
 `create-goal-scratchpad.mjs` and `create-goal-template.mjs` run this
-initialization automatically. Existing files are kept. Project-specific
-templates such as `docs/plans/templates/<lane>.md` stay in the project and are
-never moved into the skill package.
+initialization automatically. If an agent is creating or selecting a plan
+without those helpers and the directory is absent, run `init-templates.mjs`
+first. Existing files are kept. Project-specific templates such as
+`docs/plans/templates/<lane>.md` stay in the project and are never moved into
+the skill package.
 
 ## Goal Plan
 
@@ -700,6 +722,43 @@ The helper writes `docs/plans/YYYY-MM-DD-<slug>.md` or
 autogoal template. The helper lives
 under `.agents/skills/autogoal/` because it is generic rule tooling; generated
 `SKILL.md` files are not edited by hand.
+
+## Linked Plan Trees
+
+Use linked child plans when one root goal coordinates multiple independent
+task-sized plans. This is the right shape for a PRD/full-loop parent plan that
+delegates one child plan per Linear issue or implementation packet.
+
+Format the parent section as:
+
+```md
+Linked plans:
+- [DEV-123 task closeout](docs/plans/DEV-123-auth-invites.md) - owns invite acceptance.
+- [DEV-124 task closeout](docs/plans/DEV-124-password-reset.md) - owns reset flow.
+```
+
+If there are no child plans, write:
+
+```md
+Linked plans:
+- None.
+```
+
+Rules:
+
+- Link only `docs/plans/*.md` files. Do not link scratch files, generated
+  artifacts, issue URLs, PR URLs, or external docs as child plans.
+- Each child plan must be a normal autogoal-compatible plan with concrete
+  objective, threshold, verification, checklist, gates, phase table,
+  verification evidence, reboot status, and open risks.
+- The parent plan tracks orchestration and rollup decisions; the child plan
+  owns task-level proof. Do not duplicate child gates in the parent.
+- Run `check-complete.mjs` on the root parent plan before completing the goal.
+  The checker follows `Linked plans`, `Linked goal plans`, or `Child plans`
+  sections recursively and fails on missing, incomplete, out-of-tree, or cyclic
+  child plans.
+- Use child plans for independent task packets, not for pass-gated phases that
+  should stay rows in one plan.
 
 Do not pass objective, threshold, verification, constraints, boundaries, or
 blocked condition through CLI flags. The CLI only creates the static plan shell.
@@ -875,6 +934,9 @@ Primary template:
 Applied packs:
 - <pack or none>
 
+Linked plans:
+- <child docs/plans path or None>
+
 Completion threshold:
 - <quantitative or auditable done row>
 
@@ -1026,6 +1088,8 @@ Mark a goal complete only when:
 - every required goal-plan checklist item is checked or marked N/A with reason
 - `node .agents/skills/autogoal/scripts/check-complete.mjs <docs/plans/path>` passes
   after the final evidence is recorded
+- every linked child plan is complete when the root plan has `Linked plans`,
+  `Linked goal plans`, or `Child plans` entries
 - constraints and boundaries were respected, or deviations were explicitly
   accepted
 - required artifacts were created or updated

@@ -214,8 +214,13 @@ Handle `api.aiChat.submit` requests on the server. Each request includes the cha
 [Complete API example](https://github.com/udecode/plate-playground-template/blob/main/src/app/api/ai/command/route.ts)
 
 ```ts title="app/api/ai/command/route.ts"
-import { createGateway } from '@ai-sdk/gateway';
-import { convertToCoreMessages, streamText } from 'ai';
+import {
+  convertToModelMessages,
+  createGateway,
+  createUIMessageStreamResponse,
+  streamText,
+  toUIMessageStream,
+} from 'ai';
 import { createSlateEditor } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
@@ -236,12 +241,20 @@ export async function POST(req: Request) {
 
   const result = streamText({
     experimental_transform: markdownJoinerTransform(),
-    messages: convertToCoreMessages(messages),
+    instructions:
+      ctx.toolName === 'edit'
+        ? 'You are an editor that rewrites user text.'
+        : undefined,
+    messages: await convertToModelMessages(messages),
     model: gateway(model ?? 'openai/gpt-4o-mini'),
-    system: ctx.toolName === 'edit' ? 'You are an editor that rewrites user text.' : undefined,
   });
 
-  return result.toDataStreamResponse();
+  return createUIMessageStreamResponse({
+    stream: toUIMessageStream({
+      originalMessages: messages,
+      stream: result.stream,
+    }),
+  });
 }
 ```
 

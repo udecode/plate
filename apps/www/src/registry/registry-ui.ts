@@ -5,7 +5,7 @@ export const uiComponents: Registry['items'] = [
     dependencies: [
       '@platejs/ai',
       '@platejs/selection',
-      'ai@6',
+      'ai@7',
       'cmdk',
       '@faker-js/faker',
     ],

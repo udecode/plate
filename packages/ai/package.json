@@ -49,15 +49,25 @@
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
-    "@ai-sdk/react": "^3.0.0",
+    "@ai-sdk/react": "^4.0.0",
     "@plate/scripts": "workspace:*",
     "platejs": "workspace:^",
-    "ai": "^6.0.0"
+    "ai": "^7.0.0"
   },
   "peerDependencies": {
+    "@ai-sdk/react": "^4.0.0",
+    "ai": "^7.0.0",
     "platejs": ">=53.0.7",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@ai-sdk/react": {
+      "optional": true
+    },
+    "ai": {
+      "optional": true
+    }
   },
   "publishConfig": {
     "access": "public"

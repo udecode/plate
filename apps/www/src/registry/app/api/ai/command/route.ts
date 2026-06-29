@@ -4,16 +4,17 @@ import type {
 } from '@/registry/components/editor/use-chat';
 import type { NextRequest } from 'next/server';
 
-import { createGateway } from '@ai-sdk/gateway';
 import {
   type LanguageModel,
   type UIMessageStreamWriter,
+  createGateway,
   createUIMessageStream,
   createUIMessageStreamResponse,
   generateText,
   Output,
   streamText,
   tool,
+  toUIMessageStream,
 } from 'ai';
 import { NextResponse } from 'next/server';
 import { type SlateEditor, createSlateEditor, nanoid } from 'platejs';
@@ -86,23 +87,25 @@ export async function POST(req: NextRequest) {
           toolName = AIToolName;
         }
 
-        const stream = streamText({
+        const tools = {
+          comment: getCommentTool(editor, {
+            messagesRaw,
+            model: gatewayProvider(model || 'google/gemini-2.5-flash'),
+            writer,
+          }),
+          table: getTableTool(editor, {
+            messagesRaw,
+            model: gatewayProvider(model || 'google/gemini-2.5-flash'),
+            writer,
+          }),
+        };
+
+        const result = streamText({
           experimental_transform: markdownJoinerTransform(),
           model: gatewayProvider(model || 'openai/gpt-4o-mini'),
           // Not used
           prompt: '',
-          tools: {
-            comment: getCommentTool(editor, {
-              messagesRaw,
-              model: gatewayProvider(model || 'google/gemini-2.5-flash'),
-              writer,
-            }),
-            table: getTableTool(editor, {
-              messagesRaw,
-              model: gatewayProvider(model || 'google/gemini-2.5-flash'),
-              writer,
-            }),
-          },
+          tools,
           prepareStep: async (step) => {
             if (toolName === 'comment') {
               return {
@@ -163,7 +166,13 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        writer.merge(stream.toUIMessageStream({ sendFinish: false }));
+        writer.merge(
+          toUIMessageStream({
+            sendFinish: false,
+            stream: result.stream,
+            tools,
+          })
+        );
       },
     });
 
@@ -209,32 +218,25 @@ const getCommentTool = (
           ),
       });
 
-      const { partialOutputStream } = streamText({
+      const { elementStream } = streamText({
         model,
-        output: Output.array({ element: commentSchema }),
+        output: Output.array<z.infer<typeof commentSchema>>({
+          element: commentSchema,
+        }),
         prompt: getCommentPrompt(editor, {
           messages: messagesRaw,
         }),
       });
 
-      let lastLength = 0;
-
-      for await (const partialArray of partialOutputStream) {
-        for (let i = lastLength; i < partialArray.length; i++) {
-          const comment = partialArray[i];
-          const commentDataId = nanoid();
-
-          writer.write({
-            id: commentDataId,
-            data: {
-              comment,
-              status: 'streaming',
-            },
-            type: 'data-comment',
-          });
-        }
-
-        lastLength = partialArray.length;
+      for await (const comment of elementStream) {
+        writer.write({
+          id: nanoid(),
+          data: {
+            comment,
+            status: 'streaming',
+          },
+          type: 'data-comment',
+        });
       }
 
       writer.write({
@@ -274,29 +276,23 @@ const getTableTool = (
         id: z.string().describe('The id of the table cell to update.'),
       });
 
-      const { partialOutputStream } = streamText({
+      const { elementStream } = streamText({
         model,
-        output: Output.array({ element: cellUpdateSchema }),
+        output: Output.array<z.infer<typeof cellUpdateSchema>>({
+          element: cellUpdateSchema,
+        }),
         prompt: buildEditTableMultiCellPrompt(editor, messagesRaw),
       });
 
-      let lastLength = 0;
-
-      for await (const partialArray of partialOutputStream) {
-        for (let i = lastLength; i < partialArray.length; i++) {
-          const cellUpdate = partialArray[i];
-
-          writer.write({
-            id: nanoid(),
-            data: {
-              cellUpdate,
-              status: 'streaming',
-            },
-            type: 'data-table',
-          });
-        }
-
-        lastLength = partialArray.length;
+      for await (const cellUpdate of elementStream) {
+        writer.write({
+          id: nanoid(),
+          data: {
+            cellUpdate,
+            status: 'streaming',
+          },
+          type: 'data-table',
+        });
       }
 
       writer.write({
