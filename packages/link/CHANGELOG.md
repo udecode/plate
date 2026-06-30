@@ -1,5 +1,11 @@
 # @platejs/link
 
+## 53.3.1
+
+### Patch Changes
+
+- [`df0996f810d69f1d6660dbeac2a4cceda1d5e6dd`](https://github.com/udecode/plate/commit/df0996f810d69f1d6660dbeac2a4cceda1d5e6dd) – Fix Floating Link: ignore the Safari + Japanese IME composition-commit Enter (`keyCode === 229`, where `isComposing` is false) so it no longer submits the link mid-composition. Mirrors the Enter guard already used in `cmdk`.
+
 ## 53.0.3
 
 ### Patch Changes
