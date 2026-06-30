@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "markdown-joiner-transform",
   "dependencies": [
-    "ai@6"
+    "ai@7"
   ],
   "files": [
     {

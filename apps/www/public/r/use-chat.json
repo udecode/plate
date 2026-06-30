@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "use-chat",
   "dependencies": [
-    "@ai-sdk/react@3",
+    "@ai-sdk/react@4",
     "@faker-js/faker"
   ],
   "registryDependencies": [
