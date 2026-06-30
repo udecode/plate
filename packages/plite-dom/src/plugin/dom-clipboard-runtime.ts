@@ -255,7 +255,7 @@ const writeModelBackedSelectionData = <V extends Value>(
   data: Pick<DataTransfer, 'setData'>,
   clipboardFormatKey: string
 ) => {
-  const fragment = editor.read((state) => state.fragment.get());
+  const fragment = editor.read((state) => state.fragment());
   const string = JSON.stringify(fragment);
   const encoded = DOMEditor.getWindow(editor).btoa(encodeURIComponent(string));
   const text = getFragmentText(fragment);
@@ -285,7 +285,7 @@ export const writeDOMSelectionData = <V extends Value>(
   data: Pick<DataTransfer, 'getData' | 'setData'>
 ) => {
   const clipboardFormatKey = getDOMClipboardFormatKey(editor);
-  const selection = editor.read((state) => state.selection.get());
+  const selection = editor.read((state) => state.selection());
 
   if (!selection) {
     return;
@@ -425,7 +425,7 @@ export const writeDOMSelectionData = <V extends Value>(
   }
 
   if (!hasPolicyBoundaries) {
-    const fragment = editor.read((state) => state.fragment.get());
+    const fragment = editor.read((state) => state.fragment());
     const string = JSON.stringify(fragment);
     const encoded = DOMEditor.getWindow(editor).btoa(
       encodeURIComponent(string)

@@ -1,5 +1,5 @@
 import type { BaseEditor } from '../editor';
-import type { AnyBasePlugin, BasePlugins } from '../plugin/BasePlugin';
+import type { AnyBasePlugin } from '../plugin/BasePlugin';
 
 /**
  * Get all plugins having a defined `inject.plugins[plugin.key]`. It includes
@@ -8,13 +8,19 @@ import type { AnyBasePlugin, BasePlugins } from '../plugin/BasePlugin';
 export const getInjectedPlugins = (
   editor: BaseEditor,
   plugin: AnyBasePlugin
-): Partial<AnyBasePlugin>[] => {
-  const injectedPlugins: BasePlugins = [];
+): AnyBasePlugin[] => {
+  const injectedPlugins: AnyBasePlugin[] = [];
 
-  [...editor.meta.pluginList].reverse().forEach((p) => {
+  [...editor.runtime.pluginList].reverse().forEach((p) => {
     const injectedPlugin = p.inject.plugins?.[plugin.key];
 
-    if (injectedPlugin) injectedPlugins.push(injectedPlugin as any);
+    if (injectedPlugin) {
+      injectedPlugins.push({
+        ...plugin,
+        ...injectedPlugin,
+        key: injectedPlugin.key ?? plugin.key,
+      } as AnyBasePlugin);
+    }
   });
 
   return [plugin, ...injectedPlugins];

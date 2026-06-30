@@ -1,5 +1,11 @@
-import type { ElementType, HTMLAttributes, ReactNode, Ref } from 'react';
-import { useCallback, useContext } from 'react';
+import React, {
+  type ElementType,
+  type HTMLAttributes,
+  type ReactNode,
+  type Ref,
+  useCallback,
+  useContext,
+} from 'react';
 
 import {
   ElementContext,

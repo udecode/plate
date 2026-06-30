@@ -5,7 +5,7 @@ import { createBasePlugin } from '../../lib/plugin';
 import { pipeTransformFragment } from './pipeTransformFragment';
 
 const createParserEditor = (
-  plugins: Parameters<typeof createBaseEditor>[0]['plugins']
+  plugins: NonNullable<Parameters<typeof createBaseEditor>[0]>['plugins']
 ) => createBaseEditor({ plugins });
 
 const createParagraph = (text: string): Descendant => ({

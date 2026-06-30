@@ -26,10 +26,10 @@ describe('plite-history package README contract', () => {
       /import \{ History, history \} from '@platejs\/plite-history'/
     );
     assert.match(readme, /extensions: \[history\(\)\]/);
-    assert.match(readme, /state\.history\.get\(\)/);
+    assert.match(readme, /state\.history\(\)/);
     assert.match(readme, /tx\.history\.undo\(\)/);
     assert.match(readme, /editor\.api\.history/);
-    assert.match(readme, /History\.isHistory\(state\.history\.get\(\)\)/);
+    assert.match(readme, /History\.isHistory\(state\.history\(\)\)/);
     assert.match(readme, /History\.isHistory\(value\)/);
     assert.match(readme, /`usePliteEditor` installs history by default/);
     assert.doesNotMatch(readme, /createReactEditor/);

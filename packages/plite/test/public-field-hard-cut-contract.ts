@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import * as Plite from '@platejs/plite';
 import {
   getOperations as editorGetOperations,
   getSelection as editorGetSelection,
@@ -11,7 +12,7 @@ import {
   type BaseEditor,
   createEditor,
   type Editor as EditorType,
-} from '../src';
+} from '@platejs/plite';
 
 type PublicStateKeys = Extract<
   keyof EditorType,
@@ -99,7 +100,7 @@ const baseEditorHasNoInstanceAliases: PublicEditorInstanceAliasKeys extends neve
   : never = true;
 
 type PublicEditorNamespaceStateQueryKeys = Extract<
-  keyof typeof Editor,
+  keyof typeof Plite,
   | 'end'
   | 'marks'
   | 'node'
@@ -178,7 +179,10 @@ describe('public editor field hard cuts', () => {
       'wrapNodes',
     ] as const) {
       assert.equal(property in editor, false);
-      assert.equal((editor as Record<string, unknown>)[property], undefined);
+      assert.equal(
+        (editor as unknown as Record<string, unknown>)[property],
+        undefined
+      );
     }
   });
 
@@ -224,8 +228,8 @@ describe('public editor field hard cuts', () => {
       staleToggleListKey,
       staleWithTransactionKey,
     ] as const) {
-      assert.equal(property in Editor, false);
-      assert.equal((Editor as Record<string, unknown>)[property], undefined);
+      assert.equal(property in Plite, false);
+      assert.equal((Plite as Record<string, unknown>)[property], undefined);
     }
   });
 });

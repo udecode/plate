@@ -6,7 +6,7 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import { createEditor, defineEditorExtension } from '../src';
+import { createEditor, defineEditorExtension } from '@platejs/plite';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
@@ -39,7 +39,7 @@ describe('editor extension namespaces', () => {
           table(state) {
             return {
               selectedText() {
-                return state.text.string(state.selection.get() ?? []);
+                return state.text.string(state.selection() ?? []);
               },
             };
           },

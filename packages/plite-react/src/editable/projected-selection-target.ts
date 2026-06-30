@@ -21,7 +21,7 @@ export const resolveProjectedSelectionTarget = (
   }
 
   const roots = editor.read((state) =>
-    createPliteViewBoundaryRootMap(state.value.get())
+    createPliteViewBoundaryRootMap(state.value())
   );
   const target = createPliteViewBoundarySelectionTarget(roots, viewSelection);
 

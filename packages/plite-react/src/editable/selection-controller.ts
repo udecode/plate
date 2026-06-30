@@ -24,7 +24,7 @@ import {
 } from '@platejs/plite-dom/internal';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
-import { MAIN_ROOT_KEY } from '../root-key';
+import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import {
   createPliteViewSelection,
   readPliteViewSelection,
@@ -89,7 +89,7 @@ const getContentRootBoundaryPoint = (
 ) =>
   editor.read((state) => {
     const point = getPliteRootBoundaryPoint(
-      state.value.root(owner.childRoot),
+      readRootChildren(state, owner.childRoot),
       edge
     );
 

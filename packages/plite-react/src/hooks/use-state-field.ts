@@ -46,7 +46,7 @@ const getStateFieldSetterOptions = (
  * Subscribe to one `defineStateField` value.
  *
  * The hook only re-renders when the field key appears in the committed dirty
- * state keys. Use it for document state controls such as title, page settings,
+ * state keys. Use it for document meta controls such as title, page settings,
  * or feature state that should not subscribe to every editor change.
  */
 export function useStateFieldValue<

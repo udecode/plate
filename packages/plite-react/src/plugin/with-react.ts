@@ -5,11 +5,7 @@ import {
   type Editor,
   type EditorExtension,
   type EditorExtensionSetupContext,
-  type EditorStateExtensionGroups,
-  type EditorStatePatch,
-  type EditorTxExtensionGroups,
-  type Operation,
-  type Range,
+  type EditorExtensionTypeProvider,
   type Value,
 } from '@platejs/plite';
 import type {
@@ -21,7 +17,7 @@ import {
   EDITOR_TO_PENDING_SELECTION,
   installDOM,
 } from '@platejs/plite-dom/internal';
-import { history } from '@platejs/plite-history';
+import { history, type HistoryExtension } from '@platejs/plite-history';
 import {
   getEditorTransformRegistry,
   setEditorTransformRegistry,
@@ -39,88 +35,26 @@ export type ReactApi = {
   isReadOnly: () => boolean;
 };
 
-type ReactHistoryBatch<V extends Value = Value> = {
-  operations: Operation<V>[];
-  selectionBefore: Range | null;
-  selectionBeforeRoot?: string;
-  statePatches: EditorStatePatch[];
-};
-
-type ReactHistoryStateFallback<V extends Value = Value> = {
-  get: () => {
-    redos: ReactHistoryBatch<V>[];
-    undos: ReactHistoryBatch<V>[];
+export type ReactExtensionTypes = {
+  api: {
+    clipboard: DOMClipboardApi;
+    dom: DOMApi;
+    react: ReactApi;
   };
-  redos: () => readonly ReactHistoryBatch<V>[];
-  undos: () => readonly ReactHistoryBatch<V>[];
-};
-
-type ReactHistoryStateKey<V extends Value = Value> = Extract<
-  'history',
-  keyof EditorStateExtensionGroups<V>
->;
-
-type ReactHistoryStateApi<V extends Value = Value> = [
-  ReactHistoryStateKey<V>,
-] extends [never]
-  ? ReactHistoryStateFallback<V>
-  : EditorStateExtensionGroups<V>[ReactHistoryStateKey<V>];
-
-type ReactHistoryTxKey<V extends Value = Value> = Extract<
-  'history',
-  keyof EditorTxExtensionGroups<V>
->;
-
-type ReactHistoryTxFallback = {
-  redo: () => void;
-  undo: () => void;
-};
-
-type ReactHistoryTxApi<V extends Value = Value> = [
-  ReactHistoryTxKey<V>,
-] extends [never]
-  ? ReactHistoryTxFallback
-  : EditorTxExtensionGroups<V>[ReactHistoryTxKey<V>];
-
-type ReactHistoryControlApi = {
-  isMerging: () => boolean | undefined;
-  isSaving: () => boolean | undefined;
-  withMerging: (fn: () => void) => void;
-  withNewBatch: (fn: () => void) => void;
-  withoutMerging: (fn: () => void) => void;
-  withoutSaving: (fn: () => void) => void;
 };
 
 /** Editor extension installed by `react()`. */
-export type ReactExtension = EditorExtension<Editor> & {
-  conflicts: readonly ['dom'];
-  name: 'react';
-  setup: (context: EditorExtensionSetupContext<Editor>) => {
-    api: {
-      clipboard: DOMClipboardApi;
-      dom: DOMApi;
-      react: ReactApi;
+export type ReactExtension = Omit<
+  EditorExtension<Editor>,
+  'api' | 'conflicts' | 'name' | 'setup' | 'state' | 'tx'
+> &
+  EditorExtensionTypeProvider<(editor: Editor) => ReactExtensionTypes> & {
+    conflicts: readonly ['dom'];
+    name: 'react';
+    setup: (context: EditorExtensionSetupContext<Editor>) => {
+      api: ReactExtensionTypes['api'];
     };
   };
-};
-type HistoryExtension = {
-  api: {
-    history: ReactHistoryControlApi;
-  };
-  name: 'history';
-  state: {
-    history: <V extends Value>(
-      _state: unknown,
-      editor: Editor<V>
-    ) => ReactHistoryStateApi<V>;
-  };
-  tx: {
-    history: <V extends Value>(
-      _tx: unknown,
-      editor: Editor<V>
-    ) => ReactHistoryTxApi<V>;
-  };
-};
 type ReactDefaultExtensions<TExtensions extends readonly unknown[]> = readonly [
   ReactExtension,
   HistoryExtension,

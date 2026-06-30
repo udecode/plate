@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 
 import { recordPliteReactRender } from '../render-profiler';
 import { getPliteLeafShellAttributes } from '../shell-runtime';

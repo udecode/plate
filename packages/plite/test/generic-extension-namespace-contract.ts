@@ -3,7 +3,6 @@ import {
   defineEditorExtension,
   type Editor,
   type EditorPublicTransformMiddlewareKey,
-  type Value,
 } from '@platejs/plite';
 
 type CustomText = {
@@ -77,47 +76,15 @@ type _NoMissingTransformMiddlewareKey =
   AssertNever<MissingTransformMiddlewareKey>;
 type _NoExtraTransformMiddlewareKey = AssertNever<ExtraTransformMiddlewareKey>;
 
-declare module '@platejs/plite' {
-  interface EditorStateExtensionGroups<V extends Value = Value> {
-    link: {
-      nested: {
-        canOpen: () => boolean;
-      };
-      selectedHref: () => string | null;
-      value: V;
-    };
-    table: {
-      isInTable: () => boolean;
-      rowCount: () => number;
-    };
-  }
-
-  interface EditorTxExtensionGroups<V extends Value = Value> {
-    link: {
-      nested: {
-        remove: () => void;
-      };
-      setHref: (href: string) => void;
-    };
-    media: {
-      insertImage: (src: string) => void;
-    };
-    table: {
-      insertRow: () => void;
-      rowCount: () => number;
-    };
-  }
-}
-
 const extension = defineEditorExtension<CustomEditor>()({
   name: 'generic-namespace',
   state: {
     link(state) {
-      const value: CustomValue = [...state.value.root()];
+      const value: CustomValue = [...state.children()];
 
       return {
         nested: {
-          canOpen: () => state.selection.get() != null,
+          canOpen: () => state.selection() != null,
         },
         selectedHref: () => null,
         value,
@@ -126,7 +93,7 @@ const extension = defineEditorExtension<CustomEditor>()({
     table(state) {
       return {
         isInTable: () => state.nodes.hasPath([0]),
-        rowCount: () => state.value.root().length,
+        rowCount: () => state.children().length,
       };
     },
   },
@@ -138,14 +105,14 @@ const extension = defineEditorExtension<CustomEditor>()({
             tx.nodes.remove({ at: [0] });
           },
         },
-        setHref(href) {
+        setHref(href: string) {
           tx.nodes.set({ url: href }, { at: [0] });
         },
       };
     },
     media(tx) {
       return {
-        insertImage(src) {
+        insertImage(src: string) {
           tx.nodes.insert({
             type: 'image',
             src,
@@ -162,10 +129,10 @@ const extension = defineEditorExtension<CustomEditor>()({
               type: 'paragraph',
               children: [{ text: 'row' }],
             } satisfies ParagraphElement,
-            { at: [tx.value.root().length] }
+            { at: [tx.children().length] }
           );
         },
-        rowCount: () => tx.value.root().length,
+        rowCount: () => tx.children().length,
       };
     },
   },
@@ -191,7 +158,7 @@ const runtimeExtension = defineEditorExtension({
         table(state) {
           return {
             isInTable: () => mode.get() === 'cell' && state.nodes.hasPath([0]),
-            rowCount: () => state.value.root().length,
+            rowCount: () => state.children().length,
           };
         },
       },
@@ -205,7 +172,7 @@ const runtimeExtension = defineEditorExtension({
                 children: [{ text: 'row' }],
               } satisfies ParagraphElement);
             },
-            rowCount: () => tx.value.root().length,
+            rowCount: () => tx.children().length,
           };
         },
       },
@@ -237,18 +204,6 @@ defineEditorExtension({
 });
 
 defineEditorExtension<CustomEditor>()({
-  name: 'bad-link-namespace',
-  state: {
-    // @ts-expect-error augmented link state groups must return the declared shape
-    link() {
-      return {
-        selectedHref: () => null,
-      };
-    },
-  },
-});
-
-defineEditorExtension<CustomEditor>()({
   name: 'bad-command-namespace',
   // @ts-expect-error raw Plite extensions do not expose public command slots
   commands: [
@@ -271,7 +226,7 @@ defineEditorExtension<CustomEditor>()({
   name: 'middleware-context-typing',
   clipboard: {
     insertData(_data, context) {
-      context.state.selection.get();
+      context.state.selection();
 
       // @ts-expect-error clipboard middleware gets state, not tx
       context.tx;
@@ -282,7 +237,7 @@ defineEditorExtension<CustomEditor>()({
   queries: {
     text: {
       string(context) {
-        context.state.selection.get();
+        context.state.selection();
 
         // @ts-expect-error query middleware gets state, not tx
         context.tx;
@@ -293,7 +248,7 @@ defineEditorExtension<CustomEditor>()({
   },
   transforms: {
     insertText(context) {
-      context.tx.selection.get();
+      context.tx.selection();
 
       // @ts-expect-error transform middleware gets tx, not separate state
       context.state;
@@ -307,7 +262,7 @@ defineEditorExtension<CustomEditor>()({
   name: 'normalizer-node-typing',
   normalizers: {
     editor(context) {
-      const value: CustomValue = context.tx.value.get().children;
+      const value: CustomValue = context.tx.value().children;
 
       // @ts-expect-error editor normalizers do not expose node entries
       context.entry;
@@ -321,7 +276,7 @@ defineEditorExtension<CustomEditor>()({
       context.next();
     },
     node({ entry, next, tx }) {
-      const value: CustomValue = tx.value.get().children;
+      const value: CustomValue = tx.value().children;
 
       tx.nodes.insert({
         type: 'paragraph',
@@ -356,7 +311,7 @@ defineEditorExtension<CustomEditor>()({
   },
 });
 
-const editor = createEditor({ extensions: [extension], initialValue });
+const editor = createEditor({ extensions: [extension] as const, initialValue });
 
 const selectedHref: string | null = editor.read((state) =>
   state.link.selectedHref()
@@ -365,6 +320,11 @@ const customValue: CustomValue = editor.read((state) => state.link.value);
 const canOpen: boolean = editor.read((state) => state.link.nested.canOpen());
 const tableRowCount: number = editor.read((state) => state.table.rowCount());
 const isInTable: boolean = editor.read((state) => state.table.isInTable());
+const directSelectedHref: string | null = editor.read.link.selectedHref();
+const directCustomValue: CustomValue = editor.read.link.value;
+const directCanOpen: boolean = editor.read.link.nested.canOpen();
+const directTableRowCount: number = editor.read.table.rowCount();
+const directIsInTable: boolean = editor.read.table.isInTable();
 
 editor.update((tx) => {
   const beforeInsert: number = tx.table.rowCount();
@@ -378,6 +338,9 @@ editor.update((tx) => {
   void beforeInsert;
   void afterInsert;
 });
+editor.update.table.insertRow();
+editor.update.link.setHref('https://example.com');
+editor.update.media.insertImage('image.png');
 
 const assertExtensionNamespacesStayScoped = () => {
   // @ts-expect-error extension groups do not mutate the editor object
@@ -401,3 +364,8 @@ void customValue;
 void canOpen;
 void tableRowCount;
 void isInTable;
+void directSelectedHref;
+void directCustomValue;
+void directCanOpen;
+void directTableRowCount;
+void directIsInTable;

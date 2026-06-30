@@ -3,8 +3,6 @@ export { elementProperty } from './core/element-property';
 export { defineStateField } from './core/state-field';
 export { createEditor } from './create-editor';
 export { createEditorRuntime, createEditorView } from './editor-runtime-view';
-export { end } from './editor/end';
-export { start } from './editor/start';
 export {
   above,
   after,
@@ -40,6 +38,10 @@ export type {
   EditorAboveOptions,
   EditorBlockOptions,
   EditorCanonicalUpdateTag,
+  EditorClipboardApi,
+  EditorClipboardInsertDataCapability,
+  EditorClipboardInsertDataContext,
+  EditorClipboardMiddlewareMap,
   EditorCollaborationUpdateMetadata,
   EditorCommit,
   EditorCommitClass,
@@ -48,6 +50,7 @@ export type {
   EditorCommitHandler,
   EditorCommitSource,
   EditorCoreStateView,
+  EditorCoreUpdateMethods,
   EditorCoreUpdateTransaction,
   EditorDocumentValue,
   EditorElementBehavior,
@@ -57,6 +60,9 @@ export type {
   EditorElementSpec,
   EditorElementVoidKind,
   EditorExtension,
+  EditorInstalledApiGroups,
+  EditorInstalledStateGroups,
+  EditorInstalledTxGroups,
   EditorExtensionInput,
   EditorExtensionOperations,
   EditorExtensionRuntimeState,
@@ -66,6 +72,8 @@ export type {
   EditorExtensionStateGroups,
   EditorExtensionTxGroup,
   EditorExtensionTxGroups,
+  EditorExtensionTypeProvider,
+  EditorExtensionTypes,
   EditorFragmentReadOptions,
   EditorHistoryUpdateMetadata,
   EditorIsEditorOptions,
@@ -89,7 +97,6 @@ export type {
   EditorSchemaApi,
   EditorSelectionUpdateMetadata,
   EditorSnapshot,
-  EditorStateExtensionGroups,
   EditorStateField,
   EditorStateFragmentApi,
   EditorStateMarksApi,
@@ -108,6 +115,7 @@ export type {
   EditorTransactionBreakApi,
   EditorTransactionFragmentApi,
   EditorTransactionMarksApi,
+  EditorTransactionMetadataApi,
   EditorTransactionNodesApi,
   EditorTransactionOperationsApi,
   EditorTransactionRootsApi,
@@ -120,7 +128,6 @@ export type {
   EditorTransformMiddlewareContext,
   EditorTransformMiddlewareMap,
   EditorTransformNext,
-  EditorTxExtensionGroups,
   EditorUpdateContext,
   EditorUpdateMetadata,
   EditorUpdate,
@@ -162,6 +169,7 @@ export * from './interfaces/point-ref';
 export * from './interfaces/range';
 export * from './interfaces/range-ref';
 export * from './interfaces/text';
+export * from './query-node';
 export type * from './interfaces/transforms/general';
 export type * from './interfaces/transforms/node';
 export type * from './interfaces/transforms/selection';

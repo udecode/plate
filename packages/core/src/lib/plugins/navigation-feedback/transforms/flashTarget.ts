@@ -1,6 +1,4 @@
-import { NodeApi } from '@platejs/slate';
-
-import type { SlateEditor } from '../../../editor';
+import type { BaseEditor } from '../../../editor';
 import type {
   NavigationFeedbackActiveTarget,
   NavigationFlashTargetOptions,
@@ -10,10 +8,10 @@ import type {
 import { NavigationFeedbackPluginKey } from '../types';
 
 const NAVIGATION_FEEDBACK_TIMEOUT = new WeakMap<
-  SlateEditor,
+  BaseEditor,
   ReturnType<typeof setTimeout>
 >();
-const NAVIGATION_FEEDBACK_PULSE = new WeakMap<SlateEditor, number>();
+const NAVIGATION_FEEDBACK_PULSE = new WeakMap<BaseEditor, number>();
 const NAVIGATION_FEEDBACK_ATTRIBUTES = [
   'data-nav-cycle',
   'data-nav-highlight',
@@ -43,22 +41,18 @@ export const resolveNavigationFeedbackTarget = (
 };
 
 const getNavigationElement = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   target: NavigationFeedbackActiveTarget | { path: number[] }
 ) => {
-  const node = NodeApi.get(editor, target.path);
+  const node = editor.read.nodes.get(target.path)?.[0];
 
   if (!node) return;
 
-  try {
-    return editor.api.toDOMNode(node) as HTMLElement | undefined;
-  } catch {
-    return;
-  }
+  return editor.api.dom.resolveDOMNode(node) ?? undefined;
 };
 
 const clearNavigationElement = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   target?: NavigationFeedbackActiveTarget | null
 ) => {
   if (!target) return;
@@ -75,7 +69,7 @@ const clearNavigationElement = (
 };
 
 const setNavigationElement = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   target: NavigationFeedbackActiveTarget
 ) => {
   const element = getNavigationElement(editor, target);
@@ -92,7 +86,7 @@ const setNavigationElement = (
   );
 };
 
-const clearNavigationTimeout = (editor: SlateEditor) => {
+const clearNavigationTimeout = (editor: BaseEditor) => {
   const timeoutId = NAVIGATION_FEEDBACK_TIMEOUT.get(editor);
 
   if (timeoutId) {
@@ -101,7 +95,7 @@ const clearNavigationTimeout = (editor: SlateEditor) => {
   }
 };
 
-const nextPulse = (editor: SlateEditor) => {
+const nextPulse = (editor: BaseEditor) => {
   const pulse = (NAVIGATION_FEEDBACK_PULSE.get(editor) ?? 0) + 1;
 
   NAVIGATION_FEEDBACK_PULSE.set(editor, pulse);
@@ -110,7 +104,7 @@ const nextPulse = (editor: SlateEditor) => {
 };
 
 export const clearNavigationFeedbackTarget = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   pulse?: number
 ) => {
   const storedTarget = editor.getOption(
@@ -126,15 +120,16 @@ export const clearNavigationFeedbackTarget = (
   clearNavigationElement(editor, activeTarget);
   clearNavigationPathRef(storedTarget);
   editor.setOption(NavigationFeedbackPluginKey, 'activeTarget', null);
+  editor.api.redecorate();
 
   return true;
 };
 
 export const flashTarget = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { duration, target, variant = 'navigated' }: NavigationFlashTargetOptions
 ) => {
-  if (!editor.api.node(target.path)) return false;
+  if (!editor.read.nodes.get(target.path)) return false;
 
   const pulse = nextPulse(editor);
   const timeoutMs =
@@ -153,18 +148,17 @@ export const flashTarget = (
   );
   clearNavigationPathRef(previousTarget);
 
-  const pathRef = editor.api.pathRef(target.path);
-
   const activeTarget = {
     cycle: (pulse % 2) as 0 | 1,
     duration: timeoutMs,
-    pathRef,
+    pathRef: editor.read.runtime.pathRef(target.path),
     pulse,
     type: target.type,
     variant,
   };
 
   editor.setOption(NavigationFeedbackPluginKey, 'activeTarget', activeTarget);
+  editor.api.redecorate();
   setNavigationElement(
     editor,
     resolveNavigationFeedbackTarget(activeTarget) ?? {

@@ -1,17 +1,24 @@
 import type { BaseEditor } from '../editor';
-import type { PluginConfig } from './PluginBase';
-import type { AnyBasePlugin, BasePluginContext } from './BasePlugin';
+import type { PluginConfig } from './SlatePlugin';
+import type { BasePlugin } from './BasePlugin';
 
 import { createBaseEditor } from '../editor';
 import { createBasePlugin } from './createBasePlugin';
-import { getBasePlugin } from './getBasePlugin';
+import { getEditorPlugin } from './getEditorPlugin';
 
-describe('getBasePlugin', () => {
+describe('getEditorPlugin', () => {
+  type TestConfig = PluginConfig<
+    'test',
+    {
+      testOption: string;
+    }
+  >;
+
   let editor: BaseEditor;
-  let testPlugin: AnyBasePlugin;
+  let testPlugin: BasePlugin<TestConfig>;
 
   beforeEach(() => {
-    testPlugin = createBasePlugin({
+    testPlugin = createBasePlugin<TestConfig>({
       key: 'test',
       node: { type: 'test-type' },
       options: {
@@ -25,7 +32,7 @@ describe('getBasePlugin', () => {
   });
 
   it('get plugin context by plugin object', () => {
-    const context = getBasePlugin(
+    const context = getEditorPlugin(
       editor,
       testPlugin.configure({ options: { testOption: 't' } })
     );
@@ -39,10 +46,9 @@ describe('getBasePlugin', () => {
       }),
       type: 'test-type',
     });
-    expect('tf' in context).toBe(false);
   });
 
-  it('work extendEditor', () => {
+  it('works with extension context typing', () => {
     type Config = PluginConfig<
       'test',
       {
@@ -57,16 +63,25 @@ describe('getBasePlugin', () => {
       },
     });
 
-    let a: BasePluginContext<Config> = {} as any;
+    const typedEditor = createBaseEditor({
+      plugins: [plugin],
+    });
+    const context = getEditorPlugin(typedEditor, plugin);
+    const option = context.getOption('testOption');
+    const options = context.getOptions();
 
-    const b = getBasePlugin(editor, plugin);
-    a = b;
+    expect(option satisfies string).toBe('testValue');
+    expect(options.testOption satisfies string).toBe('testValue');
 
-    expect(a).toBeDefined();
+    const assertTypedContext = () => {
+      // @ts-expect-error invalid option keys should stay rejected.
+      context.getOption('missingOption');
+    };
+    void assertTypedContext;
   });
 
   it('get plugin context by plugin key', () => {
-    const context = getBasePlugin(editor, { key: 'test' });
+    const context = getEditorPlugin(editor, { key: 'test' });
 
     expect(context).toMatchObject({
       api: editor.api,
@@ -77,7 +92,6 @@ describe('getBasePlugin', () => {
       }),
       type: 'test-type',
     });
-    expect('tf' in context).toBe(false);
   });
 
   it('resolve unresolved plugin', () => {
@@ -89,7 +103,7 @@ describe('getBasePlugin', () => {
       },
     });
 
-    const context = getBasePlugin(editor, unresolvedPlugin);
+    const context = getEditorPlugin(editor, unresolvedPlugin);
 
     expect(context).toMatchObject({
       api: editor.api,
@@ -100,6 +114,5 @@ describe('getBasePlugin', () => {
       }),
       type: 'unresolved-type',
     });
-    expect('tf' in context).toBe(false);
   });
 });

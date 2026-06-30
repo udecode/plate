@@ -6,10 +6,10 @@ import {
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
-import { createEditor, type Descendant } from '../src';
+import { createEditor, type Descendant, type Element } from '@platejs/plite';
 import { extendTestSchema } from './support/schema';
 
-const createChildren = (): Descendant[] => [
+const createChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'alpha' }],
@@ -20,14 +20,14 @@ const createChildren = (): Descendant[] => [
   },
 ];
 
-const createSplitChildren = (): Descendant[] => [
+const createSplitChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'alpha' }],
   },
 ];
 
-const createMergeChildren = (): Descendant[] => [
+const createMergeChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'alpha' }],
@@ -38,7 +38,7 @@ const createMergeChildren = (): Descendant[] => [
   },
 ];
 
-const createMoveChildren = (): Descendant[] => [
+const createMoveChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'alpha' }],
@@ -57,7 +57,7 @@ const createRange = (
   focus,
 });
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -96,7 +96,7 @@ describe('plite bookmark contract', () => {
     });
 
     const bookmark = editor.read((state) => {
-      const selection = state.selection.get();
+      const selection = state.selection();
 
       assert.ok(selection);
 
@@ -340,7 +340,7 @@ describe('plite bookmark contract', () => {
       focus: { path: [0, 0], offset: 3, root: 'header' },
     });
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('Xhead!')] },

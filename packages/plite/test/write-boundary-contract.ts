@@ -7,7 +7,7 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import { createEditor } from '../src';
+import { createEditor } from '@platejs/plite';
 
 describe('editor write boundary', () => {
   const createSeededEditor = () => {

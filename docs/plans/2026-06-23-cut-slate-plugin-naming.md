@@ -278,7 +278,7 @@ Error attempts:
 | Broad `rg` audit before compaction streamed too much output | 1 | Write file lists/counts to `.tmp/cut-slate-plugin-naming/*` | Recovered with artifacted `rg -l` audits and `wc -l` counts. |
 | `pnpm --filter @platejs/plate build` matched no package | 1 | Use the actual package filter `platejs` | `pnpm --filter platejs build` passed. |
 | Core tests initially failed through stale/mixed dist and dependency closure | 1 | Rebuild facade and closure packages, then rerun focused gates | Core tests now pass. |
-| `@platejs/table` typecheck failed after core API typing stopped being `any` | 2 | Fix core bridge types and the stale table `slateExtensions` key | Table typecheck/build now pass. |
+| `@platejs/table` typecheck failed after core API typing stopped being `any` | 2 | Fix core bridge types and the stale table `pliteExtensions` key | Table typecheck/build now pass. |
 | Root `pnpm lint:fix` failed on unrelated Plite app/test lint debt and auto-fixed 48 files | 1 | Run scoped Biome over touched package dirs | Scoped Biome passed; root lint debt is outside this goal. |
 | Broad `git diff --name-only` streamed huge unrelated branch diff | 1 | Avoid broad diff output; use scoped audits/artifacts | Recorded as output-budget miss; no further broad diff output used. |
 

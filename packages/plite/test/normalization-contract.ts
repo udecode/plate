@@ -12,7 +12,7 @@ import {
   setNodes as editorSetNodes,
 } from '@platejs/plite/internal';
 import { getEditorRuntime } from '@platejs/plite/internal';
-import { createEditor, type Descendant } from '../src';
+import { createEditor, type Descendant, type Element } from '@platejs/plite';
 
 describe('plite normalization contract', () => {
   it('repairs an empty block with an empty text child', () => {
@@ -299,7 +299,7 @@ describe('plite normalization contract', () => {
           type: 'block',
           children: [{ text: 'beta' }],
         },
-      ] as Descendant[],
+      ] as Element[],
       selection: null,
       marks: null,
     });
@@ -332,7 +332,7 @@ describe('plite normalization contract', () => {
             { text: 'pha', bold: true },
           ],
         },
-      ] as Descendant[],
+      ] as Element[],
       selection: null,
       marks: null,
     });
@@ -360,7 +360,7 @@ describe('plite normalization contract', () => {
             { text: 'beta', bold: true },
           ],
         },
-      ] as Descendant[],
+      ] as Element[],
       selection: null,
       marks: null,
     });
@@ -384,7 +384,7 @@ describe('plite normalization contract', () => {
           type: 'paragraph',
           children: [{ text: 'alpha' }, { text: 'gamma' }],
         },
-      ] as Descendant[],
+      ] as Element[],
       selection: null,
       marks: null,
     });
@@ -470,7 +470,7 @@ describe('plite normalization contract', () => {
         !editorIsEditor(node) &&
         'children' in node &&
         node.type === 'paragraph' &&
-        (node as Descendant & { normalized?: boolean }).normalized !== true
+        (node as Element & { normalized?: boolean }).normalized !== true
       ) {
         editorSetNodes(editor, { normalized: true }, { at: path });
         return;

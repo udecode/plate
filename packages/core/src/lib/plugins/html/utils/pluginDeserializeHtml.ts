@@ -8,7 +8,7 @@ import type {
   HtmlDeserializer,
 } from '../../../plugin/BasePlugin';
 
-import { getBasePlugin } from '../../../plugin';
+import { getEditorPlugin } from '../../../plugin';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
 import { getPluginNodeClass } from '../../../utils/pluginNodeClass';
 import { getDataNodeProps } from './getDataNodeProps';
@@ -142,10 +142,7 @@ export const pluginDeserializeHtml = (
 
     if (!isValid) return;
   }
-  if (
-    query &&
-    !query({ ...(getBasePlugin as any)(editor, plugin), element: el })
-  ) {
+  if (query && !query({ ...getEditorPlugin(editor, plugin), element: el })) {
     return;
   }
   if (!parse)
@@ -164,7 +161,7 @@ export const pluginDeserializeHtml = (
 
     return (
       parse({
-        ...(getBasePlugin as any)(editor, plugin),
+        ...getEditorPlugin(editor, plugin),
         element: el,
         node: {},
       }) ?? {}
@@ -177,7 +174,7 @@ export const pluginDeserializeHtml = (
     plugin,
   });
 
-  let node = {
+  let node: AnyObject = {
     ...parsedNode,
     ...dataNodeProps,
   };
@@ -188,7 +185,7 @@ export const pluginDeserializeHtml = (
 
   injectedPlugins.forEach((injectedPlugin) => {
     const res = injectedPlugin.parsers?.html?.deserializer?.parse?.({
-      ...(getBasePlugin as any)(editor, plugin),
+      ...getEditorPlugin(editor, plugin),
       element: el,
       node,
     });
@@ -202,7 +199,7 @@ export const pluginDeserializeHtml = (
   });
 
   if (attributeNames) {
-    const elementAttributes = {};
+    const elementAttributes: Record<string, string | null> = {};
 
     const elementAttributeNames = el.getAttributeNames();
 

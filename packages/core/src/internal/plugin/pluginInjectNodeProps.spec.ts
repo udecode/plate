@@ -73,6 +73,78 @@ describe('pluginInjectNodeProps', () => {
     ).toBeUndefined();
   });
 
+  it('keeps transformProps hook order when inject matching rejects the node', () => {
+    const transformProps = mock(({ props }) => props);
+    const TargetPlugin = createBasePlugin({
+      inject: {
+        nodeProps: {
+          nodeKey: 'tone',
+          transformProps,
+        },
+        targetPlugins: ['quote'],
+      },
+      key: 'target',
+    });
+
+    const editor = createBaseEditor({
+      plugins: [
+        createBasePlugin({
+          key: 'paragraph',
+          node: { isElement: true, type: 'p' },
+        }),
+        TargetPlugin,
+      ],
+    });
+
+    expect(
+      pluginInjectNodeProps(
+        editor,
+        editor.getPlugin(TargetPlugin),
+        {
+          element: {
+            children: [{ text: 'hello' }],
+            tone: 'red',
+            type: 'p',
+          } as any,
+        },
+        () => [0]
+      )
+    ).toBeUndefined();
+
+    expect(transformProps).toHaveBeenCalledTimes(1);
+    expect(transformProps.mock.calls[0]?.[0].props).toEqual({});
+  });
+
+  it('keeps transformProps hook order when the query rejects the node', () => {
+    const transformProps = mock(({ props }) => props);
+    const QueryPlugin = createBasePlugin({
+      inject: {
+        nodeProps: {
+          nodeKey: 'tone',
+          query: () => false,
+          transformProps,
+        },
+      },
+      key: 'query',
+    });
+
+    const editor = createBaseEditor({
+      plugins: [QueryPlugin],
+    });
+
+    expect(
+      pluginInjectNodeProps(
+        editor,
+        editor.getPlugin(QueryPlugin),
+        { text: { text: 'hello', tone: 'red' } as any },
+        () => [0]
+      )
+    ).toBeUndefined();
+
+    expect(transformProps).toHaveBeenCalledTimes(1);
+    expect(transformProps.mock.calls[0]?.[0].props).toEqual({});
+  });
+
   it('suppresses default node values unless transformProps forces an injection', () => {
     const ForcedPlugin = createBasePlugin({
       inject: {

@@ -11,7 +11,7 @@ import {
 } from '@platejs/plite';
 import { schedulePliteReactFocus } from '../hooks/focus-scheduler';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
-import { MAIN_ROOT_KEY } from '../root-key';
+import { readRootChildren } from '../root-key';
 import {
   createPliteViewBoundaryRootMap,
   getPliteDescendantAtPath,
@@ -251,9 +251,7 @@ const getVerticalNavigationTarget = ({
     });
     const rootEdge = editor.read((state) =>
       getPliteRootBoundaryPoint(
-        state.value.root(
-          currentRoot === MAIN_ROOT_KEY ? undefined : currentRoot
-        ),
+        readRootChildren(state, currentRoot),
         direction === 'forward' ? 'end' : 'start'
       )
     );
@@ -409,9 +407,7 @@ const getHorizontalNavigationTarget = ({
   if (ownerForCurrentRoot) {
     const rootEdge = editor.read((state) =>
       getPliteRootBoundaryPoint(
-        state.value.root(
-          currentRoot === MAIN_ROOT_KEY ? undefined : currentRoot
-        ),
+        readRootChildren(state, currentRoot),
         direction === 'forward' ? 'end' : 'start'
       )
     );
@@ -461,11 +457,10 @@ const getRootLocalHorizontalSelectionTarget = ({
   unit?: 'line' | 'word';
 }): ContentRootNavigationTarget | null => {
   const rootedPoint = rootPlitePoint(point, root);
-  const nextPoint = sourceEditor.read((state) =>
+  const nextPoint =
     direction === 'forward'
       ? editorAfter(sourceEditor, rootedPoint, unit ? { unit } : undefined)
-      : editorBefore(sourceEditor, rootedPoint, unit ? { unit } : undefined)
-  );
+      : editorBefore(sourceEditor, rootedPoint, unit ? { unit } : undefined);
 
   if (!nextPoint || getPlitePointRoot(nextPoint, root) !== root) {
     return null;
@@ -538,7 +533,6 @@ const advanceVerticalBoundarySelectionTarget = ({
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
   owners,
-  selection,
   target,
 }: {
   action: Extract<ContentRootViewSelectionAction, { kind: 'move' }>;
@@ -551,7 +545,6 @@ const advanceVerticalBoundarySelectionTarget = ({
   ) => ReactRuntimeEditor | null;
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   owners: ContentRootOwner[];
-  selection: Range | null;
   target: ContentRootNavigationTarget;
 }): ContentRootNavigationTarget => {
   if (action.axis !== 'vertical') {
@@ -584,7 +577,7 @@ const advanceVerticalBoundarySelectionTarget = ({
     ) => boolean
   ) =>
     editor.read((state) => {
-      const roots = createPliteViewBoundaryRootMap(state.value.get());
+      const roots = createPliteViewBoundaryRootMap(state.value());
 
       return anchorSelection.segments.parts.some((segment) => {
         if (!predicate(segment)) {
@@ -720,7 +713,7 @@ const getRootLocalVerticalModelSelectionTarget = ({
     const children = (
       state.view.root() === root
         ? state.nodes.children()
-        : state.value.root(root === MAIN_ROOT_KEY ? undefined : root)
+        : readRootChildren(state, root)
     ) as readonly Descendant[];
     const blockIndex = point.path[0];
 
@@ -762,9 +755,7 @@ const isPointInRootTerminalBlock = ({
   root: RootKey;
 }) =>
   editor.read((state) => {
-    const children = state.value.root(
-      root === MAIN_ROOT_KEY ? undefined : root
-    );
+    const children = readRootChildren(state, root);
     const blockIndex = point.path[0];
 
     if (typeof blockIndex !== 'number' || children.length === 0) {
@@ -867,9 +858,7 @@ const getProjectedGraphVerticalSelectionTarget = ({
 
   const point = editor.read((state) => {
     const node = getPliteDescendantAtPath(
-      state.value.root(
-        targetNode.root === MAIN_ROOT_KEY ? undefined : targetNode.root
-      ),
+      readRootChildren(state, targetNode.root),
       targetNode.path
     );
 
@@ -1383,7 +1372,6 @@ const applyContentRootViewSelectionAction = ({
       getContentRootOwnerViewEditor,
       getMountedViewEditor,
       owners,
-      selection,
       target,
     });
     projectedSelection = createPliteViewSelection(graph, {

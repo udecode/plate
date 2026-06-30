@@ -15,12 +15,12 @@ import { history } from '@platejs/plite-history';
 
 import {
   createEditor,
-  type Descendant,
+  type Element,
   type EditorUpdateOptions,
   type Range,
-} from '../src';
+} from '@platejs/plite';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -35,7 +35,7 @@ const remoteCollabOptions = {
 } satisfies EditorUpdateOptions;
 
 const createCollabEditor = () => {
-  const editor = createEditor({ extensions: [history()] });
+  const editor = createEditor({ extensions: [history()] as const });
 
   editorReplace(editor, {
     children: [paragraph('one'), paragraph('two')],

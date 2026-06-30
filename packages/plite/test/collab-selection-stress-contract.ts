@@ -11,13 +11,13 @@ import { history } from '@platejs/plite-history';
 
 import {
   createEditor,
-  type Descendant,
+  type Element,
   type EditorUpdateOptions,
   type Operation,
   type Range,
-} from '../src';
+} from '@platejs/plite';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -37,10 +37,10 @@ const createCollabEditor = ({
   children = [paragraph('one')],
   selection,
 }: {
-  children?: Descendant[];
+  children?: Element[];
   selection: Range;
 }) => {
-  const editor = createEditor({ extensions: [history()] });
+  const editor = createEditor({ extensions: [history()] as const });
 
   editorReplace(editor, {
     children,

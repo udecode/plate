@@ -1,30 +1,42 @@
-import { createSlateEditor } from '../editor';
-import { createSlatePlugin } from '../plugin';
+import type { Descendant, NodeOperation } from '@platejs/plite';
+
+import { createBaseEditor } from '../editor';
+import { type BasePlugin, createBasePlugin } from '../plugin';
 import { pipeOnNodeChange } from './pipeOnNodeChange';
+
+type OnNodeChange = NonNullable<
+  NonNullable<BasePlugin['handlers']>['onNodeChange']
+>;
+
+const createNodeChangePlugin = (key: string, onNodeChange: OnNodeChange) =>
+  createBasePlugin({
+    handlers: { onNodeChange },
+    key,
+  });
+
+const node: Descendant = { text: 'next' };
+const prevNode: Descendant = { text: 'prev' };
+const insertNodeOperation: NodeOperation = {
+  node,
+  path: [0],
+  type: 'insert_node',
+};
 
 describe('pipeOnNodeChange', () => {
   it('skips handlers when the editor is read-only', () => {
     const onNodeChange = mock(() => true);
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
-        createSlatePlugin({
-          handlers: { onNodeChange },
-          key: 'test',
-        }),
+        createNodeChangePlugin('test', onNodeChange as unknown as OnNodeChange),
       ],
+      readOnly: true,
     });
 
     onNodeChange.mockClear();
-    editor.dom.readOnly = true;
 
-    expect(
-      pipeOnNodeChange(
-        editor,
-        { text: 'next' } as any,
-        { text: 'prev' } as any,
-        { type: 'insert_node' } as any
-      )
-    ).toBe(false);
+    expect(pipeOnNodeChange(editor, node, prevNode, insertNodeOperation)).toBe(
+      false
+    );
     expect(onNodeChange).not.toHaveBeenCalled();
   });
 
@@ -32,24 +44,12 @@ describe('pipeOnNodeChange', () => {
     const first = mock(() => {});
     const second = mock(() => true);
     const third = mock(() => true);
-    const node = { text: 'next' } as any;
-    const prevNode = { text: 'prev' } as any;
-    const operation = { type: 'insert_node' } as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
-        createSlatePlugin({
-          handlers: { onNodeChange: first },
-          key: 'first',
-        }),
-        createSlatePlugin({
-          handlers: { onNodeChange: second },
-          key: 'second',
-        }),
-        createSlatePlugin({
-          handlers: { onNodeChange: third },
-          key: 'third',
-        }),
+        createNodeChangePlugin('first', first as unknown as OnNodeChange),
+        createNodeChangePlugin('second', second as unknown as OnNodeChange),
+        createNodeChangePlugin('third', third as unknown as OnNodeChange),
       ],
     });
 
@@ -57,13 +57,15 @@ describe('pipeOnNodeChange', () => {
     second.mockClear();
     third.mockClear();
 
-    expect(pipeOnNodeChange(editor, node, prevNode, operation)).toBe(true);
+    expect(pipeOnNodeChange(editor, node, prevNode, insertNodeOperation)).toBe(
+      true
+    );
     expect(first).toHaveBeenCalledTimes(1);
     expect(second).toHaveBeenCalledTimes(1);
     expect(third).not.toHaveBeenCalled();
     expect(second.mock.calls[0]?.[0]).toMatchObject({
       node,
-      operation,
+      operation: insertNodeOperation,
       prevNode,
     });
   });

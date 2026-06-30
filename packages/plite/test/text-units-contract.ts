@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { getSnapshot as editorGetSnapshot } from '@platejs/plite/internal';
 
-import { createEditor, type Descendant, NodeApi } from '../src';
+import { createEditor, type Element, NodeApi } from '@platejs/plite';
 import { getCharacterDistance, getWordDistance } from '../src/text-units';
 
 type LexicalGraphemeCase = {
@@ -105,7 +105,7 @@ const lexical7163GraphemeCases: readonly LexicalGraphemeCase[] = [
   },
 ];
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -130,7 +130,10 @@ const createTextEditor = (text: string, offset: number) => {
 };
 
 const getEditorText = (editor: ReturnType<typeof createEditor>) =>
-  NodeApi.string(editorGetSnapshot(editor));
+  NodeApi.string({
+    type: 'root',
+    children: editorGetSnapshot(editor).children,
+  });
 
 const collectCharacterDistances = (text: string, reverse = false) => {
   const distances: number[] = [];

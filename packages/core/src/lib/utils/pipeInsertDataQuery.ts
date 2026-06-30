@@ -1,8 +1,8 @@
 import type { BaseEditor } from '../editor';
-import type { ParserOptions } from '../plugin/PluginBase';
+import type { ParserOptions } from '../plugin/SlatePlugin';
 import type { AnyBasePlugin } from '../plugin/BasePlugin';
 
-import { getBasePlugin } from '../plugin';
+import { getEditorPlugin } from '../plugin';
 
 /** Is the plugin disabled by another plugin. */
 export const pipeInsertDataQuery = (
@@ -16,7 +16,7 @@ export const pipeInsertDataQuery = (
     return (
       !query ||
       query({
-        ...getBasePlugin(editor, p as any),
+        ...getEditorPlugin(editor, p as any),
         ...options,
       })
     );

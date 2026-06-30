@@ -4,9 +4,9 @@ import {
   type NodeEntry,
   type NodeOf,
   type Path,
+  type QueryNodeOptions,
+  queryNode,
 } from '@platejs/plite';
-
-import { type QueryNodeOptions, queryNode } from './queryNode';
 
 export type ApplyDeepToNodesOptions<N extends Node> = {
   // Function to call on each node following the query.

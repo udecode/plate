@@ -339,7 +339,7 @@ const isReadOnlyNativeEditingKey = (nativeEvent: KeyboardEvent) => {
 const getLastCommitSingleOperationRoot = (
   editor: ReactRuntimeEditor
 ): RootKey | null => {
-  const commit = editor.read((state) => state.value.lastCommit());
+  const commit = editor.read((state) => state.lastCommit());
   const roots = new Set(
     (commit?.operations ?? [])
       .filter((operation) => operation.type !== 'set_selection')

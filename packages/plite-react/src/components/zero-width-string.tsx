@@ -1,3 +1,5 @@
+import React from 'react';
+
 export const ZeroWidthString = ({
   length = 0,
   isLineBreak = false,

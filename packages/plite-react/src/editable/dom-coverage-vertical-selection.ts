@@ -722,7 +722,7 @@ const isPlainVerticalLargeDocumentSelection = ({
   domStrategyRuntime,
   editor,
   event,
-  selection = editor.read((state) => state.selection.get()),
+  selection = editor.read((state) => state.selection()),
 }: {
   domStrategyRuntime: unknown;
   editor: ReactRuntimeEditor;
@@ -1076,7 +1076,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
   editor,
   event,
   forceModelMovement = false,
-  selection = editor.read((state) => state.selection.get()),
+  selection = editor.read((state) => state.selection()),
 }: {
   domStrategyRuntime: unknown;
   editor: ReactRuntimeEditor;
@@ -1314,7 +1314,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
 export const getPlainVerticalDOMCoverageExtension = ({
   editor,
   event,
-  selection = editor.read((state) => state.selection.get()),
+  selection = editor.read((state) => state.selection()),
 }: {
   editor: ReactRuntimeEditor;
   event: VerticalExtensionEvent;

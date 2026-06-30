@@ -10,6 +10,7 @@ import type {
   EditorNodeNormalizerContext,
   EditorPublicTransformMiddlewareKey,
   EditorRootNormalizerArgs,
+  EditorClipboardInsertDataCapability,
   EditorTransformMiddlewareArgs,
   EditorTransformMiddlewareContext,
   RegisteredEditorExtension,
@@ -512,12 +513,12 @@ const registerExtensionSlots = <TEditor extends Editor>(
         registerCapability(
           editor,
           'clipboard.insertData',
-          ((_runtimeEditor, data) =>
+          ((_runtimeEditor, data, next = () => false) =>
             slots.clipboard?.insertData?.(data, {
               editor,
-              next: () => false,
+              next,
               state: getEditorStateView(editor),
-            }) === true) as (editor: TEditor, data: DataTransfer) => boolean
+            }) === true) as EditorClipboardInsertDataCapability<TEditor>
         )
       );
     }
@@ -639,16 +640,21 @@ const registerExtensionSlots = <TEditor extends Editor>(
   };
 
   try {
-    const setupOutput = extension.setup?.(context) ?? {};
+    const rawSetupOutput = extension.setup?.(context);
+    const setupOutput =
+      rawSetupOutput && typeof rawSetupOutput === 'object'
+        ? rawSetupOutput
+        : undefined;
+    const setupSlots = setupOutput ?? {};
 
     registerSlots(extension);
-    registerSlots(setupOutput);
+    registerSlots(setupSlots);
 
     for (const cleanup of runtimeStateCleanups) {
       cleanups.push(cleanup);
     }
 
-    if (setupOutput.cleanup) {
+    if (setupOutput?.cleanup) {
       cleanups.push(setupOutput.cleanup);
     }
 

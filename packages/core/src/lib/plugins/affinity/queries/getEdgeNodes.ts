@@ -1,16 +1,15 @@
 import {
-  type TElement,
-  type TText,
+  type Element,
   ElementApi,
-  NodeApi,
+  type NodeEntry,
+  type Text,
   PathApi,
-} from '@platejs/slate';
-import { type NodeEntry, Path } from 'slate';
+} from '@platejs/plite';
 
-import type { SlateEditor } from '../../../editor';
+import type { BaseEditor } from '../../../editor';
 import type { EdgeNodes } from '../types';
 
-import { getPluginByType } from '../../../plugin/getSlatePlugin';
+import { getPluginByType } from '../../../plugin';
 
 /**
  * When the cursor is at a mark edge, this function returns the inward node and
@@ -18,25 +17,28 @@ import { getPluginByType } from '../../../plugin/getSlatePlugin';
  * the node before the text is returned. If the cursor is at the end of the
  * text, then the node after the text is returned. Otherwise, null is returned.
  */
-export const getEdgeNodes = (editor: SlateEditor): EdgeNodes | null => {
-  if (!editor.api.isCollapsed()) return null;
+export const getEdgeNodes = (editor: BaseEditor): EdgeNodes | null => {
+  if (!editor.read.selection.isCollapsed()) return null;
 
-  const cursor = editor.selection!.anchor;
+  const selection = editor.read.selection();
+  if (!selection) return null;
 
-  const textRange = editor.api.range(cursor.path);
+  const cursor = selection.anchor;
+
+  const textRange = editor.read.ranges.get(cursor.path);
 
   if (!textRange) return null;
 
-  const edge = editor.api.isStart(cursor, textRange)
+  const edge = editor.read.points.isStart(cursor, textRange)
     ? 'start'
-    : editor.api.isEnd(cursor, textRange)
+    : editor.read.points.isEnd(cursor, textRange)
       ? 'end'
       : null;
 
   if (!edge) return null;
 
-  const parent: TElement | null = (NodeApi.parent(editor, cursor.path) ??
-    null) as TElement | null;
+  const parent: Element | null =
+    (editor.read.nodes.parent(cursor.path)?.[0] as Element | undefined) ?? null;
 
   /** Inline elements */
 
@@ -49,9 +51,9 @@ export const getEdgeNodes = (editor: SlateEditor): EdgeNodes | null => {
     return parentAffinity === 'hard' || parentAffinity === 'directional';
   })();
 
-  const nodeEntry: NodeEntry<TElement | TText> = isAffinityInlineElement
+  const nodeEntry: NodeEntry<Element | Text> = isAffinityInlineElement
     ? [parent!, PathApi.parent(cursor.path)]
-    : [NodeApi.get(editor, cursor.path)!, cursor.path];
+    : [editor.read.nodes.get<Element | Text>(cursor.path)![0], cursor.path];
 
   if (
     edge === 'start' &&
@@ -62,10 +64,12 @@ export const getEdgeNodes = (editor: SlateEditor): EdgeNodes | null => {
   }
 
   const siblingPath =
-    edge === 'end' ? Path.next(nodeEntry[1]) : Path.previous(nodeEntry[1]);
-  const siblingNode = NodeApi.get<TText>(editor, siblingPath);
+    edge === 'end'
+      ? PathApi.next(nodeEntry[1])
+      : PathApi.previous(nodeEntry[1]);
+  const siblingNode = editor.read.nodes.get<Text>(siblingPath)?.[0];
 
-  const siblingEntry: NodeEntry<TText> | null = siblingNode
+  const siblingEntry: NodeEntry<Text> | null = siblingNode
     ? [siblingNode, siblingPath]
     : null;
 

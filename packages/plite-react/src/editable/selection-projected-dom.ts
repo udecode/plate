@@ -11,7 +11,7 @@ import { isDOMElement, isDOMText } from '@platejs/plite-dom';
 import { ELEMENT_TO_NODE } from '@platejs/plite-dom/internal';
 
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
-import { MAIN_ROOT_KEY } from '../root-key';
+import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import { createPliteViewSelection } from '../view-selection';
 
 import {
@@ -108,9 +108,7 @@ const getRootEdgePoint = (
   { edge }: { edge: 'end' | 'start' }
 ): Point | null =>
   editor.read((state) => {
-    const children = state.value.root(
-      root === MAIN_ROOT_KEY ? undefined : root
-    );
+    const children = readRootChildren(state, root);
     const point = getDescendantEdgePoint(children, { edge });
 
     return point ? { ...point, root } : null;

@@ -2,6 +2,7 @@ import {
   getEditorRuntime,
   setEditorRuntime,
 } from '../../src/core/editor-runtime';
+import { getOperations } from '../../src/core/public-state';
 
 const initializedEditors = new WeakSet();
 
@@ -52,13 +53,16 @@ export const createFixtureTransactionApi = (editor, tx) => {
     operations: tx.operations,
     points: tx.points,
     ranges: tx.ranges,
+    read: {
+      operations: () => getOperations(editor),
+    },
     runtime: tx.runtime,
     schema: tx.schema,
     selection: tx.selection,
     text: tx.text,
     value: tx.value,
     get children() {
-      return tx.value.root();
+      return tx.children();
     },
     normalize: tx.normalize,
     withoutNormalizing: tx.withoutNormalizing,

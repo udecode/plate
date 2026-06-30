@@ -5,10 +5,10 @@ import {
   createEditor,
   createEditorRuntime,
   createEditorView,
-  type Descendant,
-} from '../src';
+  type Element,
+} from '@platejs/plite';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -54,8 +54,12 @@ describe('state query contract', () => {
     const editor = createEditor({
       initialValue: [paragraph('one'), paragraph('two')],
     });
-    const first = editor.read((state) => state.nodes.get([0])[0]);
-    const firstText = editor.read((state) => state.nodes.get([0, 0])[0]);
+    const first = editor.read(
+      (state) => state.nodes.get([0], { required: true })[0]
+    );
+    const firstText = editor.read(
+      (state) => state.nodes.get([0, 0], { required: true })[0]
+    );
 
     assert.deepEqual(
       editor.read((state) => state.nodes.pathOf(first)),
@@ -83,7 +87,9 @@ describe('state query contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    const headerNode = headerEditor.read((state) => state.nodes.get([0])[0]);
+    const headerNode = headerEditor.read(
+      (state) => state.nodes.get([0], { required: true })[0]
+    );
 
     assert.deepEqual(
       headerEditor.read((state) => state.nodes.pathOf(headerNode)),
@@ -210,7 +216,7 @@ describe('state query contract', () => {
     );
     assert.deepEqual(
       editor.read((state) =>
-        state.fragment.get({
+        state.fragment({
           at: {
             anchor: { path: [9, 0], offset: 0 },
             focus: { path: [9, 0], offset: 0 },

@@ -7,23 +7,56 @@ import {
   createEditorRuntime,
   createEditorView,
   type Descendant,
+  type Element,
   defineEditorExtension,
+  type EditorUpdateTransaction,
   NodeApi,
-} from '../src';
+} from '@platejs/plite';
 import { getDirtyPathsForRoot } from '../src/core/update-dirty-paths';
-import { setEditorTargetRuntime } from '../src/internal';
+import {
+  above as editorAbove,
+  bookmark as editorBookmark,
+  deleteBackward as editorDeleteBackward,
+  getExtensionRegistry as editorGetExtensionRegistry,
+  getLastCommit as editorGetLastCommit,
+  insertText as editorInsertText,
+  isEditor as editorIsEditor,
+  pathRef as editorPathRef,
+  pointRef as editorPointRef,
+  rangeRef as editorRangeRef,
+  replace as editorReplaceBase,
+  reset as editorResetBase,
+  string as editorString,
+  setEditorTargetRuntime,
+} from '@platejs/plite/internal';
+
+type LegacySnapshotInput = Omit<
+  Parameters<typeof editorReplaceBase>[1],
+  'children'
+> & {
+  children: Descendant[];
+};
+
+const editorReplace = editorReplaceBase as unknown as (
+  editor: unknown,
+  input: LegacySnapshotInput
+) => void;
+const editorReset = editorResetBase as unknown as (
+  editor: unknown,
+  input: LegacySnapshotInput
+) => void;
 
 const paragraph = (text: string) =>
   ({
     type: 'paragraph',
     children: [{ text }],
-  }) satisfies Descendant;
+  }) satisfies Element;
 
 const markedParagraph = (text: string, marks: Record<string, unknown>) =>
   ({
     type: 'paragraph',
     children: [{ text, ...marks }],
-  }) satisfies Descendant;
+  }) satisfies Element;
 
 describe('editor runtime/view contract', () => {
   it('rejects explicit public main view roots', () => {
@@ -47,10 +80,11 @@ describe('editor runtime/view contract', () => {
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const commits: string[] = [];
     const unsubscribe = headerEditor.subscribe((snapshot) => {
-      commits.push(
-        ((snapshot.children[0] as Descendant).children[0] as { text: string })
-          .text
-      );
+      const [block] = snapshot.children as {
+        children: { text: string }[];
+      }[];
+
+      commits.push(block?.children[0]?.text ?? '');
     });
 
     editorReplace(headerEditor, {
@@ -62,14 +96,14 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('replaced header')] },
       }
     );
     assert.deepEqual(
-      headerEditor.read((state) => state.selection.get()),
+      headerEditor.read((state) => state.selection()),
       {
         anchor: { path: [0, 0], offset: 8, root: 'header' },
         focus: { path: [0, 0], offset: 8, root: 'header' },
@@ -84,14 +118,14 @@ describe('editor runtime/view contract', () => {
     unsubscribe();
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('reset header')] },
       }
     );
     assert.equal(
-      headerEditor.read((state) => state.selection.get()),
+      headerEditor.read((state) => state.selection()),
       null
     );
     assert.deepEqual(commits, ['replaced header', 'reset header']);
@@ -154,15 +188,15 @@ describe('editor runtime/view contract', () => {
     }, /read-only editor view/);
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body!')],
         roots: { header: [paragraph('header!')] },
       }
     );
     assert.deepEqual(
-      headerEditor.read((state) => state.value.get()),
-      mainEditor.read((state) => state.value.get())
+      headerEditor.read((state) => state.value()),
+      mainEditor.read((state) => state.value())
     );
     assert.equal(
       editorGetLastCommit(runtime.editor)?.operations[0]?.root,
@@ -181,7 +215,7 @@ describe('editor runtime/view contract', () => {
             },
           },
         }),
-      ],
+      ] as const,
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -208,7 +242,7 @@ describe('editor runtime/view contract', () => {
     headerEditor.update(() => {});
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       expectedValue
     );
 
@@ -219,7 +253,7 @@ describe('editor runtime/view contract', () => {
     }, /boom/);
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       expectedValue
     );
   });
@@ -234,7 +268,7 @@ describe('editor runtime/view contract', () => {
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const mainEditor = createEditorView(runtime);
     const snapshots: string[] = [];
-    const getSnapshotText = (children: readonly Descendant[]) =>
+    const getSnapshotText = (children: readonly Element[]) =>
       (children[0]?.children[0] as { text: string }).text;
 
     headerEditor.update((headerTx, { afterCommit }) => {
@@ -269,7 +303,7 @@ describe('editor runtime/view contract', () => {
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const mainEditor = createEditorView(runtime);
-    const getSnapshotText = (children: readonly Descendant[]) =>
+    const getSnapshotText = (children: readonly Element[]) =>
       (children[0]?.children[0] as { text: string }).text;
     let snapshotText = '';
 
@@ -302,7 +336,7 @@ describe('editor runtime/view contract', () => {
                   operation.text === '!'
               )
             ) {
-              editor.update((tx) => {
+              editor.update((tx: EditorUpdateTransaction) => {
                 tx.selection.set({
                   anchor: { path: [0, 0], offset: 0, root: 'header' },
                   focus: { path: [0, 0], offset: 0, root: 'header' },
@@ -311,7 +345,7 @@ describe('editor runtime/view contract', () => {
             }
           },
         }),
-      ],
+      ] as const,
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -350,11 +384,11 @@ describe('editor runtime/view contract', () => {
     const mainRuntimeId = runtime.read((state) => state.runtime.idAt([0]));
     const viewRead = headerEditor.read((state) => ({
       children: state.nodes.children(),
-      node: state.nodes.get([0])[0],
+      node: state.nodes.get([0], { required: true })[0],
       runtimeId: state.runtime.idAt([0]),
       snapshot: state.runtime.snapshot(),
       text: state.text.string([]),
-      value: state.value.get(),
+      value: state.value(),
     }));
 
     assert.deepEqual(viewRead.children, [paragraph('header')]);
@@ -385,7 +419,7 @@ describe('editor runtime/view contract', () => {
         at: headerRange,
         match: NodeApi.isText,
       }),
-      node: state.nodes.get(headerRange.anchor)[0],
+      node: state.nodes.get(headerRange.anchor, { required: true })[0],
       positions: [...state.points.positions({ at: headerRange })],
       staticText: editorString(runtime.editor, headerRange),
       text: state.text.string(headerRange),
@@ -462,18 +496,18 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.selection.get()),
+      runtime.read((state) => state.selection()),
       {
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       }
     );
     assert.equal(
-      headerEditor.read((state) => state.marks.get()),
+      headerEditor.read((state) => state.marks()),
       null
     );
     assert.deepEqual(
-      mainEditor.read((state) => state.marks.get()),
+      mainEditor.read((state) => state.marks()),
       {}
     );
   });
@@ -498,7 +532,7 @@ describe('editor runtime/view contract', () => {
     const read = headerEditor.read((state) => ({
       above: state.nodes.above({ match: NodeApi.isElement }),
       entries: state.nodes.toArray({ match: NodeApi.isText }),
-      fragment: state.fragment.get().map(NodeApi.string),
+      fragment: state.fragment().map(NodeApi.string),
       positions: [...state.points.positions()],
     }));
 
@@ -547,14 +581,14 @@ describe('editor runtime/view contract', () => {
     const mainEditor = createEditorView(runtime);
 
     assert.deepEqual(
-      headerEditor.read((state) => state.selection.get()),
+      headerEditor.read((state) => state.selection()),
       {
         anchor: { path: [0, 0], offset: 6, root: 'header' },
         focus: { path: [0, 0], offset: 6, root: 'header' },
       }
     );
     assert.equal(
-      mainEditor.read((state) => state.selection.get()),
+      mainEditor.read((state) => state.selection()),
       null
     );
   });
@@ -577,11 +611,11 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      headerEditor.read((state) => state.marks.get()),
+      headerEditor.read((state) => state.marks()),
       { bold: true }
     );
     assert.equal(
-      mainEditor.read((state) => state.marks.get()),
+      mainEditor.read((state) => state.marks()),
       null
     );
   });
@@ -641,22 +675,22 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.selection.get()),
+      runtime.read((state) => state.selection()),
       {
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       }
     );
     assert.deepEqual(
-      mainEditor.read((state) => state.marks.get()),
+      mainEditor.read((state) => state.marks()),
       {}
     );
     assert.equal(
-      headerEditor.read((state) => state.selection.get()),
+      headerEditor.read((state) => state.selection()),
       null
     );
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('main')],
         roots: { header: [paragraph('header')] },
@@ -685,7 +719,7 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('m1'), paragraph('m2')],
         roots: { header: [paragraph('h1'), paragraph('h2')] },
@@ -697,7 +731,7 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('m1'), paragraph('m2')],
         roots: { header: [paragraph('h1')] },
@@ -723,7 +757,7 @@ describe('editor runtime/view contract', () => {
     assert.deepEqual(mainDirtyInside, []);
     assert.deepEqual(getDirtyPathsForRoot(runtime.editor, 'main'), []);
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('m1')],
         roots: { header: [paragraph('h1'), paragraph('h2'), paragraph('h3')] },
@@ -751,14 +785,14 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('header!')] },
       }
     );
     assert.deepEqual(
-      runtime.read((state) => state.selection.get()),
+      runtime.read((state) => state.selection()),
       {
         anchor: { path: [0, 0], offset: 7, root: 'header' },
         focus: { path: [0, 0], offset: 7, root: 'header' },
@@ -781,7 +815,7 @@ describe('editor runtime/view contract', () => {
     let valueInUpdate: unknown = null;
 
     headerEditor.update((tx) => {
-      valueInUpdate = tx.value.get();
+      valueInUpdate = tx.value();
     });
 
     assert.deepEqual(valueInUpdate, {
@@ -814,7 +848,7 @@ describe('editor runtime/view contract', () => {
     }, /boom/);
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('main')],
         roots: { header: [paragraph('header')] },
@@ -833,7 +867,7 @@ describe('editor runtime/view contract', () => {
     let listenerOperationRoot: string | undefined;
     const unsubscribe = runtime.subscribe((snapshot, change) => {
       listenerText = (
-        snapshot.children[0] as Descendant & {
+        snapshot.children[0] as Element & {
           children: [{ text: string }];
         }
       ).children[0].text;
@@ -860,7 +894,7 @@ describe('editor runtime/view contract', () => {
       [paragraph('body')]
     );
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('header!')] },
@@ -892,7 +926,7 @@ describe('editor runtime/view contract', () => {
       mainRuntimeId
     );
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -929,7 +963,7 @@ describe('editor runtime/view contract', () => {
     const emptyParagraph = {
       type: 'paragraph',
       children: [],
-    } as Descendant;
+    } as Element;
     const runtime = createEditorRuntime({
       initialValue: {
         children: [emptyParagraph],
@@ -945,7 +979,7 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [emptyParagraph],
         roots: { header: [paragraph('inserted'), paragraph('header')] },
@@ -969,7 +1003,7 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('one'), paragraph('two!')] },
@@ -996,7 +1030,7 @@ describe('editor runtime/view contract', () => {
 
     assert.deepEqual(refPath, [0]);
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('main'), paragraph('other')],
         roots: { header: [paragraph('second')] },
@@ -1048,7 +1082,7 @@ describe('editor runtime/view contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
     assert.deepEqual(
-      runtime.read((state) => state.value.root()),
+      runtime.read((state) => state.children()),
       [paragraph('!main'), paragraph('other')]
     );
   });
@@ -1088,7 +1122,7 @@ describe('editor runtime/view contract', () => {
     });
     assert.equal(Object.hasOwn(range!.anchor, 'root'), false);
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body?')],
         roots: { header: [paragraph('header!')] },
@@ -1135,7 +1169,7 @@ describe('editor runtime/view contract', () => {
       focus: { path: [0, 0], offset: 7 },
     });
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body?')],
         roots: { header: [paragraph('header!')] },
@@ -1160,14 +1194,14 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.equal(
-      headerEditor.read((state) => state.selection.get()),
+      headerEditor.read((state) => state.selection()),
       null
     );
 
     editorInsertText(headerEditor, '!');
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -1179,7 +1213,7 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('header!')] },
@@ -1205,7 +1239,7 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       { children: [paragraph('main')], roots: { header: [paragraph('ad')] } }
     );
   });
@@ -1266,14 +1300,14 @@ describe('editor runtime/view contract', () => {
     }
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('helloConfidential quarterly plan')] },
       }
     );
     assert.deepEqual(
-      headerEditor.read((state) => state.selection.get()),
+      headerEditor.read((state) => state.selection()),
       {
         anchor: { path: [0, 0], offset: 5, root: 'header' },
         focus: { path: [0, 0], offset: 5, root: 'header' },
@@ -1283,7 +1317,7 @@ describe('editor runtime/view contract', () => {
 
   it("preserves the focused root selection when undoing another root's batch", () => {
     const runtime = createEditorRuntime({
-      extensions: [history()],
+      extensions: [history()] as const,
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -1313,22 +1347,22 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('header!')] },
       }
     );
     assert.deepEqual(
-      runtime.read((state) => state.selection.get()),
+      runtime.read((state) => state.selection()),
       mainSelection
     );
     assert.deepEqual(
-      mainEditor.read((state) => state.selection.get()),
+      mainEditor.read((state) => state.selection()),
       mainSelection
     );
     assert.equal(
-      headerEditor.read((state) => state.selection.get()),
+      headerEditor.read((state) => state.selection()),
       null
     );
 
@@ -1337,22 +1371,22 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
       }
     );
     assert.deepEqual(
-      runtime.read((state) => state.selection.get()),
+      runtime.read((state) => state.selection()),
       mainSelection
     );
     assert.deepEqual(
-      mainEditor.read((state) => state.selection.get()),
+      mainEditor.read((state) => state.selection()),
       mainSelection
     );
     assert.equal(
-      headerEditor.read((state) => state.selection.get()),
+      headerEditor.read((state) => state.selection()),
       null
     );
     assert.equal(
@@ -1366,7 +1400,7 @@ describe('editor runtime/view contract', () => {
 
   it("preserves the focused root selection when redoing another root's batch", () => {
     const runtime = createEditorRuntime({
-      extensions: [history()],
+      extensions: [history()] as const,
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -1401,29 +1435,29 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('header!')] },
       }
     );
     assert.deepEqual(
-      runtime.read((state) => state.selection.get()),
+      runtime.read((state) => state.selection()),
       mainSelection
     );
     assert.deepEqual(
-      mainEditor.read((state) => state.selection.get()),
+      mainEditor.read((state) => state.selection()),
       mainSelection
     );
     assert.equal(
-      headerEditor.read((state) => state.selection.get()),
+      headerEditor.read((state) => state.selection()),
       null
     );
   });
 
   it('restores null selection when undoing a programmatic non-main root batch', () => {
     const runtime = createEditorRuntime({
-      extensions: [history()],
+      extensions: [history()] as const,
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -1438,7 +1472,7 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.equal(
-      headerEditor.read((state) => state.selection.get()),
+      headerEditor.read((state) => state.selection()),
       null
     );
 
@@ -1453,25 +1487,25 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
       }
     );
     assert.equal(
-      headerEditor.read((state) => state.selection.get()),
+      headerEditor.read((state) => state.selection()),
       null
     );
     assert.equal(
-      runtime.read((state) => state.selection.get()),
+      runtime.read((state) => state.selection()),
       null
     );
   });
 
   it('applies main-root replay operations while inside a non-main view update', () => {
     const runtime = createEditorRuntime({
-      extensions: [history()],
+      extensions: [history()] as const,
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -1495,7 +1529,7 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -1546,7 +1580,7 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      target.read((state) => state.value.get()),
+      target.read((state) => state.value()),
       {
         children: [paragraph('body!')],
         roots: { header: [paragraph('header')] },
@@ -1584,7 +1618,7 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: {
@@ -1697,12 +1731,12 @@ describe('editor runtime/view contract', () => {
     });
 
     headerEditor.update((tx) => {
-      assert.equal(tx.selection.get(), null);
+      assert.equal(tx.selection(), null);
       tx.selection.set({
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       });
-      selectionAfterSet = tx.selection.get();
+      selectionAfterSet = tx.selection();
     });
 
     assert.deepEqual(selectionAfterSet, {
@@ -1728,7 +1762,7 @@ describe('editor runtime/view contract', () => {
       });
     });
     headerEditor.update((tx) => {
-      assert.equal(tx.selection.get(), null);
+      assert.equal(tx.selection(), null);
       tx.selection.set({
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
@@ -1737,14 +1771,14 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('!header')] },
       }
     );
     assert.deepEqual(
-      headerEditor.read((state) => state.selection.get()),
+      headerEditor.read((state) => state.selection()),
       {
         anchor: { path: [0, 0], offset: 1, root: 'header' },
         focus: { path: [0, 0], offset: 1, root: 'header' },
@@ -1764,7 +1798,7 @@ describe('editor runtime/view contract', () => {
     let listenerText: string | undefined;
     const unsubscribe = headerEditor.subscribe((snapshot) => {
       listenerText = (
-        snapshot.children[0] as Descendant & {
+        snapshot.children[0] as Element & {
           children: [{ text: string }];
         }
       ).children[0].text;
@@ -1804,7 +1838,7 @@ describe('editor runtime/view contract', () => {
 
     const unsubscribe = runtime.subscribe((snapshot) => {
       listenerText = (
-        snapshot.children[0] as Descendant & {
+        snapshot.children[0] as Element & {
           children: [{ text: string }];
         }
       ).children[0].text;
@@ -1815,7 +1849,7 @@ describe('editor runtime/view contract', () => {
 
     assert.equal(listenerText, 'body');
     assert.deepEqual(
-      runtime.read((state) => state.value.root('header')),
+      runtime.read((state) => state.root('header')),
       [paragraph('header!')]
     );
   });
@@ -1839,7 +1873,7 @@ describe('editor runtime/view contract', () => {
 
     const unsubscribe = runtime.subscribe((snapshot) => {
       listenerText = (
-        snapshot.children[0] as Descendant & {
+        snapshot.children[0] as Element & {
           children: [{ text: string }];
         }
       ).children[0].text;
@@ -1850,7 +1884,7 @@ describe('editor runtime/view contract', () => {
 
     assert.equal(listenerText, 'body');
     assert.deepEqual(
-      runtime.read((state) => state.value.root('header')),
+      runtime.read((state) => state.root('header')),
       [paragraph('heade')]
     );
   });
@@ -1874,7 +1908,7 @@ describe('editor runtime/view contract', () => {
 
     const unsubscribe = runtime.subscribe((snapshot) => {
       listenerText = (
-        snapshot.children[0] as Descendant & {
+        snapshot.children[0] as Element & {
           children: [{ text: string }];
         }
       ).children[0].text;
@@ -1887,7 +1921,7 @@ describe('editor runtime/view contract', () => {
 
     assert.equal(listenerText, 'body');
     assert.deepEqual(
-      runtime.read((state) => state.value.root('header')),
+      runtime.read((state) => state.root('header')),
       [paragraph('heade')]
     );
   });
@@ -1917,12 +1951,12 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.value.root('header')),
+      runtime.read((state) => state.root('header')),
       [paragraph('')]
     );
     assert.deepEqual(
       runtime
-        .read((state) => state.value.lastCommit()?.operations ?? [])
+        .read((state) => state.lastCommit()?.operations ?? [])
         .filter((operation) => operation.type !== 'set_selection'),
       [
         {
@@ -2058,11 +2092,11 @@ describe('editor runtime/view contract', () => {
 
     assert.equal(calls, 1);
     assert.equal(
-      runtime.read((state) => state.value.root()[0]?.type),
+      runtime.read((state) => state.children()[0]?.type),
       'paragraph'
     );
     assert.equal(
-      runtime.read((state) => state.value.root('header')[0]?.type),
+      runtime.read((state) => state.root('header')[0]?.type),
       'heading-one'
     );
   });

@@ -827,7 +827,7 @@ docs/plans/2026-06-14-slate-v2-alias-hard-cut.md
 docs/plans/2026-06-14-slate-v2-public-api-taste-and-beta-readiness-10h.md
 docs/plans/2026-06-14-slate-v2-public-beta-readiness-review.md
 docs/plans/2026-06-15-slate-browser-public-readiness.md
-docs/plans/2026-06-15-slate-extension-docs-cleanup.md
+docs/plans/2026-06-15-plite-extension-docs-cleanup.md
 docs/plans/2026-06-15-slate-migration-skill.md
 docs/plans/2026-06-15-slate-v2-docs-skeptical-polish.md
 docs/plans/2026-06-15-slate-v2-document-value-hard-cut-main-root.md
@@ -1188,7 +1188,7 @@ docs/solutions/performance-issues/2026-05-03-slate-rendering-strategy-needs-prod
 docs/solutions/performance-issues/2026-05-03-slate-tanstack-virtual-items-must-not-be-memoized.md
 docs/solutions/performance-issues/2026-05-05-slate-v2-large-paste-fast-path-must-still-be-a-logical-operation.md
 docs/solutions/performance-issues/2026-05-12-slate-render-props-should-not-carry-moving-paths.md
-docs/solutions/performance-issues/2026-05-18-slate-extension-oncommit-should-keep-snapshot-lazy.md
+docs/solutions/performance-issues/2026-05-18-plite-extension-oncommit-should-keep-snapshot-lazy.md
 docs/solutions/performance-issues/2026-05-23-slate-v2-core-operation-benchmarks-must-not-hide-snapshot-costs.md
 docs/solutions/runtime-errors/2026-05-23-slate-dom-operation-middleware-must-enter-operation-root-before-path-reads.md
 docs/solutions/runtime-errors/2026-05-23-slate-v2-rootless-explicit-selections-must-not-inherit-sibling-root.md

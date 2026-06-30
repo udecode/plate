@@ -68,7 +68,7 @@ const TestComponentNested = ({
 };
 
 const createStoreEditor = (
-  plugins: Parameters<typeof createBaseEditor>[0]['plugins']
+  plugins: NonNullable<Parameters<typeof createBaseEditor>[0]>['plugins']
 ) => createBaseEditor({ plugins });
 
 describe('BasePlugin store', () => {

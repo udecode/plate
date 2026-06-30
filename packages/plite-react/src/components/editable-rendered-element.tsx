@@ -1,4 +1,4 @@
-import { createElement, type ComponentType } from 'react';
+import React, { createElement, type ComponentType } from 'react';
 
 import type {
   Descendant,

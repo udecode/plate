@@ -18,31 +18,22 @@ const DEFAULT = {
 export const isEditOnly = (
   readOnly: boolean,
   plugin: any,
-  feature: keyof typeof DEFAULT | 'normalizeInitialValue'
+  feature: keyof typeof DEFAULT
 ): boolean => {
   if (!readOnly) return false;
 
-  const resolvedFeature =
-    feature === 'normalizeInitialValue' ? 'transformInitialValue' : feature;
-
   // If editOnly is true, use the default value for the feature
   if (plugin.editOnly === true) {
-    return DEFAULT[resolvedFeature];
+    return DEFAULT[feature];
   }
 
   // If editOnly is an object, use its value if specified, otherwise use default
   if (typeof plugin.editOnly === 'object') {
-    if (plugin.editOnly[resolvedFeature] !== undefined) {
-      return plugin.editOnly[resolvedFeature];
+    if (plugin.editOnly[feature] !== undefined) {
+      return plugin.editOnly[feature];
     }
 
-    if (resolvedFeature === 'transformInitialValue') {
-      return (
-        plugin.editOnly.normalizeInitialValue ?? DEFAULT.transformInitialValue
-      );
-    }
-
-    return DEFAULT[resolvedFeature];
+    return DEFAULT[feature];
   }
 
   return false;

@@ -581,7 +581,7 @@ describe('createPlitePageLayout', () => {
             children: [{ text: 'One '.repeat(5000) }],
           },
         ],
-        state: {
+        meta: {
           [pageSettings.key]: { margins: 72, preset: 'letter' },
         },
       },
@@ -1303,10 +1303,10 @@ describe('createPlitePageLayout', () => {
 
     expect(snapshot.pages).toHaveLength(2);
     expect(snapshot.blocks).toHaveLength(1);
-    expect(editor.read((state) => state.value.root())).toHaveLength(1);
-    expect(
-      editor.read((state) => state.value.root()[0]?.children)
-    ).toHaveLength(4);
+    expect(editor.read((state) => state.children())).toHaveLength(1);
+    expect(editor.read((state) => state.children()[0]?.children)).toHaveLength(
+      4
+    );
     expect(snapshot.fragments.map((fragment) => fragment.path)).toEqual([
       [0],
       [0],

@@ -1648,7 +1648,7 @@ const extractLayoutBlocks = (
   nodeLayout: PliteNodeLayoutProvider | undefined
 ): PlitePageLayoutBlock[] => {
   const children = editor.read((state) =>
-    state.value.root(toPublicRootOption(root))
+    root === MAIN_ROOT_KEY ? state.children() : state.root(root)
   );
 
   return children.flatMap((node: Descendant, index: number) => {
@@ -2950,7 +2950,7 @@ export const createPlitePageLayout = <
     const version = profileLayoutDuration('read-version', () =>
       editor.read(
         (state) =>
-          state.value.lastCommit()?.version ?? state.runtime.snapshot().version
+          state.lastCommit()?.version ?? state.runtime.snapshot().version
       )
     );
     const measurementProfile = profileLayoutDuration(

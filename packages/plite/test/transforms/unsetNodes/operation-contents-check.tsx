@@ -10,7 +10,7 @@ export const run = (editor) => {
 
   // unsetNodes uses null to remove properties, but that should not
   // flow through to the operation
-  const [setNode] = editor.value.operations();
+  const [setNode] = editor.read.operations();
 
   if (setNode.type === 'set_node') {
     assert.deepStrictEqual(setNode, {
@@ -22,7 +22,7 @@ export const run = (editor) => {
     });
   } else {
     // eslint-disable-next-line no-console
-    console.error('operations:', editor.value.operations());
+    console.error('operations:', editor.read.operations());
     assert.fail('operation was not a set node');
   }
 };

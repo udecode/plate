@@ -180,7 +180,7 @@ export const restoreHistoricSelection = <V extends Value>(
   }
 
   const operation = createHistoricSelectionOperation<V>(
-    tx.selection.get(),
+    tx.selection(),
     selection,
     root
   );

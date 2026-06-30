@@ -110,7 +110,7 @@ const withTest = (editor: any) => {
 };
 
 const getHistory = (editor: any) =>
-  editor.read((state: any) => state.history.get());
+  editor.read((state: any) => state.history());
 
 describe('@platejs/plite-history', () => {
   it('exposes the current history extension surface', () => {

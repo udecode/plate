@@ -1,26 +1,41 @@
-import { createSlateEditor } from '../editor';
-import { createSlatePlugin } from '../plugin';
+import type { Descendant, TextOperation } from '@platejs/plite';
+
+import { createBaseEditor } from '../editor';
+import { type BasePlugin, createBasePlugin } from '../plugin';
 import { pipeOnTextChange } from './pipeOnTextChange';
+
+type OnTextChange = NonNullable<
+  NonNullable<BasePlugin['handlers']>['onTextChange']
+>;
+
+const createTextChangePlugin = (key: string, onTextChange: OnTextChange) =>
+  createBasePlugin({
+    handlers: { onTextChange },
+    key,
+  });
+
+const node: Descendant = { text: 'node' };
+const insertTextOperation: TextOperation = {
+  offset: 0,
+  path: [0],
+  text: 'x',
+  type: 'insert_text',
+};
 
 describe('pipeOnTextChange', () => {
   it('skips handlers when the editor is read-only', () => {
     const onTextChange = mock(() => true);
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
-        createSlatePlugin({
-          handlers: { onTextChange },
-          key: 'test',
-        }),
+        createTextChangePlugin('test', onTextChange as unknown as OnTextChange),
       ],
+      readOnly: true,
     });
 
     onTextChange.mockClear();
-    editor.dom.readOnly = true;
 
     expect(
-      pipeOnTextChange(editor, { text: 'node' } as any, 'next', 'prev', {
-        type: 'insert_text',
-      } as any)
+      pipeOnTextChange(editor, node, 'next', 'prev', insertTextOperation)
     ).toBe(false);
     expect(onTextChange).not.toHaveBeenCalled();
   });
@@ -29,23 +44,12 @@ describe('pipeOnTextChange', () => {
     const first = mock(() => {});
     const second = mock(() => true);
     const third = mock(() => true);
-    const node = { text: 'node' } as any;
-    const operation = { type: 'insert_text' } as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
-        createSlatePlugin({
-          handlers: { onTextChange: first },
-          key: 'first',
-        }),
-        createSlatePlugin({
-          handlers: { onTextChange: second },
-          key: 'second',
-        }),
-        createSlatePlugin({
-          handlers: { onTextChange: third },
-          key: 'third',
-        }),
+        createTextChangePlugin('first', first as unknown as OnTextChange),
+        createTextChangePlugin('second', second as unknown as OnTextChange),
+        createTextChangePlugin('third', third as unknown as OnTextChange),
       ],
     });
 
@@ -53,15 +57,15 @@ describe('pipeOnTextChange', () => {
     second.mockClear();
     third.mockClear();
 
-    expect(pipeOnTextChange(editor, node, 'next', 'prev', operation)).toBe(
-      true
-    );
+    expect(
+      pipeOnTextChange(editor, node, 'next', 'prev', insertTextOperation)
+    ).toBe(true);
     expect(first).toHaveBeenCalledTimes(1);
     expect(second).toHaveBeenCalledTimes(1);
     expect(third).not.toHaveBeenCalled();
     expect(second.mock.calls[0]?.[0]).toMatchObject({
       node,
-      operation,
+      operation: insertTextOperation,
       prevText: 'prev',
       text: 'next',
     });

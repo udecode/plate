@@ -4,7 +4,12 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { cloneDeep } from 'lodash';
-import { createEditor, type Descendant } from '@platejs/plite';
+import {
+  createEditor,
+  type Element,
+  type Editor as EditorType,
+  type EditorUpdateTransaction,
+} from '@platejs/plite';
 import {
   getLastCommit as editorGetLastCommit,
   getOperations as editorGetOperations,
@@ -96,7 +101,7 @@ const runFixtureTree = (
   });
 };
 
-const withBatchTest = (editor: Editor, dirties: string[]) => {
+const withBatchTest = (editor: EditorType, dirties: string[]) => {
   const runtime = getEditorRuntime(editor);
   const { normalizeNode } = runtime;
 
@@ -162,11 +167,14 @@ describe('@platejs/plite', () => {
       const { normalizeNode } = runtime;
 
       runtime.normalizeNode = (entry, options) => {
-        normalizeNode(entry, { ...options, fallbackElement: () => ({}) });
+        normalizeNode(entry, {
+          ...options,
+          fallbackElement: () => ({ type: 'paragraph', children: [] }),
+        });
       };
     }
 
-    editor.update((tx) => {
+    editor.update(() => {
       editorNormalize(editor, { force: true });
     });
 
@@ -181,7 +189,7 @@ describe('@platejs/plite', () => {
     const { input, output, run } = module;
     const editor = withTest(input);
 
-    editor.update((tx) => {
+    editor.update((tx: EditorUpdateTransaction) => {
       run(createFixtureTransactionApi(editor, tx));
     });
 
@@ -207,11 +215,11 @@ describe('@platejs/plite', () => {
 
   describe('runtime ids', () => {
     it('keeps same-object nodes owner-scoped across editors', () => {
-      const shared: Descendant = {
+      const shared: Element = {
         type: 'paragraph',
         children: [{ text: 'shared' }],
       };
-      const other: Descendant = {
+      const other: Element = {
         type: 'paragraph',
         children: [{ text: 'other' }],
       };

@@ -222,11 +222,11 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('BefX'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 'BefX'.length },
       focus: { path: [0, 0], offset: 'BefX'.length },
     });
@@ -279,11 +279,11 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('BefZ'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 'BefZ'.length },
       focus: { path: [0, 0], offset: 'BefZ'.length },
     });
@@ -319,7 +319,7 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('Before'), contentCard(), paragraph('ter')],
       roots: { [SHARED_ROOT]: [paragraph('InZ')] },
     });
@@ -344,7 +344,7 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('Before'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('Inside'), paragraph('More')] },
     });
@@ -379,7 +379,7 @@ describe('projected editable commands', () => {
     ).toBe(true);
 
     expect(insertCount).toBe(1);
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('Before'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('Inside'), paragraph('More')] },
     });
@@ -403,7 +403,7 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('BefZ'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
@@ -424,7 +424,7 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('Before'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('Inside'), paragraph('More')] },
     });
@@ -437,7 +437,7 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('BefZ'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
@@ -459,11 +459,11 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('BefZ'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 'BefZ'.length },
       focus: { path: [0, 0], offset: 'BefZ'.length },
     });
@@ -500,7 +500,7 @@ describe('projected editable commands', () => {
     ).toBe(true);
 
     expect(insertCount).toBe(1);
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('BefH'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
@@ -534,7 +534,7 @@ describe('projected editable commands', () => {
     ).toBe(true);
 
     expect(insertCount).toBe(1);
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('BefH'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
@@ -586,7 +586,7 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('Before'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('Inside'), paragraph('More')] },
     });
@@ -611,7 +611,7 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('Before'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('Inside'), paragraph('More')] },
     });
@@ -630,11 +630,11 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('Bef'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 'Bef'.length },
       focus: { path: [0, 0], offset: 'Bef'.length },
     });
@@ -668,7 +668,7 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('Before'), contentCard(), paragraph('ter')],
       roots: { [SHARED_ROOT]: [paragraph('In')] },
     });
@@ -691,7 +691,7 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [
         paragraph('Bef'),
         paragraph(''),
@@ -734,7 +734,7 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('Before'), contentCard(), paragraph('ter')],
       roots: { [SHARED_ROOT]: [paragraph('In'), paragraph('')] },
     });
@@ -772,7 +772,7 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('Before'), contentCard(), paragraph('ter')],
       roots: { [SHARED_ROOT]: [paragraph(''), paragraph('In')] },
     });
@@ -824,7 +824,7 @@ describe('projected editable commands', () => {
 
     expect(seenDirections).toEqual([undefined]);
     expect(editorString(editor, [0])).toBe(' beta');
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -878,8 +878,8 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.root())).toEqual([paragraph('')]);
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read((state) => state.children())).toEqual([paragraph('')]);
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -904,7 +904,7 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read((state) => state.children())).toEqual([
       paragraph('alpha'),
     ]);
   });
@@ -935,8 +935,8 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.root())).toEqual([paragraph('')]);
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read((state) => state.children())).toEqual([paragraph('')]);
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -972,8 +972,8 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.marks.get())).toEqual({});
-    expect(editor.read((state) => state.value.root())).toEqual([paragraph('')]);
+    expect(editor.read((state) => state.marks())).toEqual({});
+    expect(editor.read((state) => state.children())).toEqual([paragraph('')]);
   });
 
   it('insert-text over a whole text block with inline children preserves the block', () => {
@@ -1014,14 +1014,14 @@ describe('projected editable commands', () => {
       },
     });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read((state) => state.children())).toEqual([
       {
         type: 'heading-one',
         id: 'stable-heading',
         children: [{ text: 'Z' }],
       },
     ]);
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -1056,10 +1056,8 @@ describe('projected editable commands', () => {
       },
     });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
-      paragraph('Z'),
-    ]);
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read((state) => state.children())).toEqual([paragraph('Z')]);
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -1081,7 +1079,7 @@ describe('projected editable commands', () => {
     expect(applyModelOwnedHistoryIntent({ direction: 'undo', editor })).toBe(
       true
     );
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('Before'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('Inside'), paragraph('More')] },
     });
@@ -1090,7 +1088,7 @@ describe('projected editable commands', () => {
     expect(applyModelOwnedHistoryIntent({ direction: 'redo', editor })).toBe(
       true
     );
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('BefX'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
@@ -1174,7 +1172,7 @@ describe('projected editable commands', () => {
     expect(events.map((event) => event.id)).not.toContain(
       'transaction-normalize'
     );
-    expect(editor.read((state) => state.value.root())).toEqual(initialValue);
+    expect(editor.read((state) => state.children())).toEqual(initialValue);
   });
 
   it('does not type into ambiguous projected selections across repeated content-root owners', () => {
@@ -1188,9 +1186,7 @@ describe('projected editable commands', () => {
     });
     writeAmbiguousRepeatedSelection(editor, graph);
 
-    const beforeValue = structuredClone(
-      editor.read((state) => state.value.get())
-    );
+    const beforeValue = structuredClone(editor.read((state) => state.value()));
     const beforeViewSelection = readPliteViewSelection(editor);
 
     expect(
@@ -1200,7 +1196,7 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual(beforeValue);
+    expect(editor.read((state) => state.value())).toEqual(beforeValue);
     expect(readPliteViewSelection(editor)).toEqual(beforeViewSelection);
   });
 
@@ -1215,9 +1211,7 @@ describe('projected editable commands', () => {
     });
     writeAmbiguousRepeatedSelection(editor, graph);
 
-    const beforeValue = structuredClone(
-      editor.read((state) => state.value.get())
-    );
+    const beforeValue = structuredClone(editor.read((state) => state.value()));
     const beforeViewSelection = readPliteViewSelection(editor);
 
     expect(
@@ -1227,7 +1221,7 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual(beforeValue);
+    expect(editor.read((state) => state.value())).toEqual(beforeValue);
     expect(readPliteViewSelection(editor)).toEqual(beforeViewSelection);
   });
 
@@ -1257,7 +1251,7 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('Before'), contentCard(), paragraph('XAfter')],
       roots: { [SHARED_ROOT]: [] },
     });
@@ -1277,9 +1271,7 @@ describe('projected editable commands', () => {
     writeAmbiguousRepeatedSelection(editor, graph);
     data.setData('text/plain', 'Z');
 
-    const beforeValue = structuredClone(
-      editor.read((state) => state.value.get())
-    );
+    const beforeValue = structuredClone(editor.read((state) => state.value()));
     const beforeViewSelection = readPliteViewSelection(editor);
 
     expect(beforeViewSelection).not.toBe(null);
@@ -1289,7 +1281,7 @@ describe('projected editable commands', () => {
         editor,
       })
     ).toBe(true);
-    expect(editor.read((state) => state.value.get())).toEqual(beforeValue);
+    expect(editor.read((state) => state.value())).toEqual(beforeValue);
     expect(readPliteViewSelection(editor)).toEqual(beforeViewSelection);
   });
 
@@ -1305,9 +1297,7 @@ describe('projected editable commands', () => {
     });
     writeForwardProjectedSelection(editor, graph);
 
-    const beforeValue = structuredClone(
-      editor.read((state) => state.value.get())
-    );
+    const beforeValue = structuredClone(editor.read((state) => state.value()));
     const beforeViewSelection = readPliteViewSelection(editor);
 
     expect(beforeViewSelection).not.toBe(null);
@@ -1317,7 +1307,7 @@ describe('projected editable commands', () => {
         editor,
       })
     ).toBe(true);
-    expect(editor.read((state) => state.value.get())).toEqual(beforeValue);
+    expect(editor.read((state) => state.value())).toEqual(beforeValue);
     expect(readPliteViewSelection(editor)).toEqual(beforeViewSelection);
   });
 
@@ -1338,9 +1328,7 @@ describe('projected editable commands', () => {
       `<span data-plite-fragment="${encodePliteFragment([paragraph('Z')])}" data-plite-fragment-format="x-other-plite-fragment"></span>`
     );
 
-    const beforeValue = structuredClone(
-      editor.read((state) => state.value.get())
-    );
+    const beforeValue = structuredClone(editor.read((state) => state.value()));
     const beforeViewSelection = readPliteViewSelection(editor);
 
     expect(
@@ -1349,7 +1337,7 @@ describe('projected editable commands', () => {
         editor,
       })
     ).toBe(true);
-    expect(editor.read((state) => state.value.get())).toEqual(beforeValue);
+    expect(editor.read((state) => state.value())).toEqual(beforeValue);
     expect(readPliteViewSelection(editor)).toEqual(beforeViewSelection);
   });
 
@@ -1372,7 +1360,7 @@ describe('projected editable commands', () => {
         editor,
       })
     ).toBe(true);
-    expect(editor.read((state) => state.value.get())).toEqual({
+    expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('Before'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('Inside'), paragraph('More')] },
     });
@@ -1396,7 +1384,7 @@ describe('projected editable commands', () => {
     });
 
     expect(readPliteViewSelection(editor)).toBe(null);
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [2, 0], offset: 0 },
       focus: { path: [2, 0], offset: 'After'.length },
     });

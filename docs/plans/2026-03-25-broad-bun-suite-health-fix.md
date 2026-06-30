@@ -27,7 +27,7 @@ Make the broad Bun package-graph sweep honest again after the non-React coverage
 
 ## Findings
 
-- The first broad failure presents as `editor.tf` being undefined inside [SlateExtensionPlugin.ts](packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.ts).
+- The first broad failure presents as `editor.tf` being undefined inside [PliteExtensionPlugin.ts](packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.ts).
 - That symptom is misleading.
 - [getLinkAttributes.spec.ts](packages/link/src/react/utils/getLinkAttributes.spec.ts) passes alone and fails only when paired with [floatingLinkTriggers.spec.ts](packages/link/src/react/utils/floatingLinkTriggers.spec.ts).
 - That makes the current first culprit test pollution, not a random product regression.
@@ -37,7 +37,7 @@ Make the broad Bun package-graph sweep honest again after the non-React coverage
 ## Outcome
 
 - Broad Bun package-graph sweep is green again.
-- The product code in `SlateExtensionPlugin` was not the root cause.
+- The product code in `PliteExtensionPlugin` was not the root cause.
 - The actual fix was test-harness cleanup:
   - [floatingLinkTriggers.spec.ts](packages/link/src/react/utils/floatingLinkTriggers.spec.ts) now spies on `platejs.getEditorPlugin` instead of mocking all of `platejs`
   - [useTableMergeState.spec.tsx](packages/table/src/react/hooks/useTableMergeState.spec.tsx) now spies on `platejs/react` and `../../lib` exports instead of replacing whole modules

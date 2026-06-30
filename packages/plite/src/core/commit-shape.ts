@@ -67,7 +67,9 @@ export const completeCommit = (
     version: number;
   }
 ): EditorCommit => {
-  const textChanged = change.classes.includes('text');
+  const textChanged =
+    change.classes.includes('text') ||
+    (change.dirtyTextRuntimeIds?.length ?? 0) > 0;
   const structureChanged =
     change.classes.includes('structural') || change.classes.includes('replace');
 

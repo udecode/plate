@@ -1,17 +1,24 @@
-import type { SlateEditor } from '../editor';
-import type { AnyPluginConfig, WithRequiredKey } from './BasePlugin';
+import type { BaseEditor } from '../editor';
+import type { AnyPluginConfig, WithRequiredKey } from './SlatePlugin';
 import type {
+  AnyBasePlugin,
+  BasePlugin,
   InferConfig,
-  SlatePlugin,
-  SlatePluginContext,
-} from './SlatePlugin';
+  BasePluginContext,
+} from './BasePlugin';
 
-export function getEditorPlugin<
-  P extends AnyPluginConfig | SlatePlugin<AnyPluginConfig>,
->(
-  editor: SlateEditor,
+export function getEditorPlugin<C extends AnyPluginConfig>(
+  editor: BaseEditor,
+  p: BasePlugin<C>
+): BasePluginContext<C>;
+export function getEditorPlugin<P extends AnyPluginConfig>(
+  editor: BaseEditor,
   p: WithRequiredKey<P>
-): SlatePluginContext<InferConfig<P> extends never ? P : InferConfig<P>> {
+): BasePluginContext<InferConfig<P> extends never ? P : InferConfig<P>>;
+export function getEditorPlugin(
+  editor: BaseEditor,
+  p: WithRequiredKey<AnyPluginConfig> | AnyBasePlugin
+): BasePluginContext<any> {
   const plugin = editor.getPlugin(p) as any;
 
   return {
@@ -21,7 +28,6 @@ export function getEditorPlugin<
     setOption: ((keyOrOptions: any, value: any) =>
       editor.setOption(plugin, keyOrOptions, value)) as any,
     setOptions: ((options: any) => editor.setOptions(plugin, options)) as any,
-    tf: editor.transforms,
     type: plugin.node.type,
     getOption: (key: any, ...args: any) =>
       (editor.getOption as any)(plugin, key, ...args),

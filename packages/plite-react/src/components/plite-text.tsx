@@ -1,4 +1,4 @@
-import type { ReactNode, Ref } from 'react';
+import React, { type ReactNode, type Ref } from 'react';
 import type { Path, RuntimeId } from '@platejs/plite';
 
 import { recordPliteReactRender } from '../render-profiler';

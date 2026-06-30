@@ -1404,7 +1404,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
     }
 
     const anchorPathKey = getSnapshotPathKey(anchorPath);
-    const lastCommit = editor.read((state) => state.value.lastCommit());
+    const lastCommit = editor.read((state) => state.lastCommit());
 
     if (lastCommit?.textChanged) {
       return;

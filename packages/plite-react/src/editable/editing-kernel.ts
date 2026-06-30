@@ -787,7 +787,7 @@ export const createEditableKernelTraceEntry = ({
     frameId: frame?.id ?? null,
     movement: trace.movement ?? null,
     operations:
-      trace.operations ?? editor.read((state) => [...state.value.operations()]),
+      trace.operations ?? editor.read((state) => [...state.operations()]),
     repairPolicy:
       trace.repairPolicy ??
       getEditableRepairPolicy({

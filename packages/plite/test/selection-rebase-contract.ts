@@ -7,9 +7,9 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import { createEditor, type Descendant } from '../src';
+import { createEditor, type Descendant, type Element } from '@platejs/plite';
 
-const paragraphWithEmptySuffixLeaves = (): Descendant => ({
+const paragraphWithEmptySuffixLeaves = (): Element => ({
   type: 'paragraph',
   children: [
     { text: 'This is editable ' },
@@ -22,7 +22,7 @@ const paragraphWithEmptySuffixLeaves = (): Descendant => ({
   ],
 });
 
-const paragraphWithPunctuationSuffixLeaf = (): Descendant => ({
+const paragraphWithPunctuationSuffixLeaf = (): Element => ({
   type: 'paragraph',
   children: [
     { text: 'This is editable ' },

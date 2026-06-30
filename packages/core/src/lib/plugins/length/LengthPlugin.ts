@@ -1,31 +1,28 @@
 import type { LengthConfig } from '../getCorePlugins';
 
-import { createTSlatePlugin } from '../../plugin';
+import { createBasePlugin } from '../../plugin';
 
-export const LengthPlugin = createTSlatePlugin<LengthConfig>({
+export const LengthPlugin = createBasePlugin<LengthConfig>({
   key: 'length',
-}).overrideEditor(({ editor, getOptions, tf: { apply } }) => ({
-  transforms: {
-    apply(operation) {
-      editor.tf.withoutNormalizing(() => {
-        apply(operation);
+}).extendExtension(({ editor, getOptions }) => ({
+  operations: {
+    apply({ operation, next }) {
+      next(operation);
 
-        const options = getOptions();
+      const { maxLength } = getOptions();
 
-        if (options.maxLength) {
-          const length = editor.api.string([]).length;
+      if (typeof maxLength !== 'number') return;
 
-          // Make sure to remove overflow of text beyond character limit
-          if (length > options.maxLength) {
-            const overflowLength = length - options.maxLength;
+      const length = editor.read.text.string([]).length;
 
-            editor.tf.delete({
-              distance: overflowLength,
-              reverse: true,
-              unit: 'character',
-            });
-          }
-        }
+      if (length <= maxLength) return;
+
+      editor.update((tx) => {
+        tx.text.delete({
+          distance: length - maxLength,
+          reverse: true,
+          unit: 'character',
+        });
       });
     },
   },

@@ -2,7 +2,7 @@
 
 import { jsx } from '../..';
 
-jsx;
+void jsx;
 
 import { cloneDeep } from 'lodash';
 

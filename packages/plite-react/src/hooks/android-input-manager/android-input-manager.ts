@@ -216,7 +216,7 @@ export function createAndroidInputManager({
       editorRangeRef(editor, liveSelection, { affinity: 'forward' });
     EDITOR_TO_USER_MARKS.set(
       editor,
-      editor.read((state) => state.marks.get())
+      editor.read((state) => state.marks())
     );
 
     let scheduleSelectionChange = hasPendingDiffs();
@@ -1070,7 +1070,7 @@ export function createAndroidInputManager({
       flushTimeoutId = null;
     }
 
-    const selection = editor.read((state) => state.selection.get());
+    const selection = editor.read((state) => state.selection());
     if (!range) {
       return;
     }

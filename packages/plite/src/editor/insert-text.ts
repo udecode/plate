@@ -1,6 +1,5 @@
 import { executeCommand } from '../core/command-registry';
 import {
-  getCurrentMarks,
   getCurrentSelection,
   getCurrentSelectionRoot,
   runEditorTransaction,
@@ -8,7 +7,6 @@ import {
   withEditorOperationRoot,
   withEditorOperationRootChildren,
 } from '../core/public-state';
-import { getEditorTransformRegistry } from '../core/transform-registry';
 import {
   LocationApi,
   type Range,
@@ -99,8 +97,6 @@ export const insertText: EditorStaticApi['insertText'] = (
         runEditorTransaction(editor, (tx) => {
           const hasExplicitAt = command.options?.at !== undefined;
           let target = tx.resolveTarget({ at: command.options?.at });
-          const marks = getCurrentMarks(editor);
-
           if (!target && !hasExplicitAt && tx.getModelSelection() == null) {
             target = getDefaultInsertLocation(editor);
           }
@@ -114,30 +110,20 @@ export const insertText: EditorStaticApi['insertText'] = (
             return;
           }
 
-          if (marks && !hasExplicitAt) {
-            const node = { text: command.text, ...marks };
-            getEditorTransformRegistry(editor).insertNodes(node, {
-              at: target,
-              select: !hasExplicitAt,
-              voids: command.options?.voids,
-            });
-          } else {
-            if (
-              command.text.length > 0 &&
-              !hasExplicitAt &&
-              tx.getModelSelection() == null &&
-              LocationApi.isPoint(target)
-            ) {
-              getEditorTransformRegistry(editor).select(target);
+          if (!hasExplicitAt) {
+            if (LocationApi.isPoint(target)) {
+              tx.setSelection({ anchor: target, focus: target });
+            } else if (LocationApi.isRange(target)) {
+              tx.setSelection(target);
             }
-
-            applyInsertText(editor, command.text, {
-              ...command.options,
-              at: target,
-            });
           }
 
-          if (!hasExplicitAt) {
+          applyInsertText(editor, command.text, {
+            ...command.options,
+            at: hasExplicitAt ? target : undefined,
+          });
+
+          if (!hasExplicitAt && command.options?.marks !== false) {
             setCurrentMarks(editor, null);
           }
           handled = true;

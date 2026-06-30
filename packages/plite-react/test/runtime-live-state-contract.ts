@@ -87,6 +87,6 @@ describe('plite-react runtime live state facade', () => {
     expect(readRuntimeSelection(editor)).toEqual(selection);
 
     writeRuntimeMarks(editor, { bold: true });
-    expect(editor.read((state) => state.marks.get())).toEqual({ bold: true });
+    expect(editor.read((state) => state.marks())).toEqual({ bold: true });
   });
 });

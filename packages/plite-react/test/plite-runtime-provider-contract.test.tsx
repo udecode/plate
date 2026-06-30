@@ -161,7 +161,7 @@ describe('PliteRuntime provider contract', () => {
     expect(screen.getByTestId('island-body-status')).toHaveTextContent(
       `${childRoot}:about!`
     );
-    expect(editor.read((state) => state.value.root())).toMatchObject([
+    expect(editor.read((state) => state.children())).toMatchObject([
       {
         childRoots: { body: childRoot },
         type: 'editable-void',
@@ -563,7 +563,7 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const { result } = renderHook(
-      () => usePliteRootState('header', (state) => state.selection.get()),
+      () => usePliteRootState('header', (state) => state.selection()),
       { wrapper: RuntimeWrapper }
     );
 
@@ -838,7 +838,7 @@ describe('PliteRuntime provider contract', () => {
       }
 
       expect(update).not.toHaveBeenCalled();
-      expect(editor.read((state) => state.selection.get())).toEqual({
+      expect(editor.read((state) => state.selection())).toEqual({
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
@@ -1000,7 +1000,7 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const HeaderMarksProbe = () => {
-      headerMarks(usePliteRootState('header', (state) => state.marks.get()));
+      headerMarks(usePliteRootState('header', (state) => state.marks()));
 
       return null;
     };
@@ -1406,7 +1406,7 @@ describe('PliteRuntime provider contract', () => {
       fireEvent.focusIn(screen.getByLabelText('Header editor'));
     });
 
-    expect(headerEditor.read((state) => state.selection.get())).toEqual(
+    expect(headerEditor.read((state) => state.selection())).toEqual(
       expectedSelection
     );
   });

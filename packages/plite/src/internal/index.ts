@@ -95,6 +95,7 @@ export {
   toggleMark,
   unhangRange,
   unsetNodes,
+  unwrapNodes,
   update,
   void,
   withoutNormalizing,

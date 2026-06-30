@@ -58,7 +58,7 @@ Remaining owner groups:
   whether Plate routes grow the new Slate-browser handle, keep a Plate-specific
   proof adapter, or expose a bridge during Plate v2 migration.
 - Plugin contracts: `BasePlugin`, `SlatePlugin`, `PlatePlugin`, `EditableProps`, `PlateStore`, element store, decorate/on-change pipes.
-- Runtime API helpers: node-id, slate-extension, override rules, affinity, navigation feedback, DOM, chunking.
+- Runtime API helpers: node-id, plite-extension, override rules, affinity, navigation feedback, DOM, chunking.
 - Pure primitive helpers: path/point/range equality and structural spec ranges can use `@platejs/slate` now when they do not pass a Plate editor as a v2 root.
 - Tests/type contracts: core specs and type-tests that still create legacy editors.
 - Aggregate package: `packages/plate/src/index.tsx` legacy re-export.

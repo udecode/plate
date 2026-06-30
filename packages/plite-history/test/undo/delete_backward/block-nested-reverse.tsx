@@ -2,7 +2,7 @@
 
 import { jsx } from '../..';
 
-jsx;
+void jsx;
 
 export const run = (editor) => {
   editor.update(() => {

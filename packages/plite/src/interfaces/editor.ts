@@ -87,16 +87,16 @@ export type RootKey = string;
 
 export type EditorDocumentValue<V extends Value = Value> = {
   children: V;
+  meta?: Record<string, unknown>;
   roots?: Record<RootKey, V>;
-  state?: Record<string, unknown>;
 };
 
 export type InitialValue<V extends Value = Value> =
   | V
   | {
       children: V;
+      meta?: Record<string, unknown>;
       roots?: Record<RootKey, V>;
-      state?: Record<string, unknown>;
     };
 
 export type StateFieldCollabPolicy = 'local' | 'shared';
@@ -149,25 +149,15 @@ type BivariantFunction<TFn> = TFn extends (
   ? BivariantMethod<TArgs, TResult>
   : never;
 
-export type EditorStateValueApi<V extends Value = Value> = {
-  get: () => EditorDocumentValue<V>;
-  lastCommit: () => EditorCommit<V> | null;
-  operations: (startIndex?: number) => readonly Operation<V>[];
-  /**
-   * Reads one document root without cloning the serializable document value.
-   * Omit `root` to read the primary document.
-   * Treat the returned nodes as read-only live state.
-   */
-  root: (root?: RootKey) => readonly V[number][];
-};
+export type EditorStateValueApi<V extends Value = Value> =
+  () => EditorDocumentValue<V>;
 
 export type EditorTransactionValueApi<V extends Value = Value> =
   EditorStateValueApi<V> & {
     replace: (input: SnapshotInput<V>) => void;
   };
 
-export type EditorStateSelectionApi = {
-  get: () => Selection;
+export type EditorStateSelectionApi = (() => Selection) & {
   isCollapsed: () => boolean;
 };
 
@@ -182,9 +172,9 @@ export type EditorFragmentReadOptions = {
   unwrap?: readonly string[];
 };
 
-export type EditorStateFragmentApi<V extends Value = Value> = {
-  get: (options?: EditorFragmentReadOptions) => DescendantIn<V>[];
-};
+export type EditorStateFragmentApi<V extends Value = Value> = (
+  options?: EditorFragmentReadOptions
+) => DescendantIn<V>[];
 
 export type EditorTransactionSelectionApi = EditorStateSelectionApi & {
   clear: () => void;
@@ -195,9 +185,8 @@ export type EditorTransactionSelectionApi = EditorStateSelectionApi & {
   setRange: (props: Partial<Range>) => void;
 };
 
-export type EditorStateMarksApi<V extends Value = Value> = {
-  get: () => EditorMarks<V> | null;
-};
+export type EditorStateMarksApi<V extends Value = Value> =
+  () => EditorMarks<V> | null;
 
 export type EditorTransactionMarksApi<V extends Value = Value> =
   EditorStateMarksApi<V> & {
@@ -248,6 +237,7 @@ export type EditorUpdateMetadata = {
 };
 
 export type EditorOperationReplayOptions = {
+  normalize?: boolean;
   tag?: EditorUpdateTagInput;
 };
 
@@ -266,6 +256,10 @@ export type EditorTransactionRootsApi<V extends Value = Value> = {
 
 export type EditorTransactionStatePatchesApi = {
   replay: (statePatches: readonly EditorStatePatch[]) => void;
+};
+
+export type EditorTransactionMetadataApi = {
+  merge: (metadata: EditorUpdateMetadata) => void;
 };
 
 export type EditorStateNodesApi = {
@@ -297,7 +291,7 @@ export type EditorStateNodesApi = {
   hasInlines: (element: Element) => boolean;
   hasPath: (path: Path) => boolean;
   hasTexts: (element: Element) => boolean;
-  isBlock: (element: Element) => boolean;
+  isBlock: (element: Node) => boolean;
   isEmpty: (element: Element) => boolean;
   last: (at: Location, options?: EditorLastOptions) => NodeEntry | undefined;
   leaf: {
@@ -528,26 +522,27 @@ export type EditorStateSchemaApi = {
     property: string
   ) => EditorElementPropertyDescriptor | null;
   getElementSpec: (type: string) => EditorElementSpec | null;
-  isAtom: (element: Element) => boolean;
-  isBlock: (element: Element) => boolean;
-  isEditableIsland: (element: Element) => boolean;
+  isAtom: (element: Node) => boolean;
+  isBlock: (element: Node) => boolean;
+  isEditableIsland: (element: Node) => boolean;
   isElementPropertyEqual: (
     type: string,
     property: string,
     left: unknown,
     right: unknown
   ) => boolean;
-  isInline: (element: Element) => boolean;
-  isIsolating: (element: Element) => boolean;
-  isKeyboardSelectable: (element: Element) => boolean;
-  isReadOnly: (element: Element) => boolean;
-  isSelectable: (element: Element) => boolean;
-  isVoid: (element: Element) => boolean;
-  markableVoid: (element: Element) => boolean;
+  isInline: (element: Node) => boolean;
+  isIsolating: (element: Node) => boolean;
+  isKeyboardSelectable: (element: Node) => boolean;
+  isReadOnly: (element: Node) => boolean;
+  isSelectable: (element: Node) => boolean;
+  isVoid: (element: Node) => boolean;
+  markableVoid: (element: Node) => boolean;
 };
 
 export type EditorStateRuntimeApi<V extends Value = Value> = {
   idAt: (path: Path) => RuntimeId | null;
+  pathRef: (path: Path, options?: EditorPathRefOptions) => PathRef;
   pathOf: (runtimeId: RuntimeId) => Path | null;
   snapshot: () => EditorSnapshot<V>;
 };
@@ -607,32 +602,39 @@ export type EditorElementSpec = {
   keyboardSelectable?: boolean;
   markableVoid?: boolean;
   match?: (element: Element) => boolean;
-  properties?: Readonly<Record<string, EditorElementPropertyDescriptor>>;
+  properties?: Readonly<Record<string, EditorElementPropertyDescriptor<any>>>;
   readOnly?: boolean;
   selectable?: boolean;
   type: string;
   void?: EditorElementVoidKind;
 };
 
-declare const EDITOR_STATE_EXTENSION_VALUE: unique symbol;
+declare const EDITOR_COMMAND_VALUE: unique symbol;
 
-declare const EDITOR_TX_EXTENSION_VALUE: unique symbol;
-
-export interface EditorStateExtensionGroups<V extends Value = Value> {
-  readonly [EDITOR_STATE_EXTENSION_VALUE]?: V;
-}
-
-export interface EditorTxExtensionGroups<V extends Value = Value> {
-  readonly [EDITOR_TX_EXTENSION_VALUE]?: V;
-}
+declare const EDITOR_EXTENSION_TYPES: unique symbol;
 
 export type EditorCoreStateView<V extends Value = Value> = {
+  /**
+   * Read the primary document children without cloning the full serializable
+   * document value. Treat the returned nodes as read-only live state.
+   */
+  children: () => readonly [...V];
   fragment: EditorStateFragmentApi<V>;
   getField: <TValue>(field: EditorStateField<TValue>) => TValue;
+  lastCommit: () => EditorCommit<V> | null;
   marks: EditorStateMarksApi<V>;
+  /**
+   * Read persisted document metadata. Use state fields for typed access.
+   */
+  meta: () => Readonly<Record<string, unknown>> | undefined;
   nodes: EditorStateNodesApi;
+  operations: (startIndex?: number) => readonly Operation<V>[];
   points: EditorStatePointsApi;
   ranges: EditorStateRangesApi;
+  /**
+   * Read a named secondary root. Use `children()` for the primary document.
+   */
+  root: (root: RootKey) => readonly V[number][];
   runtime: EditorStateRuntimeApi<V>;
   schema: EditorStateSchemaApi;
   selection: EditorStateSelectionApi;
@@ -648,11 +650,12 @@ export type EditorStateView<
 
 export type EditorCoreUpdateTransaction<V extends Value = Value> = Omit<
   EditorCoreStateView<V>,
-  'marks' | 'nodes' | 'selection' | 'text' | 'value'
+  'marks' | 'nodes' | 'operations' | 'selection' | 'text' | 'value'
 > & {
   break: EditorTransactionBreakApi;
   fragment: EditorTransactionFragmentApi<V>;
   marks: EditorTransactionMarksApi<V>;
+  metadata: EditorTransactionMetadataApi;
   nodes: EditorTransactionNodesApi<V>;
   normalize: (options?: EditorNormalizeOptions) => void;
   operations: EditorTransactionOperationsApi<V>;
@@ -673,13 +676,16 @@ export type EditorUpdateTransaction<
   TExtensions extends readonly unknown[] = readonly [],
 > = EditorCoreUpdateTransaction<V> & EditorInstalledTxGroups<V, TExtensions>;
 
-export type EditorReadMethods<V extends Value = Value> = EditorCoreStateView<V>;
+export type EditorReadMethods<
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+> = EditorCoreStateView<V> & EditorInstalledStateGroups<V, TExtensions>;
 
 export type EditorRead<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
 > = (<T>(fn: (state: EditorStateView<V, TExtensions>) => T) => T) &
-  EditorReadMethods<V>;
+  EditorReadMethods<V, TExtensions>;
 
 type EditorBivariantMethods<T> = {
   [K in keyof T]: T[K] extends (...args: any[]) => any
@@ -687,7 +693,7 @@ type EditorBivariantMethods<T> = {
     : T[K];
 };
 
-export type EditorUpdateMethods<V extends Value = Value> = {
+export type EditorCoreUpdateMethods<V extends Value = Value> = {
   break: EditorBivariantMethods<EditorTransactionBreakApi>;
   fragment: EditorBivariantMethods<
     Pick<EditorTransactionFragmentApi<V>, 'delete' | 'insert'>
@@ -733,20 +739,29 @@ export type EditorUpdateMethods<V extends Value = Value> = {
   >;
 };
 
+type EditorExtensionUpdateMethods<TGroups> = {
+  [K in keyof TGroups]: TGroups[K] extends object
+    ? EditorBivariantMethods<TGroups[K]>
+    : TGroups[K];
+};
+
+export type EditorUpdateMethods<
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+> = EditorCoreUpdateMethods<V> &
+  EditorExtensionUpdateMethods<EditorInstalledTxGroups<V, TExtensions>>;
+
 export type EditorUpdate<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-> = BivariantMethod<
-  [
-    fn: (
-      transaction: EditorUpdateTransaction<V, TExtensions>,
-      context: EditorUpdateContext<BaseEditor<V, TExtensions>>
-    ) => void,
-    options?: EditorUpdateOptions,
-  ],
-  void
-> &
-  EditorUpdateMethods<V>;
+> = (<TTx extends object = {}>(
+  fn: (
+    transaction: EditorUpdateTransaction<V, TExtensions> & TTx,
+    context: EditorUpdateContext<BaseEditor<V, TExtensions>>
+  ) => void,
+  options?: EditorUpdateOptions
+) => void) &
+  EditorUpdateMethods<V, TExtensions>;
 
 export type EditorUpdateContext<TEditor extends BaseEditor<any, any> = Editor> =
   {
@@ -757,7 +772,7 @@ export interface BaseEditor<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
 > {
-  api: Readonly<EditorInstalledApiGroups<TExtensions>>;
+  api: Readonly<EditorCoreApiGroups & EditorInstalledApiGroups<TExtensions>>;
   getApi: <
     TExtension extends EditorResolvedInstalledExtensions<TExtensions>[number],
   >(
@@ -1112,7 +1127,7 @@ export type EditorQueryMiddlewareArgs<_V extends Value = Value> = {
     hasInlines: { element: Element };
     hasPath: { path: Path };
     hasTexts: { element: Element };
-    isBlock: { element: Element };
+    isBlock: { element: Node };
     isEmpty: { element: Element };
     last: { at: Location; options?: EditorLastOptions };
     leaf: { at: Location; options?: EditorLeafReadOptions };
@@ -1149,6 +1164,7 @@ export type EditorQueryMiddlewareArgs<_V extends Value = Value> = {
     get: {
       at: Location;
       options?: EditorReadOptions;
+      to?: Location;
       toOrOptions?: Location | EditorReadOptions;
     };
     project: { range: Range };
@@ -1357,7 +1373,7 @@ export type EditorCommitClass =
 export type SnapshotDirtyScope = 'none' | 'paths' | 'all';
 
 export type SnapshotInput<V extends Value = Value> = {
-  children: V;
+  children: V | Descendant[];
   selection?: Selection;
   marks?: EditorMarks<V> | null;
 };
@@ -1421,12 +1437,14 @@ export type EditorTargetRuntime = {
 
 export type EditorCommand = {
   type: string;
+  [key: string]: unknown;
 };
 
 export type EditorCommandDefinition<
   TCommand extends EditorCommand = EditorCommand,
 > = Readonly<{
   type: TCommand['type'];
+  readonly [EDITOR_COMMAND_VALUE]?: TCommand;
 }>;
 
 export type EditorCommandReference<
@@ -1513,7 +1531,7 @@ export type EditorNormalizerTransaction<V extends Value = Value> = Pick<
   EditorCoreUpdateTransaction<V>,
   'break' | 'fragment' | 'marks' | 'nodes' | 'selection' | 'text'
 > & {
-  value: Pick<EditorCoreUpdateTransaction<V>['value'], 'get'>;
+  value: EditorStateValueApi<V>;
 };
 
 export type EditorNodeNormalizerContext<
@@ -1567,24 +1585,10 @@ export type EditorExtensionTxGroup<
 
 export type EditorExtensionStateGroups<
   TEditor extends BaseEditor<any> = Editor,
-> = {
-  [K in keyof EditorStateExtensionGroups<
-    ValueOf<TEditor>
-  >]?: EditorExtensionStateGroup<
-    TEditor,
-    EditorStateExtensionGroups<ValueOf<TEditor>>[K]
-  >;
-} & Record<string, EditorExtensionStateGroup<TEditor> | undefined>;
+> = Record<string, EditorExtensionStateGroup<TEditor> | undefined>;
 
 export type EditorExtensionTxGroups<TEditor extends BaseEditor<any> = Editor> =
-  {
-    [K in keyof EditorTxExtensionGroups<
-      ValueOf<TEditor>
-    >]?: EditorExtensionTxGroup<
-      TEditor,
-      EditorTxExtensionGroups<ValueOf<TEditor>>[K]
-    >;
-  } & Record<string, EditorExtensionTxGroup<TEditor> | undefined>;
+  Record<string, EditorExtensionTxGroup<TEditor> | undefined>;
 
 export type EditorExtensionApiMap = Record<
   string,
@@ -1595,7 +1599,7 @@ export type EditorClipboardInsertDataContext<
   TEditor extends BaseEditor<any> = Editor,
 > = {
   editor: TEditor;
-  next: () => boolean;
+  next: (data?: DataTransfer) => boolean;
   state: EditorStateView<ValueOf<TEditor>>;
 };
 
@@ -1607,6 +1611,22 @@ export type EditorClipboardMiddlewareMap<
     context: EditorClipboardInsertDataContext<TEditor>
   ) => boolean;
 };
+
+export type EditorClipboardApi = {
+  insertData: (data: DataTransfer) => boolean;
+};
+
+export type EditorCoreApiGroups = {
+  clipboard: EditorClipboardApi;
+};
+
+export type EditorClipboardInsertDataCapability<
+  TEditor extends BaseEditor<any> = Editor,
+> = (
+  editor: TEditor,
+  data: DataTransfer,
+  next: (data?: DataTransfer) => boolean
+) => boolean;
 
 export type EditorExtensionRuntimeState<TValue> = {
   get: () => TValue;
@@ -1681,6 +1701,20 @@ export type EditorExtensionInput<TEditor extends BaseEditor<any> = Editor> =
   | EditorExtension<TEditor, any>
   | readonly EditorExtension<TEditor, any>[];
 
+export type EditorExtensionTypes = {
+  api?: Record<string, unknown>;
+  state?: Record<string, unknown>;
+  tx?: Record<string, unknown>;
+};
+
+export type EditorExtensionTypeProvider<
+  TProvider extends (editor: any) => EditorExtensionTypes = (
+    editor: Editor
+  ) => EditorExtensionTypes,
+> = {
+  readonly [EDITOR_EXTENSION_TYPES]?: TProvider;
+};
+
 type UnionToIntersection<T> = (
   T extends unknown
     ? (value: T) => void
@@ -1695,102 +1729,168 @@ type EditorSetupOutputFromExtension<TExtension> = TExtension extends {
   ? Extract<NonNullable<TResult>, object>
   : unknown;
 
+type EditorLiteralExtensionSlot<TSlot> =
+  NonNullable<TSlot> extends infer TNonNullable
+    ? TNonNullable extends object
+      ? string extends keyof TNonNullable
+        ? unknown
+        : TNonNullable
+      : unknown
+    : unknown;
+
 type EditorExtensionName<TExtension> = TExtension extends {
   name: infer TName extends PropertyKey;
 }
   ? TName
   : never;
 
-type EditorExtensionEnabled<TExtension> = TExtension extends { enabled: false }
-  ? never
+type EditorLiteralExtensionName<TExtension> =
+  EditorExtensionName<TExtension> extends infer TName
+    ? TName extends string
+      ? string extends TName
+        ? never
+        : TName
+      : TName extends number
+        ? number extends TName
+          ? never
+          : TName
+        : TName extends symbol
+          ? symbol extends TName
+            ? never
+            : TName
+          : never
+    : never;
+
+type IsEqual<TLeft, TRight> =
+  (<T>() => T extends TLeft ? 1 : 2) extends <T>() => T extends TRight ? 1 : 2
+    ? true
+    : false;
+
+type EditorExtensionEnabled<TExtension> = TExtension extends {
+  enabled: infer TEnabled;
+}
+  ? IsEqual<TEnabled, false> extends true
+    ? never
+    : TExtension
   : TExtension;
+
+type EditorExtensionNames<TExtensions extends readonly unknown[]> =
+  TExtensions[number] extends infer TExtension
+    ? EditorLiteralExtensionName<TExtension>
+    : never;
 
 export type EditorResolvedInstalledExtensions<
   TExtensions extends readonly unknown[],
-  TSeenNames extends PropertyKey = never,
-> = TExtensions extends readonly []
-  ? readonly []
-  : TExtensions extends readonly [
-        ...infer TRest extends readonly unknown[],
-        infer TLast,
-      ]
-    ? EditorExtensionName<TLast> extends infer TName extends PropertyKey
-      ? TName extends TSeenNames
-        ? EditorResolvedInstalledExtensions<TRest, TSeenNames>
-        : TLast extends { enabled: false }
-          ? EditorResolvedInstalledExtensions<TRest, TSeenNames | TName>
-          : [
-              ...EditorResolvedInstalledExtensions<TRest, TSeenNames | TName>,
-              TLast,
-            ]
-      : EditorResolvedInstalledExtensions<TRest, TSeenNames>
-    : number extends TExtensions['length']
-      ? readonly EditorExtensionEnabled<TExtensions[number]>[]
+> = number extends TExtensions['length']
+  ? readonly EditorExtensionEnabled<TExtensions[number]>[]
+  : TExtensions extends readonly []
+    ? readonly []
+    : TExtensions extends readonly [
+          infer TFirst,
+          ...infer TRest extends readonly unknown[],
+        ]
+      ? [EditorExtensionName<TFirst>] extends [never]
+        ? EditorResolvedInstalledExtensions<TRest>
+        : [EditorLiteralExtensionName<TFirst>] extends [never]
+          ? EditorExtensionEnabled<TFirst> extends never
+            ? EditorResolvedInstalledExtensions<TRest>
+            : [
+                EditorExtensionEnabled<TFirst>,
+                ...EditorResolvedInstalledExtensions<TRest>,
+              ]
+          : EditorLiteralExtensionName<TFirst> extends EditorExtensionNames<TRest>
+            ? EditorResolvedInstalledExtensions<TRest>
+            : EditorExtensionEnabled<TFirst> extends never
+              ? EditorResolvedInstalledExtensions<TRest>
+              : [
+                  EditorExtensionEnabled<TFirst>,
+                  ...EditorResolvedInstalledExtensions<TRest>,
+                ]
       : readonly [];
 
 type EditorStateSlotsFromExtension<TExtension> = (TExtension extends {
   state?: infer TState;
 }
-  ? NonNullable<TState>
+  ? EditorLiteralExtensionSlot<TState>
   : unknown) &
   (EditorSetupOutputFromExtension<TExtension> extends {
     state?: infer TState;
   }
-    ? NonNullable<TState>
+    ? EditorLiteralExtensionSlot<TState>
     : unknown);
 
 type EditorTxSlotsFromExtension<TExtension> = (TExtension extends {
   tx?: infer TTx;
 }
-  ? NonNullable<TTx>
+  ? EditorLiteralExtensionSlot<TTx>
   : unknown) &
   (EditorSetupOutputFromExtension<TExtension> extends {
     tx?: infer TTx;
   }
-    ? NonNullable<TTx>
+    ? EditorLiteralExtensionSlot<TTx>
     : unknown);
 
 type EditorApiSlotsFromExtension<TExtension> = (TExtension extends {
   api?: infer TApi;
 }
-  ? NonNullable<TApi>
+  ? EditorLiteralExtensionSlot<TApi>
   : unknown) &
   (EditorSetupOutputFromExtension<TExtension> extends {
     api?: infer TApi;
   }
-    ? NonNullable<TApi>
+    ? EditorLiteralExtensionSlot<TApi>
     : unknown);
 
-type EditorStateGroupResult<
+type EditorProvidedTypesFromExtension<
   V extends Value,
-  K,
-  TFactory,
-> = K extends keyof EditorStateExtensionGroups<V>
-  ? EditorStateExtensionGroups<V>[K]
-  : TFactory extends (...args: any[]) => infer TResult
-    ? TResult
+  TExtension,
+> = TExtension extends {
+  readonly [EDITOR_EXTENSION_TYPES]?: infer TProvider;
+}
+  ? TProvider extends (editor: Editor<V>) => infer TTypes
+    ? TTypes
+    : never
+  : never;
+
+type EditorProvidedSlot<
+  V extends Value,
+  TExtension,
+  TSlot extends keyof EditorExtensionTypes,
+> =
+  EditorProvidedTypesFromExtension<V, TExtension> extends infer TTypes
+    ? TTypes extends object
+      ? TSlot extends keyof TTypes
+        ? NonNullable<TTypes[TSlot]>
+        : never
+      : never
     : never;
 
-type EditorTxGroupResult<
-  V extends Value,
-  K,
-  TFactory,
-> = K extends keyof EditorTxExtensionGroups<V>
-  ? EditorTxExtensionGroups<V>[K]
-  : TFactory extends (...args: any[]) => infer TResult
-    ? TResult
-    : never;
+type EditorStateGroupResult<TFactory> = TFactory extends (
+  ...args: any[]
+) => infer TResult
+  ? TResult
+  : never;
+
+type EditorTxGroupResult<TFactory> = TFactory extends (
+  ...args: any[]
+) => infer TResult
+  ? TResult
+  : never;
 
 type EditorStateGroupsFromExtension<
   V extends Value,
   TExtension,
 > = TExtension extends unknown
-  ? EditorStateSlotsFromExtension<TExtension> extends infer TState
-    ? keyof TState extends never
-      ? never
-      : {
-          [K in keyof TState]: EditorStateGroupResult<V, K, TState[K]>;
-        }
+  ? EditorProvidedSlot<V, TExtension, 'state'> extends infer TProvidedState
+    ? [TProvidedState] extends [never]
+      ? EditorStateSlotsFromExtension<TExtension> extends infer TState
+        ? keyof TState extends never
+          ? never
+          : {
+              [K in keyof TState]: EditorStateGroupResult<TState[K]>;
+            }
+        : never
+      : TProvidedState
     : never
   : never;
 
@@ -1798,12 +1898,16 @@ type EditorTxGroupsFromExtension<
   V extends Value,
   TExtension,
 > = TExtension extends unknown
-  ? EditorTxSlotsFromExtension<TExtension> extends infer TTx
-    ? keyof TTx extends never
-      ? never
-      : {
-          [K in keyof TTx]: EditorTxGroupResult<V, K, TTx[K]>;
-        }
+  ? EditorProvidedSlot<V, TExtension, 'tx'> extends infer TProvidedTx
+    ? [TProvidedTx] extends [never]
+      ? EditorTxSlotsFromExtension<TExtension> extends infer TTx
+        ? keyof TTx extends never
+          ? never
+          : {
+              [K in keyof TTx]: EditorTxGroupResult<TTx[K]>;
+            }
+        : never
+      : TProvidedTx
     : never
   : never;
 
@@ -1812,12 +1916,16 @@ type EditorApiValue<TValue> = TValue extends readonly (infer TItem)[]
   : TValue;
 
 type EditorApiGroupsFromExtension<TExtension> = TExtension extends unknown
-  ? EditorApiSlotsFromExtension<TExtension> extends infer TApi
-    ? keyof TApi extends never
-      ? never
-      : {
-          [K in keyof TApi]: EditorApiValue<TApi[K]>;
-        }
+  ? EditorProvidedSlot<Value, TExtension, 'api'> extends infer TProvidedApi
+    ? [TProvidedApi] extends [never]
+      ? EditorApiSlotsFromExtension<TExtension> extends infer TApi
+        ? keyof TApi extends never
+          ? never
+          : {
+              [K in keyof TApi]: EditorApiValue<TApi[K]>;
+            }
+        : never
+      : TProvidedApi
     : never
   : never;
 
@@ -1874,6 +1982,8 @@ export type EditorExtensionRegistry = {
   normalizers: Map<string, EditorNodeNormalizer>;
   operationMiddlewares: Set<EditorOperationMiddleware>;
   queryMiddlewares: Map<string, unknown[]>;
+  stateGroups: Map<string, unknown>;
+  txGroups: Map<string, unknown>;
 };
 
 export type EditorCommitListener<V extends Value = Value> = (
@@ -2215,7 +2325,7 @@ export interface EditorStaticApi {
   getLastCommit: <V extends Value>(editor: Editor<V>) => EditorCommit<V> | null;
 
   /**
-   * Return document state patches that are marked for collaboration.
+   * Return state-field patches that are marked for collaboration.
    */
   getCollabStatePatches: <V extends Value>(
     editor: Editor<V>,
@@ -2366,7 +2476,7 @@ export interface EditorStaticApi {
   /**
    * Check if a value is a block `Element` object.
    */
-  isBlock: (editor: Editor, value: Element) => boolean;
+  isBlock: (editor: Editor, value: Node) => boolean;
 
   /**
    * Check if a point is an edge of a location.
@@ -2399,7 +2509,7 @@ export interface EditorStaticApi {
   /**
    * Check if a value is an inline `Element` object.
    */
-  isInline: (editor: Editor, value: Element) => boolean;
+  isInline: (editor: Editor, value: Node) => boolean;
 
   /**
    * Check if the editor is currently normalizing after each operation.
@@ -2409,7 +2519,7 @@ export interface EditorStaticApi {
   /**
    * Check if a value is a selectable `Element` object.
    */
-  isSelectable: (editor: Editor, element: Element) => boolean;
+  isSelectable: (editor: Editor, element: Node) => boolean;
 
   /**
    * Check if a point is the start point of a location.
@@ -2419,7 +2529,7 @@ export interface EditorStaticApi {
   /**
    * Check if a value is a void `Element` object.
    */
-  isVoid: (editor: Editor, value: Element) => boolean;
+  isVoid: (editor: Editor, value: Node) => boolean;
 
   /**
    * Get the last node at a location.
@@ -2597,11 +2707,14 @@ export interface EditorStaticApi {
   ) => EditorExtension<TEditor>;
 
   replace: <V extends Value>(
-    editor: Editor<V>,
+    editor: Editor<V> | EditorView<V, any>,
     input: SnapshotInput<V>
   ) => void;
 
-  reset: <V extends Value>(editor: Editor<V>, input: SnapshotInput<V>) => void;
+  reset: <V extends Value>(
+    editor: Editor<V> | EditorView<V, any>,
+    input: SnapshotInput<V>
+  ) => void;
 
   /**
    * Remove a custom property from all of the leaf text nodes in the current
@@ -2799,10 +2912,15 @@ const runInternalEditorWriteSkipNormalize = <T>(
   return result;
 };
 
-const isEditorView = (editor: Editor): editor is EditorView =>
+const isEditorView = (
+  editor: Editor | EditorView<any, any>
+): editor is EditorView =>
   (editor as { runtime?: EditorRuntime }).runtime?.editor !== undefined;
 
-const replaceEditorSnapshot = (editor: Editor, input: SnapshotInput) => {
+const replaceEditorSnapshot = (
+  editor: Editor | EditorView<any, any>,
+  input: SnapshotInput
+) => {
   if (isEditorView(editor)) {
     getEditorRuntime(editor).update((tx) => {
       tx.value.replace(input);
@@ -2905,7 +3023,7 @@ const editorInternalApi: EditorInternalApiTable = {
   },
 
   getFragment(editor) {
-    return editor.read((state) => state.fragment.get());
+    return editor.read((state) => state.fragment());
   },
 
   getChildren(editor) {
@@ -3055,7 +3173,7 @@ const editorInternalApi: EditorInternalApiTable = {
     return getEditorRuntime(editor).isNormalizing();
   },
 
-  isSelectable(editor: Editor, value: Element) {
+  isSelectable(editor, value) {
     return getEditorSchema(editor).isSelectable(value);
   },
 
@@ -3456,6 +3574,7 @@ const {
   setSelection,
   splitNodes,
   toggleMark,
+  unwrapNodes,
   unsetNodes,
   wrapNodes,
   setNormalizing,
@@ -3568,6 +3687,7 @@ export {
   subscribeSource,
   toggleMark,
   unhangRange,
+  unwrapNodes,
   unsetNodes,
   update,
   voidEditor as void,

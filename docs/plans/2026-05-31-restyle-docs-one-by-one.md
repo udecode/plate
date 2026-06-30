@@ -830,7 +830,7 @@ Verification evidence:
 - Slash Command anti-slop audit: no banned marketing/changelog/placeholder matches.
 - Slash Command opening audit: 3 prose sentences before first MDX component.
 - Slash Command length audit: 166 lines after rewrite.
-- `content/docs/(plugins)/(functionality)/(utils)/exit-break.mdx`: source-backed against `packages/utils/src/lib/plugins/ExitBreakPlugin.ts`, `packages/utils/src/lib/plugins/ExitBreakPlugin.spec.ts`, `packages/core/src/lib/plugins/slate-extension/transforms/insertExitBreak.ts`, `packages/core/src/lib/plugins/slate-extension/transforms/insertExitBreak.spec.tsx`, `packages/core/src/lib/plugins/override/withBreakRules.ts`, `apps/www/src/registry/components/editor/plugins/exit-break-kit.tsx`, and registry example/value files.
+- `content/docs/(plugins)/(functionality)/(utils)/exit-break.mdx`: source-backed against `packages/utils/src/lib/plugins/ExitBreakPlugin.ts`, `packages/utils/src/lib/plugins/ExitBreakPlugin.spec.ts`, `packages/core/src/lib/plugins/plite-extension/transforms/insertExitBreak.ts`, `packages/core/src/lib/plugins/plite-extension/transforms/insertExitBreak.spec.tsx`, `packages/core/src/lib/plugins/override/withBreakRules.ts`, `apps/www/src/registry/components/editor/plugins/exit-break-kit.tsx`, and registry example/value files.
 - `pnpm --filter www check:docs` in `/Users/zbeyens/git/plate`: passed after the Exit Break rewrite.
 - `pnpm --filter @platejs/utils typecheck` in `/Users/zbeyens/git/plate`: passed after the Exit Break rewrite.
 - `pnpm --filter @platejs/core typecheck` in `/Users/zbeyens/git/plate`: passed after the Exit Break rewrite.

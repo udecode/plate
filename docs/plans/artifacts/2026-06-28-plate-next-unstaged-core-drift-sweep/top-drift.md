@@ -1,0 +1,71 @@
+# Core Drift Ledger Summary
+
+- manifest command: git diff --numstat -- packages/core + git ls-files --others --exclude-standard packages/core
+- row count: 176
+- modified/deleted/renamed rows: 173
+- untracked rows: 3
+- score >=4 rows: 16
+- score >=3 rows: 42
+
+## Top Rows
+
+- score 4: packages/core/src/react/editor/createPlateRuntimeEditor.spec.ts (D, +0/-3579, main:no) -> accepted-delete; keep delete
+- score 4: packages/core/src/lib/plugin/SlatePlugin.ts (M, +573/-660, main:yes) -> accepted-api-hard-cut; keep
+- score 4: packages/core/src/lib/plugin/BasePlugin.ts (M, +660/-561, main:yes) -> accepted-api-hard-cut; keep
+- score 4: packages/core/src/lib/editor/withPlite.ts (M, +247/-615, main:no) -> accepted-plite-route; keep
+- score 4: packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.spec.tsx (M, +78/-559, main:yes) -> accepted-current-owner; keep
+- score 4: packages/core/src/react/plugin/PlatePlugin.ts (M, +172/-273, main:yes) -> accepted-api-hard-cut; keep
+- score 4: packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.ts (M, +189/-215, main:yes) -> accepted-current-owner; keep
+- score 4: packages/core/src/lib/plugins/input-rules/internal/InputRulesPlugin.ts (M, +250/-151, main:yes) -> accepted-current-owner; keep
+- score 4: packages/core/src/lib/plugins/node-id/NodeIdPlugin.ts (M, +266/-54, main:yes) -> accepted-current-owner; keep
+- score 4: packages/core/src/lib/plugins/input-rules/createInputRules.ts (M, +239/-78, main:yes) -> accepted-current-owner; keep
+- score 4: packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx (M, +173/-87, main:yes) -> accepted-current-owner; keep
+- score 4: packages/core/src/lib/plugins/affinity/AffinityPlugin.spec.tsx (M, +153/-102, main:yes) -> fixed-restored-owner-suite; keep
+- score 4: packages/core/src/lib/plugins/dom/DOMPlugin.ts (M, +180/-71, main:yes) -> accepted-current-owner; keep
+- score 4: packages/core/src/lib/utils/overrideEditor.spec.ts (D, +0/-233, main:yes) -> accepted-delete; keep delete
+- score 4: packages/core/src/react/plugins/react/withPlateReact.ts (D, +0/-6, main:yes) -> accepted-delete; keep delete
+- score 4: packages/core/src/static/components/slate-nodes.tsx (untracked, +0/-0, main:yes) -> recover-main-owner; keep path; no rename
+- score 3: packages/core/src/react/__tests__/createPlateTestEditor.ts (M, +227/-22, main:yes) -> reviewed-accepted; keep
+- score 3: packages/core/src/internal/plugin/resolvePlugins.ts (M, +118/-118, main:yes) -> reviewed-accepted; keep
+- score 3: packages/core/src/lib/editor/withPlite.spec.ts (M, +160/-72, main:no) -> accepted-plite-route; keep
+- score 3: packages/core/src/lib/plugins/ParserPlugin.ts (M, +152/-80, main:yes) -> accepted-current-owner; keep
+- score 3: packages/core/src/lib/plugin/createBasePlugin.ts (M, +139/-67, main:no) -> accepted-api-hard-cut; keep
+- score 3: packages/core/src/lib/editor/SlateEditor.ts (M, +121/-58, main:yes) -> reviewed-accepted; keep
+- score 3: packages/core/src/lib/utils/extendApi.spec.ts (M, +55/-123, main:yes) -> reviewed-accepted; keep
+- score 3: packages/core/src/react/plugin/toPlatePlugin.ts (M, +93/-73, main:yes) -> accepted-api-hard-cut; keep
+- score 3: packages/core/src/react/components/PlateContent.tsx (M, +72/-91, main:yes) -> reviewed-accepted; keep
+- score 3: packages/core/src/react/stores/plate/PlateStore.ts (M, +83/-74, main:yes) -> reviewed-accepted; keep
+- score 3: packages/core/src/lib/plugins/ParserPlugin.spec.ts (M, +111/-26, main:yes) -> accepted-current-owner; keep
+- score 3: packages/core/src/lib/plugins/navigation-feedback/NavigationFeedbackPlugin.spec.ts (M, +80/-55, main:yes) -> reviewed-accepted; keep
+- score 3: packages/core/src/react/plugins/SlateReactExtensionPlugin.ts (M, +65/-68, main:yes) -> reviewed-accepted; keep
+- score 3: packages/core/src/react/utils/pipeRenderElement.spec.tsx (M, +58/-73, main:yes) -> reviewed-accepted; keep
+- score 3: packages/core/src/internal/plugin/resolvePlugins.spec.tsx (M, +73/-51, main:yes) -> reviewed-accepted; keep
+- score 3: packages/core/src/lib/plugins/dom/DOMPlugin.spec.ts (M, +72/-52, main:yes) -> accepted-current-owner; keep
+- score 3: packages/core/src/lib/plugins/override/OverridePlugin.ts (M, +62/-59, main:yes) -> reviewed-accepted; keep
+- score 3: packages/core/src/react/components/ContentVisibilityChunk.tsx (M, +103/-10, main:yes) -> reviewed-accepted; keep
+- score 3: packages/core/src/react/components/PlateContent.spec.tsx (M, +17/-92, main:no) -> reviewed-accepted; keep
+- score 3: packages/core/src/react/plugin/toPlatePlugin.spec.ts (M, +53/-54, main:yes) -> reviewed-accepted; keep
+- score 3: packages/core/src/react/editor/withPlate.ts (M, +74/-31, main:yes) -> accepted-plate-route; keep
+- score 3: packages/core/type-tests/plugin-composition-contracts.ts (M, +48/-43, main:yes) -> reviewed-accepted; keep
+- score 3: packages/core/src/react/plugin/createPlatePlugin.spec.ts (M, +65/-23, main:yes) -> reviewed-accepted; keep
+- score 3: packages/core/src/static/plugins/ViewPlugin.spec.ts (M, +20/-64, main:yes) -> reviewed-accepted; keep
+- score 3: packages/core/tsconfig.test.json (untracked, +0/-0, main:no) -> justify-new-proof-tooling; keep
+- score 3: packages/core/tsconfig.type-tests.json (untracked, +0/-0, main:no) -> justify-new-proof-tooling; keep
+- score 2: packages/core/src/lib/plugin/createBasePlugin.spec.ts (M, +46/-30, main:no) -> reviewed-low-risk; keep
+- score 2: packages/core/src/react/stores/plate/createPlateStore.spec.tsx (M, +54/-18, main:yes) -> reviewed-low-risk; keep
+- score 2: packages/core/src/lib/utils/pipeOnNodeChange.spec.ts (M, +35/-33, main:yes) -> reviewed-low-risk; keep
+- score 2: packages/core/src/react/editor/PlateEditor.ts (M, +33/-34, main:yes) -> reviewed-low-risk; keep
+- score 2: packages/core/src/static/components/PlateStatic.tsx (M, +31/-36, main:yes) -> reviewed-low-risk; keep
+- score 2: packages/core/src/lib/plugins/affinity/transforms/setAffinitySelection.spec.ts (M, +37/-26, main:yes) -> reviewed-low-risk; keep
+- score 2: packages/core/src/react/editor/usePlateEditor.ts (M, +29/-34, main:yes) -> reviewed-low-risk; keep
+- score 2: packages/core/src/lib/utils/pipeOnTextChange.spec.ts (M, +33/-29, main:yes) -> reviewed-low-risk; keep
+- score 2: packages/core/src/react/components/plate-nodes.tsx (M, +21/-41, main:yes) -> reviewed-low-risk; keep
+- score 2: packages/core/src/react/utils/inputRules.spec.tsx (M, +14/-46, main:yes) -> reviewed-low-risk; keep
+- score 2: packages/core/type-tests/slate-plugin-contracts.ts (M, +42/-18, main:yes) -> reviewed-low-risk; keep
+- score 2: packages/core/src/lib/plugins/dom/withScrolling.ts (M, +6/-52, main:yes) -> accepted-current-owner; keep
+- score 2: packages/core/src/lib/plugins/navigation-feedback/transforms/flashTarget.ts (M, +40/-18, main:yes) -> reviewed-low-risk; keep
+- score 2: packages/core/type-tests/plate-editor-value-contracts.ts (M, +30/-25, main:yes) -> reviewed-low-risk; keep
+- score 2: packages/core/src/react/plugins/navigation-feedback/useNavigationHighlight.ts (M, +32/-20, main:yes) -> reviewed-low-risk; keep
+- score 2: packages/core/src/static/editor/withStatic.tsx (M, +34/-18, main:yes) -> reviewed-low-risk; keep
+- score 2: packages/core/src/react/components/PlateTest.tsx (M, +26/-25, main:yes) -> reviewed-low-risk; keep
+- score 2: packages/core/src/react/stores/plate/createPlateStore.ts (M, +35/-14, main:yes) -> reviewed-low-risk; keep

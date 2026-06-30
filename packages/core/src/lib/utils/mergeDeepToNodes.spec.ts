@@ -1,8 +1,9 @@
-import { ElementApi, NodeApi, createEditor } from '@platejs/slate';
+import { NodeApi } from '@platejs/plite';
 
+import { createBaseEditor } from '../editor';
 import { mergeDeepToNodes } from './mergeDeepToNodes';
 
-const withNestedElement = () => ({
+const createNestedElement = () => ({
   children: [
     { text: 'test' },
     {
@@ -14,13 +15,10 @@ const withNestedElement = () => ({
   type: 'li',
 });
 
-const withEditorRoot = () => {
-  const editor = createEditor();
-
-  editor.children = [withNestedElement() as any];
-
-  return editor;
-};
+const createEditorRoot = () =>
+  createBaseEditor({
+    value: [createNestedElement()],
+  });
 
 describe('mergeDeepToNodes', () => {
   it('merges props into the root node and all descendants by default', () => {
@@ -57,7 +55,7 @@ describe('mergeDeepToNodes', () => {
       mergeDeepToNodes({
         node: node as any,
         query: {
-          filter: ([entry]) => NodeApi.isDescendant(entry),
+          filter: ([node]) => NodeApi.isDescendant(node),
         },
         source: { a: 1 },
       });
@@ -81,7 +79,7 @@ describe('mergeDeepToNodes', () => {
           type: 'li',
         },
         label: 'element roots',
-        node: withNestedElement(),
+        node: createNestedElement(),
       },
       {
         expected: [
@@ -100,37 +98,33 @@ describe('mergeDeepToNodes', () => {
           },
         ],
         label: 'editor roots',
-        node: withEditorRoot(),
+        node: createEditorRoot(),
       },
     ])('applies props to all descendants for $label', ({ expected, node }) => {
       mergeDeepToNodes({
         node: node as any,
         query: {
-          filter: ([entry]) => NodeApi.isDescendant(entry),
+          filter: ([node]) => NodeApi.isDescendant(node),
         },
         source: { a: 1 },
       });
 
-      if (
-        'children' in node &&
-        Array.isArray(node.children) &&
-        !('type' in node)
-      ) {
+      if (NodeApi.isEditor(node)) {
         expect(node).not.toHaveProperty('a');
-        expect(node.children).toEqual(expected);
+        expect(node.read.children()).toEqual(expected);
       } else {
         expect(node).toEqual(expected);
       }
     });
 
     it('calls the source factory for each matched node', () => {
-      const node = withNestedElement();
+      const node = createNestedElement();
       let calls = 0;
 
       mergeDeepToNodes({
         node: node as any,
         query: {
-          filter: ([entry]) => NodeApi.isDescendant(entry),
+          filter: ([node]) => NodeApi.isDescendant(node),
         },
         source: () => ({ order: ++calls }),
       });
@@ -159,7 +153,7 @@ describe('mergeDeepToNodes', () => {
       mergeDeepToNodes({
         node: node as any,
         query: {
-          filter: ([entry]) => ElementApi.isElement(entry),
+          filter: ([node]) => NodeApi.isElement(node),
         },
         source: { a: 1 },
       });
@@ -183,7 +177,7 @@ describe('mergeDeepToNodes', () => {
           type: 'li',
         },
         label: 'element roots',
-        node: withNestedElement(),
+        node: createNestedElement(),
       },
       {
         expected: [
@@ -202,7 +196,7 @@ describe('mergeDeepToNodes', () => {
           },
         ],
         label: 'editor roots',
-        node: withEditorRoot(),
+        node: createEditorRoot(),
       },
     ])('applies props only to element nodes for $label', ({
       expected,
@@ -211,18 +205,14 @@ describe('mergeDeepToNodes', () => {
       mergeDeepToNodes({
         node: node as any,
         query: {
-          filter: ([entry]) => ElementApi.isElement(entry),
+          filter: ([node]) => NodeApi.isElement(node),
         },
         source: { a: 1 },
       });
 
-      if (
-        'children' in node &&
-        Array.isArray(node.children) &&
-        !('type' in node)
-      ) {
+      if (NodeApi.isEditor(node)) {
         expect(node).not.toHaveProperty('a');
-        expect(node.children).toEqual(expected);
+        expect(node.read.children()).toEqual(expected);
       } else {
         expect(node).toEqual(expected);
       }

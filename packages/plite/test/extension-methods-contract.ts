@@ -40,7 +40,7 @@ import {
   defineEditorExtension,
   type EditorExtensionInput,
   type EditorExtensionRuntimeState,
-} from '../src';
+} from '@platejs/plite';
 import { hasTransformMiddleware } from '../src/core/transform-middleware';
 
 const asExtensionInput = (extension: unknown): EditorExtensionInput =>
@@ -73,7 +73,7 @@ describe('extension method hard cut', () => {
           handler: () => false,
           type: 'insert_text',
         },
-      ],
+      ] as const,
       name: 'command-extension',
     });
 
@@ -286,7 +286,7 @@ describe('extension method hard cut', () => {
       name: 'history',
       api: {
         history: {
-          withoutSaving(fn: () => void) {
+          run(_options: { save?: boolean }, fn: () => void) {
             fn();
           },
         },
@@ -296,17 +296,17 @@ describe('extension method hard cut', () => {
       name: 'history',
       api: {
         history: {
-          withoutSaving(fn: () => void) {
+          run(_options: { save?: boolean }, fn: () => void) {
             fn();
           },
         },
       },
     });
-    const editor = createEditor({ extensions: [installed] });
+    const editor = createEditor({ extensions: [installed] as const });
     let called = false;
 
     assert.equal(editor.getApi(installed), editor.api.history);
-    editor.getApi(installed).withoutSaving(() => {
+    editor.getApi(installed).run({ save: false }, () => {
       called = true;
     });
     assert.equal(called, true);
@@ -373,9 +373,9 @@ describe('extension method hard cut', () => {
         name: 'transaction-local-transform',
         transforms: {
           insertText({ next, text, tx }) {
-            seenOffsets.push(tx.selection.get()?.anchor.offset ?? -1);
+            seenOffsets.push(tx.selection()?.anchor.offset ?? -1);
             const handled = next({ text: text.toUpperCase() });
-            seenOffsets.push(tx.selection.get()?.anchor.offset ?? -1);
+            seenOffsets.push(tx.selection()?.anchor.offset ?? -1);
 
             return handled;
           },
@@ -409,9 +409,7 @@ describe('extension method hard cut', () => {
         clipboard: {
           insertData(_data, context) {
             hasTx = 'tx' in context;
-            seenOffsets.push(
-              context.state.selection.get()?.anchor.offset ?? -1
-            );
+            seenOffsets.push(context.state.selection()?.anchor.offset ?? -1);
 
             return context.next();
           },
@@ -960,7 +958,7 @@ describe('extension method hard cut', () => {
       'second'
     );
     assert.throws(
-      () => editor.getApi(first),
+      () => editor.getApi(first as never),
       /Editor extension "duplicate" is not installed on this editor\./
     );
 
@@ -1005,7 +1003,7 @@ describe('extension method hard cut', () => {
     ]);
 
     const host = (
-      editor.api as {
+      editor.api as unknown as {
         host: { blur: () => string; focus: () => string };
       }
     ).host;
@@ -1026,7 +1024,7 @@ describe('extension method hard cut', () => {
     );
 
     assert.equal(
-      (editor.api as { redecorate: () => string }).redecorate(),
+      (editor.api as unknown as { redecorate: () => string }).redecorate(),
       'fallback'
     );
 
@@ -1040,21 +1038,21 @@ describe('extension method hard cut', () => {
     );
 
     assert.equal(
-      (editor.api as { redecorate: () => string }).redecorate(),
+      (editor.api as unknown as { redecorate: () => string }).redecorate(),
       'override'
     );
 
     installOverride();
 
     assert.equal(
-      (editor.api as { redecorate: () => string }).redecorate(),
+      (editor.api as unknown as { redecorate: () => string }).redecorate(),
       'fallback'
     );
 
     installFallback();
 
     assert.equal(
-      (editor.api as { redecorate?: unknown }).redecorate,
+      (editor.api as unknown as { redecorate?: unknown }).redecorate,
       undefined
     );
   });
@@ -1107,9 +1105,12 @@ describe('extension method hard cut', () => {
       ),
       'installed'
     );
-    assert.equal(editor.getApi(installed), editor.api.duplicate);
+    assert.equal(
+      editor.getApi(installed as never),
+      (editor.api as { duplicate?: unknown }).duplicate
+    );
     assert.throws(
-      () => editor.getApi(replacement),
+      () => editor.getApi(replacement as never),
       /Editor extension "duplicate" is not installed on this editor\./
     );
   });

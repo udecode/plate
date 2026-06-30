@@ -11,10 +11,10 @@ import {
   createEditor,
   createEditorRuntime,
   createEditorView,
-  type Descendant,
-} from '../src';
+  type Element,
+} from '@platejs/plite';
 
-const createChildren = (): Descendant[] => [
+const createChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'alpha' }],
@@ -25,7 +25,7 @@ const createChildren = (): Descendant[] => [
   },
 ];
 
-const createNestedChildren = (): Descendant[] => [
+const createNestedChildren = (): Element[] => [
   {
     type: 'quote',
     children: [

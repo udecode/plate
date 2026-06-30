@@ -1,4 +1,10 @@
-import type { Operation, Point, RootKey } from '@platejs/plite';
+import type {
+  Descendant,
+  EditorStateView,
+  Operation,
+  Point,
+  RootKey,
+} from '@platejs/plite';
 
 export const MAIN_ROOT_KEY = 'main' as RootKey;
 
@@ -12,3 +18,18 @@ export const getPointRoot = (
 
 export const toPublicRootOption = (root: RootKey): RootKey | undefined =>
   root === MAIN_ROOT_KEY ? undefined : root;
+
+export const readRootChildren = (
+  state: Pick<EditorStateView, 'children' | 'root' | 'value' | 'view'>,
+  root: RootKey
+): readonly Descendant[] => {
+  if (state.view.root() === root) {
+    return state.children();
+  }
+
+  if (root === MAIN_ROOT_KEY) {
+    return state.value().children;
+  }
+
+  return state.root(root);
+};

@@ -13,66 +13,72 @@ const packagesPath = fileURLToPath(
 const changesetsPath = fileURLToPath(
   new URL('../../../.changeset', import.meta.url)
 );
+const releasePackageDirectories = [
+  'browser',
+  'plite',
+  'plite-dom',
+  'plite-history',
+  'plite-hyperscript',
+  'plite-layout',
+  'plite-react',
+  'yjs',
+];
+
+const readRootPackageJson = () =>
+  JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
+    scripts: Record<string, string>;
+  };
+
+const readReleasePackageJson = (packageDirectory: string) =>
+  JSON.parse(
+    readFileSync(join(packagesPath, packageDirectory, 'package.json'), 'utf8')
+  ) as {
+    bugs?: string | { url?: string };
+    dependencies?: Record<string, string>;
+    description?: string;
+    exports?: Record<string, unknown>;
+    homepage?: string;
+    keywords?: string[];
+    license?: string;
+    name?: string;
+    optionalDependencies?: Record<string, string>;
+    peerDependencies?: Record<string, string>;
+    private?: boolean;
+    repository?: string | { directory?: string; type?: string; url?: string };
+  };
 
 describe('release scripts contract', () => {
-  it('keeps direct release entrypoints versioned before publish', () => {
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
-      scripts: Record<string, string>;
-    };
+  it('keeps direct release entrypoints routed through the release script', () => {
+    const packageJson = readRootPackageJson();
 
-    assert.equal(
-      packageJson.scripts.changesetversion,
-      'changeset version && bun install'
-    );
     assert.ok(
-      !/\bgit\s+add\b/.test(packageJson.scripts.changesetversion),
-      'changesetversion must not stage the checkout as a side effect'
+      !/\bgit\s+add\b/.test(packageJson.scripts['ci:release']),
+      'release scripts must not stage the checkout as a side effect'
     );
     assert.equal(
-      packageJson.scripts.release,
-      'bun changesetversion && bun prerelease && changeset publish'
+      packageJson.scripts['ci:release'],
+      'node tooling/scripts/release-packages.mjs'
     );
     assert.equal(
-      packageJson.scripts['release:latest'],
-      'bun changesetversion && bun prerelease && changeset publish'
+      packageJson.scripts['g:release:beta'],
+      'node tooling/scripts/release-packages.mjs --channel beta'
     );
-    assert.equal(
-      packageJson.scripts['release:next'],
-      'bun changesetversion && bun prerelease && changeset publish --tag next'
-    );
-    assert.equal(
-      packageJson.scripts['release:experimental'],
-      'bun changesetversion && bun prerelease && changeset publish --tag experimental'
-    );
-    assert.equal(
-      packageJson.scripts['internal:release:next'],
-      'bun changesetversion && bun prerelease && changeset publish --tag next'
-    );
+    assert.equal(packageJson.scripts['g:release:next'], 'pnpm g:release:beta');
   });
 
-  it('keeps publish-only scripts available for CI after versioning', () => {
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
-      scripts: Record<string, string>;
-    };
+  it('keeps legacy direct publish entrypoints out of the root scripts', () => {
+    const packageJson = readRootPackageJson();
 
-    assert.equal(
-      packageJson.scripts['release:publish:latest'],
-      'changeset publish'
-    );
-    assert.equal(
-      packageJson.scripts['release:publish:next'],
-      'changeset publish --tag next'
-    );
+    assert.equal(packageJson.scripts['release:publish:latest'], undefined);
+    assert.equal(packageJson.scripts['release:publish:next'], undefined);
     assert.equal(
       packageJson.scripts['release:publish:experimental'],
-      'changeset publish --tag experimental'
+      undefined
     );
   });
 
   it('keeps direct tsc typecheck scripts read-only', () => {
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
-      scripts: Record<string, string>;
-    };
+    const packageJson = readRootPackageJson();
 
     const emittingTypecheckScripts = Object.entries(packageJson.scripts)
       .filter(
@@ -85,15 +91,22 @@ describe('release scripts contract', () => {
   });
 
   it('keeps root Bun package tests from hiding package .test contracts', () => {
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
-      scripts: Record<string, string>;
-    };
+    const packageJson = readRootPackageJson();
     const testBun = packageJson.scripts['test:bun'];
 
-    assert.match(testBun, /--path-ignore-patterns ''/);
-    assert.match(testBun, /packages\/yjs\/test/);
-    assert.match(testBun, /bun --filter plite-browser test:core/);
-    assert.doesNotMatch(testBun, /packages\/plite-browser\/test\/core/);
+    assert.equal(testBun, undefined);
+    assert.equal(
+      packageJson.scripts['test:plite'],
+      'pnpm plite:test && pnpm plite:browser:test'
+    );
+    assert.match(
+      packageJson.scripts['plite:test'],
+      /--filter @platejs\/plite\b.* test/
+    );
+    assert.equal(
+      packageJson.scripts['plite:browser:test'],
+      'pnpm --filter @platejs/browser test'
+    );
   });
 
   it('keeps consumer-facing package dependency ranges publishable', () => {
@@ -104,21 +117,8 @@ describe('release scripts contract', () => {
       'optionalDependencies',
     ] as const;
 
-    for (const packageName of readdirSync(packagesPath)) {
-      const packageJsonPath = join(packagesPath, packageName, 'package.json');
-
-      if (!existsSync(packageJsonPath)) continue;
-
-      const packageJson = JSON.parse(
-        readFileSync(packageJsonPath, 'utf8')
-      ) as Partial<
-        Record<
-          (typeof consumerDependencyFields)[number],
-          Record<string, string>
-        >
-      > & {
-        private?: boolean;
-      };
+    for (const packageName of releasePackageDirectories) {
+      const packageJson = readReleasePackageJson(packageName);
 
       if (packageJson.private) continue;
 
@@ -126,7 +126,7 @@ describe('release scripts contract', () => {
         for (const [dependencyName, range] of Object.entries(
           packageJson[field] ?? {}
         )) {
-          if (range.startsWith('workspace:')) {
+          if (range === 'workspace:*') {
             violations.push(`${packageName}.${field}.${dependencyName}`);
           }
         }
@@ -139,21 +139,8 @@ describe('release scripts contract', () => {
   it('keeps public package npm metadata complete', () => {
     const violations: string[] = [];
 
-    for (const packageName of readdirSync(packagesPath).sort()) {
-      const packageJsonPath = join(packagesPath, packageName, 'package.json');
-
-      if (!existsSync(packageJsonPath)) continue;
-
-      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
-        bugs?: { url?: string };
-        description?: string;
-        homepage?: string;
-        keywords?: string[];
-        license?: string;
-        name?: string;
-        private?: boolean;
-        repository?: string;
-      };
+    for (const packageName of releasePackageDirectories) {
+      const packageJson = readReleasePackageJson(packageName);
 
       if (packageJson.private) continue;
 
@@ -165,17 +152,22 @@ describe('release scripts contract', () => {
       if (!packageJson.description) violations.push(`${prefix}.description`);
       if (packageJson.license !== 'MIT') violations.push(`${prefix}.license`);
       if (
-        packageJson.repository !== 'https://github.com/ianstormtaylor/slate.git'
+        typeof packageJson.repository !== 'object' ||
+        packageJson.repository.type !== 'git' ||
+        packageJson.repository.url !== 'https://github.com/udecode/plate.git' ||
+        packageJson.repository.directory !== `packages/${packageName}`
       ) {
         violations.push(`${prefix}.repository`);
       }
-      if (packageJson.homepage !== 'https://docs.plitejs.org/') {
+      if (packageJson.homepage !== 'https://platejs.org') {
         violations.push(`${prefix}.homepage`);
       }
-      if (
-        packageJson.bugs?.url !==
-        'https://github.com/ianstormtaylor/slate/issues'
-      ) {
+      const bugsUrl =
+        typeof packageJson.bugs === 'string'
+          ? packageJson.bugs
+          : packageJson.bugs?.url;
+
+      if (bugsUrl !== 'https://github.com/udecode/plate/issues') {
         violations.push(`${prefix}.bugs.url`);
       }
       if (
@@ -204,16 +196,8 @@ describe('release scripts contract', () => {
   it('keeps public package export maps typed and ESM-explicit', () => {
     const violations: string[] = [];
 
-    for (const packageName of readdirSync(packagesPath).sort()) {
-      const packageJsonPath = join(packagesPath, packageName, 'package.json');
-
-      if (!existsSync(packageJsonPath)) continue;
-
-      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
-        exports?: Record<string, unknown>;
-        name?: string;
-        private?: boolean;
-      };
+    for (const packageName of releasePackageDirectories) {
+      const packageJson = readReleasePackageJson(packageName);
 
       if (packageJson.private) continue;
 
@@ -230,6 +214,13 @@ describe('release scripts contract', () => {
       }
 
       for (const [subpath, entry] of Object.entries(exportMap)) {
+        if (subpath === './package.json') {
+          if (entry !== './package.json') {
+            violations.push(`${prefix}.exports.${subpath}`);
+          }
+          continue;
+        }
+
         if (!entry || Array.isArray(entry) || typeof entry !== 'object') {
           violations.push(`${prefix}.exports.${subpath}`);
           continue;

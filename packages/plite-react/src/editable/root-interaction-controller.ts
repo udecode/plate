@@ -23,7 +23,7 @@ import {
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
-import { MAIN_ROOT_KEY } from '../root-key';
+import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import { getPliteRootBoundaryPoint } from '../view-boundary-graph';
 import {
   createPliteViewSelection,
@@ -349,7 +349,7 @@ const resolveContentRootOwnerChromeEndpoint = ({
 
   const edge = resolveContentRootOwnerChromeEdge({ event, owner });
   const childPoint = editor.read((state) =>
-    getPliteRootBoundaryPoint(state.value.root(owner.childRoot), edge)
+    getPliteRootBoundaryPoint(readRootChildren(state, owner.childRoot), edge)
   );
 
   return childPoint
@@ -439,7 +439,7 @@ const resolveExistingSelectionProjectedDragEndpoint = ({
 
   const targetRoot = getEditableRootFromTarget(event.target);
   const targetEditor = getMountedViewEditor(targetRoot) ?? editor;
-  const selection = targetEditor.read((state) => state.selection.get());
+  const selection = targetEditor.read((state) => state.selection());
 
   if (!selection || !RangeApi.isExpanded(selection)) {
     return null;
@@ -520,7 +520,7 @@ const collapseModelSelectionToProjectedDragAnchor = ({
     },
     viewRoot
   );
-  const selection = editor.read((state) => state.selection.get());
+  const selection = editor.read((state) => state.selection());
 
   if (selection && RangeApi.equals(selection, range)) {
     return;
@@ -1079,9 +1079,7 @@ export const useRootInteractionController = ({
       selection?: RootInteractionFocusSelection;
     } = {}) => {
       const focusEditor = getMountedViewEditor(root) ?? editor;
-      const currentSelection = focusEditor.read((state) =>
-        state.selection.get()
-      );
+      const currentSelection = focusEditor.read((state) => state.selection());
       const getEndSelection = (): Range => {
         const point = focusEditor.read((state) =>
           state.points.end([], { required: true })

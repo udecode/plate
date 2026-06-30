@@ -6,9 +6,14 @@ import {
   replace as editorReplace,
 } from '@platejs/plite/internal';
 
-import { createEditor, type Descendant, NodeApi } from '../src';
+import {
+  createEditor,
+  type Descendant,
+  type EditorUpdateTransaction,
+  NodeApi,
+} from '@platejs/plite';
 
-import { setEditorTargetRuntime } from '../src/internal';
+import { setEditorTargetRuntime } from '@platejs/plite/internal';
 
 const paragraph = (text: string, props: Record<string, unknown> = {}) =>
   ({
@@ -92,7 +97,7 @@ describe('transaction target runtime', () => {
 
   it('does not invoke target runtime for explicit primitive targets', () => {
     const cases: Array<{
-      run: Parameters<ReturnType<typeof setupEditor>['update']>[0];
+      run: (tx: EditorUpdateTransaction) => void;
       name: string;
     }> = [
       {
@@ -194,7 +199,7 @@ describe('transaction target runtime', () => {
     });
 
     editor.update((tx) => {
-      selection = tx.selection.get();
+      selection = tx.selection();
     });
 
     assert.equal(calls, 0);

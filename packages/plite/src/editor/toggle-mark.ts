@@ -23,7 +23,7 @@ const applyToggleMark: EditorStaticApi['toggleMark'] = (
       return;
     }
 
-    const marks = editor.read((state) => state.marks.get()) as Record<
+    const marks = editor.read((state) => state.marks()) as Record<
       string,
       unknown
     > | null;

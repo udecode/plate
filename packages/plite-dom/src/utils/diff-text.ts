@@ -214,7 +214,7 @@ export function normalizePoint(
 }
 
 /**
- * Normalize a 'pending selection' to ensure it's valid in the current document state.
+ * Normalize a 'pending selection' to ensure it's valid in the current document model.
  */
 export function normalizeRange(
   editor: EditorType<any>,

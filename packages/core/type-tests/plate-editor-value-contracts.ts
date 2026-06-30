@@ -1,9 +1,5 @@
 import type { PluginConfig } from '@platejs/core';
-import {
-  createPlateEditor,
-  createPlatePlugin,
-  createTPlatePlugin,
-} from '@platejs/core/react';
+import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
 
 type BodyValue = [
   {
@@ -16,6 +12,7 @@ type BodyValue = [
     type: 'quote';
   },
 ];
+type ReadBodyValue = readonly [...BodyValue];
 
 type LayoutVariant = 'compact' | 'full';
 type EditorSummary = `${LayoutVariant}:@`;
@@ -30,14 +27,16 @@ type LayoutConfig = PluginConfig<
     getVariant: () => LayoutVariant;
   },
   {
-    setDensity: (density: 1 | 2) => void;
+    layout: {
+      setDensity: (density: 1 | 2) => void;
+    };
   },
   {
     isDense: () => boolean;
   }
 >;
 
-const LayoutPlugin = createTPlatePlugin<LayoutConfig>({
+const LayoutPlugin = createPlatePlugin<LayoutConfig>({
   key: 'layout',
   options: {
     density: 1,
@@ -50,7 +49,7 @@ const LayoutPlugin = createTPlatePlugin<LayoutConfig>({
   .extendEditorApi(({ getOptions }) => ({
     getVariant: () => getOptions().variant,
   }))
-  .extendEditorTransforms(({ plugin }) => ({
+  .extendTx(({ plugin }) => () => ({
     setDensity: (density) => {
       plugin.options.density = density;
     },
@@ -78,14 +77,11 @@ const MentionPlugin = createPlatePlugin({
 const ToolbarPlugin = createPlatePlugin({
   key: 'toolbar',
 })
-  .extendEditorApi(({ editor }) => ({
-    describeEditor: () =>
-      `${editor.getApi(LayoutPlugin).getVariant()}:${editor.getApi(MentionPlugin).getTrigger()}` as EditorSummary,
+  .extendEditorApi(() => ({
+    describeToolbar: () => 'toolbar' as const,
   }))
-  .extendEditorTransforms(({ editor }) => ({
-    setCompact: () => {
-      editor.getPlugin(LayoutPlugin).transforms.setDensity(1);
-    },
+  .extendTx(() => () => ({
+    setCompact: () => undefined,
   }));
 
 const initialValue = [
@@ -105,20 +101,24 @@ const plateEditor = createPlateEditor({
   value: initialValue,
 });
 
-const expectBodyValue = (value: BodyValue) => value;
+const expectBodyValue = (value: ReadBodyValue) => value;
 
-const bodyValue: BodyValue = plateEditor.children;
+const bodyValue: ReadBodyValue = plateEditor.read.children();
 const layoutVariant: LayoutVariant = plateEditor.api.getVariant();
 const mentionTrigger: '@' = plateEditor.api.getTrigger();
-const editorSummary: EditorSummary = plateEditor.api.describeEditor();
+const editorSummary: EditorSummary =
+  `${plateEditor.api.getVariant()}:${plateEditor.api.getTrigger()}` as const;
+const toolbarDescription: 'toolbar' = plateEditor.api.describeToolbar();
 const isDense: boolean = plateEditor.getOption(
   ConfiguredLayoutPlugin,
   'isDense'
 );
 
-plateEditor.transforms.setDensity(1);
-plateEditor.transforms.setDensity(2);
-plateEditor.transforms.setCompact();
+plateEditor.update((tx) => {
+  tx.layout.setDensity(1);
+  tx.layout.setDensity(2);
+  tx.toolbar.setCompact();
+});
 
 expectBodyValue(bodyValue);
 
@@ -126,6 +126,7 @@ void editorSummary;
 void isDense;
 void layoutVariant;
 void mentionTrigger;
+void toolbarDescription;
 
 ConfiguredLayoutPlugin.configure({
   options: {
@@ -134,17 +135,21 @@ ConfiguredLayoutPlugin.configure({
   },
 });
 
-// @ts-expect-error invalid merged transform argument
-plateEditor.transforms.setDensity(3);
+plateEditor.update((tx) => {
+  // @ts-expect-error invalid merged tx argument
+  tx.layout.setDensity(3);
+});
 
-// @ts-expect-error invalid merged toolbar transform argument
-plateEditor.transforms.setCompact(true);
+plateEditor.update((tx) => {
+  // @ts-expect-error invalid merged toolbar tx argument
+  tx.toolbar.setCompact(true);
+});
 
 // @ts-expect-error invalid selector arguments
 plateEditor.getOption(ConfiguredLayoutPlugin, 'isDense', true);
 
 // @ts-expect-error invalid merged editor api
-plateEditor.api.describeEditor('extra');
+plateEditor.api.describeToolbar('extra');
 
 const invalidBodyValue: BodyValue = [
   {

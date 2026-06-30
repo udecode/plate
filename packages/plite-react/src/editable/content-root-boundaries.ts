@@ -5,7 +5,7 @@ import {
   type Point,
   type RootKey,
 } from '@platejs/plite';
-import { MAIN_ROOT_KEY } from '../root-key';
+import { readRootChildren } from '../root-key';
 import {
   getPliteBoundaryPoint,
   getPliteDescendantAtPath,
@@ -94,9 +94,7 @@ export const getOwnerBoundaryPoint = (
   direction: ContentRootNavigationDirection
 ): Point | null =>
   editor.read((state) => {
-    const children = state.value.root(
-      owner.ownerRoot === MAIN_ROOT_KEY ? undefined : owner.ownerRoot
-    );
+    const children = readRootChildren(state, owner.ownerRoot);
     const ownerNode =
       children && getPliteDescendantAtPath(children, owner.ownerPath);
 
@@ -127,9 +125,7 @@ export const getOwnerAdjacentBoundary = (
   direction: ContentRootNavigationDirection
 ): ContentRootAdjacentBoundary | null =>
   editor.read((state) => {
-    const children = state.value.root(
-      owner.ownerRoot === MAIN_ROOT_KEY ? undefined : owner.ownerRoot
-    );
+    const children = readRootChildren(state, owner.ownerRoot);
 
     return children
       ? getSiblingBoundary({
@@ -146,9 +142,7 @@ export const getOwnerSelfBoundaryPoint = (
   edge: 'end' | 'start'
 ): Point | null =>
   editor.read((state) => {
-    const children = state.value.root(
-      owner.ownerRoot === MAIN_ROOT_KEY ? undefined : owner.ownerRoot
-    );
+    const children = readRootChildren(state, owner.ownerRoot);
     const ownerNode =
       children && getPliteDescendantAtPath(children, owner.ownerPath);
 
@@ -163,9 +157,7 @@ export const getExitBoundaryPoint = (
   direction: ContentRootNavigationDirection
 ): Point | null =>
   editor.read((state) => {
-    const children = state.value.root(
-      owner.ownerRoot === MAIN_ROOT_KEY ? undefined : owner.ownerRoot
-    );
+    const children = readRootChildren(state, owner.ownerRoot);
     const ownerNode =
       children && getPliteDescendantAtPath(children, owner.ownerPath);
 
@@ -201,7 +193,7 @@ export const getRootBoundaryNavigationTarget = ({
 }): ContentRootBoundaryNavigationTarget | null => {
   const point = editor.read((state) =>
     getPliteRootBoundaryPoint(
-      state.value.root(owner.childRoot),
+      readRootChildren(state, owner.childRoot),
       direction === 'forward' ? 'start' : 'end'
     )
   );
@@ -235,7 +227,7 @@ export const getDocumentBoundaryNavigationTarget = ({
   const targetRoot = ownerForCurrentRoot?.ownerRoot ?? currentRoot;
   const point = editor.read((state) =>
     getPliteRootBoundaryPoint(
-      state.value.root(targetRoot === MAIN_ROOT_KEY ? undefined : targetRoot),
+      readRootChildren(state, targetRoot),
       direction === 'forward' ? 'end' : 'start'
     )
   );

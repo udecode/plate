@@ -26,6 +26,13 @@ import {
 
 import { History, history } from '../src';
 
+const PLITE_IMPORT_RE = /import \{ createEditor \} from "@platejs\/plite"/;
+const PLITE_REACT_IMPORT_RE =
+  /import \{ usePliteEditor \} from ["']@platejs\/plite-react["']/;
+const HISTORY_RUN_DOC_RE = /editor\.api\.history\.run\(\{ save: false \}/;
+const USE_PLITE_EDITOR_RE = /const editor = usePliteEditor\(\{/;
+const CREATE_REACT_EDITOR_RE = /createReactEditor/;
+
 const paragraph = (
   text: string,
   props: Record<string, unknown> = {}
@@ -38,7 +45,7 @@ const paragraph = (
 const historyTestEditor = () => createEditor({ extensions: [history()] });
 
 const getHistory = (editor: EditorType) =>
-  editor.read((state: any) => state.history.get());
+  editor.read((state: any) => state.history());
 
 const undo = (editor: EditorType) => {
   editor.update((tx) => {
@@ -91,13 +98,11 @@ describe('plite-history contract', () => {
       'utf8'
     );
 
-    assert.match(docs, /import \{ createEditor \} from "@platejs\/plite"/);
-    assert.match(
-      docs,
-      /import \{ usePliteEditor \} from '@platejs\/plite-react'/
-    );
-    assert.match(docs, /const editor = usePliteEditor\(\{/);
-    assert.doesNotMatch(docs, /createReactEditor/);
+    assert.match(docs, PLITE_IMPORT_RE);
+    assert.match(docs, PLITE_REACT_IMPORT_RE);
+    assert.match(docs, HISTORY_RUN_DOC_RE);
+    assert.match(docs, USE_PLITE_EDITOR_RE);
+    assert.doesNotMatch(docs, CREATE_REACT_EDITOR_RE);
   });
 
   it('keeps History.isHistory true before edits and across edit, undo, and redo', () => {
@@ -352,13 +357,13 @@ describe('plite-history contract', () => {
 
     undo(editor);
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       { children: [paragraph('x')], roots: { header: [paragraph('a')] } }
     );
 
     undo(editor);
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       { children: [paragraph('x')], roots: { header: [paragraph('')] } }
     );
   });
@@ -415,7 +420,7 @@ describe('plite-history contract', () => {
 
     undo(headerEditor);
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('m1')],
         roots: { footer: [paragraph('f1')], header: [paragraph('h12')] },
@@ -539,21 +544,21 @@ describe('plite-history contract', () => {
     undo(headerEditor);
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
       }
     );
     assert.deepEqual(
-      mainEditor.read((state) => state.selection.get()),
+      mainEditor.read((state) => state.selection()),
       {
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       }
     );
     assert.equal(
-      headerEditor.read((state) => state.selection.get()),
+      headerEditor.read((state) => state.selection()),
       null
     );
   });
@@ -587,7 +592,7 @@ describe('plite-history contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body'), island],
         roots: { [childRoot]: [paragraph('child')] },
@@ -597,14 +602,14 @@ describe('plite-history contract', () => {
     undo(editor);
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       { children: [paragraph('body')] }
     );
 
     redo(editor);
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body'), island],
         roots: { [childRoot]: [paragraph('child')] },
@@ -780,7 +785,7 @@ describe('plite-history contract', () => {
       ]);
     });
 
-    headerEditor.api.history.withoutSaving(() => {
+    headerEditor.api.history.run({ save: false }, () => {
       write(headerEditor, (tx) => {
         tx.operations.replay([
           {
@@ -805,14 +810,14 @@ describe('plite-history contract', () => {
     undo(headerEditor);
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('remote'), oldChild, paragraph('tail')] },
       }
     );
     assert.deepEqual(
-      runtime.read((state) => state.selection.get()),
+      runtime.read((state) => state.selection()),
       {
         anchor: { path: [1, 0], offset: 3, root: 'header' },
         focus: { path: [1, 0], offset: 3, root: 'header' },
@@ -820,7 +825,7 @@ describe('plite-history contract', () => {
     );
   });
 
-  it('rebases saved undo batches across local withoutSaving document edits', () => {
+  it('rebases saved undo batches across local history.run({ save: false }) document edits', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('abcdef')], {
@@ -832,7 +837,7 @@ describe('plite-history contract', () => {
       tx.text.insert('X');
     });
 
-    editor.api.history.withoutSaving(() => {
+    editor.api.history.run({ save: false }, () => {
       write(editor, (tx) => {
         tx.text.insert('Y', { at: { path: [0, 0], offset: 0 } });
       });
@@ -851,7 +856,7 @@ describe('plite-history contract', () => {
     assert.equal(editorString(editor, [0]), 'Yabcdef');
   });
 
-  it('drops saved undo batches deleted by local withoutSaving edits', () => {
+  it('drops saved undo batches deleted by local history.run({ save: false }) edits', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('ab')], {
@@ -866,7 +871,7 @@ describe('plite-history contract', () => {
     assert.equal(editorString(editor, [0]), 'aXb');
     assert.equal(getHistory(editor).undos.length, 1);
 
-    editor.api.history.withoutSaving(() => {
+    editor.api.history.run({ save: false }, () => {
       write(editor, (tx) => {
         tx.text.delete({
           at: {
@@ -887,7 +892,7 @@ describe('plite-history contract', () => {
     assert.equal(getHistory(editor).redos.length, 0);
   });
 
-  it('rebases saved non-main split positions across withoutSaving text edits', () => {
+  it('rebases saved non-main split positions across history.run({ save: false }) text edits', () => {
     const editor = createEditor({
       extensions: [history()],
       initialValue: {
@@ -908,7 +913,7 @@ describe('plite-history contract', () => {
       ]);
     });
 
-    editor.api.history.withoutSaving(() => {
+    editor.api.history.run({ save: false }, () => {
       write(editor, (tx) => {
         tx.text.insert('Y', {
           at: { offset: 0, path: [0, 0], root: 'header' },
@@ -920,7 +925,7 @@ describe('plite-history contract', () => {
     redo(editor);
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('main')],
         roots: {
@@ -1122,6 +1127,28 @@ describe('plite-history contract', () => {
     );
 
     assert.equal(getHistory(skipEditor).undos.length, 0);
+  });
+
+  it('lets transaction metadata skip history for the active update', () => {
+    const editor = historyTestEditor();
+
+    replace(editor, [paragraph('')], {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    });
+
+    editor.update((tx) => {
+      tx.metadata.merge({ history: { mode: 'skip' } });
+      tx.text.insert('a');
+    });
+
+    assert.deepEqual(
+      editor.read((state) => state.value()),
+      {
+        children: [paragraph('a')],
+      }
+    );
+    assert.equal(getHistory(editor).undos.length, 0);
   });
 
   it('clears redo history when a new edit follows undo', () => {

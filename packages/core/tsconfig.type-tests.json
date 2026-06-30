@@ -1,0 +1,9 @@
+{
+  "extends": "../../tooling/config/tsconfig.type-tests.json",
+  "include": [
+    "type-tests/**/*.ts",
+    "type-tests/**/*.tsx",
+    "../../tooling/config/global.d.ts"
+  ],
+  "exclude": ["dist", "node_modules"]
+}

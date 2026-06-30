@@ -16,7 +16,7 @@ import {
   PointApi,
   RangeApi,
   TextApi,
-} from '../src';
+} from '@platejs/plite';
 
 describe('plite interfaces contract', () => {
   it('treats editors as nodes, not elements', () => {
@@ -24,6 +24,16 @@ describe('plite interfaces contract', () => {
 
     assert.equal(NodeApi.isNode(editor), true);
     assert.equal(ElementApi.isElement(editor), false);
+  });
+
+  it('treats elements and text as descendants, not editor roots', () => {
+    const editor = createEditor();
+    const element = { children: [{ text: '' }], type: 'p' };
+    const text = { text: '' };
+
+    assert.equal(NodeApi.isDescendant(editor), false);
+    assert.equal(NodeApi.isDescendant(element), true);
+    assert.equal(NodeApi.isDescendant(text), true);
   });
 
   it('treats arrays of editor-like values as not an element list', () => {

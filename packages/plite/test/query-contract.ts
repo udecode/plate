@@ -33,7 +33,7 @@ import {
   positions as editorPositions,
   previous as editorPrevious,
   range as editorRange,
-  replace as editorReplace,
+  replace as editorReplaceBase,
   select as editorSelect,
   string as editorString,
   unhangRange as editorUnhangRange,
@@ -41,10 +41,24 @@ import {
 import {
   createEditor,
   type Descendant,
+  type Element,
   type EditorElementSpec,
+  type Node,
   NodeApi,
   PathApi,
-} from '../src';
+} from '@platejs/plite';
+
+type LegacySnapshotInput = Omit<
+  Parameters<typeof editorReplaceBase>[1],
+  'children'
+> & {
+  children: Descendant[];
+};
+
+const editorReplace = editorReplaceBase as unknown as (
+  editor: Parameters<typeof editorReplaceBase>[0],
+  input: LegacySnapshotInput
+) => void;
 
 let extensionIndex = 0;
 
@@ -117,9 +131,9 @@ const getNodeEntries = (
 ) => editor.read((state) => state.nodes.toArray(options));
 
 const getMarks = (editor: ReturnType<typeof createEditor>) =>
-  editor.read((state) => state.marks.get());
+  editor.read((state) => state.marks());
 
-const createChildren = (): Descendant[] => [
+const createChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'alpha' }],
@@ -130,7 +144,7 @@ const createChildren = (): Descendant[] => [
   },
 ];
 
-const createLegacyBlockChildren = (): Descendant[] => [
+const createLegacyBlockChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'one' }],
@@ -141,7 +155,7 @@ const createLegacyBlockChildren = (): Descendant[] => [
   },
 ];
 
-const createElementSplitChildren = (): Descendant[] => [
+const createElementSplitChildren = (): Element[] => [
   {
     type: 'paragraph',
     data: true,
@@ -154,31 +168,31 @@ const createElementSplitChildren = (): Descendant[] => [
       },
       { text: 'after' },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createVoidBlockPairChildren = (): Descendant[] => [
+const createVoidBlockPairChildren = (): Element[] => [
   {
     type: 'paragraph',
     void: true,
     children: [{ text: 'one' }],
-  } as Descendant,
+  } as Element,
   {
     type: 'paragraph',
     void: true,
     children: [{ text: 'two' }],
-  } as Descendant,
+  } as Element,
 ];
 
-const createVoidSplitChildren = (): Descendant[] => [
+const createVoidSplitChildren = (): Element[] => [
   {
     type: 'paragraph',
     void: true,
     children: [{ text: 'one' }, { text: 'two' }],
-  } as Descendant,
+  } as Element,
 ];
 
-const createSelectableVoidBetweenBlocksChildren = (): Descendant[] => [
+const createSelectableVoidBetweenBlocksChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'one' }],
@@ -186,14 +200,14 @@ const createSelectableVoidBetweenBlocksChildren = (): Descendant[] => [
   {
     type: 'video',
     children: [{ text: '' }],
-  } as Descendant,
+  } as Element,
   {
     type: 'paragraph',
     children: [{ text: 'two' }],
   },
 ];
 
-const createNonSelectableBlockChildren = (): Descendant[] => [
+const createNonSelectableBlockChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'one' }],
@@ -202,26 +216,26 @@ const createNonSelectableBlockChildren = (): Descendant[] => [
     type: 'paragraph',
     nonSelectable: true,
     children: [{ text: 'two' }],
-  } as Descendant,
+  } as Element,
   {
     type: 'paragraph',
     children: [{ text: 'three' }],
   },
 ];
 
-const createLeadingNonSelectableBlockChildren = (): Descendant[] => [
+const createLeadingNonSelectableBlockChildren = (): Element[] => [
   {
     type: 'paragraph',
     nonSelectable: true,
     children: [{ text: 'two' }],
-  } as Descendant,
+  } as Element,
   {
     type: 'paragraph',
     children: [{ text: 'three' }],
   },
 ];
 
-const createTrailingNonSelectableBlockChildren = (): Descendant[] => [
+const createTrailingNonSelectableBlockChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'one' }],
@@ -230,10 +244,10 @@ const createTrailingNonSelectableBlockChildren = (): Descendant[] => [
     type: 'paragraph',
     nonSelectable: true,
     children: [{ text: 'two' }],
-  } as Descendant,
+  } as Element,
 ];
 
-const createNonSelectableInlineChildren = (): Descendant[] => [
+const createNonSelectableInlineChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [
@@ -245,10 +259,10 @@ const createNonSelectableInlineChildren = (): Descendant[] => [
       },
       { text: 'three' },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createLeadingNonSelectableInlineChildren = (): Descendant[] => [
+const createLeadingNonSelectableInlineChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [
@@ -259,10 +273,10 @@ const createLeadingNonSelectableInlineChildren = (): Descendant[] => [
       },
       { text: 'three' },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createTrailingNonSelectableInlineChildren = (): Descendant[] => [
+const createTrailingNonSelectableInlineChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [
@@ -273,10 +287,10 @@ const createTrailingNonSelectableInlineChildren = (): Descendant[] => [
         children: [{ text: 'two' }],
       },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createNonSelectableInlineVoidChildren = (): Descendant[] => [
+const createNonSelectableInlineVoidChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [
@@ -289,28 +303,28 @@ const createNonSelectableInlineVoidChildren = (): Descendant[] => [
       },
       { text: 'three' },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createSingleBlockChildren = (): Descendant[] => [
+const createSingleBlockChildren = (): Element[] => [
   {
     type: 'block',
     children: [{ text: 'one' }],
-  } as Descendant,
+  } as Element,
 ];
 
-const createTwoBlockChildren = (): Descendant[] => [
+const createTwoBlockChildren = (): Element[] => [
   {
     type: 'block',
     children: [{ text: 'one' }],
-  } as Descendant,
+  } as Element,
   {
     type: 'block',
     children: [{ text: 'two' }],
-  } as Descendant,
+  } as Element,
 ];
 
-const createNestedBlockChildren = (): Descendant[] => [
+const createNestedBlockChildren = (): Element[] => [
   {
     type: 'block',
     children: [
@@ -319,10 +333,10 @@ const createNestedBlockChildren = (): Descendant[] => [
         children: [{ text: 'one' }],
       },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createInlineBlockChildren = (): Descendant[] => [
+const createInlineBlockChildren = (): Element[] => [
   {
     type: 'block',
     children: [
@@ -333,10 +347,10 @@ const createInlineBlockChildren = (): Descendant[] => [
       },
       { text: 'three' },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createNestedInlineChildren = (): Descendant[] => [
+const createNestedInlineChildren = (): Element[] => [
   {
     type: 'block',
     children: [
@@ -354,18 +368,18 @@ const createNestedInlineChildren = (): Descendant[] => [
       },
       { text: 'five' },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createVoidBlockChildren = (): Descendant[] => [
+const createVoidBlockChildren = (): Element[] => [
   {
     type: 'block',
     void: true,
     children: [{ text: 'one' }, { text: 'two' }],
-  } as Descendant,
+  } as Element,
 ];
 
-const createVoidInlineChildren = (): Descendant[] => [
+const createVoidInlineChildren = (): Element[] => [
   {
     type: 'block',
     children: [
@@ -377,10 +391,10 @@ const createVoidInlineChildren = (): Descendant[] => [
       },
       { text: 'three' },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createMarkableVoidChildren = (): Descendant[] => [
+const createMarkableVoidChildren = (): Element[] => [
   {
     type: 'block',
     children: [
@@ -393,7 +407,7 @@ const createMarkableVoidChildren = (): Descendant[] => [
       },
       { text: '' },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
 it('above exposes the current traversal API', () => {
@@ -438,7 +452,7 @@ it('above exposes the current traversal API', () => {
       at: [0, 0, 1, 0],
       match: (node) =>
         'type' in node &&
-        (node as Descendant & { type?: string }).type === 'paragraph',
+        (node as Element & { type?: string }).type === 'paragraph',
     }),
     [
       {
@@ -481,7 +495,7 @@ it('mirrors the legacy above/block-lowest.tsx oracle row', () => {
       at: [0, 0, 0],
       match: (node) =>
         'type' in node &&
-        (node as Descendant & { type?: string }).type === 'block' &&
+        (node as Element & { type?: string }).type === 'block' &&
         editorIsBlock(editor, node),
       mode: 'lowest',
     }),
@@ -519,7 +533,7 @@ it('mirrors the legacy above/block-highest.tsx oracle row', () => {
       at: [0, 0, 0],
       match: (node) =>
         'type' in node &&
-        (node as Descendant & { type?: string }).type === 'block' &&
+        (node as Element & { type?: string }).type === 'block' &&
         editorIsBlock(editor, node),
       mode: 'highest',
     }),
@@ -565,7 +579,7 @@ it('mirrors the legacy above/inline.tsx oracle row', () => {
       at: [0, 1, 0],
       match: (node) =>
         'type' in node &&
-        (node as Descendant & { type?: string }).type === 'inline' &&
+        (node as Element & { type?: string }).type === 'inline' &&
         editorIsInline(editor, node),
     }),
     [
@@ -642,7 +656,7 @@ it('mirrors the legacy above/potential-parent.tsx oracle row', () => {
       at: [0, 0, 1],
       match: (node) =>
         'type' in node &&
-        (node as Descendant & { type?: string }).type === 'block' &&
+        (node as Element & { type?: string }).type === 'block' &&
         editorIsBlock(editor, node),
     }),
     [
@@ -696,7 +710,7 @@ it('mirrors the legacy above/range.tsx oracle row', () => {
       },
       match: (node) =>
         'type' in node &&
-        (node as Descendant & { type?: string }).type === 'block' &&
+        (node as Element & { type?: string }).type === 'block' &&
         editorIsBlock(editor, node),
     }),
     [
@@ -859,6 +873,8 @@ it('mirrors the legacy edges/end/start/path/point/node/parent/range oracle rows'
     offset: 2,
   });
   const rangeNode = getNodeEntry(editor, spanningRange);
+
+  assert.ok(rangeNode);
   assert.equal(editorIsEditor(rangeNode[0]), true);
   assert.deepEqual(rangeNode[1], []);
   assert.deepEqual(getNodeEntry(editor, spanningRange, { edge: 'start' }), [
@@ -997,8 +1013,8 @@ it('mirrors the legacy has*/is* editor predicate oracle rows', () => {
     marks: null,
   });
 
-  const nestedBlock = getNodeEntry(editor, [0])[0] as Descendant & {
-    children: Descendant[];
+  const nestedBlock = getNodeEntry(editor, [0])![0] as Element & {
+    children: Element[];
   };
   assert.equal(editorHasBlocks(editor, nestedBlock), true);
   assert.equal(editorHasInlines(editor, nestedBlock), false);
@@ -1013,8 +1029,8 @@ it('mirrors the legacy has*/is* editor predicate oracle rows', () => {
     marks: null,
   });
 
-  const block = getNodeEntry(editor, [0])[0] as Descendant & {
-    children: Descendant[];
+  const block = getNodeEntry(editor, [0])![0] as Element & {
+    children: Element[];
   };
   assert.equal(editorHasBlocks(editor, block), false);
   assert.equal(editorHasInlines(editor, block), true);
@@ -1042,8 +1058,8 @@ it('mirrors the legacy has*/is* editor predicate oracle rows', () => {
     marks: null,
   });
 
-  const inline = getNodeEntry(editor, [0, 1])[0] as Descendant & {
-    children: Descendant[];
+  const inline = getNodeEntry(editor, [0, 1])![0] as Element & {
+    children: Element[];
   };
   assert.equal(editorHasBlocks(editor, inline), false);
   assert.equal(editorHasInlines(editor, inline), true);
@@ -1064,8 +1080,8 @@ it('mirrors the legacy has*/is* editor predicate oracle rows', () => {
     marks: null,
   });
 
-  const nestedInline = getNodeEntry(editor, [0, 1])[0] as Descendant & {
-    children: Descendant[];
+  const nestedInline = getNodeEntry(editor, [0, 1])![0] as Element & {
+    children: Element[];
   };
   assert.equal(editorHasBlocks(editor, nestedInline), false);
   assert.equal(editorHasInlines(editor, nestedInline), true);
@@ -1077,8 +1093,8 @@ it('mirrors the legacy has*/is* editor predicate oracle rows', () => {
     marks: null,
   });
 
-  const voidBlock = getNodeEntry(editor, [0])[0] as Descendant & {
-    children: Descendant[];
+  const voidBlock = getNodeEntry(editor, [0])![0] as Element & {
+    children: Element[];
   };
   assert.equal(editorIsVoid(editor, voidBlock), true);
   assert.equal(editorIsEmpty(editor, voidBlock), false);
@@ -1089,8 +1105,8 @@ it('mirrors the legacy has*/is* editor predicate oracle rows', () => {
     marks: null,
   });
 
-  const voidInline = getNodeEntry(editor, [0, 1])[0] as Descendant & {
-    children: Descendant[];
+  const voidInline = getNodeEntry(editor, [0, 1])![0] as Element & {
+    children: Element[];
   };
   assert.equal(editorIsVoid(editor, voidInline), true);
   assert.equal(editorIsEmpty(editor, voidInline), false);
@@ -1470,7 +1486,7 @@ const unhangOracleCases = [
         type: 'paragraph',
         children: [{ text: 'another' }],
       },
-    ] as Descendant[],
+    ] as Element[],
     selection: {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
@@ -1487,7 +1503,7 @@ const unhangOracleCases = [
         type: 'paragraph',
         children: [{ text: 'one' }],
       },
-    ] as Descendant[],
+    ] as Element[],
     selection: {
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
@@ -1504,7 +1520,7 @@ const unhangOracleCases = [
         type: 'paragraph',
         children: [{ text: 'before' }, { text: 'selected' }, { text: 'after' }],
       },
-    ] as Descendant[],
+    ] as Element[],
     selection: {
       anchor: { path: [0, 0], offset: 6 },
       focus: { path: [0, 2], offset: 0 },
@@ -1536,7 +1552,7 @@ const unhangOracleCases = [
         type: 'paragraph',
         children: [{ text: '' }],
       },
-    ] as Descendant[],
+    ] as Element[],
     selection: {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [3, 0], offset: 0 },
@@ -1569,7 +1585,7 @@ const unhangOracleCases = [
         type: 'paragraph',
         children: [{ text: '' }],
       },
-    ] as Descendant[],
+    ] as Element[],
     selection: {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [3, 0], offset: 0 },
@@ -1602,7 +1618,7 @@ const unhangOracleCases = [
         type: 'paragraph',
         children: [{ text: '' }],
       },
-    ] as Descendant[],
+    ] as Element[],
     selection: {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [3, 0], offset: 0 },
@@ -1636,7 +1652,7 @@ const unhangOracleCases = [
         type: 'paragraph',
         children: [{ text: '' }],
       },
-    ] as Descendant[],
+    ] as Element[],
     selection: {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
@@ -1682,7 +1698,7 @@ const unhangOracleCases = [
         type: 'paragraph',
         children: [{ text: '' }],
       },
-    ] as Descendant[],
+    ] as Element[],
     selection: {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [2, 0], offset: 0 },
@@ -1716,7 +1732,7 @@ const unhangOracleCases = [
         type: 'paragraph',
         children: [{ text: 'This is the second paragraph' }],
       },
-    ] as Descendant[],
+    ] as Element[],
     selection: {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 2], offset: 0 },
@@ -1762,7 +1778,7 @@ const unhangOracleCases = [
         type: 'paragraph',
         children: [{ text: 'This is the third paragraph' }],
       },
-    ] as Descendant[],
+    ] as Element[],
     selection: {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 2], offset: 0 },
@@ -1799,7 +1815,7 @@ const unhangOracleCases = [
         type: 'paragraph',
         children: [{ text: 'Another block' }],
       },
-    ] as Descendant[],
+    ] as Element[],
     selection: {
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 1, 0], offset: 0 },
@@ -2300,7 +2316,7 @@ it('nodes exposes nested text leaves and text content for element queries', () =
   );
   assert.deepEqual(NodeApi.first(editor, [0]), [{ text: 'Foo' }, [0, 0]]);
   assert.deepEqual(NodeApi.last(editor, [0]), [{ text: 'Qux' }, [0, 2]]);
-  assert.equal(NodeApi.string(getNodeEntry(editor, [0])[0]), 'FooBarBazQux');
+  assert.equal(NodeApi.string(getNodeEntry(editor, [0])![0]), 'FooBarBazQux');
 });
 
 it('nodes reverse returns the exact inverse of forward matches', () => {
@@ -2332,8 +2348,9 @@ it('nodes reverse returns the exact inverse of forward matches', () => {
     marks: null,
   });
 
-  const match = (node: Descendant) =>
-    'type' in node && (node.type === 'paragraph' || node.type === 'nested');
+  const match = (node: Node) =>
+    NodeApi.isElement(node) &&
+    (node.type === 'paragraph' || node.type === 'nested');
   const paths = (options: { reverse?: boolean } = {}) =>
     Array.from(
       getNodeEntries(editor, {
@@ -2410,7 +2427,7 @@ it('positions uses element spec atom and editable-island policies', () => {
         type: 'editable-embed',
         children: [{ text: 'two' }],
       },
-    ] as Descendant[],
+    ] as Element[],
     selection: null,
     marks: null,
   });
@@ -2506,12 +2523,12 @@ it('Editor exposes a narrowed static read/query layer for the current public sur
     marks: null,
   });
 
-  const paragraph = getNodeEntry(editor, [0])[0] as Descendant & {
-    children: Descendant[];
+  const paragraph = getNodeEntry(editor, [0])![0] as Element & {
+    children: Element[];
     type: string;
   };
-  const quote = getNodeEntry(editor, [1])[0] as Descendant & {
-    children: Descendant[];
+  const quote = getNodeEntry(editor, [1])![0] as Element & {
+    children: Element[];
     type: string;
   };
   const sameBlockRange = {
@@ -2559,7 +2576,7 @@ it('Editor exposes a narrowed static read/query layer for the current public sur
         at: [],
         match: (node) =>
           'type' in node &&
-          (node as Descendant & { type?: string }).type === 'paragraph',
+          (node as Element & { type?: string }).type === 'paragraph',
         mode: 'lowest',
       })
     ),
@@ -2571,7 +2588,7 @@ it('Editor exposes a narrowed static read/query layer for the current public sur
   assert.deepEqual(
     Array.from(editorLevels(editor, { at: { path: [0, 1, 0], offset: 1 } })),
     [
-      [getNodeEntry(editor, [])[0], []],
+      [getNodeEntry(editor, [])![0], []],
       [paragraph, [0]],
       [paragraph.children[1], [0, 1]],
       [{ text: 'two' }, [0, 1, 0]],
@@ -2649,7 +2666,7 @@ it('Editor static read/query helpers see the live draft tree inside an outer tra
       firstString: editorString(editor, [0]),
       insertedPathExists: editorHasPath(editor, [2]),
       shiftedNodeString: editorString(editor, [2]),
-      lastPoint: getEnd(editor, [2]),
+      lastPoint: getEnd(editor, [2])!,
     };
   });
 
@@ -2691,7 +2708,7 @@ it('mirrors the legacy editorLevels/success.tsx oracle row', () => {
   });
 
   assert.deepEqual(Array.from(editorLevels(editor, { at: [0, 0] })), [
-    [getNodeEntry(editor, [])[0], []],
+    [getNodeEntry(editor, [])![0], []],
     [
       {
         type: 'element',
@@ -2728,7 +2745,7 @@ it('mirrors the legacy editorLevels/reverse.tsx oracle row', () => {
         },
         [0],
       ],
-      [getNodeEntry(editor, [])[0], []],
+      [getNodeEntry(editor, [])![0], []],
     ]
   );
 });
@@ -2786,7 +2803,7 @@ it('mirrors the legacy editorLevels/voids-false.tsx oracle row', () => {
   });
 
   assert.deepEqual(Array.from(editorLevels(editor, { at: [0, 0] })), [
-    [getNodeEntry(editor, [])[0], []],
+    [getNodeEntry(editor, [])![0], []],
     [
       {
         type: 'element',
@@ -2817,7 +2834,7 @@ it('mirrors the legacy editorLevels/voids-true.tsx oracle row', () => {
   assert.deepEqual(
     Array.from(editorLevels(editor, { at: [0, 0], voids: true })),
     [
-      [getNodeEntry(editor, [])[0], []],
+      [getNodeEntry(editor, [])![0], []],
       [
         {
           type: 'element',

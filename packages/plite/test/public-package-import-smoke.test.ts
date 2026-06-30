@@ -67,7 +67,6 @@ const exactPublicPackageRuntimeExportExpectations = {
     'defineStateField',
     'edges',
     'elementProperty',
-    'end',
     'first',
     'fragment',
     'isBlock',
@@ -85,9 +84,9 @@ const exactPublicPackageRuntimeExportExpectations = {
     'pathRef',
     'pointRef',
     'previous',
+    'queryNode',
     'range',
     'setDebugValueScrubber',
-    'start',
     'string',
     'unhangRange',
   ],
@@ -498,6 +497,7 @@ const internalBridgeRuntimeExportExpectations = {
     'unhangRange',
     'unsetNodes',
     'update',
+    'unwrapNodes',
     'void',
     'withOperationRootChildren',
     'withoutNormalizing',
@@ -596,9 +596,10 @@ describe('public package imports', () => {
 
   test('keeps plite-browser root unavailable', async () => {
     let importedRoot = false;
+    const browserRootSpecifier = '@platejs/browser' as string;
 
     try {
-      await import('@platejs/browser');
+      await import(browserRootSpecifier);
       importedRoot = true;
     } catch {}
 

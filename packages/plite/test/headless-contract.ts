@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   createEditor,
-  type Descendant,
+  type Element,
   type Editor as EditorType,
 } from '@platejs/plite';
 import {
@@ -36,26 +36,26 @@ const createSelectedEditor = (): EditorType =>
 
 describe('plite headless contract', () => {
   it('supports package-split headless composition through source-resolved package imports', () => {
-    const editor = createEditor({ extensions: [history()] });
+    const editor = createEditor({ extensions: [history()] as const });
     const input = createSelectedEditor();
     const h = createHyperscript({
       elements: {
         paragraph: { type: 'paragraph' },
       },
     });
-    const fragment = h(
+    const fragment = (h as any)(
       'fragment',
       {},
-      h('paragraph', {}, 'alpha')
-    ) as Descendant[];
+      (h as any)('paragraph', {}, 'alpha')
+    ) as Element[];
 
     assert.equal(
-      editor.read((state) => History.isHistory(state.history.get())),
+      editor.read((state) => History.isHistory(state.history())),
       true
     );
 
     editorReplace(editor, {
-      children: editorGetChildren(input) as Descendant[],
+      children: editorGetChildren(input) as Element[],
       selection: editorGetSelection(input),
       marks: null,
     });
@@ -98,21 +98,21 @@ describe('plite headless contract', () => {
         paragraph: { type: 'paragraph' },
       },
     });
-    const input = h(
+    const input = (h as any)(
       'editor',
       {},
-      h('paragraph', {}, 'word'),
-      h(
+      (h as any)('paragraph', {}, 'word'),
+      (h as any)(
         'selection',
         {},
-        h('anchor', { path: [0, 0], offset: 1 }),
-        h('focus', { path: [0, 0], offset: 3 })
+        (h as any)('anchor', { path: [0, 0], offset: 1 }),
+        (h as any)('focus', { path: [0, 0], offset: 3 })
       )
     ) as EditorType;
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: editorGetChildren(input) as Descendant[],
+      children: editorGetChildren(input) as Element[],
       selection: editorGetSelection(input),
       marks: null,
     });

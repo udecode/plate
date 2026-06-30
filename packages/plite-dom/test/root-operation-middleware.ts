@@ -44,7 +44,7 @@ describe('root operation middleware', () => {
       });
     }).not.toThrow();
 
-    expect(runtime.read((state) => state.value.get())).toEqual({
+    expect(runtime.read((state) => state.value())).toEqual({
       children: [paragraph('first'), paragraph('second')],
       roots: { header: [paragraph('header')] },
     });

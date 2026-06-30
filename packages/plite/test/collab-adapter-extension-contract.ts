@@ -8,13 +8,14 @@ import {
 
 import {
   createEditor,
-  type Descendant,
+  type Element,
   defineEditorExtension,
   type EditorUpdateOptions,
+  type EditorUpdateTransaction,
   type Operation,
-} from '../src';
+} from '@platejs/plite';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -47,7 +48,7 @@ const createSeededEditor = () => {
 
 type FakeAdapterState = {
   connected: boolean;
-  exports: Operation[][];
+  exports: readonly (readonly Operation[])[];
   originClientId: string;
   paused: boolean;
   remoteImports: number;
@@ -56,7 +57,7 @@ type FakeAdapterState = {
 const createFakeCollabAdapterExtension = () => {
   let controller: {
     connect: () => void;
-    exports: () => readonly Operation[][];
+    exports: () => readonly (readonly Operation[])[];
     importRemote: (operations: readonly Operation[]) => void;
     listenerEvents: () => readonly string[];
     pause: () => void;
@@ -94,7 +95,7 @@ const createFakeCollabAdapterExtension = () => {
           return adapterState.get().exports;
         },
         importRemote(operations) {
-          context.editor.update((tx) => {
+          context.editor.update((tx: EditorUpdateTransaction) => {
             tx.operations.replay(clone(operations));
           }, remoteCollabOptions);
           setAdapterState((state) => ({

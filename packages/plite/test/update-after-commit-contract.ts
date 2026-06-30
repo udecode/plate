@@ -10,15 +10,23 @@ import {
   createEditor,
   createEditorRuntime,
   createEditorView,
-  type Descendant,
+  type Element,
   defineEditorExtension,
   type EditorCommitHandler,
-} from '../src';
+  type EditorUpdateTransaction,
+} from '@platejs/plite';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
+
+type ViewAfterCommitEvent = {
+  editor: unknown;
+  root: string;
+  snapshotText: string;
+  text: string;
+};
 
 const seedEditor = <TEditor extends ReturnType<typeof createEditor>>(
   editor: TEditor = createEditor() as TEditor
@@ -154,13 +162,13 @@ describe('editor.update afterCommit', () => {
                     operation.text === '!'
                 )
               ) {
-                editor.update((tx) => {
+                editor.update((tx: EditorUpdateTransaction) => {
                   tx.text.insert('?');
                 });
               }
             },
           }),
-        ],
+        ] as const,
       })
     );
     const versions: string[] = [];
@@ -190,7 +198,7 @@ describe('editor.update afterCommit', () => {
               events.push('onCommit');
             },
           }),
-        ],
+        ] as const,
       })
     );
     events.length = 0;
@@ -214,12 +222,7 @@ describe('editor.update afterCommit', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    let event: {
-      editor: unknown;
-      root: string;
-      snapshotText: string;
-      text: string;
-    } | null = null;
+    let event: ViewAfterCommitEvent | null = null;
 
     headerEditor.update((tx, { afterCommit }) => {
       afterCommit(({ editor, snapshot }) => {
@@ -238,8 +241,10 @@ describe('editor.update afterCommit', () => {
       tx.text.insert('!');
     });
 
-    assert.equal(event?.editor, headerEditor);
-    assert.deepEqual(event, {
+    const recordedEvent = event as unknown as ViewAfterCommitEvent | null;
+
+    assert.equal(recordedEvent?.editor, headerEditor);
+    assert.deepEqual(recordedEvent, {
       editor: headerEditor,
       root: 'header',
       snapshotText: 'header!',

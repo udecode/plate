@@ -1,4 +1,6 @@
-import { createSlateEditor } from '../../editor';
+import { defineEditorExtension } from '@platejs/plite';
+
+import { createBaseEditor } from '../../editor';
 import { NavigationFeedbackPlugin } from './NavigationFeedbackPlugin';
 
 describe('NavigationFeedbackPlugin', () => {
@@ -14,15 +16,17 @@ describe('NavigationFeedbackPlugin', () => {
       timeoutCallback = callback;
       return 1;
     }) as typeof setTimeout);
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
-    editor.tf.navigation.flashTarget({
-      duration: 25,
-      target: {
-        path: [0],
-        type: 'node',
-      },
+    editor.update((tx) => {
+      tx.navigation.flashTarget({
+        duration: 25,
+        target: {
+          path: [0],
+          type: 'node',
+        },
+      });
     });
 
     expect(editor.api.navigation.activeTarget()).toEqual({
@@ -40,6 +44,53 @@ describe('NavigationFeedbackPlugin', () => {
     expect(editor.api.navigation.activeTarget()).toBeNull();
   });
 
+  it('flashTarget marks the resolved DOM element through the typed dom API', () => {
+    const setAttributeSpy = mock(() => {});
+    const setPropertySpy = mock(() => {});
+    const editor = createBaseEditor({
+      value: [{ children: [{ text: 'one' }], type: 'p' }],
+    } as any);
+
+    editor.extend(
+      defineEditorExtension({
+        api: {
+          dom: {
+            resolveDOMNode: () =>
+              ({
+                removeAttribute: mock(() => {}),
+                setAttribute: setAttributeSpy,
+                style: {
+                  removeProperty: mock(() => {}),
+                  setProperty: setPropertySpy,
+                },
+              }) as unknown as HTMLElement,
+          },
+        },
+        name: 'test:dom-node-resolution',
+      })
+    );
+
+    editor.update((tx) => {
+      tx.navigation.flashTarget({
+        duration: 25,
+        target: {
+          path: [0],
+          type: 'node',
+        },
+      });
+    });
+
+    expect(setAttributeSpy).toHaveBeenCalledWith('data-nav-target', 'true');
+    expect(setAttributeSpy).toHaveBeenCalledWith(
+      'data-nav-highlight',
+      'navigated'
+    );
+    expect(setPropertySpy).toHaveBeenCalledWith(
+      '--plate-nav-feedback-duration',
+      '25ms'
+    );
+  });
+
   it('a new flash replaces the previous timer and increments the pulse', () => {
     const clearTimeoutSpy = spyOn(
       globalThis,
@@ -50,20 +101,24 @@ describe('NavigationFeedbackPlugin', () => {
       timeoutId += 1;
       return timeoutId;
     }) as typeof setTimeout);
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
-    editor.tf.navigation.flashTarget({
-      target: {
-        path: [0],
-        type: 'node',
-      },
+    editor.update((tx) => {
+      tx.navigation.flashTarget({
+        target: {
+          path: [0],
+          type: 'node',
+        },
+      });
     });
-    editor.tf.navigation.flashTarget({
-      target: {
-        path: [0],
-        type: 'node',
-      },
+    editor.update((tx) => {
+      tx.navigation.flashTarget({
+        target: {
+          path: [0],
+          type: 'node',
+        },
+      });
     });
 
     expect(clearTimeoutSpy).toHaveBeenCalledWith(1);
@@ -78,33 +133,44 @@ describe('NavigationFeedbackPlugin', () => {
   });
 
   it('navigate selects, focuses, scrolls, and flashes the target', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
-    const focusSpy = spyOn(editor.tf, 'focus').mockImplementation(() => {});
-    const scrollSpy = spyOn(editor.api, 'scrollIntoView').mockImplementation(
-      () => {}
+    const focusSpy = mock(() => {});
+    const scrollSpy = mock(() => {});
+    editor.extend(
+      defineEditorExtension({
+        api: {
+          dom: {
+            focus: focusSpy,
+          },
+          scrollIntoView: scrollSpy,
+        },
+        name: 'test:scroll-service',
+      })
     );
-    editor.tf.navigation.navigate({
-      scrollTarget: {
-        offset: 1,
-        path: [0, 0],
-      },
-      select: {
-        anchor: { offset: 1, path: [0, 0] },
-        focus: { offset: 1, path: [0, 0] },
-      },
-      target: {
-        path: [0],
-        type: 'node',
-      },
+    editor.update((tx) => {
+      tx.navigation.navigate({
+        scrollTarget: {
+          offset: 1,
+          path: [0, 0],
+        },
+        select: {
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 1, path: [0, 0] },
+        },
+        target: {
+          path: [0],
+          type: 'node',
+        },
+      });
     });
 
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     });
@@ -124,20 +190,25 @@ describe('NavigationFeedbackPlugin', () => {
   });
 
   it('keeps the active target path synced when the target node moves', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
 
-    editor.tf.navigation.flashTarget({
-      target: {
-        path: [0],
-        type: 'node',
-      },
+    editor.update((tx) => {
+      tx.navigation.flashTarget({
+        target: {
+          path: [0],
+          type: 'node',
+        },
+      });
     });
 
-    editor.tf.insertNodes({ children: [{ text: 'zero' }], type: 'p' } as any, {
-      at: [0],
-    });
+    editor.update.nodes.insert(
+      { children: [{ text: 'zero' }], type: 'p' } as any,
+      {
+        at: [0],
+      }
+    );
 
     expect(editor.api.navigation.activeTarget()).toEqual({
       cycle: 1,
@@ -165,18 +236,20 @@ describe('NavigationFeedbackPlugin', () => {
   });
 
   it('clears the active target when the target node is removed', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
 
-    editor.tf.navigation.flashTarget({
-      target: {
-        path: [0],
-        type: 'node',
-      },
+    editor.update((tx) => {
+      tx.navigation.flashTarget({
+        target: {
+          path: [0],
+          type: 'node',
+        },
+      });
     });
 
-    editor.tf.removeNodes({ at: [0] });
+    editor.update.nodes.remove({ at: [0] });
 
     expect(editor.api.navigation.activeTarget()).toBeNull();
     expect(
@@ -186,7 +259,7 @@ describe('NavigationFeedbackPlugin', () => {
   });
 
   it('uses the top-level navigationFeedback option to override duration', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       navigationFeedback: { duration: 1200 },
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
@@ -195,15 +268,14 @@ describe('NavigationFeedbackPlugin', () => {
   });
 
   it('can disable the navigation feedback plugin from editor options', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       navigationFeedback: false,
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
 
-    expect(editor.meta.pluginList.map((plugin) => plugin.key)).not.toContain(
+    expect(editor.runtime.pluginList.map((plugin) => plugin.key)).not.toContain(
       NavigationFeedbackPlugin.key
     );
     expect(editor.api.navigation).toBeUndefined();
-    expect(editor.tf.navigation).toBeUndefined();
   });
 });

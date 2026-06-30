@@ -1264,7 +1264,7 @@ docs/plans/2026-06-15-4951-block-placeholder-list-item.md:9
 docs/plans/2026-06-15-beta-public-release-readiness.md:729
 docs/plans/2026-06-15-rewrite-changesets-from-diffs.md:106
 docs/plans/2026-06-15-slate-browser-public-readiness.md:104
-docs/plans/2026-06-15-slate-extension-docs-cleanup.md:49
+docs/plans/2026-06-15-plite-extension-docs-cleanup.md:49
 docs/plans/2026-06-15-slate-migration-skill.md:65
 docs/plans/2026-06-15-slate-v2-docs-skeptical-polish.md:112
 docs/plans/2026-06-15-slate-v2-document-value-hard-cut-main-root.md:75
@@ -1811,7 +1811,7 @@ docs/solutions/performance-issues/2026-05-03-slate-tanstack-virtual-items-must-n
 docs/solutions/performance-issues/2026-05-05-slate-v2-large-paste-fast-path-must-still-be-a-logical-operation.md:24
 docs/solutions/performance-issues/2026-05-08-dom-selection-bridges-must-stay-cheap-on-selectionchange.md:17
 docs/solutions/performance-issues/2026-05-12-slate-render-props-should-not-carry-moving-paths.md:15
-docs/solutions/performance-issues/2026-05-18-slate-extension-oncommit-should-keep-snapshot-lazy.md:7
+docs/solutions/performance-issues/2026-05-18-plite-extension-oncommit-should-keep-snapshot-lazy.md:7
 docs/solutions/performance-issues/2026-05-23-slate-v2-core-operation-benchmarks-must-not-hide-snapshot-costs.md:14
 docs/solutions/runtime-errors/2026-04-01-plate-docs-examples-should-use-platecontent-under-plate.md:12
 docs/solutions/runtime-errors/2026-05-23-slate-dom-operation-middleware-must-enter-operation-root-before-path-reads.md:16

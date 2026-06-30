@@ -1,13 +1,13 @@
-import { type TElement, type TText, ElementApi, NodeApi } from '@platejs/slate';
+import { type Element, ElementApi, NodeApi, type Text } from '@platejs/plite';
 
-import type { SlateEditor } from '../../../editor';
+import type { BaseEditor } from '../../../editor';
 import type { EdgeNodes } from '../types';
 
-import { getPluginByType } from '../../../plugin/getSlatePlugin';
+import { getPluginByType } from '../../../plugin';
 
 export const isNodeAffinity = (
-  editor: SlateEditor,
-  node: TElement | TText,
+  editor: BaseEditor,
+  node: Element | Text,
   affinity: 'directional' | 'hard' | 'outward'
 ) => {
   const marks = Object.keys(NodeApi.extractProps(node));
@@ -19,7 +19,7 @@ export const isNodeAffinity = (
 };
 
 export const isNodesAffinity = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   edgeNodes: EdgeNodes,
   affinity: 'directional' | 'hard' | 'outward'
 ) => {

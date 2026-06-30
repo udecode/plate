@@ -350,7 +350,7 @@ export const useRootDocumentEpoch = () => {
   const selector = useCallback(
     (editor: ReactRuntimeEditor) =>
       editor.read((state) => {
-        const commit = state.value.lastCommit();
+        const commit = state.lastCommit();
 
         if (commit?.fullDocumentChanged) {
           lastEpochRef.current = commit.version;
@@ -376,7 +376,7 @@ export const useTopLevelSelectionIndex = (enabled: boolean) => {
         return null;
       }
 
-      const selection = editor.read((state) => state.selection.get());
+      const selection = editor.read((state) => state.selection());
       const anchorIndex = selection?.anchor.path[0];
       const focusIndex = selection?.focus.path[0];
 
@@ -425,7 +425,7 @@ export const useSelectionPaths = (enabled: boolean) => {
         return null;
       }
 
-      const selection = editor.read((state) => state.selection.get());
+      const selection = editor.read((state) => state.selection());
 
       if (!selection) {
         return null;
@@ -487,7 +487,7 @@ export const useEditableRootCommitWakeup = () => {
 
   useEditorSelector(
     (editor: ReactRuntimeEditor) =>
-      editor.read((state) => state.value.lastCommit()?.version ?? 0),
+      editor.read((state) => state.lastCommit()?.version ?? 0),
     Object.is,
     {
       profileId: 'editable-root-commit',

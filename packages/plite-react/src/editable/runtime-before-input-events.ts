@@ -443,7 +443,7 @@ export const useRuntimeBeforeInputEvents = ({
                   native: false,
                   selection:
                     currentSelection ??
-                    targetEditor.read((state) => state.selection.get()),
+                    targetEditor.read((state) => state.selection()),
                   setComposing,
                 })
             );

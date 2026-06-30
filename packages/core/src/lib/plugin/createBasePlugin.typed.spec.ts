@@ -1,4 +1,4 @@
-import type { NodeComponent, PluginConfig } from './PluginBase';
+import type { NodeComponent, PluginConfig } from './SlatePlugin';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
@@ -82,9 +82,9 @@ describe('createBasePlugin', () => {
 
     // Test withComponent method
     const MockComponent: NodeComponent = () => null;
-    const pluginWithComponent = basePlugin.withComponent(MockComponent);
+    const componentPlugin = basePlugin.withComponent(MockComponent);
     const editorWithComponent = createBaseEditor({
-      plugins: [pluginWithComponent],
+      plugins: [componentPlugin],
     });
     expect(editorWithComponent.plugins.testPlugin.render.node).toBe(
       MockComponent
@@ -106,12 +106,9 @@ describe('createBasePlugin', () => {
       plugins: [nestedPlugin],
     });
 
-    const extendedParentPlugin = parentPlugin.extendPlugin(
-      { key: 'nested' },
-      {
-        options: { nestedOption: 'modified' },
-      }
-    );
+    const extendedParentPlugin = parentPlugin.extendPlugin(nestedPlugin, {
+      options: { nestedOption: 'modified' },
+    });
 
     const resolvedParentEditor = createBaseEditor({
       plugins: [extendedParentPlugin],

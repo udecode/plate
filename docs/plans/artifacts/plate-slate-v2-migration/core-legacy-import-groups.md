@@ -43,13 +43,13 @@ scanner ledgers for authoritative current state.
 | `packages/core/src/lib/plugins/override/withDeleteRules.ts` | legacy-runtime-api | value:PointApi, value:RangeApi |
 | `packages/core/src/lib/plugins/override/withMergeRules.ts` | legacy-runtime-api | type:Path, type:TElement, value:ElementApi, value:PathApi, value:TextApi |
 | `packages/core/src/lib/plugins/override/withNormalizeRules.ts` | legacy-runtime-api | value:ElementApi |
-| `packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.ts` | current-v2 | type:Descendant, type:Element, type:NodeOperation, type:Text, type:TextOperation, value:NodeApi, value:OperationApi, value:PathApi |
-| `packages/core/src/lib/plugins/slate-extension/transforms/init.spec.ts` | editor-contract | type:TSelection |
-| `packages/core/src/lib/plugins/slate-extension/transforms/init.ts` | editor-contract | type:EditorTransforms, type:TSelection, type:Value |
-| `packages/core/src/lib/plugins/slate-extension/transforms/insertExitBreak.ts` | legacy-runtime-api | type:EditorAboveOptions, value:combineMatchOptions, value:PathApi |
-| `packages/core/src/lib/plugins/slate-extension/transforms/liftBlock.ts` | legacy-runtime-api | type:EditorAboveOptions, value:combineMatchOptions |
-| `packages/core/src/lib/plugins/slate-extension/transforms/resetBlock.ts` | legacy-runtime-api | type:Path, value:NodeApi |
-| `packages/core/src/lib/plugins/slate-extension/transforms/setValue.ts` | editor-contract | type:Descendant, type:EditorTransforms, type:Value |
+| `packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.ts` | current-v2 | type:Descendant, type:Element, type:NodeOperation, type:Text, type:TextOperation, value:NodeApi, value:OperationApi, value:PathApi |
+| `packages/core/src/lib/plugins/plite-extension/transforms/init.spec.ts` | editor-contract | type:TSelection |
+| `packages/core/src/lib/plugins/plite-extension/transforms/init.ts` | editor-contract | type:EditorTransforms, type:TSelection, type:Value |
+| `packages/core/src/lib/plugins/plite-extension/transforms/insertExitBreak.ts` | legacy-runtime-api | type:EditorAboveOptions, value:combineMatchOptions, value:PathApi |
+| `packages/core/src/lib/plugins/plite-extension/transforms/liftBlock.ts` | legacy-runtime-api | type:EditorAboveOptions, value:combineMatchOptions |
+| `packages/core/src/lib/plugins/plite-extension/transforms/resetBlock.ts` | legacy-runtime-api | type:Path, value:NodeApi |
+| `packages/core/src/lib/plugins/plite-extension/transforms/setValue.ts` | editor-contract | type:Descendant, type:EditorTransforms, type:Value |
 | `packages/core/src/lib/types/EditableProps.ts` | editor-contract | type:DOMRange, type:Editor, type:NodeEntry, type:TRange |
 | `packages/core/src/lib/utils/applyDeepToNodes.ts` | legacy-runtime-api | type:NodeEntry, type:NodeOf, type:Path, type:TNode, value:NodeApi |
 | `packages/core/src/lib/utils/defaultsDeepToNodes.ts` | type-only | type:TNode |

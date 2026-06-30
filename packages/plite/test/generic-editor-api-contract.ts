@@ -25,7 +25,11 @@ type QuoteElement = {
 
 type CustomValue = (ParagraphElement | QuoteElement)[];
 
-const editor = createEditor<CustomValue>();
+const initialValue: CustomValue = [
+  { type: 'paragraph', children: [{ text: '' }] },
+];
+
+const editor = createEditor<CustomValue>({ initialValue });
 
 editor.update((tx) => {
   tx.nodes.set<ElementOf<typeof editor>>({ type: 'quote' });
@@ -36,13 +40,13 @@ editor.update((tx) => {
 const leaf: TextOf<typeof editor> = { text: 'typed', bold: true };
 const marks: EditorMarksOf<typeof editor> = { code: true };
 const staticChildren: Readonly<CustomValue> = editor.read((state) =>
-  state.value.root()
+  state.children()
 );
 const operations: readonly Operation<CustomValue>[] = editor.read((state) =>
-  state.value.operations()
+  state.operations()
 );
 const commit: EditorCommit<CustomValue> | null = editor.read((state) =>
-  state.value.lastCommit()
+  state.lastCommit()
 );
 
 editor.update((tx) => {

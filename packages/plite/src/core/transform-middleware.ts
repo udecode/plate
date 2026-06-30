@@ -1,5 +1,6 @@
 import type {
   Editor,
+  EditorCommand,
   EditorPublicTransformMiddlewareKey,
   EditorTransformMiddlewareArgs,
   Value,
@@ -58,9 +59,10 @@ type _NoExtraRegisteredEditorTransformMiddlewareKey =
 type TransformMiddlewareCommand<
   V extends Value,
   TKey extends EditorPublicTransformMiddlewareKey,
-> = EditorTransformMiddlewareArgs<V>[TKey] & {
-  type: string;
-};
+> = EditorCommand &
+  EditorTransformMiddlewareArgs<V>[TKey] & {
+    type: string;
+  } & Record<string, unknown>;
 
 const TRANSFORM_COMMAND_PREFIX = 'transform:';
 const DEFAULT_DEPTH = new WeakMap<Editor, number>();
@@ -145,7 +147,7 @@ export const executeTransformMiddleware = <
       {
         ...args,
         type,
-      },
+      } as TransformMiddlewareCommand<V, TKey>,
       (command) => {
         profileCoreDuration(`transform-${key}-command-default`, () =>
           runTransformDefault(editor, () =>

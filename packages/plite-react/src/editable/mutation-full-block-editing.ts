@@ -240,7 +240,7 @@ export const canUseCachedCollapsedTextInsert = ({
   return canUseExplicitCollapsedTextInsert({
     editor,
     marks: profileEditableMutationDuration('model-text-input-read-marks', () =>
-      editor.read((state) => state.marks.get())
+      editor.read((state) => state.marks())
     ),
     selection,
   });

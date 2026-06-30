@@ -1,0 +1,392 @@
+{
+  "generatedAt": "2026-06-28T06:01:34.113Z",
+  "scope": "tracked/untracked diff under packages/core/src, packages/core/type-tests, core package config, packages/plite/src",
+  "rule": "Files that move logic into or depend on currentRuntimeBridge cannot score 100; currentRuntimeBridge itself is forbidden bridge hack score 0.",
+  "totalUnique": 206,
+  "below100": 206,
+  "below50": 11,
+  "bridgeBlocked": 27,
+  "maxScore": 90,
+  "minScore": 0,
+  "verdictBuckets": {
+    "forbidden-bridge-hack": 1,
+    "private-tx-adapter-risk": 1,
+    "core-plite-migration-risk": 52,
+    "alias-hard-cut": 2,
+    "replacement-owner": 2,
+    "public-type-surface-risk": 14,
+    "type-cast-risk": 36,
+    "bridge-installer": 1,
+    "strict-rescore-reviewed": 46,
+    "deleted-legacy-file": 15,
+    "owner-incomplete-bridge-backed": 19,
+    "dom-owner-partial-bridge-backed": 2,
+    "empty-owner-logic-displaced": 1,
+    "plugin-migrated-needs-focused-proof": 6,
+    "repaired-but-needs-owner-proof": 1,
+    "bridge-command-consumer": 3,
+    "plite-api-change-needs-contract-proof": 4
+  },
+  "topDrift": [
+    {
+      "path": "packages/core/src/internal/currentRuntimeBridge.ts",
+      "status": "??",
+      "confidence_score_100": 0,
+      "verdict": "forbidden-bridge-hack",
+      "owner": "core-to-plugin-migration",
+      "evidence": "File centralizes displaced command/input-rule/node-id/affinity/onChange logic. Moving product/plugin logic here is forbidden and cannot score above 0.",
+      "next": "Cut file by moving each job back to its real owner, then delete imports."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/input-rules/internal/InputRulesPlugin.ts",
+      "status": "M",
+      "confidence_score_100": 5,
+      "verdict": "empty-owner-logic-displaced",
+      "owner": "InputRulesPlugin",
+      "evidence": "InputRulesPlugin is almost empty while runtime execution lives in currentRuntimeBridge. This is the exact bad-score case.",
+      "next": "Move insertText/insertBreak/insertData input-rule execution into InputRulesPlugin-owned extension and tests."
+    },
+    {
+      "path": "packages/core/src/lib/editor/extendBaseEditor.ts",
+      "status": "??",
+      "confidence_score_100": 15,
+      "verdict": "bridge-installer",
+      "owner": "core",
+      "evidence": "Installs currentRuntimeBridge commands and input-rules extension. This makes the bridge part of the default route. Direct import/reference to currentRuntimeBridge caps this file at 25.",
+      "next": "Remove currentRuntimeBridge dependency before rescoring."
+    },
+    {
+      "path": "packages/core/src/react/plugins/PliteReactExtensionPlugin.spec.tsx",
+      "status": "??",
+      "confidence_score_100": 25,
+      "verdict": "bridge-command-consumer",
+      "owner": "core-react",
+      "evidence": "React keydown path pulls commands from currentRuntimeBridge instead of typed plugin tx/extension handlers. Direct import/reference to currentRuntimeBridge caps this file at 25.",
+      "next": "Remove currentRuntimeBridge dependency before rescoring."
+    },
+    {
+      "path": "packages/core/src/react/plugins/PliteReactExtensionPlugin.ts",
+      "status": "??",
+      "confidence_score_100": 25,
+      "verdict": "bridge-command-consumer",
+      "owner": "core-react",
+      "evidence": "React keydown path pulls commands from currentRuntimeBridge instead of typed plugin tx/extension handlers. Direct import/reference to currentRuntimeBridge caps this file at 25.",
+      "next": "Remove currentRuntimeBridge dependency before rescoring."
+    },
+    {
+      "path": "packages/core/src/react/plugins/PliteReactExtensionPlugin.slow.tsx",
+      "status": "D",
+      "confidence_score_100": 30,
+      "verdict": "bridge-command-consumer",
+      "owner": "core-react",
+      "evidence": "React keydown path pulls commands from currentRuntimeBridge instead of typed plugin tx/extension handlers.",
+      "next": "Move keydown commands to explicit Plate plugin tx/extension owner; remove bridge import."
+    },
+    {
+      "path": "packages/core/src/internal/editor/runtimeTxExtensions.ts",
+      "status": "??",
+      "confidence_score_100": 35,
+      "verdict": "private-tx-adapter-risk",
+      "owner": "core",
+      "evidence": "Private adapter installs Plate plugin tx groups into Plite update. It is not the same dirty bridge, but still migration plumbing.",
+      "next": "Keep only until package tx extension shape is fully proven; avoid expanding it."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx",
+      "status": "M",
+      "confidence_score_100": 45,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "NodeIdPlugin",
+      "evidence": "Node-id options live here, but insert normalization still happens in currentRuntimeBridge.",
+      "next": "Move insert-node id normalization into NodeIdPlugin extension/tx middleware with focused tests."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/node-id/NodeIdPlugin.ts",
+      "status": "M",
+      "confidence_score_100": 45,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "NodeIdPlugin",
+      "evidence": "Node-id options live here, but insert normalization still happens in currentRuntimeBridge.",
+      "next": "Move insert-node id normalization into NodeIdPlugin extension/tx middleware with focused tests."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.spec.tsx",
+      "status": "M",
+      "confidence_score_100": 45,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "PliteExtensionPlugin",
+      "evidence": "Plugin options hold onNodeChange/onTextChange, but dispatch is still in currentRuntimeBridge.",
+      "next": "Move operation/change dispatch into this plugin or a small adjacent owner; remove bridge dispatch."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.ts",
+      "status": "??",
+      "confidence_score_100": 45,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "PliteExtensionPlugin",
+      "evidence": "Plugin options hold onNodeChange/onTextChange, but dispatch is still in currentRuntimeBridge.",
+      "next": "Move operation/change dispatch into this plugin or a small adjacent owner; remove bridge dispatch."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/affinity/AffinityPlugin.spec.ts",
+      "status": "??",
+      "confidence_score_100": 55,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "AffinityPlugin",
+      "evidence": "Affinity owner exists, but directional/outward inline insertion logic still exists in currentRuntimeBridge.",
+      "next": "Move edge insertion/selection behavior fully into AffinityPlugin-owned extension."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/affinity/index.ts",
+      "status": "M",
+      "confidence_score_100": 55,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "AffinityPlugin",
+      "evidence": "Affinity owner exists, but directional/outward inline insertion logic still exists in currentRuntimeBridge.",
+      "next": "Move edge insertion/selection behavior fully into AffinityPlugin-owned extension."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/affinity/queries/getEdgeNodes.spec.tsx",
+      "status": "??",
+      "confidence_score_100": 55,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "AffinityPlugin",
+      "evidence": "Affinity owner exists, but directional/outward inline insertion logic still exists in currentRuntimeBridge.",
+      "next": "Move edge insertion/selection behavior fully into AffinityPlugin-owned extension."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/affinity/queries/getEdgeNodes.ts",
+      "status": "??",
+      "confidence_score_100": 55,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "AffinityPlugin",
+      "evidence": "Affinity owner exists, but directional/outward inline insertion logic still exists in currentRuntimeBridge.",
+      "next": "Move edge insertion/selection behavior fully into AffinityPlugin-owned extension."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/affinity/queries/getMarkBoundaryAffinity.spec.ts",
+      "status": "??",
+      "confidence_score_100": 55,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "AffinityPlugin",
+      "evidence": "Affinity owner exists, but directional/outward inline insertion logic still exists in currentRuntimeBridge.",
+      "next": "Move edge insertion/selection behavior fully into AffinityPlugin-owned extension."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/affinity/queries/getMarkBoundaryAffinity.ts",
+      "status": "??",
+      "confidence_score_100": 55,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "AffinityPlugin",
+      "evidence": "Affinity owner exists, but directional/outward inline insertion logic still exists in currentRuntimeBridge.",
+      "next": "Move edge insertion/selection behavior fully into AffinityPlugin-owned extension."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/affinity/queries/index.ts",
+      "status": "??",
+      "confidence_score_100": 55,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "AffinityPlugin",
+      "evidence": "Affinity owner exists, but directional/outward inline insertion logic still exists in currentRuntimeBridge.",
+      "next": "Move edge insertion/selection behavior fully into AffinityPlugin-owned extension."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/affinity/queries/isNodeAffinity.ts",
+      "status": "??",
+      "confidence_score_100": 55,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "AffinityPlugin",
+      "evidence": "Affinity owner exists, but directional/outward inline insertion logic still exists in currentRuntimeBridge.",
+      "next": "Move edge insertion/selection behavior fully into AffinityPlugin-owned extension."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/affinity/transforms/index.ts",
+      "status": "??",
+      "confidence_score_100": 55,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "AffinityPlugin",
+      "evidence": "Affinity owner exists, but directional/outward inline insertion logic still exists in currentRuntimeBridge.",
+      "next": "Move edge insertion/selection behavior fully into AffinityPlugin-owned extension."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/affinity/transforms/setAffinitySelection.spec.ts",
+      "status": "??",
+      "confidence_score_100": 55,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "AffinityPlugin",
+      "evidence": "Affinity owner exists, but directional/outward inline insertion logic still exists in currentRuntimeBridge.",
+      "next": "Move edge insertion/selection behavior fully into AffinityPlugin-owned extension."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/affinity/transforms/setAffinitySelection.ts",
+      "status": "??",
+      "confidence_score_100": 55,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "AffinityPlugin",
+      "evidence": "Affinity owner exists, but directional/outward inline insertion logic still exists in currentRuntimeBridge.",
+      "next": "Move edge insertion/selection behavior fully into AffinityPlugin-owned extension."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/affinity/types.ts",
+      "status": "??",
+      "confidence_score_100": 55,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "AffinityPlugin",
+      "evidence": "Affinity owner exists, but directional/outward inline insertion logic still exists in currentRuntimeBridge.",
+      "next": "Move edge insertion/selection behavior fully into AffinityPlugin-owned extension."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/input-rules/createInputRules.ts",
+      "status": "M",
+      "confidence_score_100": 55,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "InputRulesPlugin",
+      "evidence": "Input-rule config/types exist, but runtime execution is still in currentRuntimeBridge.",
+      "next": "Keep config shape only after InputRulesPlugin owns runtime execution."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/input-rules/createTextSubstitutionInputRule.spec.ts",
+      "status": "M",
+      "confidence_score_100": 55,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "InputRulesPlugin",
+      "evidence": "Input-rule config/types exist, but runtime execution is still in currentRuntimeBridge.",
+      "next": "Keep config shape only after InputRulesPlugin owns runtime execution."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/input-rules/types.ts",
+      "status": "M",
+      "confidence_score_100": 55,
+      "verdict": "owner-incomplete-bridge-backed",
+      "owner": "InputRulesPlugin",
+      "evidence": "Input-rule config/types exist, but runtime execution is still in currentRuntimeBridge.",
+      "next": "Keep config shape only after InputRulesPlugin owns runtime execution."
+    },
+    {
+      "path": "packages/core/src/lib/editor/BaseEditor.ts",
+      "status": "??",
+      "confidence_score_100": 70,
+      "verdict": "public-type-surface-risk",
+      "owner": "core-api",
+      "evidence": "Public/editor/plugin type surface changed during bridge migration. Passing typecheck is not enough for 100.",
+      "next": "Needs API review/type-contract proof after bridge removal."
+    },
+    {
+      "path": "packages/core/src/lib/plugin/BasePlugin.ts",
+      "status": "M",
+      "confidence_score_100": 70,
+      "verdict": "public-type-surface-risk",
+      "owner": "core-api",
+      "evidence": "Public/editor/plugin type surface changed during bridge migration. Passing typecheck is not enough for 100.",
+      "next": "Needs API review/type-contract proof after bridge removal."
+    },
+    {
+      "path": "packages/core/src/lib/plugin/PluginBase.ts",
+      "status": "??",
+      "confidence_score_100": 70,
+      "verdict": "public-type-surface-risk",
+      "owner": "core-api",
+      "evidence": "Public/editor/plugin type surface changed during bridge migration. Passing typecheck is not enough for 100.",
+      "next": "Needs API review/type-contract proof after bridge removal."
+    },
+    {
+      "path": "packages/core/src/lib/plugin/createBasePlugin.ts",
+      "status": "M",
+      "confidence_score_100": 70,
+      "verdict": "public-type-surface-risk",
+      "owner": "core-api",
+      "evidence": "Public/editor/plugin type surface changed during bridge migration. Passing typecheck is not enough for 100.",
+      "next": "Needs API review/type-contract proof after bridge removal."
+    },
+    {
+      "path": "packages/core/src/lib/plugin/createBasePlugin.typed.spec.ts",
+      "status": "M",
+      "confidence_score_100": 70,
+      "verdict": "public-type-surface-risk",
+      "owner": "core-api",
+      "evidence": "Public/editor/plugin type surface changed during bridge migration. Passing typecheck is not enough for 100.",
+      "next": "Needs API review/type-contract proof after bridge removal."
+    },
+    {
+      "path": "packages/core/src/lib/plugin/getBasePlugin.ts",
+      "status": "??",
+      "confidence_score_100": 70,
+      "verdict": "public-type-surface-risk",
+      "owner": "core-api",
+      "evidence": "Public/editor/plugin type surface changed during bridge migration. Passing typecheck is not enough for 100.",
+      "next": "Needs API review/type-contract proof after bridge removal."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/dom/DOMPlugin.spec.ts",
+      "status": "M",
+      "confidence_score_100": 70,
+      "verdict": "dom-owner-partial-bridge-backed",
+      "owner": "DOMPlugin",
+      "evidence": "DOM state owner exists, while bridge still wraps focus/blur/deselect/currentKeyboardEvent side effects.",
+      "next": "Verify DOM-only behavior can be owned by DOMPlugin/Plite React extension without bridge command facade."
+    },
+    {
+      "path": "packages/core/src/lib/plugins/dom/DOMPlugin.ts",
+      "status": "M",
+      "confidence_score_100": 70,
+      "verdict": "dom-owner-partial-bridge-backed",
+      "owner": "DOMPlugin",
+      "evidence": "DOM state owner exists, while bridge still wraps focus/blur/deselect/currentKeyboardEvent side effects.",
+      "next": "Verify DOM-only behavior can be owned by DOMPlugin/Plite React extension without bridge command facade."
+    },
+    {
+      "path": "packages/core/src/react/editor/PlateEditor.spec.ts",
+      "status": "??",
+      "confidence_score_100": 70,
+      "verdict": "public-type-surface-risk",
+      "owner": "core-api",
+      "evidence": "Public/editor/plugin type surface changed during bridge migration. Passing typecheck is not enough for 100.",
+      "next": "Needs API review/type-contract proof after bridge removal."
+    },
+    {
+      "path": "packages/core/src/react/editor/PlateEditor.ts",
+      "status": "M",
+      "confidence_score_100": 70,
+      "verdict": "public-type-surface-risk",
+      "owner": "core-api",
+      "evidence": "Public/editor/plugin type surface changed during bridge migration. Passing typecheck is not enough for 100.",
+      "next": "Needs API review/type-contract proof after bridge removal."
+    },
+    {
+      "path": "packages/core/src/react/editor/PlateEditorCore.spec.ts",
+      "status": "??",
+      "confidence_score_100": 70,
+      "verdict": "public-type-surface-risk",
+      "owner": "core-api",
+      "evidence": "Public/editor/plugin type surface changed during bridge migration. Passing typecheck is not enough for 100.",
+      "next": "Needs API review/type-contract proof after bridge removal."
+    },
+    {
+      "path": "packages/core/src/react/editor/TPlateEditor.spec.ts",
+      "status": "D",
+      "confidence_score_100": 70,
+      "verdict": "public-type-surface-risk",
+      "owner": "core-api",
+      "evidence": "Public/editor/plugin type surface changed during bridge migration. Passing typecheck is not enough for 100.",
+      "next": "Needs API review/type-contract proof after bridge removal."
+    },
+    {
+      "path": "packages/core/src/react/editor/TPlateEditorCore.spec.ts",
+      "status": "D",
+      "confidence_score_100": 70,
+      "verdict": "public-type-surface-risk",
+      "owner": "core-api",
+      "evidence": "Public/editor/plugin type surface changed during bridge migration. Passing typecheck is not enough for 100.",
+      "next": "Needs API review/type-contract proof after bridge removal."
+    },
+    {
+      "path": "packages/core/src/react/editor/extendPlateEditor.ts",
+      "status": "??",
+      "confidence_score_100": 70,
+      "verdict": "public-type-surface-risk",
+      "owner": "core-api",
+      "evidence": "Public/editor/plugin type surface changed during bridge migration. Passing typecheck is not enough for 100.",
+      "next": "Needs API review/type-contract proof after bridge removal."
+    }
+  ]
+}

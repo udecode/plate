@@ -1,15 +1,19 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, type Descendant, defineStateField } from '../src';
+import { createEditor, type Element, defineStateField } from '@platejs/plite';
+import {
+  getLastCommit as editorGetLastCommit,
+  subscribeSource as editorSubscribeSource,
+} from '@platejs/plite/internal';
 
 const paragraph = (text: string) =>
   ({
     type: 'paragraph',
     children: [{ text }],
-  }) satisfies Descendant;
+  }) satisfies Element;
 
-describe('document state patch contract', () => {
+describe('document meta patch contract', () => {
   it('writes state fields as operation-free commits with dirty state keys', () => {
     const documentTitle = defineStateField({
       key: 'document.title',
@@ -19,10 +23,10 @@ describe('document state patch contract', () => {
       persist: true,
     });
     const editor = createEditor({
-      extensions: [documentTitle],
+      extensions: [documentTitle] as const,
       initialValue: {
         children: [paragraph('body')],
-        state: { [documentTitle.key]: 'Q2 Plan' },
+        meta: { [documentTitle.key]: 'Q2 Plan' },
       },
     });
     const stateCommits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] =
@@ -64,10 +68,10 @@ describe('document state patch contract', () => {
     assert.equal(stateCommits.length, 1);
     assert.equal(stateCommits[0], commit);
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
-        state: { [documentTitle.key]: 'Q3 Plan' },
+        meta: { [documentTitle.key]: 'Q3 Plan' },
       }
     );
   });
@@ -81,7 +85,7 @@ describe('document state patch contract', () => {
       persist: true,
     });
     const editor = createEditor({
-      extensions: [largeSharedState],
+      extensions: [largeSharedState] as const,
       initialValue: [paragraph('body')],
     });
 
@@ -105,7 +109,7 @@ describe('document state patch contract', () => {
       persist: true,
     });
     const editor = createEditor({
-      extensions: [largeDefaultHistoryState],
+      extensions: [largeDefaultHistoryState] as const,
       initialValue: [paragraph('body')],
     });
 
@@ -129,10 +133,10 @@ describe('document state patch contract', () => {
       persist: true,
     });
     const editor = createEditor({
-      extensions: [largePreviousState],
+      extensions: [largePreviousState] as const,
       initialValue: {
         children: [paragraph('body')],
-        state: {
+        meta: {
           [largePreviousState.key]: { body: 'x'.repeat(40_000) },
         },
       },
@@ -171,11 +175,11 @@ describe('document state patch contract', () => {
       persist: true,
     });
     const source = createEditor({
-      extensions: [largeCounter],
+      extensions: [largeCounter] as const,
       initialValue: [paragraph('body')],
     });
     const remote = createEditor({
-      extensions: [largeCounter],
+      extensions: [largeCounter] as const,
       initialValue: [paragraph('body')],
     });
 
@@ -219,10 +223,10 @@ describe('document state patch contract', () => {
       persist: true,
     });
     const editor = createEditor({
-      extensions: [documentTitle],
+      extensions: [documentTitle] as const,
       initialValue: {
         children: [paragraph('body')],
-        state: { [documentTitle.key]: 'Q2 Plan' },
+        meta: { [documentTitle.key]: 'Q2 Plan' },
       },
     });
     let commits = 0;

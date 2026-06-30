@@ -13,9 +13,9 @@ import {
 import {
   createEditor,
   defineEditorExtension,
-  type Descendant,
+  type Element,
   type Operation,
-} from '../src';
+} from '@platejs/plite';
 import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
 
 const runEditorTransaction = (
@@ -31,7 +31,7 @@ const runEditorTransaction = (
 const paragraph = (
   text: string,
   props: Record<string, unknown> = {}
-): Descendant => ({
+): Element => ({
   type: 'paragraph',
   ...props,
   children: [{ text }],
@@ -41,7 +41,7 @@ const clone = <T>(value: T): T => structuredClone(value);
 
 const replaceChildren = (
   editor: ReturnType<typeof createEditor>,
-  children: Descendant[]
+  children: Element[]
 ) => {
   editorReplace(editor, {
     children: clone(children),
@@ -99,12 +99,12 @@ describe('plite public accessor + transaction boundary', () => {
             },
           ],
         }),
-      ],
+      ] as const,
     });
     const value = [
       paragraph('one'),
       { type: 'caption', children: [{ text: '' }] },
-    ] as Descendant[];
+    ] as Element[];
 
     replaceChildren(editor, value);
 
@@ -113,11 +113,13 @@ describe('plite public accessor + transaction boundary', () => {
     const start = editor.read.points.start([]);
     const runtimeId = editor.read.runtime.idAt([0]);
 
+    assert.ok(start);
+    assert.ok(runtimeId);
     assert.equal(editor.read.schema.isInline(mention), true);
     assert.equal(editor.read.schema.isVoid(caption), true);
     assert.equal(editor.read.schema.isSelectable(caption), false);
     assert.equal(editor.read.points.isEnd(start, []), false);
-    assert.deepEqual(editor.read.runtime.pathOf(runtimeId!), [0]);
+    assert.deepEqual(editor.read.runtime.pathOf(runtimeId), [0]);
   });
 
   it('read and replace are the public snapshot state path', () => {
@@ -125,7 +127,7 @@ describe('plite public accessor + transaction boundary', () => {
     const value = [paragraph('one')];
 
     editorReplace(editor, { children: value, selection: null, marks: null });
-    const currentValue = editor.read((state) => state.value.get());
+    const currentValue = editor.read((state) => state.value());
 
     assert.deepEqual(currentValue, { children: value });
     assert.equal(editorIsEditor(editor, { deep: true }), true);

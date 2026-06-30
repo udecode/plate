@@ -1,5 +1,5 @@
-import { createSlateEditor } from '../../lib/editor';
-import { createSlatePlugin } from '../../lib/plugin';
+import { createBaseEditor } from '../../lib/editor';
+import { createBasePlugin } from '../../lib/plugin';
 import { defineInputRule } from '../../lib/plugins/input-rules';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { validatePlugin } from './resolvePlugin';
@@ -7,12 +7,12 @@ import { validatePlugin } from './resolvePlugin';
 describe('resolvePlugin', () => {
   it('lets the last child-plugin extension win', () => {
     expect(
-      createSlateEditor({
+      createBaseEditor({
         plugins: [
-          createSlatePlugin({
+          createBasePlugin({
             key: 'a',
             plugins: [
-              createSlatePlugin({
+              createBasePlugin({
                 key: 'aa',
               }),
             ],
@@ -43,28 +43,28 @@ describe('resolvePlugin', () => {
     const config = {
       inputRules: [configuredRule],
     };
-    const plugin = createSlatePlugin({
+    const plugin = createBasePlugin({
       key: 'inputRulesPlugin',
     }).configure(config);
-    const firstEditor = createSlateEditor({
+    const firstEditor = createBaseEditor({
       plugins: [plugin],
     });
-    const secondEditor = createSlateEditor({
+    const secondEditor = createBaseEditor({
       plugins: [plugin],
     });
 
     expect(config.inputRules).toEqual([configuredRule]);
     expect(
-      firstEditor.meta.inputRules.plugins.inputRulesPlugin.rules
+      firstEditor.runtime.inputRules.plugins.inputRulesPlugin.rules
     ).toHaveLength(1);
     expect(
-      secondEditor.meta.inputRules.plugins.inputRulesPlugin.rules
+      secondEditor.runtime.inputRules.plugins.inputRulesPlugin.rules
     ).toHaveLength(1);
   });
 
-  it('reports plugins that do not come from createSlatePlugin', () => {
+  it('reports plugins that do not come from createBasePlugin', () => {
     const errorLogger = mock();
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         DebugPlugin.configure({
           options: {
@@ -74,14 +74,14 @@ describe('resolvePlugin', () => {
         }),
       ],
     });
-    const plugin = createSlatePlugin({ key: 'broken' });
+    const plugin = createBasePlugin({ key: 'broken' });
 
     delete (plugin as any).__extensions;
 
     validatePlugin(editor, plugin as any);
 
     expect(errorLogger).toHaveBeenCalledWith(
-      "Invalid plugin 'broken', you should use createSlatePlugin.",
+      "Invalid plugin 'broken', you should use createBasePlugin.",
       'USE_CREATE_PLUGIN',
       undefined
     );
@@ -89,7 +89,7 @@ describe('resolvePlugin', () => {
 
   it('reports plugins that claim to be both elements and leaves', () => {
     const errorLogger = mock();
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         DebugPlugin.configure({
           options: {
@@ -102,7 +102,7 @@ describe('resolvePlugin', () => {
 
     validatePlugin(
       editor,
-      createSlatePlugin({
+      createBasePlugin({
         key: 'invalid',
         node: {
           isElement: true,
@@ -119,7 +119,7 @@ describe('resolvePlugin', () => {
   });
 
   it('does not mutate the configured plugin between editor instances', () => {
-    const configured = createSlatePlugin({ key: 'p' }).configure({
+    const configured = createBasePlugin({ key: 'p' }).configure({
       inputRules: [
         {
           apply: () => true,
@@ -129,10 +129,10 @@ describe('resolvePlugin', () => {
       ],
     });
 
-    const e1 = createSlateEditor({ plugins: [configured] });
+    const e1 = createBaseEditor({ plugins: [configured] });
     expect((e1.plugins.p as any).__configuredInputRules?.length).toBe(1);
 
-    const e2 = createSlateEditor({ plugins: [configured] });
+    const e2 = createBaseEditor({ plugins: [configured] });
     expect((e2.plugins.p as any).__configuredInputRules?.length).toBe(1);
   });
 });

@@ -1,12 +1,12 @@
-import { createSlateEditor } from '../../editor';
-import { createSlatePlugin } from '../../plugin';
+import { createBaseEditor } from '../../editor';
+import { createBasePlugin } from '../../plugin';
 import { createTextSubstitutionInputRule } from './createInputRules';
 
 const createEditor = (
   rule: ReturnType<typeof createTextSubstitutionInputRule>
 ) =>
-  createSlateEditor({
-    plugins: [createSlatePlugin({ key: 'shortcuts', inputRules: [rule] })],
+  createBaseEditor({
+    plugins: [createBasePlugin({ key: 'shortcuts', inputRules: [rule] })],
     selection: {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
@@ -21,10 +21,12 @@ describe('createTextSubstitutionInputRule', () => {
     });
     const editor = createEditor(rule);
 
-    editor.tf.insertText('-');
-    editor.tf.insertText('>');
+    editor.update.text.insert('-');
+    editor.update.text.insert('>');
 
-    expect(editor.children).toEqual([{ children: [{ text: '→' }], type: 'p' }]);
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '→' }], type: 'p' },
+    ]);
   });
 
   it('keeps the literal text when only the leading character is typed', () => {
@@ -33,9 +35,11 @@ describe('createTextSubstitutionInputRule', () => {
     });
     const editor = createEditor(rule);
 
-    editor.tf.insertText('-');
+    editor.update.text.insert('-');
 
-    expect(editor.children).toEqual([{ children: [{ text: '-' }], type: 'p' }]);
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '-' }], type: 'p' },
+    ]);
   });
 
   it('substitutes multi-character flat matches (`(c)` → `©`)', () => {
@@ -44,11 +48,13 @@ describe('createTextSubstitutionInputRule', () => {
     });
     const editor = createEditor(rule);
 
-    editor.tf.insertText('(');
-    editor.tf.insertText('c');
-    editor.tf.insertText(')');
+    editor.update.text.insert('(');
+    editor.update.text.insert('c');
+    editor.update.text.insert(')');
 
-    expect(editor.children).toEqual([{ children: [{ text: '©' }], type: 'p' }]);
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '©' }], type: 'p' },
+    ]);
   });
 
   it('wraps paired delimiters on the closing character (smart quotes)', () => {
@@ -57,12 +63,12 @@ describe('createTextSubstitutionInputRule', () => {
     });
     const editor = createEditor(rule);
 
-    editor.tf.insertText('"');
-    editor.tf.insertText('h');
-    editor.tf.insertText('i');
-    editor.tf.insertText('"');
+    editor.update.text.insert('"');
+    editor.update.text.insert('h');
+    editor.update.text.insert('i');
+    editor.update.text.insert('"');
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: '“hi”' }], type: 'p' },
     ]);
   });
@@ -73,12 +79,12 @@ describe('createTextSubstitutionInputRule', () => {
     });
     const editor = createEditor(rule);
 
-    editor.tf.insertText('f');
-    editor.tf.insertText('o');
-    editor.tf.insertText('o');
-    editor.tf.insertText(' ');
+    editor.update.text.insert('f');
+    editor.update.text.insert('o');
+    editor.update.text.insert('o');
+    editor.update.text.insert(' ');
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: 'FOO' }], type: 'p' },
     ]);
   });

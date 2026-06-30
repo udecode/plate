@@ -1,11 +1,15 @@
 /** @jsx jsxt */
-import { BaseLinkPlugin } from '@platejs/link';
 import { jsxt } from '@platejs/test-utils';
 
 import { createBaseEditor, createBasePlugin } from '../../lib';
 import { normalizeDescendantsToDocumentFragment } from './index';
 
 jsxt;
+
+const TestLinkPlugin = createBasePlugin({
+  key: 'a',
+  node: { isElement: true, isInline: true, type: 'a' },
+});
 
 describe('normalizeDescendantsToDocumentFragment()', () => {
   it('returns a blank text node when descendants are empty', () => {
@@ -114,7 +118,7 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
     output,
   }: any) => {
     const editor = createBaseEditor({
-      plugins: [BaseLinkPlugin],
+      plugins: [TestLinkPlugin],
     });
 
     const result = normalizeDescendantsToDocumentFragment(editor, {
@@ -193,7 +197,7 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
     });
 
     const editor = createBaseEditor({
-      plugins: [BaseLinkPlugin],
+      plugins: [TestLinkPlugin],
     });
 
     const result = normalizeDescendantsToDocumentFragment(editor, {

@@ -92,10 +92,10 @@ const reactValue: ValueOf<typeof reactEditor> = [
   { type: 'paragraph', children: [{ text: 'one', bold: true }] },
 ];
 
-historyOnlyEditor.api.history.withoutSaving(() => {});
+historyOnlyEditor.api.history.run({ save: false }, () => {});
 historyOnlyEditor.read((state) => state.history.undos());
 historyOnlyEditor.update((tx) => tx.history.undo());
-manualReactHistoryEditor.api.history.withoutSaving(() => {});
+manualReactHistoryEditor.api.history.run({ save: false }, () => {});
 manualReactHistoryEditor.api.react.isComposing();
 manualReactHistoryEditor.api.dom.focus();
 manualReactHistoryEditor.read((state) => state.history.undos());
@@ -116,7 +116,7 @@ historyReactEditor.update((tx) => {
   tx.history.undo();
 });
 
-historyReactEditor.api.history.withoutSaving(() => {});
+historyReactEditor.api.history.run({ save: false }, () => {});
 historyReactEditor.api.dom.focus();
 historyReactEditor.api.clipboard.writeSelection(dataTransfer);
 historyReactEditor.api.react.isFocused();
@@ -131,7 +131,7 @@ defaultHistoryReactEditor.update((tx) => {
   tx.history.undo();
 });
 
-defaultHistoryReactEditor.api.history.withoutSaving(() => {});
+defaultHistoryReactEditor.api.history.run({ save: false }, () => {});
 const typedDefaultReactEditor: ReactEditor<CustomValue> =
   defaultHistoryReactEditor;
 const typedNamespaceReactEditor: PliteReact.ReactEditor<CustomValue> =
@@ -145,26 +145,26 @@ const typedNoHistoryReactEditor: ReactEditor<
   readonly [typeof DisabledHistoryExtension]
 > = noHistoryReactEditor;
 
-typedDefaultReactEditor.api.history.withoutSaving(() => {});
+typedDefaultReactEditor.api.history.run({ save: false }, () => {});
 typedDefaultReactEditor.api.dom.focus();
 typedDefaultReactEditor.api.react.isComposing();
-typedNamespaceReactEditor.api.history.withoutSaving(() => {});
+typedNamespaceReactEditor.api.history.run({ save: false }, () => {});
 const customApiResult: 'pong' = typedCustomApiReactEditor.api.customApi.ping();
 
 // @ts-expect-error Plite React no longer exports extension-owned renderer maps
-PliteReact.editableRenderers;
+void PliteReact.editableRenderers;
 
 // @ts-expect-error Plite React no longer exports extension-owned key commands
-PliteReact.editableKeyCommands;
+void PliteReact.editableKeyCommands;
 
 // @ts-expect-error public Editable command types are not root exports
 type _NoEditableCommandContext = PliteReact.EditableCommandContext;
 
 // @ts-expect-error ReactEditor exposes DOM through api.dom, not root dom
-typedDefaultReactEditor.dom;
+void typedDefaultReactEditor.dom;
 
 // @ts-expect-error disabled history does not contribute public ReactEditor api
-typedNoHistoryReactEditor.api.history.withoutSaving(() => {});
+typedNoHistoryReactEditor.api.history.run({ save: false }, () => {});
 
 // @ts-expect-error disabled default history removes state history
 noHistoryReactEditor.read((state) => state.history.undos());
@@ -173,7 +173,7 @@ noHistoryReactEditor.read((state) => state.history.undos());
 noHistoryReactEditor.update((tx) => tx.history.undo());
 
 // @ts-expect-error disabled default history removes history api
-noHistoryReactEditor.api.history.withoutSaving(() => {});
+noHistoryReactEditor.api.history.run({ save: false }, () => {});
 
 const selectorOptions: EditorSelectorOptions<typeof historyReactEditor> = {
   shouldUpdate: (operations, change) => {
@@ -192,7 +192,7 @@ const SelectorProbe = () => {
   const selected = useEditorSelector(
     (selectedEditor: typeof historyReactEditor, operations) => {
       const valueFromSelector: Readonly<CustomValue> = selectedEditor.read(
-        (state) => state.value.root()
+        (state) => state.children()
       );
       const typedOperations: readonly Operation<CustomValue>[] | undefined =
         operations;
@@ -218,7 +218,7 @@ const HookProbe = () => {
     initialValue,
   });
   const valueFromHook: Readonly<CustomValue> = hookEditor.read((state) =>
-    state.value.root()
+    state.children()
   );
 
   hookEditor.read((state) => {
@@ -231,7 +231,7 @@ const HookProbe = () => {
     tx.history.undo();
   });
 
-  hookEditor.api.history.withoutSaving(() => {});
+  hookEditor.api.history.run({ save: false }, () => {});
   hookEditor.api.dom.focus();
   hookEditor.api.react.isComposing();
 
@@ -259,7 +259,7 @@ baseEditor.api.react.isComposing();
 baseEditor.api.dom.focus();
 
 // @ts-expect-error public withReact wrapper is cut
-PliteReact.withReact;
+void PliteReact.withReact;
 
 const _placeholderAsSpan = (
   <PliteReact.PlitePlaceholder as="span">

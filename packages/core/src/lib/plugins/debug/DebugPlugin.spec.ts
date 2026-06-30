@@ -2,6 +2,13 @@ import { createBaseEditor } from '../../editor';
 import { createBasePlugin } from '../../plugin';
 import { DebugPlugin, PlateError } from './DebugPlugin';
 
+const SamplePlugin = createBasePlugin({
+  key: 'sample',
+  api: {
+    sampleMethod: () => {},
+  },
+});
+
 describe('DebugPlugin', () => {
   afterEach(() => {
     mock.restore();
@@ -14,17 +21,12 @@ describe('DebugPlugin', () => {
         DebugPlugin.configure({
           options: {
             logger: {
-              log: mockLogger,
-            } as any,
+              log: mockLogger as any,
+            },
             logLevel: 'log',
           },
         }),
-        createBasePlugin({
-          key: 'sample',
-          api: {
-            sampleMethod: () => {},
-          },
-        }),
+        SamplePlugin,
       ],
     });
 
@@ -81,8 +83,10 @@ describe('DebugPlugin', () => {
       editor.api.debug.error('Test error', 'TEST_ERROR', { foo: 'bar' });
     } catch (error) {
       expect(error).toBeInstanceOf(PlateError);
-      expect((error as PlateError).message).toBe('[TEST_ERROR] Test error');
-      expect((error as PlateError).type).toBe('TEST_ERROR');
+      if (!(error instanceof PlateError)) throw error;
+
+      expect(error.message).toBe('[TEST_ERROR] Test error');
+      expect(error.type).toBe('TEST_ERROR');
     }
   });
 
@@ -121,7 +125,7 @@ describe('DebugPlugin', () => {
             isProduction: true,
             logger: {
               log: mockLogger,
-            } as any,
+            },
             logLevel: 'log',
           },
         }),

@@ -301,7 +301,7 @@ describe('projected clipboard', () => {
 
     try {
       const beforeValue = structuredClone(
-        editor.read((state) => state.value.get())
+        editor.read((state) => state.value())
       );
       const beforeSelection = readPliteViewSelection(editor);
 
@@ -316,7 +316,7 @@ describe('projected clipboard', () => {
       expect(event.preventDefault).toHaveBeenCalled();
       expect(result.command).toBe(null);
       expect(clipboardData.data.size).toBe(0);
-      expect(editor.read((state) => state.value.get())).toEqual(beforeValue);
+      expect(editor.read((state) => state.value())).toEqual(beforeValue);
       expect(readPliteViewSelection(editor)).toEqual(beforeSelection);
     } finally {
       cleanupEditorRoot(editor, root);

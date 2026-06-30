@@ -20,7 +20,7 @@ Keep the configured node-id `idKey` on reset transforms instead of hard-coding `
 
 ## Findings
 
-- Issue points at `packages/core/src/lib/plugins/slate-extension/transforms/resetBlock.ts`
+- Issue points at `packages/core/src/lib/plugins/plite-extension/transforms/resetBlock.ts`
 - Existing node-id tests live under `packages/core/src/lib/plugins/node-id/`
 - No existing `resetBlock` test file surfaced from test search
 - `docs/solutions/patterns/critical-patterns.md` does not exist in this repo

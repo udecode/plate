@@ -1,12 +1,9 @@
-import type { Path, TElement, TText } from '@platejs/slate';
+import type { Element, Path, Text } from '@platejs/plite';
 
 import { isDefined } from '@udecode/utils';
 
-import type { SlateEditor } from '../../lib/editor';
-import type {
-  EditorPlugin,
-  TransformOptions,
-} from '../../lib/plugin/SlatePlugin';
+import type { BaseEditor } from '../../lib/editor';
+import type { BasePlugin, TransformOptions } from '../../lib/plugin/BasePlugin';
 
 import {
   type GetInjectNodePropsOptions,
@@ -14,6 +11,14 @@ import {
   getEditorPlugin,
 } from '../../lib/plugin';
 import { getInjectMatch } from '../../lib/utils/getInjectMatch';
+
+const getNodeProp = (node: Element | Text, key?: string) =>
+  key ? (node as Record<string, unknown>)[key] : undefined;
+
+const getNodePropClassValue = (value: unknown) =>
+  typeof value === 'string' || typeof value === 'number'
+    ? String(value)
+    : undefined;
 
 /**
  * Return if `element`, `text`, `nodeKey` is defined. Return if `node.type` is
@@ -23,10 +28,10 @@ import { getInjectMatch } from '../../lib/utils/getInjectMatch';
  * `[styleKey]: value`.
  */
 export const pluginInjectNodeProps = (
-  editor: SlateEditor,
-  plugin: EditorPlugin,
+  editor: BaseEditor,
+  plugin: BasePlugin,
   nodeProps: GetInjectNodePropsOptions,
-  getElementPath: (node: TElement | TText) => Path
+  getElementPath: (node: Element | Text) => Path
 ): GetInjectNodePropsReturnType | undefined => {
   const {
     key,
@@ -45,7 +50,7 @@ export const pluginInjectNodeProps = (
     defaultNodeValue,
     nodeKey = editor.getType(key),
     query,
-    styleKey = nodeKey as any,
+    styleKey = nodeKey,
     transformClassName,
     transformNodeValue,
     transformProps,
@@ -55,6 +60,19 @@ export const pluginInjectNodeProps = (
 
   const injectMatch = getInjectMatch(editor, plugin);
   const shouldResolvePathForMatch = !!(excludeBelowPlugins || maxLevel);
+  const nodeValue = getNodeProp(node, nodeKey);
+  const editorPluginContext = getEditorPlugin(editor, plugin);
+  const getTransformOptions = (value?: unknown): TransformOptions => ({
+    ...nodeProps,
+    ...editorPluginContext,
+    nodeValue,
+    value,
+  });
+  const callTransformPropsWithoutInjecting = () => {
+    // `transformProps` may call React hooks. Keep the call order stable even
+    // when this node does not receive injected props.
+    transformProps?.({ ...getTransformOptions(), props: {} });
+  };
 
   if (
     !injectMatch(
@@ -62,20 +80,22 @@ export const pluginInjectNodeProps = (
       shouldResolvePathForMatch ? getElementPath(node) : undefined
     )
   ) {
+    callTransformPropsWithoutInjecting();
+
     return;
   }
 
   const queryResult = query?.({
     ...injectNodeProps,
-    ...(getEditorPlugin(editor, plugin) as any),
+    ...editorPluginContext,
     nodeProps,
   });
 
   if (query && !queryResult) {
+    callTransformPropsWithoutInjecting();
+
     return;
   }
-
-  const nodeValue = node[nodeKey!] as any;
 
   // early return if there is no reason to inject props
   if (
@@ -87,29 +107,25 @@ export const pluginInjectNodeProps = (
     return;
   }
 
-  const transformOptions: TransformOptions = {
-    ...nodeProps,
-    ...(getEditorPlugin(editor, plugin) as any),
-    nodeValue,
-  };
-  const value = transformNodeValue?.(transformOptions) ?? nodeValue;
-  transformOptions.value = value;
+  const value = transformNodeValue?.(getTransformOptions()) ?? nodeValue;
+  const transformOptions = getTransformOptions(value);
 
   let newProps: GetInjectNodePropsReturnType = {};
+  const nodeValueKey = getNodePropClassValue(nodeValue);
+  const valueKey = getNodePropClassValue(value);
 
-  if (element && nodeKey && nodeValue) {
-    newProps.className = `slate-${nodeKey}-${nodeValue}`;
+  if (element && nodeKey && nodeValueKey) {
+    newProps.className = `plite-${nodeKey}-${nodeValueKey}`;
   }
-  if (classNames?.[nodeValue] || transformClassName) {
+  if ((nodeValueKey && classNames?.[nodeValueKey]) || transformClassName) {
     newProps.className =
-      transformClassName?.(transformOptions) ?? classNames?.[value];
+      transformClassName?.(transformOptions) ??
+      (valueKey ? classNames?.[valueKey] : undefined);
   }
   if (styleKey) {
-    newProps.style =
-      transformStyle?.(transformOptions) ??
-      ({
-        [styleKey as string]: value,
-      } as any);
+    newProps.style = transformStyle?.(transformOptions) ?? {
+      [styleKey as string]: value,
+    };
   }
   if (transformProps) {
     newProps =

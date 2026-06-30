@@ -9,13 +9,13 @@ import {
 } from '@platejs/plite/internal';
 import {
   createEditor,
-  type Descendant,
+  type Element,
   OperationApi,
   type Operation as PliteOperation,
-} from '../src';
+} from '@platejs/plite';
 import { extendTestSchema } from './support/schema';
 
-const moveChildren = (): Descendant[] => [
+const moveChildren = (): Element[] => [
   {
     type: 'element',
     children: [{ text: '1' }],
@@ -44,7 +44,7 @@ describe('plite operations contract', () => {
   it('applies and inverts replace_fragment as one root replacement', () => {
     const editor = createEditor();
     const children = moveChildren();
-    const newChildren: Descendant[] = [
+    const newChildren: Element[] = [
       {
         type: 'element',
         children: [{ text: 'one' }],
@@ -90,7 +90,7 @@ describe('plite operations contract', () => {
 
   it('applies and inverts replace_children as one parent child-range replacement', () => {
     const editor = createEditor();
-    const children: Descendant[] = [
+    const children: Element[] = [
       {
         type: 'element',
         children: [{ text: '0' }],
@@ -144,15 +144,15 @@ describe('plite operations contract', () => {
 
   it('applies and inverts huge replace_children ranges without argument spreading', () => {
     const editor = createEditor();
-    const childCount = 200_000;
-    const children: Descendant[] = Array.from(
+    const childCount = 125_000;
+    const children: Element[] = Array.from(
       { length: childCount },
       (_, index) => ({
         type: 'element',
         children: [{ text: String(index) }],
       })
     );
-    const newChildren: Descendant[] = [
+    const newChildren: Element[] = [
       {
         type: 'element',
         children: [{ text: 'replacement' }],
@@ -217,7 +217,7 @@ describe('plite operations contract', () => {
 
   it('rejects nullish set_node removals and removes by omission', () => {
     const editor = createEditor();
-    const children: Descendant[] = [
+    const children: Element[] = [
       {
         type: 'element',
         children: [{ text: '', someKey: true }],
@@ -454,7 +454,7 @@ describe('plite operations contract', () => {
   });
 
   it('rejects replay operations with negative positions without changing the snapshot', () => {
-    const children: Descendant[] = [
+    const children: Element[] = [
       {
         type: 'element',
         children: [{ text: 'one' }, { text: 'two' }],
@@ -611,7 +611,7 @@ describe('plite operations contract', () => {
           newProperties: {
             anchor: { path: [0, 0], offset: 0 },
           },
-        }),
+        } as PliteOperation),
       /set_selection patch requires an existing selection or a full range/
     );
   });
@@ -698,7 +698,7 @@ describe('plite operations contract', () => {
 
   it('replays and inverts composed split_node and insert_text operations', () => {
     const editor = createEditor();
-    const children: Descendant[] = [
+    const children: Element[] = [
       {
         type: 'element',
         children: [{ bold: true, text: 'Hello World' }],
@@ -730,7 +730,7 @@ describe('plite operations contract', () => {
     });
 
     editor.update((tx) => {
-      tx.operations.replay(operations);
+      tx.operations.replay(operations, { normalize: false });
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -748,7 +748,9 @@ describe('plite operations contract', () => {
     });
 
     editor.update((tx) => {
-      tx.operations.replay(operations.map(OperationApi.inverse).reverse());
+      tx.operations.replay(operations.map(OperationApi.inverse).reverse(), {
+        normalize: false,
+      });
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, children);

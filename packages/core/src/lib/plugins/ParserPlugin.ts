@@ -1,89 +1,96 @@
 import { pipeInsertFragment } from '../../internal/plugin/pipeInsertFragment';
 import { pipeTransformData } from '../../internal/plugin/pipeTransformData';
 import { pipeTransformFragment } from '../../internal/plugin/pipeTransformFragment';
-import { type Parser, createSlatePlugin, getEditorPlugin } from '../plugin';
-import { getInjectedPlugins } from '../utils';
+import { createBasePlugin } from '../plugin';
+import { getEditorPlugin } from '../plugin/getEditorPlugin';
+import { getInjectedPlugins } from '../utils/getInjectedPlugins';
 import { pipeInsertDataQuery } from '../utils/pipeInsertDataQuery';
 
-export const ParserPlugin = createSlatePlugin({
+export const ParserPlugin = createBasePlugin({
   key: 'parser',
-}).overrideEditor(({ editor, tf: { insertData } }) => ({
-  transforms: {
-    insertData(dataTransfer: DataTransfer) {
-      const inserted = [...editor.meta.pluginList].reverse().some((plugin) => {
-        const parser = plugin.parser as Parser | undefined;
+}).extendExtension(({ editor }) => ({
+  clipboard: {
+    insertData(dataTransfer, { next }) {
+      const inserted = [...editor.runtime.pluginList]
+        .reverse()
+        .some((plugin) => {
+          const parser = plugin.parser;
 
-        if (!parser) return false;
+          if (!parser) return false;
 
-        const injectedPlugins = getInjectedPlugins(editor, plugin);
-        const { deserialize, format, mimeTypes } = parser;
+          const { deserialize, format, mimeTypes } = parser;
 
-        if (!format && !mimeTypes) return false;
+          if (!format && !mimeTypes) return false;
 
-        // Handle both string and string[] formats
-        const formats = Array.isArray(format) ? format : format ? [format] : [];
-        const mimeTypeList =
-          mimeTypes ||
-          formats.map((fmt) => (fmt.includes('/') ? fmt : `text/${fmt}`));
+          const formats = Array.isArray(format)
+            ? format
+            : format
+              ? [format]
+              : [];
+          const mimeTypeList =
+            mimeTypes ||
+            formats.map((format) =>
+              format.includes('/') ? format : `text/${format}`
+            );
 
-        for (const mimeType of mimeTypeList) {
-          let data = dataTransfer.getData(mimeType);
+          const injectedPlugins = getInjectedPlugins(editor, plugin);
 
-          if (
-            (mimeType !== 'Files' && !data) ||
-            (mimeType === 'Files' && dataTransfer.files.length === 0)
-          )
-            continue;
-          if (
-            !pipeInsertDataQuery(editor, injectedPlugins, {
+          for (const mimeType of mimeTypeList) {
+            let data = dataTransfer.getData(mimeType);
+
+            if (
+              (mimeType !== 'Files' && !data) ||
+              (mimeType === 'Files' && (dataTransfer.files?.length ?? 0) === 0)
+            ) {
+              continue;
+            }
+
+            const parserOptions = { data, dataTransfer, mimeType };
+
+            if (!pipeInsertDataQuery(editor, injectedPlugins, parserOptions)) {
+              continue;
+            }
+
+            data = pipeTransformData(editor, injectedPlugins, parserOptions);
+
+            let fragment = deserialize?.({
+              ...getEditorPlugin(editor, plugin),
+              ...parserOptions,
               data,
-              dataTransfer,
-              mimeType,
-            })
-          ) {
-            continue;
+            });
+
+            if (!fragment?.length) continue;
+
+            fragment = pipeTransformFragment(editor, injectedPlugins, {
+              ...parserOptions,
+              data,
+              fragment,
+            });
+
+            if (fragment.length === 0) continue;
+
+            pipeInsertFragment(editor, injectedPlugins, {
+              ...parserOptions,
+              data,
+              fragment,
+            });
+
+            return true;
           }
 
-          data = pipeTransformData(editor, injectedPlugins, {
-            data,
-            dataTransfer,
-            mimeType,
-          });
+          return false;
+        });
 
-          let fragment = deserialize?.({
-            ...getEditorPlugin(editor, plugin),
-            data,
-            dataTransfer,
-            mimeType,
-          });
+      if (inserted) return true;
+      if (next()) return true;
 
-          if (!fragment?.length) continue;
+      const text = dataTransfer.getData('text/plain');
 
-          fragment = pipeTransformFragment(editor, injectedPlugins, {
-            data,
-            dataTransfer,
-            fragment,
-            mimeType,
-          });
+      if (!text) return false;
 
-          if (fragment.length === 0) continue;
+      editor.update.text.insert(text);
 
-          pipeInsertFragment(editor, injectedPlugins, {
-            data,
-            dataTransfer,
-            fragment,
-            mimeType,
-          });
-
-          return true;
-        }
-
-        return false;
-      });
-
-      if (inserted) return;
-
-      insertData(dataTransfer);
+      return true;
     },
   },
 }));

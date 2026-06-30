@@ -9,7 +9,7 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import { createEditor, type Descendant } from '../src';
+import { createEditor, type Descendant, type Element } from '@platejs/plite';
 import { replaceEditorValue } from './support/snapshot';
 
 const paragraph = (text: string, props: Record<string, unknown> = {}) =>
@@ -17,10 +17,10 @@ const paragraph = (text: string, props: Record<string, unknown> = {}) =>
     type: 'paragraph',
     ...props,
     children: [{ text }],
-  }) as Descendant;
+  }) as Element;
 
 describe('state/tx public API contract', () => {
-  it('initializes document state during editor creation', () => {
+  it('initializes document meta during editor creation', () => {
     const selection = {
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
@@ -31,20 +31,20 @@ describe('state/tx public API contract', () => {
     });
 
     const state = editor.read((state) => ({
-      lastCommit: state.value.lastCommit(),
-      operations: state.value.operations(),
-      selection: state.selection.get(),
-      value: state.value.get(),
+      lastCommit: state.lastCommit(),
+      operations: state.operations(),
+      selection: state.selection(),
+      value: state.value(),
     }));
 
     assert.deepEqual(state.value, { children: [paragraph('one')] });
     assert.deepEqual(
-      editor.read((state) => state.value.root()),
+      editor.read((state) => state.children()),
       [paragraph('one')]
     );
     assert.throws(
-      () => editor.read((state) => state.value.root('main')),
-      /primary editor root by key/
+      () => editor.read((state) => state.root('main')),
+      /Use editor\.read\.children/
     );
     assert.deepEqual(state.selection, selection);
     assert.deepEqual(state.operations, []);
@@ -116,7 +116,7 @@ describe('state/tx public API contract', () => {
       /Omit root to target the primary document/
     );
     assert.throws(
-      () => editor.read((state) => state.fragment.get({ at: mainRange })),
+      () => editor.read((state) => state.fragment({ at: mainRange })),
       /Omit root to target the primary document/
     );
   });
@@ -148,11 +148,11 @@ describe('state/tx public API contract', () => {
           { type: 'list-item', checked: false, children: [{ text: 'two' }] },
         ],
       },
-    ] satisfies Descendant[];
+    ] satisfies Element[];
     const serialized = JSON.stringify(value);
-    const parsed = JSON.parse(serialized) as Descendant[];
+    const parsed = JSON.parse(serialized) as Element[];
     const editor = createEditor({ initialValue: parsed });
-    const exported = editor.read((state) => state.value.get());
+    const exported = editor.read((state) => state.value());
     const reserialized = JSON.stringify(exported);
     const rehydrated = createEditor({
       initialValue: JSON.parse(reserialized),
@@ -161,7 +161,7 @@ describe('state/tx public API contract', () => {
     assert.deepEqual(parsed, value);
     assert.deepEqual(exported, { children: value });
     assert.deepEqual(
-      rehydrated.read((state) => state.value.get()),
+      rehydrated.read((state) => state.value()),
       { children: value }
     );
     assert.equal(reserialized.includes('pathToId'), false);
@@ -192,10 +192,10 @@ describe('state/tx public API contract', () => {
     });
 
     const state = editor.read((state) => ({
-      lastCommit: state.value.lastCommit(),
-      operations: state.value.operations(),
-      selection: state.selection.get(),
-      value: state.value.get(),
+      lastCommit: state.lastCommit(),
+      operations: state.operations(),
+      selection: state.selection(),
+      value: state.value(),
     }));
 
     assert.deepEqual(state.value, { children: [paragraph('two')] });
@@ -229,9 +229,9 @@ describe('state/tx public API contract', () => {
         type: 'image',
         children: [{ text: '' }],
       }),
-      selection: state.selection.get(),
+      selection: state.selection(),
       text: state.text.string([]),
-      value: state.value.get(),
+      value: state.value(),
     }));
 
     assert.equal(state.isVoid, false);
@@ -258,13 +258,13 @@ describe('state/tx public API contract', () => {
     });
 
     const fragments = editor.read((state) => ({
-      explicit: state.fragment.get({
+      explicit: state.fragment({
         at: {
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         },
       }),
-      selected: state.fragment.get(),
+      selected: state.fragment(),
     }));
 
     assert.deepEqual(fragments.selected, [paragraph('one')]);
@@ -284,8 +284,8 @@ describe('state/tx public API contract', () => {
     assert.equal(typeof firstTextRuntimeId, 'string');
 
     const state = editor.read((state) => ({
-      lastCommit: state.value.lastCommit(),
-      operations: state.value.operations(),
+      lastCommit: state.lastCommit(),
+      operations: state.operations(),
       path: state.runtime.pathOf(firstTextRuntimeId!),
       snapshot: state.runtime.snapshot(),
       valueHasSnapshot: 'snapshot' in state.value,
@@ -351,7 +351,7 @@ describe('state/tx public API contract', () => {
     const state = editor.read((state) => ({
       oldSecondTextPath: state.runtime.pathOf(oldSecondTextRuntimeId!),
       nextTextRuntimeId: state.runtime.idAt([0, 0]),
-      value: state.value.get(),
+      value: state.value(),
     }));
 
     assert.deepEqual(state.value, { children: [paragraph('fresh')] });
@@ -371,7 +371,7 @@ describe('state/tx public API contract', () => {
 
     const state = editor.read((state) => ({
       path: state.runtime.pathOf(textRuntimeId!),
-      value: state.value.get(),
+      value: state.value(),
     }));
 
     assert.deepEqual(state.path, [1, 0]);
@@ -419,7 +419,7 @@ describe('state/tx public API contract', () => {
       assert.deepEqual(tx.runtime.pathOf(firstBlockRuntimeId!), [2]);
     });
 
-    const exportedValue = editor.read((state) => state.value.get());
+    const exportedValue = editor.read((state) => state.value());
     const serialized = JSON.stringify(exportedValue);
 
     assert.deepEqual(exportedValue, {
@@ -443,10 +443,16 @@ describe('state/tx public API contract', () => {
       before: state.points.before({ path: [1, 0], offset: 0 }),
       edge: state.points.isEdge({ path: [0, 0], offset: 0 }, [0]),
       first: state.nodes.first([]),
-      hasBlocks: state.nodes.hasBlocks({ children: [paragraph('nested')] }),
+      hasBlocks: state.nodes.hasBlocks({
+        type: 'container',
+        children: [paragraph('nested')],
+      }),
       hasPath: state.nodes.hasPath([1, 0]),
       isBlock: state.schema.isBlock(paragraph('one')),
-      isEmpty: state.nodes.isEmpty({ children: [{ text: '' }] }),
+      isEmpty: state.nodes.isEmpty({
+        type: 'paragraph',
+        children: [{ text: '' }],
+      }),
       last: state.nodes.last([]),
       levels: Array.from(state.nodes.levels({ at: [0, 0] })),
       nodePaths: state.nodes.toArray({ at: [] }, ([, path]) => path),
@@ -499,7 +505,7 @@ describe('state/tx public API contract', () => {
       });
 
       draftText = tx.text.string([]);
-      draftSelection = tx.selection.get();
+      draftSelection = tx.selection();
     });
 
     assert.equal(draftText, 'one!two');
@@ -529,9 +535,9 @@ describe('state/tx public API contract', () => {
     });
 
     editor.update((tx) => {
-      before = tx.fragment.get();
+      before = tx.fragment();
       tx.fragment.insert([paragraph('z')]);
-      after = tx.fragment.get({
+      after = tx.fragment({
         at: {
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 1 },
@@ -617,7 +623,7 @@ describe('state/tx public API contract', () => {
 
     editor.update((tx) => {
       tx.marks.add('bold', true);
-      marks = tx.marks.get();
+      marks = tx.marks();
       tx.marks.remove('bold');
     });
 

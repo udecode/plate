@@ -28,7 +28,7 @@ describe('plite-react state field selector contract', () => {
       extensions: [documentTitle],
       initialValue: {
         children: [paragraph('body')],
-        state: { [documentTitle.key]: 'Q2 Plan' },
+        meta: { [documentTitle.key]: 'Q2 Plan' },
       },
     });
     const values: string[] = [];

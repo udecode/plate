@@ -1,4 +1,5 @@
-import { createBaseEditor, type BaseEditor } from '../../lib/editor';
+import { createBaseEditor } from '../../lib/editor';
+import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 
 import { createBasePlugin } from '../../lib/plugin/createBasePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
@@ -13,19 +14,16 @@ import {
   resolvePlugins,
 } from './resolvePlugins';
 
-const createEditor = (options?: Parameters<typeof createBaseEditor>[0]) =>
-  createBaseEditor(options);
-
-const getResolvedKeys = (plugins: any[]) => {
-  const editor = createEditor();
+const getResolvedKeys = (plugins: readonly AnyBasePlugin[]) => {
+  const editor = createBaseEditor();
 
   resolvePlugins(editor, plugins);
 
-  return editor.meta.pluginList.map((plugin) => plugin.key);
+  return editor.runtime.pluginList.map((plugin) => plugin.key);
 };
 
-const getSortedKeys = (plugins: any[]) => {
-  const editor = createEditor();
+const getSortedKeys = (plugins: readonly AnyBasePlugin[]) => {
+  const editor = createBaseEditor();
 
   return resolveAndSortPlugins(editor, plugins).map((plugin) => plugin.key);
 };
@@ -68,7 +66,7 @@ describe('resolvePlugins', () => {
   });
 
   it('apply overrides correctly', () => {
-    const editor = createEditor();
+    const editor = createBaseEditor();
     const plugins = [
       createBasePlugin({
         key: 'a',
@@ -88,7 +86,7 @@ describe('resolvePlugins', () => {
   });
 
   it('merge all plugin APIs into editor.api', () => {
-    const editor = createEditor({
+    const editor = createBaseEditor({
       plugins: [
         createBasePlugin({
           key: 'plugin1',
@@ -108,7 +106,7 @@ describe('resolvePlugins', () => {
   });
 
   it('overwrite API methods with the same name', () => {
-    const editor = createEditor({
+    const editor = createBaseEditor({
       plugins: [
         createBasePlugin<'plugin1'>({
           key: 'plugin1',
@@ -125,7 +123,7 @@ describe('resolvePlugins', () => {
   });
 
   it('fills plugin cache buckets for node, render, hook, rule, and handler metadata', () => {
-    const editor = createEditor({
+    const editor = createBaseEditor({
       plugins: [
         createBasePlugin({
           key: 'cachey',
@@ -164,30 +162,44 @@ describe('resolvePlugins', () => {
     (editor.plugins.cachey as any).useHooks = () => {};
     resolvePlugins(editor, [editor.plugins.cachey as any]);
 
-    expect(editor.meta.pluginCache.decorate).toContain('cachey');
-    expect(editor.meta.pluginCache.handlers.onChange).toContain('cachey');
-    expect(editor.meta.pluginCache.handlers.onNodeChange).toContain('cachey');
-    expect(editor.meta.pluginCache.handlers.onTextChange).toContain('cachey');
-    expect(editor.meta.pluginCache.node.isText).toContain('cachey');
-    expect(editor.meta.pluginCache.node.leafProps).toContain('cachey');
-    expect(editor.meta.pluginCache.node.textProps).toContain('cachey');
-    expect(editor.meta.pluginCache.transformInitialValue).toContain('cachey');
-    expect(editor.meta.pluginCache.render.aboveEditable).toContain('cachey');
-    expect(editor.meta.pluginCache.render.aboveNodes).toContain('cachey');
-    expect(editor.meta.pluginCache.render.abovePlite).toContain('cachey');
-    expect(editor.meta.pluginCache.render.afterContainer).toContain('cachey');
-    expect(editor.meta.pluginCache.render.afterEditable).toContain('cachey');
-    expect(editor.meta.pluginCache.render.beforeContainer).toContain('cachey');
-    expect(editor.meta.pluginCache.render.beforeEditable).toContain('cachey');
-    expect(editor.meta.pluginCache.render.belowNodes).toContain('cachey');
-    expect(editor.meta.pluginCache.render.belowRootNodes).toContain('cachey');
-    expect(editor.meta.pluginCache.rules.match).toContain('cachey');
-    expect(editor.meta.pluginCache.useHooks).toContain('cachey');
+    expect(editor.runtime.pluginCache.decorate).toContain('cachey');
+    expect(editor.runtime.pluginCache.handlers.onChange).toContain('cachey');
+    expect(editor.runtime.pluginCache.handlers.onNodeChange).toContain(
+      'cachey'
+    );
+    expect(editor.runtime.pluginCache.handlers.onTextChange).toContain(
+      'cachey'
+    );
+    expect(editor.runtime.pluginCache.node.isText).toContain('cachey');
+    expect(editor.runtime.pluginCache.node.leafProps).toContain('cachey');
+    expect(editor.runtime.pluginCache.node.textProps).toContain('cachey');
+    expect(editor.runtime.pluginCache.transformInitialValue).toContain(
+      'cachey'
+    );
+    expect(editor.runtime.pluginCache.render.aboveEditable).toContain('cachey');
+    expect(editor.runtime.pluginCache.render.aboveNodes).toContain('cachey');
+    expect(editor.runtime.pluginCache.render.abovePlite).toContain('cachey');
+    expect(editor.runtime.pluginCache.render.afterContainer).toContain(
+      'cachey'
+    );
+    expect(editor.runtime.pluginCache.render.afterEditable).toContain('cachey');
+    expect(editor.runtime.pluginCache.render.beforeContainer).toContain(
+      'cachey'
+    );
+    expect(editor.runtime.pluginCache.render.beforeEditable).toContain(
+      'cachey'
+    );
+    expect(editor.runtime.pluginCache.render.belowNodes).toContain('cachey');
+    expect(editor.runtime.pluginCache.render.belowRootNodes).toContain(
+      'cachey'
+    );
+    expect(editor.runtime.pluginCache.rules.match).toContain('cachey');
+    expect(editor.runtime.pluginCache.useHooks).toContain('cachey');
   });
 
   it('creates a shortcut handler from plugin-specific tx commands', () => {
     const toggle = mock();
-    const editor = createEditor({
+    const editor = createBaseEditor({
       plugins: [
         createBasePlugin({
           key: 'shortcutTx',
@@ -198,14 +210,75 @@ describe('resolvePlugins', () => {
       ],
     });
 
-    editor.meta.shortcuts['shortcutTx.toggle']?.handler?.({} as any);
+    editor.runtime.shortcuts['shortcutTx.toggle']?.handler?.({} as any);
 
     expect(toggle).toHaveBeenCalledTimes(1);
   });
 
+  it('falls back to plugin-specific api when tx has no matching shortcut command', () => {
+    const other = mock();
+    const toggle = mock() as any;
+    const editor = createBaseEditor({
+      plugins: [
+        createBasePlugin({
+          key: 'shortcutMixed',
+          shortcuts: {
+            toggle: { keys: 'mod+k' },
+          },
+        })
+          .extendTx(() => () => ({ other }))
+          .extendApi(() => ({ toggle })),
+      ],
+    });
+
+    editor.runtime.shortcuts['shortcutMixed.toggle']?.handler?.({} as any);
+
+    expect(other).not.toHaveBeenCalled();
+    expect(toggle).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not prevent default when no matching tx or api shortcut command exists', () => {
+    const other = mock();
+    const editor = createBaseEditor({
+      plugins: [
+        createBasePlugin({
+          key: 'shortcutMissing',
+          shortcuts: {
+            toggle: { keys: 'mod+k' },
+          },
+        }).extendTx(() => () => ({ other })),
+      ],
+    });
+
+    const result = editor.runtime.shortcuts[
+      'shortcutMissing.toggle'
+    ]?.handler?.({} as any);
+
+    expect(other).not.toHaveBeenCalled();
+    expect(result).toBe(false);
+  });
+
+  it('does not treat foreign tx groups as plugin shortcut commands', () => {
+    const replace = mock();
+    const editor = createBaseEditor({
+      plugins: [
+        createBasePlugin({
+          key: 'shortcutForeign',
+          shortcuts: {
+            replace: { keys: 'mod+k' },
+          },
+        }).extendTxGroup('foreignTx', () => () => ({ replace })),
+      ],
+    });
+
+    expect(editor.runtime.shortcuts['shortcutForeign.replace']?.handler).toBe(
+      undefined
+    );
+  });
+
   it('creates a shortcut handler from plugin-specific api methods', () => {
     const toggle = mock();
-    const editor = createEditor({
+    const editor = createBaseEditor({
       plugins: [
         createBasePlugin({
           key: 'shortcutApi',
@@ -218,14 +291,32 @@ describe('resolvePlugins', () => {
       ],
     });
 
-    editor.meta.shortcuts['shortcutApi.toggle']?.handler?.({} as any);
+    editor.runtime.shortcuts['shortcutApi.toggle']?.handler?.({} as any);
 
     expect(toggle).toHaveBeenCalledTimes(1);
   });
 
+  it('cleans plugin api extensions before resolving a new plugin set on the same editor', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        createBasePlugin({
+          key: 'pluginApi',
+        }).extendApi(() => ({
+          run: () => 'run',
+        })),
+      ],
+    });
+
+    expect(editor.plugins.pluginApi.api).toHaveProperty('pluginApi.run');
+
+    resolvePlugins(editor, []);
+
+    expect(editor.plugins.pluginApi).toBeUndefined();
+  });
+
   it('throws when AutoformatPlugin is combined with active input rules', () => {
     expect(() =>
-      createEditor({
+      createBaseEditor({
         plugins: [
           createBasePlugin({
             key: 'autoformat',
@@ -248,7 +339,7 @@ describe('resolvePlugins', () => {
 
   it('throws when inputRules is configured as a boolean map', () => {
     expect(() =>
-      createEditor({
+      createBaseEditor({
         plugins: [
           createBasePlugin({
             key: 'marks',
@@ -335,7 +426,7 @@ describe('resolveAndSortPlugins', () => {
       ],
     },
   ])('$name', ({ expected, plugins }) => {
-    expect(getSortedKeys(plugins() as any)).toEqual(expected);
+    expect(getSortedKeys(plugins())).toEqual(expected);
   });
 
   it('handle circular dependencies gracefully', () => {
@@ -351,7 +442,7 @@ describe('resolveAndSortPlugins', () => {
 
   it('warns when a dependency is missing', () => {
     const warnLogger = mock();
-    const editor = createEditor({
+    const editor = createBaseEditor({
       plugins: [
         DebugPlugin.configure({
           options: {
@@ -379,7 +470,7 @@ describe('resolveAndSortPlugins', () => {
 
 describe('applyPluginsToEditor', () => {
   it('merge plugins correctly', () => {
-    const editor = createEditor();
+    const editor = createBaseEditor();
 
     const plugins = [
       createBasePlugin({ key: 'a', node: { type: 'typeA' } }),
@@ -388,13 +479,13 @@ describe('applyPluginsToEditor', () => {
 
     applyPluginsToEditor(editor, plugins);
 
-    expect(editor.meta.pluginList).toHaveLength(2);
+    expect(editor.runtime.pluginList).toHaveLength(2);
     expect(editor.plugins.a.node.type).toBe('typeA');
     expect(editor.plugins.b.node.type).toBe('typeB');
   });
 
   it('update existing plugins', () => {
-    const editor = createEditor({
+    const editor = createBaseEditor({
       plugins: [createBasePlugin({ key: 'a', node: { type: 'oldType' } })],
     });
 
@@ -402,14 +493,14 @@ describe('applyPluginsToEditor', () => {
 
     applyPluginsToEditor(editor, plugins);
 
-    expect(editor.meta.pluginList).toHaveLength(1);
+    expect(editor.runtime.pluginList).toHaveLength(1);
     expect(editor.plugins.a.node.type).toBe('newType');
   });
 });
 
 describe('applyPluginOverrides', () => {
   it('apply overrides correctly', () => {
-    const editor = createEditor({
+    const editor = createBaseEditor({
       plugins: [
         createBasePlugin({
           key: 'a',
@@ -431,7 +522,7 @@ describe('applyPluginOverrides', () => {
   });
 
   it('handle nested overrides', () => {
-    const editor = createEditor() as BaseEditor;
+    const editor = createBaseEditor();
 
     resolvePlugins(editor, [
       createBasePlugin({
@@ -451,7 +542,7 @@ describe('applyPluginOverrides', () => {
   });
 
   it('apply multiple overrides in correct order', () => {
-    const editor = createEditor({
+    const editor = createBaseEditor({
       plugins: [
         createBasePlugin({
           key: 'a',
@@ -555,11 +646,32 @@ describe('applyPluginOverrides', () => {
 
   describe('targetPlugins', () => {
     it('correctly apply targetPluginToInject and merge with existing plugins', () => {
-      const plugin = createBasePlugin({
-        key: 'testPlugin',
-        inject: {
-          plugins: {
-            plugin1: {
+      const resolvedPlugin = resolvePluginTest(
+        createBasePlugin({
+          key: 'testPlugin',
+          inject: {
+            plugins: {
+              plugin1: {
+                parsers: {
+                  html: {
+                    deserializer: {
+                      parse: () => {},
+                    },
+                  },
+                },
+              },
+              plugin3: {
+                parsers: {
+                  html: {
+                    deserializer: {
+                      parse: () => {},
+                    },
+                  },
+                },
+              },
+            },
+            targetPlugins: ['plugin1', 'plugin2'],
+            targetPluginToInject: ({ targetPlugin: _targetPlugin }) => ({
               parsers: {
                 html: {
                   deserializer: {
@@ -567,31 +679,10 @@ describe('applyPluginOverrides', () => {
                   },
                 },
               },
-            },
-            plugin3: {
-              parsers: {
-                html: {
-                  deserializer: {
-                    parse: () => {},
-                  },
-                },
-              },
-            },
+            }),
           },
-          targetPlugins: ['plugin1', 'plugin2'],
-          targetPluginToInject: ({ targetPlugin: _targetPlugin }) => ({
-            parsers: {
-              html: {
-                deserializer: {
-                  parse: () => {},
-                },
-              },
-            },
-          }),
-        },
-      });
-
-      const resolvedPlugin = resolvePluginTest(plugin);
+        })
+      );
 
       expect(resolvedPlugin.inject?.plugins).toBeDefined();
       expect(Object.keys(resolvedPlugin.inject!.plugins!)).toEqual([
@@ -633,7 +724,7 @@ describe('applyPluginOverrides', () => {
     const originalLogger = mock();
     const replacementLogger = mock();
 
-    const editor = createEditor({
+    const editor = createBaseEditor({
       plugins: [
         createBasePlugin({
           key: 'a',
@@ -664,7 +755,7 @@ describe('applyPluginOverrides', () => {
   it('allow overriding core plugins like DebugPlugin', () => {
     const customLogger = mock();
 
-    const editor = createEditor({
+    const editor = createBaseEditor({
       plugins: [
         DebugPlugin.configure({
           options: {
@@ -703,7 +794,7 @@ describe('applyPluginOverrides', () => {
       },
     },
   ])('does not include plugins disabled through $name', ({ override }) => {
-    const editor = createEditor({
+    const editor = createBaseEditor({
       override,
       plugins: [
         createBasePlugin({ key: 'a' }),
@@ -728,7 +819,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       options: { nested: nestedOptions },
     });
 
-    const editor = createEditor({
+    const editor = createBaseEditor({
       plugins: [plugin],
     });
 
@@ -745,7 +836,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       options: { value: 'original' },
     });
 
-    const editor = createEditor({
+    const editor = createBaseEditor({
       plugins: [plugin],
     });
 
@@ -767,7 +858,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       },
     }));
 
-    const editor = createEditor({
+    const editor = createBaseEditor({
       plugins: [plugin],
     });
 
@@ -781,24 +872,24 @@ describe('mergePlugins behavior in resolvePlugins', () => {
 
 describe('resolvePlugins with keyless plugins', () => {
   it('does not add a plugin without a key to the editor', () => {
-    const editor = createEditor();
+    const editor = createBaseEditor();
     const plugins = [
       createBasePlugin({ node: { type: 'no-key-plugin' } } as any), // Simulate a plugin without a key
       createBasePlugin({ key: 'keyedPlugin', node: { type: 'keyed-type' } }),
     ];
 
-    resolvePlugins(editor, plugins);
+    resolvePlugins(editor, plugins as any);
 
-    expect(editor.meta.pluginList.map((p) => p.key)).not.toContain('');
+    expect(editor.runtime.pluginList.map((p) => p.key)).not.toContain('');
     expect(editor.plugins.keyedPlugin).toBeDefined();
-    expect(editor.meta.pluginList.some((p) => p.key === 'keyedPlugin')).toBe(
+    expect(editor.runtime.pluginList.some((p) => p.key === 'keyedPlugin')).toBe(
       true
     );
     // Exact count depends on core plugins, but it should contain keyedPlugin and not the keyless one.
   });
 
   it('process child plugins of a keyless plugin', () => {
-    const editor = createEditor();
+    const editor = createBaseEditor();
     const plugins = [
       createBasePlugin({
         // No key for the parent
@@ -823,14 +914,14 @@ describe('resolvePlugins with keyless plugins', () => {
       }),
     ];
 
-    resolvePlugins(editor, plugins);
+    resolvePlugins(editor, plugins as any);
 
     expect(editor.plugins['parent-no-key']).toBeUndefined();
     expect(editor.plugins.childKey1).toBeDefined();
     expect(editor.plugins.childKey2).toBeDefined();
     expect(editor.plugins.anotherPlugin).toBeDefined();
 
-    const pluginKeys = editor.meta.pluginList.map((p) => p.key);
+    const pluginKeys = editor.runtime.pluginList.map((p) => p.key);
     expect(pluginKeys).toContain('childKey1');
     expect(pluginKeys).toContain('childKey2');
     expect(pluginKeys).toContain('anotherPlugin');

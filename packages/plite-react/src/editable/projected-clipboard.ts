@@ -108,7 +108,7 @@ const getProjectedViewSelectionClipboardRanges = (
   viewSelection: PliteViewSelection
 ): Range[] | null =>
   editor.read((state) => {
-    const roots = createPliteViewBoundaryRootMap(state.value.get());
+    const roots = createPliteViewBoundaryRootMap(state.value());
     const ranges: Range[] = [];
 
     for (const segment of viewSelection.segments.parts) {
@@ -156,7 +156,7 @@ export const getProjectedViewSelectionFragment = (
   }
 
   return editor.read((state) =>
-    ranges.flatMap((range) => state.fragment.get({ at: range }))
+    ranges.flatMap((range) => state.fragment({ at: range }))
   );
 };
 

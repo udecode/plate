@@ -1,0 +1,8 @@
+{
+  "generatedAt": "2026-06-27T22:47:38.852Z",
+  "scope": "packages/core/src, packages/core/type-tests, packages/core package config, packages/plite/src",
+  "totalUnique": 204,
+  "below100": 0,
+  "score": 100,
+  "proof": "pnpm check:core pass; stale Core API scan clean for live tf/slate/overrideEditor; focused navigation + keyboard + input-rules specs pass"
+}

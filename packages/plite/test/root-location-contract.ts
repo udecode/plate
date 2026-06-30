@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import type { Operation, Range } from '../src';
+import type { Operation, Range } from '@platejs/plite';
 import {
   getOperationRoot,
   getPointRoot,

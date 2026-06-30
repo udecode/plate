@@ -248,7 +248,7 @@ Temporary scaffold allowed:
      `/blocks/playground` browser proof.
 
 5. **Runtime helper packets**
-   - Migrate affinity, node-id, navigation feedback, slate-extension
+   - Migrate affinity, node-id, navigation feedback, plite-extension
      transforms, chunking, DOM scroll, render-leaf, and decorate helpers only
      after the editor root is v2.
    - Proof:

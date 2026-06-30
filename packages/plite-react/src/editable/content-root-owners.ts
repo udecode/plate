@@ -89,7 +89,7 @@ export const findContentRootOwners = (
 
   return editor.read((state) => {
     const owners: ContentRootOwner[] = [];
-    const roots = createPliteViewBoundaryRootMap(state.value.get());
+    const roots = createPliteViewBoundaryRootMap(state.value());
 
     const visit = (node: Descendant, ownerRoot: RootKey, ownerPath: Path) => {
       if (!NodeApi.isElement(node)) {
@@ -263,7 +263,7 @@ export const createContentRootProjectionGraph = (
 ) =>
   editor.read((state) => {
     const nodes: PliteViewBoundaryGraphNodeInput[] = [];
-    const roots = createPliteViewBoundaryRootMap(state.value.get());
+    const roots = createPliteViewBoundaryRootMap(state.value());
 
     const appendRoot = (
       root: RootKey,

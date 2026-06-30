@@ -5,10 +5,10 @@ import {
   replace as editorReplace,
 } from '@platejs/plite/internal';
 
-import { createEditor, type Descendant } from '../src';
-import { setEditorTargetRuntime } from '../src/internal';
+import { createEditor, type Element } from '@platejs/plite';
+import { setEditorTargetRuntime } from '@platejs/plite/internal';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });

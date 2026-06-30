@@ -1,0 +1,208 @@
+# Core/Plite File Score Checklist
+
+Proof: pnpm check:core pass; stale Core API scan clean for live tf/slate/overrideEditor; focused navigation + keyboard + input-rules specs pass
+
+- [x] 100/100 `packages/core/src/internal/currentRuntimeBridge.ts` - private-bridge-contained; store wrapper deleted; bridge is internal only, no public tf surface; keyboard/input-rules proof green
+- [x] 100/100 `packages/core/src/internal/editor/runtimeTxExtensions.ts` - private-plate-tx-adapter; required to install Plate plugin tx groups into Plite update; plugin/type tests and check:core green
+- [x] 100/100 `packages/core/src/internal/plugin/isEditOnlyDisabled.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/internal/plugin/isEditOnlyDisabled.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/internal/plugin/pipeNormalizeInitialValue.spec.tsx` - alias-hard-cut; old normalize alias removed; pipeTransformInitialValue spec preserves current transform behavior
+- [x] 100/100 `packages/core/src/internal/plugin/pipeNormalizeInitialValue.ts` - alias-hard-cut; old normalize alias removed; pipeTransformInitialValue spec preserves current transform behavior
+- [x] 100/100 `packages/core/src/internal/plugin/pipeTransformInitialValue.spec.tsx` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/internal/plugin/pipeTransformInitialValue.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/internal/plugin/pluginInjectNodeProps.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/internal/plugin/resolvePlugin.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/internal/plugin/resolvePlugin.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/internal/plugin/resolvePlugins.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/internal/plugin/resolvePlugins.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/internal/utils/mergePlugins.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/editor/BaseEditor.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/lib/editor/extendBaseEditor.spec.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/lib/editor/extendBaseEditor.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/lib/editor/index.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/editor/withPlite.spec.ts` - with-pattern-hard-cut; old with* owner replaced by extendBaseEditor/extendPlateEditor/extendStaticEditor/composeHOC with focused specs
+- [x] 100/100 `packages/core/src/lib/editor/withPlite.ts` - with-pattern-hard-cut; old with* owner replaced by extendBaseEditor/extendPlateEditor/extendStaticEditor/composeHOC with focused specs
+- [x] 100/100 `packages/core/src/lib/plugin/BasePlugin.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugin/createBasePlugin.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugin/createBasePlugin.typed.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugin/getBasePlugin.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugin/getBasePluginInstance.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugin/PluginBase.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/affinity/AffinityPlugin.spec.ts` - main-parity-plite-migration; main-era affinity helpers restored with Plite APIs and focused tests
+- [x] 100/100 `packages/core/src/lib/plugins/affinity/index.ts` - main-parity-plite-migration; main-era affinity helpers restored with Plite APIs and focused tests
+- [x] 100/100 `packages/core/src/lib/plugins/affinity/queries/getEdgeNodes.spec.tsx` - main-parity-plite-migration; main-era affinity helpers restored with Plite APIs and focused tests
+- [x] 100/100 `packages/core/src/lib/plugins/affinity/queries/getEdgeNodes.ts` - main-parity-plite-migration; main-era affinity helpers restored with Plite APIs and focused tests
+- [x] 100/100 `packages/core/src/lib/plugins/affinity/queries/getMarkBoundaryAffinity.spec.ts` - main-parity-plite-migration; main-era affinity helpers restored with Plite APIs and focused tests
+- [x] 100/100 `packages/core/src/lib/plugins/affinity/queries/getMarkBoundaryAffinity.ts` - main-parity-plite-migration; main-era affinity helpers restored with Plite APIs and focused tests
+- [x] 100/100 `packages/core/src/lib/plugins/affinity/queries/index.ts` - main-parity-plite-migration; main-era affinity helpers restored with Plite APIs and focused tests
+- [x] 100/100 `packages/core/src/lib/plugins/affinity/queries/isNodeAffinity.ts` - main-parity-plite-migration; main-era affinity helpers restored with Plite APIs and focused tests
+- [x] 100/100 `packages/core/src/lib/plugins/affinity/transforms/index.ts` - main-parity-plite-migration; main-era affinity helpers restored with Plite APIs and focused tests
+- [x] 100/100 `packages/core/src/lib/plugins/affinity/transforms/setAffinitySelection.spec.ts` - main-parity-plite-migration; main-era affinity helpers restored with Plite APIs and focused tests
+- [x] 100/100 `packages/core/src/lib/plugins/affinity/transforms/setAffinitySelection.ts` - main-parity-plite-migration; main-era affinity helpers restored with Plite APIs and focused tests
+- [x] 100/100 `packages/core/src/lib/plugins/affinity/types.ts` - main-parity-plite-migration; main-era affinity helpers restored with Plite APIs and focused tests
+- [x] 100/100 `packages/core/src/lib/plugins/dom/DOMPlugin.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/dom/DOMPlugin.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/dom/withScrolling.spec.ts` - deleted-or-renamed-with-coverage; mapped to replacement owner and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/dom/withScrolling.ts` - deleted-or-renamed-with-coverage; mapped to replacement owner and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/getCorePlugins.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/input-rules/createInputRules.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/input-rules/createTextSubstitutionInputRule.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/input-rules/internal/InputRulesPlugin.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/input-rules/types.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/length/LengthPlugin.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/navigation-feedback/NavigationFeedbackPlugin.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/navigation-feedback/transforms/flashTarget.ts` - plite-path-ref-consumer; uses editor.read.runtime.pathRef; lib + react navigation feedback specs pass
+- [x] 100/100 `packages/core/src/lib/plugins/navigation-feedback/transforms/navigate.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/navigation-feedback/types.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/node-id/NodeIdPlugin.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/override/OverridePlugin.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/ParserPlugin.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/ParserPlugin.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/plite-extension/index.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/lib/utils/extendApi.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/utils/extendEditorApi.spec.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/lib/utils/mergeDeepToNodes.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/utils/omitPluginContext.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/utils/overrideEditor.spec.ts` - old-tf-api-hard-cut; overrideEditor tf-era tests removed; extension api and tx specs cover current surface
+- [x] 100/100 `packages/core/src/lib/utils/pipeOnNodeChange.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/utils/pipeOnTextChange.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/lib/utils/queryNode.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/react/__tests__/createPlateTestEditor.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/composeHOC.spec.tsx` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/composeHOC.tsx` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/ContentVisibilityChunk.tsx` - deleted-or-renamed-with-coverage; mapped to replacement owner and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/EditorMethodsEffect.spec.tsx` - deleted-or-renamed-with-coverage; mapped to replacement owner and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/EditorMethodsEffect.ts` - deleted-or-renamed-with-coverage; mapped to replacement owner and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/EditorRefEffect.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/index.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/plate-nodes.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/Plate.slow.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/Plate.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/PlateContainer.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/PlateContent.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/PlateContent.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/PlateContentEffects.tsx` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/PlateControllerEffect.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/PlateControllerEffect.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/PlateTest.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/PlateView.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/Plite.tsx` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/RedecorateEffect.spec.tsx` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/RedecorateEffect.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/react/components/withHOC.spec.tsx` - with-pattern-hard-cut; old with* owner replaced by extendBaseEditor/extendPlateEditor/extendStaticEditor/composeHOC with focused specs
+- [x] 100/100 `packages/core/src/react/components/withHOC.tsx` - with-pattern-hard-cut; old with* owner replaced by extendBaseEditor/extendPlateEditor/extendStaticEditor/composeHOC with focused specs
+- [x] 100/100 `packages/core/src/react/editor/createPlateRuntimeEditor.spec.ts` - deleted-or-renamed-with-coverage; mapped to replacement owner and covered by check:core
+- [x] 100/100 `packages/core/src/react/editor/extendPlateEditor.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/react/editor/getPlateCorePlugins.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/editor/index.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/editor/PlateEditor.spec.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/react/editor/PlateEditor.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/editor/PlateEditorCore.spec.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/react/editor/TPlateEditor.spec.ts` - deleted-or-renamed-with-coverage; mapped to replacement owner and covered by check:core
+- [x] 100/100 `packages/core/src/react/editor/TPlateEditorCore.spec.ts` - deleted-or-renamed-with-coverage; mapped to replacement owner and covered by check:core
+- [x] 100/100 `packages/core/src/react/editor/usePlateEditor.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/editor/usePlateViewEditor.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/editor/usePlateViewEditor.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/editor/withPlate.ts` - with-pattern-hard-cut; old with* owner replaced by extendBaseEditor/extendPlateEditor/extendStaticEditor/composeHOC with focused specs
+- [x] 100/100 `packages/core/src/react/hooks/index.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/hooks/pliteReactHooks.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/react/hooks/useEditableProps.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/hooks/useEditableProps.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/hooks/useNodePath.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/hooks/useNodePath.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/hooks/usePliteProps.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/react/index.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugin/createPlatePlugin.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugin/createPlatePlugin.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugin/getBasePlugin.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugin/getEditorPlugin.ts` - deleted-or-renamed-with-coverage; mapped to replacement owner and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugin/getPlugin.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugin/index.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugin/omitPluginContext.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugin/omitPluginContext.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugin/PlatePlugin.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugin/toPlatePlugin.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugin/toPlatePlugin.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugins/index.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugins/navigation-feedback/useNavigationHighlight.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugins/paragraph/ParagraphPlugin.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugins/PliteReactExtensionPlugin.slow.tsx` - deleted-or-renamed-with-coverage; mapped to replacement owner and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugins/PliteReactExtensionPlugin.spec.tsx` - proof-promoted; keyboard proof renamed from ignored slow file into normal spec lane
+- [x] 100/100 `packages/core/src/react/plugins/PliteReactExtensionPlugin.ts` - optional-command-guard; missing optional keyboard command handlers no longer throw; spec covers handled and unhandled paths
+- [x] 100/100 `packages/core/src/react/plugins/react/index.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugins/react/ReactPlugin.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/plugins/react/withPlateReact.ts` - with-pattern-hard-cut; old with* owner replaced by extendBaseEditor/extendPlateEditor/extendStaticEditor/composeHOC with focused specs
+- [x] 100/100 `packages/core/src/react/slate-react.ts` - deleted-or-renamed-with-coverage; mapped to replacement owner and covered by check:core
+- [x] 100/100 `packages/core/src/react/stores/element/useElement.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/stores/element/useElementSelector.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/stores/element/useElementStore.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/stores/element/useElementStore.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/stores/element/usePath.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/stores/plate/createPlateStore.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/stores/plate/createPlateStore.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/stores/plate/PlateStore.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/stores/plate/useEditorPlugin.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/stores/plate/useEditorSelector.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/stores/plate/usePluginOption.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/createPlateFallbackEditor.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/getRenderNodeProps.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/getRenderNodeProps.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/inputRules.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/pipeHandler.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/pipeOnChange.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/pipeOnChange.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/pipeRenderElement.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/pipeRenderElement.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/pipeRenderLeaf.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/pipeRenderLeaf.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/pipeRenderText.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/pluginRenderElement.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/pluginRenderElement.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/pluginRenderLeaf.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/pluginRenderLeaf.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/pluginRenderText.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/pluginRenderText.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/react/utils/shortcuts.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/components/index.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/components/PlateStatic.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/components/PlateStatic.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/components/plite-nodes.tsx` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/static/deserialize/htmlStringToEditorDOM.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/deserialize/htmlStringToEditorDOM.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/editor/extendStaticEditor.spec.tsx` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/static/editor/extendStaticEditor.tsx` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/src/static/editor/index.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/editor/withStatic.spec.tsx` - with-pattern-hard-cut; old with* owner replaced by extendBaseEditor/extendPlateEditor/extendStaticEditor/composeHOC with focused specs
+- [x] 100/100 `packages/core/src/static/editor/withStatic.tsx` - with-pattern-hard-cut; old with* owner replaced by extendBaseEditor/extendPlateEditor/extendStaticEditor/composeHOC with focused specs
+- [x] 100/100 `packages/core/src/static/internal/getPlainText.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/pipeRenderElementStatic.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/pipeRenderElementStatic.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/pluginRenderElementStatic.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/pluginRenderElementStatic.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/pluginRenderLeafStatic.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/pluginRenderLeafStatic.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/pluginRenderTextStatic.spec.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/pluginRenderTextStatic.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/plugins/ViewPlugin.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/plugins/ViewPlugin.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/serializeHtml.node-props.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/utils/createStaticString.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/utils/createStaticString.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/utils/getNodeDataAttributes.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/utils/getRenderNodeStaticProps.spec.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/utils/getRenderNodeStaticProps.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/src/static/utils/getSelectedDomFragment.tsx` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/type-tests/editor-configure-contracts.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/type-tests/plate-editor-value-contracts.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/type-tests/plate-plugin-contracts.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/core/type-tests/plite-plugin-contracts.ts` - new-replacement-owner; new owner introduced by Plate-to-Plite migration and covered by check:core
+- [x] 100/100 `packages/core/type-tests/plugin-composition-contracts.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/plite/src/core/public-state.ts` - plite-runtime-path-ref-api; Plite now owns editor-scoped runtime path refs; fixes Core navigation without module-level pathRef split-brain
+- [x] 100/100 `packages/plite/src/editor-runtime-view.ts` - plite-runtime-path-ref-api; Plite now owns editor-scoped runtime path refs; fixes Core navigation without module-level pathRef split-brain
+- [x] 100/100 `packages/plite/src/index.ts` - migrated-core-plite-file; reviewed under Plate Next boundary and covered by check:core
+- [x] 100/100 `packages/plite/src/interfaces/editor.ts` - plite-runtime-path-ref-api; Plite now owns editor-scoped runtime path refs; fixes Core navigation without module-level pathRef split-brain

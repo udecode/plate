@@ -12,9 +12,15 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import { createEditor, type Descendant, defineEditorExtension } from '../src';
+import {
+  createEditor,
+  type Descendant,
+  type Element,
+  defineEditorExtension,
+  type EditorUpdateTransaction,
+} from '@platejs/plite';
 
-const children: Descendant[] = [
+const children: Element[] = [
   {
     type: 'paragraph',
     children: [{ text: 'one' }],
@@ -87,7 +93,7 @@ describe('extension query middleware', () => {
       'one!'
     );
     assert.deepEqual(
-      editor.read((state) => state.fragment.get()),
+      editor.read((state) => state.fragment()),
       [{ type: 'paragraph', children: [{ text: 'one' }] }]
     );
     assert.equal(editorString(editor, [1]), 'two!');
@@ -124,7 +130,7 @@ describe('extension query middleware', () => {
             get({ next, options }) {
               return next({ options }).map((node) => ({
                 ...node,
-                children: node.children.map((child) => {
+                children: (node.children as Descendant[]).map((child) => {
                   if (!('transientPreview' in child)) {
                     return child;
                   }
@@ -142,7 +148,7 @@ describe('extension query middleware', () => {
     );
 
     assert.deepEqual(
-      editor.read((state) => state.fragment.get()),
+      editor.read((state) => state.fragment()),
       [
         {
           type: 'paragraph',
@@ -179,9 +185,7 @@ describe('extension query middleware', () => {
           text: {
             string(context) {
               hasTx = 'tx' in context;
-              seenOffsets.push(
-                context.state.selection.get()?.anchor.offset ?? -1
-              );
+              seenOffsets.push(context.state.selection()?.anchor.offset ?? -1);
 
               return context.next({
                 at: context.at,
@@ -435,8 +439,8 @@ describe('extension query middleware', () => {
     const paragraph = children[0]!;
 
     editor.read((state) => {
-      state.fragment.get();
-      state.marks.get();
+      state.fragment();
+      state.marks();
       state.nodes.above({ at: [0, 0] });
       state.nodes.children();
       state.nodes.elementReadOnly({ at: [0] });
@@ -653,7 +657,7 @@ describe('extension query middleware', () => {
             string({ editor, next }) {
               assert.throws(
                 () =>
-                  editor.update((tx) => {
+                  editor.update((tx: EditorUpdateTransaction) => {
                     tx.text.insert('!');
                   }),
                 /editor\.update cannot be started inside query middleware/
@@ -694,7 +698,7 @@ describe('extension query middleware', () => {
                 try {
                   yield* next({ options });
                 } finally {
-                  editor.update((tx) => {
+                  editor.update((tx: EditorUpdateTransaction) => {
                     tx.text.insert('!');
                   });
                 }

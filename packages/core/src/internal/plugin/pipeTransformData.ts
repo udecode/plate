@@ -1,13 +1,13 @@
 import type { BaseEditor } from '../../lib/editor';
-import type { ParserOptions } from '../../lib/plugin/PluginBase';
+import type { ParserOptions } from '../../lib/plugin/SlatePlugin';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 
-import { getBasePlugin } from '../../lib/plugin';
+import { getEditorPlugin } from '../../lib/plugin';
 
 /** Pipe insert-data transformData hooks. */
 export const pipeTransformData = (
   editor: BaseEditor,
-  plugins: Partial<AnyBasePlugin>[],
+  plugins: AnyBasePlugin[],
   { data, ...options }: ParserOptions
 ) => {
   plugins.forEach((p) => {
@@ -16,7 +16,7 @@ export const pipeTransformData = (
     if (!transformData) return;
 
     data = transformData({
-      ...getBasePlugin(editor, p as any),
+      ...getEditorPlugin(editor, p),
       data,
       ...options,
     });

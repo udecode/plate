@@ -1,18 +1,27 @@
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, it } from 'node:test';
 import * as ts from 'typescript';
 
 const repoRoot = resolve(import.meta.dir, '../../..');
 
-const sourceRoots = ['packages', 'site', 'playwright', 'docs'];
+const sourceRoots = [
+  'packages/plite',
+  'packages/plite-dom',
+  'packages/plite-history',
+  'packages/plite-react',
+  'apps/plite',
+  'docs/plite',
+];
 
 const ignoredPathFragments = [
+  '/.next/',
   '/dist/',
   '/node_modules/',
-  'site/.next/',
-  'site/out/',
+  '/out/',
+  'apps/www/.next/',
+  'apps/www/out/',
 ];
 
 const selfPath = 'packages/plite/test/escape-hatch-inventory-contract.ts';
@@ -88,34 +97,34 @@ const inventoryRules: InventoryRule[] = [
       'Changelog entries preserve history and are not primary API guidance.',
   },
   {
-    expected: { primitive: 133, stale: 627 },
-    gate: 'browser proof handles must stay explicitly classified as proof transport',
-    id: 'browser-proof-rows',
+    expected: { primitive: 134, stale: 629 },
+    gate: 'Plite browser proof rows must stay explicitly classified as proof transport',
+    id: 'app-plite-browser-proof-rows',
     next: 'explicit-proof-bridge',
     owner: 'browser-proof',
-    path: /^playwright\/integration\/examples\//,
+    path: /^apps\/plite\/tests\/plite-browser\/donor\/examples\//,
     rationale:
-      'Playwright rows use semantic handles and explicit selection control for proof setup.',
+      'Apps/plite owns the browser proof transport rows that exercise editor behavior through semantic handles.',
   },
   {
-    expected: { stale: 8 },
-    gate: 'plite-browser docs describe proof handles, not app runtime API',
-    id: 'plite-browser-proof-docs',
+    expected: { primitive: 1, stale: 2 },
+    gate: 'Plite browser app smoke specs must stay classified as proof transport',
+    id: 'app-plite-browser-smoke-spec',
     next: 'explicit-proof-bridge',
     owner: 'browser-proof',
-    path: /^packages\/plite-browser\/README\.md$/,
+    path: /^apps\/plite\/tests\/plite-browser\/plite-examples\.spec\.ts$/,
     rationale:
-      'The plite-browser README documents the proof harness selection API.',
+      'The app-level Plite browser smoke spec uses editor handles only to prove browser behavior.',
   },
   {
-    expected: { stale: 1 },
-    gate: 'plite-browser proof audit fixtures must stay classified as test-only transport',
-    id: 'plite-browser-proof-audit-tests',
-    next: 'explicit-proof-bridge',
-    owner: 'browser-proof',
-    path: /^packages\/plite-browser\/test\/core\/keyboard-oracle-audit\.test\.ts$/,
+    expected: { stale: 59 },
+    gate: 'internal Plite ledgers may preserve old API names as historical evidence',
+    id: 'internal-plite-ledgers',
+    next: 'historical-only',
+    owner: 'historical-doc',
+    path: /^docs\/plite\//,
     rationale:
-      'The keyboard oracle audit stores low-level fixture text for proof classification.',
+      'Docs/plite stores internal ledgers and roadmap artifacts, not current public API guidance.',
   },
   {
     expected: { stale: 1 },
@@ -138,7 +147,7 @@ const inventoryRules: InventoryRule[] = [
       'Plite React owns editable input, IME, repair, and bridge workers behind the kernel.',
   },
   {
-    expected: { primitive: 120, stale: 65 },
+    expected: { stale: 65 },
     gate: 'core contract tests may exercise compatibility, but only as tests',
     id: 'plite-core-contract-tests',
     next: 'keep-as-contract',
@@ -148,16 +157,7 @@ const inventoryRules: InventoryRule[] = [
       'Core contracts intentionally cover snapshots and update/runtime behavior.',
   },
   {
-    expected: { primitive: 8 },
-    gate: 'history tests may cover undo fixtures while history runtime burns down compatibility',
-    id: 'plite-history-tests',
-    next: 'keep-as-contract',
-    owner: 'contract-test',
-    path: /^packages\/plite-history\/test\//,
-    rationale: 'History contracts guard undo/redo behavior during the rewrite.',
-  },
-  {
-    expected: { bridge: 51, primitive: 22 },
+    expected: { bridge: 51 },
     gate: 'React tests may exercise bridges only as contract proof',
     id: 'plite-react-tests',
     next: 'keep-as-contract',
@@ -195,7 +195,11 @@ const listSourceFiles = () => {
   };
 
   for (const root of sourceRoots) {
-    walk(join(repoRoot, root));
+    const absoluteRoot = join(repoRoot, root);
+
+    if (existsSync(absoluteRoot)) {
+      walk(absoluteRoot);
+    }
   }
 
   return files.sort();
@@ -403,7 +407,11 @@ describe('escape hatch source inventory', () => {
       }
     }
 
-    assert.deepEqual(unmatched, []);
+    assert.equal(
+      unmatched.length,
+      0,
+      JSON.stringify(unmatched.slice(0, 20), null, 2)
+    );
 
     const expected = Object.fromEntries(
       inventoryRules.flatMap((rule) =>

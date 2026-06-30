@@ -7,9 +7,9 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import { createEditor, type Descendant, NodeApi, TextApi } from '../src';
+import { createEditor, type Element, NodeApi, TextApi } from '@platejs/plite';
 
-const richTextParagraph = (): Descendant => ({
+const richTextParagraph = (): Element => ({
   type: 'paragraph',
   children: [
     { text: 'This is editable ' },

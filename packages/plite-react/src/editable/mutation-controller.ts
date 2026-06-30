@@ -131,7 +131,7 @@ export const applyModelOwnedLineBreak = ({
 
   editor.update((tx) => {
     if (kind === 'open-line') {
-      const selection = tx.selection.get();
+      const selection = tx.selection();
       const blockEntry =
         selection && RangeApi.isCollapsed(selection)
           ? tx.nodes.above({
@@ -339,9 +339,7 @@ const applyProjectedViewSelectionDataCommand = ({
   }
 
   if (!hasFallbackPayload) {
-    const previousSelection = runtimeEditor.read((state) =>
-      state.selection.get()
-    );
+    const previousSelection = runtimeEditor.read((state) => state.selection());
 
     runtimeEditor.update((tx) => {
       const rangeRefs = target.ranges.map((range) =>

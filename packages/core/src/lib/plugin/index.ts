@@ -4,7 +4,7 @@
 
 export * from './BasePlugin';
 export * from './HandlerReturnType';
-export * from './PluginBase';
+export * from './SlatePlugin';
 export * from './createBasePlugin';
-export * from './getBasePlugin';
-export * from './getBasePluginInstance';
+export * from './getEditorPlugin';
+export * from './getSlatePlugin';

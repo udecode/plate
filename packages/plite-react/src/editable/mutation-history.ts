@@ -102,7 +102,7 @@ export const consumeModelOwnedHistoryFocusRoot = (
 };
 
 export const shouldForceRenderAfterModelOwnedHistory = (editor: Editor) => {
-  const commit = editor.read((state) => state.value.lastCommit());
+  const commit = editor.read((state) => state.lastCommit());
 
   return (
     !commit ||

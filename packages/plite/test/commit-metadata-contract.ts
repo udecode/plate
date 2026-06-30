@@ -11,13 +11,13 @@ import {
 
 import {
   createEditor,
-  type Descendant,
+  type Element,
   defineStateField,
   type EditorUpdateOptions,
   type EditorUpdateTag,
-} from '../src';
+} from '@platejs/plite';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -149,6 +149,53 @@ describe('commit metadata contract', () => {
     assert.equal(Object.isFrozen(commit.metadata.selection), true);
   });
 
+  it('lets transactions merge commit metadata during an update', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [paragraph('one')],
+      selection: {
+        anchor: { path: [0, 0], offset: 3 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+    });
+
+    editor.update(
+      (tx) => {
+        tx.metadata.merge({
+          history: { mode: 'skip' },
+          selection: { focus: false },
+        });
+        tx.metadata.merge({
+          origin: { kind: 'node-id' },
+          selection: { scroll: false },
+        });
+        tx.text.insert('!');
+      },
+      {
+        metadata: {
+          collab: { origin: 'local' },
+          selection: { dom: 'preserve', focus: true },
+        },
+        tag: ['provenance-local'],
+      }
+    );
+
+    const commit = editorGetLastCommit(editor);
+
+    assert(commit);
+    assert.deepEqual(commit.tags, ['provenance-local']);
+    assert.deepEqual(commit.metadata, {
+      collab: { origin: 'local' },
+      history: { mode: 'skip' },
+      origin: { kind: 'node-id' },
+      selection: { dom: 'preserve', focus: false, scroll: false },
+    });
+    assert.equal(Object.isFrozen(commit.metadata), true);
+    assert.equal(Object.isFrozen(commit.metadata.history), true);
+    assert.equal(Object.isFrozen(commit.metadata.selection), true);
+  });
+
   it('keeps local provenance state available without serializing it', () => {
     const localProvenance = defineStateField<{
       runtimeIds: string[];
@@ -160,7 +207,7 @@ describe('commit metadata contract', () => {
       persist: false,
     });
     const editor = createEditor({
-      extensions: [localProvenance],
+      extensions: [localProvenance] as const,
       initialValue: [paragraph('one')],
     });
 
@@ -208,11 +255,11 @@ describe('commit metadata contract', () => {
       }
     );
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       { children: [paragraph('one!')] }
     );
     assert.equal(
-      JSON.stringify(editor.read((state) => state.value.get())).includes(
+      JSON.stringify(editor.read((state) => state.value())).includes(
         blockRuntimeId
       ),
       false

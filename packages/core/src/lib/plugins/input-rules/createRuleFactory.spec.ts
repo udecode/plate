@@ -1,4 +1,5 @@
 import { createRuleFactory } from './createRuleFactory';
+import type { BlockStartInputRuleMatch, InsertTextInputRule } from './types';
 
 describe('createRuleFactory', () => {
   it('passes config defaults into block-start match resolvers when no public options are provided', () => {
@@ -7,7 +8,7 @@ describe('createRuleFactory', () => {
       marker: '>',
       trigger: ' ',
       match: ({ marker }) => marker,
-    })();
+    })() as InsertTextInputRule<BlockStartInputRuleMatch>;
 
     const range = {
       anchor: { offset: 0, path: [0, 0] },
@@ -17,12 +18,12 @@ describe('createRuleFactory', () => {
     const match = rule.resolve?.({
       cause: 'insertText',
       editor: {} as any,
-      getBlockEntry: () => {},
+      getBlockEntry: () => undefined,
       getBlockStartRange: () => range as any,
       getBlockStartText: () => '>',
       getBlockTextBeforeSelection: () => '>',
-      getCharAfter: () => {},
-      getCharBefore: () => {},
+      getCharAfter: () => undefined,
+      getCharBefore: () => undefined,
       insertText: () => {},
       isCollapsed: true,
       options: undefined,
@@ -41,7 +42,7 @@ describe('createRuleFactory', () => {
       resolveMatch: ({ match }) => ({
         start: Number((match as RegExpMatchArray)[1]),
       }),
-    })();
+    })() as InsertTextInputRule<BlockStartInputRuleMatch & { start: number }>;
 
     const range = {
       anchor: { offset: 0, path: [0, 0] },
@@ -51,12 +52,12 @@ describe('createRuleFactory', () => {
     const match = rule.resolve?.({
       cause: 'insertText',
       editor: {} as any,
-      getBlockEntry: () => {},
+      getBlockEntry: () => undefined,
       getBlockStartRange: () => range as any,
       getBlockStartText: () => '3.',
       getBlockTextBeforeSelection: () => '3.',
-      getCharAfter: () => {},
-      getCharBefore: () => {},
+      getCharAfter: () => undefined,
+      getCharBefore: () => undefined,
       insertText: () => {},
       isCollapsed: true,
       options: undefined,

@@ -57,7 +57,7 @@ const createChildren = (): Descendant[] => [
 ];
 
 const getHistory = (editor: Editor) =>
-  editor.read((state: any) => state.history.get());
+  editor.read((state: any) => state.history());
 
 const undo = (editor: Editor) => {
   editor.update((tx) => {
@@ -419,7 +419,7 @@ describe('plite-dom clipboard boundary', () => {
 
                 seen.push(
                   `${title ? 'consume' : 'delegate'}:${
-                    state.selection.get()?.anchor.offset ?? -1
+                    state.selection()?.anchor.offset ?? -1
                   }`
                 );
 

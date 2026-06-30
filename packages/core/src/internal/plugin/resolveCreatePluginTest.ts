@@ -1,10 +1,14 @@
-import type { AnyPluginConfig } from '../../lib/plugin/PluginBase';
+import type {
+  AnyPluginConfig,
+  PluginConfig,
+} from '../../lib/plugin/SlatePlugin';
 
 import { createBaseEditor } from '../../lib/editor';
-import { createBasePlugin } from '../../lib/plugin/createBasePlugin';
+import {
+  createBasePlugin,
+  type CreateBasePluginInput,
+} from '../../lib/plugin/createBasePlugin';
 import { resolvePlugin } from './resolvePlugin';
-
-type CreateEditorPluginInput = Parameters<typeof createBasePlugin>[0];
 
 export const resolvePluginTest = <P extends AnyPluginConfig>(p: P) => {
   const editor = createBaseEditor({
@@ -20,8 +24,8 @@ export const resolvePluginTest = <P extends AnyPluginConfig>(p: P) => {
   return editor.getPlugin({ key });
 };
 
-export const resolveCreatePluginTest = ((plugin: CreateEditorPluginInput) => {
-  const p = createBasePlugin(plugin);
+export const resolveCreatePluginTest = ((plugin: CreateBasePluginInput) => {
+  const p = createBasePlugin<PluginConfig>(plugin);
 
   const editor = createBaseEditor({
     plugins: [p],

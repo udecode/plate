@@ -43,7 +43,7 @@
     "lint:fix": "plate-pkg p:lint:fix",
     "test": "plate-pkg p:test",
     "test:watch": "plate-pkg p:test:watch",
-    "typecheck": "plate-pkg p:typecheck"
+    "typecheck": "plate-pkg p:typecheck && tsc --project tsconfig.test.json --noEmit && tsc --project tsconfig.type-tests.json --noEmit"
   },
   "dependencies": {
     "@platejs/plite": "workspace:^",

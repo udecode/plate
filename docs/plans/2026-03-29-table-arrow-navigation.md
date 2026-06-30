@@ -28,7 +28,7 @@ Make plain `ArrowUp` / `ArrowDown` table navigation stable.
 
 ## Progress
 
-- Investigated `SlateReactExtensionPlugin -> withApplyTable -> overrideSelectionFromCell -> moveSelectionFromCell`.
+- Investigated `PliteReactExtensionPlugin -> withApplyTable -> overrideSelectionFromCell -> moveSelectionFromCell`.
 - Added a `withTable.moveLine` override so table owns collapsed `ArrowUp` / `ArrowDown` movement before browser default caret motion.
 - Refined that override so cross-cell movement only happens once the caret reaches the visual edge of the current cell.
 - Added regression coverage for:

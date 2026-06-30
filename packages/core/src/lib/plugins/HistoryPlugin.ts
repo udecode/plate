@@ -1,14 +1,7 @@
-import { withHistory } from '@platejs/slate';
+import { history } from '@platejs/plite-history';
 
-import type { SlateEditor } from '../editor';
+import { createBasePlugin } from '../plugin';
 
-import { type ExtendEditor, createSlatePlugin } from '../plugin';
-
-export const withPlateHistory: ExtendEditor = ({ editor }) =>
-  withHistory(editor as any) as any as SlateEditor;
-
-/** @see {@link withHistory} */
-export const HistoryPlugin = createSlatePlugin({
+export const HistoryPlugin = createBasePlugin({
   key: 'history',
-  extendEditor: withPlateHistory,
-});
+}).extendExtension(history());

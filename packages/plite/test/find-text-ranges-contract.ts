@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-import { type Element, NodeApi, type NodeTextRangeRoot } from '../src';
+import { type Element, NodeApi, type NodeTextRangeRoot } from '@platejs/plite';
 
 const root = (children: Element['children']): Element => ({
   type: 'root',

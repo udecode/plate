@@ -32,7 +32,7 @@ Completion threshold:
   `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-15-4951-block-placeholder-list-item.md` passes.
 
 Verification surface:
-- `pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx`
+- `pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx`
 - `pnpm turbo typecheck --filter=./packages/core --filter=./packages/utils`
 - `pnpm --filter www build:source`
 - `pnpm lint:fix`
@@ -189,7 +189,7 @@ Completion Gates:
 | Pre-solution issue challenge verdict | yes | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | Valid. Reproduced before implementation; rejected list-only proposed fix as too narrow. |
 | Repro escalation ladder | yes | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | Focused source-level spec reproduced and verified the behavior. Playwright/Browser/screenshot N/A because no browser-only state remained. |
 | Bug reproduced before fix | yes | Record failing test/repro or N/A with reason | `bun test packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx -t "keeps the target on a single empty list item"` failed before implementation: expected placeholder `_target`, received `null`. |
-| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | `pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx` passed: 30 tests, including editor API, `node.isMetadataProp`, configured NodeId metadata, custom inert props, and empty list-item placeholder target. |
+| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | `pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx` passed: 30 tests, including editor API, `node.isMetadataProp`, configured NodeId metadata, custom inert props, and empty list-item placeholder target. |
 | TypeScript or typed config changed | yes | Run relevant typecheck | `pnpm turbo typecheck --filter=./packages/core --filter=./packages/utils` passed. |
 | Package exports or file layout changed | no | Run `pnpm brl` before final verification and keep generated barrel updates | N/A: no exports or file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | Run `pnpm install` and relevant package checks | N/A: no manifests, lockfile, or install graph changed. |
@@ -218,7 +218,7 @@ Completion Gates:
 | Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | `.changeset/core-node-metadata-prop.md` has `"@platejs/core": patch`; `.changeset/utils-block-placeholder-list.md` has `"@platejs/utils": patch`; no forbidden core package minor. |
 | Registry changelog | no | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | N/A: not registry-only. |
 | No release artifact | no | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | N/A: changeset is required and present. |
-| Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | `pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx`, `pnpm turbo typecheck --filter=./packages/core --filter=./packages/utils`, and `pnpm check` passed. |
+| Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | `pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx`, `pnpm turbo typecheck --filter=./packages/core --filter=./packages/utils`, and `pnpm check` passed. |
 | Barrel/export generation | no | Run `pnpm brl` when exports or exported file layout changed, otherwise N/A | N/A: no exports or exported file layout changed. |
 
 Phase / pass table:
@@ -244,19 +244,19 @@ Implementation notes:
 - `editor.api.isElementStateEmpty(element)` uses `NodeApi.extractProps`, ignores `type`, asks `node.isMetadataProp` plugins about the remaining props, and treats any unclaimed prop as non-empty state.
 
 Review fixes:
-- Removed the bad `editor.api.slateExtension.isElementStateEmpty` shape after user feedback. The durable API is `node.isMetadataProp` for plugin ownership and `editor.api.isElementStateEmpty` for callers.
+- Removed the bad `editor.api.pliteExtension.isElementStateEmpty` shape after user feedback. The durable API is `node.isMetadataProp` for plugin ownership and `editor.api.isElementStateEmpty` for callers.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
 | Ran focused tests before workspace dependency build finished, causing missing `@platejs/plite` resolution | 1 | Rerun after package typecheck built workspace deps | Sequential rerun passed: 30 tests, 0 failures. |
-| Autoreview treated the removed `editor.api.slateExtension.isElementStateEmpty` shape as published API | 1 | Check `origin/main` for the API before accepting the finding | Rejected as false-positive: the alias only existed inside this unmerged PR and is absent from `origin/main`. |
+| Autoreview treated the removed `editor.api.pliteExtension.isElementStateEmpty` shape as published API | 1 | Check `origin/main` for the API before accepting the finding | Rejected as false-positive: the alias only existed inside this unmerged PR and is absent from `origin/main`. |
 | Broad stale-symbol search streamed generated docs JSON | 1 | Scope source audit to source-owned files and exclude generated/changelog blobs | Scoped `rg -n "isPropEmpty"` audit returned no source-owned matches. |
 
 Verification evidence:
 - Red repro: `bun test packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx -t "keeps the target on a single empty list item"` failed before implementation with expected `_target` object vs received `null`.
 - Stale symbol audit: `rg -n "isPropEmpty" . --glob '!docs/plans/**' --glob '!apps/www/public/rd/**' --glob '!apps/www/src/generated/**' --glob '!**/CHANGELOG.md' --glob '!node_modules/**' --glob '!**/.next/**' --glob '!**/.turbo/**'` found no source-owned matches.
-- Focused proof: `pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx` passed: 30 tests, 0 failures.
+- Focused proof: `pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx` passed: 30 tests, 0 failures.
 - Typecheck: `pnpm turbo typecheck --filter=./packages/core --filter=./packages/utils` passed.
 - Docs/lint: `pnpm --filter www build:source && pnpm lint:fix` passed.
 - Full gate: `pnpm check` passed with exit 0; existing sidebar hook warning and multiple-core test message were non-fatal.

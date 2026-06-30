@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import { LinkPlugin } from '@platejs/link/react';
 import { jsxt } from '@platejs/test-utils';
 
-import { createSlateEditor } from '../../editor';
+import { createBaseEditor } from '../../editor';
+import { createBasePlugin } from '../../plugin';
 import {
   NodeIdPlugin,
   normalizeNodeId,
@@ -12,10 +12,21 @@ import {
 
 jsxt;
 
+const TestLinkPlugin = createBasePlugin({
+  key: 'a',
+  node: { isElement: true, isInline: true, type: 'a' },
+});
+
 const createIdFactory = (start = 1) => {
   let id = start;
 
   return () => id++;
+};
+
+const createStringIdFactory = (prefix = 'generated') => {
+  let id = 1;
+
+  return () => `${prefix}-${id++}`;
 };
 
 describe('normalizeNodeId', () => {
@@ -130,9 +141,9 @@ describe('normalizeNodeIdWithEditor', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       nodeId: false,
-      plugins: [LinkPlugin],
+      plugins: [TestLinkPlugin],
       value: input.children,
     });
 
@@ -155,7 +166,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -166,9 +177,9 @@ describe('NodeIdPlugin', () => {
       value: input.children,
     });
 
-    expect(editor.children[0].id).toBe(1);
-    expect(editor.children[1].id).toBe(9);
-    expect(editor.children[2].id).toBe(2);
+    expect(editor.read.children()[0].id).toBe(1);
+    expect(editor.read.children()[1].id).toBe(9);
+    expect(editor.read.children()[2].id).toBe(2);
   });
 
   it('does not mutate the provided initial value during normalization', () => {
@@ -177,7 +188,7 @@ describe('NodeIdPlugin', () => {
       { children: [{ text: 'last' }], type: 'p' },
     ] as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -188,8 +199,8 @@ describe('NodeIdPlugin', () => {
       value,
     });
 
-    expect(editor.children[0].id).toBe(1);
-    expect(editor.children[1].id).toBe(2);
+    expect(editor.read.children()[0].id).toBe(1);
+    expect(editor.read.children()[1].id).toBe(2);
     expect(value[0].id).toBeUndefined();
     expect(value[1].id).toBeUndefined();
   });
@@ -203,7 +214,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -211,13 +222,13 @@ describe('NodeIdPlugin', () => {
             idCreator: createIdFactory(),
           },
         }),
-        LinkPlugin,
+        TestLinkPlugin,
       ],
       value: input.children,
     });
 
-    expect(editor.children[0].id).toBe(1);
-    expect((editor.children[0] as any).children[1].id).toBe(2);
+    expect(editor.read.children()[0].id).toBe(1);
+    expect((editor.read.children()[0] as any).children[1].id).toBe(2);
   });
 
   it('skips inline nodes during initial normalization by default', () => {
@@ -229,20 +240,20 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
             idCreator: createIdFactory(),
           },
         }),
-        LinkPlugin,
+        TestLinkPlugin,
       ],
       value: input.children,
     });
 
-    expect(editor.children[0].id).toBe(1);
-    expect((editor.children[0] as any).children[1].id).toBeUndefined();
+    expect(editor.read.children()[0].id).toBe(1);
+    expect((editor.read.children()[0] as any).children[1].id).toBeUndefined();
   });
 
   it('renormalizes middle nodes when initialValueIds is "always"', () => {
@@ -254,7 +265,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -266,9 +277,9 @@ describe('NodeIdPlugin', () => {
       value: input.children,
     });
 
-    expect(editor.children[0].id).toBe(1);
-    expect(editor.children[1].id).toBe(100);
-    expect(editor.children[2].id).toBe(3);
+    expect(editor.read.children()[0].id).toBe(1);
+    expect(editor.read.children()[1].id).toBe(100);
+    expect(editor.read.children()[2].id).toBe(3);
   });
 
   it('skips initial normalization when initialValueIds is false', () => {
@@ -280,7 +291,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -292,88 +303,9 @@ describe('NodeIdPlugin', () => {
       value: input.children,
     });
 
-    expect(editor.children[0].id).toBeUndefined();
-    expect(editor.children[1].id).toBe(9);
-    expect(editor.children[2].id).toBeUndefined();
-  });
-
-  it('supports legacy normalizeInitialValue: true', () => {
-    const input = (
-      <editor>
-        <hp id={1}>first</hp>
-        <hp>middle</hp>
-        <hp id={3}>last</hp>
-      </editor>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: [
-        NodeIdPlugin.configure({
-          options: {
-            idCreator: createIdFactory(100),
-            normalizeInitialValue: true,
-          } as any,
-        }),
-      ],
-      value: input.children,
-    });
-
-    expect(editor.children[0].id).toBe(1);
-    expect(editor.children[1].id).toBe(100);
-    expect(editor.children[2].id).toBe(3);
-  });
-
-  it('supports legacy normalizeInitialValue: null as a disable path', () => {
-    const input = (
-      <editor>
-        <hp>first</hp>
-        <hp id={9}>middle</hp>
-        <hp>last</hp>
-      </editor>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: [
-        NodeIdPlugin.configure({
-          options: {
-            idCreator: createIdFactory(),
-            normalizeInitialValue: null,
-          } as any,
-        }),
-      ],
-      value: input.children,
-    });
-
-    expect(editor.children[0].id).toBeUndefined();
-    expect(editor.children[1].id).toBe(9);
-    expect(editor.children[2].id).toBeUndefined();
-  });
-
-  it('prefers initialValueIds over the legacy normalizeInitialValue alias', () => {
-    const input = (
-      <editor>
-        <hp id={1}>first</hp>
-        <hp>middle</hp>
-        <hp id={3}>last</hp>
-      </editor>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: [
-        NodeIdPlugin.configure({
-          options: {
-            idCreator: createIdFactory(100),
-            initialValueIds: false,
-            normalizeInitialValue: true,
-          } as any,
-        }),
-      ],
-      value: input.children,
-    });
-
-    expect(editor.children[0].id).toBe(1);
-    expect(editor.children[1].id).toBeUndefined();
-    expect(editor.children[2].id).toBe(3);
+    expect(editor.read.children()[0].id).toBeUndefined();
+    expect(editor.read.children()[1].id).toBe(9);
+    expect(editor.read.children()[2].id).toBeUndefined();
   });
 
   it('respects a custom idKey in the if-needed fast path', () => {
@@ -385,7 +317,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -398,38 +330,197 @@ describe('NodeIdPlugin', () => {
       value: input.children,
     });
 
-    expect(editor.children[0].foo).toBe('first');
-    expect(editor.children[1].foo).toBeUndefined();
-    expect(editor.children[2].foo).toBe('last');
+    expect(editor.read.children()[0].foo).toBe('first');
+    expect(editor.read.children()[1].foo).toBeUndefined();
+    expect(editor.read.children()[2].foo).toBe('last');
   });
 
-  it('assigns ids to inserted nodes through editor transforms', () => {
-    const input = (
-      <editor>
-        <hp id={10}>
-          test
-          <cursor />
-        </hp>
-      </editor>
-    ) as any;
-
-    const editor = createSlateEditor({
+  it('replaces duplicate inserted ids and restores a unique _id override', () => {
+    const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
-            idCreator: createIdFactory(),
+            idCreator: createStringIdFactory(),
           },
         }),
       ],
-      selection: input.selection,
-      value: input.children,
+      value: [{ children: [{ text: 'existing' }], id: 'taken-id', type: 'p' }],
     });
 
-    editor.tf.insertNode((<hp>inserted</hp>) as any);
+    editor.update.operations.replay([
+      {
+        node: {
+          _id: 'preferred-id',
+          children: [{ text: 'inserted' }],
+          id: 'taken-id',
+          type: 'p',
+        } as any,
+        path: [1],
+        type: 'insert_node',
+      },
+    ]);
 
-    expect(editor.children).toMatchObject([
-      { id: 10, type: 'p' },
-      { id: 1, type: 'p' },
+    expect(editor.read.children()[1]).toMatchObject({
+      children: [{ text: 'inserted' }],
+      id: 'preferred-id',
+      type: 'p',
+    });
+    expect((editor.read.children()[1] as any)._id).toBeUndefined();
+  });
+
+  it('generates ids for nested inserted duplicates with one document scan', () => {
+    const onDuplicateIdScan = mock();
+    const editor = createBaseEditor({
+      plugins: [
+        NodeIdPlugin.configure({
+          options: {
+            idCreator: createStringIdFactory(),
+            onDuplicateIdScan,
+          },
+        }),
+      ],
+      value: [
+        { children: [{ text: 'existing a' }], id: 'taken-a', type: 'p' },
+        { children: [{ text: 'existing b' }], id: 'taken-b', type: 'p' },
+      ],
+    });
+
+    editor.update.operations.replay([
+      {
+        node: {
+          children: [
+            {
+              children: [{ text: 'hello' }],
+              id: 'taken-a',
+              type: 'p',
+            },
+            {
+              children: [{ text: 'world' }],
+              id: 'taken-b',
+              type: 'p',
+            },
+          ],
+          type: 'blockquote',
+        } as any,
+        path: [2],
+        type: 'insert_node',
+      },
+    ]);
+
+    expect(onDuplicateIdScan).toHaveBeenCalledTimes(1);
+    expect(onDuplicateIdScan).toHaveBeenCalledWith({
+      candidateCount: 2,
+      duration: expect.any(Number),
+      existingCount: 2,
+      visitedCount: expect.any(Number),
+    });
+    expect(editor.read.children()[2]).toMatchObject({
+      children: [
+        { children: [{ text: 'hello' }], id: 'generated-2', type: 'p' },
+        { children: [{ text: 'world' }], id: 'generated-3', type: 'p' },
+      ],
+      id: 'generated-1',
+      type: 'blockquote',
+    });
+  });
+
+  it('creates a fresh id when a split node id already exists', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        NodeIdPlugin.configure({
+          options: {
+            idCreator: createStringIdFactory(),
+            reuseId: true,
+          },
+        }),
+      ],
+      value: [
+        { children: [{ text: 'existing' }], id: 'existing-id', type: 'p' },
+        {
+          children: [{ text: 'before' }, { text: 'after' }],
+          id: 'source-id',
+          type: 'p',
+        },
+      ],
+    });
+
+    editor.update.operations.replay([
+      {
+        path: [1],
+        position: 1,
+        properties: {
+          id: 'existing-id',
+          type: 'p',
+        },
+        type: 'split_node',
+      },
+    ]);
+
+    expect(editor.read.children()[2]).toMatchObject({
+      children: [{ text: 'after' }],
+      id: 'generated-1',
+      type: 'p',
+    });
+  });
+
+  it('keeps a unique split id when reuseId is enabled', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        NodeIdPlugin.configure({
+          options: {
+            idCreator: createStringIdFactory(),
+            reuseId: true,
+          },
+        }),
+      ],
+      value: [{ children: [{ text: 'before' }, { text: 'after' }], type: 'p' }],
+    });
+
+    editor.update.operations.replay([
+      {
+        path: [0],
+        position: 1,
+        properties: {
+          id: 'keep-id',
+          type: 'p',
+        },
+        type: 'split_node',
+      },
+    ]);
+
+    expect(editor.read.children()[1]).toMatchObject({
+      children: [{ text: 'after' }],
+      id: 'keep-id',
+      type: 'p',
+    });
+  });
+
+  it('removes ids from disallowed split text nodes', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        NodeIdPlugin.configure({
+          options: {
+            idCreator: createStringIdFactory(),
+          },
+        }),
+      ],
+      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+    });
+
+    editor.update.operations.replay([
+      {
+        path: [0, 0],
+        position: 2,
+        properties: {
+          id: 'remove-me',
+        } as any,
+        type: 'split_node',
+      },
+    ]);
+
+    expect((editor.read.children()[0] as any).children).toEqual([
+      { text: 'he' },
+      { text: 'llo' },
     ]);
   });
 });

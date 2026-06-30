@@ -37,7 +37,7 @@ Completion threshold:
 
 Verification surface:
 - Source audit: `rg -n "isEmptyBlockPristine" packages content apps docs .changeset -g '!apps/www/public/**' -g '!apps/www/src/generated/**'`.
-- Focused tests: `pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx`.
+- Focused tests: `pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx`.
 - Package typecheck: `pnpm turbo typecheck --filter=./packages/core --filter=./packages/utils`.
 - Docs checks: `pnpm --filter www build:source` and `pnpm --filter www check:docs`.
 - Final lint/check: `pnpm lint:fix`; broader `pnpm check` if scoped gates do not cover the changed package/API surface.
@@ -201,7 +201,7 @@ Completion Gates:
 | Pre-solution issue challenge verdict | no | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | N/A: user-directed cleanup, not a public bug report; durable boundary still recorded as core/plugin metadata ownership. |
 | Repro escalation ladder | no | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | N/A: cleanup, no bug/visual claim. |
 | Bug reproduced before fix | no | Record failing test/repro or N/A with reason | N/A: cleanup, not a bug fix. |
-| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | `pnpm --filter @platejs/plite build && pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx` passed: 30 pass, 0 fail. |
+| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | `pnpm --filter @platejs/plite build && pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx` passed: 30 pass, 0 fail. |
 | TypeScript or typed config changed | yes | Run relevant typecheck | `pnpm turbo typecheck --filter=./packages/core --filter=./packages/utils` passed: 7 successful, 7 total; `pnpm check` also passed full package typecheck. |
 | Package exports or file layout changed | no | Run `pnpm brl` before final verification and keep generated barrel updates | N/A: no exported files, package export maps, or barrel-owned file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | Run `pnpm install` and relevant package checks | N/A for package install graph: no package manifests or lockfiles changed. |
@@ -283,7 +283,7 @@ Error attempts:
 Verification evidence:
 - `rg -n "isEmptyBlockPristine" packages content apps .changeset -g '!apps/www/public/**' -g '!apps/www/src/generated/**' -g '!apps/www/src/__registry__/**' -g '!**/CHANGELOG.md'` returned no matches.
 - `rg -n 'Always relative to `main`, never last commit|NEVER write a changeset relative to the last commit|branch-only API|exists on `main`' .agents/rules/changeset.mdc .agents/skills/changeset/SKILL.md` found the rule in both source and generated skill.
-- `pnpm --filter @platejs/plite build && pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx` passed: 30 pass, 0 fail.
+- `pnpm --filter @platejs/plite build && pnpm --filter @platejs/core build && bun test packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.spec.tsx packages/utils/src/react/plugins/BlockPlaceholderPlugin.spec.tsx` passed: 30 pass, 0 fail.
 - `pnpm turbo typecheck --filter=./packages/core --filter=./packages/utils` passed: 7 successful, 7 total.
 - `pnpm --filter www build:source && pnpm --filter www check:docs` passed.
 - `pnpm lint:fix` passed: 3280 files checked, no fixes applied.

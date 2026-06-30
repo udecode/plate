@@ -569,7 +569,7 @@ export const PagedEditable = ({
   const [viewport, setViewport] = useState<PagedEditableViewport | null>(null);
   const selectedPaths = useEditorState(
     (state) => {
-      const selection = state.selection.get();
+      const selection = state.selection();
 
       return selection
         ? [selection.anchor.path, selection.focus.path]

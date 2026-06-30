@@ -1,7 +1,7 @@
-import type { Editor } from '@platejs/slate';
-
 import { IS_APPLE } from '@udecode/utils';
 import { type KeyboardEventLike, isKeyHotkey } from 'is-hotkey';
+
+import type { BaseEditor } from '../editor';
 
 export { isHotkey } from 'is-hotkey';
 
@@ -76,7 +76,7 @@ export const createHotkey = (key: string) => {
 const createComposing =
   (key: string) =>
   (
-    editor: Editor,
+    editor: BaseEditor,
     event: React.KeyboardEvent,
     {
       composing,
@@ -86,7 +86,7 @@ const createComposing =
     } = {}
   ) => {
     if (!createHotkey(key)(event)) return false;
-    if (!!composing !== editor.api.isComposing()) return false;
+    if (!!composing !== editor.api.dom.isComposing()) return false;
 
     return true;
   };

@@ -1,7 +1,7 @@
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 
 const getLastCommit = (editor: ReactRuntimeEditor) =>
-  editor.read((state) => state.value.lastCommit());
+  editor.read((state) => state.lastCommit());
 
 export const shouldSkipSelectionScroll = (editor: ReactRuntimeEditor) => {
   const commit = getLastCommit(editor);

@@ -1,12 +1,6 @@
-import type { Descendant } from '@platejs/plite';
-
 import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
 import { pipeInsertFragment } from './pipeInsertFragment';
-
-const createParserEditor = (
-  plugins: Parameters<typeof createBaseEditor>[0]['plugins']
-) => createBaseEditor({ plugins });
 
 describe('pipeInsertFragment', () => {
   it('stops at the first preInsert handler returning true and still inserts the fragment', () => {
@@ -42,11 +36,11 @@ describe('pipeInsertFragment', () => {
       },
     });
 
-    const editor = createParserEditor([firstPlugin, secondPlugin, thirdPlugin]);
+    const editor = createBaseEditor({
+      plugins: [firstPlugin, secondPlugin, thirdPlugin],
+    });
 
-    const fragment: Descendant[] = [
-      { children: [{ text: 'hello' }], type: 'p' },
-    ];
+    const fragment = [{ children: [{ text: 'hello' }], type: 'p' }];
 
     pipeInsertFragment(editor, [firstPlugin, secondPlugin, thirdPlugin], {
       data: '',
@@ -56,6 +50,6 @@ describe('pipeInsertFragment', () => {
     });
 
     expect(calls).toEqual(['first:1', 'second:1']);
-    expect(editor.children).toEqual(fragment);
+    expect(editor.read.children()).toEqual(fragment);
   });
 });

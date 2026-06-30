@@ -70,7 +70,7 @@ work is either:
   `platejs/react`, by letting `PlateRuntimeEditor` own its `update` signature
   instead of inheriting the base React editor update type and by avoiding fake
   broad runtime-plugin tx index signatures.
-- Loop 305 moved `SlateExtensionPlugin` operation classification to Slate v2
+- Loop 305 moved `PliteExtensionPlugin` operation classification to Slate v2
   `OperationApi` and kept the current-runtime `apply` boundary honest through
   typed `NodeOperation` / `TextOperation` structural locals after the v2 guards.
 - Loop 306 removed local `as any` bridges from SlateExtension node/text handler

@@ -25,7 +25,11 @@
   "sideEffects": false,
   "type": "module",
   "exports": {
-    ".": "./dist/index.js",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
@@ -36,7 +40,7 @@
   ],
   "scripts": {
     "brl": "echo 'No barrels to generate'",
-    "build": "plate-pkg p:build",
+    "build": "tsdown --config ./tsdown.config.mts --log-level warn",
     "clean": "rimraf dist lib",
     "lint": "plate-pkg p:lint",
     "lint:fix": "plate-pkg p:lint:fix",

@@ -17,6 +17,7 @@ import {
 import type { Editor, EditorStaticApi } from '../interfaces/editor';
 import { NodeApi, type NodeEntry } from '../interfaces/node';
 import type { Operation } from '../interfaces/operation';
+import { TextApi } from '../interfaces/text';
 import { isNormalizing } from './is-normalizing';
 import { node } from './node';
 import { setNormalizing } from './set-normalizing';
@@ -96,6 +97,39 @@ export const normalize: EditorStaticApi['normalize'] = (
         path.join(',')
       )
     );
+
+    const hasMergeableTextSibling = () => {
+      if (operation.path.length === 0 || !NodeApi.has(editor, operation.path)) {
+        return false;
+      }
+
+      const [current] = node(editor, operation.path);
+
+      if (!TextApi.isText(current)) {
+        return false;
+      }
+
+      const parentPath = operation.path.slice(0, -1);
+      const [parent] = node(editor, parentPath);
+
+      if (!('children' in parent) || !Array.isArray(parent.children)) {
+        return false;
+      }
+
+      const index = operation.path.at(-1)!;
+      const prev = parent.children[index - 1];
+      const next = parent.children[index + 1];
+
+      return (
+        (TextApi.isText(prev) &&
+          TextApi.equals(current, prev, { loose: true })) ||
+        (TextApi.isText(next) && TextApi.equals(current, next, { loose: true }))
+      );
+    };
+
+    if (hasMergeableTextSibling()) {
+      return false;
+    }
 
     return getDirtyPaths(editor).every((path) =>
       expectedDirtyPathKeys.has(path.join(','))

@@ -1,8 +1,8 @@
-import { type PluginConfig, createSlatePlugin } from '../../plugin';
+import { type PluginConfig, createBasePlugin } from '../../plugin';
 
 export type ParagraphConfig = PluginConfig<'p'>;
 
-export const BaseParagraphPlugin = createSlatePlugin({
+export const BaseParagraphPlugin = createBasePlugin({
   key: 'p',
   node: {
     isElement: true,

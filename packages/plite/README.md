@@ -27,12 +27,12 @@ one-shot reads and the callback form when several reads must share one state
 view.
 
 ```ts
-const value = editor.read.value.get()
-const selection = editor.read.selection.get()
+const value = editor.read.value()
+const selection = editor.read.selection()
 
 const info = editor.read((state) => ({
   text: state.text.string([]),
-  value: state.value.get(),
+  value: state.value(),
 }))
 ```
 

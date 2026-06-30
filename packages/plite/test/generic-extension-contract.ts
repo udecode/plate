@@ -30,7 +30,7 @@ const extension = defineEditorExtension<CustomEditor>()({
     apply(context) {
       const operation: Operation<CustomValue> = context.operation;
       const value: Readonly<ValueOf<typeof context.editor>> =
-        context.editor.read((state) => state.value.root());
+        context.editor.read((state) => state.children());
 
       context.next(operation);
       void value;
@@ -63,7 +63,7 @@ defineEditorExtension<CustomEditor>()({
   register() {},
 });
 
-const editor = createEditor({ extensions: [extension], initialValue });
-const value: Readonly<CustomValue> = editor.read((state) => state.value.root());
+const editor = createEditor({ extensions: [extension] as const, initialValue });
+const value: Readonly<CustomValue> = editor.read((state) => state.children());
 
 void value;

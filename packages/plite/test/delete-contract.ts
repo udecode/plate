@@ -14,14 +14,18 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import { createEditor, type Descendant, defineEditorExtension } from '../src';
+import {
+  createEditor,
+  type Element,
+  defineEditorExtension,
+} from '@platejs/plite';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
 
-const table = (): Descendant => ({
+const table = (): Element => ({
   type: 'table',
   children: [
     {
@@ -782,7 +786,7 @@ describe('plite delete contract', () => {
 
   it('preserves following list and block quote wrappers on Delete from an empty paragraph', () => {
     const cases: Array<{
-      children: Descendant[];
+      children: Element[];
       selection: NonNullable<ReturnType<typeof editorGetSnapshot>['selection']>;
     }> = [
       {
@@ -1069,8 +1073,11 @@ describe('plite delete contract', () => {
       tx.text.deleteBackward();
     });
 
-    const tableNode = editorGetChildren(editor)[1] as Descendant & {
-      children: { children: Descendant[] }[];
+    const tableNode = editorGetChildren(editor)[1] as Omit<
+      Element,
+      'children'
+    > & {
+      children: { children: Element[] }[];
     };
 
     assert.equal(tableNode.type, 'table');

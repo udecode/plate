@@ -2,7 +2,7 @@ import { isLeaf } from '@platejs/plite-dom/internal';
 
 import type { BaseEditor } from '../../../editor';
 
-import { type AnyBasePlugin, getBasePlugin } from '../../../plugin';
+import { type AnyBasePlugin, getEditorPlugin } from '../../../plugin';
 import { isPluginNodeClass } from '../../../utils/pluginNodeClass';
 
 const getDefaultNodeProps = ({
@@ -60,7 +60,7 @@ export const getDataNodeProps = ({
   const defaultNodeProps = disableDefaultNodeProps
     ? {}
     : getDefaultNodeProps({
-        ...(getBasePlugin as any)(editor, plugin),
+        ...getEditorPlugin(editor, plugin),
         element,
       });
 
@@ -68,7 +68,7 @@ export const getDataNodeProps = ({
 
   const customNodeProps =
     toNodeProps({
-      ...(getBasePlugin as any)(editor, plugin),
+      ...getEditorPlugin(editor, plugin),
       element,
     }) ?? {};
 

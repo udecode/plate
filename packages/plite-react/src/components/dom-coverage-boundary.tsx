@@ -1,5 +1,4 @@
-import type { ReactNode } from 'react';
-import { useContext } from 'react';
+import React, { type ReactNode, useContext } from 'react';
 import type { Range as PliteRange } from '@platejs/plite';
 import type {
   DOMCoverageBoundary,

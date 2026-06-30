@@ -277,8 +277,11 @@ const normalizeNodeDefault = (
         Array.isArray(directChildIndexes) &&
         (directChildIndexes.includes(index) ||
           directChildIndexes.includes(index - 1));
+      const shouldCanonicalizeImplicitAdjacentText =
+        !options.explicit && options.operation?.type === 'insert_text';
       const canCanonicalizeAdjacentText =
-        options.explicit && !touchesDirectChildCleanup;
+        (options.explicit && !touchesDirectChildCleanup) ||
+        shouldCanonicalizeImplicitAdjacentText;
 
       if (TextApi.isText(child) && TextApi.isText(prev)) {
         if (

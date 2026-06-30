@@ -5,7 +5,6 @@ import {
   defineEditorExtension,
   type Editor,
   type Path,
-  type Value,
 } from '@platejs/plite';
 
 type CustomText = {
@@ -19,22 +18,6 @@ type ParagraphElement = {
 
 type CustomValue = ParagraphElement[];
 
-declare module '@platejs/plite' {
-  interface EditorStateExtensionGroups<V extends Value = Value> {
-    blockSelection: {
-      hasSelection: () => boolean;
-      selectedPath: () => Path | null;
-    };
-  }
-
-  interface EditorTxExtensionGroups<V extends Value = Value> {
-    blockSelection: {
-      removeSelected: () => void;
-      selectedPath: () => Path | null;
-    };
-  }
-}
-
 const selectedBlockPaths = new WeakMap<Editor, Path | null>();
 
 const paragraph = (text: string): ParagraphElement => ({
@@ -42,8 +25,8 @@ const paragraph = (text: string): ParagraphElement => ({
   children: [{ text }],
 });
 
-const createBlockSelectionExtension = <TEditor extends Editor<CustomValue>>() =>
-  defineEditorExtension<TEditor>({
+const createBlockSelectionExtension = () =>
+  defineEditorExtension({
     name: 'block-selection-contract',
     setup({ editor }) {
       return {
@@ -52,7 +35,7 @@ const createBlockSelectionExtension = <TEditor extends Editor<CustomValue>>() =>
             clear() {
               selectedBlockPaths.set(editor, null);
             },
-            select(path) {
+            select(path: Path) {
               selectedBlockPaths.set(editor, [...path] as Path);
             },
             selectedPath() {
@@ -117,12 +100,21 @@ const assertTypes = (
     return hasSelection;
   });
 
+  const directHasSelection: boolean = editor.read.blockSelection.hasSelection();
+  const directSelectedPath: Path | null =
+    editor.read.blockSelection.selectedPath();
+
   editor.update((tx) => {
     tx.blockSelection.removeSelected();
 
     // @ts-expect-error local editor actions are not transaction transforms
     tx.blockSelection.select([0]);
   });
+
+  editor.update.blockSelection.removeSelected();
+
+  void directHasSelection;
+  void directSelectedPath;
 };
 
 describe('extension namespace contract', () => {
@@ -148,14 +140,12 @@ describe('extension namespace contract', () => {
       editor.read((state) => state.blockSelection.selectedPath()),
       [1]
     );
+    assert.deepEqual(editor.read.blockSelection.selectedPath(), [1]);
 
-    editor.update((tx) => {
-      assert.deepEqual(tx.blockSelection.selectedPath(), [1]);
-      tx.blockSelection.removeSelected();
-    });
+    editor.update.blockSelection.removeSelected();
 
     assert.deepEqual(
-      editor.read((state) => state.value.root()),
+      editor.read((state) => state.children()),
       [paragraph('one')]
     );
     assert.equal(editor.api.blockSelection.selectedPath(), null);
@@ -174,7 +164,13 @@ describe('extension namespace contract', () => {
 
     assert.equal(api.blockSelection?.selectedPath(), null);
     assert.equal(
-      editor.read((state) => state.blockSelection.hasSelection()),
+      editor.read((state) =>
+        (
+          state as typeof state & {
+            blockSelection: { hasSelection: () => boolean };
+          }
+        ).blockSelection.hasSelection()
+      ),
       false
     );
 

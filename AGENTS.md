@@ -54,6 +54,9 @@ Primary user-facing entrypoints:
 - `auto` as the ergonomic Plate/Plite front door: route public GitHub queue
   prompts to `maintainer`, post-merge/current-tree closure to `autoclosure`,
   and internal Plate/Plite quality prompts to `auto`.
+- `plate-next` for Plate v2 cleanup review: deeply audit migrated Plate files,
+  APIs, and packages against the Plite boundary, then cut old Slate/Plate
+  compatibility sludge or route the decision to `plate-plan`.
 - `autoclosure` for post-merge/current-tree until-clean closure.
 - `maintainer` for public Plate/Plite issue, PR, and security queue work.
 - `architecture-cleanup` for repo-grounded architecture/code cleanup,
@@ -81,6 +84,9 @@ Default routing:
   question -> `maintainer` unless the user explicitly names a narrower owner.
 - Internal Plate/Plite quality, behavior, perf, browser proof, API cleanup,
   benchmark repair, docs/API cohesion, or long autonomous loop -> `auto`.
+- Plate v2 cleanup review, "why does this migrated Plate helper exist?",
+  old Slate compatibility cuts in Plate/Core, or no-arg autopilot for the next
+  Plate-to-Plite cleanup packet -> `plate-next`.
 - Post-merge, current-tree, teammate branch, external PR, ready-to-commit, or
   until-clean closure of already-applied work -> `autoclosure`.
 - Broad architecture cleanup, refactor opportunities, module consolidation,

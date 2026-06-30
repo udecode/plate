@@ -88,13 +88,11 @@ describe('plite-react provider hooks contract', () => {
       })
     );
 
-    expect(result.current.read((state) => state.value.get())).toEqual({
+    expect(result.current.read((state) => state.value())).toEqual({
       children: initialValue,
     });
-    expect(result.current.read((state) => state.value.operations())).toEqual(
-      []
-    );
-    expect(result.current.read((state) => state.value.lastCommit())).toBe(null);
+    expect(result.current.read((state) => state.operations())).toEqual([]);
+    expect(result.current.read((state) => state.lastCommit())).toBe(null);
   });
 
   test('useEditor updates when the provider editor changes', () => {
@@ -518,7 +516,7 @@ describe('plite-react provider hooks contract', () => {
     const snapshot = editorGetSnapshot(editor);
     const blockRuntimeId = snapshot.index.pathToId['0'];
     const textRuntimeId = snapshot.index.pathToId['0.0'];
-    const selector = jest.fn((state) => state.selection.get());
+    const selector = jest.fn((state) => state.selection());
     const seenChanges: EditorCommit[] = [];
     const shouldUpdate = jest.fn((change?: EditorCommit) => {
       if (change) {

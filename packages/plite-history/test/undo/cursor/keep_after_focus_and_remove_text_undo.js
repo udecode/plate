@@ -3,7 +3,7 @@
 import { deleteFragment as editorDeleteFragment } from '@platejs/plite/internal';
 import { jsx } from '../..';
 
-jsx;
+void jsx;
 
 export const run = (editor) => {
   // focus at the end

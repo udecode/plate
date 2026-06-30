@@ -32,7 +32,7 @@ test('caret movement preserves core move_selection commit metadata', () => {
     },
   });
 
-  const selection = editor.read((state) => state.selection.get());
+  const selection = editor.read((state) => state.selection());
   const result = applyEditableCaretMovement({
     domStrategyRuntime: null,
     editor,
@@ -42,11 +42,11 @@ test('caret movement preserves core move_selection commit metadata', () => {
   });
 
   expect(result.handled).toBe(true);
-  expect(editor.read((state) => state.selection.get())).toEqual({
+  expect(editor.read((state) => state.selection())).toEqual({
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 1 },
   });
-  expect(editor.read((state) => state.value.lastCommit())?.command).toEqual({
+  expect(editor.read((state) => state.lastCommit())?.command).toEqual({
     origin: 'command',
     type: 'move_selection',
   });

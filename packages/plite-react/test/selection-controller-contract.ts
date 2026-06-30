@@ -350,9 +350,7 @@ test('model selection export is owned by the matching root view only', () => {
     });
   });
 
-  const childSelection = childEditor.read((state: any) =>
-    state.selection.get()
-  );
+  const childSelection = childEditor.read((state: any) => state.selection());
 
   expect(isSelectionInEditorView(mainEditor, childSelection)).toBe(false);
   expect(isSelectionInEditorView(childEditor, childSelection)).toBe(true);

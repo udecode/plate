@@ -58,6 +58,8 @@ import type {
   CreateEditorOptions,
   DescendantIn,
   Editor,
+  EditorClipboardApi,
+  EditorClipboardInsertDataCapability,
   EditorCommit,
   EditorExtension,
   EditorExtensionInput,
@@ -88,10 +90,44 @@ const resolveApiCapability = (capabilities: unknown[]) => {
   return capabilities.at(-1);
 };
 
+const createClipboardApi = (
+  getEditor: () => Editor,
+  getFallback?: () => ((data: DataTransfer) => boolean) | undefined
+): EditorClipboardApi =>
+  Object.freeze({
+    insertData(dataTransfer) {
+      const editor = getEditor();
+      const handlers = (getExtensionRegistry(editor).capabilities.get(
+        'clipboard.insertData'
+      ) ?? []) as EditorClipboardInsertDataCapability[];
+
+      const dispatch = (index: number, data: DataTransfer): boolean => {
+        const handler = handlers[index];
+
+        if (!handler) return getFallback?.()?.(data) === true;
+
+        return (
+          handler(editor, data, (nextData = data) =>
+            dispatch(index - 1, nextData)
+          ) === true
+        );
+      };
+
+      return dispatch(handlers.length - 1, dataTransfer);
+    },
+  });
+
 /**
  * Create a mutable Plite editor with schema, command, query, state, and
  * extension runtime APIs installed.
  */
+export function createEditor<
+  const TExtensions extends readonly unknown[],
+  V extends Value = Value,
+>(
+  options: CreateEditorOptions<V, TExtensions> & { extensions: TExtensions }
+): Editor<V, TExtensions>;
+
 export function createEditor<
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly [],
@@ -155,10 +191,47 @@ export function createEditor<
     shouldNormalize: (options) => shouldNormalize(editor, options),
   } satisfies InternalEditorTransformRuntime<V>;
 
+  const createResolvedClipboardApi = () => {
+    const capabilities =
+      getExtensionRegistry(editor as Editor).capabilities.get('clipboard') ??
+      [];
+    const resolved = resolveApiCapability(capabilities);
+    const capability = isMergeableApiCapability(resolved) ? resolved : {};
+    const insertFragmentData = capability.insertFragmentData;
+    const insertTextData = capability.insertTextData;
+    const fallbackInsertData =
+      typeof insertFragmentData === 'function' &&
+      typeof insertTextData === 'function'
+        ? (data: DataTransfer) =>
+            (insertFragmentData as (data: DataTransfer) => boolean).call(
+              capability,
+              data
+            ) ||
+            (insertTextData as (data: DataTransfer) => boolean).call(
+              capability,
+              data
+            )
+        : typeof capability.insertData === 'function'
+          ? (capability.insertData as (data: DataTransfer) => boolean).bind(
+              capability
+            )
+          : undefined;
+
+    return Object.freeze({
+      ...capability,
+      insertData: createClipboardApi(
+        () => editor as Editor,
+        () => fallbackInsertData
+      ).insertData,
+    });
+  };
   const api = new Proxy(Object.create(null) as Record<string, unknown>, {
     get(_target, property) {
       if (typeof property !== 'string') {
         return;
+      }
+      if (property === 'clipboard') {
+        return createResolvedClipboardApi();
       }
 
       const capabilities = getExtensionRegistry(

@@ -28,24 +28,27 @@ editor.update((tx) => {
 const operation: Operation<ValueOf<typeof editor>> | undefined = editor.read(
   (state) => state.history.undos()[0]?.operations[0]
 );
-const historyValue = editor.read((state) => state.history.get());
+const historyValue = editor.read((state) => state.history());
+const directUndoCount: number = editor.read.history.undos().length;
 
 editor.update((tx) => {
   tx.history.undo();
   tx.history.redo();
 });
+editor.update.history.undo();
+editor.update.history.redo();
 
-editor.api.history.withoutSaving(() => {
+editor.api.history.run({ save: false }, () => {
   editor.update((tx) => {
     tx.text.insert('b');
   });
 });
-editor.api.history.withoutMerging(() => {
+editor.api.history.run({ merge: false }, () => {
   editor.update((tx) => {
     tx.text.insert('c');
   });
 });
-editor.getApi(HistoryExtension).withNewBatch(() => {
+editor.getApi(HistoryExtension).run({ newBatch: true }, () => {
   editor.update((tx) => {
     tx.text.insert('d');
   });
@@ -59,15 +62,16 @@ const assertHistoryTypeErrors = () => {
   editor.api.history.undo();
 
   // @ts-expect-error history is extension state, not an editor root field
-  editor.history;
+  void editor.history;
 
   // @ts-expect-error undo is exposed on tx.history, not the editor root
   editor.undo();
 
   // @ts-expect-error public withHistory wrapper is cut
-  PliteHistory.withHistory;
+  void PliteHistory.withHistory;
 };
 
 void assertHistoryTypeErrors;
+void directUndoCount;
 void historyValue;
 void operation;

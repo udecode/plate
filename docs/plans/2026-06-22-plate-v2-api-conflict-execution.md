@@ -151,7 +151,7 @@ Checkpoint supervisor:
 | consolidation | auto | complete | P1 | Move accepted reusable decisions to durable docs/rules. | Accepted plan corrected: `platejs` remains the Plate product facade; conflicts are fixed in the facade/API, not by broad consumer import churn. | update |
 | final-handoff | auto | complete | P0 | Emit changed list, review attention, queued checkpoints, commands, residual risks. | Handoff ledgers filled for this checkpoint. | update |
 | core-api-packet | auto / packages/core | complete | P0 | Remove public legacy API conflict while preserving Plite extension inference. | Core runtime typecheck/test/build passed; runtime declaration no longer exposes `getPluginApi/getTransforms` on `PlateRuntimeEditor`. | keep |
-| slate-extension-typing-gate | auto / packages/plite | N/A | P0 if core typing fails | Core typing passed without Plite substrate changes. | no-change |
+| plite-extension-typing-gate | auto / packages/plite | N/A | P0 if core typing fails | Core typing passed without Plite substrate changes. | no-change |
 | package-entrypoint-packet | auto / packages/plate | deferred | P1 | Curate `platejs` facade exports after core API conflict rows are stable. | Do not force feature packages around the facade; fix the facade itself. | update |
 | consumer-import-migration | auto / feature packages | reverted | P1 | Broad direct-owner import migration is not the right default for Plate feature packages. | `@platejs/autoformat` and `@platejs/juice` restored to `platejs` imports. | revert |
 | facade-correction | auto / packages/plate | complete | P0 | Keep the Plate product facade as the internal feature-package import surface. | `packages/plate/src/index.tsx` already exports core/slate/utils; package consumers restored to `platejs`. | keep |
@@ -161,7 +161,7 @@ Checkpoint mutation ledger:
 |------|----------|---------------|----------|--------|--------|
 | 0 | seed | initial template rows | plan creation | starter topology only | complete |
 | 0 | update | status, gap-scan | accepted plan + latest prompt | execute API conflict plan, not generic editor behavior soak | complete |
-| 0 | add | core-api-packet, slate-extension-typing-gate, package-entrypoint-packet | accepted plan phases 1-2 | implementation starts at core public boundary | complete |
+| 0 | add | core-api-packet, plite-extension-typing-gate, package-entrypoint-packet | accepted plan phases 1-2 | implementation starts at core public boundary | complete |
 | 1 | update | core-api-packet | core source audit | `tf/transforms/getTransforms/getPluginApi` are still used by private runtime bridge and legacy package internals; the first clean cut is the Plite-v2 public route plus tests proving `api/tx` inference, not a fake repo-wide deletion. | complete |
 | 1 | add | consumer-import-migration | `rg` over `platejs` imports | Initial thought was to migrate feature packages away from `platejs`; this was too strict. | reverted |
 | 2 | add | facade-correction | user challenge + `packages/plate/src/index.tsx` audit | `platejs` is the Plate product facade. Feature packages should keep the product import and the facade should be curated instead. | complete |

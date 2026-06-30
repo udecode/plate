@@ -1,62 +1,49 @@
-import { type OverrideEditor, getPluginByType } from '../../plugin';
-import { createSlatePlugin } from '../../plugin/createSlatePlugin';
-import { BaseParagraphPlugin } from '../paragraph';
-import { withBreakRules } from './withBreakRules';
-import { withDeleteRules } from './withDeleteRules';
-import { withMergeRules } from './withMergeRules';
-import { withNormalizeRules } from './withNormalizeRules';
+import type { EditorElementSpec } from '@platejs/plite';
 
-/**
- * Merge and register all the inline types and void types from the plugins and
- * options, using `editor.api.isInline`, `editor.api.markableVoid` and
- * `editor.api.isVoid`
- */
-export const withOverrides: OverrideEditor = ({
-  api: { isInline, isSelectable, isVoid, markableVoid },
-  editor,
-}) => {
-  // Use pre-computed arrays from plugin resolution
-  return {
-    api: {
-      create: {
-        block: (node) => ({
-          children: [{ text: '' }],
-          type: editor.getType(BaseParagraphPlugin.key),
-          ...node,
-        }),
-      },
-      isInline(element) {
-        return getPluginByType(editor, element.type as string)?.node.isInline
-          ? true
-          : isInline(element);
-      },
-      isSelectable(element) {
-        return getPluginByType(editor, element.type as string)?.node
-          .isSelectable === false
-          ? false
-          : isSelectable(element);
-      },
-      isVoid(element) {
-        return getPluginByType(editor, element.type as string)?.node.isVoid
-          ? true
-          : isVoid(element);
-      },
-      markableVoid(element) {
-        return getPluginByType(editor, element.type as string)?.node
-          .isMarkableVoid
-          ? true
-          : markableVoid(element);
-      },
-    },
-  };
-};
+import { createBasePlugin } from '../../plugin/createBasePlugin';
 
-/** Override the editor api and transforms based on the plugins. */
-export const OverridePlugin = createSlatePlugin({
+/** Override the editor based on resolved Plate plugin node behavior. */
+export const OverridePlugin = createBasePlugin({
   key: 'override',
-})
-  .overrideEditor(withOverrides)
-  .overrideEditor(withBreakRules)
-  .overrideEditor(withDeleteRules)
-  .overrideEditor(withMergeRules)
-  .overrideEditor(withNormalizeRules);
+}).extendExtension(({ editor }) => {
+  const elements = editor.runtime.pluginList.flatMap((plugin) => {
+    const { node } = plugin;
+    const type = node?.type;
+
+    if (!type) return [];
+
+    const hasSchemaBehavior =
+      node.isInline !== undefined ||
+      node.isMarkableVoid !== undefined ||
+      node.isSelectable !== undefined ||
+      node.isVoid !== undefined;
+
+    if (!hasSchemaBehavior) return [];
+
+    const spec: EditorElementSpec = { type };
+
+    if (node.isInline === true) {
+      spec.inline = true;
+    }
+    if (node.isSelectable === false) {
+      spec.selectable = false;
+    }
+    if (node.isMarkableVoid === true) {
+      spec.markableVoid = true;
+    }
+    if (node.isVoid === true) {
+      spec.void =
+        node.isInline === true
+          ? node.isMarkableVoid === true
+            ? 'markable-inline'
+            : 'inline'
+          : 'block';
+    }
+
+    return [spec];
+  });
+
+  if (elements.length === 0) return;
+
+  return { elements };
+});

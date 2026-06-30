@@ -276,7 +276,7 @@ test('deferred native text input repair ignores echoes while model owns text inp
 
     expect(repairDOMInput).not.toHaveBeenCalled();
     expect(root.textContent).toBe('aThis');
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -340,7 +340,7 @@ test('native text input repair uses runtime target while model owns text input w
       },
       root
     );
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -531,7 +531,7 @@ test('pending native text input repair corrects model selection before boundary 
   expect(
     repairPendingNativeTextInputModelSelection({ editor, inputController })
   ).toBe(true);
-  expect(editor.read((state) => state.selection.get())).toEqual({
+  expect(editor.read((state) => state.selection())).toEqual({
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 4 },
   });
@@ -567,7 +567,7 @@ test('pending native text input repair does not move selection when expected tex
       inputController,
     })
   ).toBe(false);
-  expect(editor.read((state) => state.selection.get())).toEqual({
+  expect(editor.read((state) => state.selection())).toEqual({
     anchor: { path: [0, 0], offset: 3 },
     focus: { path: [0, 0], offset: 3 },
   });
@@ -638,7 +638,7 @@ test('deferred native text input repair clears pending selection when root disco
     expect(
       inputController.state.pendingNativeTextInputRepairPathKey
     ).toBeNull();
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -730,7 +730,7 @@ test('deferred native text input repair clears pending state when selection repa
     expect(
       inputController.state.pendingNativeTextInputRepairPathKey
     ).toBeNull();
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });

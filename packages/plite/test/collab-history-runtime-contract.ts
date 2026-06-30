@@ -14,9 +14,9 @@ import {
 
 import { history } from '@platejs/plite-history';
 
-import { createEditor, type Descendant, type Operation } from '../src';
+import { createEditor, type Element, type Operation } from '@platejs/plite';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -37,7 +37,7 @@ const createCollabEditor = () => {
 };
 
 const createHistoryCollabEditor = () => {
-  const editor = createEditor({ extensions: [history()] });
+  const editor = createEditor({ extensions: [history()] as const });
 
   editorReplace(editor, {
     children: [paragraph('one'), paragraph('two'), paragraph('three')],
@@ -93,7 +93,7 @@ const replayRemoteCommit = (
 
 describe('collab and history runtime contract', () => {
   it('publishes one commit truth for collab subscribers, extension listeners, and history', () => {
-    const editor = createEditor({ extensions: [history()] });
+    const editor = createEditor({ extensions: [history()] as const });
 
     editorReplace(editor, {
       children: [paragraph('one')],
@@ -297,7 +297,7 @@ describe('collab and history runtime contract', () => {
       tag,
     }: {
       edit: (editor: CollabEditor) => void;
-      expectedChildren: Descendant[];
+      expectedChildren: Element[];
       tag: string;
     }) => {
       const source = createHistoryCollabEditor();
@@ -572,8 +572,15 @@ describe('collab and history runtime contract', () => {
     );
 
     assert.equal(editorString(editor, [0]), '?one!');
-    assert.equal(firstUndoOperations(editor)?.[0]?.type, 'insert_text');
-    assert.equal(firstUndoOperations(editor)?.[0]?.offset, 4);
+    const firstUndoOperation = firstUndoOperations(editor)?.[0];
+
+    assert.equal(firstUndoOperation?.type, 'insert_text');
+    assert.equal(
+      firstUndoOperation?.type === 'insert_text'
+        ? firstUndoOperation.offset
+        : undefined,
+      4
+    );
 
     editor.update((tx) => {
       tx.history.undo();

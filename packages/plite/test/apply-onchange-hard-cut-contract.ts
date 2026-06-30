@@ -9,16 +9,16 @@ import {
 
 import {
   createEditor,
-  type Descendant,
+  type Element,
   type Editor as EditorType,
-} from '../src';
+} from '@platejs/plite';
 
 type LegacyOnChangeKey = Extract<keyof EditorType, 'onChange'>;
 
 const editorHasNoOnChangeKey: LegacyOnChangeKey extends never ? true : never =
   true;
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -30,14 +30,20 @@ describe('apply/onChange hard cuts', () => {
     const editor = createEditor();
 
     assert.equal('onChange' in editor, false);
-    assert.equal((editor as Record<string, unknown>).onChange, undefined);
+    assert.equal(
+      (editor as unknown as Record<string, unknown>).onChange,
+      undefined
+    );
   });
 
   it('does not expose editor.apply as an instance extension point', () => {
     const editor = createEditor();
 
     assert.equal('apply' in editor, false);
-    assert.equal((editor as Record<string, unknown>).apply, undefined);
+    assert.equal(
+      (editor as unknown as Record<string, unknown>).apply,
+      undefined
+    );
   });
 
   it('imports operations through tx.operations.replay and publishes one commit', () => {

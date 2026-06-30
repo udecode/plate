@@ -12,13 +12,13 @@ export const input = (
 );
 export const output = (
   <editor>
-    <block>
+    <element type="paragraph">
       <text>one</text>
-    </block>
+    </element>
     <block>two</block>
-    <block>
+    <element type="paragraph">
       <text>three</text>
-    </block>
+    </element>
     <block>four</block>
   </editor>
 );

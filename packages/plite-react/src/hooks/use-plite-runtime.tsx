@@ -1,5 +1,6 @@
-import type { DependencyList, ReactNode } from 'react';
-import {
+import React, {
+  type DependencyList,
+  type ReactNode,
   createContext,
   useCallback,
   useContext,
@@ -75,7 +76,7 @@ const selectionChanged = (change?: EditorCommit) =>
   Boolean(change?.selectionChanged);
 
 const selectActiveRoot = (state: EditorStateView): RootKey => {
-  const selection = state.selection.get();
+  const selection = state.selection();
 
   return getSelectionRoot(selection) ?? MAIN_ROOT_KEY;
 };

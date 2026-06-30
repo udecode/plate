@@ -321,7 +321,7 @@ export const useEditableRootRuntime = ({
     state,
   });
 
-  const marks = editor.read((state) => state.marks.get());
+  const marks = editor.read((state) => state.marks());
   usePendingInsertionMarksEffect({ editor, marks });
 
   return {

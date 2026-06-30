@@ -33,7 +33,7 @@ test('native anchor checks use the editor window NodeFilter realm', () => {
   const editor = {
     read: vi.fn((callback) =>
       callback({
-        marks: { get: () => null },
+        marks: () => null,
         view: { root: () => 'main' },
       })
     ),
@@ -94,7 +94,7 @@ test('native single-character input allows synced printable ASCII', () => {
   const editor = {
     read: vi.fn((callback) =>
       callback({
-        marks: { get: () => null },
+        marks: () => null,
         view: { root: () => 'main' },
       })
     ),
@@ -193,7 +193,7 @@ test('native single-character input rejects projected text hosts', () => {
   const editor = {
     read: vi.fn((callback) =>
       callback({
-        marks: { get: () => null },
+        marks: () => null,
         view: { root: () => 'main' },
       })
     ),

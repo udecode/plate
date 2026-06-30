@@ -38,7 +38,7 @@ Verification surface:
   - `packages/core/src/react/editor/createPlateRuntimeEditor.ts:669-724` exposes runtime `tf`, `transforms`, `getTransforms`, `getPluginApi`, options, and Plite update.
   - `packages/core/src/lib/editor/PliteEditor.ts:192-216` names a Plate product editor `PliteEditor` with Plate `api/tf/transforms`.
   - `packages/core/src/lib/plugin/SlatePlugin.ts:95-129` and `packages/core/src/react/plugin/PlatePlugin.ts:105-139` define plugin API/transforms extension points over legacy editor APIs.
-  - `packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.ts:56-99` is a Plate core feature named as Plite extension and still extends API/transforms.
+  - `packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.ts:56-99` is a Plate core feature named as Plite extension and still extends API/transforms.
   - `packages/core/src/react/editor/createPlateRuntimeEditor.ts:9723-9739` already installs `plugin.api` and `plugin.tx` through `defineEditorExtension`.
   - `packages/plate/src/index.tsx:1-7` re-exports Plate core and all `@platejs/plite` from the same top-level package.
   - `content/docs/migration/slate-to-plate.mdx:20-30` teaches `editor.tf.*` and `editor.api.*`.
@@ -177,7 +177,7 @@ Plite/Plate boundary map:
 | `@platejs/slate-legacy` package | Public package today | private scaffold or deleted package | cut public package | `packages/core/package.json:54`; `packages/slate-legacy/package.json` inspected during package scan | Do not publish as beta product. |
 | Top-level `platejs` package | Plate product facade that currently re-exports core/slate/utils | Plate product facade | curate facade exports, not consumer import churn | `packages/plate/src/index.tsx:1-9` plus internal `platejs` import audit | Plate feature packages may keep importing from `platejs`. Substrate packages and intentionally low-level code use direct `@platejs/*` owners. Fix conflicts at the facade/API boundary instead of forcing every plugin package around it. |
 | `createPliteEditor` from Plate core | Plate static editor with Plite name | Plate static editor | rename | `packages/core/src/lib/editor/PliteEditor.ts:192-216`; `packages/plate/src/index.tsx:2` | Rename to `createPlateStaticEditor`; no alias. |
-| `SlateExtensionPlugin` | Plate core behavior named Plite | Plate core behavior | rename | `packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.ts:56-99` | Rename to Plate core/runtime extension terminology. |
+| `PliteExtensionPlugin` | Plate core behavior named Plite | Plate core behavior | rename | `packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.ts:56-99` | Rename to Plate core/runtime extension terminology. |
 | Feature packages | Plate | Plate | revise incrementally | Accessor count touched `packages/table`, `packages/list`, `packages/ai`, `packages/selection`, etc. | Migrate package by package after core target lands. |
 
 API conflict ledger:
@@ -379,7 +379,7 @@ Verification evidence:
 - Inspected legacy runtime bridge in `packages/core/src/internal/currentRuntimeBridge.ts:1-34`.
 - Inspected public Plate editor/runtime types in `packages/core/src/react/editor/PlateEditor.ts:1-108`, `packages/core/src/react/editor/createPlateRuntimeEditor.ts:669-724`, and `packages/core/src/lib/editor/PliteEditor.ts:192-260`.
 - Inspected plugin extension points in `packages/core/src/lib/plugin/SlatePlugin.ts:95-129` and `packages/core/src/react/plugin/PlatePlugin.ts:105-139`.
-- Inspected Plate-named-as-Plite core plugin in `packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.ts:56-99`.
+- Inspected Plate-named-as-Plite core plugin in `packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.ts:56-99`.
 - Inspected top-level `platejs` exports in `packages/plate/src/index.tsx:1-7`.
 - Inspected docs teaching old API names in `content/docs/migration/slate-to-plate.mdx:20-30`.
 - Ran package-count scans for legacy imports and old Plate accessor surfaces.

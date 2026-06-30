@@ -1,13 +1,14 @@
-import {
-  assignLegacyApi,
-  assignLegacyTransforms,
-  syncLegacyMethods,
-} from '@platejs/slate';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 import { isDefined } from '@udecode/utils';
 import merge from 'lodash/merge.js';
 import { createVanillaStore } from 'zustand-x/vanilla';
 
-import type { SlateEditor, SlatePlugin, SlatePlugins } from '../../lib';
+import type {
+  AnyBasePlugin,
+  BaseEditor,
+  BasePlugin,
+  BasePlugins,
+} from '../../lib';
 
 import { getEditorPlugin } from '../../lib/plugin';
 import { mergePlugins } from '../utils/mergePlugins';
@@ -26,25 +27,84 @@ import { createInputRuleBuilder } from '../../lib/plugins/input-rules/internal/c
  */
 export type PluginStoreFactory = typeof createVanillaStore;
 
+type PluginApiCleanups = Map<string, () => void>;
+type TxExtensionMetadata = {
+  __plateOwnTxGroup?: true;
+  __plateTxGroupKey?: string;
+};
+
+const pluginApiCleanups = new WeakMap<BaseEditor, PluginApiCleanups>();
+
+const getPluginApiCleanups = (editor: BaseEditor) => {
+  let cleanups = pluginApiCleanups.get(editor);
+
+  if (!cleanups) {
+    cleanups = new Map();
+    pluginApiCleanups.set(editor, cleanups);
+  }
+
+  return cleanups;
+};
+
+const cleanupPluginApis = (editor: BaseEditor) => {
+  const cleanups = pluginApiCleanups.get(editor);
+
+  if (!cleanups) return;
+
+  cleanups.forEach((cleanup) => {
+    cleanup();
+  });
+  cleanups.clear();
+};
+
+const getPluginShortcutTxCommand = (
+  transaction: EditorUpdateTransaction,
+  pluginKey: string,
+  shortcutKey: string
+): (() => void) | undefined => {
+  const pluginTx = (transaction as unknown as Record<string, unknown>)[
+    pluginKey
+  ];
+
+  if (!pluginTx || typeof pluginTx !== 'object') return;
+
+  const command = (pluginTx as Record<string, unknown>)[shortcutKey];
+
+  return typeof command === 'function' ? (command as () => void) : undefined;
+};
+
+const hasOwnPluginTxGroup = (plugin: BasePlugin) => {
+  if (typeof plugin.tx?.[plugin.key] === 'function') return true;
+
+  return plugin.__txExtensions.some((txExtension) => {
+    const metadata = txExtension as TxExtensionMetadata;
+
+    return (
+      metadata.__plateOwnTxGroup === true ||
+      metadata.__plateTxGroupKey === plugin.key
+    );
+  });
+};
+
 export const resolvePlugins = (
-  editor: SlateEditor,
-  plugins: SlatePlugins = [],
+  editor: BaseEditor,
+  plugins: readonly AnyBasePlugin[] = [],
   createStore: PluginStoreFactory = createVanillaStore
 ) => {
   editor.plugins = {};
-  editor.meta.pluginList = [];
-  editor.meta.inputRules = {
+  editor.runtime.pluginList = [];
+  editor.runtime.inputRules = {
     insertBreak: [],
     insertData: [],
     insertText: { all: [], byTrigger: {} },
     plugins: {},
   } as ResolvedInputRulesMeta;
-  editor.meta.shortcuts = {} as Record<
+  editor.runtime.shortcuts = {} as Record<
     string,
-    SlatePlugin['shortcuts'][string]
+    BasePlugin['shortcuts'][string]
   >;
-  editor.meta.components = {};
-  editor.meta.pluginCache = {
+  editor.runtime.components = {};
+  editor.runtime.pluginCache = {
     decorate: [],
     handlers: {
       onChange: [],
@@ -67,7 +127,7 @@ export const resolvePlugins = (
     render: {
       aboveEditable: [],
       aboveNodes: [],
-      aboveSlate: [],
+      abovePlite: [],
       afterContainer: [],
       afterEditable: [],
       beforeContainer: [],
@@ -80,6 +140,7 @@ export const resolvePlugins = (
     },
     useHooks: [],
   };
+  cleanupPluginApis(editor);
 
   const resolvedPlugins = resolveAndSortPlugins(editor, plugins);
 
@@ -90,115 +151,107 @@ export const resolvePlugins = (
   resolvePluginStores(editor, createStore);
 
   // Last pass
-  editor.meta.pluginList.forEach((plugin: SlatePlugin) => {
-    if (plugin.extendEditor) {
-      // biome-ignore lint/style/noParameterAssign: Intentional editor extension pattern
-      editor = plugin.extendEditor(getEditorPlugin(editor, plugin) as any);
-
-      // Sync any editor methods that were modified by extendEditor
-      syncLegacyMethods(editor);
-    }
-
-    // Sync overridden plugin methods to legacy editor methods
+  editor.runtime.pluginList.forEach((plugin: BasePlugin) => {
+    // Sync overridden plugin methods to the editor runtime.
     resolvePluginMethods(editor, plugin);
 
     if (plugin.node?.isContainer) {
-      editor.meta.pluginCache.node.isContainer.push(plugin.key);
+      editor.runtime.pluginCache.node.isContainer.push(plugin.key);
     }
 
     if (plugin.node?.isMetadataProp) {
-      editor.meta.pluginCache.node.isMetadataProp.push(plugin.key);
+      editor.runtime.pluginCache.node.isMetadataProp.push(plugin.key);
     }
 
-    editor.meta.pluginCache.node.types[plugin.node.type] = plugin.key;
+    editor.runtime.pluginCache.node.types[plugin.node.type] = plugin.key;
 
     if (plugin.inject?.nodeProps) {
-      editor.meta.pluginCache.inject.nodeProps.push(plugin.key);
+      editor.runtime.pluginCache.inject.nodeProps.push(plugin.key);
     }
 
     if (plugin.render?.node) {
-      editor.meta.components[plugin.key] = plugin.render.node;
+      editor.runtime.components[plugin.key] = plugin.render.node;
     }
 
     if (
       plugin.node?.isLeaf &&
       (plugin.node?.isDecoration === true || plugin.render.leaf)
     ) {
-      editor.meta.pluginCache.node.isLeaf.push(plugin.key);
+      editor.runtime.pluginCache.node.isLeaf.push(plugin.key);
     }
 
     if (plugin.node.isLeaf && plugin.node.isDecoration === false) {
-      editor.meta.pluginCache.node.isText.push(plugin.key);
+      editor.runtime.pluginCache.node.isText.push(plugin.key);
     }
 
     if (plugin.node?.leafProps) {
-      editor.meta.pluginCache.node.leafProps.push(plugin.key);
+      editor.runtime.pluginCache.node.leafProps.push(plugin.key);
     }
 
     if (plugin.node.textProps) {
-      editor.meta.pluginCache.node.textProps.push(plugin.key);
+      editor.runtime.pluginCache.node.textProps.push(plugin.key);
     }
 
     if (plugin.render.aboveEditable) {
-      editor.meta.pluginCache.render.aboveEditable.push(plugin.key);
+      editor.runtime.pluginCache.render.aboveEditable.push(plugin.key);
     }
 
-    if (plugin.render.aboveSlate) {
-      editor.meta.pluginCache.render.aboveSlate.push(plugin.key);
+    if (plugin.render.abovePlite) {
+      editor.runtime.pluginCache.render.abovePlite.push(plugin.key);
     }
 
     if (plugin.render.afterEditable) {
-      editor.meta.pluginCache.render.afterEditable.push(plugin.key);
+      editor.runtime.pluginCache.render.afterEditable.push(plugin.key);
     }
 
     if (plugin.render.beforeEditable) {
-      editor.meta.pluginCache.render.beforeEditable.push(plugin.key);
+      editor.runtime.pluginCache.render.beforeEditable.push(plugin.key);
     }
 
     if (plugin.rules?.match) {
-      editor.meta.pluginCache.rules.match.push(plugin.key);
+      editor.runtime.pluginCache.rules.match.push(plugin.key);
     }
 
     if (plugin.render.afterContainer) {
-      editor.meta.pluginCache.render.afterContainer.push(plugin.key);
+      editor.runtime.pluginCache.render.afterContainer.push(plugin.key);
     }
 
     if (plugin.render.beforeContainer) {
-      editor.meta.pluginCache.render.beforeContainer.push(plugin.key);
+      editor.runtime.pluginCache.render.beforeContainer.push(plugin.key);
     }
 
     if (plugin.render.belowRootNodes) {
-      editor.meta.pluginCache.render.belowRootNodes.push(plugin.key);
+      editor.runtime.pluginCache.render.belowRootNodes.push(plugin.key);
     }
 
-    if (plugin.transformInitialValue || plugin.normalizeInitialValue) {
-      editor.meta.pluginCache.transformInitialValue.push(plugin.key);
+    if (plugin.transformInitialValue) {
+      editor.runtime.pluginCache.transformInitialValue.push(plugin.key);
     }
 
     if (plugin.decorate) {
-      editor.meta.pluginCache.decorate.push(plugin.key);
+      editor.runtime.pluginCache.decorate.push(plugin.key);
     }
 
     if (plugin.render.aboveNodes) {
-      editor.meta.pluginCache.render.aboveNodes.push(plugin.key);
+      editor.runtime.pluginCache.render.aboveNodes.push(plugin.key);
     }
 
     if (plugin.render.belowNodes) {
-      editor.meta.pluginCache.render.belowNodes.push(plugin.key);
+      editor.runtime.pluginCache.render.belowNodes.push(plugin.key);
     }
 
     if ((plugin as any).useHooks) {
-      editor.meta.pluginCache.useHooks.push(plugin.key);
+      editor.runtime.pluginCache.useHooks.push(plugin.key);
     }
 
     if ((plugin as any).handlers?.onChange) {
-      editor.meta.pluginCache.handlers.onChange.push(plugin.key);
+      editor.runtime.pluginCache.handlers.onChange.push(plugin.key);
     }
     if ((plugin as any).handlers?.onNodeChange) {
-      editor.meta.pluginCache.handlers.onNodeChange.push(plugin.key);
+      editor.runtime.pluginCache.handlers.onNodeChange.push(plugin.key);
     }
     if ((plugin as any).handlers?.onTextChange) {
-      editor.meta.pluginCache.handlers.onTextChange.push(plugin.key);
+      editor.runtime.pluginCache.handlers.onTextChange.push(plugin.key);
     }
   });
 
@@ -210,15 +263,15 @@ export const resolvePlugins = (
 };
 
 const resolvePluginStores = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   createStore: PluginStoreFactory
 ) => {
   // Create zustand stores for each plugin
-  editor.meta.pluginList.forEach((plugin) => {
+  editor.runtime.pluginList.forEach((plugin) => {
     let store = createStore(plugin.options, {
       mutative: true,
       name: plugin.key,
-    });
+    }) as typeof plugin.optionsStore;
 
     // Apply option extensions
     if (
@@ -228,7 +281,9 @@ const resolvePluginStores = (
       (plugin as any).__selectorExtensions.forEach((extension: any) => {
         const extendedOptions = extension(getEditorPlugin(editor, plugin));
 
-        store = store.extendSelectors(() => extendedOptions);
+        store = store.extendSelectors(
+          () => extendedOptions
+        ) as typeof plugin.optionsStore;
       });
     }
 
@@ -236,105 +291,99 @@ const resolvePluginStores = (
   });
 };
 
-const resolvePluginMethods = (editor: SlateEditor, plugin: any) => {
-  // Merge APIs
-  Object.entries(plugin.api).forEach(([apiKey, apiFunction]) => {
-    (editor.api as any)[apiKey] = apiFunction;
-  });
-
+const resolvePluginMethods = (editor: BaseEditor, plugin: any) => {
   // Apply API and transform extensions
   if (plugin.__apiExtensions && plugin.__apiExtensions.length > 0) {
-    plugin.__apiExtensions.forEach(
-      ({ extension, isOverride, isPluginSpecific, isTransform }: any) => {
-        const newExtensions = extension(getEditorPlugin(editor, plugin) as any);
+    plugin.__apiExtensions.forEach(({ extension, isPluginSpecific }: any) => {
+      const context = {
+        ...(getEditorPlugin(editor, plugin) as any),
+        api: editor.api,
+      };
 
-        if (isOverride) {
-          // Handle combined API and transforms override
-          if (newExtensions.api) {
-            merge(editor.api, newExtensions.api);
-            merge(plugin.api, newExtensions.api);
-            assignLegacyApi(editor, editor.api);
-          }
-          if (newExtensions.transforms) {
-            merge(editor.transforms, newExtensions.transforms);
-            merge(plugin.transforms, newExtensions.transforms);
-            assignLegacyTransforms(editor, newExtensions.transforms);
-          }
-        } else if (isTransform) {
-          // Handle transforms
-          if (isPluginSpecific) {
-            // Plugin-specific transform
-            if (!(editor.transforms as any)[plugin.key]) {
-              (editor.transforms as any)[plugin.key] = {};
-            }
-            if (!(plugin.transforms as any)[plugin.key]) {
-              (plugin.transforms as any)[plugin.key] = {};
-            }
+      const newExtensions = extension(context);
 
-            merge((editor.transforms as any)[plugin.key], newExtensions);
-            merge((plugin.transforms as any)[plugin.key], newExtensions);
-          } else {
-            // Editor-wide transform
-            merge(editor.transforms, newExtensions);
-            merge(plugin.transforms, newExtensions);
-            assignLegacyTransforms(editor, newExtensions);
-          }
-        } else if (isPluginSpecific) {
-          // Handle APIs - Plugin-specific API
-          if (!(editor.api as any)[plugin.key]) {
-            (editor.api as any)[plugin.key] = {};
-          }
-          if (!(plugin.api as any)[plugin.key]) {
-            (plugin.api as any)[plugin.key] = {};
-          }
-
-          merge((editor.api as any)[plugin.key], newExtensions);
-          merge((plugin.api as any)[plugin.key], newExtensions);
-        } else {
-          // Handle APIs - Editor-wide API
-          merge(editor.api, newExtensions);
-          merge(plugin.api, newExtensions);
-          assignLegacyApi(editor, editor.api);
+      if (isPluginSpecific) {
+        // Handle APIs - Plugin-specific API
+        if (!(plugin.api as any)[plugin.key]) {
+          (plugin.api as any)[plugin.key] = {};
         }
+
+        merge((plugin.api as any)[plugin.key], newExtensions);
+      } else {
+        // Handle APIs - Editor-wide API
+        merge(plugin.api, newExtensions);
       }
-    );
+    });
     plugin.__apiExtensions = undefined;
+  }
+
+  if (plugin.api && Object.keys(plugin.api).length > 0) {
+    const cleanups = getPluginApiCleanups(editor);
+
+    cleanups.get(plugin.key)?.();
+    cleanups.set(
+      plugin.key,
+      editor.extend({
+        api: merge({}, plugin.api),
+        name: `plate:${plugin.key}:api`,
+      })
+    );
   }
 };
 
-const resolvePluginShortcuts = (editor: SlateEditor) => {
-  editor.meta.shortcuts = {} as Record<
+const resolvePluginShortcuts = (editor: BaseEditor) => {
+  editor.runtime.shortcuts = {} as Record<
     string,
-    SlatePlugin['shortcuts'][string]
+    BasePlugin['shortcuts'][string]
   >; // Initialize with a more specific type
 
-  editor.meta.pluginList.forEach((plugin) => {
+  editor.runtime.pluginList.forEach((plugin) => {
     Object.entries(plugin.shortcuts).forEach(([originalKey, hotkey]) => {
       const namespacedKey = `${plugin.key}.${originalKey}`;
 
       if (hotkey === null) {
         // If hotkey is null, remove the namespaced shortcut
         delete (
-          editor.meta.shortcuts as Record<
+          editor.runtime.shortcuts as Record<
             string,
-            SlatePlugin['shortcuts'][string]
+            BasePlugin['shortcuts'][string]
           >
         )[namespacedKey];
       } else if (hotkey && typeof hotkey === 'object') {
         const resolvedHotkey = { ...hotkey } as NonNullable<
-          SlatePlugin['shortcuts'][string]
+          BasePlugin['shortcuts'][string]
         >;
 
-        // If no custom handler is provided, try to use plugin transform method as handler
+        // If no custom handler is provided, route plugin commands through tx.
         if (!resolvedHotkey.handler) {
-          const pluginSpecificTransforms = (plugin.transforms as any)?.[
-            plugin.key
-          ];
+          const hasShortcutTxGroup = hasOwnPluginTxGroup(plugin);
           const pluginSpecificApi = (plugin.api as any)?.[plugin.key];
 
-          if (pluginSpecificTransforms?.[originalKey]) {
-            resolvedHotkey.handler = () =>
-              pluginSpecificTransforms[originalKey]();
+          if (hasShortcutTxGroup) {
+            resolvedHotkey.handler = () => {
+              let handled = false;
+
+              editor.update((tx) => {
+                const command = getPluginShortcutTxCommand(
+                  tx,
+                  plugin.key,
+                  originalKey
+                );
+
+                if (!command) return;
+
+                command();
+                handled = true;
+              });
+
+              if (handled) return;
+
+              if (typeof pluginSpecificApi?.[originalKey] === 'function') {
+                return pluginSpecificApi[originalKey]();
+              }
+
+              return false;
+            };
           } else if (pluginSpecificApi?.[originalKey]) {
             resolvedHotkey.handler = () => pluginSpecificApi[originalKey]();
           }
@@ -344,9 +393,9 @@ const resolvePluginShortcuts = (editor: SlateEditor) => {
         resolvedHotkey.priority = resolvedHotkey.priority ?? plugin.priority;
 
         (
-          editor.meta.shortcuts as Record<
+          editor.runtime.shortcuts as Record<
             string,
-            SlatePlugin['shortcuts'][string]
+            BasePlugin['shortcuts'][string]
           >
         )[namespacedKey] = resolvedHotkey;
       }
@@ -354,7 +403,7 @@ const resolvePluginShortcuts = (editor: SlateEditor) => {
   });
 };
 
-const resolvePluginInputRules = (editor: SlateEditor) => {
+const resolvePluginInputRules = (editor: BaseEditor) => {
   const resolvedMeta: ResolvedInputRulesMeta = {
     insertBreak: [],
     insertData: [],
@@ -362,7 +411,7 @@ const resolvePluginInputRules = (editor: SlateEditor) => {
     plugins: {},
   };
 
-  editor.meta.pluginList.forEach((plugin, pluginIndex) => {
+  editor.runtime.pluginList.forEach((plugin, pluginIndex) => {
     const pluginKey = plugin.key;
     const inputRulesDefinition = (plugin as any).inputRules;
     const definitionRules =
@@ -435,15 +484,15 @@ const resolvePluginInputRules = (editor: SlateEditor) => {
     rules.sort(sortRules);
   });
 
-  editor.meta.inputRules = resolvedMeta;
+  editor.runtime.inputRules = resolvedMeta;
 };
 
-const validateRemovedRuntimePlugins = (editor: SlateEditor) => {
+const validateRemovedRuntimePlugins = (editor: BaseEditor) => {
   const hasAutoformatPlugin = !!editor.plugins.autoformat;
   const hasResolvedInputRules =
-    editor.meta.inputRules.insertBreak.length > 0 ||
-    editor.meta.inputRules.insertData.length > 0 ||
-    editor.meta.inputRules.insertText.all.length > 0;
+    editor.runtime.inputRules.insertBreak.length > 0 ||
+    editor.runtime.inputRules.insertData.length > 0 ||
+    editor.runtime.inputRules.insertText.all.length > 0;
 
   if (hasAutoformatPlugin && hasResolvedInputRules) {
     throw new Error(
@@ -457,12 +506,33 @@ const validateRemovedRuntimePlugins = (editor: SlateEditor) => {
 };
 
 const flattenAndResolvePlugins = (
-  editor: SlateEditor,
-  plugins: SlatePlugins
-): Map<string, SlatePlugin> => {
-  const pluginMap = new Map<string, SlatePlugin>();
+  editor: BaseEditor,
+  plugins: readonly AnyBasePlugin[]
+): Map<string, AnyBasePlugin> => {
+  const pluginMap = new Map<string, AnyBasePlugin>();
+  const mergeDuplicatePlugin = (
+    existingPlugin: AnyBasePlugin,
+    resolvedPlugin: AnyBasePlugin
+  ) => {
+    const mergedPlugin = mergePlugins(existingPlugin, resolvedPlugin);
 
-  const processPlugin = (plugin: SlatePlugin) => {
+    mergedPlugin.__apiExtensions = [
+      ...(existingPlugin.__apiExtensions ?? []),
+      ...(resolvedPlugin.__apiExtensions ?? []),
+    ];
+    mergedPlugin.__selectorExtensions = [
+      ...(existingPlugin.__selectorExtensions ?? []),
+      ...(resolvedPlugin.__selectorExtensions ?? []),
+    ];
+    mergedPlugin.__txExtensions = [
+      ...(existingPlugin.__txExtensions ?? []),
+      ...(resolvedPlugin.__txExtensions ?? []),
+    ];
+
+    return mergedPlugin;
+  };
+
+  const processPlugin = (plugin: AnyBasePlugin) => {
     const resolvedPlugin = resolvePlugin(editor, plugin);
 
     if (resolvedPlugin.key) {
@@ -471,7 +541,7 @@ const flattenAndResolvePlugins = (
       if (existingPlugin) {
         pluginMap.set(
           resolvedPlugin.key,
-          mergePlugins(existingPlugin, resolvedPlugin)
+          mergeDuplicatePlugin(existingPlugin, resolvedPlugin)
         );
       } else {
         pluginMap.set(resolvedPlugin.key, resolvedPlugin);
@@ -491,9 +561,9 @@ const flattenAndResolvePlugins = (
 };
 
 export const resolveAndSortPlugins = (
-  editor: SlateEditor,
-  plugins: SlatePlugins
-): SlatePlugins => {
+  editor: BaseEditor,
+  plugins: readonly AnyBasePlugin[]
+): BasePlugins => {
   // Step 1: Resolve, flatten, and merge all plugins
   const pluginMap = flattenAndResolvePlugins(editor, plugins);
 
@@ -506,10 +576,10 @@ export const resolveAndSortPlugins = (
   enabledPlugins.sort((a, b) => b.priority - a.priority);
 
   // Step 4: Reorder based on dependencies
-  const orderedPlugins: SlatePlugins = [];
+  const orderedPlugins: BasePlugins = [];
   const visited = new Set<string>();
 
-  const visit = (plugin: SlatePlugin) => {
+  const visit = (plugin: AnyBasePlugin) => {
     if (visited.has(plugin.key)) return;
 
     visited.add(plugin.key);
@@ -536,17 +606,17 @@ export const resolveAndSortPlugins = (
 };
 
 export const applyPluginsToEditor = (
-  editor: SlateEditor,
-  plugins: SlatePlugins
+  editor: BaseEditor,
+  plugins: BasePlugins
 ) => {
-  editor.meta.pluginList = plugins;
+  editor.runtime.pluginList = plugins;
   editor.plugins = Object.fromEntries(
     plugins.map((plugin) => [plugin.key, plugin])
   );
 };
 
-export const resolvePluginOverrides = (editor: SlateEditor) => {
-  const applyOverrides = (plugins: SlatePlugin[]): SlatePlugin[] => {
+export const resolvePluginOverrides = (editor: BaseEditor) => {
+  const applyOverrides = (plugins: AnyBasePlugin[]): AnyBasePlugin[] => {
     let overriddenPlugins = [...plugins];
 
     const enabledOverrides: Record<string, boolean> = {};
@@ -554,7 +624,7 @@ export const resolvePluginOverrides = (editor: SlateEditor) => {
       string,
       { component: any; priority: number }
     > = {};
-    const pluginOverrides: Record<string, Partial<SlatePlugin>> = {};
+    const pluginOverrides: Record<string, Partial<AnyBasePlugin>> = {};
 
     // Collect all overrides
     for (const plugin of plugins) {
@@ -627,8 +697,8 @@ export const resolvePluginOverrides = (editor: SlateEditor) => {
       }));
   };
 
-  editor.meta.pluginList = applyOverrides(editor.meta.pluginList as any);
+  editor.runtime.pluginList = applyOverrides(editor.runtime.pluginList as any);
   editor.plugins = Object.fromEntries(
-    editor.meta.pluginList.map((plugin) => [plugin.key, plugin])
+    editor.runtime.pluginList.map((plugin) => [plugin.key, plugin])
   );
 };

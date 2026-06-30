@@ -21,7 +21,7 @@ const getLocationKey = (location: NativeTextInputLocation | undefined) =>
 const getCurrentSelectionLocation = (
   editor: Editor
 ): NativeTextInputLocation | undefined => {
-  const selection = editor.read((state) => state.selection.get());
+  const selection = editor.read((state) => state.selection());
 
   return selection?.anchor;
 };

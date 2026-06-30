@@ -2,7 +2,6 @@ import {
   createEditor,
   type Descendant,
   defineEditorExtension,
-  type Value,
 } from '@platejs/plite';
 
 type CustomText = {
@@ -17,21 +16,7 @@ type ChecklistElement = {
 
 type CustomValue = ChecklistElement[];
 
-declare module '@platejs/plite' {
-  interface EditorStateExtensionGroups<V extends Value = Value> {
-    checklist: {
-      isActive: () => boolean;
-      value: () => V;
-    };
-  }
-
-  interface EditorTxExtensionGroups<V extends Value = Value> {
-    checklist: {
-      toggle: () => void;
-      value: () => V;
-    };
-  }
-}
+const typeOnly = (_callback: () => void) => {};
 
 const initialValue: CustomValue = [
   { type: 'checklist', children: [{ text: 'todo' }] },
@@ -42,8 +27,8 @@ const ChecklistExtension = defineEditorExtension({
   state: {
     checklist(state) {
       return {
-        isActive: () => state.selection.get() != null,
-        value: () => state.value.root() as CustomValue,
+        isActive: () => state.selection() != null,
+        value: () => state.children() as CustomValue,
       };
     },
   },
@@ -53,7 +38,7 @@ const ChecklistExtension = defineEditorExtension({
         toggle() {
           tx.nodes.set({ checked: true }, { at: [0, 0] });
         },
-        value: () => tx.value.root() as CustomValue,
+        value: () => tx.children() as CustomValue,
       };
     },
   },
@@ -72,7 +57,7 @@ const RuntimeHostExtension = defineEditorExtension({
 
 const editor = createEditor({
   initialValue,
-  extensions: [ChecklistExtension, RuntimeHostExtension],
+  extensions: [ChecklistExtension, RuntimeHostExtension] as const,
 });
 
 const installedValue: CustomValue = editor.read((state) =>
@@ -81,6 +66,8 @@ const installedValue: CustomValue = editor.read((state) =>
 const installedActive: boolean = editor.read((state) =>
   state.checklist.isActive()
 );
+const directInstalledValue: CustomValue = editor.read.checklist.value();
+const directInstalledActive: boolean = editor.read.checklist.isActive();
 
 editor.update((tx) => {
   const value: CustomValue = tx.checklist.value();
@@ -88,6 +75,7 @@ editor.update((tx) => {
 
   void value;
 });
+editor.update.checklist.toggle();
 
 const hostStatus: 'ready' = editor.api.runtimeHost.status();
 const tokenHostStatus: 'ready' = editor.getApi(RuntimeHostExtension).status();
@@ -130,20 +118,22 @@ const disabledEditor = createEditor({
     DisabledChecklistExtension,
     RuntimeHostExtension,
     DisabledRuntimeHostExtension,
-  ],
+  ] as const,
 });
 
-// @ts-expect-error disabled extensions do not contribute state groups
-disabledEditor.read((state) => state.checklist.isActive());
+typeOnly(() => {
+  // @ts-expect-error disabled extensions do not contribute state groups
+  disabledEditor.read((state) => state.checklist.isActive());
 
-// @ts-expect-error disabled extensions do not contribute tx groups
-disabledEditor.update((tx) => tx.checklist.toggle());
+  // @ts-expect-error disabled extensions do not contribute tx groups
+  disabledEditor.update((tx) => tx.checklist.toggle());
 
-// @ts-expect-error disabled extensions do not contribute runtime API handles
-disabledEditor.api.runtimeHost.status();
+  // @ts-expect-error disabled extensions do not contribute runtime API handles
+  disabledEditor.api.runtimeHost.status();
 
-// @ts-expect-error disabled extension tokens cannot access installed API
-disabledEditor.getApi(RuntimeHostExtension);
+  // @ts-expect-error disabled extension tokens cannot access installed API
+  disabledEditor.getApi(RuntimeHostExtension);
+});
 
 const FirstSameNameExtension = defineEditorExtension({
   name: 'same-name',
@@ -165,37 +155,45 @@ const SecondSameNameExtension = defineEditorExtension({
 
 const latestWinsEditor = createEditor({
   initialValue,
-  extensions: [FirstSameNameExtension, SecondSameNameExtension],
+  extensions: [FirstSameNameExtension, SecondSameNameExtension] as const,
 });
 
 latestWinsEditor.api.sameName.secondOnly();
 
-// @ts-expect-error latest same-name extension replaces earlier type output
-latestWinsEditor.api.sameName.firstOnly();
+typeOnly(() => {
+  // @ts-expect-error latest same-name extension replaces earlier type output
+  latestWinsEditor.api.sameName.firstOnly();
+});
 
 latestWinsEditor.getApi(SecondSameNameExtension).secondOnly();
 
-// @ts-expect-error replaced extension tokens cannot access installed API
-latestWinsEditor.getApi(FirstSameNameExtension);
+typeOnly(() => {
+  // @ts-expect-error replaced extension tokens cannot access installed API
+  latestWinsEditor.getApi(FirstSameNameExtension);
+});
 
 const plainEditor = createEditor({ initialValue });
 
-// @ts-expect-error extension state groups are only present when installed
-plainEditor.read((state) => state.checklist.isActive());
+typeOnly(() => {
+  // @ts-expect-error extension state groups are only present when installed
+  plainEditor.read((state) => state.checklist.isActive());
 
-// @ts-expect-error extension tx groups are only present when installed
-plainEditor.update((tx) => tx.checklist.toggle());
+  // @ts-expect-error extension tx groups are only present when installed
+  plainEditor.update((tx) => tx.checklist.toggle());
 
-// @ts-expect-error extension api handles are only present when installed
-plainEditor.api.runtimeHost.status();
+  // @ts-expect-error extension api handles are only present when installed
+  plainEditor.api.runtimeHost.status();
 
-// @ts-expect-error capability lookup by string is not public API
-editor.getApi('runtime-host');
+  // @ts-expect-error capability lookup by string is not public API
+  editor.getApi('runtime-host');
 
-// @ts-expect-error uninstalled extension tokens cannot access installed API
-editor.getApi(OtherRuntimeHostExtension);
+  // @ts-expect-error uninstalled extension tokens cannot access installed API
+  editor.getApi(OtherRuntimeHostExtension);
+});
 
 const _keepsValueInference: Descendant = installedValue[0];
 const _keepsBooleanInference: boolean = installedActive;
+const _keepsDirectValueInference: Descendant = directInstalledValue[0];
+const _keepsDirectBooleanInference: boolean = directInstalledActive;
 const _keepsHostStatusInference: 'ready' = hostStatus;
 const _keepsTokenHostStatusInference: 'ready' = tokenHostStatus;

@@ -1,13 +1,18 @@
 /** @jsx jsxt */
 
-import { BaseLinkPlugin } from '@platejs/link';
 import { jsxt } from '@platejs/test-utils';
 
-import type { PlateEditor } from '../../../../react/editor';
+import { createBasePlugin } from '../../../plugin';
 import { createPlateTestEditor } from '../../../../react/__tests__/createPlateTestEditor';
 import { getEdgeNodes } from './getEdgeNodes';
 
 jsxt;
+
+const TestLinkPlugin = createBasePlugin({
+  key: 'a',
+  node: { isElement: true, isInline: true, type: 'a' },
+  rules: { selection: { affinity: 'hard' } },
+});
 
 describe('getEdgeNodes', () => {
   describe('Text node edges', () => {
@@ -22,7 +27,7 @@ describe('getEdgeNodes', () => {
             </htext>
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any;
 
       const [editor] = await createPlateTestEditor({
         selection: input.selection,
@@ -46,7 +51,7 @@ describe('getEdgeNodes', () => {
             <htext bold>second</htext>
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any;
 
       const [editor] = await createPlateTestEditor({
         selection: input.selection,
@@ -69,7 +74,7 @@ describe('getEdgeNodes', () => {
             </htext>
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any;
 
       const [editor] = await createPlateTestEditor({
         selection: input.selection,
@@ -92,7 +97,7 @@ describe('getEdgeNodes', () => {
             </htext>
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any;
 
       const [editor] = await createPlateTestEditor({
         selection: input.selection,
@@ -119,10 +124,10 @@ describe('getEdgeNodes', () => {
             <htext>after</htext>
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any;
 
       const [editor] = await createPlateTestEditor({
-        plugins: [BaseLinkPlugin],
+        plugins: [TestLinkPlugin],
         selection: input.selection,
         value: input.children,
       });
@@ -153,10 +158,10 @@ describe('getEdgeNodes', () => {
             <htext>after</htext>
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any;
 
       const [editor] = await createPlateTestEditor({
-        plugins: [BaseLinkPlugin],
+        plugins: [TestLinkPlugin],
         selection: input.selection,
         value: input.children,
       });

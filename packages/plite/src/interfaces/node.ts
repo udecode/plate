@@ -266,14 +266,19 @@ export interface NodeInterface {
   isAncestor: (node: Node) => node is Ancestor;
 
   /**
+   * Check if a value is an `Element` or `Text` node.
+   */
+  isDescendant: (value: unknown) => value is Descendant;
+
+  /**
    * Check if a node is an `Editor` object.
    */
-  isEditor: (node: Node) => node is Editor;
+  isEditor: (value: unknown) => value is Editor;
 
   /**
    * Check if a node is an `Element` object.
    */
-  isElement: (node: Node) => node is Element;
+  isElement: (value: unknown) => value is Element;
 
   /**
    * Check if a value implements the `Node` interface.
@@ -288,7 +293,7 @@ export interface NodeInterface {
   /**
    * Check if a node is an `Text` object.
    */
-  isText: (node: Node) => node is Text;
+  isText: (value: unknown) => value is Text;
 
   /**
    * Get the last leaf node entry in a root node from a path.
@@ -823,12 +828,16 @@ export const NodeApi: NodeInterface = {
     return !NodeApi.isText(node);
   },
 
-  isEditor(node: Node): node is Editor {
-    return editorIsEditor(node);
+  isDescendant(value: unknown): value is Descendant {
+    return NodeApi.isElement(value) || NodeApi.isText(value);
   },
 
-  isElement(node: Node): node is Element {
-    return Array.isArray((node as Element).children) && !editorIsEditor(node);
+  isEditor(value: unknown): value is Editor {
+    return editorIsEditor(value);
+  },
+
+  isElement(value: unknown): value is Element {
+    return ElementApi.isElement(value);
   },
 
   isNode(
@@ -852,8 +861,8 @@ export const NodeApi: NodeInterface = {
     );
   },
 
-  isText(node: Node): node is Text {
-    return typeof (node as Text).text === 'string';
+  isText(value: unknown): value is Text {
+    return TextApi.isText(value);
   },
 
   last(root: Node, path: Path): NodeEntry {

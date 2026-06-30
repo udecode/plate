@@ -3,13 +3,13 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 
-import * as Plite from '../src';
-import { createEditor, type Descendant } from '../src';
+import * as Plite from '@platejs/plite';
+import { createEditor, type Element } from '@platejs/plite';
 import { getTestEditorSnapshot, replaceEditorValue } from './support/snapshot';
 
 const repoRoot = resolve(import.meta.dir, '../../..');
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });

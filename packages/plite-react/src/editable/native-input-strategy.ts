@@ -51,7 +51,7 @@ export const canUseNativeSingleCharacterInput = ({
 
   // Skip native if there are marks, as
   // `insertText` will insert a node, not just text.
-  if (hasNativeBlockingMarks(editor.read((state) => state.marks.get()))) {
+  if (hasNativeBlockingMarks(editor.read((state) => state.marks()))) {
     return false;
   }
 

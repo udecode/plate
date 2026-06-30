@@ -1,11 +1,12 @@
-import type { Point } from '@platejs/slate';
-import type { SlateEditor } from '../../../editor';
+import type { EditorUpdateTransaction, Point } from '@platejs/plite';
+
+import type { BaseEditor } from '../../../editor';
 import type { NavigationNavigateOptions } from '../types';
 
 import { flashTarget } from './flashTarget';
 
 const getScrollTarget = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { scrollTarget, select, target }: NavigationNavigateOptions
 ): Point | undefined => {
   if (scrollTarget) return scrollTarget;
@@ -13,11 +14,12 @@ const getScrollTarget = (
   if (select && 'anchor' in select && select.anchor) return select.anchor;
   if (select && 'path' in select) return select;
 
-  return editor.api.start(target.path);
+  return editor.read.points.start(target.path);
 };
 
 export const navigate = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   {
     flash,
     focus = true,
@@ -27,13 +29,13 @@ export const navigate = (
     target,
   }: NavigationNavigateOptions
 ) => {
-  if (!editor.api.node(target.path)) return false;
+  if (!editor.read.nodes.get(target.path)) return false;
 
   if (select) {
     if ('focus' in select) {
-      editor.tf.select(select);
+      tx.selection.set(select);
     } else {
-      editor.tf.select({
+      tx.selection.set({
         anchor: select,
         focus: select,
       });
@@ -41,7 +43,7 @@ export const navigate = (
   }
 
   if (focus) {
-    editor.tf.focus();
+    editor.api.dom.focus?.();
   }
 
   if (scroll) {
@@ -55,7 +57,7 @@ export const navigate = (
     });
 
     if (point) {
-      editor.api.scrollIntoView(point);
+      editor.api.scrollIntoView?.(point);
     }
   }
 

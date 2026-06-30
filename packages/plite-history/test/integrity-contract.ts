@@ -27,7 +27,7 @@ const paragraph = (text: string): Descendant => ({
 const historyTestEditor = () => createEditor({ extensions: [history()] });
 
 const getHistory = (editor: EditorType) =>
-  editor.read((state: any) => state.history.get());
+  editor.read((state: any) => state.history());
 
 const undo = (editor: EditorType) => {
   editor.update((tx) => {
@@ -92,7 +92,7 @@ describe('plite-history integrity contract', () => {
     assert.deepEqual(getVisibleState(editor), before);
   });
 
-  it('withNewBatch splits once then merges the rest of the scope', () => {
+  it('history.run({ newBatch: true }) splits once then merges the rest of the scope', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
@@ -104,7 +104,7 @@ describe('plite-history integrity contract', () => {
       tx.text.insert('a');
     });
 
-    editor.api.history.withNewBatch(() => {
+    editor.api.history.run({ newBatch: true }, () => {
       write(editor, (tx) => {
         tx.text.insert('b');
         tx.text.insert('c');
@@ -122,7 +122,7 @@ describe('plite-history integrity contract', () => {
     assert.equal(getText(editor), 'one');
   });
 
-  it('withoutMerging forces a fresh batch', () => {
+  it('history.run({ merge: false }) forces a fresh batch', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
@@ -134,7 +134,7 @@ describe('plite-history integrity contract', () => {
       tx.text.insert('a');
     });
 
-    editor.api.history.withoutMerging(() => {
+    editor.api.history.run({ merge: false }, () => {
       write(editor, (tx) => {
         tx.text.insert('b');
       });
@@ -149,7 +149,7 @@ describe('plite-history integrity contract', () => {
     assert.equal(getText(editor), 'one');
   });
 
-  it('withoutSaving suppresses history recording', () => {
+  it('history.run({ save: false }) suppresses history recording', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
@@ -157,7 +157,7 @@ describe('plite-history integrity contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    editor.api.history.withoutSaving(() => {
+    editor.api.history.run({ save: false }, () => {
       write(editor, (tx) => {
         tx.text.insert('a');
       });

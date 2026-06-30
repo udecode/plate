@@ -1,7 +1,6 @@
-import type { TElement, TText } from '@platejs/slate';
-import type { NodeEntry } from 'slate';
+import type { Element, NodeEntry, Text } from '@platejs/plite';
 
 export type EdgeNodes =
-  | [NodeEntry<TElement | TText>, NodeEntry<TElement | TText>]
-  | [NodeEntry<TElement | TText>, null]
-  | [null, NodeEntry<TElement | TText>];
+  | [NodeEntry<Element | Text>, NodeEntry<Element | Text>]
+  | [NodeEntry<Element | Text>, null]
+  | [null, NodeEntry<Element | Text>];

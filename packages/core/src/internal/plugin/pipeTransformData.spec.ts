@@ -3,7 +3,7 @@ import { createBasePlugin } from '../../lib/plugin';
 import { pipeTransformData } from './pipeTransformData';
 
 const createParserEditor = (
-  plugins: Parameters<typeof createBaseEditor>[0]['plugins']
+  plugins: NonNullable<Parameters<typeof createBaseEditor>[0]>['plugins']
 ) => createBaseEditor({ plugins });
 
 describe('pipeTransformData', () => {

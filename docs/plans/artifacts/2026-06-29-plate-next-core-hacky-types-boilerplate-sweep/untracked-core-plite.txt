@@ -1,0 +1,3 @@
+packages/core/src/static/components/slate-nodes.tsx
+packages/core/tsconfig.test.json
+packages/core/tsconfig.type-tests.json

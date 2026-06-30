@@ -1,19 +1,19 @@
-import type { SlateEditor } from '../editor';
+import type { BaseEditor } from '../editor';
 import type {
   AnyPluginConfig,
   PluginConfig,
   WithRequiredKey,
-} from './BasePlugin';
-import type { AnySlatePlugin, SlatePlugin } from './SlatePlugin';
+} from './SlatePlugin';
+import type { AnyBasePlugin, BasePlugin } from './BasePlugin';
 
 import { resolvePlugin } from '../../internal/plugin/resolvePlugin';
-import { createSlatePlugin } from './createSlatePlugin';
+import { createBasePlugin } from './createBasePlugin';
 
 /** Get editor plugin by key or plugin object. */
 export function getSlatePlugin<C extends AnyPluginConfig = PluginConfig>(
-  editor: SlateEditor,
+  editor: BaseEditor,
   p: WithRequiredKey<C>
-): C extends { node: any } ? C : SlatePlugin<C> {
+): C extends { node: any } ? C : BasePlugin<C> {
   let plugin = p as any;
 
   const editorPlugin = editor.plugins[p.key] as any;
@@ -21,10 +21,10 @@ export function getSlatePlugin<C extends AnyPluginConfig = PluginConfig>(
   if (!editorPlugin) {
     // When passing only { key }
     if (!plugin.node) {
-      plugin = createSlatePlugin(plugin);
+      plugin = createBasePlugin(plugin);
     }
 
-    // Resolve is need when passing an external plugin with extensions (e.g. in withLink)
+    // Resolve when passing an external plugin with deferred plugin configuration.
     return plugin.__resolved ? plugin : resolvePlugin(editor, plugin);
   }
 
@@ -32,22 +32,22 @@ export function getSlatePlugin<C extends AnyPluginConfig = PluginConfig>(
 }
 
 /** Get editor plugin type by key or plugin object. */
-export function getPluginType(editor: SlateEditor, key: string): string {
-  const p = editor.getPlugin<AnySlatePlugin>({ key });
+export function getPluginType(editor: BaseEditor, key: string): string {
+  const p = (editor.getPlugin as any)({ key }) as AnyBasePlugin;
 
   return p.node.type ?? p.key ?? '';
 }
 
 /** Get editor plugin types by key. */
-export const getPluginTypes = (editor: SlateEditor, keys: string[]) =>
+export const getPluginTypes = (editor: BaseEditor, keys: string[]) =>
   keys.map((key) => editor.getType(key));
 
 export const getPluginKey = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   type: string
-): string | undefined => editor.meta.pluginCache.node.types[type];
+): string | undefined => editor.runtime.pluginCache.node.types[type];
 
-export const getPluginKeys = (editor: SlateEditor, types: string[]): string[] =>
+export const getPluginKeys = (editor: BaseEditor, types: string[]): string[] =>
   types
     .map((type) => {
       const pluginKey = getPluginKey(editor, type);
@@ -55,12 +55,12 @@ export const getPluginKeys = (editor: SlateEditor, types: string[]): string[] =>
     })
     .filter(Boolean);
 
-export const getPluginByType = (editor: SlateEditor, type: string) => {
+export const getPluginByType = (editor: BaseEditor, type: string) => {
   const key = getPluginKey(editor, type);
   if (!key) return null;
 
   return editor.getPlugin({ key });
 };
 
-export const getContainerTypes = (editor: SlateEditor) =>
-  getPluginTypes(editor, editor.meta.pluginCache.node.isContainer);
+export const getContainerTypes = (editor: BaseEditor) =>
+  getPluginTypes(editor, editor.runtime.pluginCache.node.isContainer);

@@ -5,18 +5,24 @@ import {
   createEditor,
   createEditorRuntime,
   createEditorView,
-  type Descendant,
+  type Element,
+  type Operation,
   defineEditorExtension,
   OperationApi,
   PointApi,
   RangeApi,
-} from '../src';
+} from '@platejs/plite';
+import {
+  getLastCommit as editorGetLastCommit,
+  insertNodes as editorInsertNodes,
+  pathRef as editorPathRef,
+} from '@platejs/plite/internal';
 
 const paragraph = (text: string) =>
   ({
     type: 'paragraph',
     children: [{ text }],
-  }) satisfies Descendant;
+  }) satisfies Element;
 
 const voidBlock = defineEditorExtension({
   name: 'test-void-block',
@@ -49,7 +55,7 @@ describe('rooted operation contract', () => {
       },
     ]);
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body!')],
         roots: { header },
@@ -58,14 +64,14 @@ describe('rooted operation contract', () => {
   });
 
   it('keeps Point and Range transforms root-local', () => {
-    const operation = {
+    const operation: Operation = {
       offset: 0,
       path: [0, 0],
       root: 'main',
       text: '!',
       type: 'insert_text',
-    } as const;
-    const headerPoint = { path: [0, 0], offset: 3, root: 'header' } as const;
+    };
+    const headerPoint = { path: [0, 0], offset: 3, root: 'header' };
     const headerRange = { anchor: headerPoint, focus: headerPoint };
 
     assert.deepEqual(PointApi.transform(headerPoint, operation), headerPoint);
@@ -133,7 +139,7 @@ describe('rooted operation contract', () => {
     });
 
     assert.deepEqual(
-      mergeEditor.read((state) => state.selection.get()),
+      mergeEditor.read((state) => state.selection()),
       mainSelection
     );
 
@@ -162,7 +168,7 @@ describe('rooted operation contract', () => {
     });
 
     assert.deepEqual(
-      splitEditor.read((state) => state.selection.get()),
+      splitEditor.read((state) => state.selection()),
       mainSelection
     );
   });
@@ -187,7 +193,7 @@ describe('rooted operation contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('hder')] },
@@ -221,7 +227,7 @@ describe('rooted operation contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('hXder')] },
@@ -255,7 +261,7 @@ describe('rooted operation contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('X')] },
@@ -266,7 +272,7 @@ describe('rooted operation contract', () => {
 
   it('checks explicit point inserts against the target root', () => {
     const editor = createEditor({
-      extensions: [voidBlock],
+      extensions: [voidBlock] as const,
       initialValue: {
         children: [{ type: 'void-block', children: [{ text: '' }] }],
         roots: {
@@ -282,7 +288,7 @@ describe('rooted operation contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [{ type: 'void-block', children: [{ text: '' }] }],
         roots: { header: [paragraph('heXad')] },
@@ -313,7 +319,7 @@ describe('rooted operation contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: {
@@ -361,7 +367,7 @@ describe('rooted operation contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body!')],
         roots: {
@@ -404,7 +410,7 @@ describe('rooted operation contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: {
@@ -441,7 +447,7 @@ describe('rooted operation contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: {
@@ -469,7 +475,7 @@ describe('rooted operation contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: {
@@ -497,7 +503,7 @@ describe('rooted operation contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
       }
@@ -569,7 +575,7 @@ describe('rooted operation contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('he'), paragraph('new'), paragraph('ad')] },
@@ -599,7 +605,7 @@ describe('rooted operation contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('he'), paragraph('new'), paragraph('ad')] },
@@ -623,12 +629,12 @@ describe('rooted operation contract', () => {
       },
     });
 
-    editorInsertNodes(editor, paragraph('new'), {
+    editorInsertNodes(editor as never, paragraph('new'), {
       at: { path: [0, 0], offset: 2, root: 'header' },
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('he'), paragraph('new'), paragraph('ad')] },
@@ -690,7 +696,7 @@ describe('rooted operation contract', () => {
     }, /Cannot replay an invalid Plite operation/);
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('head')] },
@@ -717,7 +723,7 @@ describe('rooted operation contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.selection.get()),
+      editor.read((state) => state.selection()),
       headerSelection
     );
     assert.equal(editorGetLastCommit(editor)?.operations[0]?.root, 'header');
@@ -758,11 +764,11 @@ describe('rooted operation contract', () => {
     assert.equal(inverse.root, 'main');
 
     editor.update((tx) => {
-      tx.operations.replay([inverse]);
+      tx.operations.replay([inverse as never]);
     });
 
     assert.deepEqual(
-      editor.read((state) => state.selection.get()),
+      editor.read((state) => state.selection()),
       mainSelection
     );
   });

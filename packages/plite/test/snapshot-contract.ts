@@ -2,18 +2,74 @@ import assert from 'node:assert/strict';
 import {
   createEditor,
   type Descendant,
+  ElementApi,
+  type Element,
   type EditorCommit,
   type EditorElementSpec,
   type Operation,
   OperationApi,
   type Path,
-} from '../src';
+} from '@platejs/plite';
 import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
 import {
+  addMark as editorAddMark,
+  collapse as editorCollapse,
+  delete as editorDelete,
+  deleteBackward as editorDeleteBackward,
+  deselect as editorDeselect,
+  getChildren as editorGetChildren,
   getCachedFullRootReplaceTopLevelRuntimeIds,
   getEditorRuntime,
+  getLastCommit as editorGetLastCommit,
+  getSnapshot as editorGetSnapshot,
+  insertFragment as editorInsertFragment,
+  insertBreak as editorInsertBreak,
+  insertNodes as editorInsertNodes,
+  insertSoftBreak as editorInsertSoftBreak,
+  insertText as editorInsertText,
+  isEditor as editorIsEditor,
+  mergeNodes as editorMergeNodes,
+  move as editorMove,
+  moveNodes as editorMoveNodes,
+  normalize as editorNormalize,
   projectRangeInSnapshot,
-} from '../src/internal';
+  getOperations as editorGetOperations,
+  projectRange as editorProjectRange,
+  removeMark as editorRemoveMark,
+  removeNodes as editorRemoveNodes,
+  replace as editorReplaceBase,
+  select as editorSelect,
+  setPoint as editorSetPoint,
+  setSelection as editorSetSelection,
+  setNodes as editorSetNodes,
+  splitNodes as editorSplitNodes,
+  subscribe as editorSubscribe,
+  subscribeSource as editorSubscribeSource,
+  toggleMark as editorToggleMark,
+  liftNodes as editorLiftNodes,
+  unwrapNodes as editorUnwrapNodes,
+  unsetNodes as editorUnsetNodes,
+  withoutNormalizing as editorWithoutNormalizing,
+  wrapNodes as editorWrapNodes,
+} from '@platejs/plite/internal';
+
+type NestedTextElement = {
+  a?: boolean;
+  children: { children: { text: string }[] }[];
+  type: string;
+};
+
+type LegacySnapshotInput = Omit<
+  Parameters<typeof editorReplaceBase>[1],
+  'children'
+> & {
+  children: Descendant[];
+};
+
+const editorReplace = editorReplaceBase as unknown as (
+  editor: Parameters<typeof editorReplaceBase>[0],
+  input: LegacySnapshotInput
+) => void;
 
 const runEditorTransaction = (
   editor: Parameters<typeof runInternalEditorTransaction>[0],
@@ -47,9 +103,9 @@ const applyOperation = (
 };
 
 const getMarks = (editor: ReturnType<typeof createEditor>) =>
-  editor.read((state) => state.marks.get());
+  editor.read((state) => state.marks());
 
-const createChildren = (): Descendant[] => [
+const createChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'alpha' }],
@@ -60,7 +116,7 @@ const createChildren = (): Descendant[] => [
   },
 ];
 
-const createLegacyBlockChildren = (): Descendant[] => [
+const createLegacyBlockChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'one' }],
@@ -71,21 +127,21 @@ const createLegacyBlockChildren = (): Descendant[] => [
   },
 ];
 
-const createLegacyMoveChildren = (): Descendant[] => [
+const createLegacyMoveChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'one two three' }],
   },
 ];
 
-const createLegacySingleBlockChildren = (): Descendant[] => [
+const createLegacySingleBlockChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'one' }],
   },
 ];
 
-const createLegacyDeleteBoundaryChildren = (): Descendant[] => [
+const createLegacyDeleteBoundaryChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'word' }],
@@ -96,7 +152,7 @@ const createLegacyDeleteBoundaryChildren = (): Descendant[] => [
   },
 ];
 
-const createLegacyInlineDeleteChildren = (): Descendant[] => [
+const createLegacyInlineDeleteChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [
@@ -108,10 +164,10 @@ const createLegacyInlineDeleteChildren = (): Descendant[] => [
       },
       { text: 'three' },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createLegacyInlineDeleteInsideChildren = (): Descendant[] => [
+const createLegacyInlineDeleteInsideChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [
@@ -123,10 +179,10 @@ const createLegacyInlineDeleteInsideChildren = (): Descendant[] => [
       },
       { text: '' },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createLegacyInlineBoundaryChildren = (): Descendant[] => [
+const createLegacyInlineBoundaryChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'one' }],
@@ -142,10 +198,10 @@ const createLegacyInlineBoundaryChildren = (): Descendant[] => [
       },
       { text: 'four' },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createLegacyInlineAfterChildren = (): Descendant[] => [
+const createLegacyInlineAfterChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [
@@ -157,17 +213,17 @@ const createLegacyInlineAfterChildren = (): Descendant[] => [
       },
       { text: 'a' },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createLegacyWrappedBlockChildren = (): Descendant[] => [
+const createLegacyWrappedBlockChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'word' }],
   },
 ];
 
-const createLegacyNestedBlockChildren = (): Descendant[] => [
+const createLegacyNestedBlockChildren = (): Element[] => [
   {
     type: 'quote',
     children: [
@@ -176,28 +232,28 @@ const createLegacyNestedBlockChildren = (): Descendant[] => [
         children: [{ text: 'word' }],
       },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createLegacyNestedBlockAcrossChildren = (): Descendant[] => [
+const createLegacyNestedBlockAcrossChildren = (): Element[] => [
   {
     type: 'quote',
     a: true,
     children: createLegacyBlockChildren(),
-  } as Descendant,
+  } as Element,
 ];
 
-const createLegacyQuoteChildren = (...texts: string[]): Descendant[] => [
+const createLegacyQuoteChildren = (...texts: string[]): Element[] => [
   {
     type: 'quote',
     children: texts.map((text) => ({
       type: 'paragraph',
       children: [{ text }],
     })),
-  } as Descendant,
+  } as Element,
 ];
 
-const createLegacyNestedBlockStartChildren = (): Descendant[] => [
+const createLegacyNestedBlockStartChildren = (): Element[] => [
   {
     type: 'quote',
     a: true,
@@ -209,24 +265,24 @@ const createLegacyNestedBlockStartChildren = (): Descendant[] => [
       'five',
       'six'
     )[0]!.children,
-  } as Descendant,
+  } as Element,
 ];
 
-const createLegacyNestedBlockMultipleChildren = (): Descendant[] => [
+const createLegacyNestedBlockMultipleChildren = (): Element[] => [
   ...createLegacyQuoteChildren('one', 'two'),
 ];
 
-const createLegacyLiftFullChildren = (): Descendant[] => [
+const createLegacyLiftFullChildren = (): Element[] => [
   ...createLegacyQuoteChildren('one', 'two', 'three', 'four', 'five', 'six'),
 ];
 
 const createLegacyLiftPairChildren = createLegacyNestedBlockMultipleChildren;
 
-const createLegacyLiftTripleChildren = (): Descendant[] => [
+const createLegacyLiftTripleChildren = (): Element[] => [
   ...createLegacyQuoteChildren('one', 'two', 'three'),
 ];
 
-const createExpandedChildren = (): Descendant[] => [
+const createExpandedChildren = (): Element[] => [
   ...createChildren(),
   {
     type: 'paragraph',
@@ -234,35 +290,35 @@ const createExpandedChildren = (): Descendant[] => [
   },
 ];
 
-const createStyledChildren = (): Descendant[] => [
+const createStyledChildren = (): Element[] => [
   {
     type: 'paragraph',
     align: 'left',
     children: [{ text: 'alpha', bold: true }],
-  } as Descendant,
+  } as Element,
   {
     type: 'paragraph',
     align: 'right',
     children: [{ text: 'beta' }],
-  } as Descendant,
+  } as Element,
 ];
 
-const createMergeTextChildren = (): Descendant[] => [
+const createMergeTextChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [
       { text: 'al', bold: true },
       { text: 'pha', bold: true },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createElementMergeChildren = (): Descendant[] => [
+const createElementMergeChildren = (): Element[] => [
   {
     type: 'paragraph',
     data: true,
     children: [{ text: 'before' }],
-  } as Descendant,
+  } as Element,
   {
     type: 'paragraph',
     data: true,
@@ -274,17 +330,17 @@ const createElementMergeChildren = (): Descendant[] => [
       },
       { text: 'after' },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createWrapChildren = (): Descendant[] => [
+const createWrapChildren = (): Element[] => [
   {
     type: 'paragraph',
     children: [{ text: 'alpha' }],
   },
 ];
 
-const createListWrapperChildren = (): Descendant[] => [
+const createListWrapperChildren = (): Element[] => [
   {
     type: 'bulleted-list',
     children: [
@@ -297,10 +353,10 @@ const createListWrapperChildren = (): Descendant[] => [
         children: [{ text: 'two' }],
       },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createUnwrapChildren = (): Descendant[] => [
+const createUnwrapChildren = (): Element[] => [
   {
     type: 'quote',
     children: [
@@ -313,10 +369,10 @@ const createUnwrapChildren = (): Descendant[] => [
         children: [{ text: 'beta' }],
       },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createTopLevelUnwrapChildren = (): Descendant[] => [
+const createTopLevelUnwrapChildren = (): Element[] => [
   {
     type: 'quote',
     children: [
@@ -329,7 +385,7 @@ const createTopLevelUnwrapChildren = (): Descendant[] => [
         children: [{ text: 'beta' }],
       },
     ],
-  } as Descendant,
+  } as Element,
   {
     type: 'quote',
     children: [
@@ -338,10 +394,10 @@ const createTopLevelUnwrapChildren = (): Descendant[] => [
         children: [{ text: 'gamma' }],
       },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createLiftOnlyChildChildren = (): Descendant[] => [
+const createLiftOnlyChildChildren = (): Element[] => [
   {
     type: 'quote',
     children: [
@@ -350,10 +406,10 @@ const createLiftOnlyChildChildren = (): Descendant[] => [
         children: [{ text: 'alpha' }],
       },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createLiftSiblingChildren = (): Descendant[] => [
+const createLiftSiblingChildren = (): Element[] => [
   {
     type: 'quote',
     children: [
@@ -370,10 +426,10 @@ const createLiftSiblingChildren = (): Descendant[] => [
         children: [{ text: 'three' }],
       },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
-const createElementSplitChildren = (): Descendant[] => [
+const createElementSplitChildren = (): Element[] => [
   {
     type: 'paragraph',
     data: true,
@@ -386,12 +442,12 @@ const createElementSplitChildren = (): Descendant[] => [
       },
       { text: 'after' },
     ],
-  } as Descendant,
+  } as Element,
 ];
 
 const getBlockTexts = (children: readonly Descendant[]) =>
   children.map((node) => {
-    assert.ok('children' in node);
+    assert.ok(ElementApi.isElement(node));
     return node.children
       .map((child) => ('text' in child ? child.text : ''))
       .join('');
@@ -724,9 +780,9 @@ it('treats semantic id prop changes as normalization progress', () => {
     if (
       path.length === 1 &&
       !editorIsEditor(node) &&
-      'children' in node &&
+      ElementApi.isElement(node) &&
       node.type === 'paragraph' &&
-      (node as Descendant & { id?: string }).id !== 'kept'
+      (node as Element & { id?: string }).id !== 'kept'
     ) {
       editorSetNodes(editor, { id: 'kept' }, { at: path });
       return;
@@ -747,7 +803,7 @@ it('treats semantic id prop changes as normalization progress', () => {
   });
 
   assert.equal(
-    (editorGetSnapshot(editor).children[0] as Descendant & { id?: string }).id,
+    (editorGetSnapshot(editor).children[0] as Element & { id?: string }).id,
     'kept'
   );
 });
@@ -1293,8 +1349,8 @@ it('markableVoid lets addMark and removeMark target the text child inside a void
   const getMention = (snapshot: ReturnType<typeof editorGetSnapshot>) =>
     snapshot.children[0].children.find(
       (child) => 'children' in child && child.type === 'mention'
-    ) as Descendant & {
-      children: Array<Descendant & { bold?: boolean }>;
+    ) as Element & {
+      children: Array<Element & { bold?: boolean }>;
     };
 
   editorReplace(editor, {
@@ -2667,10 +2723,15 @@ it('falls back to the transaction path for direct text ops when custom normaliza
     if (
       path.length === 1 &&
       !editorIsEditor(node) &&
-      'children' in node &&
+      ElementApi.isElement(node) &&
       node.type === 'paragraph' &&
-      (node as Descendant & { normalized?: boolean }).normalized !== true &&
-      node.children.some((child) => 'text' in child && child.text.includes('!'))
+      (node as Element & { normalized?: boolean }).normalized !== true &&
+      node.children.some(
+        (child) =>
+          'text' in child &&
+          typeof child.text === 'string' &&
+          child.text.includes('!')
+      )
     ) {
       editorSetNodes(editor, { normalized: true }, { at: path });
       return;
@@ -2692,7 +2753,7 @@ it('falls back to the transaction path for direct text ops when custom normaliza
     text: '!',
   });
 
-  const firstBlock = editorGetSnapshot(editor).children[0] as Descendant & {
+  const firstBlock = editorGetSnapshot(editor).children[0] as Element & {
     normalized?: boolean;
   };
 
@@ -2805,8 +2866,8 @@ it('editorAddMark stores explicit marks for collapsed insertion and editorInsert
   editorInsertText(editor, '!');
 
   const snapshot = editorGetSnapshot(editor);
-  const firstBlock = snapshot.children[0] as Descendant & {
-    children: Array<Descendant & { bold?: boolean }>;
+  const firstBlock = snapshot.children[0] as Element & {
+    children: Array<Element & { bold?: boolean }>;
   };
 
   assert.deepEqual(snapshot.marks, null);
@@ -2844,8 +2905,8 @@ it('editorRemoveMark can clear inherited leaf marks for the next collapsed inser
   editorInsertText(editor, '!');
 
   const snapshot = editorGetSnapshot(editor);
-  const firstBlock = snapshot.children[0] as Descendant & {
-    children: Array<Descendant & { bold?: boolean }>;
+  const firstBlock = snapshot.children[0] as Element & {
+    children: Array<Element & { bold?: boolean }>;
   };
 
   assert.deepEqual(snapshot.marks, null);
@@ -2883,8 +2944,8 @@ it('editorToggleMark clears an inherited collapsed mark before the next insertio
   editorInsertText(editor, '!');
 
   const snapshot = editorGetSnapshot(editor);
-  const firstBlock = snapshot.children[0] as Descendant & {
-    children: Array<Descendant & { bold?: boolean }>;
+  const firstBlock = snapshot.children[0] as Element & {
+    children: Array<Element & { bold?: boolean }>;
   };
 
   assert.deepEqual(firstBlock.children, [
@@ -2919,8 +2980,8 @@ it('tx.marks.toggle defaults to true and clears inherited collapsed marks', () =
   editorInsertText(editor, '!');
 
   const snapshot = editorGetSnapshot(editor);
-  const firstBlock = snapshot.children[0] as Descendant & {
-    children: Array<Descendant & { bold?: boolean }>;
+  const firstBlock = snapshot.children[0] as Element & {
+    children: Array<Element & { bold?: boolean }>;
   };
 
   assert.deepEqual(firstBlock.children, [
@@ -2953,7 +3014,7 @@ it('editorAddMark applies bold across an expanded selection while preserving exi
   editorAddMark(editor, 'bold', true);
 
   const snapshot = editorGetSnapshot(editor);
-  const firstBlock = snapshot.children[0] as Descendant & {
+  const firstBlock = snapshot.children[0] as Element & {
     children: Array<
       Descendant & { bold?: boolean; italic?: boolean; underline?: boolean }
     >;
@@ -2988,8 +3049,8 @@ it('editorRemoveMark clears bold only inside an expanded subrange', () => {
   editorRemoveMark(editor, 'bold');
 
   const snapshot = editorGetSnapshot(editor);
-  const firstBlock = snapshot.children[0] as Descendant & {
-    children: Array<Descendant & { bold?: boolean }>;
+  const firstBlock = snapshot.children[0] as Element & {
+    children: Array<Element & { bold?: boolean }>;
   };
 
   assert.deepEqual(firstBlock.children, [
@@ -3009,9 +3070,9 @@ it('preserves custom node properties across replacement snapshots', () => {
   });
 
   const snapshot = editorGetSnapshot(editor);
-  const firstBlock = snapshot.children[0] as Descendant & {
+  const firstBlock = snapshot.children[0] as Element & {
     align?: string;
-    children: Array<Descendant & { bold?: boolean }>;
+    children: Array<Element & { bold?: boolean }>;
   };
 
   assert.equal(firstBlock.align, 'left');
@@ -3188,6 +3249,7 @@ it('supports set_node and path-based setNodes while keeping runtime ids stable',
   applyOperation(editor, {
     type: 'set_node',
     path: [0],
+    properties: {},
     newProperties: {
       type: 'quote',
       align: 'center',
@@ -3205,9 +3267,9 @@ it('supports set_node and path-based setNodes while keeping runtime ids stable',
   });
 
   const after = editorGetSnapshot(editor);
-  const firstBlock = after.children[0] as Descendant & {
+  const firstBlock = after.children[0] as Element & {
     align?: string;
-    children: Array<Descendant & { bold?: boolean; italic?: boolean }>;
+    children: Array<Element & { bold?: boolean; italic?: boolean }>;
     type: string;
   };
 
@@ -3246,9 +3308,9 @@ it('supports property removal through set_node and path-based unsetNodes while k
   });
 
   const after = editorGetSnapshot(editor);
-  const firstBlock = after.children[0] as Descendant & {
+  const firstBlock = after.children[0] as Element & {
     align?: string;
-    children: Array<Descendant & { bold?: boolean }>;
+    children: Array<Element & { bold?: boolean }>;
   };
 
   assert.equal(firstBlock.align, undefined);
@@ -3408,8 +3470,8 @@ it('supports split_node on an element path, keeps the legacy leading empty text,
   });
 
   const after = editorGetSnapshot(editor);
-  const leftBlock = after.children[0] as Descendant & { data?: boolean };
-  const rightBlock = after.children[1] as Descendant & { data?: boolean };
+  const leftBlock = after.children[0] as Element & { data?: boolean };
+  const rightBlock = after.children[1] as Element & { data?: boolean };
 
   assert.equal(leftBlock.data, true);
   assert.equal(rightBlock.data, true);
@@ -3448,8 +3510,8 @@ it('supports path-based splitNodes helper calls on element nodes with the legacy
   });
 
   const after = editorGetSnapshot(editor);
-  const leftBlock = after.children[0] as Descendant & { data?: boolean };
-  const rightBlock = after.children[1] as Descendant & { data?: boolean };
+  const leftBlock = after.children[0] as Element & { data?: boolean };
+  const rightBlock = after.children[1] as Element & { data?: boolean };
 
   assert.equal(leftBlock.data, true);
   assert.equal(rightBlock.data, true);
@@ -3488,7 +3550,7 @@ it('supports merge_node on a text path and keeps the left branch id', () => {
   });
 
   const after = editorGetSnapshot(editor);
-  const firstText = after.children[0].children[0] as Descendant & {
+  const firstText = after.children[0].children[0] as Element & {
     bold?: boolean;
   };
 
@@ -3522,7 +3584,7 @@ it('supports path-based mergeNodes helper calls on text nodes and keeps the left
   editorMergeNodes(editor, { at: [0, 1] });
 
   const after = editorGetSnapshot(editor);
-  const firstText = after.children[0].children[0] as Descendant & {
+  const firstText = after.children[0].children[0] as Element & {
     bold?: boolean;
   };
 
@@ -3563,7 +3625,7 @@ it('supports merge_node on an element path and preserves moved descendant ids', 
   });
 
   const after = editorGetSnapshot(editor);
-  const block = after.children[0] as Descendant & { data?: boolean };
+  const block = after.children[0] as Element & { data?: boolean };
 
   assert.equal(after.children.length, 1);
   assert.equal(block.data, true);
@@ -3599,7 +3661,7 @@ it('supports path-based mergeNodes helper calls on element nodes', () => {
   editorMergeNodes(editor, { at: [1] });
 
   const after = editorGetSnapshot(editor);
-  const block = after.children[0] as Descendant & { data?: boolean };
+  const block = after.children[0] as Element & { data?: boolean };
 
   assert.equal(after.children.length, 1);
   assert.equal(block.data, true);
@@ -5038,7 +5100,7 @@ it('supports path-based wrapNodes helper calls and preserves the moved node id',
   );
 
   const after = editorGetSnapshot(editor);
-  const wrapper = after.children[0] as Descendant & { type: string };
+  const wrapper = after.children[0] as Element & { type: string };
 
   assert.equal(wrapper.type, 'quote');
   assert.equal(wrapper.children.length, 1);
@@ -5076,7 +5138,7 @@ it('supports range-based wrapNodes helper calls across top-level block spans and
   );
 
   const after = editorGetSnapshot(editor);
-  const wrapper = after.children[0] as Descendant & { type: string };
+  const wrapper = after.children[0] as Element & { type: string };
 
   assert.equal(after.children.length, 1);
   assert.equal(wrapper.type, 'quote');
@@ -5118,7 +5180,7 @@ it('supports path-based wrapNodes inside an outer transaction using the live dra
   });
 
   const after = editorGetSnapshot(editor);
-  const wrapper = after.children[2] as Descendant & { type: string };
+  const wrapper = after.children[2] as NestedTextElement;
 
   assert.equal(wrapper.type, 'quote');
   assert.equal(wrapper.children.length, 1);
@@ -5139,19 +5201,12 @@ it('mirrors the legacy wrapNodes/path/block.tsx oracle row', () => {
 
   editorWrapNodes(
     editor,
-    {
-      type: 'quote',
-      a: true,
-      children: [],
-    } as Descendant,
+    { type: 'quote', a: true, children: [] },
     { at: [0] }
   );
 
   const after = editorGetSnapshot(editor);
-  const wrapper = after.children[0] as Descendant & {
-    a?: boolean;
-    type: string;
-  };
+  const wrapper = after.children[0] as NestedTextElement;
 
   assert.equal(wrapper.type, 'quote');
   assert.equal(wrapper.a, true);
@@ -5174,17 +5229,10 @@ it('mirrors the legacy wrapNodes/block/block.tsx oracle row', () => {
     marks: null,
   });
 
-  editorWrapNodes(editor, {
-    type: 'quote',
-    a: true,
-    children: [],
-  } as Descendant);
+  editorWrapNodes(editor, { type: 'quote', a: true, children: [] });
 
   const after = editorGetSnapshot(editor);
-  const wrapper = after.children[0] as Descendant & {
-    a?: boolean;
-    type: string;
-  };
+  const wrapper = after.children[0] as NestedTextElement;
 
   assert.equal(wrapper.type, 'quote');
   assert.equal(wrapper.a, true);
@@ -5207,14 +5255,10 @@ it('mirrors the legacy wrapNodes/block/block-across.tsx oracle row', () => {
     marks: null,
   });
 
-  editorWrapNodes(editor, {
-    type: 'quote',
-    a: true,
-    children: [],
-  } as Descendant);
+  editorWrapNodes(editor, { type: 'quote', a: true, children: [] });
 
   const after = editorGetSnapshot(editor);
-  const wrapper = after.children[0] as Descendant & {
+  const wrapper = after.children[0] as Element & {
     a?: boolean;
     type: string;
   };
@@ -5241,14 +5285,10 @@ it('mirrors the legacy wrapNodes/block/block-end.tsx oracle row', () => {
     marks: null,
   });
 
-  editorWrapNodes(editor, {
-    type: 'quote',
-    a: true,
-    children: [],
-  } as Descendant);
+  editorWrapNodes(editor, { type: 'quote', a: true, children: [] });
 
   const after = editorGetSnapshot(editor);
-  const wrapper = after.children[1] as Descendant & {
+  const wrapper = after.children[1] as Element & {
     a?: boolean;
     type: string;
   };
@@ -5292,7 +5332,7 @@ it('supports selection-based wrapNodes inside an outer transaction using the liv
   });
 
   const after = editorGetSnapshot(editor);
-  const wrapper = after.children[1] as Descendant & { type: string };
+  const wrapper = after.children[1] as Element & { type: string };
 
   assert.equal(after.children.length, 2);
   assert.equal(wrapper.type, 'quote');
@@ -5324,8 +5364,8 @@ it('supports list formatting flows by turning selected top-level blocks into lis
   });
 
   const snapshot = editorGetSnapshot(editor);
-  const wrapper = snapshot.children[0] as Descendant & {
-    children: Array<Descendant & { type?: string }>;
+  const wrapper = snapshot.children[0] as Element & {
+    children: Array<Element & { type?: string }>;
     type?: string;
   };
 
@@ -5366,8 +5406,8 @@ it('supports numbered list formatting flows with list-item children', () => {
   });
 
   const snapshot = editorGetSnapshot(editor);
-  const wrapper = snapshot.children[0] as Descendant & {
-    children: Array<Descendant & { type?: string }>;
+  const wrapper = snapshot.children[0] as Element & {
+    children: Array<Element & { type?: string }>;
     type?: string;
   };
 
@@ -5727,7 +5767,7 @@ it('supports path-based liftNodes helper calls for a first child', () => {
   editorLiftNodes(editor, { at: [0, 0] });
 
   const after = editorGetSnapshot(editor);
-  const trailingWrapper = after.children[1] as Descendant & { type: string };
+  const trailingWrapper = after.children[1] as NestedTextElement;
 
   assert.equal(after.children.length, 2);
   assert.equal(after.children[0].children[0].text, 'one');
@@ -5768,7 +5808,7 @@ it('mirrors the legacy liftNodes/path/first-block.tsx oracle row', () => {
   editorLiftNodes(editor, { at: [0, 0] });
 
   const after = editorGetSnapshot(editor);
-  const trailingWrapper = after.children[1] as Descendant & { type: string };
+  const trailingWrapper = after.children[1] as Element & { type: string };
 
   assert.equal(after.children[0].children[0].text, 'one');
   assert.equal(trailingWrapper.type, 'quote');
@@ -5787,7 +5827,7 @@ it('mirrors the legacy liftNodes/path/last-block.tsx oracle row', () => {
   editorLiftNodes(editor, { at: [0, 1] });
 
   const after = editorGetSnapshot(editor);
-  const leadingWrapper = after.children[0] as Descendant & { type: string };
+  const leadingWrapper = after.children[0] as Element & { type: string };
 
   assert.equal(leadingWrapper.type, 'quote');
   assert.deepEqual(getBlockTexts(leadingWrapper.children), ['one']);
@@ -5806,8 +5846,14 @@ it('mirrors the legacy liftNodes/path/middle-block.tsx oracle row', () => {
   editorLiftNodes(editor, { at: [0, 1] });
 
   const after = editorGetSnapshot(editor);
-  const leadingWrapper = after.children[0] as Descendant & { type: string };
-  const trailingWrapper = after.children[2] as Descendant & { type: string };
+  const leadingWrapper = after.children[0] as Element & {
+    children: { children: { text: string }[] }[];
+    type: string;
+  };
+  const trailingWrapper = after.children[2] as Element & {
+    children: { children: { text: string }[] }[];
+    type: string;
+  };
 
   assert.equal(leadingWrapper.type, 'quote');
   assert.deepEqual(getBlockTexts(leadingWrapper.children), ['one']);
@@ -5861,8 +5907,8 @@ it('supports path-based liftNodes helper calls for a middle child', () => {
   editorLiftNodes(editor, { at: [0, 1] });
 
   const after = editorGetSnapshot(editor);
-  const leadingWrapper = after.children[0] as Descendant & { type: string };
-  const trailingWrapper = after.children[2] as Descendant & { type: string };
+  const leadingWrapper = after.children[0] as NestedTextElement;
+  const trailingWrapper = after.children[2] as NestedTextElement;
 
   assert.equal(after.children.length, 3);
   assert.equal(leadingWrapper.type, 'quote');
@@ -5894,7 +5940,7 @@ it('supports path-based liftNodes helper calls for a last child', () => {
   editorLiftNodes(editor, { at: [0, 2] });
 
   const after = editorGetSnapshot(editor);
-  const leadingWrapper = after.children[0] as Descendant & { type: string };
+  const leadingWrapper = after.children[0] as NestedTextElement;
 
   assert.equal(after.children.length, 2);
   assert.equal(leadingWrapper.type, 'quote');
@@ -5930,7 +5976,7 @@ it('supports range-based liftNodes helper calls across top-level wrapper-child s
   });
 
   const after = editorGetSnapshot(editor);
-  const trailingWrapper = after.children[2] as Descendant & { type: string };
+  const trailingWrapper = after.children[2] as Element & { type: string };
 
   assert.deepEqual(getBlockTexts(after.children), ['one', 'two', '']);
   assert.equal(after.index.pathToId['0'], firstId);
@@ -6168,8 +6214,8 @@ it('supports delete helper calls with an exact point across mixed-inline sibling
   });
 
   const after = editorGetSnapshot(editor);
-  const link = after.children[0].children[1] as Descendant & {
-    children: Descendant[];
+  const link = after.children[0].children[1] as Element & {
+    children: Element[];
   };
 
   assert.equal(link.children[0].text, 'yperlink');
@@ -6242,9 +6288,9 @@ it('supports delete helper calls across adjacent nested block boundaries without
   });
 
   const after = editorGetSnapshot(editor);
-  const codeBlock = after.children[0] as Descendant & {
+  const codeBlock = after.children[0] as Element & {
     type: string;
-    children: Array<Descendant & { type: string; children: Descendant[] }>;
+    children: Array<Element & { type: string; children: Element[] }>;
   };
 
   assert.equal(after.children.length, 1);
@@ -6553,8 +6599,8 @@ it('mirrors the legacy delete/selection/inline-inside.tsx oracle row', () => {
   editorDelete(editor);
 
   const after = editorGetSnapshot(editor);
-  const link = after.children[0].children[1] as Descendant & {
-    children: Descendant[];
+  const link = after.children[0].children[1] as Element & {
+    children: Element[];
   };
 
   assert.equal(link.children[0].text, 'wod');
@@ -6580,8 +6626,8 @@ it('collapses outside an inline after deleting its first selected character', ()
   editorDelete(editor, { reverse: true });
 
   const after = editorGetSnapshot(editor);
-  const link = after.children[0].children[1] as Descendant & {
-    children: Descendant[];
+  const link = after.children[0].children[1] as Element & {
+    children: Element[];
   };
 
   assert.equal(link.children[0].text, 'ord');
@@ -6607,8 +6653,8 @@ it('collapses outside an inline after deleting its last selected character', () 
   editorDelete(editor, { reverse: false });
 
   const after = editorGetSnapshot(editor);
-  const link = after.children[0].children[1] as Descendant & {
-    children: Descendant[];
+  const link = after.children[0].children[1] as Element & {
+    children: Element[];
   };
 
   assert.equal(link.children[0].text, 'wor');
@@ -6759,8 +6805,8 @@ it('mirrors the legacy delete/selection/inline-whole.tsx oracle row', () => {
   editorDelete(editor);
 
   const after = editorGetSnapshot(editor);
-  const link = after.children[0].children[1] as Descendant & {
-    children: Descendant[];
+  const link = after.children[0].children[1] as Element & {
+    children: Element[];
   };
 
   assert.equal(link.children[0].text, '');
@@ -6818,8 +6864,8 @@ it('supports delete helper calls with an explicit non-empty range across adjacen
   });
 
   const after = editorGetSnapshot(editor);
-  const link = after.children[0].children[1] as Descendant & {
-    children: Descendant[];
+  const link = after.children[0].children[1] as Element & {
+    children: Element[];
   };
 
   assert.equal(after.children[0].children[0].text, 'befo');
@@ -6936,8 +6982,8 @@ it('supports delete helper calls with the current non-empty selection across adj
   });
 
   const after = editorGetSnapshot(editor);
-  const link = after.children[0].children[1] as Descendant & {
-    children: Descendant[];
+  const link = after.children[0].children[1] as Element & {
+    children: Element[];
   };
 
   assert.equal(after.children[0].children[0].text, 'before');
@@ -7055,8 +7101,8 @@ it('supports delete helper calls with the current collapsed selection across mix
   });
 
   const after = editorGetSnapshot(editor);
-  const link = after.children[0].children[1] as Descendant & {
-    children: Descendant[];
+  const link = after.children[0].children[1] as Element & {
+    children: Element[];
   };
 
   assert.equal(link.children[0].text, 'hyperlin');
@@ -7157,7 +7203,7 @@ it('publishes immutable snapshots detached from public editor fields', () => {
   const snapshot = editorGetSnapshot(editor);
 
   assert.throws(() => {
-    (snapshot.children as Descendant[]).push({
+    (snapshot.children as Element[]).push({
       type: 'paragraph',
       children: [{ text: 'oops' }],
     });
@@ -7260,8 +7306,8 @@ it('uses addMark as the active mark write path', () => {
   editorInsertText(editor, '!');
 
   const snapshot = editorGetSnapshot(editor);
-  const firstBlock = snapshot.children[0] as Descendant & {
-    children: Array<Descendant & { bold?: boolean }>;
+  const firstBlock = snapshot.children[0] as Element & {
+    children: Array<Element & { bold?: boolean }>;
   };
 
   assert.deepEqual(snapshot.marks, null);
@@ -7299,8 +7345,8 @@ it('preserves inherited leaf marks when addMark is collapsed', () => {
   editorInsertText(editor, '!');
 
   const snapshot = editorGetSnapshot(editor);
-  const firstBlock = snapshot.children[0] as Descendant & {
-    children: Array<Descendant & { bold?: boolean; italic?: boolean }>;
+  const firstBlock = snapshot.children[0] as Element & {
+    children: Array<Element & { bold?: boolean; italic?: boolean }>;
   };
 
   assert.deepEqual(firstBlock.children, [
@@ -7420,7 +7466,7 @@ it('projects ranges against an explicit snapshot for internal projection stores'
   assert.ok(rightId);
 
   editorReplace(editor, {
-    children: [{ children: [{ text: 'replaced' }] }],
+    children: [{ type: 'paragraph', children: [{ text: 'replaced' }] }],
     selection: null,
   });
 

@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, type Descendant } from '../src';
+import { createEditor, type Element } from '@platejs/plite';
 import { replaceEditorValue } from './support/snapshot';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -26,7 +26,7 @@ describe('read/update contract', () => {
 
     const state = editor.read((state) => ({
       children: state.runtime.snapshot().children,
-      selection: state.selection.get(),
+      selection: state.selection(),
     }));
 
     assert.deepEqual(state.children, [paragraph('one')]);
@@ -47,7 +47,7 @@ describe('read/update contract', () => {
       'one!'
     );
 
-    const commit = editor.read((state) => state.value.lastCommit());
+    const commit = editor.read((state) => state.lastCommit());
 
     assert(commit);
     assert.deepEqual(commit.classes, ['text']);
@@ -66,7 +66,7 @@ describe('read/update contract', () => {
     });
 
     assert.equal(editor.read.text.string([]), 'one');
-    assert.deepEqual(editor.read.selection.get(), {
+    assert.deepEqual(editor.read.selection(), {
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -78,15 +78,12 @@ describe('read/update contract', () => {
     editor.update.marks.toggle('bold');
 
     assert.equal(editor.read.text.string([]), 'one!two');
-    assert.deepEqual(editor.read.value.get().children, [
+    assert.deepEqual(editor.read.value().children, [
       paragraph('one!'),
       paragraph('two'),
     ]);
-    assert.deepEqual(editor.read.marks.get(), { bold: true });
-    assert.equal(
-      editor.read.value.lastCommit()?.classes.includes('mark'),
-      true
-    );
+    assert.deepEqual(editor.read.marks(), { bold: true });
+    assert.equal(editor.read.lastCommit()?.classes.includes('mark'), true);
   });
 
   it('sets an exact expanded range without retargeting endpoints', () => {
@@ -149,10 +146,10 @@ describe('read/update contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.selection.get()),
+      editor.read((state) => state.selection()),
       selection
     );
-    const operation = editor.read((state) => state.value.operations()).at(-1);
+    const operation = editor.read((state) => state.operations()).at(-1);
 
     assert.equal(operation?.type, 'set_selection');
     assert.deepEqual(operation?.newProperties, selection);

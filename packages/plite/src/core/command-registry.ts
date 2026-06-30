@@ -31,7 +31,8 @@ const getCommandType = <TCommand extends EditorCommand>(
 
 export const defineCommand = <TCommand extends EditorCommand>(
   type: TCommand['type']
-): EditorCommandDefinition<TCommand> => Object.freeze({ type });
+): EditorCommandDefinition<TCommand> =>
+  Object.freeze({ type }) as EditorCommandDefinition<TCommand>;
 
 export const registerCommand = <TCommand extends EditorCommand>(
   editor: Editor,

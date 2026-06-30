@@ -1,28 +1,28 @@
 import type { BaseEditor } from '../../lib/editor';
 
-import { getBasePlugin } from '../../lib/plugin';
+import { getEditorPlugin } from '../../lib/plugin';
 import { isEditOnly } from './isEditOnlyDisabled';
 
 /** Transform initial value from editor plugins before the editor is ready. */
 export const pipeTransformInitialValue = (editor: BaseEditor) => {
-  const value = editor.meta.isNormalizing;
+  const value = editor.runtime.isNormalizing;
 
-  editor.meta.isNormalizing = true;
+  editor.runtime.isNormalizing = true;
 
-  editor.meta.pluginCache.transformInitialValue.forEach((key) => {
+  editor.runtime.pluginCache.transformInitialValue.forEach((key) => {
     const p = editor.getPlugin({ key });
 
-    if (isEditOnly(editor.dom.readOnly, p, 'transformInitialValue')) {
+    if (isEditOnly(editor.api.dom.isReadOnly(), p, 'transformInitialValue')) {
       return;
     }
 
-    if (!p.transformInitialValue && !p.normalizeInitialValue) {
+    if (!p.transformInitialValue) {
       return;
     }
 
     const ctx = {
-      ...getBasePlugin(editor, p),
-      value: editor.children,
+      ...getEditorPlugin(editor, p),
+      value: editor.read.children(),
     } as any;
 
     if (p.transformInitialValue) {
@@ -34,16 +34,9 @@ export const pipeTransformInitialValue = (editor: BaseEditor) => {
         );
       }
 
-      editor.children = nextValue;
-      return;
-    }
-
-    const nextValue = p.normalizeInitialValue?.(ctx);
-
-    if (nextValue !== undefined) {
-      editor.children = nextValue;
+      editor.update.value.replace({ children: nextValue, selection: null });
     }
   });
 
-  editor.meta.isNormalizing = value;
+  editor.runtime.isNormalizing = value;
 };

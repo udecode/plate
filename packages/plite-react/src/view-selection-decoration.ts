@@ -259,7 +259,7 @@ const readPliteViewSelectionDecorations = (
   let roots: Readonly<Record<string, readonly Descendant[]>> | null = null;
   const getRoots = () => {
     roots ??= editor.read((state) =>
-      createPliteViewBoundaryRootMap(state.value.get())
+      createPliteViewBoundaryRootMap(state.value())
     );
 
     return roots;

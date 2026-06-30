@@ -29,13 +29,18 @@ import type {
   EditorReadOptions,
   EditorNormalizerTransaction,
   EditorSnapshot,
+  EditorStateFragmentApi,
   EditorStateField,
+  EditorStateMarksApi,
   EditorStateNodesApi,
   EditorStatePointsApi,
   EditorStateRangesApi,
+  EditorStateSelectionApi,
   EditorStatePatch,
   EditorStateView,
   EditorTransaction,
+  EditorTransactionFragmentApi,
+  EditorTransactionSelectionApi,
   EditorUpdateContext,
   EditorUpdateMetadata,
   EditorUpdateOptions,
@@ -83,7 +88,7 @@ import {
   cacheFullRootReplaceSnapshotIndexes,
   getFullRootReplaceCachedSnapshot,
 } from './full-root-replace-cache';
-import { cloneDocumentState, normalizeEditorValue } from './initial-value';
+import { cloneDocumentMeta, normalizeEditorValue } from './initial-value';
 import {
   getCommitListeners,
   getSnapshotListeners,
@@ -128,7 +133,6 @@ import {
   freezePublicCommitOperations,
   getPublicExplicitLocationRoot,
   getPublicExplicitRangeRoot,
-  getPublicRootReadKey,
   getReadLocationRoot,
   MAIN_ROOT_KEY,
   requireMutableRoot,
@@ -144,7 +148,6 @@ import {
   getNodeImpactRuntimeIds,
   getOperationScopePaths,
   getSelectionImpactRuntimeIds,
-  operationChangesTextContent,
   operationChangesTopLevelOrder,
   operationTouchesOnlyTopLevelPaths,
   uniqPaths,
@@ -233,6 +236,7 @@ type TransactionSnapshot = {
   reason: 'replace' | null;
   selection: Selection;
   selectionRoot: string;
+  skipNormalize: boolean;
 };
 
 type TransactionAfterCommitHandler = {
@@ -390,33 +394,33 @@ export const canUseTextFastPath = (editor: Editor) => {
 const createEditorDocumentValue = <V extends Value>({
   children,
   fields,
+  meta,
   roots,
-  state,
 }: {
   children: V;
   fields: ReadonlyMap<string, Pick<EditorStateField, 'persist'>>;
+  meta: Record<string, unknown> | undefined;
   roots: Record<string, Descendant[]>;
-  state: Record<string, unknown> | undefined;
 }): EditorDocumentValue<V> => {
   const mainChildren = (roots[MAIN_ROOT_KEY] ?? children) as V;
   const extraRoots = Object.fromEntries(
     Object.entries(roots).filter(([key]) => key !== MAIN_ROOT_KEY)
   ) as Record<string, V>;
-  const persistentState =
-    state === undefined
+  const persistentMeta =
+    meta === undefined
       ? undefined
       : Object.fromEntries(
-          Object.entries(state).filter(
+          Object.entries(meta).filter(
             ([key]) => fields.get(key)?.persist !== false
           )
         );
   const hasExtraRoots = Object.keys(extraRoots).length > 0;
-  const hasPersistentState =
-    persistentState !== undefined && Object.keys(persistentState).length > 0;
+  const hasPersistentMeta =
+    persistentMeta !== undefined && Object.keys(persistentMeta).length > 0;
   const value = {
     children: cloneFrozen(mainChildren),
+    ...(hasPersistentMeta ? { meta: cloneFrozen(persistentMeta) } : {}),
     ...(hasExtraRoots ? { roots: cloneFrozen(extraRoots) } : {}),
-    ...(hasPersistentState ? { state: cloneFrozen(persistentState) } : {}),
   };
 
   return Object.freeze(value) as EditorDocumentValue<V>;
@@ -1173,8 +1177,8 @@ const getEditorDocumentValue = <V extends Value>(
   createEditorDocumentValue({
     children: getChildren(editor),
     fields: getStateFieldMap(editor),
+    meta: DOCUMENT_STATE.get(editor),
     roots: getEditorDocumentRoots(editor),
-    state: DOCUMENT_STATE.get(editor),
   });
 
 export const getLiveNode = (
@@ -1278,9 +1282,6 @@ export const getOperationDirtiness = (
   const hasReplaceFragmentOperation = operations.some(
     (op) => op.type === 'replace_fragment'
   );
-  const hasStructuralTextOperation = operations.some(
-    operationChangesTextContent
-  );
   const classes =
     reason === 'replace' || hasReplaceFragmentOperation
       ? (['replace'] as const)
@@ -1296,9 +1297,7 @@ export const getOperationDirtiness = (
             )
           ? (['text'] as const)
           : operations.length > 0
-            ? hasStructuralTextOperation
-              ? (['structural', 'text'] as const)
-              : (['structural'] as const)
+            ? (['structural'] as const)
             : statePatches.length > 0
               ? (['state'] as const)
               : (['mark'] as const);
@@ -1653,43 +1652,52 @@ const getStateView = <
 >(
   editor: Editor<V, TExtensions>
 ): EditorStateView<V, TExtensions> => {
-  const state = {
-    fragment: Object.freeze({
-      get: (options = {}) =>
-        executeQueryMiddleware(
+  const fragmentApi = Object.freeze(((options = {}) =>
+    executeQueryMiddleware(
+      editor,
+      'fragment',
+      'get',
+      { options },
+      ({ options }) => {
+        const readOptions = options ?? {};
+
+        return withOptionsRootRead(
           editor,
-          'fragment',
-          'get',
-          { options },
-          ({ options }) => {
-            const readOptions = options ?? {};
+          readOptions,
+          () => {
+            if (readOptions.at && !hasLocationPath(editor, readOptions.at)) {
+              return [];
+            }
 
-            return withOptionsRootRead(
-              editor,
-              readOptions,
-              () => {
-                if (
-                  readOptions.at &&
-                  !hasLocationPath(editor, readOptions.at)
-                ) {
-                  return [];
-                }
+            return getFragment(editor, readOptions) as DescendantIn<V>[];
+          },
+          { selectionFallback: usesImplicitSelectionLocation(readOptions) }
+        );
+      }
+    )) satisfies EditorStateFragmentApi<V>);
+  const marksApi = Object.freeze((() =>
+    executeQueryMiddleware(editor, 'marks', 'get', {}, () =>
+      getSelectionMarks(editor)
+    )) satisfies EditorStateMarksApi<V>);
+  const selectionApi = Object.freeze(
+    Object.assign(() => getCurrentSelection(editor), {
+      isCollapsed: () => {
+        const selection = getCurrentSelection(editor);
 
-                return getFragment(editor, readOptions) as DescendantIn<V>[];
-              },
-              { selectionFallback: usesImplicitSelectionLocation(readOptions) }
-            );
-          }
-        ),
-    }),
+        return !!selection && RangeApi.isCollapsed(selection);
+      },
+    }) satisfies EditorStateSelectionApi
+  );
+  const state = {
+    children: () =>
+      (getEditorDocumentRoots(editor)[MAIN_ROOT_KEY] ??
+        []) as unknown as readonly [...V],
+    fragment: fragmentApi,
     getField: <TValue>(field: EditorStateField<TValue>) =>
       getStateFieldValue(editor, field),
-    marks: Object.freeze({
-      get: () =>
-        executeQueryMiddleware(editor, 'marks', 'get', {}, () =>
-          getSelectionMarks(editor)
-        ),
-    }),
+    lastCommit: () => getLastCommit(editor) as EditorCommit<V> | null,
+    marks: marksApi,
+    meta: () => getEditorDocumentValue(editor).meta,
     nodes: Object.freeze<EditorStateNodesApi>({
       above: <T extends Ancestor>(options = {}) =>
         executeQueryMiddleware(
@@ -1797,7 +1805,7 @@ const getStateView = <
           { element },
           ({ element }) => getEditorRuntime(editor).hasTexts(element)
         ),
-      isBlock: (element: import('../interfaces/element').Element) =>
+      isBlock: (element: import('../interfaces/node').Node) =>
         executeQueryMiddleware(
           editor,
           'nodes',
@@ -2007,6 +2015,8 @@ const getStateView = <
           ({ options }) => getEditorRuntime(editor).void(options)
         ),
     }),
+    operations: (startIndex?: number) =>
+      getOperations(editor, startIndex) as readonly Operation<V>[],
     points: Object.freeze({
       after: (at: Location, options = {}) =>
         executeQueryMiddleware(
@@ -2132,8 +2142,20 @@ const getStateView = <
             getEditorRuntime(editor).unhangRange(range, options)
         ),
     }),
+    root: (root: RootKey) => {
+      if (root === MAIN_ROOT_KEY) {
+        throw new Error(
+          '[Plite] editor.read.root("main") is invalid. Use editor.read.children().'
+        );
+      }
+
+      return (getEditorDocumentRoots(editor)[root] ??
+        []) as readonly V[number][];
+    },
     runtime: Object.freeze({
       idAt: (path: Path) => getRuntimeId(editor, path),
+      pathRef: (path, options) =>
+        getEditorRuntime(editor).pathRef(path, options),
       pathOf: (runtimeId) => getPathByRuntimeId(editor, runtimeId),
       snapshot: () => getSnapshot(editor) as EditorSnapshot<V>,
     }),
@@ -2148,11 +2170,11 @@ const getStateView = <
         getEditorSchema(editor).getElementPropertyDescriptor(type, property),
       getElementSpec: (type: string) =>
         getEditorSchema(editor).getElementSpec(type),
-      isAtom: (element: import('../interfaces/element').Element) =>
+      isAtom: (element: import('../interfaces/node').Node) =>
         getEditorSchema(editor).isAtom(element),
-      isBlock: (element: import('../interfaces/element').Element) =>
+      isBlock: (element: import('../interfaces/node').Node) =>
         getEditorRuntime(editor).isBlock(element),
-      isEditableIsland: (element: import('../interfaces/element').Element) =>
+      isEditableIsland: (element: import('../interfaces/node').Node) =>
         getEditorSchema(editor).isEditableIsland(element),
       isElementPropertyEqual: (
         type: string,
@@ -2166,30 +2188,22 @@ const getStateView = <
           left,
           right
         ),
-      isReadOnly: (element: import('../interfaces/element').Element) =>
+      isReadOnly: (element: import('../interfaces/node').Node) =>
         getEditorSchema(editor).isReadOnly(element),
-      isInline: (element: import('../interfaces/element').Element) =>
+      isInline: (element: import('../interfaces/node').Node) =>
         getEditorSchema(editor).isInline(element),
-      isIsolating: (element: import('../interfaces/element').Element) =>
+      isIsolating: (element: import('../interfaces/node').Node) =>
         getEditorSchema(editor).isIsolating(element),
-      isKeyboardSelectable: (
-        element: import('../interfaces/element').Element
-      ) => getEditorSchema(editor).isKeyboardSelectable(element),
-      isSelectable: (element: import('../interfaces/element').Element) =>
+      isKeyboardSelectable: (element: import('../interfaces/node').Node) =>
+        getEditorSchema(editor).isKeyboardSelectable(element),
+      isSelectable: (element: import('../interfaces/node').Node) =>
         getEditorSchema(editor).isSelectable(element),
-      isVoid: (element: import('../interfaces/element').Element) =>
+      isVoid: (element: import('../interfaces/node').Node) =>
         getEditorSchema(editor).isVoid(element),
-      markableVoid: (element: import('../interfaces/element').Element) =>
+      markableVoid: (element: import('../interfaces/node').Node) =>
         getEditorSchema(editor).markableVoid(element),
     }),
-    selection: Object.freeze({
-      get: () => getCurrentSelection(editor),
-      isCollapsed: () => {
-        const selection = getCurrentSelection(editor);
-
-        return !!selection && RangeApi.isCollapsed(selection);
-      },
-    }),
+    selection: selectionApi,
     text: Object.freeze({
       string: (at: Location, options = {}) =>
         withLocationRootRead(editor, at, () => {
@@ -2200,14 +2214,7 @@ const getStateView = <
           return getEditorRuntime(editor).string(at, options);
         }),
     }),
-    value: Object.freeze({
-      get: () => getEditorDocumentValue(editor),
-      lastCommit: () => getLastCommit(editor) as EditorCommit<V> | null,
-      operations: (startIndex?: number) =>
-        getOperations(editor, startIndex) as readonly Operation<V>[],
-      root: (root?: RootKey) =>
-        (getEditorDocumentRoots(editor)[getPublicRootReadKey(root)] ?? []) as V,
-    }),
+    value: () => getEditorDocumentValue(editor),
     view: Object.freeze({
       isFocused: () => false,
       isReadOnly: () => false,
@@ -2262,6 +2269,22 @@ const getUpdateContext = <
   });
 };
 
+const mergeActiveUpdateMetadata = (
+  editor: Editor,
+  metadata: EditorUpdateMetadata
+) => {
+  const transactionSnapshot = TRANSACTION_SNAPSHOT.get(editor);
+
+  if (!transactionSnapshot) {
+    throw new Error('tx.metadata.merge can only run during editor.update');
+  }
+
+  transactionSnapshot.metadata = mergeUpdateMetadata(
+    transactionSnapshot.metadata,
+    metadata
+  );
+};
+
 const getUpdateView = <
   V extends Value,
   TExtensions extends readonly unknown[] = readonly [],
@@ -2285,26 +2308,37 @@ const getUpdateView = <
       insertSoft: () =>
         runSelectionMutation(() => transforms.insertSoftBreak()),
     }),
-    fragment: Object.freeze({
-      get: (...args: Parameters<typeof state.fragment.get>) =>
-        state.fragment.get(...args),
-      delete: (...args: Parameters<typeof transforms.deleteFragment>) =>
-        runSelectionMutation(() => transforms.deleteFragment(...args)),
-      insert: (fragment, options) =>
-        runMutation(options, () =>
-          transforms.insertFragment(fragment, options)
-        ),
-    }),
-    marks: Object.freeze({
-      ...state.marks,
-      add: (key: string, value: unknown) =>
-        runSelectionMutation(() => transforms.addMark(key, value)),
-      remove: (key: string) =>
-        runSelectionMutation(() => transforms.removeMark(key)),
-      set: (marks) =>
-        runSelectionMutation(() => setCurrentMarks(editor, marks)),
-      toggle: (key: string, value = true) =>
-        runSelectionMutation(() => transforms.toggleMark(key, value)),
+    fragment: Object.freeze(
+      Object.assign(
+        (...args: Parameters<typeof state.fragment>) => state.fragment(...args),
+        {
+          delete: (...args: Parameters<typeof transforms.deleteFragment>) =>
+            runSelectionMutation(() => transforms.deleteFragment(...args)),
+          insert: (
+            fragment: Parameters<EditorTransactionFragmentApi<V>['insert']>[0],
+            options: Parameters<EditorTransactionFragmentApi<V>['insert']>[1]
+          ) =>
+            runMutation(options, () =>
+              transforms.insertFragment(fragment, options)
+            ),
+        }
+      )
+    ),
+    marks: Object.freeze(
+      Object.assign((() => state.marks()) satisfies EditorStateMarksApi<V>, {
+        add: (key: string, value: unknown) =>
+          runSelectionMutation(() => transforms.addMark(key, value)),
+        remove: (key: string) =>
+          runSelectionMutation(() => transforms.removeMark(key)),
+        set: (marks: EditorMarks<V> | null) =>
+          runSelectionMutation(() => setCurrentMarks(editor, marks)),
+        toggle: (key: string, value: unknown = true) =>
+          runSelectionMutation(() => transforms.toggleMark(key, value)),
+      })
+    ),
+    metadata: Object.freeze({
+      merge: (metadata: EditorUpdateMetadata) =>
+        mergeActiveUpdateMetadata(editor, metadata),
     }),
     nodes: Object.freeze({
       ...state.nodes,
@@ -2337,6 +2371,12 @@ const getUpdateView = <
         }
 
         withUpdateTagContext(editor, normalizeUpdateTags(options.tag), () => {
+          const snapshot = TRANSACTION_SNAPSHOT.get(editor);
+
+          if (snapshot && options.normalize === false) {
+            snapshot.skipNormalize = true;
+          }
+
           for (const operation of operations) {
             assertKnownReplayOperation(operation);
             const isInternalOwnedReplay =
@@ -2413,42 +2453,33 @@ const getUpdateView = <
     statePatches: Object.freeze({
       replay: (statePatches) => applyStatePatches(editor, statePatches, 'redo'),
     }),
-    selection: Object.freeze({
-      ...state.selection,
-      clear: () => runSelectionMutation(() => transforms.deselect()),
-      collapse: (options = {}) =>
-        runSelectionMutation(() => transforms.collapse(options)),
-      move: (options = {}) =>
-        runSelectionMutation(() => transforms.move(options)),
-      set: (target: Location | null) => {
-        if (target == null) {
-          runSelectionMutation(() => transforms.deselect());
-          return;
-        }
+    selection: Object.freeze(
+      Object.assign(() => state.selection(), {
+        isCollapsed: () => state.selection.isCollapsed(),
+        clear: () => runSelectionMutation(() => transforms.deselect()),
+        collapse: (options = {}) =>
+          runSelectionMutation(() => transforms.collapse(options)),
+        move: (options = {}) =>
+          runSelectionMutation(() => transforms.move(options)),
+        set: (target: Location | null) => {
+          if (target == null) {
+            runSelectionMutation(() => transforms.deselect());
+            return;
+          }
 
-        if (RangeApi.isRange(target)) {
-          runLocationMutation(target, () => {
-            const operation = createSetSelectionOperation(
-              getCurrentSelection(editor),
-              target
-            );
+          if (RangeApi.isRange(target)) {
+            runLocationMutation(target, () => transforms.select(target));
+            return;
+          }
 
-            if (!operation) {
-              return;
-            }
-
-            applyWithOperationMiddlewares(editor, operation);
-          });
-          return;
-        }
-
-        runLocationMutation(target, () => transforms.select(target));
-      },
-      setPoint: (...args: Parameters<typeof transforms.setPoint>) =>
-        runSelectionMutation(() => transforms.setPoint(...args)),
-      setRange: (...args: Parameters<typeof transforms.setSelection>) =>
-        runSelectionMutation(() => transforms.setSelection(...args)),
-    }),
+          runLocationMutation(target, () => transforms.select(target));
+        },
+        setPoint: (...args: Parameters<typeof transforms.setPoint>) =>
+          runSelectionMutation(() => transforms.setPoint(...args)),
+        setRange: (...args: Parameters<typeof transforms.setSelection>) =>
+          runSelectionMutation(() => transforms.setSelection(...args)),
+      }) satisfies EditorTransactionSelectionApi
+    ),
     setField: <TValue>(
       field: EditorStateField<TValue>,
       value: StateFieldValueInput<TValue>
@@ -2468,10 +2499,11 @@ const getUpdateView = <
       insert: (text: string, options = {}) =>
         runMutation(options, () => transforms.insertText(text, options)),
     }),
-    value: Object.freeze({
-      ...state.value,
-      replace: (input: SnapshotInput<V>) => replaceSnapshot(editor, input),
-    }),
+    value: Object.freeze(
+      Object.assign(() => state.value(), {
+        replace: (input: SnapshotInput<V>) => replaceSnapshot(editor, input),
+      })
+    ),
     withoutNormalizing: (fn: () => void) => transforms.withoutNormalizing(fn),
   } satisfies EditorCoreUpdateTransaction<V>;
 
@@ -2516,9 +2548,7 @@ export const getNormalizerUpdateView = <V extends Value>(
     nodes: tx.nodes,
     selection: tx.selection,
     text: tx.text,
-    value: Object.freeze({
-      get: tx.value.get,
-    }),
+    value: tx.value,
   } satisfies EditorNormalizerTransaction<V>);
 };
 
@@ -3603,10 +3633,6 @@ export const buildSnapshotChange = ({
     'build-snapshot-change:classify-fragment',
     () => operations.some((op) => op.type === 'replace_fragment')
   );
-  const hasStructuralTextOperation = profileCoreDuration(
-    'build-snapshot-change:classify-structural-text',
-    () => operations.some(operationChangesTextContent)
-  );
   const classes = profileCoreDuration('build-snapshot-change:classes', () =>
     reason === 'replace' || hasReplaceFragmentOperation
       ? (['replace'] as const)
@@ -3622,9 +3648,7 @@ export const buildSnapshotChange = ({
             )
           ? (['text'] as const)
           : operations.length > 0
-            ? hasStructuralTextOperation
-              ? (['structural', 'text'] as const)
-              : (['structural'] as const)
+            ? (['structural'] as const)
             : statePatches.length > 0
               ? (['state'] as const)
               : (['mark'] as const)
@@ -4097,7 +4121,7 @@ export const runEditorTransaction = (
       command: profileCoreDuration('transaction-command', () =>
         cloneValue(getCommandContext(editor))
       ),
-      documentState: cloneDocumentState(DOCUMENT_STATE.get(editor)),
+      documentState: cloneDocumentMeta(DOCUMENT_STATE.get(editor)),
       implicitTarget: null,
       implicitTargetResolved: false,
       marks: previousSnapshot?.marks ?? getCurrentMarks(editor),
@@ -4112,6 +4136,7 @@ export const runEditorTransaction = (
       roots: transactionRoots,
       selection: previousSnapshot?.selection ?? getCurrentSelection(editor),
       selectionRoot: getCurrentSelectionRoot(editor),
+      skipNormalize: false,
       statePatches: [],
       tags: new Set(getCurrentUpdateTags(editor)),
     });
@@ -4149,7 +4174,7 @@ export const runEditorTransaction = (
       isOuter &&
       (TRANSACTION_CHANGED.get(editor) ?? false) &&
       getEditorRuntime(editor).isNormalizing() &&
-      !options.skipNormalize &&
+      !(options.skipNormalize || snapshot?.skipNormalize) &&
       !canSkipDefaultTopLevelStructuralNormalize(
         editor,
         operationsSinceSnapshot,
@@ -4480,7 +4505,7 @@ export const replaceSnapshot = (editor: Editor, input: SnapshotInput) => {
     () => {
       const transaction = TRANSACTION_SNAPSHOT.get(editor);
       const existingIndex = buildSnapshotIndex(editor, getChildren(editor));
-      const nextChildren = cloneValue([...input.children]);
+      const nextChildren = cloneValue([...input.children]) as Value;
 
       if (transaction) {
         transaction.reason = 'replace';
@@ -4530,7 +4555,7 @@ export const initializePublicState = <
   CHILDREN.set(editor, initialChildren);
   ROOTS.set(editor, initialValue.roots);
   CURRENT_CHILDREN_ROOT.set(editor, MAIN_ROOT_KEY);
-  DOCUMENT_STATE.set(editor, initialValue.state);
+  DOCUMENT_STATE.set(editor, initialValue.meta);
   seedRuntimeIds(initialChildren, editor);
   const initialSelectionRoot =
     getPublicExplicitRangeRoot(options.initialSelection) ?? MAIN_ROOT_KEY;

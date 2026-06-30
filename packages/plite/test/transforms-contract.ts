@@ -14,7 +14,7 @@ import {
   defineEditorExtension,
   type Element,
   NodeApi,
-} from '../src';
+} from '@platejs/plite';
 
 const collapsedSelection = (path: number[], offset: number) => ({
   anchor: { path, offset },
@@ -120,6 +120,38 @@ describe('plite transforms contract', () => {
     assert.deepEqual(after.selection, collapsedSelection([0, 1], 5));
   });
 
+  it('insertText normalizes adjacent same-mark leaves after replacing part of a marked leaf', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ bold: true, text: 'bold' }],
+        },
+      ],
+      selection: {
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+      marks: null,
+    });
+
+    editor.update((tx) => {
+      tx.text.insert('1');
+    });
+
+    const after = editorGetSnapshot(editor);
+
+    assert.deepEqual(after.children, [
+      {
+        type: 'paragraph',
+        children: [{ bold: true, text: 'bo1d' }],
+      },
+    ]);
+    assert.deepEqual(after.selection, collapsedSelection([0, 0], 3));
+  });
+
   it('insertText keeps selected marks when replacing the full document text', () => {
     const editor = createEditor();
 
@@ -150,6 +182,66 @@ describe('plite transforms contract', () => {
       },
     ]);
     assert.deepEqual(after.selection, collapsedSelection([0, 0], 4));
+  });
+
+  it('insertText applies pending marks by default for implicit insertion', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'existing ' }],
+        },
+      ],
+      selection: collapsedSelection([0, 0], 'existing '.length),
+      marks: { bold: true },
+    });
+
+    editor.update.text.insert('marked');
+
+    const after = editorGetSnapshot(editor);
+
+    assert.deepEqual(after.children, [
+      {
+        type: 'paragraph',
+        children: [{ text: 'existing ' }, { bold: true, text: 'marked' }],
+      },
+    ]);
+    assert.deepEqual(
+      after.selection,
+      collapsedSelection([0, 1], 'marked'.length)
+    );
+  });
+
+  it('insertText can skip pending marks for implicit insertion', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'existing ' }],
+        },
+      ],
+      selection: collapsedSelection([0, 0], 'existing '.length),
+      marks: { bold: true },
+    });
+
+    editor.update.text.insert('plain', { marks: false });
+
+    const after = editorGetSnapshot(editor);
+
+    assert.deepEqual(after.children, [
+      {
+        type: 'paragraph',
+        children: [{ text: 'existing plain' }],
+      },
+    ]);
+    assert.deepEqual(
+      after.selection,
+      collapsedSelection([0, 0], 'existing plain'.length)
+    );
   });
 
   it('insertText replaces a mixed-mark range without removing text before it', () => {
@@ -211,7 +303,7 @@ describe('plite transforms contract', () => {
           type: 'paragraph',
           children: [{ text: 'After' }],
         },
-      ] as Descendant[],
+      ] as Element[],
       selection: {
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [2, 0], offset: 2 },
@@ -250,7 +342,7 @@ describe('plite transforms contract', () => {
           children: [{ type: 'paragraph', children: [{ text: 'inside' }] }],
         },
         { type: 'paragraph', children: [{ text: 'after' }] },
-      ] as Descendant[],
+      ] as Element[],
       selection: collapsedSelection([1, 0], 0),
       marks: null,
     });
@@ -514,7 +606,7 @@ describe('plite transforms contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.root()),
+      editor.read((state) => state.children()),
       [
         {
           type: 'paragraph',

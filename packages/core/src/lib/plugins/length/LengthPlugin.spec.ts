@@ -1,12 +1,12 @@
-import type { SlateEditor } from '../../editor';
+import type { BaseEditor } from '../../editor';
 
-import { createSlateEditor } from '../../editor';
+import { createBaseEditor } from '../../editor';
 
 describe('LengthPlugin', () => {
-  let editor: SlateEditor;
+  let editor: BaseEditor;
 
   const createEditorWithLength = (maxLength: number) =>
-    createSlateEditor({
+    createBaseEditor({
       autoSelect: true,
       maxLength,
     });
@@ -14,29 +14,29 @@ describe('LengthPlugin', () => {
   describe('when inserting text', () => {
     it('allow inserting text within the maxLength', () => {
       editor = createEditorWithLength(10);
-      editor.tf.insertText('Hello');
+      editor.update.text.insert('Hello');
 
-      expect(editor.children).toEqual([
+      expect(editor.read.children()).toEqual([
         { children: [{ text: 'Hello' }], type: 'p' },
       ]);
     });
 
     it('truncate text that exceeds maxLength', () => {
       editor = createEditorWithLength(5);
-      editor.tf.insertText('Hello, World!');
+      editor.update.text.insert('Hello, World!');
 
-      expect(editor.children).toEqual([
+      expect(editor.read.children()).toEqual([
         { children: [{ text: 'Hello' }], type: 'p' },
       ]);
     });
 
     it('handle multiple insertions up to maxLength', () => {
       editor = createEditorWithLength(10);
-      editor.tf.insertText('Hello');
-      editor.tf.insertText(', ');
-      editor.tf.insertText('World');
+      editor.update.text.insert('Hello');
+      editor.update.text.insert(', ');
+      editor.update.text.insert('World');
 
-      expect(editor.children).toEqual([
+      expect(editor.read.children()).toEqual([
         { children: [{ text: 'Hello, Wor' }], type: 'p' },
       ]);
     });
@@ -45,10 +45,12 @@ describe('LengthPlugin', () => {
   describe('when deleting text', () => {
     it('allow deleting text', () => {
       editor = createEditorWithLength(10);
-      editor.tf.insertText('Hello, World');
-      editor.tf.delete({ distance: 7, reverse: true });
+      editor.update.text.insert('Hello, World');
+      editor.update((tx) => {
+        tx.text.delete({ distance: 7, reverse: true });
+      });
 
-      expect(editor.children).toEqual([
+      expect(editor.read.children()).toEqual([
         { children: [{ text: 'Hel' }], type: 'p' },
       ]);
     });
@@ -57,11 +59,11 @@ describe('LengthPlugin', () => {
   describe('when pasting text', () => {
     it('truncate pasted text that exceeds maxLength', () => {
       editor = createEditorWithLength(10);
-      editor.tf.insertFragment([
+      editor.update.fragment.insert([
         { children: [{ text: 'This is a long pasted text' }], type: 'p' },
       ]);
 
-      expect(editor.children).toEqual([
+      expect(editor.read.children()).toEqual([
         { children: [{ text: 'This is a ' }], type: 'p' },
       ]);
     });
@@ -69,14 +71,14 @@ describe('LengthPlugin', () => {
 
   describe('when maxLength is not set', () => {
     it('does not limit text input', () => {
-      editor = createSlateEditor({
+      editor = createBaseEditor({
         autoSelect: true,
       });
-      editor.tf.insertText(
+      editor.update.text.insert(
         'This is a very long text that exceeds any reasonable limit'
       );
 
-      expect(editor.children).toEqual([
+      expect(editor.read.children()).toEqual([
         {
           children: [
             {

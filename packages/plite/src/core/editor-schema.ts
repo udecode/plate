@@ -5,7 +5,9 @@ import type {
   EditorElementSpec,
   EditorSchemaApi,
   Element,
+  Node,
 } from '../interfaces';
+import { ElementApi } from '../interfaces';
 import {
   getExtensionRegistry,
   registerElementSpec,
@@ -70,6 +72,10 @@ export const createEditorSchema = (
       : null;
 
     let spec = exactSpec;
+
+    if (!ElementApi.isElement(element)) {
+      return spec;
+    }
 
     for (const registration of registry.elementMatchers) {
       if (registration.spec.match?.(element as Element)) {
@@ -201,17 +207,28 @@ export const createEditorSchema = (
     getElementBehavior,
     getElementProperty,
     getElementPropertyDescriptor,
-    isAtom: (element) => getElementBehavior(element).atom,
-    isBlock: (element) => !getElementBehavior(element).inline,
-    isEditableIsland: (element) => getElementBehavior(element).editableIsland,
+    isAtom: (element: Node) =>
+      ElementApi.isElement(element) && getElementBehavior(element).atom,
+    isBlock: (element: Node) =>
+      ElementApi.isElement(element) && !getElementBehavior(element).inline,
+    isEditableIsland: (element: Node) =>
+      ElementApi.isElement(element) &&
+      getElementBehavior(element).editableIsland,
     isElementPropertyEqual,
-    isInline: (element) => getElementBehavior(element).inline,
-    isIsolating: (element) => getElementBehavior(element).isolating,
-    isKeyboardSelectable: (element) =>
+    isInline: (element: Node) =>
+      ElementApi.isElement(element) && getElementBehavior(element).inline,
+    isIsolating: (element: Node) =>
+      ElementApi.isElement(element) && getElementBehavior(element).isolating,
+    isKeyboardSelectable: (element: Node) =>
+      ElementApi.isElement(element) &&
       getElementBehavior(element).keyboardSelectable,
-    isReadOnly: (element) => getElementBehavior(element).readOnly,
-    isSelectable: (element) => getElementBehavior(element).selectable,
-    isVoid: (element) => getElementBehavior(element).void,
-    markableVoid: (element) => getElementBehavior(element).markableVoid,
+    isReadOnly: (element: Node) =>
+      ElementApi.isElement(element) && getElementBehavior(element).readOnly,
+    isSelectable: (element: Node) =>
+      ElementApi.isElement(element) && getElementBehavior(element).selectable,
+    isVoid: (element: Node) =>
+      ElementApi.isElement(element) && getElementBehavior(element).void,
+    markableVoid: (element: Node) =>
+      ElementApi.isElement(element) && getElementBehavior(element).markableVoid,
   });
 };

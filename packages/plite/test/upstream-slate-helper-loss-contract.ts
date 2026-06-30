@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 
 import {
   createEditor,
-  type Descendant,
   type Editor,
   type Element,
   type Node,
@@ -14,7 +13,7 @@ import {
   type Range,
   RangeApi,
   type Text,
-} from '../src';
+} from '@platejs/plite';
 import { extendTestSchema } from './support/schema';
 
 type PropMode = 'all' | 'block' | 'text';
@@ -30,7 +29,7 @@ const text = (value: string, props: Record<string, unknown> = {}): Text => ({
 });
 
 const createSeededEditor = (
-  children: Descendant[],
+  children: Element[],
   selection: Range | null = null
 ) => {
   const editor = createEditor({
@@ -77,7 +76,7 @@ const getCurrentIsAt = (
   } = {}
 ) =>
   editor.read((state) => {
-    const target = at ?? state.selection.get();
+    const target = at ?? state.selection();
 
     if (!target) return false;
 
@@ -147,11 +146,13 @@ const getCurrentSelected = (
   options: { contains?: boolean } = {}
 ) =>
   editor.read((state) => {
-    const selection = state.selection.get();
+    const selection = state.selection();
 
     if (!selection) return false;
 
     const range = RangeApi.isRange(target) ? target : state.ranges.get(target);
+
+    if (!range) return false;
 
     return options.contains
       ? RangeApi.surrounds(selection, range)
@@ -177,10 +178,14 @@ const getCurrentRange = (
 
       if (!block) return;
 
-      return state.ranges.get(state.points.start(block[1]), focus);
+      const anchor = state.points.start(block[1]);
+
+      if (!anchor) return;
+
+      return state.ranges.get(anchor, focus);
     }
 
-    return state.ranges.get(at);
+    return typeof at === 'string' ? undefined : state.ranges.get(at);
   });
 
 const getCurrentIsEmptyAfter = (editor: Editor, at: Point | Range | null) =>
@@ -193,18 +198,15 @@ const getCurrentIsEmptyAfter = (editor: Editor, at: Point | Range | null) =>
     if (!block) return false;
     if (!state.points.isEnd(point, PathApi.parent(point.path))) return false;
 
-    const siblingEntries = state.nodes.toArray({
-      at: block[1],
-      match: (_node, path) =>
-        path.length === point.path.length && PathApi.isAfter(path, point.path),
-    });
+    const focus = state.points.end(block[1]);
 
-    if (siblingEntries.length === 0) {
-      return state.points.isEnd(point, block[1]);
-    }
+    if (!focus) return false;
 
-    return siblingEntries.every(([node]) =>
-      NodeApi.isText(node) ? node.text === '' : NodeApi.string(node) === ''
+    return (
+      state.text.string({
+        anchor: point,
+        focus,
+      }) === ''
     );
   });
 
@@ -277,7 +279,7 @@ describe('old Slate helper behavior through current Plite APIs', () => {
       block: state.nodes.block({ at: [9, 9, 9] }),
       entries: state.nodes.toArray({ at: [9, 9, 9] }),
       find: state.nodes.find({ at: [9, 9, 9], match: typeIs('paragraph') }),
-      fragment: state.fragment.get({
+      fragment: state.fragment({
         at: {
           anchor: { path: [9, 0], offset: 0 },
           focus: { path: [9, 0], offset: 0 },
@@ -305,7 +307,7 @@ describe('old Slate helper behavior through current Plite APIs', () => {
     );
   });
 
-  it('keeps old fragment unwrap behavior as state.fragment.get({ unwrap })', () => {
+  it('keeps old fragment unwrap behavior as state.fragment({ unwrap })', () => {
     const editor = createSeededEditor([
       {
         type: 'blockquote',
@@ -314,7 +316,7 @@ describe('old Slate helper behavior through current Plite APIs', () => {
     ]);
 
     const fragment = editor.read((state) =>
-      state.fragment.get({
+      state.fragment({
         at: state.ranges.get([0]),
         unwrap: ['blockquote'],
       })
@@ -350,15 +352,22 @@ describe('old Slate helper behavior through current Plite APIs', () => {
         anchor: { path: [0, 0, 0], offset: 1 },
         focus: { path: [1, 0], offset: 2 },
       };
-      const [start, end] = state.ranges.edges(selection);
+      const edges = state.ranges.edges(selection);
+
+      assert.ok(edges);
+
+      const [start, end] = edges;
       const startBlock = state.nodes.block({ at: start });
       const endBlock = state.nodes.block({ at: end });
+
+      assert.ok(startBlock);
+      assert.ok(endBlock);
 
       return {
         endBlockPath: endBlock?.[1],
         highestPath: highest?.[1],
         lowestPath: lowest?.[1],
-        range: state.ranges.get(startBlock![1], endBlock![1]),
+        range: state.ranges.get(startBlock[1], endBlock[1]),
         startBlockPath: startBlock?.[1],
       };
     });
@@ -637,7 +646,13 @@ describe('old Slate helper behavior through current Plite APIs', () => {
       }
     );
 
-    assert.equal(getCurrentIsEmptyAfter(editor, editor.selection), true);
+    assert.equal(
+      getCurrentIsEmptyAfter(
+        editor,
+        editor.read((state) => state.selection())
+      ),
+      true
+    );
     assert.equal(
       getCurrentIsEmptyAfter(editor, {
         anchor: { path: [0, 1, 0], offset: 2 },
@@ -803,7 +818,7 @@ describe('old Slate helper behavior through current Plite APIs', () => {
     );
 
     assert.deepEqual(
-      editor.read((state) => state.marks.get()),
+      editor.read((state) => state.marks()),
       { bold: true }
     );
 
@@ -812,7 +827,7 @@ describe('old Slate helper behavior through current Plite APIs', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.root()),
+      editor.read((state) => state.children()),
       [
         {
           type: 'paragraph',

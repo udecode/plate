@@ -1,51 +1,66 @@
-import type { AnyPluginConfig, PluginConfig } from '../plugin/BasePlugin';
-import type { SlatePlugin } from '../plugin/SlatePlugin';
+import type { AnyPluginConfig, PluginConfig } from '../plugin/SlatePlugin';
+import type { BasePlugin, InferConfig } from '../plugin/BasePlugin';
 
 import { AstPlugin } from './AstPlugin';
 import { HistoryPlugin } from './HistoryPlugin';
 import { OverridePlugin } from './override/OverridePlugin';
 import { ParserPlugin } from './ParserPlugin';
 import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
-import { DOMPlugin } from './dom';
-import { HtmlPlugin } from './html';
+import { type DomConfig, DOMPlugin } from './dom';
+import { type HtmlConfig, HtmlPlugin } from './html';
 import { InputRulesPlugin } from './input-rules/internal/InputRulesPlugin';
 import { LengthPlugin } from './length';
 import {
   type NavigationFeedbackConfig,
   NavigationFeedbackPlugin,
 } from './navigation-feedback';
-import { AffinityPlugin } from './affinity';
+import { type AffinityConfig, AffinityPlugin } from './affinity';
 import { type NodeIdConfig, NodeIdPlugin } from './node-id/NodeIdPlugin';
-import { BaseParagraphPlugin } from './paragraph';
+import { type ParagraphConfig, BaseParagraphPlugin } from './paragraph';
 import {
   type SlateExtensionConfig,
   SlateExtensionPlugin,
 } from './slate-extension';
-import { type ChunkingConfig, ChunkingPlugin } from './chunking/ChunkingPlugin';
 
 export type CorePlugin = ReturnType<typeof getCorePlugins>[number];
+
+export type CorePluginConfig =
+  | AffinityConfig
+  | DebugConfig
+  | DomConfig
+  | LengthConfig
+  | NavigationFeedbackConfig
+  | NodeIdConfig
+  | ParagraphConfig
+  | SlateExtensionConfig
+  | PluginConfig<'ast'>
+  | PluginConfig<'history'>
+  | HtmlConfig
+  | PluginConfig<'inputRules'>
+  | PluginConfig<'override'>
+  | PluginConfig<'parser'>;
 
 export type GetCorePluginsOptions = {
   /** Enable mark/element affinity. */
   affinity?: boolean;
-  /** Configure Slate's chunking optimization. */
-  chunking?: ChunkingConfig['options'] | boolean;
   /** Specifies the maximum number of characters allowed in the editor. */
   maxLength?: number;
   /** Configure the navigation feedback plugin. */
   navigationFeedback?: NavigationFeedbackConfig['options'] | boolean;
   /** Configure the node id plugin. */
   nodeId?: NodeIdConfig['options'] | boolean;
+  /** Initial read-only state for base editors. */
+  readOnly?: boolean;
   /** Override the core plugins using the same key. */
   plugins?: AnyPluginConfig[];
 };
 
 export const getCorePlugins = ({
   affinity,
-  chunking,
   maxLength,
   navigationFeedback,
   nodeId,
+  readOnly,
   plugins = [],
 }: GetCorePluginsOptions) => {
   // Disable nodeId by default in test environment for deterministic tests
@@ -54,10 +69,14 @@ export const getCorePlugins = ({
     resolvedNodeId = false;
   }
 
-  let corePlugins = [
-    DebugPlugin as SlatePlugin<DebugConfig>,
+  const corePlugins = [
+    DebugPlugin as BasePlugin<DebugConfig>,
     SlateExtensionPlugin,
-    DOMPlugin,
+    DOMPlugin.configure({
+      options: {
+        readOnly: readOnly ?? false,
+      },
+    }),
     NavigationFeedbackPlugin.configure({
       enabled: navigationFeedback !== false,
       options:
@@ -80,10 +99,6 @@ export const getCorePlugins = ({
     }),
     AffinityPlugin.configure({ enabled: affinity }),
     BaseParagraphPlugin,
-    ChunkingPlugin.configure({
-      enabled: chunking !== false,
-      options: typeof chunking === 'boolean' ? undefined : chunking,
-    }),
   ];
 
   // Create a map for quick lookup of custom plugins
@@ -92,7 +107,7 @@ export const getCorePlugins = ({
   );
 
   // Replace core plugins with custom plugins if they exist and remove them from plugins
-  corePlugins = corePlugins.map((corePlugin) => {
+  const resolvedCorePlugins = corePlugins.map((corePlugin) => {
     const customPlugin = customPluginsMap.get(corePlugin.key);
 
     if (customPlugin) {
@@ -106,16 +121,23 @@ export const getCorePlugins = ({
       return customPlugin;
     }
 
-    return corePlugin as any;
+    return corePlugin;
   });
 
-  return corePlugins;
+  return resolvedCorePlugins;
 };
 
-export type CorePluginTransforms = SlateExtensionConfig['transforms'] &
-  NavigationFeedbackConfig['transforms'];
 export type CorePluginApi = SlateExtensionConfig['api'] &
-  NavigationFeedbackConfig['api'];
+  NavigationFeedbackConfig['api'] &
+  DebugConfig['api'] &
+  DomConfig['api'] &
+  InferConfig<typeof HistoryPlugin>['api'] &
+  HtmlConfig['api'];
+
+export type CorePluginTx = NavigationFeedbackConfig['tx'] &
+  DomConfig['tx'] &
+  InferConfig<typeof HistoryPlugin>['tx'] &
+  InferConfig<typeof NodeIdPlugin>['tx'];
 
 export type DebugConfig = PluginConfig<
   'debug',

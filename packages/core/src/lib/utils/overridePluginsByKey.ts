@@ -13,6 +13,7 @@ export const overridePluginsByKey = (
 ): AnyBasePlugin => {
   if (overrideByKey[plugin.key]) {
     const {
+      __editorExtensions: pluginOverridesEditorExtensions,
       __extensions: pluginOverridesExtensions,
       plugins: pluginOverridesPlugins,
       ...pluginOverrides
@@ -27,6 +28,12 @@ export const overridePluginsByKey = (
       plugin.__extensions = [
         ...(plugin.__extensions || []),
         ...pluginOverridesExtensions,
+      ];
+    }
+    if (pluginOverridesEditorExtensions) {
+      plugin.__editorExtensions = [
+        ...(plugin.__editorExtensions || []),
+        ...pluginOverridesEditorExtensions,
       ];
     }
     if (!nested) {

@@ -172,7 +172,7 @@ const restoreSelectionIfMovementEnteredBoundary = ({
   previousSelection: Range | null;
   reverse: boolean;
 }) => {
-  const nextSelection = editor.read((state) => state.selection.get());
+  const nextSelection = editor.read((state) => state.selection());
 
   if (
     !previousSelection ||
@@ -314,7 +314,7 @@ const moveSelectionAndRespectBoundaries = ({
   if (writeViewSelection) {
     writeMainRootViewSelection(
       editor,
-      editor.read((state) => state.selection.get()),
+      editor.read((state) => state.selection()),
       viewSelectionRootElement
     );
   }

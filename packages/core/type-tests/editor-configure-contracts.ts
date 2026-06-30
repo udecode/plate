@@ -61,18 +61,17 @@ const DisplayPlugin = createPlatePlugin<DisplayConfig>({
   getLabel: () => getOptions().label,
 }));
 
-const plateEditor = createPlateEditor<
-  [{ children: [{ text: string }]; type: 'p' }],
-  typeof DisplayPlugin
->({
+const plateEditor = createPlateEditor({
   plugins: [DisplayPlugin],
-  value: [{ children: [{ text: 'hello' }], type: 'p' }],
+  value: [{ children: [{ text: 'hello' }], type: 'p' }] as [
+    { children: [{ text: string }]; type: 'p' },
+  ],
 });
 
 const nestedLevel: 1 | 2 = basePlateEditor.getOptions(ChildPlugin).level;
 const nestedApiLevel: 1 | 2 = basePlateEditor.api.plugin.getLevel();
-const plateValue: [{ children: [{ text: string }]; type: 'p' }] =
-  plateEditor.children;
+const plateValue: readonly [{ children: [{ text: string }]; type: 'p' }] =
+  plateEditor.read.children();
 const plateLabel: 'body' | 'title' = plateEditor.api.getLabel();
 
 basePlateEditor.api.setLevel(1);

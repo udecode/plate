@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useState } from 'react';
+import React, { type ReactNode, useEffect, useState } from 'react';
 
 import { recordPliteReactRender } from '../render-profiler';
 import { PliteElement } from './plite-element';

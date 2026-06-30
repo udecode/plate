@@ -6,7 +6,7 @@ import {
   defineEditorExtension,
   type EditorElementSpec,
   elementProperty,
-} from '../src';
+} from '@platejs/plite';
 
 describe('editor schema', () => {
   it('owns element predicates for app-defined specs', () => {

@@ -139,12 +139,12 @@ export const commitChromeCompositionEndFallback = ({
     return false;
   }
 
-  const target = editor.read((state) => state.selection.get());
+  const target = editor.read((state) => state.selection());
   // Ensure we insert text with the marks the user was actually seeing
   if (placeholderMarks !== undefined) {
     EDITOR_TO_USER_MARKS.set(
       editor,
-      editor.read((state) => state.marks.get())
+      editor.read((state) => state.marks())
     );
     writeRuntimeMarks(editor, placeholderMarks);
   }
@@ -369,7 +369,7 @@ export const applyEditableCompositionStart = ({
       return;
     }
 
-    const marks = editor.read((state) => state.marks.get());
+    const marks = editor.read((state) => state.marks());
     if (marks && Object.keys(marks).length > 0) {
       EDITOR_TO_PENDING_INSERTION_MARKS.set(editor, marks);
       writeRuntimeMarks(editor, marks);
@@ -377,7 +377,7 @@ export const applyEditableCompositionStart = ({
 
     setComposing(true);
 
-    const selection = editor.read((state) => state.selection.get());
+    const selection = editor.read((state) => state.selection());
     if (
       selection &&
       RangeApi.isExpanded(selection) &&
@@ -439,7 +439,7 @@ export const usePendingInsertionMarksEffect = ({
   // before we receive the composition end event.
   useEffect(() => {
     setTimeout(() => {
-      const selection = editor.read((state) => state.selection.get());
+      const selection = editor.read((state) => state.selection());
       if (selection) {
         const { anchor } = selection;
         const text = readRuntimeText(editor, anchor.path);

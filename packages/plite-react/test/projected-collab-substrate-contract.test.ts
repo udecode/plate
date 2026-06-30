@@ -58,7 +58,7 @@ const createProjectedEditor = () =>
   });
 
 const readValue = (editor: ReturnType<typeof createProjectedEditor>) =>
-  editor.read((state) => state.value.get());
+  editor.read((state) => state.value());
 
 const replayRemote = (
   editor: ReturnType<typeof createProjectedEditor>,

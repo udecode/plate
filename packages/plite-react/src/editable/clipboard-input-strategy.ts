@@ -259,7 +259,7 @@ const preventReadOnlyClipboardDefault = ({
 };
 
 const materializePasteTargetBoundaries = (editor: ReactRuntimeEditor) => {
-  const selection = editor.read((state) => state.selection.get());
+  const selection = editor.read((state) => state.selection());
 
   if (!selection) {
     return;
@@ -362,7 +362,7 @@ export const applyEditableCut = ({
     }
 
     editor.api.clipboard.writeSelection(clipboardData);
-    const selection = editor.read((state) => state.selection.get());
+    const selection = editor.read((state) => state.selection());
 
     if (selection) {
       if (RangeApi.isExpanded(selection)) {

@@ -1,7 +1,6 @@
-import { createEditor as createBaseEditor } from '@platejs/slate';
-
-import { createSlateEditor } from '../editor';
-import { createSlatePlugin } from '../plugin';
+import { createPlateEditor } from '../../react/editor/withPlate';
+import { createBaseEditor } from '../editor';
+import { type PluginConfig, createBasePlugin } from '../plugin';
 
 const createParagraph = (text: string) => ({
   children: [{ text }],
@@ -10,7 +9,7 @@ const createParagraph = (text: string) => ({
 
 describe('ParserPlugin', () => {
   it('pipes matching parser data into fragment insertion', () => {
-    const PlainPlugin = createSlatePlugin({
+    const PlainPlugin = createBasePlugin<PluginConfig<'plain'>>({
       key: 'plain',
       parser: {
         format: 'plain',
@@ -23,41 +22,40 @@ describe('ParserPlugin', () => {
         ],
       },
     });
-    const editor = createSlateEditor({
+    const editor = createPlateEditor({
+      value: [{ children: [{ text: '' }], type: 'p' }],
       plugins: [PlainPlugin],
     });
 
-    editor.tf.insertFragment = mock() as any;
+    let inserted: unknown;
 
-    editor.tf.insertData({
-      files: [],
-      getData: mock((mimeType: string) =>
-        mimeType === 'text/plain' ? 'hello' : ''
-      ),
-    } as any);
+    editor.update(() => {
+      inserted = editor.api.clipboard.insertData({
+        files: [],
+        getData: mock((mimeType: string) =>
+          mimeType === 'text/plain' ? 'hello' : ''
+        ),
+      } as any);
+    });
 
-    expect(editor.tf.insertFragment).toHaveBeenCalledWith([
+    expect(inserted).toBe(true);
+    expect(editor.read.children()).toEqual([
       createParagraph('hello-world'),
       createParagraph('tail'),
     ]);
   });
 
   it('falls back to the previous insertData transform when no parser inserts', () => {
-    const fallbackInsertData = mock();
-    const baseEditor = createBaseEditor();
-
-    baseEditor.insertData = fallbackInsertData as any;
-    baseEditor.tf.insertData = fallbackInsertData as any;
-
-    const PlainPlugin = createSlatePlugin({
+    const PlainPlugin = createBasePlugin<PluginConfig<'plain'>>({
       key: 'plain',
       parser: {
         format: 'plain',
         deserialize: () => [],
       },
     });
-    const editor = createSlateEditor({
-      editor: baseEditor,
+    const initialValue = [createParagraph('initial')];
+    const editor = createPlateEditor({
+      value: initialValue,
       plugins: [PlainPlugin],
     });
     const dataTransfer = {
@@ -67,8 +65,89 @@ describe('ParserPlugin', () => {
       ),
     } as any;
 
-    editor.tf.insertData(dataTransfer);
+    let inserted: unknown;
 
-    expect(fallbackInsertData).toHaveBeenCalledWith(dataTransfer);
+    editor.update(() => {
+      inserted = editor.api.clipboard.insertData(dataTransfer);
+    });
+
+    expect(inserted).toBe(true);
+    expect(editor.read.children()).toEqual([createParagraph('initialhello')]);
+  });
+
+  it('routes base editor insertData through parser hooks', () => {
+    const PlainPlugin = createBasePlugin<PluginConfig<'plain'>>({
+      key: 'plain',
+      parser: {
+        format: 'plain',
+        query: ({ data }) => data === 'hello',
+        deserialize: ({ data }) => [createParagraph(data)],
+        transformData: ({ data }) => `${data}-world`,
+        transformFragment: ({ fragment }) => [
+          ...fragment,
+          createParagraph('tail'),
+        ],
+      },
+    });
+    const editor = createBaseEditor({
+      plugins: [PlainPlugin],
+      value: [createParagraph('initial')],
+    });
+
+    const inserted = editor.api.clipboard.insertData({
+      files: [],
+      getData: mock((mimeType: string) =>
+        mimeType === 'text/plain' ? 'hello' : ''
+      ),
+    } as any);
+
+    expect(inserted).toBe(true);
+    expect(editor.read.children()).toEqual([
+      createParagraph('initialhello-world'),
+      createParagraph('tail'),
+    ]);
+  });
+
+  it('falls back to plain text insertData on the base editor route', () => {
+    const editor = createBaseEditor({
+      value: [createParagraph('initial')],
+    });
+
+    const inserted = editor.api.clipboard.insertData({
+      files: [],
+      getData: mock((mimeType: string) =>
+        mimeType === 'text/plain' ? 'hello' : ''
+      ),
+    } as any);
+
+    expect(inserted).toBe(true);
+    expect(editor.read.children()).toEqual([createParagraph('initialhello')]);
+  });
+
+  it('does not install parser runtime behavior when ParserPlugin is replaced', () => {
+    const EmptyParserPlugin = createBasePlugin<PluginConfig<'parser'>>({
+      key: 'parser',
+    });
+    const PlainPlugin = createBasePlugin<PluginConfig<'plain'>>({
+      key: 'plain',
+      parser: {
+        format: 'plain',
+        deserialize: ({ data }) => [createParagraph(data)],
+      },
+    });
+    const editor = createBaseEditor({
+      plugins: [EmptyParserPlugin, PlainPlugin],
+      value: [createParagraph('initial')],
+    });
+
+    const inserted = editor.api.clipboard.insertData({
+      files: [],
+      getData: mock((mimeType: string) =>
+        mimeType === 'text/plain' ? 'hello' : ''
+      ),
+    } as any);
+
+    expect(inserted).toBe(false);
+    expect(editor.read.children()).toEqual([createParagraph('initial')]);
   });
 });

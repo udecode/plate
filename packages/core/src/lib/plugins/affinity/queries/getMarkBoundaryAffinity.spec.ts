@@ -1,11 +1,35 @@
+import type { EditorMarks, Selection } from '@platejs/plite';
+
+import { createBaseEditor } from '../../../editor';
 import { getMarkBoundaryAffinity } from './getMarkBoundaryAffinity';
+
+const value = [{ children: [{ text: '' }], type: 'p' }];
+
+const collapsedSelection = (offset: number): Selection => ({
+  anchor: { offset, path: [0, 0] },
+  focus: { offset, path: [0, 0] },
+});
+
+const createEditor = ({
+  marks,
+  selection,
+}: {
+  marks: EditorMarks | null;
+  selection: Selection;
+}) => {
+  const editor = createBaseEditor({ selection, value });
+
+  editor.update.marks.set(marks);
+
+  return editor;
+};
 
 describe('getMarkBoundaryAffinity', () => {
   it('returns undefined without a selection', () => {
     expect(
-      getMarkBoundaryAffinity({ marks: null, selection: null } as any, [
-        undefined,
-        undefined,
+      getMarkBoundaryAffinity(createEditor({ marks: null, selection: null }), [
+        null,
+        [{ text: 'a' }, [0, 0]],
       ])
     ).toBeUndefined();
   });
@@ -13,13 +37,35 @@ describe('getMarkBoundaryAffinity', () => {
   it('uses the only available leaf when a single boundary leaf exists', () => {
     expect(
       getMarkBoundaryAffinity(
-        {
+        createEditor({
           marks: null,
-          selection: {
-            anchor: { offset: 0 },
-          },
-        } as any,
-        [[{ bold: true, text: 'a' }, [0, 0]] as any, undefined]
+          selection: collapsedSelection(0),
+        }),
+        [[{ bold: true, text: 'a' }, [0, 0]], null]
+      )
+    ).toBe('backward');
+  });
+
+  it('treats a single current mark as no comparable boundary marks', () => {
+    expect(
+      getMarkBoundaryAffinity(
+        createEditor({
+          marks: { bold: true },
+          selection: collapsedSelection(0),
+        }),
+        [[{ bold: true, text: 'a' }, [0, 0]], null]
+      )
+    ).toBe('backward');
+  });
+
+  it('treats an empty marks object as no comparable boundary marks', () => {
+    expect(
+      getMarkBoundaryAffinity(
+        createEditor({
+          marks: {},
+          selection: collapsedSelection(0),
+        }),
+        [[{ text: 'a' }, [0, 0]], null]
       )
     ).toBe('backward');
   });
@@ -27,13 +73,11 @@ describe('getMarkBoundaryAffinity', () => {
   it('returns undefined when the only leaf does not match the current marks', () => {
     expect(
       getMarkBoundaryAffinity(
-        {
+        createEditor({
           marks: { bold: true, color: 'red' },
-          selection: {
-            anchor: { offset: 0 },
-          },
-        } as any,
-        [[{ bold: true, color: 'blue', text: 'a' }, [0, 0]] as any, undefined]
+          selection: collapsedSelection(0),
+        }),
+        [[{ bold: true, color: 'blue', text: 'a' }, [0, 0]], null]
       )
     ).toBeUndefined();
   });
@@ -41,15 +85,13 @@ describe('getMarkBoundaryAffinity', () => {
   it('prefers forward when selection is backward and only the forward leaf matches marks', () => {
     expect(
       getMarkBoundaryAffinity(
-        {
+        createEditor({
           marks: { bold: true, color: 'red' },
-          selection: {
-            anchor: { offset: 1 },
-          },
-        } as any,
+          selection: collapsedSelection(1),
+        }),
         [
-          [{ bold: true, color: 'blue', text: 'a' }, [0, 0]] as any,
-          [{ bold: true, color: 'red', text: 'b' }, [0, 1]] as any,
+          [{ bold: true, color: 'blue', text: 'a' }, [0, 0]],
+          [{ bold: true, color: 'red', text: 'b' }, [0, 1]],
         ]
       )
     ).toBe('forward');
@@ -58,15 +100,13 @@ describe('getMarkBoundaryAffinity', () => {
   it('falls back to backward when no special case applies', () => {
     expect(
       getMarkBoundaryAffinity(
-        {
+        createEditor({
           marks: { bold: true, color: 'red' },
-          selection: {
-            anchor: { offset: 1 },
-          },
-        } as any,
+          selection: collapsedSelection(1),
+        }),
         [
-          [{ bold: true, color: 'red', text: 'a' }, [0, 0]] as any,
-          [{ bold: true, color: 'blue', text: 'b' }, [0, 1]] as any,
+          [{ bold: true, color: 'red', text: 'a' }, [0, 0]],
+          [{ bold: true, color: 'blue', text: 'b' }, [0, 1]],
         ]
       )
     ).toBe('backward');

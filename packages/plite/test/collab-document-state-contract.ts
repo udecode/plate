@@ -9,12 +9,12 @@ import { history } from '@platejs/plite-history';
 
 import {
   createEditor,
-  type Descendant,
+  type Element,
   defineStateField,
   type EditorUpdateOptions,
-} from '../src';
+} from '@platejs/plite';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -37,10 +37,10 @@ const privateNote = defineStateField({
 
 const createDocumentStateEditor = () =>
   createEditor({
-    extensions: [history(), documentTitle, privateNote],
+    extensions: [history(), documentTitle, privateNote] as const,
     initialValue: {
       children: [paragraph('body')],
-      state: {
+      meta: {
         [documentTitle.key]: 'Q2 Plan',
         [privateNote.key]: '',
       },
@@ -63,7 +63,7 @@ const remoteCollabOptions = {
   tag: ['collaboration', 'remote-import'],
 } satisfies EditorUpdateOptions;
 
-describe('collab document state contract', () => {
+describe('collab document meta contract', () => {
   it('replays shared state patches remotely without local undo history', () => {
     const source = createDocumentStateEditor();
     const remote = createDocumentStateEditor();
@@ -101,8 +101,8 @@ describe('collab document state contract', () => {
     assert.deepEqual(remoteCommit.metadata, remoteCollabOptions.metadata);
     assert.equal(historyUndoCount(remote), 0);
     assert.deepEqual(
-      remote.read((state) => state.value.get()),
-      source.read((state) => state.value.get())
+      remote.read((state) => state.value()),
+      source.read((state) => state.value())
     );
   });
 

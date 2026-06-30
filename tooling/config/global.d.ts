@@ -1,7 +1,25 @@
 /// <reference types="bun-types/test-globals" />
 
-declare var mock: typeof import('bun:test').mock;
-declare var spyOn: typeof import('bun:test').spyOn;
+type AnyTestMock = ((...args: any[]) => any) & {
+  mock: { calls: any[]; instances: any[]; results: any[] };
+  mockClear(): AnyTestMock;
+  mockImplementation(fn: (...args: any[]) => any): AnyTestMock;
+  mockReset(): AnyTestMock;
+  mockRestore(): void;
+  mockReturnValue(value: any): AnyTestMock;
+  mockReturnValueOnce(value: any): AnyTestMock;
+};
+
+interface Spy extends AnyTestMock {}
+
+declare namespace jasmine {
+  interface Spy extends AnyTestMock {}
+}
+
+declare var mock: ((implementation?: (...args: any[]) => any) => AnyTestMock) & {
+  restore(): void;
+};
+declare function spyOn(...args: any[]): Spy;
 
 // Extend Bun's Spy/Mock type with Jest-compatible methods for typecheck
 declare module 'bun:test' {

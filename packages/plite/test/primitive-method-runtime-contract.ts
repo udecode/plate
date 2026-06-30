@@ -13,16 +13,16 @@ import {
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
-import { createEditor, type Descendant, NodeApi } from '../src';
-import { setEditorTargetRuntime } from '../src/internal';
+import { createEditor, type Element, NodeApi } from '@platejs/plite';
+import { setEditorTargetRuntime } from '@platejs/plite/internal';
 import { extendTestSchema } from './support/schema';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
 
-const quote = (text: string): Descendant => ({
+const quote = (text: string): Element => ({
   type: 'quote',
   children: [paragraph(text)],
 });
@@ -704,7 +704,7 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((tx) => {
-      editorDeleteBackward(editor, 'character');
+      editorDeleteBackward(editor, { unit: 'character' });
     });
 
     assert.equal(calls, 1);
@@ -730,7 +730,7 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((tx) => {
-      editorDeleteForward(editor, 'character');
+      editorDeleteForward(editor, { unit: 'character' });
     });
 
     assert.equal(calls, 1);

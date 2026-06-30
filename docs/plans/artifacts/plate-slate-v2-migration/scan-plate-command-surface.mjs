@@ -216,9 +216,9 @@ function isRuntimeBackedApiCapabilityDecision(text, index, relativePath) {
     (relativePath.endsWith('/NavigationFeedbackPlugin.ts') &&
       after.includes('navigation:') &&
       after.includes('activeTarget')) ||
-    (relativePath.endsWith('/SlateExtensionPlugin.ts') &&
+    (relativePath.endsWith('/PliteExtensionPlugin.ts') &&
       after.includes('isElementStateEmpty')) ||
-    (relativePath.endsWith('/SlateReactExtensionPlugin.ts') &&
+    (relativePath.endsWith('/PliteReactExtensionPlugin.ts') &&
       after.includes('redecorate')) ||
     (relativePath.endsWith('/HtmlPlugin.ts') &&
       after.includes('deserializeHtml')) ||
@@ -377,11 +377,11 @@ function isRuntimeBackedTransformFacadeDecision(text, index, relativePath) {
       after.includes('navigate')) ||
     (relativePath.endsWith('/NodeIdPlugin.ts') &&
       after.includes('normalize()')) ||
-    (relativePath.endsWith('/SlateExtensionPlugin.ts') &&
+    (relativePath.endsWith('/PliteExtensionPlugin.ts') &&
       after.includes('insertExitBreak') &&
       after.includes('resetBlock') &&
       after.includes('setValue')) ||
-    (relativePath.endsWith('/SlateReactExtensionPlugin.ts') &&
+    (relativePath.endsWith('/PliteReactExtensionPlugin.ts') &&
       after.includes('reset(options)')) ||
     (relativePath.endsWith('/ExitBreakPlugin.ts') &&
       after.includes('editor.tf.insertExitBreak')) ||
@@ -421,7 +421,7 @@ function isRuntimeBackedEditorDecision(text, index, relativePath) {
       ownerWindow.includes('insertData')) ||
     (relativePath.endsWith('/ReactPlugin.ts') &&
       ownerWindow.includes('withPlateReact')) ||
-    (relativePath.endsWith('/SlateReactExtensionPlugin.ts') &&
+    (relativePath.endsWith('/PliteReactExtensionPlugin.ts') &&
       ownerWindow.includes('normalizeNode')) ||
     (relativePath.endsWith('/createPlateRuntimeEditor.ts') &&
       ownerWindow.includes('runtime') &&

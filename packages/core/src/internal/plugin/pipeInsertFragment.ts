@@ -1,22 +1,22 @@
 import type { Descendant } from '@platejs/plite';
 
 import type { BaseEditor } from '../../lib/editor';
-import type { ParserOptions } from '../../lib/plugin/PluginBase';
+import type { ParserOptions } from '../../lib/plugin/SlatePlugin';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 
-import { getBasePlugin } from '../../lib/plugin';
+import { getEditorPlugin } from '../../lib/plugin';
 
 /** Pipe preInsert then insertFragment. */
 export const pipeInsertFragment = (
   editor: BaseEditor,
-  injectedPlugins: Partial<AnyBasePlugin>[],
+  injectedPlugins: AnyBasePlugin[],
   { fragment, ...options }: ParserOptions & { fragment: Descendant[] }
 ) => {
   editor.update((tx) => {
     injectedPlugins.some(
       (p) =>
         p.parser?.preInsert?.({
-          ...getBasePlugin(editor, p as any),
+          ...getEditorPlugin(editor, p),
           fragment,
           ...options,
         }) === true

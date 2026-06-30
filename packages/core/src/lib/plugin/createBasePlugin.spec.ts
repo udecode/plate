@@ -1,15 +1,27 @@
-import { BasicBlocksPlugin } from '@platejs/basic-nodes/react';
-import { LinkPlugin } from '@platejs/link/react';
-
 import {
   resolveCreatePluginTest,
   resolvePluginTest,
 } from '../../internal/plugin/resolveCreatePluginTest';
 import {
-  type PluginConfig,
+  type AnyBasePlugin,
   createBaseEditor,
   createBasePlugin,
 } from '../index';
+import { getEditorPlugin } from './getEditorPlugin';
+
+const resolveEditorExtensions = (plugin: AnyBasePlugin) => {
+  const editor = createBaseEditor({ plugins: [plugin] });
+  const resolvedPlugin = editor.getPlugin(plugin);
+  const context = getEditorPlugin(editor, resolvedPlugin);
+
+  return resolvedPlugin.__editorExtensions.flatMap((extension) => {
+    const input = extension(context);
+
+    if (!input) return [];
+
+    return Array.isArray(input) ? input : [input];
+  });
+};
 
 describe('createBasePlugin', () => {
   describe('extend', () => {
@@ -44,7 +56,7 @@ describe('createBasePlugin', () => {
     });
 
     it('resolves function-based plugins against the editor context', () => {
-      const plugin = resolveCreatePluginTest((editor: any) => ({
+      const plugin = resolveCreatePluginTest((editor) => ({
         key: 'functionPlugin',
         node: { type: 'function' },
         options: { editorId: editor.id },
@@ -86,10 +98,21 @@ describe('createBasePlugin', () => {
       });
     });
 
-    it('can extend shipped nested plugins', () => {
+    it('can extend nested plugins', () => {
       const editor = createBaseEditor({
         plugins: [
-          BasicBlocksPlugin.extendPlugin(
+          createBasePlugin({
+            key: 'blocks',
+            plugins: [
+              createBasePlugin({
+                key: 'heading',
+                node: { type: 'heading' },
+                options: {
+                  levels: 6,
+                },
+              }),
+            ],
+          }).extendPlugin(
             { key: 'heading' },
             {
               node: { type: 'h' },
@@ -115,11 +138,13 @@ describe('createBasePlugin', () => {
         method: () => 'child',
       }));
 
-      const extendedPlugin = createBasePlugin({
+      const parentPlugin = createBasePlugin({
         key: 'parent',
         options: { parentOption: 'parent' },
         plugins: [childPlugin],
-      }).extendPlugin(childPlugin, (ctx) => ({
+      });
+
+      const extendedPlugin = parentPlugin.extendPlugin(childPlugin, (ctx) => ({
         options: {
           extendedOption: `extended ${ctx.plugin.options.childOption}`,
         },
@@ -202,13 +227,13 @@ describe('createBasePlugin', () => {
         }))
         .extend(({ editor }) => {
           const replace = (text: string) => {
-            // @ts-expect-error extendTxGroup does not add the plugin-owned group
-            type _MissingPluginGroup = Parameters<
-              Parameters<typeof editor.update>[0]
-            >[0]['sourcePlugin'];
-
             return editor.update((tx) => {
+              // @ts-expect-error Explicit tx groups should not install an own-key tx group.
+              const sourcePlugin = tx.sourcePlugin;
+
               const length = tx.foreignTx.replace(text);
+
+              expect(sourcePlugin).toBeUndefined();
 
               return length satisfies number;
             });
@@ -220,6 +245,55 @@ describe('createBasePlugin', () => {
         });
 
       expect(1).toBe(1);
+    });
+
+    it('adds editor extensions with plugin-derived names', () => {
+      const resolved = resolvePluginTest(
+        createBasePlugin({
+          key: 'runtime',
+        }).extendExtension({
+          operations: {
+            apply({ next, operation }) {
+              next(operation);
+            },
+          },
+        })
+      );
+
+      expect(resolveEditorExtensions(resolved)).toMatchObject([
+        {
+          name: 'runtime',
+        },
+      ]);
+    });
+
+    it('keeps explicit editor extension names and disambiguates arrays', () => {
+      const resolved = resolvePluginTest(
+        createBasePlugin({
+          key: 'runtime',
+        }).extendExtension([
+          {
+            operations: {
+              apply({ next, operation }) {
+                next(operation);
+              },
+            },
+          },
+          {
+            name: 'custom-runtime',
+            operations: {
+              apply({ next, operation }) {
+                next(operation);
+              },
+            },
+          },
+        ])
+      );
+
+      expect(resolveEditorExtensions(resolved)).toMatchObject([
+        { name: 'runtime:0' },
+        { name: 'custom-runtime' },
+      ]);
     });
   });
 
@@ -293,10 +367,13 @@ describe('createBasePlugin', () => {
         node: { type: 'custom-td' },
       });
 
-      const resolvedPlugin = resolvePluginTest(configuredPlugin);
-      const parsedNode = resolvedPlugin.parsers?.html?.deserializer?.parse?.(
-        {} as any
-      );
+      const editor = createBaseEditor({ plugins: [configuredPlugin] });
+      const resolvedPlugin = editor.getPlugin(configuredPlugin);
+      const parsedNode = resolvedPlugin.parsers?.html?.deserializer?.parse?.({
+        ...getEditorPlugin(editor, resolvedPlugin),
+        element: document.createElement('td'),
+        node: {},
+      });
 
       expect(parsedNode).toEqual({ type: 'custom-td' });
     });
@@ -326,10 +403,22 @@ describe('createBasePlugin', () => {
       expect(observedType).toBe('customType');
     });
 
-    it('can override shipped plugin parsers at the root', () => {
+    it('can override plugin parsers at the root', () => {
+      const linkPlugin = createBasePlugin({
+        key: 'a',
+        parsers: {
+          html: {
+            deserializer: {
+              parse: () => ({ href: true }),
+              withoutChildren: false,
+            },
+          },
+        },
+      });
+
       const editor = createBaseEditor({
         plugins: [
-          LinkPlugin.extend(() => ({
+          linkPlugin.extend(() => ({
             parsers: {
               html: {
                 deserializer: {
@@ -342,9 +431,15 @@ describe('createBasePlugin', () => {
         ],
       });
 
-      const plugin = editor.getPlugin(LinkPlugin);
+      const plugin = editor.getPlugin(linkPlugin);
 
-      expect(plugin.parsers.html?.deserializer?.parse?.({} as any)).toEqual({
+      expect(
+        plugin.parsers.html?.deserializer?.parse?.({
+          ...getEditorPlugin(editor, plugin),
+          element: document.createElement('a'),
+          node: {},
+        })
+      ).toEqual({
         test: true,
       });
       expect(plugin.parsers.html?.deserializer?.withoutChildren).toBe(true);
@@ -378,16 +473,16 @@ describe('createBasePlugin', () => {
     });
 
     it('does not add a plugin when the target is missing', () => {
+      const child = createBasePlugin({
+        key: 'aa',
+        options: { initialValue: 'aa' },
+      });
+
       const editor = createBaseEditor({
         plugins: [
           createBasePlugin({
             key: 'a',
-            plugins: [
-              createBasePlugin({
-                key: 'aa',
-                options: { initialValue: 'aa' },
-              }),
-            ],
+            plugins: [child],
           }).configurePlugin({ key: 'bb' }, { options: { newOption: 'new' } }),
         ],
       });
@@ -410,14 +505,12 @@ describe('createBasePlugin', () => {
         plugins: [grandchild],
       });
 
-      const parent = createBasePlugin({
-        key: 'a',
-        plugins: [child],
-      });
-
       const editor = createBaseEditor({
         plugins: [
-          parent.configurePlugin(grandchild, {
+          createBasePlugin({
+            key: 'a',
+            plugins: [child],
+          }).configurePlugin(grandchild, {
             node: { isElement: false },
             options: { a: 2 },
           }),
@@ -425,9 +518,7 @@ describe('createBasePlugin', () => {
       });
 
       expect(editor.plugins.c.node.isElement).toBe(false);
-      expect(
-        editor.getOptions<PluginConfig<any, { a: number }>>({ key: 'c' }).a
-      ).toBe(2);
+      expect(editor.getOptions(grandchild).a).toBe(2);
     });
   });
 });

@@ -1,21 +1,34 @@
-import { createEditor } from '@platejs/slate';
-
 import {
+  HistoryPlugin,
   type PluginConfig,
-  createSlatePlugin,
-  createTSlatePlugin,
-  withSlate,
+  createBaseEditor,
+  createBasePlugin,
+  getEditorPlugin,
 } from '@platejs/core';
+import { defineEditorExtension } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 
-const BoldPlugin = createSlatePlugin({
+const baseSingleExtension = defineEditorExtension({
+  name: 'base-single-extension',
+});
+const baseArrayExtension = defineEditorExtension({
+  name: 'base-array-extension',
+});
+const baseFactoryExtension = defineEditorExtension({
+  name: 'base-factory-extension',
+});
+
+const BoldPlugin = createBasePlugin({
   key: 'bold',
   options: {
     enabled: true as const,
     hotkey: 'mod+b',
   },
-}).extendEditorApi(({ getOptions }) => ({
-  toggleBold: () => getOptions().hotkey,
-}));
+})
+  .extendExtension(baseSingleExtension)
+  .extendEditorApi(({ getOptions }) => ({
+    toggleBold: () => getOptions().hotkey,
+  }));
 
 type CalloutConfig = PluginConfig<
   'callout',
@@ -28,7 +41,7 @@ type CalloutConfig = PluginConfig<
   }
 >;
 
-const CalloutPlugin = createTSlatePlugin<CalloutConfig>({
+const CalloutPlugin = createBasePlugin<CalloutConfig>({
   key: 'callout',
   options: {
     dismissible: false,
@@ -44,41 +57,115 @@ const ConfiguredCalloutPlugin = CalloutPlugin.configure({
   options: {
     variant: 'warning',
   },
-}).extend({
+})
+  .extend({
+    options: {
+      dismissible: true,
+    },
+  })
+  .extendExtension(baseArrayExtension);
+
+const FactoryExtensionPlugin = createBasePlugin({
+  key: 'factoryExtension',
   options: {
-    dismissible: true,
+    enabled: true,
   },
+}).extendExtension(({ getOptions }) => {
+  const enabled: boolean = getOptions().enabled;
+
+  void enabled;
+
+  return [baseFactoryExtension] as const;
 });
 
-const slateEditor = withSlate(createEditor(), {
-  plugins: [BoldPlugin, ConfiguredCalloutPlugin],
+const InlineHistoryPlugin = createBasePlugin({
+  key: 'inlineHistory',
+}).extendExtension(history());
+
+const basePlateEditor = createBaseEditor({
+  plugins: [BoldPlugin, ConfiguredCalloutPlugin, FactoryExtensionPlugin],
 });
 
-const boldHotkey: string = slateEditor.api.toggleBold();
-const boldEnabled: true = slateEditor.getOptions(BoldPlugin).enabled;
-const calloutVariant: 'info' | 'warning' = slateEditor.getOptions(
+const inlineHistoryEditor = createBaseEditor({
+  plugins: [InlineHistoryPlugin],
+});
+
+const coreHistoryEditor = createBaseEditor({
+  plugins: [HistoryPlugin],
+});
+
+const OriginalOverridePlugin = createBasePlugin({
+  key: 'originalOverride',
+})
+  .extendEditorApi(() => ({
+    overrideLabel: () => 'original' as const,
+    scopedLabel: () => 'scoped' as const,
+  }))
+  .extendApi(() => ({
+    pluginScopedLabel: () => 'plugin-scoped' as const,
+  }));
+
+const ReplacementOverridePlugin = createBasePlugin({
+  key: 'replacementOverride',
+}).extendEditorApi(({ editor }) => {
+  const originalApi = getEditorPlugin(editor, OriginalOverridePlugin).api;
+
+  return {
+    overrideLabel: () => `overridden:${originalApi.scopedLabel()}`,
+  };
+});
+
+const overrideEditor = createBaseEditor({
+  plugins: [OriginalOverridePlugin, ReplacementOverridePlugin],
+});
+
+const boldHotkey: string = basePlateEditor.api.toggleBold();
+const boldEnabled: true = basePlateEditor.getOptions(BoldPlugin).enabled;
+const calloutVariant: 'info' | 'warning' = basePlateEditor.getOptions(
   ConfiguredCalloutPlugin
 ).variant;
-const calloutDismissible: boolean | undefined = slateEditor.getOptions(
+const calloutDismissible: boolean | undefined = basePlateEditor.getOptions(
   ConfiguredCalloutPlugin
 ).dismissible;
+const inlineHistorySaving: boolean | undefined =
+  inlineHistoryEditor.api.history.isSaving();
+const coreHistorySaving: boolean | undefined =
+  coreHistoryEditor.api.history.isSaving();
+const overrideLabel: string = overrideEditor.api.overrideLabel();
+const scopedLabel: 'scoped' = getEditorPlugin(
+  overrideEditor,
+  OriginalOverridePlugin
+).api.scopedLabel();
+const pluginScopedLabel: 'plugin-scoped' =
+  overrideEditor.api.originalOverride.pluginScopedLabel();
 
-slateEditor.api.setVariant('info');
-slateEditor.api.setVariant('warning');
+basePlateEditor.api.setVariant('info');
+basePlateEditor.api.setVariant('warning');
+inlineHistoryEditor.update((tx) => tx.history.undo());
+coreHistoryEditor.update((tx) => tx.history.redo());
 
 void boldEnabled;
 void boldHotkey;
 void calloutDismissible;
 void calloutVariant;
+void coreHistorySaving;
+void inlineHistorySaving;
+void overrideLabel;
+void pluginScopedLabel;
+void scopedLabel;
 
 // @ts-expect-error invalid configured option value
 CalloutPlugin.configure({ options: { variant: 'danger' } });
 
 // @ts-expect-error invalid merged editor api
-slateEditor.api.notReal();
+basePlateEditor.api.notReal();
 
 // @ts-expect-error wrong argument type for merged api
-slateEditor.api.setVariant('danger');
+basePlateEditor.api.setVariant('danger');
 
 // @ts-expect-error boolean option must stay boolean
-slateEditor.getOptions(BoldPlugin).enabled = 'yes';
+basePlateEditor.getOptions(BoldPlugin).enabled = 'yes';
+
+// @ts-expect-error editor-level override APIs must not keep stale first-plugin literals
+const staleOverrideLabel: 'original' = overrideEditor.api.overrideLabel();
+void staleOverrideLabel;

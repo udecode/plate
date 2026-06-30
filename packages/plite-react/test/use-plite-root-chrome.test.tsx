@@ -65,7 +65,7 @@ describe('usePliteRootChrome', () => {
     });
 
     expect(document.activeElement).toBe(screen.getByLabelText('Header editor'));
-    expect(headerEditor.read((state) => state.selection.get())).toEqual({
+    expect(headerEditor.read((state) => state.selection())).toEqual({
       anchor: { offset: 6, path: [0, 0], root: 'header' },
       focus: { offset: 6, path: [0, 0], root: 'header' },
     });
@@ -76,7 +76,7 @@ describe('usePliteRootChrome', () => {
     });
 
     expect(document.activeElement).toBe(screen.getByLabelText('Header editor'));
-    expect(headerEditor.read((state) => state.selection.get())).toEqual({
+    expect(headerEditor.read((state) => state.selection())).toEqual({
       anchor: { offset: 6, path: [0, 0], root: 'header' },
       focus: { offset: 6, path: [0, 0], root: 'header' },
     });
@@ -110,13 +110,11 @@ describe('usePliteRootChrome', () => {
       await flushRootChromeFocus();
     });
 
-    expect(headerEditor.read((state) => state.selection.get()?.anchor)).toEqual(
-      {
-        offset: 6,
-        path: [0, 0],
-        root: 'header',
-      }
-    );
+    expect(headerEditor.read((state) => state.selection()?.anchor)).toEqual({
+      offset: 6,
+      path: [0, 0],
+      root: 'header',
+    });
   });
 
   test('ignores native editable text and interactive descendants', async () => {
@@ -153,19 +151,19 @@ describe('usePliteRootChrome', () => {
       );
       await flushRootChromeFocus();
     });
-    expect(editor.read((state) => state.selection.get())).toBeNull();
+    expect(editor.read((state) => state.selection())).toBeNull();
 
     await act(async () => {
       fireEvent.mouseDown(screen.getByTestId('native-text-descendant'));
       await flushRootChromeFocus();
     });
-    expect(editor.read((state) => state.selection.get())).toBeNull();
+    expect(editor.read((state) => state.selection())).toBeNull();
 
     await act(async () => {
       fireEvent.mouseDown(screen.getByTestId('native-element-descendant'));
       await flushRootChromeFocus();
     });
-    expect(editor.read((state) => state.selection.get())).toBeNull();
+    expect(editor.read((state) => state.selection())).toBeNull();
   });
 
   test('handles blank editable root clicks synchronously', async () => {
@@ -197,13 +195,11 @@ describe('usePliteRootChrome', () => {
     fireEvent.mouseUp(screen.getByTestId('blank-editor-surface'));
     await flushRootChromeFocus();
 
-    expect(headerEditor.read((state) => state.selection.get()?.anchor)).toEqual(
-      {
-        offset: 6,
-        path: [0, 0],
-        root: 'header',
-      }
-    );
+    expect(headerEditor.read((state) => state.selection()?.anchor)).toEqual({
+      offset: 6,
+      path: [0, 0],
+      root: 'header',
+    });
   });
 
   test('blank editable root clicks focus at the end without a restorable selection', async () => {
@@ -235,13 +231,11 @@ describe('usePliteRootChrome', () => {
     fireEvent.mouseUp(screen.getByTestId('blank-editor-surface'));
     await flushRootChromeFocus();
 
-    expect(headerEditor.read((state) => state.selection.get()?.anchor)).toEqual(
-      {
-        offset: 6,
-        path: [0, 0],
-        root: 'header',
-      }
-    );
+    expect(headerEditor.read((state) => state.selection()?.anchor)).toEqual({
+      offset: 6,
+      path: [0, 0],
+      root: 'header',
+    });
   });
 
   test("restores a root's previous selection when chrome reactivates it", async () => {
@@ -285,9 +279,9 @@ describe('usePliteRootChrome', () => {
       await flushRootChromeFocus();
     });
 
-    expect(
-      headerEditor.read((state) => state.selection.get()?.anchor.offset)
-    ).toBe(3);
+    expect(headerEditor.read((state) => state.selection()?.anchor.offset)).toBe(
+      3
+    );
   });
 
   test('clears projected selections when chrome restores a root selection', async () => {
@@ -344,8 +338,8 @@ describe('usePliteRootChrome', () => {
     });
 
     expect(readPliteViewSelection(headerEditor)).toBe(null);
-    expect(
-      headerEditor.read((state) => state.selection.get()?.anchor.offset)
-    ).toBe(3);
+    expect(headerEditor.read((state) => state.selection()?.anchor.offset)).toBe(
+      3
+    );
   });
 });

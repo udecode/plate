@@ -793,7 +793,7 @@ export const DOMEditor: DOMEditorInterface = {
   },
 
   deselect: (editor) => {
-    const selection = editor.read((state) => state.selection.get());
+    const selection = editor.read((state) => state.selection());
     const root = DOMEditor.findDocumentOrShadowRoot(editor);
     const domSelection = getSelection(root);
 

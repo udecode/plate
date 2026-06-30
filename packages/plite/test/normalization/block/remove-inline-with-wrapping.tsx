@@ -16,17 +16,17 @@ export const output = (
   <editor>
     <block>
       <block>one</block>
-      <block>
+      <element type="paragraph">
         <text />
         <inline>two</inline>
         <text />
-      </block>
+      </element>
       <block>three</block>
-      <block>
+      <element type="paragraph">
         <text />
         <inline>four</inline>
         <text />
-      </block>
+      </element>
     </block>
   </editor>
 );

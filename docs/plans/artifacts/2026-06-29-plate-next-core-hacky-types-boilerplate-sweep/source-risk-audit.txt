@@ -1,0 +1,179 @@
+Pattern audit after cleanup
+===========================
+
+Clipboard boilerplate / old local API shims
+packages/plite/src/create-editor.ts:93:const createClipboardApi = (getEditor: () => Editor): EditorClipboardApi =>
+packages/plite/src/create-editor.ts:191:  const clipboardApi = createClipboardApi(() => editor as Editor);
+
+Pass-through helper wrappers called out by the packet
+packages/core/src/internal/plugin/resolvePlugins.ts:603:        ((!(p as any).render.node && !(p as any).node.component) ||
+packages/core/src/internal/plugin/resolveCreatePluginTest.ts:17:    key = resolvePlugin(editor, p as any).key;
+packages/core/src/internal/plugin/resolveCreatePluginTest.ts:33:    key = resolvePlugin(editor, p as any).key;
+packages/core/src/lib/utils/pipeInsertDataQuery.ts:19:        ...getEditorPlugin(editor, p as any),
+
+Remaining source casts in touched plugin/runtime files (reviewed or deferred)
+packages/core/src/lib/editor/withPlite.ts:87:        (tx as any).history?.undo?.();
+packages/core/src/lib/editor/withPlite.ts:94:        (tx as any).history?.redo?.();
+packages/core/src/lib/editor/withPlite.ts:364:                } as never)
+packages/core/src/lib/editor/withPlite.ts:368:          const text = editor.read.text.string(path as never);
+packages/core/src/lib/editor/withPlite.ts:419:      state.value.root(root === 'main' ? undefined : (root as never))
+packages/core/src/lib/editor/withPlite.ts:457:      } as never)
+packages/core/src/lib/editor/withPlite.ts:503:        ? input(getEditorPlugin(editor, plugin) as never)
+packages/core/src/lib/editor/withPlite.ts:527:  plugin as unknown as PlateRuntimePluginInput;
+packages/core/src/lib/editor/withPlite.ts:539:      (editor.getOption as unknown as (...input: unknown[]) => unknown)(
+packages/core/src/lib/editor/withPlite.ts:619:          groupFactory(transaction, runtimeEditor as BaseEditor, context as any)
+packages/core/src/lib/editor/withPlite.ts:679:                } as never);
+packages/core/src/lib/editor/withPlite.ts:688:              } as never);
+packages/core/src/lib/editor/withPlite.ts:926:  const editor = e as unknown as BaseEditor;
+packages/core/src/lib/editor/withPlite.ts:947:      (editor.getPlugin as any)(plugin).inject?.nodeProps ?? ({} as any);
+packages/core/src/lib/editor/withPlite.ts:976:    return (store.get as any)(key, ...args);
+packages/core/src/lib/editor/withPlite.ts:1015:  let rootPluginInstance: AnyBasePlugin = (createBasePlugin as any)({
+packages/core/src/lib/editor/withPlite.ts:1031:    rootPluginInstance = rootPlugin(rootPluginInstance) as any;
+packages/core/src/lib/editor/withPlite.ts:1046:      onReady: onReady as any,
+packages/core/src/lib/editor/withPlite.ts:1050:  return editor as any;
+packages/core/src/lib/editor/withPlite.ts:1114:    options as unknown as ExtendBaseEditorOptions<V, InferPlugins<P>>
+packages/core/src/internal/plugin/resolvePlugins.ts:199:    if ((plugin as any).useHooks) {
+packages/core/src/internal/plugin/resolvePlugins.ts:203:    if ((plugin as any).handlers?.onChange) {
+packages/core/src/internal/plugin/resolvePlugins.ts:206:    if ((plugin as any).handlers?.onNodeChange) {
+packages/core/src/internal/plugin/resolvePlugins.ts:209:    if ((plugin as any).handlers?.onTextChange) {
+packages/core/src/internal/plugin/resolvePlugins.ts:234:      (plugin as any).__selectorExtensions &&
+packages/core/src/internal/plugin/resolvePlugins.ts:235:      (plugin as any).__selectorExtensions.length > 0
+packages/core/src/internal/plugin/resolvePlugins.ts:237:      (plugin as any).__selectorExtensions.forEach((extension: any) => {
+packages/core/src/internal/plugin/resolvePlugins.ts:253:        ...(getEditorPlugin(editor, plugin) as any),
+packages/core/src/internal/plugin/resolvePlugins.ts:261:        if (!(plugin.api as any)[plugin.key]) {
+packages/core/src/internal/plugin/resolvePlugins.ts:262:          (plugin.api as any)[plugin.key] = {};
+packages/core/src/internal/plugin/resolvePlugins.ts:265:        merge((plugin.api as any)[plugin.key], newExtensions);
+packages/core/src/internal/plugin/resolvePlugins.ts:308:          const pluginSpecificTx = (plugin.tx as any)?.[plugin.key];
+packages/core/src/internal/plugin/resolvePlugins.ts:309:          const pluginSpecificApi = (plugin.api as any)?.[plugin.key];
+packages/core/src/internal/plugin/resolvePlugins.ts:346:    const inputRulesDefinition = (plugin as any).inputRules;
+packages/core/src/internal/plugin/resolvePlugins.ts:353:    const configuredRules = ((plugin as any).__configuredInputRules ??
+packages/core/src/internal/plugin/resolvePlugins.ts:370:      ) as unknown as ResolvedInputRule;
+packages/core/src/internal/plugin/resolvePlugins.ts:565:      if ((plugin.override as any).components) {
+packages/core/src/internal/plugin/resolvePlugins.ts:566:        Object.entries((plugin.override as any).components).forEach(
+packages/core/src/internal/plugin/resolvePlugins.ts:603:        ((!(p as any).render.node && !(p as any).node.component) ||
+packages/core/src/internal/plugin/resolvePlugins.ts:606:        (updatedPlugin as any).render.node =
+packages/core/src/internal/plugin/resolvePlugins.ts:608:        (updatedPlugin as any).node.component =
+packages/core/src/internal/plugin/resolvePlugins.ts:630:  editor.meta.pluginList = applyOverrides(editor.meta.pluginList as any);
+packages/core/src/lib/plugin/getSlatePlugin.ts:17:  let plugin = p as any;
+packages/core/src/lib/plugin/getSlatePlugin.ts:19:  const editorPlugin = editor.plugins[p.key] as any;
+packages/core/src/lib/plugin/getSlatePlugin.ts:36:  const p = (editor.getPlugin as any)({ key }) as AnyBasePlugin;
+packages/core/src/lib/utils/normalizeDescendantsToDocumentFragment.ts:127:  return normalize(descendants, isInline, makeDefaultBlock as any);
+packages/core/src/lib/plugin/getEditorPlugin.ts:24:  const plugin = editor.getPlugin(p) as any;
+packages/core/src/lib/plugin/getEditorPlugin.ts:29:    plugin: plugin as any,
+packages/core/src/lib/plugin/getEditorPlugin.ts:31:      editor.setOption(plugin, keyOrOptions, value)) as any,
+packages/core/src/lib/plugin/getEditorPlugin.ts:32:    setOptions: ((options: any) => editor.setOptions(plugin, options)) as any,
+packages/core/src/lib/plugin/getEditorPlugin.ts:35:      (editor.getOption as any)(plugin, key, ...args),
+packages/core/src/internal/plugin/resolvePlugin.ts:46:      getEditorPlugin(editor, plugin as any)
+packages/core/src/internal/plugin/resolvePlugin.ts:47:    ) as any;
+packages/core/src/internal/plugin/resolvePlugin.ts:57:      (plugin as any).__configuredInputRules = [
+packages/core/src/internal/plugin/resolvePlugin.ts:59:          (plugin as any).__configuredInputRules
+packages/core/src/internal/plugin/resolvePlugin.ts:67:    (plugin as any).__configuration = undefined;
+packages/core/src/internal/plugin/resolvePlugin.ts:74:        extension(getEditorPlugin(editor, plugin as any))
+packages/core/src/internal/plugin/resolvePlugin.ts:107:  (validatePlugin as any)(editor, plugin);
+packages/core/src/lib/utils/hotkeys.ts:60:  const generic = (HOTKEYS as any)[key];
+packages/core/src/lib/utils/hotkeys.ts:61:  const apple = (APPLE_HOTKEYS as any)[key];
+packages/core/src/lib/utils/hotkeys.ts:62:  const windows = (WINDOWS_HOTKEYS as any)[key];
+packages/core/src/lib/plugin/createBasePlugin.ts:85:  const nextPluginRecord = nextPlugin as any;
+packages/core/src/lib/plugin/createBasePlugin.ts:96:        (extension: unknown) => !baseExtensions.includes(extension as never)
+packages/core/src/lib/plugin/createBasePlugin.ts:203:    baseConfig = config as any;
+packages/core/src/lib/plugin/createBasePlugin.ts:236:  ) as unknown as BasePlugin;
+packages/core/src/lib/plugin/createBasePlugin.ts:245:      isFunction(config) ? config(ctx as any) : config;
+packages/core/src/lib/plugin/createBasePlugin.ts:271:            } as any)
+packages/core/src/lib/plugin/createBasePlugin.ts:290:    const result = configureNestedPlugin(newPlugin.plugins as any);
+packages/core/src/lib/plugin/createBasePlugin.ts:291:    newPlugin.plugins = result.plugins as any;
+packages/core/src/lib/plugin/createBasePlugin.ts:296:  }) as any;
+packages/core/src/lib/plugin/createBasePlugin.ts:301:      ...(newPlugin.__apiExtensions as any),
+packages/core/src/lib/plugin/createBasePlugin.ts:311:      ...(newPlugin.__selectorExtensions as any),
+packages/core/src/lib/plugin/createBasePlugin.ts:321:      ...(newPlugin.__apiExtensions as any),
+packages/core/src/lib/plugin/createBasePlugin.ts:331:      ...(newPlugin.__txExtensions as any),
+packages/core/src/lib/plugin/createBasePlugin.ts:343:      ...(newPlugin.__txExtensions as any),
+packages/core/src/lib/plugin/createBasePlugin.ts:357:        ...(newPlugin.__extensions as any),
+packages/core/src/lib/plugin/createBasePlugin.ts:361:      newPlugin = mergePlugins(newPlugin, extendConfig as any);
+packages/core/src/lib/plugin/createBasePlugin.ts:371:      ...(newPlugin.__extensions as any),
+packages/core/src/lib/plugin/createBasePlugin.ts:401:                ...(nestedPlugin.__extensions as any),
+packages/core/src/lib/plugin/createBasePlugin.ts:405:            } as any)
+packages/core/src/lib/plugin/createBasePlugin.ts:424:    const result = extendNestedPlugin(newPlugin.plugins as any);
+packages/core/src/lib/plugin/createBasePlugin.ts:425:    newPlugin.plugins = result.plugins as any;
+packages/core/src/lib/plugin/createBasePlugin.ts:435:                ? extendConfig(ctx as any)
+packages/core/src/lib/plugin/createBasePlugin.ts:436:                : (extendConfig as any),
+packages/core/src/lib/plugin/createBasePlugin.ts:438:        } as any)
+packages/core/src/lib/plugin/createBasePlugin.ts:449:    }) as any;
+packages/plite/src/interfaces/element.ts:158:    (value as unknown as Record<string, unknown>)[elementKey] === elementVal,
+packages/core/src/internal/plugin/resolveCreatePluginTest.ts:12:  }) as any;
+packages/core/src/internal/plugin/resolveCreatePluginTest.ts:17:    key = resolvePlugin(editor, p as any).key;
+packages/core/src/internal/plugin/resolveCreatePluginTest.ts:28:  }) as any;
+packages/core/src/internal/plugin/resolveCreatePluginTest.ts:33:    key = resolvePlugin(editor, p as any).key;
+packages/core/src/lib/utils/pipeInsertDataQuery.ts:19:        ...getEditorPlugin(editor, p as any),
+packages/core/src/lib/utils/getPluginNodeProps.ts:27:        ? plugin.node.props(newProps as any)
+packages/core/src/internal/plugin/pipeTransformInitialValue.ts:26:    } as any;
+packages/core/src/lib/utils/getInjectedPlugins.ts:17:    if (injectedPlugin) injectedPlugins.push(injectedPlugin as any);
+packages/plite/src/interfaces/editor.ts:3333:    ) as never;
+packages/core/src/lib/utils/applyDeepToNodes.ts:48:      node: child as any,
+packages/core/src/lib/plugins/getCorePlugins.ts:101:    return corePlugin as any;
+packages/core/src/lib/plugins/html/utils/htmlElementToLeaf.ts:44:        arr.push(jsx('text', attributes, child) as any);
+packages/plite/src/editor/previous.ts:42:    return editorNode(editor, previousPath) as any;
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:427:          getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:435:          getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:443:          getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:452:          getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:460:          getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:468:          getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:474:      }) as unknown as AnyInputRule<unknown>;
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:491:          getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:499:          getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:508:          getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:518:                getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:531:          getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:537:      }) as unknown as AnyInputRule<unknown>;
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:551:          getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:562:          getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:571:          getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:582:                getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:589:      }) as unknown as AnyInputRule<unknown>;
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:611:          getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:617:      } as InsertTextInputRule<unknown>) as unknown as AnyInputRule<unknown>;
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:637:      } as InsertBreakInputRule<unknown>) as unknown as AnyInputRule<unknown>;
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:654:          getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:665:      } as InsertDataInputRule<unknown>) as unknown as AnyInputRule<unknown>;
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:678:        getFactoryInput({}) as unknown as FactoryInput<
+packages/core/src/lib/plugins/input-rules/createRuleFactory.ts:685:    }) as unknown as AnyInputRule<unknown>;
+packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts:104:            if (!values.includes((el.style as any)[key]) && value !== '*')
+packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts:107:            if (value === '*' && !(el.style as any)[key]) return false;
+packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts:114:              defaultNodeValue === (el.style as any)[key]
+packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts:208:        (elementAttributes as any)[elementAttributeName] =
+packages/plite/src/core/snapshot-index.ts:16:}) as unknown as SnapshotIndex;
+packages/plite/src/core/editor-schema.ts:61:  return (element as unknown as Record<string, unknown>)[property];
+packages/plite/src/editor/bookmark.ts:68:  Array.from(NodeApi.texts({ children } as never), ([node, path]) => ({
+packages/plite/src/editor/bookmark.ts:100:    { children: op.children } as never,
+packages/plite/src/editor/bookmark.ts:140:    { children: op.newChildren } as never,
+packages/plite/src/core/full-root-replace-cache.ts:282:  }) as unknown as EditorSnapshot;
+packages/plite/src/editor-runtime-view.ts:105:    )) as unknown as TMethod;
+packages/plite/src/editor-runtime-view.ts:912:  viewEditor = view as unknown as typeof runtime.editor;
+packages/plite/src/core/public-state.ts:1037:    } as unknown as PliteNode,
+packages/plite/src/core/public-state.ts:2213:  const stateRecord = state as unknown as Record<string, unknown>;
+packages/plite/src/core/public-state.ts:2218:      stateRecord as never,
+packages/plite/src/core/public-state.ts:2219:      editor as never
+packages/plite/src/core/public-state.ts:2482:  const txRecord = tx as unknown as Record<string, unknown>;
+packages/plite/src/core/public-state.ts:2487:      txRecord as never,
+packages/plite/src/core/public-state.ts:2488:      editor as never,
+packages/plite/src/core/public-state.ts:2489:      getUpdateContext(editor) as never
+packages/plite/src/core/public-state.ts:3055:  }) as unknown as EditorTransaction;
+packages/plite/src/core/public-state.ts:3080:  }) as unknown as EditorSnapshot;
+packages/plite/src/core/public-state.ts:3097:  }) as unknown as EditorSnapshot;
+packages/plite/src/core/public-state.ts:3194:  }) as unknown as EditorSnapshot;
+packages/plite/src/core/public-state.ts:3230:  }) as unknown as EditorSnapshot;
+packages/plite/src/core/public-state.ts:3477:  }) as unknown as EditorSnapshot;
+packages/plite/src/core/editor-extension.ts:188:  const methods = (extension as unknown as { methods?: unknown }).methods;
+packages/plite/src/core/editor-extension.ts:189:  const publicCommands = (extension as unknown as { commands?: unknown })
+packages/plite/src/core/editor-extension.ts:192:    extension as unknown as { commitListeners?: unknown }
+packages/plite/src/core/editor-extension.ts:195:    extension as unknown as { operationMiddlewares?: unknown }
+packages/plite/src/core/editor-extension.ts:197:  const register = (extension as unknown as { register?: unknown }).register;
+packages/plite/src/core/editor-extension.ts:234:  const commitListeners = (slots as unknown as { commitListeners?: unknown })
+packages/plite/src/core/editor-extension.ts:237:    slots as unknown as { operationMiddlewares?: unknown }
+packages/plite/src/core/editor-extension.ts:239:  const commands = (slots as unknown as { commands?: unknown }).commands;
+packages/plite/src/core/editor-extension.ts:612:              group as never,
+packages/plite/src/core/editor-extension.ts:613:              method as never,
+packages/plite/src/core/editor-extension.ts:614:              middleware as never
+packages/plite/src/core/transform-middleware.ts:111:  return args as unknown as EditorTransformMiddlewareArgs<V>[TKey];
+packages/plite/src/core/editor-runtime.ts:162:  EDITOR_RUNTIME.set(editor, runtime as unknown as InternalEditorRuntime);
+packages/plite/src/core/editor-runtime.ts:179:  return runtime as unknown as InternalEditorRuntime<V>;

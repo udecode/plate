@@ -1228,7 +1228,7 @@ packages/core/src/lib/plugins/html/utils/getDataNodeProps.ts
 packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.spec.ts
 packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts
 packages/core/src/lib/plugins/index.ts
-packages/core/src/lib/plugins/plite-extension/SlateExtensionPlugin.ts
+packages/core/src/lib/plugins/plite-extension/PliteExtensionPlugin.ts
 packages/core/src/lib/utils/getSlateClass.ts
 packages/core/src/lib/utils/omitPluginContext.spec.ts
 packages/core/src/react/components/PlateContent.tsx

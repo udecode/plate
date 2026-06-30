@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, type Descendant } from '../src';
+import { createEditor, type Descendant } from '@platejs/plite';
 
 const paragraph = (text: string) =>
   ({
@@ -12,19 +12,19 @@ const paragraph = (text: string) =>
 describe('createEditor value contract', () => {
   it('normalizes every supported initialValue shape to canonical document value', () => {
     const children = [paragraph('body')];
-    const state = { 'document.title': 'Q2 Plan' };
+    const meta = { 'document.title': 'Q2 Plan' };
     const header = [paragraph('header')];
 
     const fromChildren = createEditor({ initialValue: children });
     const fromDocument = createEditor({
-      initialValue: { children, state },
+      initialValue: { children, meta },
     });
     const fromRoots = createEditor({
-      initialValue: { children, roots: { header }, state },
+      initialValue: { children, roots: { header }, meta },
     });
 
     assert.deepEqual(
-      fromChildren.read((state) => state.value.get()),
+      fromChildren.read((state) => state.value()),
       {
         children,
       }
@@ -34,18 +34,18 @@ describe('createEditor value contract', () => {
       children
     );
     assert.deepEqual(
-      fromDocument.read((state) => state.value.get()),
+      fromDocument.read((state) => state.value()),
       {
         children,
-        state,
+        meta,
       }
     );
     assert.deepEqual(
-      fromRoots.read((state) => state.value.get()),
+      fromRoots.read((state) => state.value()),
       {
         children,
         roots: { header },
-        state,
+        meta,
       }
     );
   });

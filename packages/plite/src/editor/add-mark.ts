@@ -58,7 +58,7 @@ const applyAddMark: EditorStaticApi['addMark'] = (editor, key, value) => {
       );
     } else {
       const marks = {
-        ...(editor.read((state) => state.marks.get()) || {}),
+        ...(editor.read((state) => state.marks()) || {}),
         [key]: value,
       };
 

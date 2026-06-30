@@ -7,7 +7,7 @@ jsx;
 import { type Operation, OperationApi } from '@platejs/plite';
 export const run = (editor) => {
   editor.nodes.set({ key: true }, { at: [0] });
-  const [op] = editor.value.operations();
+  const [op] = editor.read.operations();
   const roundTrip: Operation = JSON.parse(JSON.stringify(op));
   const inverted = OperationApi.inverse(roundTrip);
   editor.operations.replay([inverted]);

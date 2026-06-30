@@ -36,7 +36,7 @@ const redo = (editor: EditorType) => {
   });
 };
 
-describe('document state history contract', () => {
+describe('document meta history contract', () => {
   it('undoes and redoes state-only field commits as history batches', () => {
     const documentTitle = defineStateField({
       key: 'document.title',
@@ -49,7 +49,7 @@ describe('document state history contract', () => {
       extensions: [history(), documentTitle],
       initialValue: {
         children: [paragraph('body')],
-        state: { [documentTitle.key]: 'Q2 Plan' },
+        meta: { [documentTitle.key]: 'Q2 Plan' },
       },
     });
     const readTitle = () =>
@@ -182,7 +182,7 @@ describe('document state history contract', () => {
     assert.equal(readPreview(), 'Draft body');
     assert.equal(readText(), 'Original body');
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       { children: [paragraph('Original body')] }
     );
     assert.equal(
@@ -258,10 +258,10 @@ describe('document state history contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
-        state: { [optionalSubtitle.key]: 'Draft subtitle' },
+        meta: { [optionalSubtitle.key]: 'Draft subtitle' },
       }
     );
 
@@ -272,17 +272,17 @@ describe('document state history contract', () => {
       undefined
     );
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       { children: [paragraph('body')] }
     );
 
     redo(editor);
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
-        state: { [optionalSubtitle.key]: 'Draft subtitle' },
+        meta: { [optionalSubtitle.key]: 'Draft subtitle' },
       }
     );
   });
@@ -304,7 +304,7 @@ describe('document state history contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       { children: [paragraph('body')] }
     );
     assert.equal(
@@ -315,7 +315,7 @@ describe('document state history contract', () => {
     undo(editor);
 
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       { children: [paragraph('body')] }
     );
   });
@@ -397,7 +397,7 @@ describe('document state history contract', () => {
       extensions: [history(), documentTitle],
       initialValue: {
         children: [paragraph('body')],
-        state: { [documentTitle.key]: 'Q2 Plan' },
+        meta: { [documentTitle.key]: 'Q2 Plan' },
       },
     });
     const selectionBeforeTitleChange = {
@@ -423,7 +423,7 @@ describe('document state history contract', () => {
 
     const undoCommit = editorGetLastCommit(editor);
     assert.deepEqual(
-      editor.read((state) => state.selection.get()),
+      editor.read((state) => state.selection()),
       currentSelection
     );
     assert.deepEqual(undoCommit?.operations, []);
@@ -465,14 +465,14 @@ describe('document state history contract', () => {
     undo(headerEditor);
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
       }
     );
     assert.deepEqual(
-      runtime.read((state) => state.selection.get()),
+      runtime.read((state) => state.selection()),
       {
         anchor: { path: [0, 0], offset: 6, root: 'header' },
         focus: { path: [0, 0], offset: 6, root: 'header' },
@@ -486,7 +486,7 @@ describe('document state history contract', () => {
     redo(headerEditor);
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('header!')] },
@@ -513,7 +513,7 @@ describe('document state history contract', () => {
     });
 
     assert.deepEqual(
-      runtime.read((state) => state.selection.get()),
+      runtime.read((state) => state.selection()),
       {
         anchor: { path: [1, 0], offset: 3, root: 'header' },
         focus: { path: [1, 0], offset: 3, root: 'header' },
@@ -524,14 +524,14 @@ describe('document state history contract', () => {
     redo(headerEditor);
 
     assert.deepEqual(
-      runtime.read((state) => state.value.get()),
+      runtime.read((state) => state.value()),
       {
         children: [paragraph('body')],
         roots: { header: [paragraph('header'), paragraph('new')] },
       }
     );
     assert.deepEqual(
-      runtime.read((state) => state.selection.get()),
+      runtime.read((state) => state.selection()),
       {
         anchor: { path: [1, 0], offset: 3, root: 'header' },
         focus: { path: [1, 0], offset: 3, root: 'header' },

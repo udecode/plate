@@ -29,6 +29,8 @@ export interface TextInsertFragmentOptions {
 export interface TextInsertTextOptions {
   /** Location to insert at. Defaults to the transaction target. */
   at?: Location;
+  /** Apply pending editor marks to implicit text insertion. */
+  marks?: boolean;
   /** Allow insertion into void elements. */
   voids?: boolean;
 }

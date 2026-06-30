@@ -4,7 +4,7 @@ Objective:
 Clean Plite extension docs; done when public docs use extension-first wording, simple authoring path first, and source audits pass.
 
 Goal plan:
-docs/plans/2026-06-15-slate-extension-docs-cleanup.md
+docs/plans/2026-06-15-plite-extension-docs-cleanup.md
 
 Template:
 docs/plans/templates/docs.md
@@ -52,7 +52,7 @@ Completion threshold:
 - Docs closure is legal only when the page teaches the fastest correct path,
   every claim is source-backed, docs-lane shape is satisfied, required MDX/link/
   preview checks are recorded, and
-  `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-15-slate-extension-docs-cleanup.md`
+  `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-15-plite-extension-docs-cleanup.md`
   passes.
 
 Verification surface:
@@ -103,7 +103,7 @@ Completion rule:
   remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
 - Do not call `update_goal(status: complete)` until every completion threshold
   above is satisfied, final evidence is recorded, and
-  `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-15-slate-extension-docs-cleanup.md`
+  `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-15-plite-extension-docs-cleanup.md`
   passes.
 - Do not create hook state for this goal. This file plus the active goal are the
   durable state.
@@ -184,7 +184,7 @@ Completion Gates:
 | Agent rules or skills changed | N/A | Run `pnpm install` and verify generated skill sync | No agent rules/skills changed. |
 | Autoreview for non-trivial docs changes | N/A | Load `.agents/skills/autoreview/SKILL.md` and run the right target, or record N/A for tiny/no-local-patch work | Loaded autoreview; helper target rejected because it would sweep unrelated dirty checkout. |
 | Final lint | N/A | Run `pnpm lint:fix` or scoped equivalent | No Markdown lint script found; scoped anti-slop and stale-term audits passed. |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-15-slate-extension-docs-cleanup.md` | First run caught closeout metadata gaps; rerun after this update is the final mechanical gate. |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-15-plite-extension-docs-cleanup.md` | First run caught closeout metadata gaps; rerun after this update is the final mechanical gate. |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |

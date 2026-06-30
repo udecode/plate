@@ -1,10 +1,14 @@
-import { defineEditorExtension, type Editor, type Element } from '../../src';
+import {
+  defineEditorExtension,
+  type Editor,
+  type EditorElementSpec,
+} from '../../src';
 
 let index = 0;
 
 export const extendTestSchema = (
   editor: Editor,
-  elements: Element | Element[]
+  elements: EditorElementSpec | EditorElementSpec[]
 ) =>
   editor.extend(
     defineEditorExtension({

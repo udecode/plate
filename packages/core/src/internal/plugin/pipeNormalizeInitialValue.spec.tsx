@@ -1,14 +1,13 @@
-import React from 'react';
-
-import { renderHook } from '@testing-library/react';
+import type { Value } from '@platejs/plite';
 
 import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
-import { TestPlate as Plate } from '../../react/__tests__/TestPlate';
-import { createPlateEditor, useEditorValue } from '../../react';
-import { pipeTransformInitialValue } from './pipeTransformInitialValue';
+import { pipeNormalizeInitialValue } from './pipeNormalizeInitialValue';
 
-describe('pipeTransformInitialValue', () => {
+describe('pipeNormalizeInitialValue', () => {
+  const createLoosePlugin = (config: Record<string, unknown>) =>
+    createBasePlugin(config as any) as any;
+
   const createTestPlugin = (key: string) =>
     createBasePlugin({
       key,
@@ -21,108 +20,68 @@ describe('pipeTransformInitialValue', () => {
 
   const plugins = [createTestPlugin('a'), createTestPlugin('b')];
 
-  describe('when children is passed to createPlateEditor', () => {
-    it('normalize the initial value once', () => {
-      const editor = createPlateEditor({
+  describe('when value is passed to createBaseEditor', () => {
+    it('transforms the initial value once', () => {
+      const editor = createBaseEditor({
         plugins,
         value: [{ children: [{ text: '' }], count: 0, type: 'p' }],
       });
 
-      const wrapper = ({ children }: any) => (
-        <Plate editor={editor}>{children}</Plate>
-      );
-
-      const { result } = renderHook(() => useEditorValue(), {
-        wrapper,
-      });
-
-      expect(result.current).toEqual([
+      expect(editor.read.children()).toEqual([
         { children: [{ text: '' }], count: 2, type: 'p' },
       ]);
     });
   });
 
-  describe('when initialValue was previously passed to Plate', () => {
-    it('normalize the initial value once', () => {
-      const editor = createPlateEditor({
+  describe('when value was already initialized', () => {
+    it('transforms the initial value once', () => {
+      const editor = createBaseEditor({
         plugins,
         value: [{ children: [{ text: '' }], count: 0, type: 'p' }],
       });
 
-      const wrapper = ({ children }: any) => (
-        <Plate editor={editor}>{children}</Plate>
-      );
-
-      const { result } = renderHook(() => useEditorValue(), {
-        wrapper,
-      });
-
-      expect(result.current).toEqual([
+      expect(editor.read.children()).toEqual([
         { children: [{ text: '' }], count: 2, type: 'p' },
       ]);
     });
   });
 
-  describe('when both children and initialValue were previously provided', () => {
-    it('use children and normalize it once', () => {
-      const editor = createPlateEditor({
+  describe('when value is provided with plugin transforms', () => {
+    it('uses the provided value and transforms it once', () => {
+      const editor = createBaseEditor({
         plugins,
         value: [{ children: [{ text: '' }], count: 0, type: 'p' }],
       });
 
-      const wrapper = ({ children }: any) => (
-        <Plate editor={editor}>{children}</Plate>
-      );
-
-      const { result } = renderHook(() => useEditorValue(), {
-        wrapper,
-      });
-
-      expect(result.current).toEqual([
+      expect(editor.read.children()).toEqual([
         { children: [{ text: '' }], count: 2, type: 'p' },
       ]);
     });
   });
 
-  describe('withPlate', () => {
+  describe('extendPlateEditor', () => {
     describe('children handling', () => {
       it('use provided children', () => {
         const children = [
           { children: [{ text: 'Test' }], count: 0, type: 'p' },
         ];
-        const editor = createPlateEditor({
+        const editor = createBaseEditor({
           plugins,
           value: children,
         });
 
-        const wrapper = ({ children }: any) => (
-          <Plate editor={editor}>{children}</Plate>
-        );
-
-        const { result } = renderHook(() => useEditorValue(), {
-          wrapper,
-        });
-
-        expect(result.current).toEqual([
+        expect(editor.read.children()).toEqual([
           { children: [{ text: 'Test' }], count: 2, type: 'p' },
         ]);
       });
 
       it('keeps the current editor value when children are empty', () => {
-        const editor = createPlateEditor({
+        const editor = createBaseEditor({
           plugins,
           value: [{ children: [{ text: 'Factory' }], count: 0, type: 'p' }],
         });
 
-        const wrapper = ({ children }: any) => (
-          <Plate editor={editor}>{children}</Plate>
-        );
-
-        const { result } = renderHook(() => useEditorValue(), {
-          wrapper,
-        });
-
-        expect(result.current).toEqual([
+        expect(editor.read.children()).toEqual([
           { children: [{ text: 'Factory' }], count: 2, type: 'p' },
         ]);
       });
@@ -134,33 +93,33 @@ describe('pipeTransformInitialValue', () => {
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 1, path: [0, 0] },
         };
-        const editor = createPlateEditor({
+        const editor = createBaseEditor({
           plugins,
           selection,
         });
 
-        expect(editor.selection).toEqual(selection);
+        expect(editor.read.selection()).toEqual(selection);
       });
 
       it('auto-select start when autoSelect is "start"', () => {
-        const editor = createPlateEditor({
+        const editor = createBaseEditor({
           autoSelect: 'start',
           value: [{ children: [{ text: 'Test' }], type: 'p' }],
         });
 
-        expect(editor.selection).toEqual({
+        expect(editor.read.selection()).toEqual({
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 0, path: [0, 0] },
         });
       });
 
       it('auto-select end when autoSelect is true', () => {
-        const editor = createPlateEditor({
+        const editor = createBaseEditor({
           autoSelect: true,
           value: [{ children: [{ text: 'Test' }], type: 'p' }],
         });
 
-        expect(editor.selection).toEqual({
+        expect(editor.read.selection()).toEqual({
           anchor: { offset: 4, path: [0, 0] },
           focus: { offset: 4, path: [0, 0] },
         });
@@ -168,91 +127,45 @@ describe('pipeTransformInitialValue', () => {
     });
   });
 
-  it('supports legacy normalizeInitialValue hooks that return a value', () => {
-    const editor = createBaseEditor({
-      plugins: [
-        createBasePlugin({
-          key: 'legacy',
-          normalizeInitialValue: ({ value: initialValue }: any) =>
-            initialValue.map((node: any) => ({
-              ...node,
-              count: node.count + 1,
-            })),
-        }),
-      ],
-    });
-    editor.children = [
-      { children: [{ text: '' }], count: 0, type: 'p' },
-    ] as any;
-
-    pipeTransformInitialValue(editor);
-
-    expect(editor.children).toEqual([
-      { children: [{ text: '' }], count: 1, type: 'p' },
-    ]);
-  });
-
-  it('supports legacy normalizeInitialValue hooks that mutate in place', () => {
-    const editor = createBaseEditor({
-      plugins: [
-        createBasePlugin({
-          key: 'legacy-mutate',
-          normalizeInitialValue: ({ value: initialValue }: any) => {
-            initialValue[0].count += 1;
-          },
-        }),
-      ],
-    });
-    editor.children = [
-      { children: [{ text: '' }], count: 0, type: 'p' },
-    ] as any;
-
-    pipeTransformInitialValue(editor);
-
-    expect(editor.children).toEqual([
-      { children: [{ text: '' }], count: 1, type: 'p' },
-    ]);
-  });
-
   it('throws when a transformInitialValue hook returns undefined', () => {
     const editor = createBaseEditor({
-      plugins: [
-        createBasePlugin({
-          key: 'bad',
-          transformInitialValue: (() => {}) as any,
-        }),
-      ],
+      plugins: [createLoosePlugin({ key: 'bad' })],
       skipInitialization: true,
     });
-    editor.children = [{ children: [{ text: '' }], type: 'p' }] as any;
+    editor.getPlugin({ key: 'bad' }).transformInitialValue = (() => {}) as any;
+    editor.runtime.pluginCache.transformInitialValue.push('bad');
+    editor.update.value.replace({
+      children: [{ children: [{ text: '' }], type: 'p' }],
+      selection: null,
+    });
 
-    expect(() => pipeTransformInitialValue(editor)).toThrow(
+    expect(() => pipeNormalizeInitialValue(editor)).toThrow(
       'Plugin "bad" transformInitialValue must return the next value.'
     );
   });
 
   it('skips transformInitialValue for read-only editOnly plugins', () => {
-    const callCount = mock();
+    let callCount = 0;
     const editor = createBaseEditor({
       plugins: [
-        createBasePlugin({
+        createLoosePlugin({
           key: 'skip',
           editOnly: { transformInitialValue: true },
-          transformInitialValue: ({ value }) => {
-            callCount();
+          transformInitialValue: ({ value }: { value: Value }) => {
+            callCount += 1;
 
             return value;
           },
         }),
       ],
+      readOnly: true,
       value: [{ children: [{ text: '' }], type: 'p' }],
     });
 
-    editor.dom.readOnly = true;
-    (callCount as any).mockClear();
+    callCount = 0;
 
-    pipeTransformInitialValue(editor);
+    pipeNormalizeInitialValue(editor);
 
-    expect(callCount).not.toHaveBeenCalled();
+    expect(callCount).toBe(0);
   });
 });

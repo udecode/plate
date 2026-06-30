@@ -10,14 +10,14 @@ import {
 } from '@platejs/plite/internal';
 import {
   createEditor,
-  type Descendant,
+  type Element,
   defineEditorExtension,
   elementProperty,
   type Operation,
-} from '../src';
+} from '@platejs/plite';
 import { extendTestSchema } from './support/schema';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });

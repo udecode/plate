@@ -1,6 +1,6 @@
-import type { AnySlatePlugin, SlatePluginContext } from '../plugin';
+import type { AnyPluginConfig, BasePluginContext } from '../plugin';
 
-export const omitPluginContext = <T extends SlatePluginContext<AnySlatePlugin>>(
+export const omitPluginContext = <T extends BasePluginContext<AnyPluginConfig>>(
   ctx: T
 ) => {
   const {
@@ -11,7 +11,6 @@ export const omitPluginContext = <T extends SlatePluginContext<AnySlatePlugin>>(
     plugin,
     setOption,
     setOptions,
-    tf,
     type,
     ...rest
   } = ctx;

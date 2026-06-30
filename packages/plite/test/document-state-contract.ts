@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, type Descendant, defineStateField } from '../src';
+import {
+  createEditor,
+  type Descendant,
+  defineStateField,
+} from '@platejs/plite';
 
 const paragraph = (text: string) =>
   ({
@@ -9,7 +13,7 @@ const paragraph = (text: string) =>
     children: [{ text }],
   }) satisfies Descendant;
 
-describe('document state contract', () => {
+describe('document meta contract', () => {
   it('initializes persisted state fields and reads them by descriptor', () => {
     const documentTitle = defineStateField({
       key: 'document.title',
@@ -20,16 +24,16 @@ describe('document state contract', () => {
     });
 
     const explicit = createEditor({
-      extensions: [documentTitle],
+      extensions: [documentTitle] as const,
       initialValue: {
         children: [paragraph('body')],
-        state: {
+        meta: {
           [documentTitle.key]: 'Q2 Plan',
         },
       },
     });
     const defaulted = createEditor({
-      extensions: [documentTitle],
+      extensions: [documentTitle] as const,
       initialValue: [paragraph('body')],
     });
 
@@ -38,10 +42,10 @@ describe('document state contract', () => {
       'Q2 Plan'
     );
     assert.deepEqual(
-      explicit.read((state) => state.value.get()),
+      explicit.read((state) => state.value()),
       {
         children: [paragraph('body')],
-        state: { [documentTitle.key]: 'Q2 Plan' },
+        meta: { [documentTitle.key]: 'Q2 Plan' },
       }
     );
     assert.equal(
@@ -49,15 +53,15 @@ describe('document state contract', () => {
       'Untitled'
     );
     assert.deepEqual(
-      defaulted.read((state) => state.value.get()),
+      defaulted.read((state) => state.value()),
       {
         children: [paragraph('body')],
-        state: { [documentTitle.key]: 'Untitled' },
+        meta: { [documentTitle.key]: 'Untitled' },
       }
     );
   });
 
-  it('omits non-persistent state fields from document values', () => {
+  it('omits non-persistent fields from document meta', () => {
     const documentTitle = defineStateField({
       key: 'document.title',
       initial: () => 'Untitled',
@@ -69,7 +73,7 @@ describe('document state contract', () => {
       persist: false,
     });
     const editor = createEditor({
-      extensions: [documentTitle, localPanel],
+      extensions: [documentTitle, localPanel] as const,
       initialValue: [paragraph('body')],
     });
 
@@ -83,10 +87,10 @@ describe('document state contract', () => {
       'open'
     );
     assert.deepEqual(
-      editor.read((state) => state.value.get()),
+      editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
-        state: { [documentTitle.key]: 'Q2 Plan' },
+        meta: { [documentTitle.key]: 'Q2 Plan' },
       }
     );
   });

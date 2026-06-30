@@ -257,7 +257,7 @@ export function usePliteHistory({
             })
           );
 
-          if (!focusEditor.read((state) => state.selection.get())) {
+          if (!focusEditor.read((state) => state.selection())) {
             focusEditor.update((tx) => {
               const point = tx.points.start([], { required: true });
               tx.selection.set({ anchor: point, focus: point });

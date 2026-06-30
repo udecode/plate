@@ -148,7 +148,7 @@ describe('content root navigation', () => {
     const event = keyEvent('ArrowDown');
 
     selectPoint(mainEditor, { path: [0, 0], offset: 'Plain'.length });
-    const selection = mainEditor.read((state) => state.selection.get());
+    const selection = mainEditor.read((state) => state.selection());
 
     const result = applyContentRootNavigation({
       editor: mainEditor,
@@ -210,12 +210,12 @@ describe('content root navigation', () => {
       getMountedViewEditor: (root) =>
         root === 'main' ? mainEditor : bodyEditor,
       isRTL: false,
-      selection: bodyEditor.read((state) => state.selection.get()),
+      selection: bodyEditor.read((state) => state.selection()),
     });
 
     expect(result.handled).toBe(false);
     expect(event.preventDefault).not.toHaveBeenCalled();
-    expect(bodyEditor.read((state) => state.selection.get())).toEqual({
+    expect(bodyEditor.read((state) => state.selection())).toEqual({
       anchor: { offset: 0, path: [1, 0], root: 'card:body' },
       focus: { offset: 0, path: [1, 0], root: 'card:body' },
     });
@@ -235,16 +235,16 @@ describe('content root navigation', () => {
       getMountedViewEditor: (root) =>
         root === 'card:body' ? bodyEditor : mainEditor,
       isRTL: false,
-      selection: mainEditor.read((state) => state.selection.get()),
+      selection: mainEditor.read((state) => state.selection()),
     });
 
     expect(result.handled).toBe(true);
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(bodyEditor.read((state) => state.selection.get())).toEqual({
+    expect(bodyEditor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 0, root: 'card:body' },
       focus: { path: [0, 0], offset: 0, root: 'card:body' },
     });
-    expect(mainEditor.read((state) => state.selection.get())).toBe(null);
+    expect(mainEditor.read((state) => state.selection())).toBe(null);
     expect(focusEditor).toHaveBeenCalledWith(bodyEditor);
   });
 
@@ -260,12 +260,12 @@ describe('content root navigation', () => {
       getMountedViewEditor: (root) =>
         root === 'card:body' ? bodyEditor : mainEditor,
       isRTL: false,
-      selection: mainEditor.read((state) => state.selection.get()),
+      selection: mainEditor.read((state) => state.selection()),
     });
 
     expect(result.handled).toBe(true);
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(bodyEditor.read((state) => state.selection.get())).toEqual({
+    expect(bodyEditor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 'Inside'.length, root: 'card:body' },
       focus: { path: [0, 0], offset: 'Inside'.length, root: 'card:body' },
     });
@@ -283,11 +283,11 @@ describe('content root navigation', () => {
       getMountedViewEditor: (root) =>
         root === 'card:body' ? bodyEditor : mainEditor,
       isRTL: false,
-      selection: mainEditor.read((state) => state.selection.get()),
+      selection: mainEditor.read((state) => state.selection()),
     });
 
     expect(result.handled).toBe(true);
-    expect(bodyEditor.read((state) => state.selection.get())).toEqual({
+    expect(bodyEditor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 'Inside'.length, root: 'card:body' },
       focus: { path: [0, 0], offset: 'Inside'.length, root: 'card:body' },
     });
@@ -305,12 +305,12 @@ describe('content root navigation', () => {
       getMountedViewEditor: (root) =>
         root === 'card:body' ? bodyEditor : mainEditor,
       isRTL: false,
-      selection: mainEditor.read((state) => state.selection.get()),
+      selection: mainEditor.read((state) => state.selection()),
     });
 
     expect(result.handled).toBe(true);
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(bodyEditor.read((state) => state.selection.get())).toEqual({
+    expect(bodyEditor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 0, root: 'card:body' },
       focus: { path: [0, 0], offset: 0, root: 'card:body' },
     });
@@ -332,12 +332,12 @@ describe('content root navigation', () => {
       getMountedViewEditor: (root) =>
         root === 'main' ? mainEditor : bodyEditor,
       isRTL: false,
-      selection: bodyEditor.read((state) => state.selection.get()),
+      selection: bodyEditor.read((state) => state.selection()),
     });
 
     expect(result.handled).toBe(true);
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(mainEditor.read((state) => state.selection.get())).toEqual({
+    expect(mainEditor.read((state) => state.selection())).toEqual({
       anchor: { path: [2, 0], offset: 'After'.length },
       focus: { path: [2, 0], offset: 'After'.length },
     });
@@ -359,11 +359,11 @@ describe('content root navigation', () => {
       getMountedViewEditor: (root) =>
         root === 'main' ? mainEditor : bodyEditor,
       isRTL: false,
-      selection: bodyEditor.read((state) => state.selection.get()),
+      selection: bodyEditor.read((state) => state.selection()),
     });
 
     expect(result.handled).toBe(true);
-    expect(mainEditor.read((state) => state.selection.get())).toEqual({
+    expect(mainEditor.read((state) => state.selection())).toEqual({
       anchor: { path: [4, 0], offset: 0 },
       focus: { path: [4, 0], offset: 0 },
     });
@@ -385,11 +385,11 @@ describe('content root navigation', () => {
       getMountedViewEditor: (root) =>
         root === 'main' ? mainEditor : bodyEditor,
       isRTL: false,
-      selection: bodyEditor.read((state) => state.selection.get()),
+      selection: bodyEditor.read((state) => state.selection()),
     });
 
     expect(result.handled).toBe(true);
-    expect(mainEditor.read((state) => state.selection.get())).toEqual({
+    expect(mainEditor.read((state) => state.selection())).toEqual({
       anchor: { path: [2, 0], offset: 'Between'.length },
       focus: { path: [2, 0], offset: 'Between'.length },
     });
@@ -409,15 +409,15 @@ describe('content root navigation', () => {
       getMountedViewEditor: (root) =>
         root === 'main' ? mainEditor : bodyEditor,
       isRTL: false,
-      selection: bodyEditor.read((state) => state.selection.get()),
+      selection: bodyEditor.read((state) => state.selection()),
     });
 
     expect(result.handled).toBe(true);
-    expect(mainEditor.read((state) => state.selection.get())).toEqual({
+    expect(mainEditor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 'Before'.length },
       focus: { path: [0, 0], offset: 'Before'.length },
     });
-    expect(bodyEditor.read((state) => state.selection.get())).toBe(null);
+    expect(bodyEditor.read((state) => state.selection())).toBe(null);
     expect(focusEditor).toHaveBeenCalledWith(mainEditor);
   });
 
@@ -433,11 +433,11 @@ describe('content root navigation', () => {
       getMountedViewEditor: (root) =>
         root === 'main' ? mainEditor : bodyEditor,
       isRTL: false,
-      selection: bodyEditor.read((state) => state.selection.get()),
+      selection: bodyEditor.read((state) => state.selection()),
     });
 
     expect(result.handled).toBe(true);
-    expect(mainEditor.read((state) => state.selection.get())).toEqual({
+    expect(mainEditor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 'Before'.length },
       focus: { path: [0, 0], offset: 'Before'.length },
     });
@@ -455,11 +455,11 @@ describe('content root navigation', () => {
       getMountedViewEditor: (root) =>
         root === 'main' ? mainEditor : bodyEditor,
       isRTL: false,
-      selection: bodyEditor.read((state) => state.selection.get()),
+      selection: bodyEditor.read((state) => state.selection()),
     });
 
     expect(result.handled).toBe(true);
-    expect(mainEditor.read((state) => state.selection.get())).toEqual({
+    expect(mainEditor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 'Before'.length },
       focus: { path: [0, 0], offset: 'Before'.length },
     });
@@ -501,7 +501,7 @@ describe('content root navigation', () => {
       getMountedViewEditor: (root) =>
         root === 'card:body' ? bodyEditor : mainEditor,
       isRTL: false,
-      selection: mainEditor.read((state) => state.selection.get()),
+      selection: mainEditor.read((state) => state.selection()),
     });
 
     expect(result.handled).toBe(true);
@@ -534,7 +534,7 @@ describe('content root navigation', () => {
       getMountedViewEditor: (root) =>
         root === 'card:body' ? bodyEditor : mainEditor,
       isRTL: false,
-      selection: mainEditor.read((state) => state.selection.get()),
+      selection: mainEditor.read((state) => state.selection()),
     });
 
     expect(result.handled).toBe(true);
@@ -571,7 +571,7 @@ describe('content root navigation', () => {
       getMountedViewEditor: (root) =>
         root === 'card:body' ? bodyEditor : mainEditor,
       isRTL: false,
-      selection: mainEditor.read((state) => state.selection.get()),
+      selection: mainEditor.read((state) => state.selection()),
     });
 
     expect(result.handled).toBe(true);
@@ -619,7 +619,7 @@ describe('content root navigation', () => {
       getMountedViewEditor: (root) =>
         root === 'card:body' ? bodyEditor : mainEditor,
       isRTL: false,
-      selection: mainEditor.read((state) => state.selection.get()),
+      selection: mainEditor.read((state) => state.selection()),
     });
 
     expect(result.handled).toBe(true);
@@ -645,11 +645,11 @@ describe('content root navigation', () => {
       getMountedViewEditor: (root) =>
         root === 'card:body' ? bodyEditor : mainEditor,
       isRTL: false,
-      selection: mainEditor.read((state) => state.selection.get()),
+      selection: mainEditor.read((state) => state.selection()),
     });
 
     expect(result.handled).toBe(true);
-    expect(bodyEditor.read((state) => state.selection.get())).toEqual({
+    expect(bodyEditor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 0, root: 'card:body' },
       focus: { path: [0, 0], offset: 0, root: 'card:body' },
     });
@@ -772,4 +772,4 @@ describe('content root navigation', () => {
 });
 
 const runtimeValue = (editor: ReactRuntimeEditor) =>
-  editor.read((state) => state.value.get());
+  editor.read((state) => state.value());

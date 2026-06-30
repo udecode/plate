@@ -1,9 +1,9 @@
-import type {
-  CSSProperties,
-  ElementType,
-  HTMLAttributes,
-  ReactNode,
-  Ref,
+import React, {
+  type CSSProperties,
+  type ElementType,
+  type HTMLAttributes,
+  type ReactNode,
+  type Ref,
 } from 'react';
 import { IS_WEBKIT } from '@platejs/plite-dom';
 

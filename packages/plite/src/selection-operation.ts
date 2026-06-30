@@ -1,5 +1,5 @@
 import type { SetSelectionOperation } from './interfaces/operation';
-import type { Range } from './interfaces/range';
+import { RangeApi, type Range } from './interfaces/range';
 
 const clonePoint = (point: Range['anchor']) => ({
   ...point,
@@ -19,6 +19,10 @@ export const createSetSelectionOperation = (
   next: Range | null
 ): SetSelectionOperation | null => {
   if (previous == null && next == null) {
+    return null;
+  }
+
+  if (previous && next && RangeApi.equals(previous, next)) {
     return null;
   }
 

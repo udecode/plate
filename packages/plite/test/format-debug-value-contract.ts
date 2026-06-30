@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe, it } from 'node:test';
 
-import { setDebugValueScrubber } from '../src';
-import { formatDebugValue } from '../src/internal';
+import { setDebugValueScrubber } from '@platejs/plite';
+import { formatDebugValue } from '@platejs/plite/internal';
 
 describe('formatDebugValue', () => {
   afterEach(() => {

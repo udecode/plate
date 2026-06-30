@@ -5,27 +5,27 @@ import { cloneValue } from './clone';
 export type NormalizedInitialValue = {
   children: Descendant[];
   explicit: boolean;
+  meta: Record<string, unknown> | undefined;
   roots: Record<string, Descendant[]>;
-  state: Record<string, unknown> | undefined;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
 
-export const cloneDocumentState = (
-  state: unknown
+export const cloneDocumentMeta = (
+  meta: unknown
 ): Record<string, unknown> | undefined => {
-  if (state === undefined) {
+  if (meta === undefined) {
     return;
   }
 
-  if (!isRecord(state)) {
+  if (!isRecord(meta)) {
     throw new Error(
-      '[Plite] initialValue.state is invalid! Expected an object.'
+      '[Plite] initialValue.meta is invalid! Expected an object.'
     );
   }
 
-  return cloneValue(state);
+  return cloneValue(meta);
 };
 
 const cloneInitialExtraRoots = (
@@ -69,8 +69,8 @@ export const normalizeEditorValue = (
     return {
       children: [],
       explicit: false,
+      meta: undefined,
       roots: { [MAIN_ROOT_KEY]: [] as Descendant[] },
-      state: undefined,
     };
   }
 
@@ -80,8 +80,8 @@ export const normalizeEditorValue = (
     return {
       children,
       explicit: true,
+      meta: undefined,
       roots: { [MAIN_ROOT_KEY]: children },
-      state: undefined,
     };
   }
 
@@ -98,8 +98,8 @@ export const normalizeEditorValue = (
     return {
       children,
       explicit: true,
+      meta: cloneDocumentMeta(input.meta),
       roots: { [MAIN_ROOT_KEY]: children, ...roots },
-      state: cloneDocumentState(input.state),
     };
   }
 

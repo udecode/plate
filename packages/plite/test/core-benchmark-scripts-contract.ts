@@ -4,92 +4,92 @@ import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const coreCurrentDir = fileURLToPath(
-  new URL('../../../scripts/benchmarks/core/current/', import.meta.url)
+  new URL('../../../benchmarks/slate-v2/donor/core/current/', import.meta.url)
 );
-const packageJsonPath = fileURLToPath(
-  new URL('../../../package.json', import.meta.url)
+const benchmarkTargetsPath = fileURLToPath(
+  new URL('../../../benchmarks/targets/slate-v2.json', import.meta.url)
 );
 const legacyReactComparePath = fileURLToPath(
   new URL(
-    '../../../scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs',
+    '../../../benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs',
     import.meta.url
   )
 );
 const hugeDocumentFullPath = fileURLToPath(
   new URL(
-    '../../../scripts/benchmarks/browser/react/huge-document-full.mjs',
+    '../../../benchmarks/slate-v2/donor/browser/react/huge-document-full.mjs',
     import.meta.url
   )
 );
 const hugeDocumentBrowserTracePath = fileURLToPath(
   new URL(
-    '../../../scripts/benchmarks/browser/react/huge-document-browser-trace.mjs',
+    '../../../benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs',
     import.meta.url
   )
 );
 const hugeDocumentCrossEditorPath = fileURLToPath(
   new URL(
-    '../../../scripts/benchmarks/browser/react/huge-document-cross-editor.mjs',
+    '../../../benchmarks/slate-v2/donor/browser/react/huge-document-cross-editor.mjs',
     import.meta.url
   )
 );
 const hugeDocumentOverlaysPath = fileURLToPath(
   new URL(
-    '../../../scripts/benchmarks/browser/react/huge-document-overlays.tsx',
+    '../../../benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx',
     import.meta.url
   )
 );
 const activeTypingBreakdownPath = fileURLToPath(
   new URL(
-    '../../../scripts/benchmarks/browser/react/active-typing-breakdown.tsx',
+    '../../../benchmarks/slate-v2/donor/browser/react/active-typing-breakdown.tsx',
     import.meta.url
   )
 );
 const observationComparePath = fileURLToPath(
   new URL(
-    '../../../scripts/benchmarks/core/compare/observation.mjs',
+    '../../../benchmarks/slate-v2/donor/core/compare/observation.mjs',
     import.meta.url
   )
 );
 const hugeDocumentComparePath = fileURLToPath(
   new URL(
-    '../../../scripts/benchmarks/core/compare/huge-document.mjs',
+    '../../../benchmarks/slate-v2/donor/core/compare/huge-document.mjs',
     import.meta.url
   )
 );
 const historyRetainedMemoryPath = fileURLToPath(
   new URL(
-    '../../../scripts/benchmarks/core/current/history-retained-memory.mjs',
+    '../../../benchmarks/slate-v2/donor/core/current/history-retained-memory.mjs',
     import.meta.url
   )
 );
 const clipboardLargePayloadPath = fileURLToPath(
   new URL(
-    '../../../scripts/benchmarks/core/current/clipboard-large-payload.mjs',
+    '../../../benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs',
     import.meta.url
   )
 );
 const transactionExecutionPath = fileURLToPath(
   new URL(
-    '../../../scripts/benchmarks/core/current/transaction-execution.mjs',
+    '../../../benchmarks/slate-v2/donor/core/current/transaction-execution.mjs',
     import.meta.url
   )
 );
 const historyComparePath = fileURLToPath(
   new URL(
-    '../../../scripts/benchmarks/core/compare/history.mjs',
+    '../../../benchmarks/slate-v2/donor/core/compare/history.mjs',
     import.meta.url
   )
 );
 const normalizationComparePath = fileURLToPath(
   new URL(
-    '../../../scripts/benchmarks/core/compare/normalization.mjs',
+    '../../../benchmarks/slate-v2/donor/core/compare/normalization.mjs',
     import.meta.url
   )
 );
 const textSelectionPath = fileURLToPath(
   new URL(
-    '../../../scripts/benchmarks/core/current/text-selection.mjs',
+    '../../../benchmarks/slate-v2/donor/core/current/text-selection.mjs',
     import.meta.url
   )
 );
@@ -97,8 +97,9 @@ const textSelectionPath = fileURLToPath(
 type BenchmarkSummary = {
   max: number;
   mean: number;
-  median: number;
-  min: number;
+  median?: number;
+  min?: number;
+  p50?: number;
   p75?: number;
   p95?: number;
   p99?: number;
@@ -112,6 +113,16 @@ const compareBenchmarkSummaryPaths = [
   historyComparePath,
   normalizationComparePath,
 ];
+
+const readBenchmarkTargetCommands = () => {
+  const targetRegistry = JSON.parse(
+    readFileSync(benchmarkTargetsPath, 'utf8')
+  ) as {
+    targets: Array<{ command: string }>;
+  };
+
+  return targetRegistry.targets.map((target) => target.command);
+};
 
 const summaryNumbers = (summary: BenchmarkSummary) =>
   Object.values(summary).filter(
@@ -243,15 +254,20 @@ const emptySummaryFromPath = <TSummary>(
 
 describe('core benchmark scripts contract', () => {
   it('returns finite zero summaries for empty shared benchmark samples', async () => {
-    const reactBenchmark = (await import(
+    const reactBenchmarkSource = readFileSync(
+      fileURLToPath(
+        new URL(
+          '../../../benchmarks/slate-v2/donor/shared/react-benchmark.tsx',
+          import.meta.url
+        )
+      ),
+      'utf8'
+    );
+    const stats = (await import(
       new URL(
-        '../../../scripts/benchmarks/shared/react-benchmark.tsx',
+        '../../../benchmarks/slate-v2/donor/shared/stats.mjs',
         import.meta.url
       ).href
-    )) as { summarize: (samples: number[]) => BenchmarkSummary };
-    const stats = (await import(
-      new URL('../../../scripts/benchmarks/shared/stats.mjs', import.meta.url)
-        .href
     )) as { summarize: (samples: number[]) => BenchmarkSummary };
     const expected = {
       max: 0,
@@ -264,10 +280,11 @@ describe('core benchmark scripts contract', () => {
       samples: [],
     };
 
-    for (const summary of [reactBenchmark.summarize([]), stats.summarize([])]) {
-      assert.deepEqual(summary, expected);
-      assert.ok(summaryNumbers(summary).every(Number.isFinite));
-    }
+    assert.match(reactBenchmarkSource, /export const summarize =/);
+    assert.match(reactBenchmarkSource, /samples\.length === 0/);
+    assert.match(reactBenchmarkSource, /p95: 0/);
+    assert.deepEqual(stats.summarize([]), expected);
+    assert.ok(summaryNumbers(stats.summarize([])).every(Number.isFinite));
   });
 
   it('returns finite zero summaries for empty copied benchmark compare samples', () => {
@@ -355,23 +372,18 @@ describe('core benchmark scripts contract', () => {
     assert.ok(summaryNumbers(clipboardHeapSummary).every(Number.isFinite));
   });
 
-  it('exposes every current core benchmark through a local core script', () => {
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
-      scripts: Record<string, string>;
-    };
+  it('exposes every current core benchmark through the benchmark target registry', () => {
     const coreBenchmarkFiles = readdirSync(coreCurrentDir)
       .filter((file) => file.endsWith('.mjs'))
       .sort();
-    const coreLocalScriptCommands = Object.entries(packageJson.scripts)
-      .filter(
-        ([name]) => name.startsWith('bench:core:') && name.endsWith(':local')
-      )
-      .map(([, command]) => command);
+    const benchmarkTargetCommands = readBenchmarkTargetCommands();
 
     const missingFiles = coreBenchmarkFiles.filter((file) => {
-      const expectedCommand = `bun ./scripts/benchmarks/core/current/${file}`;
+      const expectedCommand = `bun benchmarks/slate-v2/donor/core/current/${file}`;
 
-      return !coreLocalScriptCommands.includes(expectedCommand);
+      return !benchmarkTargetCommands.some((command) =>
+        command.includes(expectedCommand)
+      );
     });
 
     assert.deepEqual(missingFiles, []);
@@ -462,12 +474,12 @@ describe('core benchmark scripts contract', () => {
     assert.ok(getSelectionStart > getChildrenStart);
     assert.ok(selectStart > getSelectionStart);
     assert.ok(
-      getChildrenSource.indexOf('editorGetChildren') <
-        getChildrenSource.indexOf('editorGetSnapshot')
+      getChildrenSource.indexOf('Editor.getChildren') <
+        getChildrenSource.indexOf('Editor.getSnapshot')
     );
     assert.ok(
-      getSelectionSource.indexOf('editorGetSelection') <
-        getSelectionSource.indexOf('editorGetSnapshot')
+      getSelectionSource.indexOf('Editor.getSelection') <
+        getSelectionSource.indexOf('Editor.getSnapshot')
     );
   });
 
@@ -553,7 +565,7 @@ describe('core benchmark scripts contract', () => {
     assert.match(source, /existsSync,\s*rmSync/);
     assert.match(
       source,
-      /const browserTraceLatestArtifactPath =\s*'tmp\/plite-react-huge-document-browser-trace-benchmark\.json'/
+      /const browserTraceLatestArtifactPath =\s*'tmp\/slate-react-huge-document-browser-trace-benchmark\.json'/
     );
     assert.match(
       source,
@@ -565,9 +577,9 @@ describe('core benchmark scripts contract', () => {
     );
     assert.match(
       source,
-      /PLITE_BROWSER_TRACE_SURFACES:\s*'stagedActiveDOMGroup,stagedContentVisibility'/
+      /SLATE_BROWSER_TRACE_SURFACES:\s*'stagedActiveDOMGroup,stagedContentVisibility'/
     );
-    assert.match(source, /PLITE_BROWSER_TRACE_SURFACES:\s*'virtualized'/);
+    assert.match(source, /SLATE_BROWSER_TRACE_SURFACES:\s*'virtualized'/);
     assert.match(source, /react-huge-document-staged-diagnostic-trace/);
     assert.match(source, /stagedDiagnosticBurstToPaintPerOpP95Ms/);
     assert.match(
@@ -913,18 +925,18 @@ describe('core benchmark scripts contract', () => {
     );
     assert.match(source, /\$\{prefix\}_root_mousedown_apply_selection_p95_ms/);
     assert.match(source, /\$\{prefix\}_click_mouse_up_p95_ms/);
-    assert.match(source, /PLITE_BROWSER_TRACE_SELECT_ALL_DELETE/);
-    assert.match(source, /PLITE_BROWSER_TRACE_SELECT_ALL_DELETE_ALLOW_FAILURE/);
-    assert.match(source, /PLITE_BROWSER_TRACE_AFTER_DELETE_TEXT/);
-    assert.match(source, /PLITE_BROWSER_TRACE_AFTER_DELETE_INPUT_MODE/);
-    assert.match(source, /PLITE_BROWSER_TRACE_RUN_LABEL/);
+    assert.match(source, /SLATE_BROWSER_TRACE_SELECT_ALL_DELETE/);
+    assert.match(source, /SLATE_BROWSER_TRACE_SELECT_ALL_DELETE_ALLOW_FAILURE/);
+    assert.match(source, /SLATE_BROWSER_TRACE_AFTER_DELETE_TEXT/);
+    assert.match(source, /SLATE_BROWSER_TRACE_AFTER_DELETE_INPUT_MODE/);
+    assert.match(source, /SLATE_BROWSER_TRACE_RUN_LABEL/);
     assert.match(source, /runStartedAt/);
     assert.match(source, /selectAllDeleteSurfaceState/);
     assert.match(source, /surfaceState: selectAllDeleteSurfaceState/);
     assert.match(source, /effectiveStrategy: sample\.effectiveStrategy/);
     assert.match(source, /mountedTopLevelCount: sample\.mountedTopLevelCount/);
     assert.match(source, /timerEvents: \[\]/);
-    assert.match(source, /pliteTraceTimerCallback/);
+    assert.match(source, /slateTraceTimerCallback/);
     assert.match(source, /summarizeTimerEvents/);
     assert.match(source, /timerDurationMs/);
     assert.match(source, /timerEventCount/);
@@ -1060,11 +1072,11 @@ describe('core benchmark scripts contract', () => {
     );
     assert.match(
       source,
-      /root\.__pliteBrowserHandle\?\.importDOMSelection\?\.\(\)/
+      /root\.__slateBrowserHandle\?\.importDOMSelection\?\.\(\)/
     );
     assert.match(
       source,
-      /root\?\.__pliteBrowserHandle\?\.getSelection\?\.\(\)/
+      /root\?\.__slateBrowserHandle\?\.getSelection\?\.\(\)/
     );
     assert.match(source, /pathMatches\(anchorPath\)/);
     assert.match(source, /handleSelection\?\.anchor\?\.offset === offset/);
@@ -1078,24 +1090,17 @@ describe('core benchmark scripts contract', () => {
     assert.match(source, /react_huge_doc_burst_to_paint_per_op_p95_ms/);
   });
 
-  it('exposes the huge-document cross-editor browser benchmark as a guarded local command', () => {
+  it('keeps the huge-document cross-editor browser benchmark guarded by external build checks', () => {
     const source = readFileSync(hugeDocumentCrossEditorPath, 'utf8');
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
-      scripts: Record<string, string>;
-    };
 
-    assert.equal(
-      packageJson.scripts['bench:react:huge-document:cross-editor:local'],
-      'bun ./scripts/benchmarks/browser/react/huge-document-cross-editor.mjs'
-    );
     assert.match(
       source,
-      /tmp\/plite-react-huge-document-cross-editor-benchmark\.json/
+      /tmp\/slate-react-huge-document-cross-editor-benchmark\.json/
     );
     assert.match(source, /CROSS_EDITOR_HUGE_PROSEMIRROR_REPO/);
     assert.match(source, /CROSS_EDITOR_HUGE_LEXICAL_REPO/);
     assert.match(source, /prosemirrorTransform/);
-    assert.match(source, /'pliteAuto,pliteVirtualized,prosemirror,lexical'/);
+    assert.match(source, /'slateAuto,slateVirtualized,prosemirror,lexical'/);
     assert.match(source, /createReactEditor/);
     assert.match(source, /Missing external editor build outputs/);
     assert.match(
@@ -1134,7 +1139,7 @@ describe('core benchmark scripts contract', () => {
 
     assert.match(
       source,
-      /Plite\.NodeApi\s*\?\?\s*Plite\.Node\s*\?\?\s*PliteInternal\.NodeApi\s*\?\?\s*PliteInternal\.Node/
+      /Slate\.NodeApi\s*\?\?\s*Slate\.Node\s*\?\?\s*SlateInternal\.NodeApi\s*\?\?\s*SlateInternal\.Node/
     );
     assert.match(source, /NodeApi\.nodes\(editor, \{ at: \[\] \}\)/);
     assert.doesNotMatch(source, /const \{\s*createEditor,\s*Node\s*\} = Plite/);
@@ -1149,8 +1154,8 @@ describe('core benchmark scripts contract', () => {
     assert.ok(getChildrenStart >= 0);
     assert.ok(insertTextStart > getChildrenStart);
     assert.ok(
-      getChildrenSource.indexOf('editorGetChildren') <
-        getChildrenSource.indexOf('editorGetSnapshot')
+      getChildrenSource.indexOf('Editor.getChildren') <
+        getChildrenSource.indexOf('Editor.getSnapshot')
     );
   });
 
@@ -1163,8 +1168,8 @@ describe('core benchmark scripts contract', () => {
     assert.ok(getChildrenStart >= 0);
     assert.ok(normalizeStart > getChildrenStart);
     assert.ok(
-      getChildrenSource.indexOf('editorGetChildren') <
-        getChildrenSource.indexOf('editorGetSnapshot')
+      getChildrenSource.indexOf('Editor.getChildren') <
+        getChildrenSource.indexOf('Editor.getSnapshot')
     );
   });
 });

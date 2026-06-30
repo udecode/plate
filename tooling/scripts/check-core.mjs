@@ -1,12 +1,45 @@
 #!/usr/bin/env node
 import { readdirSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, sep } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const root = process.cwd();
 const coreDir = join(root, 'packages/core');
+const pliteDir = join(root, 'packages/plite');
 
-const batchSize = Number(process.env.CORE_TEST_BATCH_SIZE ?? 10);
+const testBatchSizeOverride = process.env.CORE_TEST_BATCH_SIZE;
+
+const getTestBatchSize = (fileCount) => {
+  if (testBatchSizeOverride === undefined) return fileCount;
+
+  const batchSize = Math.floor(Number(testBatchSizeOverride));
+
+  if (!Number.isFinite(batchSize) || batchSize <= 0) {
+    throw new Error(
+      `CORE_TEST_BATCH_SIZE must be a positive number, received "${testBatchSizeOverride}".`
+    );
+  }
+
+  return batchSize;
+};
+
+const getTestBatchLabel = (fileCount, batchSize) =>
+  batchSize >= fileCount ? 'all files' : `batches of ${batchSize}`;
+
+const packageTestTargets = [
+  {
+    name: 'Core',
+    dir: coreDir,
+    roots: ['src'],
+    bunArgs: [],
+  },
+  {
+    name: 'Plite',
+    dir: pliteDir,
+    roots: ['src', 'test'],
+    bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
+  },
+];
 
 const run = (label, command, args, options = {}) => {
   console.info(`\n[check:core] ${label}`);
@@ -22,7 +55,13 @@ const run = (label, command, args, options = {}) => {
   }
 };
 
-const collectCoreSpecs = (dir) => {
+const toPosixPath = (path) => path.split(sep).join('/');
+
+const isTestFile = (fileName) =>
+  /\.(?:spec|test)\.[cm]?[tj]sx?$/.test(fileName) ||
+  /-contract\.[cm]?[tj]sx?$/.test(fileName);
+
+const collectTestFiles = (dir) => {
   const entries = readdirSync(dir, { withFileTypes: true });
   const files = [];
 
@@ -32,54 +71,83 @@ const collectCoreSpecs = (dir) => {
     const path = join(dir, entry.name);
 
     if (entry.isDirectory()) {
-      files.push(...collectCoreSpecs(path));
+      files.push(...collectTestFiles(path));
       continue;
     }
 
     if (!entry.isFile()) continue;
-    if (!/\.spec\.[cm]?[tj]sx?$/.test(entry.name)) continue;
-    files.push(relative(coreDir, path));
+    if (!isTestFile(entry.name)) continue;
+    files.push(path);
   }
 
   return files.sort();
 };
 
-const runCoreTests = () => {
-  const files = collectCoreSpecs(join(coreDir, 'src'));
+const collectPackageTestFiles = (target) =>
+  target.roots
+    .flatMap((rootName) => collectTestFiles(join(target.dir, rootName)))
+    .sort();
+
+const collectTestInventory = () =>
+  packageTestTargets.map((target) => ({
+    ...target,
+    files: collectPackageTestFiles(target),
+  }));
+
+const runPackageTests = (target) => {
+  const files = target.files.map(
+    (file) => `./${toPosixPath(relative(target.dir, file))}`
+  );
 
   if (files.length === 0) {
-    throw new Error('No Core spec files found under packages/core/src.');
+    throw new Error(
+      `No ${target.name} test files found under ${target.roots.join(', ')}.`
+    );
   }
 
+  const batchSize = getTestBatchSize(files.length);
+
   console.info(
-    `\n[check:core] core tests (${files.length} files, batches of ${batchSize})`
+    `\n[check:core] ${target.name} tests (${files.length} files, ${getTestBatchLabel(
+      files.length,
+      batchSize
+    )})`
   );
 
   for (let index = 0; index < files.length; index += batchSize) {
     const batch = files.slice(index, index + batchSize);
-    const label = `core test batch ${index / batchSize + 1}/${Math.ceil(
+    const label = `${target.name} test batch ${index / batchSize + 1}/${Math.ceil(
       files.length / batchSize
     )}`;
 
-    run(label, 'bun', ['test', ...batch], { cwd: coreDir });
+    run(label, 'bun', ['test', ...target.bunArgs, ...batch], {
+      cwd: target.dir,
+    });
   }
 };
 
-run('typecheck Core + Plite', 'pnpm', [
+const testInventory = collectTestInventory();
+
+run('typecheck Core + Plite source and tests', 'pnpm', [
   'turbo',
   'typecheck',
   '--filter=./packages/core',
   '--filter=./packages/plite',
 ]);
-run('typecheck Core specs', 'pnpm', [
+run('type contracts', 'pnpm', [
   'exec',
   'tsc',
   '-p',
-  'packages/core/tsconfig.spec.json',
+  'packages/core/tsconfig.type-tests.json',
   '--noEmit',
 ]);
-run('type contracts', 'pnpm', ['test:types']);
 run('lint Core', 'pnpm', ['--filter', '@platejs/core', 'lint']);
 run('lint Plite', 'pnpm', ['--filter', '@platejs/plite', 'lint']);
-runCoreTests();
-run('test Plite', 'pnpm', ['--filter', '@platejs/plite', 'test']);
+run('build Plite artifact for Core runtime tests', 'pnpm', [
+  '--filter',
+  '@platejs/plite',
+  'build',
+]);
+for (const target of testInventory) {
+  runPackageTests(target);
+}

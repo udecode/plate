@@ -6,5 +6,5 @@ const editor = createBaseEditor({
 });
 
 it('returns true when type matches', () => {
-  expect(isType(editor, editor.children[0], 'p')).toEqual(true);
+  expect(isType(editor, editor.read.children()[0], 'p')).toEqual(true);
 });
