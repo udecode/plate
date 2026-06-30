@@ -1,5 +1,11 @@
 # @platejs/ai
 
+## 53.3.0
+
+### Minor Changes
+
+- [`34fdca42f73e7dd30d94db31058c28662dbb9212`](https://github.com/udecode/plate/commit/34fdca42f73e7dd30d94db31058c28662dbb9212) – Support AI SDK v7 chat helper types.
+
 ## 53.2.2
 
 ### Patch Changes
