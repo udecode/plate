@@ -10,6 +10,26 @@ const PR_REGEX = /^\s*(?:pr|pull|pull\s+request):\s*#?(\d+)/im;
 const COMMIT_REGEX = /^\s*commit:\s*([^\s]+)/im;
 const USER_REGEX = /^\s*(?:author|user):\s*@?([^\s]+)/gim;
 
+const createFallbackLinks = ({ commit, pull, repo }) => ({
+  commit: commit
+    ? `[\`${commit}\`](https://github.com/${repo}/commit/${commit})`
+    : null,
+  pull: pull ? `[#${pull}](https://github.com/${repo}/pull/${pull})` : null,
+  user: null,
+});
+
+const readGithubLinks = async (readLinks, fallbackLinks) => {
+  try {
+    return await readLinks();
+  } catch (error) {
+    console.warn(
+      `[changeset changelog] Falling back without GitHub metadata: ${error.message}`
+    );
+
+    return fallbackLinks;
+  }
+};
+
 module.exports = {
   getDependencyReleaseLine: async () => '',
   getReleaseLine: async (changeset, _type, options) => {
@@ -45,10 +65,22 @@ module.exports = {
 
     const links = await (async () => {
       if (prFromSummary !== undefined) {
-        let { links } = await getInfoFromPullRequest({
-          repo: options.repo,
-          pull: prFromSummary,
-        });
+        let links = await readGithubLinks(
+          async () => {
+            const info = await getInfoFromPullRequest({
+              repo: options.repo,
+              pull: prFromSummary,
+            });
+
+            return info.links;
+          },
+          createFallbackLinks({
+            commit: commitFromSummary,
+            pull: prFromSummary,
+            repo: options.repo,
+          })
+        );
+
         if (commitFromSummary) {
           links = {
             ...links,
@@ -59,11 +91,20 @@ module.exports = {
       }
       const commitToFetchFrom = commitFromSummary || changeset.commit;
       if (commitToFetchFrom) {
-        const { links } = await getInfo({
-          repo: options.repo,
-          commit: commitToFetchFrom,
-        });
-        return links;
+        return readGithubLinks(
+          async () => {
+            const info = await getInfo({
+              repo: options.repo,
+              commit: commitToFetchFrom,
+            });
+
+            return info.links;
+          },
+          createFallbackLinks({
+            commit: commitToFetchFrom,
+            repo: options.repo,
+          })
+        );
       }
       return {
         commit: null,
