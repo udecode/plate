@@ -12,6 +12,10 @@ export const useFloatingLinkEnter = () => {
     '*',
     (e) => {
       if (e.key !== 'Enter') return;
+      // `keyCode === 229` is the Safari + Japanese IME composition-commit Enter,
+      // where `isComposing` is false. Ignore it so it doesn't submit the link
+      // mid-composition. Mirrors the Enter guard in `cmdk`.
+      if (e.isComposing || e.keyCode === 229) return;
       if (submitFloatingLink(editor)) {
         e.preventDefault();
       }
