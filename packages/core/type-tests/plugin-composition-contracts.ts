@@ -12,6 +12,7 @@ type ChildConfig = PluginConfig<
   },
   {
     getLabel: () => ChildLabel;
+    getMode: () => ChildMode;
   },
   {
     child: {
@@ -20,6 +21,7 @@ type ChildConfig = PluginConfig<
   },
   {
     isLevel: (level: 1 | 2) => boolean;
+    isMode: (mode: ChildMode) => boolean;
   }
 >;
 
@@ -32,9 +34,11 @@ const ChildPlugin = createBasePlugin<ChildConfig>({
 })
   .extendSelectors(({ getOptions }) => ({
     isLevel: (level: 1 | 2) => getOptions().level === level,
+    isMode: (mode: ChildMode) => getOptions().mode === mode,
   }))
   .extendEditorApi(({ getOptions }) => ({
     getLabel: () => `${getOptions().mode}:${getOptions().level}` as ChildLabel,
+    getMode: () => getOptions().mode,
   }))
   .extendTx(({ plugin }) => () => ({
     setMode: (mode) => {
@@ -57,6 +61,18 @@ const GrandparentPlugin = createBasePlugin({
 }).configurePlugin(ChildPlugin, {
   options: {
     mode: 'edit',
+  },
+});
+
+const PartialChildOverridePlugin = createBasePlugin({
+  key: 'partialChildOverride',
+  plugins: [ChildPlugin],
+}).configurePlugin(ChildPlugin, {
+  api: {
+    getLabel: () => 'edit:2' as const,
+  },
+  selectors: {
+    isLevel: (level) => level === 2,
   },
 });
 
@@ -88,12 +104,18 @@ const InspectorPlugin = createBasePlugin({
   }));
 
 const basePlateEditor = createBaseEditor({
-  plugins: [GrandparentPlugin, FormatPlugin, InspectorPlugin],
+  plugins: [
+    GrandparentPlugin,
+    PartialChildOverridePlugin,
+    FormatPlugin,
+    InspectorPlugin,
+  ],
 });
 
 const childLevel: 1 | 2 = basePlateEditor.getOptions(ChildPlugin).level;
 const childMode: ChildMode = basePlateEditor.getOptions(ChildPlugin).mode;
 const childLabel: ChildLabel = basePlateEditor.api.getLabel();
+const childModeFromPartialApi: ChildMode = basePlateEditor.api.getMode();
 const isLevelTwo: boolean = basePlateEditor.getOption(
   ChildPlugin,
   'isLevel',
@@ -113,6 +135,7 @@ basePlateEditor.update((tx) => {
 void childLabel;
 void childLevel;
 void childMode;
+void childModeFromPartialApi;
 void formatTone;
 void inspected;
 void isLevelTwo;

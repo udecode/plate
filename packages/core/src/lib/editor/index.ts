@@ -3,4 +3,5 @@
  */
 
 export * from './SlateEditor';
+export * from './pluginRuntimeTypes';
 export * from './withPlite';

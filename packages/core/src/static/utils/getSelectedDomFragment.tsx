@@ -1,8 +1,13 @@
-import { type Descendant, ElementApi, NodeApi } from '@platejs/slate';
+import {
+  type Descendant,
+  type Element as PliteElement,
+  ElementApi,
+  NodeApi,
+} from '@platejs/plite';
 
-import type { SlateEditor } from '../../lib';
+import type { BaseEditor } from '../../lib';
 
-export const getSelectedDomFragment = (editor: SlateEditor): Descendant[] => {
+export const getSelectedDomFragment = (editor: BaseEditor): Descendant[] => {
   const selection = window.getSelection();
 
   if (!selection || selection.rangeCount === 0) return [];
@@ -10,19 +15,23 @@ export const getSelectedDomFragment = (editor: SlateEditor): Descendant[] => {
   const range = selection.getRangeAt(0);
   const fragment = range.cloneContents();
 
-  const _domBlocks = fragment.querySelectorAll(
-    '[data-slate-node="element"][data-slate-id]'
+  const domBlocks = Array.from(
+    fragment.querySelectorAll('[data-plite-node="element"][data-plite-id]')
   );
-
-  const domBlocks = Array.from(_domBlocks);
 
   if (domBlocks.length === 0) return [];
 
   const nodes: Descendant[] = [];
 
   domBlocks.forEach((node, index) => {
-    const blockId = (node as HTMLElement).dataset.slateId;
-    const block = editor.api.node({ id: blockId, at: [] });
+    const blockId = (node as HTMLElement).dataset.pliteId;
+    const block = editor.read((state) =>
+      state.nodes.find<PliteElement>({
+        at: [],
+        match: (n): n is PliteElement =>
+          ElementApi.isElement(n) && n.id === blockId,
+      })
+    );
 
     // prevent inline elements like link and table cells.
     if (!block || block[1].length !== 1) return;
@@ -35,12 +44,27 @@ export const getSelectedDomFragment = (editor: SlateEditor): Descendant[] => {
       (index === 0 || index === domBlocks.length - 1) &&
       node.textContent?.trim() !== NodeApi.string(block[0]) &&
       ElementApi.isElement(block[0]) &&
-      !editor.api.isVoid(block[0])
+      !editor.read.schema.isVoid(block[0])
     ) {
       const html = document.createElement('div');
       html.append(node);
       const results = editor.api.html.deserialize({ element: html });
-      nodes.push(results[0]);
+      const [firstResult] = results;
+
+      if (!firstResult) return;
+
+      if (ElementApi.isElement(firstResult)) {
+        nodes.push(firstResult);
+
+        return;
+      }
+
+      const { children: _children, id: _id, ...blockProps } = block[0];
+
+      nodes.push({
+        ...blockProps,
+        children: results,
+      });
     } else {
       nodes.push(block[0]);
     }

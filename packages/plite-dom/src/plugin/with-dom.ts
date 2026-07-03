@@ -53,6 +53,13 @@ const clearUserSelectionRef = (editor: EditorType) => {
 
 export interface DOMEditorOptions {
   /**
+   * Expose DOM clipboard insertion through `editor.api.clipboard.insertData`.
+   *
+   * Set to `false` when a host package owns clipboard parsing and fallback
+   * insertion.
+   */
+  clipboard?: false;
+  /**
    * Bare `DataTransfer` subtype for Plite's internal fragment payload.
    *
    * Plite writes and reads `application/${clipboardFormatKey}`.
@@ -275,14 +282,21 @@ export const dom = (options: DOMEditorOptions = {}) =>
     setup(context: EditorExtensionSetupContext<EditorType>) {
       const editor = installDOM(context.editor, options);
       const { clipboard, ...domApi } = editor.dom;
+      const api = {
+        dom: Object.freeze(domApi) as DOMApi,
+      } as {
+        clipboard?: typeof clipboard;
+        dom: DOMApi;
+      };
+
+      if (options.clipboard !== false) {
+        api.clipboard = clipboard;
+      }
 
       Reflect.deleteProperty(editor, 'dom');
 
       return {
-        api: {
-          clipboard,
-          dom: Object.freeze(domApi) as DOMApi,
-        },
+        api,
       };
     },
   });

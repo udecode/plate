@@ -4,6 +4,7 @@ export type RenderLeafFn = (props: RenderLeafProps) => React.ReactElement<any>;
 
 export type RenderLeafProps<N extends Text = Text> = {
   attributes: {
+    [key: string]: unknown;
     className?: string;
     'data-plite-leaf'?: true;
     style?: React.CSSProperties;

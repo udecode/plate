@@ -24,6 +24,8 @@ export type {
   DOMApi,
   DOMClipboardApi,
   DOMClipboardInsertDataHandler,
+  ScrollIntoViewOptions,
+  ScrollIntoViewTarget,
 } from './plugin/dom-editor';
 export { PliteDOMResolutionError } from './plugin/dom-editor';
 export type { DOMEditorOptions } from './plugin/with-dom';

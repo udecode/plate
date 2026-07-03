@@ -1,4 +1,5 @@
 import { type Value, RangeApi } from '@platejs/plite';
+import { setEditorFocused } from '@platejs/plite/internal';
 import { getSelection } from '@platejs/plite-dom';
 import { IS_FOCUSED } from '@platejs/plite-dom/internal';
 
@@ -42,6 +43,7 @@ const syncPreferredModelSelectionToDOM = <
     }
 
     IS_FOCUSED.set(editor as Parameters<typeof IS_FOCUSED.set>[0], true);
+    setEditorFocused(editor, true);
     element.focus({ preventScroll: true });
 
     if (RangeApi.isBackward(selection)) {
@@ -83,6 +85,7 @@ export const focusPliteEditable = <
   if (readPliteViewSelection(editor)) {
     if (element) {
       IS_FOCUSED.set(editor as Parameters<typeof IS_FOCUSED.set>[0], true);
+      setEditorFocused(editor, true);
       element.focus({ preventScroll: true });
     }
 

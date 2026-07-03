@@ -4,12 +4,12 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
-import { createTSlatePlugin } from '../../lib/plugin';
+import { createBasePlugin } from '../../lib/plugin';
 import { createPlateEditor } from '../editor/withPlate';
 import { pipeRenderLeaf } from './pipeRenderLeaf';
 import { pipeRenderText } from './pipeRenderText';
 
-const attributes = { 'data-slate-leaf': true, 'data-testid': 'Leaf' } as any;
+const attributes = { 'data-plite-leaf': true, 'data-testid': 'Leaf' } as any;
 
 const text = { test: true, text: 'test' };
 
@@ -22,6 +22,10 @@ const getHookOrderErrors = (errorSpy: any) =>
       message.includes('Rendered more hooks')
     );
   });
+
+type ChildrenProps = {
+  children: React.ReactNode;
+};
 
 it('render the default leaf', () => {
   const Leaf = pipeRenderLeaf(createPlateEditor({ plugins: [] }))!;
@@ -38,7 +42,7 @@ it('render the default leaf', () => {
   );
 
   (expect(getByTestId('Leaf')) as any).toHaveAttribute(
-    'data-slate-leaf',
+    'data-plite-leaf',
     'true'
   );
   expect(getByTestId('Leaf').tagName).toBe('SPAN');
@@ -56,14 +60,14 @@ it('returns the custom leaf renderer unchanged when no plugin work exists', () =
 });
 
 it('render with render.leaf and isDecoration=false', () => {
-  const testPlugin = createTSlatePlugin({
+  const testPlugin = createBasePlugin({
     key: 'test',
     node: {
       isDecoration: false,
       isLeaf: true,
     },
     render: {
-      leaf: ({ children }) => (
+      leaf: ({ children }: ChildrenProps) => (
         <span data-testid="leaf-wrapper">{children}</span>
       ),
     },
@@ -90,14 +94,14 @@ it('render with render.leaf and isDecoration=false', () => {
 });
 
 it('render with render.leaf and isDecoration=true', () => {
-  const testPlugin = createTSlatePlugin({
+  const testPlugin = createBasePlugin({
     key: 'test',
     node: {
       isDecoration: true,
       isLeaf: true,
     },
     render: {
-      leaf: ({ children }) => (
+      leaf: ({ children }: ChildrenProps) => (
         <span data-testid="leaf-wrapper">{children}</span>
       ),
     },
@@ -124,7 +128,7 @@ it('render with render.leaf and isDecoration=true', () => {
 });
 
 it('keeps the outer leaf attributes for render.as leaf plugins', () => {
-  const testPlugin = createTSlatePlugin({
+  const testPlugin = createBasePlugin({
     key: 'test',
     node: {
       isLeaf: true,
@@ -153,14 +157,14 @@ it('keeps the outer leaf attributes for render.as leaf plugins', () => {
   );
 
   (expect(getByTestId('Leaf')) as any).toHaveAttribute(
-    'data-slate-leaf',
+    'data-plite-leaf',
     'true'
   );
   expect(container.querySelector('strong')).not.toBeNull();
 });
 
 it('nests multiple simple render.as leaf plugins without losing outer attributes', () => {
-  const boldPlugin = createTSlatePlugin({
+  const boldPlugin = createBasePlugin({
     key: 'bold',
     node: {
       isLeaf: true,
@@ -170,7 +174,7 @@ it('nests multiple simple render.as leaf plugins without losing outer attributes
       as: 'strong',
     },
   });
-  const italicPlugin = createTSlatePlugin({
+  const italicPlugin = createBasePlugin({
     key: 'italic',
     node: {
       isLeaf: true,
@@ -199,7 +203,7 @@ it('nests multiple simple render.as leaf plugins without losing outer attributes
   );
 
   (expect(getByTestId('Leaf')) as any).toHaveAttribute(
-    'data-slate-leaf',
+    'data-plite-leaf',
     'true'
   );
   expect(container.querySelector('strong')).not.toBeNull();
@@ -211,28 +215,28 @@ it('skips inactive leaf renderers', () => {
   let activeCalls = 0;
   let inactiveCalls = 0;
 
-  const boldPlugin = createTSlatePlugin({
+  const boldPlugin = createBasePlugin({
     key: 'bold',
     node: {
       isLeaf: true,
       type: 'bold',
     },
     render: {
-      leaf: ({ children }) => {
+      leaf: ({ children }: ChildrenProps) => {
         activeCalls += 1;
 
         return <strong data-testid="active-leaf">{children}</strong>;
       },
     },
   });
-  const italicPlugin = createTSlatePlugin({
+  const italicPlugin = createBasePlugin({
     key: 'italic',
     node: {
       isLeaf: true,
       type: 'italic',
     },
     render: {
-      leaf: ({ children }) => {
+      leaf: ({ children }: ChildrenProps) => {
         inactiveCalls += 1;
 
         return <em data-testid="inactive-leaf">{children}</em>;
@@ -267,14 +271,14 @@ it('keeps complex leaf renderer hooks stable when a mark activates', () => {
   const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
 
   try {
-    const testPlugin = createTSlatePlugin({
+    const testPlugin = createBasePlugin({
       key: 'test',
       node: {
         isLeaf: true,
         type: 'test',
       },
       render: {
-        leaf: ({ children }) => (
+        leaf: ({ children }: ChildrenProps) => (
           <span data-testid="complex-leaf">{children}</span>
         ),
       },
@@ -320,7 +324,7 @@ it('keeps complex leaf renderer hooks stable when a mark activates', () => {
 });
 
 it('uses node.type to activate leaf renderers when key differs', () => {
-  const simplePlugin = createTSlatePlugin({
+  const simplePlugin = createBasePlugin({
     key: 'simple',
     node: {
       isLeaf: true,
@@ -330,14 +334,14 @@ it('uses node.type to activate leaf renderers when key differs', () => {
       as: 'strong',
     },
   });
-  const complexPlugin = createTSlatePlugin({
+  const complexPlugin = createBasePlugin({
     key: 'complex',
     node: {
       isLeaf: true,
       type: 'complexMark',
     },
     render: {
-      leaf: ({ children }) => (
+      leaf: ({ children }: ChildrenProps) => (
         <span data-testid="complex-leaf">{children}</span>
       ),
     },
@@ -371,7 +375,7 @@ it('uses node.type to activate leaf renderers when key differs', () => {
 });
 
 it('keeps plugin leafProps behavior', () => {
-  const testPlugin = createTSlatePlugin({
+  const testPlugin = createBasePlugin({
     key: 'test',
     node: {
       isLeaf: true,
@@ -406,7 +410,7 @@ it('keeps plugin leafProps behavior', () => {
 });
 
 it('render with render.node', () => {
-  const testPlugin = createTSlatePlugin({
+  const testPlugin = createBasePlugin({
     key: 'test',
     node: {
       isDecoration: false,
@@ -427,7 +431,7 @@ it('render with render.node', () => {
   );
 
   (expect(getByTestId('Leaf')) as any).toHaveAttribute(
-    'data-slate-leaf',
+    'data-plite-leaf',
     'true'
   );
   expect(getByTestId('Leaf').tagName).toBe('SPAN');
@@ -445,7 +449,7 @@ it('returns the custom text renderer unchanged when no plugin work exists', () =
 });
 
 it('keeps the outer text attributes for render.as text plugins', () => {
-  const testPlugin = createTSlatePlugin({
+  const testPlugin = createBasePlugin({
     key: 'test',
     node: {
       isDecoration: false,
@@ -470,7 +474,7 @@ it('keeps the outer text attributes for render.as text plugins', () => {
   );
 
   (expect(getByTestId('Leaf')) as any).toHaveAttribute(
-    'data-slate-leaf',
+    'data-plite-leaf',
     'true'
   );
   expect(container.querySelector('strong')).not.toBeNull();
@@ -480,7 +484,7 @@ it('skips inactive text renderers', () => {
   let activeCalls = 0;
   let inactiveCalls = 0;
 
-  const boldPlugin = createTSlatePlugin({
+  const boldPlugin = createBasePlugin({
     key: 'bold',
     node: {
       isDecoration: false,
@@ -488,14 +492,14 @@ it('skips inactive text renderers', () => {
       type: 'bold',
     },
     render: {
-      node: ({ children }) => {
+      node: ({ children }: ChildrenProps) => {
         activeCalls += 1;
 
         return <strong data-testid="active-text">{children}</strong>;
       },
     },
   });
-  const italicPlugin = createTSlatePlugin({
+  const italicPlugin = createBasePlugin({
     key: 'italic',
     node: {
       isDecoration: false,
@@ -503,7 +507,7 @@ it('skips inactive text renderers', () => {
       type: 'italic',
     },
     render: {
-      node: ({ children }) => {
+      node: ({ children }: ChildrenProps) => {
         inactiveCalls += 1;
 
         return <em data-testid="inactive-text">{children}</em>;
@@ -533,7 +537,7 @@ it('keeps complex text renderer hooks stable when a mark activates', () => {
   const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
 
   try {
-    const testPlugin = createTSlatePlugin({
+    const testPlugin = createBasePlugin({
       key: 'test',
       node: {
         isDecoration: false,
@@ -541,7 +545,7 @@ it('keeps complex text renderer hooks stable when a mark activates', () => {
         type: 'test',
       },
       render: {
-        node: ({ children }) => (
+        node: ({ children }: ChildrenProps) => (
           <span data-testid="complex-text">{children}</span>
         ),
       },
@@ -577,7 +581,7 @@ it('keeps complex text renderer hooks stable when a mark activates', () => {
 });
 
 it('keeps plugin textProps behavior', () => {
-  const testPlugin = createTSlatePlugin({
+  const testPlugin = createBasePlugin({
     key: 'test',
     node: {
       isDecoration: false,

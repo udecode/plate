@@ -1320,4 +1320,94 @@ describe('plite delete contract', () => {
       focus: { path: [0, 0], offset: 'an '.length },
     });
   });
+
+  it('clears inherited mark after deleting backward at offset one in marked text', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ bold: true, text: 'abc' }],
+        },
+      ],
+      marks: null,
+      selection: {
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.text.deleteBackward();
+      tx.text.insert('a');
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'paragraph',
+        children: [{ text: 'a' }, { bold: true, text: 'bc' }],
+      },
+    ]);
+  });
+
+  it('clears inherited mark after deleting forward at marked block start', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ bold: true, text: 'abc' }],
+        },
+      ],
+      marks: null,
+      selection: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.text.deleteForward();
+      tx.text.insert('a');
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'paragraph',
+        children: [{ text: 'a' }, { bold: true, text: 'bc' }],
+      },
+    ]);
+  });
+
+  it('clears inherited mark after deleting a marked fragment at block start', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ bold: true, text: 'bc' }],
+        },
+      ],
+      marks: null,
+      selection: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 1 },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.fragment.delete();
+      tx.text.insert('b');
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'paragraph',
+        children: [{ text: 'b' }, { bold: true, text: 'c' }],
+      },
+    ]);
+  });
 });

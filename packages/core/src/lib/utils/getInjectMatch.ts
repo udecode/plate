@@ -6,20 +6,18 @@ import { type BasePlugin, getPluginKey, getPluginKeys } from '../plugin';
 
 export const getInjectMatch = <E extends BaseEditor>(
   editor: E,
-  plugin: BasePlugin
+  plugin: Pick<BasePlugin, 'inject'>
 ) => {
   return (node: Node, path?: Path) => {
     const {
-      inject: {
-        excludeBelowPlugins,
-        excludePlugins,
-        isBlock: _isBlock,
-        isElement: _isElement,
-        isLeaf,
-        maxLevel,
-        targetPlugins,
-      },
-    } = plugin;
+      excludeBelowPlugins,
+      excludePlugins,
+      isBlock: _isBlock,
+      isElement: _isElement,
+      isLeaf,
+      maxLevel,
+      targetPlugins,
+    } = plugin.inject ?? {};
 
     const element = ElementApi.isElement(node) ? node : undefined;
 

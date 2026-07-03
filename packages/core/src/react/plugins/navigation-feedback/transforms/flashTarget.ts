@@ -1,4 +1,4 @@
-import type { BaseEditor } from '../../../editor';
+import type { BaseEditor } from '../../../../lib/editor';
 import type {
   NavigationFeedbackActiveTarget,
   NavigationFlashTargetOptions,
@@ -12,12 +12,6 @@ const NAVIGATION_FEEDBACK_TIMEOUT = new WeakMap<
   ReturnType<typeof setTimeout>
 >();
 const NAVIGATION_FEEDBACK_PULSE = new WeakMap<BaseEditor, number>();
-const NAVIGATION_FEEDBACK_ATTRIBUTES = [
-  'data-nav-cycle',
-  'data-nav-highlight',
-  'data-nav-pulse',
-  'data-nav-target',
-] as const;
 
 const clearNavigationPathRef = (
   target?: NavigationFeedbackStoredTarget | null
@@ -40,52 +34,6 @@ export const resolveNavigationFeedbackTarget = (
   };
 };
 
-const getNavigationElement = (
-  editor: BaseEditor,
-  target: NavigationFeedbackActiveTarget | { path: number[] }
-) => {
-  const node = editor.read.nodes.get(target.path)?.[0];
-
-  if (!node) return;
-
-  return editor.api.dom.resolveDOMNode(node) ?? undefined;
-};
-
-const clearNavigationElement = (
-  editor: BaseEditor,
-  target?: NavigationFeedbackActiveTarget | null
-) => {
-  if (!target) return;
-
-  const element = getNavigationElement(editor, target);
-
-  if (!element) return;
-
-  for (const attribute of NAVIGATION_FEEDBACK_ATTRIBUTES) {
-    element.removeAttribute(attribute);
-  }
-
-  element.style.removeProperty('--plate-nav-feedback-duration');
-};
-
-const setNavigationElement = (
-  editor: BaseEditor,
-  target: NavigationFeedbackActiveTarget
-) => {
-  const element = getNavigationElement(editor, target);
-
-  if (!element) return;
-
-  element.setAttribute('data-nav-cycle', String(target.cycle));
-  element.setAttribute('data-nav-highlight', target.variant);
-  element.setAttribute('data-nav-pulse', String(target.pulse));
-  element.setAttribute('data-nav-target', 'true');
-  element.style.setProperty(
-    '--plate-nav-feedback-duration',
-    `${target.duration}ms`
-  );
-};
-
 const clearNavigationTimeout = (editor: BaseEditor) => {
   const timeoutId = NAVIGATION_FEEDBACK_TIMEOUT.get(editor);
 
@@ -105,29 +53,29 @@ const nextPulse = (editor: BaseEditor) => {
 
 export const clearNavigationFeedbackTarget = (
   editor: BaseEditor,
+  refreshDecorations: () => void,
   pulse?: number
 ) => {
   const storedTarget = editor.getOption(
     NavigationFeedbackPluginKey,
     'activeTarget'
   );
-  const activeTarget = resolveNavigationFeedbackTarget(storedTarget);
 
   if (!storedTarget) return false;
   if (pulse !== undefined && storedTarget.pulse !== pulse) return false;
 
   clearNavigationTimeout(editor);
-  clearNavigationElement(editor, activeTarget);
   clearNavigationPathRef(storedTarget);
   editor.setOption(NavigationFeedbackPluginKey, 'activeTarget', null);
-  editor.api.redecorate();
+  refreshDecorations();
 
   return true;
 };
 
 export const flashTarget = (
   editor: BaseEditor,
-  { duration, target, variant = 'navigated' }: NavigationFlashTargetOptions
+  { duration, target, variant = 'navigated' }: NavigationFlashTargetOptions,
+  refreshDecorations: () => void
 ) => {
   if (!editor.read.nodes.get(target.path)) return false;
 
@@ -142,10 +90,6 @@ export const flashTarget = (
   );
 
   clearNavigationTimeout(editor);
-  clearNavigationElement(
-    editor,
-    resolveNavigationFeedbackTarget(previousTarget)
-  );
   clearNavigationPathRef(previousTarget);
 
   const activeTarget = {
@@ -158,21 +102,10 @@ export const flashTarget = (
   };
 
   editor.setOption(NavigationFeedbackPluginKey, 'activeTarget', activeTarget);
-  editor.api.redecorate();
-  setNavigationElement(
-    editor,
-    resolveNavigationFeedbackTarget(activeTarget) ?? {
-      cycle: activeTarget.cycle,
-      duration: activeTarget.duration,
-      path: target.path,
-      pulse: activeTarget.pulse,
-      type: activeTarget.type,
-      variant: activeTarget.variant,
-    }
-  );
+  refreshDecorations();
 
   const timeoutId = setTimeout(() => {
-    clearNavigationFeedbackTarget(editor, pulse);
+    clearNavigationFeedbackTarget(editor, refreshDecorations, pulse);
   }, timeoutMs);
 
   NAVIGATION_FEEDBACK_TIMEOUT.set(editor, timeoutId);

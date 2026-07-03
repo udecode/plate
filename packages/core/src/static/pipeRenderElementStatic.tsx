@@ -3,7 +3,7 @@ import React from 'react';
 import { type BaseEditor, getPluginByType } from '../lib';
 import { PliteElement } from './components/plite-nodes';
 import {
-  type SlateRenderElement,
+  type PliteRenderElement,
   pluginRenderElementStatic,
 } from './pluginRenderElementStatic';
 import { getRenderNodeStaticProps } from './utils';
@@ -13,9 +13,9 @@ export const pipeRenderElementStatic = (
   {
     renderElement: renderElementProp,
   }: {
-    renderElement?: SlateRenderElement;
+    renderElement?: PliteRenderElement;
   } = {}
-): SlateRenderElement =>
+): PliteRenderElement =>
   function render(props) {
     const plugin = getPluginByType(editor, props.element.type);
 
@@ -37,7 +37,7 @@ export const pipeRenderElementStatic = (
       <PliteElement {...ctxProps}>
         {props.children}
 
-        {editor.meta.pluginCache.render.belowRootNodes.map((key) => {
+        {editor.runtime.pluginCache.render.belowRootNodes.map((key) => {
           const plugin = editor.getPlugin({ key }) as any;
           const Component = plugin.render.belowRootNodes;
 

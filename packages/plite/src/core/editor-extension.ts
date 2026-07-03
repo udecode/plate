@@ -22,10 +22,12 @@ import {
   registerCapability,
   registerCommitListener,
   registerElementSpec,
+  registerNodeChangeListener,
   registerNormalizer,
   registerOperationMiddleware,
   registerQueryMiddleware,
   registerStateGroup,
+  registerTextChangeListener,
   registerTxGroup,
 } from './extension-registry';
 import {
@@ -589,6 +591,22 @@ const registerExtensionSlots = <TEditor extends Editor>(
             },
           } as EditorCommitContext<TEditor>);
         })
+      );
+    }
+
+    if (slots.onNodeChange) {
+      cleanups.push(
+        registerNodeChangeListener(editor, (context) =>
+          slots.onNodeChange?.(context)
+        )
+      );
+    }
+
+    if (slots.onTextChange) {
+      cleanups.push(
+        registerTextChangeListener(editor, (context) =>
+          slots.onTextChange?.(context)
+        )
       );
     }
 

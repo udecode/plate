@@ -1,8 +1,8 @@
 import React from 'react';
 
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 
-import type { AnyPluginConfig } from '../../lib';
+import type { BasePluginInput } from '../../lib';
 
 import { createStaticEditor } from '../../static/editor/withStatic';
 
@@ -20,7 +20,7 @@ import { createStaticEditor } from '../../static/editor/withStatic';
  */
 export function usePlateViewEditor<
   V extends Value = Value,
-  P extends AnyPluginConfig = any,
+  const P extends readonly BasePluginInput[] = readonly BasePluginInput[],
   TEnabled extends boolean | undefined = undefined,
 >(
   options: Parameters<typeof createStaticEditor<V, P>>[0] & {

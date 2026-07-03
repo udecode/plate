@@ -12,7 +12,7 @@ export const pipeTransformInitialValue = (editor: BaseEditor) => {
   editor.runtime.pluginCache.transformInitialValue.forEach((key) => {
     const p = editor.getPlugin({ key });
 
-    if (isEditOnly(editor.api.dom.isReadOnly(), p, 'transformInitialValue')) {
+    if (isEditOnly(editor.read.view.isReadOnly(), p, 'transformInitialValue')) {
       return;
     }
 

@@ -2,26 +2,26 @@ import React from 'react';
 
 import clsx from 'clsx';
 
-import type { RenderLeafProps, BaseEditor, BasePlugin } from '../lib';
+import type { RenderLeafProps, AnyBasePlugin, BaseEditor } from '../lib';
 
 import { PliteLeaf } from './components';
 import { getNodeDataAttributes } from './utils/getNodeDataAttributes';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
-export type SlateRenderLeaf = (
+export type PliteRenderLeaf = (
   props: RenderLeafProps
-) => React.ReactElement<any> | undefined;
+) => React.ReactNode | undefined;
 
 export const pluginRenderLeafStatic = (
   editor: BaseEditor,
-  plugin: BasePlugin
-): SlateRenderLeaf =>
+  plugin: AnyBasePlugin
+): PliteRenderLeaf =>
   function render(props) {
     const { children, leaf } = props;
 
     if (leaf[plugin.node.type]) {
       const Component = (plugin.render.leaf ??
-        editor.meta.components?.[plugin.key]) as any;
+        editor.runtime.components?.[plugin.key]) as any;
       const Leaf = Component ?? PliteLeaf;
 
       const ctxProps = getRenderNodeStaticProps({
@@ -48,12 +48,12 @@ export const pluginRenderLeafStatic = (
 /** @see {@link RenderLeaf} */
 export const pipeRenderLeafStatic = (
   editor: BaseEditor,
-  { renderLeaf: renderLeafProp }: { renderLeaf?: SlateRenderLeaf } = {}
-): SlateRenderLeaf => {
-  const renderLeafs: SlateRenderLeaf[] = [];
-  const leafPropsPlugins: BasePlugin[] = [];
+  { renderLeaf: renderLeafProp }: { renderLeaf?: PliteRenderLeaf } = {}
+): PliteRenderLeaf => {
+  const renderLeafs: PliteRenderLeaf[] = [];
+  const leafPropsPlugins: AnyBasePlugin[] = [];
 
-  editor.meta.pluginCache.node.isLeaf.forEach((key) => {
+  editor.runtime.pluginCache.node.isLeaf.forEach((key) => {
     const plugin = editor.getPlugin({ key });
 
     if (plugin) {
@@ -61,7 +61,7 @@ export const pipeRenderLeafStatic = (
     }
   });
 
-  editor.meta.pluginCache.node.leafProps.forEach((key) => {
+  editor.runtime.pluginCache.node.leafProps.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     if (plugin) {
       leafPropsPlugins.push(plugin as any);

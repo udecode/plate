@@ -1,7 +1,3 @@
 import { ViewPlugin } from './ViewPlugin';
 
-export const getStaticPlugins = () => {
-  const staticPlugins = [ViewPlugin];
-
-  return [...staticPlugins];
-};
+export const getStaticPlugins = () => [ViewPlugin] as const;

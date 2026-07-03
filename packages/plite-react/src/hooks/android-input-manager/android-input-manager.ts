@@ -9,6 +9,7 @@ import {
   type Range,
   RangeApi,
 } from '@platejs/plite';
+import { setEditorComposing } from '@platejs/plite/internal';
 import {
   applyStringDiff,
   isDOMElement,
@@ -357,6 +358,7 @@ export function createAndroidInputManager({
 
     compositionEndTimeoutId = setTimeout(() => {
       IS_COMPOSING.set(editor, false);
+      setEditorComposing(editor, false);
       flush();
     }, RESOLVE_DELAY);
   };
@@ -365,6 +367,7 @@ export function createAndroidInputManager({
     _event: React.CompositionEvent<HTMLDivElement>
   ) => {
     IS_COMPOSING.set(editor, true);
+    setEditorComposing(editor, true);
 
     if (compositionEndTimeoutId) {
       clearTimeout(compositionEndTimeoutId);

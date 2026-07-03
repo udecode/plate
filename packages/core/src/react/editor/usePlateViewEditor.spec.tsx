@@ -2,8 +2,8 @@ import { jsx } from '@platejs/test-utils';
 /** @jsx jsx */
 import { renderHook } from '@testing-library/react';
 
-import { createSlatePlugin } from '../../lib/plugin/createSlatePlugin';
-import * as withStaticModule from '../../static/editor/withStatic';
+import { createBasePlugin } from '../../lib/plugin/createBasePlugin';
+import * as extendStaticEditorModule from '../../static/editor/withStatic';
 import { usePlateViewEditor } from './usePlateViewEditor';
 
 jsx;
@@ -21,7 +21,7 @@ describe('usePlateViewEditor', () => {
       ...options,
     }));
     createStaticEditorSpy = spyOn(
-      withStaticModule,
+      extendStaticEditorModule,
       'createStaticEditor'
     ).mockImplementation(mockCreateStaticEditor);
   });
@@ -42,8 +42,9 @@ describe('usePlateViewEditor', () => {
 
     it('pass options to createStaticEditor', () => {
       const options = {
+        enabled: true as const,
         id: 'custom-id',
-        plugins: [createSlatePlugin({ key: 'test' })],
+        plugins: [createBasePlugin({ key: 'test' })],
         value: [{ children: [{ text: 'Hello' }], type: 'p' }],
       };
 
@@ -275,8 +276,8 @@ describe('usePlateViewEditor', () => {
         id: 'complex-editor',
         enabled: true,
         plugins: [
-          createSlatePlugin({ key: 'plugin1' }),
-          createSlatePlugin({ key: 'plugin2' }),
+          createBasePlugin({ key: 'plugin1' }),
+          createBasePlugin({ key: 'plugin2' }),
         ],
         selection: {
           anchor: { offset: 0, path: [0, 0] },

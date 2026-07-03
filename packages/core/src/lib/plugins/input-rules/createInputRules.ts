@@ -1,5 +1,5 @@
-import type { Point } from '@platejs/slate';
-import type { SlateEditor } from '../../editor';
+import { ElementApi, type Point } from '@platejs/plite';
+import type { BaseEditor } from '../../editor';
 
 import type {
   BlockFenceInputRuleConfig,
@@ -22,18 +22,18 @@ import { defineInputRule } from './defineInputRule';
 
 const noWhiteSpaceRegex = /\S+/;
 
-const isPreviousCharacterEmpty = (editor: SlateEditor, at: Point) => {
-  const range = editor.api.range('before', at);
+const isPreviousCharacterEmpty = (editor: BaseEditor, at: Point) => {
+  const before = editor.read.points.before(at);
 
-  if (!range) return true;
+  if (!before) return true;
 
-  const text = editor.api.string(range);
+  const text = editor.read.text.string({ anchor: before, focus: at });
 
   return text ? !noWhiteSpaceRegex.exec(text) : true;
 };
 
 const getMarkMatch = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   {
     end = '',
     start,
@@ -48,21 +48,21 @@ const getMarkMatch = (
       beforeStartMatchPoint: Point;
     }
   | undefined => {
-  const { selection } = editor;
+  const selection = editor.read.selection();
 
   if (!selection) return;
 
   let beforeEndMatchPoint: Point | undefined = selection.anchor;
 
   if (end) {
-    beforeEndMatchPoint = editor.api.before(selection, {
+    beforeEndMatchPoint = editor.read.points.before(selection, {
       matchString: end,
     });
 
     if (!beforeEndMatchPoint) return;
   }
 
-  const afterStartMatchPoint = editor.api.before(beforeEndMatchPoint, {
+  const afterStartMatchPoint = editor.read.points.before(beforeEndMatchPoint, {
     afterMatch: true,
     matchString: start,
     skipInvalid: true,
@@ -70,7 +70,7 @@ const getMarkMatch = (
 
   if (!afterStartMatchPoint) return;
 
-  const beforeStartMatchPoint = editor.api.before(beforeEndMatchPoint, {
+  const beforeStartMatchPoint = editor.read.points.before(beforeEndMatchPoint, {
     matchString: start,
     skipInvalid: true,
   });
@@ -96,8 +96,8 @@ export const createMarkInputRule = (
     resolve: ({ editor, text }) => {
       if (
         text !== config.trigger ||
-        !editor.selection ||
-        !editor.api.isCollapsed()
+        !editor.read.selection() ||
+        !editor.read.selection.isCollapsed()
       ) {
         return;
       }
@@ -113,7 +113,7 @@ export const createMarkInputRule = (
         anchor: match.afterStartMatchPoint,
         focus: match.beforeEndMatchPoint,
       };
-      const matchText = editor.api.string(range);
+      const matchText = editor.read.text.string(range);
 
       if (config.trim !== 'allow' && matchText.trim() !== matchText) return;
 
@@ -127,32 +127,38 @@ export const createMarkInputRule = (
         ? [...config.marks]
         : [config.mark ?? pluginKey];
 
-      if (match.beforeEndMatchPoint !== editor.selection?.anchor) {
-        editor.tf.delete({
+      const selection = editor.read.selection();
+
+      if (selection && match.beforeEndMatchPoint !== selection.anchor) {
+        editor.update.text.delete({
           at: {
             anchor: match.beforeEndMatchPoint,
-            focus: editor.selection!.anchor,
+            focus: selection.anchor,
           },
         });
       }
 
-      editor.tf.select({
+      editor.update.selection.set({
         anchor: match.afterStartMatchPoint,
         focus: match.beforeEndMatchPoint,
       });
 
       marks.forEach((mark) => {
-        editor.tf.addMark(editor.getType(mark), true);
+        const key = editor.getType(mark);
+
+        editor.update.marks.add(key, true);
       });
 
-      editor.tf.collapse({ edge: 'end' });
-      editor.tf.removeMarks(
-        marks.map((mark) => editor.getType(mark)),
-        {
-          shouldChange: false,
-        }
-      );
-      editor.tf.delete({
+      editor.update.selection.collapse({ edge: 'end' });
+
+      const markKeys = marks.map((mark) => editor.getType(mark));
+
+      editor.update((tx) => {
+        markKeys.forEach((key) => {
+          tx.marks.remove(key);
+        });
+      });
+      editor.update.text.delete({
         at: {
           anchor: match.beforeStartMatchPoint,
           focus: match.afterStartMatchPoint,
@@ -246,25 +252,32 @@ export const createBlockStartInputRule = <TMatch extends object = {}>(
       const defaultMatch = match as BlockStartInputRuleMatch;
 
       if (config.removeMatchedText !== false) {
-        editor.tf.delete({ at: defaultMatch.range });
+        editor.update.text.delete({ at: defaultMatch.range });
       }
 
       const node = editor.getType(config.node ?? pluginKey);
 
       if (config.mode === 'wrap') {
-        editor.tf.toggleBlock(node, { wrap: true });
+        editor.update.blocks.toggle(node, {
+          defaultType: editor.getType('p'),
+          wrap: true,
+        });
         return true;
       }
 
       if (config.mode === 'toggle') {
-        editor.tf.toggleBlock(node);
+        editor.update.blocks.toggle(node, {
+          defaultType: editor.getType('p'),
+        });
         return true;
       }
 
-      editor.tf.setNodes(
+      editor.update.nodes.set(
         { type: node },
         {
-          match: (entryNode) => editor.api.isBlock(entryNode),
+          match: (entryNode) =>
+            ElementApi.isElement(entryNode) &&
+            editor.read.schema.isBlock(entryNode),
         }
       );
 
@@ -280,7 +293,7 @@ export const matchBlockFence = <
   config: MatchBlockFenceOptions<TMatch>
 ) => {
   const { editor } = context;
-  const { selection } = editor;
+  const selection = editor.read.selection();
 
   if (!context.isCollapsed || !selection) return;
 
@@ -289,10 +302,10 @@ export const matchBlockFence = <
   if (!blockEntry) return;
 
   const [blockNode, path] = blockEntry;
-  const endPoint = editor.api.end(path);
+  const endPoint = editor.read.points.end(path);
 
   if (config.block && blockNode.type !== editor.getType(config.block)) return;
-  if (!endPoint || !editor.api.isEnd(selection.focus, path)) return;
+  if (!endPoint || !editor.read.points.isEnd(selection.focus, path)) return;
 
   const range = context.getBlockStartRange();
   const blockText = context.getBlockStartText();
@@ -363,18 +376,15 @@ export const matchDelimitedInline = (
     trim = 'reject',
   }: MatchDelimitedInlineOptions
 ): DelimitedInlineInputRuleMatch | undefined => {
-  const { editor } = context;
-  const { selection } = editor;
-
-  if (!selection || !context.isCollapsed) return;
+  if (!context.isCollapsed) return;
 
   const blockRange = context.getBlockStartRange();
+  const textBefore = context.getBlockStartText();
 
-  if (!blockRange) return;
+  if (!blockRange || textBefore === undefined) return;
 
   const openingDelimiter = open;
   const closingDelimiter = close ?? open;
-  const textBefore = editor.api.string(blockRange);
   const beforeClose = requireClosingDelimiter
     ? (() => {
         const closeLength = closingDelimiter.length;
@@ -409,32 +419,22 @@ export const matchDelimitedInline = (
 
   if (previousChar && boundaryRe && !boundaryRe.test(previousChar)) return;
 
-  const nextPoint = editor.api.after(selection, {
-    distance: 1,
-    unit: 'character',
-  });
+  const nextChar = context.getCharAfter();
 
-  if (nextPoint && followRe) {
-    const nextChar = editor.api.string({
-      anchor: selection.anchor,
-      focus: nextPoint,
-    });
+  if (nextChar && followRe && !followRe.test(nextChar)) return;
 
-    if (nextChar && !followRe.test(nextChar)) return;
-  }
+  const startPoint = {
+    offset: blockRange.focus.offset - content.length - openingDelimiter.length,
+    path: blockRange.focus.path,
+  };
 
-  const startPoint = editor.api.before(selection, {
-    distance: content.length + openingDelimiter.length,
-    unit: 'character',
-  });
-
-  if (!startPoint) return;
+  if (startPoint.offset < 0) return;
 
   return {
     content,
     deleteRange: {
       anchor: startPoint,
-      focus: selection.anchor,
+      focus: blockRange.focus,
     },
   };
 };
@@ -460,17 +460,17 @@ const getTextSubstitutionMatchRange = ({
 };
 
 const getTextSubstitutionMatchPoints = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { end, start }: { end: string; start: string }
 ): TextSubstitutionMatch['points'] | undefined => {
-  const { selection } = editor;
+  const selection = editor.read.selection();
 
   if (!selection) return;
 
   let beforeEndMatchPoint: Point | undefined = selection.anchor;
 
   if (end) {
-    beforeEndMatchPoint = editor.api.before(selection, {
+    beforeEndMatchPoint = editor.read.points.before(selection, {
       matchString: end,
     });
 
@@ -481,7 +481,7 @@ const getTextSubstitutionMatchPoints = (
   let beforeStartMatchPoint: Point | undefined;
 
   if (start) {
-    afterStartMatchPoint = editor.api.before(beforeEndMatchPoint, {
+    afterStartMatchPoint = editor.read.points.before(beforeEndMatchPoint, {
       afterMatch: true,
       matchString: start,
       skipInvalid: true,
@@ -489,7 +489,7 @@ const getTextSubstitutionMatchPoints = (
 
     if (!afterStartMatchPoint) return;
 
-    beforeStartMatchPoint = editor.api.before(beforeEndMatchPoint, {
+    beforeStartMatchPoint = editor.read.points.before(beforeEndMatchPoint, {
       matchString: start,
       skipInvalid: true,
     });
@@ -555,7 +555,7 @@ const resolveTextSubstitution = ({
   editor,
 }: {
   candidates: CompiledPattern[];
-  editor: SlateEditor;
+  editor: BaseEditor;
 }): TextSubstitutionMatch | undefined => {
   for (const { end, pattern, start } of candidates) {
     const points = getTextSubstitutionMatchPoints(editor, { end, start });
@@ -571,15 +571,15 @@ const resolveTextSubstitution = ({
 };
 
 const applyTextSubstitution = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   match: TextSubstitutionMatch | undefined
 ) => {
-  const selection = editor.selection;
+  const selection = editor.read.selection();
 
   if (!selection || !match) return false;
 
   if (match.end) {
-    editor.tf.delete({
+    editor.update.text.delete({
       at: {
         anchor: match.points.beforeEndMatchPoint,
         focus: selection.anchor,
@@ -591,20 +591,20 @@ const applyTextSubstitution = (
     ? match.pattern.format[1]
     : match.pattern.format;
 
-  editor.tf.insertText(formatEnd);
+  editor.update.text.insert(formatEnd);
 
   if (match.points.beforeStartMatchPoint && match.points.afterStartMatchPoint) {
     const formatStart = Array.isArray(match.pattern.format)
       ? match.pattern.format[0]
       : match.pattern.format;
 
-    editor.tf.delete({
+    editor.update.text.delete({
       at: {
         anchor: match.points.beforeStartMatchPoint,
         focus: match.points.afterStartMatchPoint,
       },
     });
-    editor.tf.insertText(formatStart, {
+    editor.update.text.insert(formatStart, {
       at: match.points.beforeStartMatchPoint,
     });
   }
@@ -626,7 +626,9 @@ export const createTextSubstitutionInputRule = ({
     target: 'insertText',
     trigger: triggers,
     resolve: ({ editor, text }) => {
-      if (!editor.selection || !editor.api.isCollapsed()) return;
+      if (!editor.read.selection() || !editor.read.selection.isCollapsed()) {
+        return;
+      }
 
       const candidates = patternsByTrigger.get(text);
 

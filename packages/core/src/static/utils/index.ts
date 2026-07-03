@@ -10,4 +10,4 @@ export * from './getSelectedDomNode';
 export * from './isSelectOutside';
 export * from './pipeDecorate';
 export * from './stripHtmlClassNames';
-export * from './stripSlateDataAttributes';
+export * from './stripPliteDataAttributes';

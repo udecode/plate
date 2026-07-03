@@ -28,6 +28,7 @@ import {
 } from '@platejs/plite-dom/internal';
 
 import { PliteEditableRootContext } from '../context';
+import { refreshEditorDecorations } from '../decoration-refresh';
 import {
   getEditorRuntime,
   getOperationCount,
@@ -46,6 +47,7 @@ import {
   createReactEditor,
   type ReactEditor as ReactEditorType,
 } from '../plugin/with-react';
+import type { PliteProjectionStoreRefreshOptions } from '../projection-store';
 import {
   getOperationRoot,
   MAIN_ROOT_KEY,
@@ -107,8 +109,19 @@ const getExtensionCapabilityName = (extension: ExtensionLike) => {
 const getContentRootOwnerKey = (owner: PliteContentRootOwner) =>
   `${owner.ownerRoot}\u0000${owner.ownerPath.join('.')}\u0000${owner.childRoot}`;
 
-const createReactApi = (domApi: ReactRuntimeEditor['api']['dom']) =>
+const createReactApi = (
+  editor: object,
+  domApi: ReactRuntimeEditor['api']['dom']
+) =>
   Object.freeze({
+    refreshDecorations: (options?: PliteProjectionStoreRefreshOptions) => {
+      refreshEditorDecorations(editor, {
+        ...options,
+        reason: options?.reason ?? 'external',
+        requiresDOMSelectionExport:
+          options?.requiresDOMSelectionExport ?? domApi.isFocused(),
+      });
+    },
     isComposing: () => domApi.isComposing(),
     isFocused: () => domApi.isFocused(),
     isReadOnly: () => domApi.isReadOnly(),
@@ -261,7 +274,7 @@ export const createReactRuntimeViewEditor = <
   const { clipboard, ...domApi } = createDOMEditorCapability(
     toReactRuntimeEditor<V>(editor)
   );
-  const reactApi = createReactApi(domApi);
+  const reactApi = createReactApi(editor, domApi);
   const baseApi = view.api as Record<PropertyKey, unknown>;
   const viewApi = new Proxy(baseApi, {
     get(target, property, receiver) {

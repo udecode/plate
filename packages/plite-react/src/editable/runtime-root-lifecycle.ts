@@ -1,4 +1,5 @@
 import type { RefObject } from 'react';
+import { setEditorFocused } from '@platejs/plite/internal';
 import {
   containsShadowAware,
   getSelection,
@@ -74,6 +75,7 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     }
 
     IS_FOCUSED.delete(editor);
+    setEditorFocused(editor, false);
 
     if (hasReadOnlyModelSelection) {
       editor.update((tx) => {

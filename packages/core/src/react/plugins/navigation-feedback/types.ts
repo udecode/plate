@@ -1,6 +1,6 @@
 import type { Path, PathRef, Point, Range } from '@platejs/plite';
 
-import type { PluginConfig } from '../../plugin';
+import type { PluginConfig } from '../../../lib/plugin';
 
 export const NAVIGATION_FEEDBACK_KEY = 'navigationFeedback';
 export const NavigationFeedbackPluginKey = {

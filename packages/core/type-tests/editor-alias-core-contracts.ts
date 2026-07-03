@@ -1,11 +1,25 @@
 import type { BaseEditor } from '@platejs/core';
 import type { PlateEditor } from '@platejs/core/react';
+import type { Descendant } from '@platejs/plite';
 
 declare const baseEditor: BaseEditor;
+declare const expectDescendants: (value: Descendant[]) => void;
 declare const plateEditor: PlateEditor;
 
 baseEditor.api.debug.log('base');
 plateEditor.api.debug.log('plate');
+
+expectDescendants(
+  baseEditor.api.html.deserialize({
+    element: '<p>base</p>',
+  })
+);
+
+expectDescendants(
+  plateEditor.api.html.deserialize({
+    element: '<p>plate</p>',
+  })
+);
 
 baseEditor.update((tx) => {
   tx.history.undo();

@@ -4,12 +4,12 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
-import { createTSlatePlugin } from '../../lib/plugin';
+import { createBasePlugin } from '../../lib/plugin';
 import { createPlateEditor } from '../editor/withPlate';
 import { pluginRenderText } from './pluginRenderText';
 
 it('uses a plain render.as fast path for simple text plugins', () => {
-  const testPlugin = createTSlatePlugin({
+  const testPlugin = createBasePlugin({
     key: 'test',
     node: {
       isDecoration: false,
@@ -23,12 +23,12 @@ it('uses a plain render.as fast path for simple text plugins', () => {
   const editor = createPlateEditor({
     plugins: [testPlugin],
   });
-  editor.meta.pluginCache.inject.nodeProps = [];
+  editor.runtime.pluginCache.inject.nodeProps = [];
   const renderText = pluginRenderText(editor, testPlugin as any);
   const TestComponent = () =>
     renderText({
       attributes: {
-        'data-slate-node': 'text',
+        'data-plite-node': 'text',
         className: 'from-slate',
       } as any,
       children: 'test content',
@@ -40,8 +40,8 @@ it('uses a plain render.as fast path for simple text plugins', () => {
   const text = container.querySelector('strong');
 
   expect(text).not.toBeNull();
-  expect(text).toHaveClass('slate-test');
+  expect(text).toHaveClass('plite-test');
   expect(text).toHaveClass('from-slate');
-  expect(text).toHaveAttribute('data-slate-node', 'text');
+  expect(text).toHaveAttribute('data-plite-node', 'text');
   expect(text).toHaveTextContent('test content');
 });

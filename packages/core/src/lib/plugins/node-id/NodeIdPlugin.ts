@@ -1,22 +1,27 @@
 import {
   type Descendant,
+  type NodeEntry,
+  type NodeProps,
+  type Operation,
   type QueryNodeOptions,
   type Value,
   ElementApi,
+  TextApi,
   queryNode,
-} from '@platejs/slate';
+} from '@platejs/plite';
+import cloneDeep from 'lodash/cloneDeep.js';
 import { nanoid } from 'nanoid';
 
-import type { PluginConfig } from '../../plugin/BasePlugin';
+import type { BaseEditor } from '../../editor/SlateEditor';
+import type { PluginConfig } from '../../plugin/SlatePlugin';
 
-import { createTSlatePlugin } from '../../plugin/createSlatePlugin';
-import { withNodeId } from './withNodeId';
+import { createBasePlugin } from '../../plugin/createBasePlugin';
 
 export type NodeIdOptions = {
   /**
-   * By default, when a node inserted using editor.tf.insertNode(s) has an id,
-   * it will be used instead of the id generator, except if it already exists in
-   * the document. Set this option to true to disable this behavior.
+   * By default, inserted nodes reuse their existing id when that id is not
+   * already present in the document. Set this option to true to always assign a
+   * fresh id.
    */
   disableInsertOverrides?: boolean;
   /**
@@ -48,16 +53,6 @@ export type NodeIdOptions = {
    * @default 'if-needed'
    */
   initialValueIds?: false | 'always' | 'if-needed';
-  /**
-   * Legacy alias for `initialValueIds`.
-   *
-   * - `false`: only check the first and last top-level nodes
-   * - `true`: walk the whole initial value and fill missing ids
-   * - `null`: skip initial-value id assignment
-   *
-   * @deprecated Use `initialValueIds` instead.
-   */
-  normalizeInitialValue?: boolean | null;
   /**
    * Reports duplicate-id scan cost during inserted-node normalization.
    */
@@ -99,6 +94,10 @@ type NormalizeNodeIdRuntimeOptions = NormalizeNodeIdOptions & {
 
 const defaultNodeIdFilter = () => true;
 
+const hasElementType = (node: unknown) =>
+  typeof (node as { type?: unknown }).type === 'string' &&
+  !TextApi.isText(node);
+
 const isDefaultNodeIdFastPath = ({
   allow,
   exclude,
@@ -117,7 +116,7 @@ const isBlockCandidate = (
   isBlock?: (node: Descendant) => boolean
 ) =>
   ElementApi.isElement(node) &&
-  (isBlock ? isBlock(node) : (node as any).inline !== true);
+  (isBlock ? isBlock(node) : (node as { inline?: boolean }).inline !== true);
 
 const shouldAssignNodeId = (
   entry: [Descendant, number[]],
@@ -148,7 +147,9 @@ const shouldAssignNodeId = (
         if (
           filterInline &&
           ElementApi.isElement(entryNode) &&
-          !(isBlock ? isBlock(entryNode) : (entryNode as any).inline !== true)
+          !(isBlock
+            ? isBlock(entryNode)
+            : (entryNode as { inline?: boolean }).inline !== true)
         ) {
           return false;
         }
@@ -160,21 +161,183 @@ const shouldAssignNodeId = (
 };
 
 const resolveInitialValueIds = (
-  options: Pick<NodeIdOptions, 'initialValueIds' | 'normalizeInitialValue'>
-): false | 'always' | 'if-needed' => {
-  if (options.initialValueIds !== undefined) {
-    return options.initialValueIds;
+  options: Pick<NodeIdOptions, 'initialValueIds'>
+): false | 'always' | 'if-needed' => options.initialValueIds ?? 'if-needed';
+
+const normalizeInsertedNodeIdOperation = (
+  editor: BaseEditor,
+  operation: Extract<Operation, { type: 'insert_node' }>,
+  options: NodeIdOptions
+) => {
+  const {
+    allow,
+    disableInsertOverrides,
+    exclude,
+    filter = defaultNodeIdFilter,
+    filterText = true,
+    idCreator = () => nanoid(10),
+    idKey = 'id',
+  } = options;
+  const query = {
+    allow,
+    exclude,
+    filter: (entry: NodeEntry) => {
+      const [node] = entry;
+
+      return filter(entry) && (!filterText || hasElementType(node));
+    },
+  };
+  const node = cloneDeep(operation.node) as Descendant & {
+    _id?: unknown;
+  };
+  const duplicateCandidateIds = new Set<unknown>();
+
+  const collectCandidateIds = (entry: NodeEntry) => {
+    const [entryNode, path] = entry;
+    const entryRecord = entryNode as Record<string, unknown>;
+
+    if (queryNode([entryNode as Descendant, path], query)) {
+      if (entryRecord[idKey] !== undefined) {
+        duplicateCandidateIds.add(entryRecord[idKey]);
+      }
+
+      if (!disableInsertOverrides && entryRecord._id !== undefined) {
+        duplicateCandidateIds.add(entryRecord._id);
+      }
+    }
+
+    if (!ElementApi.isElement(entryNode)) return;
+
+    entryNode.children.forEach((child, index) => {
+      collectCandidateIds([child as Descendant, [...path, index]]);
+    });
+  };
+
+  collectCandidateIds([node, operation.path]);
+
+  const existingIds = new Set<unknown>();
+  const start = globalThis.performance?.now() ?? Date.now();
+  let visitedCount = 0;
+
+  if (duplicateCandidateIds.size > 0) {
+    for (const [entryNode] of editor.read.nodes.entries({ at: [] })) {
+      visitedCount += 1;
+
+      const id = (entryNode as Record<string, unknown>)[idKey];
+
+      if (id === undefined || !duplicateCandidateIds.has(id)) continue;
+
+      existingIds.add(id);
+
+      if (existingIds.size === duplicateCandidateIds.size) {
+        break;
+      }
+    }
   }
 
-  if (options.normalizeInitialValue === null) {
-    return false;
+  options.onDuplicateIdScan?.({
+    candidateCount: duplicateCandidateIds.size,
+    duration: (globalThis.performance?.now() ?? Date.now()) - start,
+    existingCount: existingIds.size,
+    visitedCount,
+  });
+
+  const normalizeInsertedNode = (entry: NodeEntry) => {
+    const [entryNode, path] = entry;
+    const entryRecord = entryNode as Record<string, unknown>;
+
+    if (queryNode([entryNode as Descendant, path], query)) {
+      if (
+        entryRecord[idKey] !== undefined &&
+        existingIds.has(entryRecord[idKey])
+      ) {
+        delete entryRecord[idKey];
+      }
+
+      if (entryRecord[idKey] === undefined) {
+        Object.assign(entryRecord, { [idKey]: idCreator() });
+      }
+
+      if (!disableInsertOverrides && entryRecord._id !== undefined) {
+        const id = entryRecord._id;
+        // biome-ignore lint/performance/noDelete: _id is an insert-only override marker.
+        delete entryRecord._id;
+
+        if (!existingIds.has(id)) {
+          entryRecord[idKey] = id;
+        }
+      }
+    }
+
+    if (!ElementApi.isElement(entryNode)) return;
+
+    entryNode.children.forEach((child, index) => {
+      normalizeInsertedNode([child as Descendant, [...path, index]]);
+    });
+  };
+
+  normalizeInsertedNode([node, operation.path]);
+
+  return {
+    ...operation,
+    node,
+  };
+};
+
+const normalizeSplitNodeIdOperation = (
+  editor: BaseEditor,
+  operation: Extract<Operation, { type: 'split_node' }>,
+  options: NodeIdOptions
+) => {
+  const {
+    allow,
+    exclude,
+    filter = defaultNodeIdFilter,
+    filterText = true,
+    idCreator = () => nanoid(10),
+    idKey = 'id',
+    reuseId,
+  } = options;
+  const properties = {
+    ...operation.properties,
+  } as NodeProps<Descendant> & Record<string, unknown>;
+  const query = {
+    allow,
+    exclude,
+    filter: (entry: NodeEntry) => {
+      const [node] = entry;
+
+      return filter(entry) && (!filterText || hasElementType(node));
+    },
+  };
+
+  if (queryNode([properties as Descendant, operation.path], query)) {
+    const id = properties[idKey];
+    const duplicate =
+      id !== undefined &&
+      editor.read.nodes.some({
+        at: [],
+        match: (node) => (node as Record<string, unknown>)[idKey] === id,
+      });
+
+    if (!reuseId || id === undefined || duplicate) {
+      properties[idKey] = idCreator();
+    }
+
+    return {
+      ...operation,
+      properties,
+    };
   }
 
-  if (options.normalizeInitialValue === true) {
-    return 'always';
+  if (properties[idKey] !== undefined) {
+    delete properties[idKey];
   }
 
-  return 'if-needed';
+  return {
+    ...operation,
+    properties,
+  };
 };
 
 /**
@@ -300,13 +463,14 @@ export const normalizeNodeId = <V extends Value>(
 ): V => normalizeNodeIdRuntime(value, options);
 
 export const normalizeNodeIdWithEditor = <V extends Value>(
-  editor: { api: { isBlock: (node: Descendant) => boolean } },
+  editor: BaseEditor,
   value: V,
   options: NormalizeNodeIdOptions = {}
 ): V =>
   normalizeNodeIdRuntime(value, {
     ...options,
-    isBlock: editor.api.isBlock,
+    isBlock: (node) =>
+      ElementApi.isElement(node) && editor.read.schema.isBlock(node),
   });
 
 export type NodeIdConfig = PluginConfig<
@@ -320,8 +484,7 @@ export type NodeIdConfig = PluginConfig<
   }
 >;
 
-/** @see {@link withNodeId} */
-export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
+export const NodeIdPlugin = createBasePlugin<NodeIdConfig>({
   key: 'nodeId',
   options: {
     filterInline: true,
@@ -336,20 +499,29 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
       isMetadataProp: ({ key }) => key === (getOptions().idKey ?? 'id'),
     },
   }))
-  .extendTransforms(({ editor, getOptions }) => ({
+  .extendTx(({ editor, getOptions }) => (tx) => ({
     normalize() {
       const options = getOptions();
       const { idCreator, idKey } = options;
       const updates: { at: number[]; props: Record<string, unknown> }[] = [];
+      const isBlock = (node: Descendant) =>
+        ElementApi.isElement(node) && editor.read.schema.isBlock(node);
+      const applyUpdates = () => {
+        if (updates.length === 0) return;
 
-      if (
-        isDefaultNodeIdFastPath({ ...options, isBlock: editor.api.isBlock })
-      ) {
+        tx.metadata.merge({ history: { mode: 'skip' } });
+
+        for (const { at, props } of updates) {
+          tx.nodes.set(props, { at });
+        }
+      };
+
+      if (isDefaultNodeIdFastPath({ ...options, isBlock })) {
         const path: number[] = [];
 
         const visitFast = (node: Descendant) => {
           if (!ElementApi.isElement(node)) return;
-          if (!isBlockCandidate(node, editor.api.isBlock)) return;
+          if (!isBlockCandidate(node, isBlock)) return;
 
           if (!node[idKey!]) {
             updates.push({
@@ -358,24 +530,20 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
             });
           }
 
-          node.children.forEach((child: any, index: number) => {
+          node.children.forEach((child: Descendant, index: number) => {
             path.push(index);
             visitFast(child);
             path.pop();
           });
         };
 
-        editor.children.forEach((node, index) => {
+        editor.read.children().forEach((node: Descendant, index: number) => {
           path.push(index);
           visitFast(node);
           path.pop();
         });
 
-        if (updates.length === 0) return;
-
-        editor.tf.withoutSaving(() => {
-          editor.tf.setNodesBatch(updates as any);
-        });
+        applyUpdates();
 
         return;
       }
@@ -383,9 +551,7 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
       const addNodeId = (entry: [Descendant, number[]]) => {
         const [node, path] = entry;
 
-        if (
-          shouldAssignNodeId(entry, { ...options, isBlock: editor.api.isBlock })
-        ) {
+        if (shouldAssignNodeId(entry, { ...options, isBlock })) {
           updates.push({
             at: path,
             props: { [idKey!]: idCreator!() },
@@ -394,22 +560,47 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
 
         // Only traverse children if this is an Element node
         if (ElementApi.isElement(node)) {
-          node.children.forEach((child: any, index: number) => {
+          node.children.forEach((child: Descendant, index: number) => {
             addNodeId([child, [...path, index]]);
           });
         }
       };
 
       // Start traversal from top-level nodes.
-      editor.children.forEach((node, index) => {
+      editor.read.children().forEach((node: Descendant, index: number) => {
         addNodeId([node, [index]]);
       });
 
-      if (updates.length === 0) return;
+      applyUpdates();
+    },
+  }))
+  .extendExtension(({ editor, getOptions }) => ({
+    operations: {
+      apply({ operation, next }) {
+        if (operation.type === 'insert_node') {
+          next(
+            normalizeInsertedNodeIdOperation(
+              editor,
+              operation,
+              getOptions()
+            ) as Operation
+          );
+          return;
+        }
 
-      editor.tf.withoutSaving(() => {
-        editor.tf.setNodesBatch(updates as any);
-      });
+        if (operation.type === 'split_node') {
+          next(
+            normalizeSplitNodeIdOperation(
+              editor,
+              operation,
+              getOptions()
+            ) as Operation
+          );
+          return;
+        }
+
+        next(operation);
+      },
     },
   }))
   .extend({
@@ -434,5 +625,4 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
 
       return normalizeNodeIdWithEditor(editor, value, options);
     },
-  })
-  .overrideEditor(withNodeId);
+  });

@@ -1,27 +1,46 @@
-import { BaseLinkPlugin } from '@platejs/link';
-import { BaseImagePlugin } from '@platejs/media';
-
 import { BaseParagraphPlugin } from '../lib/plugins';
+import { createBasePlugin } from '../lib/plugin';
 import { createStaticEditor } from './editor/withStatic';
 import { serializeHtml } from './serializeHtml';
 
+const getStringProp = (record: Record<string, unknown>, key: string) => {
+  const value = record[key];
+
+  return typeof value === 'string' ? value : '';
+};
+
+const getObjectProp = (record: Record<string, unknown>, key: string) => {
+  const value = record[key];
+
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+};
+
 const plugins = [
   BaseParagraphPlugin,
-  BaseLinkPlugin.extend(() => ({
+  createBasePlugin({
+    key: 'a',
     node: {
       dangerouslyAllowAttributes: ['target'],
+      isElement: true,
+      isInline: true,
       props: ({ element }) =>
-        /^https?:\/\/slatejs.org\/?/.test((element as any).url)
+        /^https?:\/\/platejs.org\/?/.test(getStringProp(element, 'url'))
           ? {}
           : { target: '_blank' },
+      type: 'a',
     },
-  })),
-  BaseImagePlugin.extend({
+  }),
+  createBasePlugin({
+    key: 'img',
     node: {
+      isElement: true,
       props: ({ element }) => ({
-        alt: (element as any).attributes?.alt,
-        width: (element as any).url.split('/').pop(),
+        alt: getObjectProp(element, 'attributes').alt,
+        width: getStringProp(element, 'url').split('/').pop(),
       }),
+      type: 'img',
     },
   }),
 ];
@@ -44,7 +63,7 @@ describe('serializeHtml plugin node props', () => {
               children: [{ text: 'link' }],
               target: '_self',
               type: 'a',
-              url: 'https://slatejs.org/',
+              url: 'https://platejs.org/',
             },
             { text: '.' },
           ],

@@ -496,7 +496,7 @@ export const insertDOMFragmentData = <V extends Value>(
   return false;
 };
 
-export const insertDOMTextData = (
+const insertDOMTextDataInTransaction = (
   editor: DOMEditor<any>,
   data: DataTransfer
 ): boolean => {
@@ -552,4 +552,17 @@ export const insertDOMTextData = (
     return true;
   }
   return false;
+};
+
+export const insertDOMTextData = (
+  editor: DOMEditor<any>,
+  data: DataTransfer
+): boolean => {
+  let inserted = false;
+
+  editor.update(() => {
+    inserted = insertDOMTextDataInTransaction(editor, data);
+  });
+
+  return inserted;
 };

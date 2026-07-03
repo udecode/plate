@@ -90,6 +90,11 @@ Rules:
   like `PreInsertOptions`, explicit callback parameter annotations, or
   `Parameters<typeof fn>` plumbing just to silence TypeScript. Fix the owning
   API/source typing so the call site stays inferred.
+- Do not add local fixture-shape aliases in tests, such as
+  `type EditorFixture = { children; selection }`, to hide weak hyperscript
+  typing. If many tests need the same JSX/editor fixture shape, repair or
+  export the test-utils owner type and let call sites use that source-owned
+  fixture type without local casts.
 - Preserve main-style inline test setup. Do not extract `const plugins`,
   `const options`, helper variables, or wrapper factories from a test just to
   placate migrated types when `origin/main` kept the setup inline. Inline
@@ -280,6 +285,8 @@ Default suspicion list:
 - explicit callback/helper types in tests that replace inference from
   `createBasePlugin`, `createBaseEditor`, plugin config, tx groups, or editor
   API calls.
+- local JSX/editor fixture aliases in tests, especially `{ children; selection
+  }` shapes that should come from `@platejs/test-utils`.
 - duplicate Plate helpers around Plite APIs.
 - docs/examples that teach legacy compatibility instead of latest state.
 

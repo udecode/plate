@@ -3,6 +3,7 @@ import {
   type Editor,
   type EditorCommit,
   type EditorExtensionSetupContext,
+  type EditorExtensionTypeProvider,
   type EditorStatePatch,
   type EditorUpdateTransaction,
   type Operation,
@@ -46,46 +47,33 @@ import {
 import {
   clearHistoryState,
   getHistory,
-  isMerging,
-  isSaving,
-  isSplittingOnce,
-  setSplittingOnce,
-  withMerging,
-  withNewBatch,
-  withoutMerging,
-  withoutSaving,
   writeHistory,
 } from './history-state';
 
-export type HistoryStateApi<V extends Value = Value> = {
+export type HistoryStateApi<V extends Value = Value> = (() => History<V>) & {
   /** Read the complete undo/redo history object. */
-  get: () => History<V>;
   /** Read the redo stack. */
   redos: () => readonly Batch<V>[];
   /** Read the undo stack. */
   undos: () => readonly Batch<V>[];
 };
 
-export type HistoryTxApi = {
-  /** Redo the next history batch inside the current transaction. */
-  redo: () => void;
-  /** Undo the previous history batch inside the current transaction. */
-  undo: () => void;
+export type HistoryControlTx<V extends Value = Value> = {
+  (): void;
+  <T>(fn: (tx: EditorUpdateTransaction<V>) => T): T;
 };
 
-export type HistoryControlApi = {
-  /** Read whether new operations are currently merging into a previous batch. */
-  isMerging: () => boolean | undefined;
-  /** Read whether new operations are currently saved to history. */
-  isSaving: () => boolean | undefined;
-  /** Run updates that merge into the previous history batch. */
-  withMerging: (fn: () => void) => void;
-  /** Run updates whose first operation starts a fresh history batch. */
-  withNewBatch: (fn: () => void) => void;
-  /** Run updates that do not merge into the previous history batch. */
-  withoutMerging: (fn: () => void) => void;
-  /** Run updates without saving operations or state patches to history. */
-  withoutSaving: (fn: () => void) => void;
+export type HistoryTxApi<V extends Value = Value> = {
+  /** Merge this transaction into the previous compatible undo batch. */
+  merge: HistoryControlTx<V>;
+  /** Make this transaction start a fresh undo batch. */
+  newBatch: HistoryControlTx<V>;
+  /** Redo the next history batch inside the current transaction. */
+  redo: () => void;
+  /** Do not save this transaction to history. */
+  skip: HistoryControlTx<V>;
+  /** Undo the previous history batch inside the current transaction. */
+  undo: () => void;
 };
 
 export type HistoryOptions<TEnabled extends boolean | undefined = undefined> = {
@@ -93,15 +81,28 @@ export type HistoryOptions<TEnabled extends boolean | undefined = undefined> = {
   enabled?: TEnabled;
 };
 
-declare module '@platejs/plite' {
-  interface EditorStateExtensionGroups<V extends Value = Value> {
+export type HistoryExtensionTypes<V extends Value = Value> = {
+  state: {
     history: HistoryStateApi<V>;
-  }
+  };
+  tx: {
+    history: HistoryTxApi<V>;
+  };
+};
 
-  interface EditorTxExtensionGroups<V extends Value = Value> {
-    history: HistoryTxApi;
-  }
-}
+type HistoryMode = 'merge' | 'push' | 'skip';
+
+const createHistoryControl = <V extends Value>(
+  tx: EditorUpdateTransaction<V>,
+  mode: HistoryMode
+): HistoryControlTx<V> =>
+  ((fn?: (tx: EditorUpdateTransaction<V>) => unknown) => {
+    tx.metadata.merge({ history: { mode } });
+
+    if (fn) {
+      return fn(tx);
+    }
+  }) as HistoryControlTx<V>;
 
 const runHistoricUpdate = <V extends Value>(
   editor: Editor<V>,
@@ -168,7 +169,11 @@ const applyUndo = <V extends Value>(editor: Editor<V>) => {
 
   runHistoricUpdate(editor, batch, (tx) => {
     const inverseOps = batch.operations.map(OperationApi.inverse).reverse();
-    const operations = filterHistoricUndoOperations(inverseOps, root);
+    const undoOperations = filterHistoricUndoOperations(inverseOps, root);
+    const operations = undoOperations.filter(
+      (operation) =>
+        !(undoOperations.length === 1 && isHistoricUndoNoop(editor, operation))
+    );
 
     applyStatePatches(editor, batch.statePatches, 'undo');
     replayHistoricOperations(editor, operations);
@@ -181,34 +186,69 @@ const applyUndo = <V extends Value>(editor: Editor<V>) => {
   history.undos.pop();
 };
 
-/**
- * Create the undo/redo history extension.
- */
-export const history = <const TEnabled extends boolean | undefined = undefined>(
+const getHistoricOperationNodeEntry = (
+  editor: Editor,
+  operation: Operation,
+  path: Path
+) =>
+  editor.read.nodes.get({
+    path,
+    offset: 0,
+    ...(getOperationRoot(operation) !== MAIN_ROOT_KEY
+      ? { root: getOperationRoot(operation) }
+      : {}),
+  });
+
+const isHistoricUndoNoop = (editor: Editor, operation: Operation): boolean => {
+  if (operation.type !== 'merge_node') {
+    return false;
+  }
+
+  const index = operation.path.at(-1);
+
+  if (index == null || index === 0) {
+    return false;
+  }
+
+  return (
+    !getHistoricOperationNodeEntry(editor, operation, operation.path) &&
+    !!getHistoricOperationNodeEntry(
+      editor,
+      operation,
+      PathApi.previous(operation.path)
+    )
+  );
+};
+
+const createHistoryExtension = <
+  const TEnabled extends boolean | undefined = undefined,
+>(
   options: HistoryOptions<TEnabled> = {}
-) => {
-  const extension = {
+) =>
+  ({
     enabled: options.enabled as TEnabled,
     name: 'history',
     options,
     state: {
       history(_state: unknown, editor: Editor) {
-        return {
-          get: () => getHistory(editor),
+        return Object.assign(() => getHistory(editor), {
           redos: () => getHistory(editor).redos,
           undos: () => getHistory(editor).undos,
-        };
+        });
       },
     },
     tx: {
-      history(_tx: unknown, editor: Editor) {
+      history(tx: EditorUpdateTransaction, editor: Editor) {
         return {
+          merge: createHistoryControl(tx, 'merge'),
+          newBatch: createHistoryControl(tx, 'push'),
           redo() {
             executeCommand(editor, { type: 'history_redo' }, () => {
               applyRedo(editor);
               return true;
             });
           },
+          skip: createHistoryControl(tx, 'skip'),
           undo() {
             executeCommand(editor, { type: 'history_undo' }, () => {
               applyUndo(editor);
@@ -224,16 +264,6 @@ export const history = <const TEnabled extends boolean | undefined = undefined>(
       getHistory(editor);
 
       return {
-        api: {
-          history: {
-            isMerging: () => isMerging(editor),
-            isSaving: () => isSaving(editor),
-            withMerging: (fn: () => void) => withMerging(editor, fn),
-            withNewBatch: (fn: () => void) => withNewBatch(editor, fn),
-            withoutMerging: (fn: () => void) => withoutMerging(editor, fn),
-            withoutSaving: (fn: () => void) => withoutSaving(editor, fn),
-          },
-        },
         cleanup() {
           clearHistoryState(editor);
         },
@@ -250,16 +280,11 @@ export const history = <const TEnabled extends boolean | undefined = undefined>(
           const history = getHistory(editor);
           const { undos } = history;
           const lastBatch = undos.at(-1);
-          let save = isSaving(editor);
-          let merge = isMerging(editor);
-
-          if (save == null) {
-            save = shouldSaveCommit(
-              change,
-              committedOps,
-              committedStatePatches
-            );
-          }
+          const save = shouldSaveCommit(
+            change,
+            committedOps,
+            committedStatePatches
+          );
 
           if (!save && shouldRebaseHistory(change, committedOps)) {
             rebaseHistory(history.undos, committedOps);
@@ -279,31 +304,26 @@ export const history = <const TEnabled extends boolean | undefined = undefined>(
               return;
             }
 
-            if (merge == null) {
-              if (lastBatch == null) {
-                merge = false;
-              } else if (change?.metadata.history?.mode === 'push') {
-                merge = false;
-              } else if (change?.metadata.history?.mode === 'merge') {
-                merge = shouldMergeExplicitBatch(
-                  preparedBatch.operations,
-                  lastBatch,
-                  change.metadata
-                );
-              } else if (change?.tags.includes('history-push')) {
-                merge = false;
-              } else if (change?.tags.includes('history-merge')) {
-                merge = true;
-              } else if (preparedBatch.statePatches.length > 0) {
-                merge = false;
-              } else {
-                merge = shouldMergeBatch(preparedBatch.operations, lastBatch);
-              }
-            }
+            let merge = false;
 
-            if (isSplittingOnce(editor)) {
+            if (lastBatch == null) {
               merge = false;
-              setSplittingOnce(editor, undefined);
+            } else if (change?.metadata.history?.mode === 'push') {
+              merge = false;
+            } else if (change?.metadata.history?.mode === 'merge') {
+              merge = shouldMergeExplicitBatch(
+                preparedBatch.operations,
+                lastBatch,
+                change.metadata
+              );
+            } else if (change?.tags.includes('history-push')) {
+              merge = false;
+            } else if (change?.tags.includes('history-merge')) {
+              merge = true;
+            } else if (preparedBatch.statePatches.length > 0) {
+              merge = false;
+            } else {
+              merge = shouldMergeBatch(preparedBatch.operations, lastBatch);
             }
 
             if (lastBatch && merge) {
@@ -325,10 +345,23 @@ export const history = <const TEnabled extends boolean | undefined = undefined>(
         },
       };
     },
-  } as const;
+  }) as const;
 
-  return defineEditorExtension(extension);
-};
+export type HistoryExtension<TEnabled extends boolean | undefined = undefined> =
+  ReturnType<typeof createHistoryExtension<TEnabled>> &
+    EditorExtensionTypeProvider<
+      <V extends Value>(editor: Editor<V>) => HistoryExtensionTypes<V>
+    >;
+
+/**
+ * Create the undo/redo history extension.
+ */
+export const history = <const TEnabled extends boolean | undefined = undefined>(
+  options: HistoryOptions<TEnabled> = {}
+): HistoryExtension<TEnabled> =>
+  defineEditorExtension()(
+    createHistoryExtension(options)
+  ) as HistoryExtension<TEnabled>;
 
 const isSameOperationRoot = (operation: Operation, applied: Operation) =>
   getOperationRoot(operation) === getOperationRoot(applied);

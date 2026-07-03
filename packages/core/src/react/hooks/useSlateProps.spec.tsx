@@ -12,9 +12,9 @@ import {
   useSelectionVersion,
   useValueVersion,
 } from '../stores';
-import { usePliteProps } from './usePliteProps';
+import { useSlateProps } from './useSlateProps';
 
-describe('usePliteProps', () => {
+describe('useSlateProps', () => {
   it('routes slate callbacks through the matching plate callbacks and versions', () => {
     const onChange = mock();
     const onSelectionChange = mock();
@@ -35,7 +35,7 @@ describe('usePliteProps', () => {
     const { result } = renderHook(
       () => ({
         editorVersion: useEditorVersion(),
-        props: usePliteProps({}),
+        props: useSlateProps({}),
         selectionVersion: useSelectionVersion(),
         valueVersion: useValueVersion(),
       }),
@@ -52,11 +52,10 @@ describe('usePliteProps', () => {
     onValueChange.mockClear();
 
     expect(result.current.props.editor).toBe(editor);
-    expect(result.current.props.initialValue).toBeUndefined();
-    expect(result.current.props.key).toBe(editor.meta.key);
+    expect(result.current.props.key).toBe(editor.runtime.key);
 
     act(() => {
-      result.current.props.onChange(nextValue as any);
+      result.current.props.onChange!(nextValue as any, editor as any);
     });
 
     expect(result.current.editorVersion).toBe(2);
@@ -65,7 +64,7 @@ describe('usePliteProps', () => {
     expect(onChange).toHaveBeenCalledWith({ editor, value: nextValue });
 
     act(() => {
-      result.current.props.onValueChange(nextValue as any);
+      result.current.props.onValueChange!(nextValue as any, editor as any);
     });
 
     expect(result.current.editorVersion).toBe(2);
@@ -74,7 +73,7 @@ describe('usePliteProps', () => {
     expect(onValueChange).toHaveBeenCalledWith({ editor, value: nextValue });
 
     act(() => {
-      result.current.props.onSelectionChange(nextSelection);
+      result.current.props.onSelectionChange!(nextSelection, editor as any);
     });
 
     expect(result.current.editorVersion).toBe(2);
@@ -106,7 +105,7 @@ describe('usePliteProps', () => {
     const { result } = renderHook(
       () => ({
         editorVersion: useEditorVersion(),
-        props: usePliteProps({}),
+        props: useSlateProps({}),
       }),
       { wrapper }
     );
@@ -115,9 +114,10 @@ describe('usePliteProps', () => {
     onChange.mockClear();
 
     act(() => {
-      result.current.props.onChange([
-        { children: [{ text: 'two' }], type: 'p' },
-      ] as any);
+      result.current.props.onChange!(
+        [{ children: [{ text: 'two' }], type: 'p' }] as any,
+        editor as any
+      );
     });
 
     expect(result.current.editorVersion).toBe(2);

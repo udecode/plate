@@ -14,7 +14,7 @@ const editor = createEditor({
 })
 
 const isHistoryValue = editor.read((state) =>
-  History.isHistory(state.history.get())
+  History.isHistory(state.history())
 )
 ```
 
@@ -31,20 +31,18 @@ const editor = usePliteEditor({
 })
 ```
 
-Read history through `state.history`, write through `tx.history`, and control
-batching through `editor.api.history`.
+Read history through `state.history`, write through `tx.history`, and use
+`editor.update.history.*` for a single controlled update.
 
 ```ts
-const undoCount = editor.read((state) => state.history.get().undos.length)
+const undoCount = editor.read((state) => state.history().undos.length)
 
 editor.update((tx) => {
   tx.history.undo()
 })
 
-editor.api.history.withoutSaving(() => {
-  editor.update((tx) => {
-    tx.text.insert('draft')
-  })
+editor.update.history.skip((tx) => {
+  tx.text.insert('draft')
 })
 ```
 

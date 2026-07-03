@@ -1,10 +1,14 @@
-import { createTSlatePlugin } from '../../../plugin';
+import { ElementApi, RangeApi, type Element } from '@platejs/plite';
 
+import type { BaseEditor } from '../../../editor';
 import type {
   InsertBreakInputRuleContext,
   InsertDataInputRuleContext,
   InsertTextInputRuleContext,
+  SelectionInputRuleContext,
 } from '../types';
+
+import { createBasePlugin } from '../../../plugin';
 
 const createCachedGetter = <TValue>(compute: () => TValue) => {
   let hasValue = false;
@@ -20,70 +24,94 @@ const createCachedGetter = <TValue>(compute: () => TValue) => {
   };
 };
 
+const dataTransferHasMime = (data: DataTransfer, mimeType: string) => {
+  if (mimeType === 'Files') {
+    return (data.files?.length ?? 0) > 0;
+  }
+
+  const types = Array.from(data.types ?? []);
+
+  if (types.includes(mimeType)) return true;
+
+  try {
+    return !!data.getData(mimeType);
+  } catch {
+    return false;
+  }
+};
+
 const createSelectionContext = ({
   editor,
 }: {
-  editor: InsertTextInputRuleContext['editor'];
-}) => {
-  const { selection } = editor;
-  const isCollapsed = !!selection && editor.api.isCollapsed();
+  editor: BaseEditor;
+}): Omit<SelectionInputRuleContext, 'pluginKey'> => {
+  const selection = editor.read.selection();
+  const isCollapsed = !!selection && RangeApi.isCollapsed(selection);
+  const getBlockEntry = createCachedGetter(() =>
+    selection
+      ? editor.read((state) =>
+          state.nodes.above<Element>({
+            at: selection.focus,
+            match: (node: unknown) =>
+              ElementApi.isElement(node) && state.schema.isBlock(node),
+          })
+        )
+      : undefined
+  );
   const getBlockStartRange = createCachedGetter(() => {
-    if (!selection) return;
+    const blockEntry = getBlockEntry();
 
-    return editor.api.range('start', selection);
+    if (!selection || !blockEntry) return;
+
+    return {
+      anchor: editor.read.points.start(blockEntry[1], { required: true }),
+      focus: RangeApi.start(selection),
+    };
   });
   const getBlockStartText = createCachedGetter(() => {
     const range = getBlockStartRange();
 
-    return range ? editor.api.string(range) : undefined;
+    return range ? editor.read.text.string(range) : undefined;
+  });
+  const getCharAfter = createCachedGetter(() => {
+    if (!selection || !isCollapsed) return;
+
+    const afterPoint = editor.read.points.after(selection, {
+      distance: 1,
+      unit: 'character',
+    });
+
+    return afterPoint
+      ? editor.read.text.string({
+          anchor: selection.anchor,
+          focus: afterPoint,
+        }) || undefined
+      : undefined;
+  });
+  const getCharBefore = createCachedGetter(() => {
+    if (!selection || !isCollapsed) return;
+
+    const beforePoint = editor.read.points.before(selection, {
+      distance: 1,
+      unit: 'character',
+    });
+
+    return beforePoint
+      ? editor.read.text.string({
+          anchor: beforePoint,
+          focus: selection.anchor,
+        }) || undefined
+      : undefined;
   });
 
   return {
     editor,
-    getBlockEntry: createCachedGetter(() => {
-      if (!selection) return;
-
-      return editor.api.block({ at: selection });
-    }),
+    getBlockEntry,
     getBlockStartRange,
     getBlockStartText,
-    getBlockTextBeforeSelection: createCachedGetter(
-      () => getBlockStartText() ?? ''
-    ),
-    getCharAfter: createCachedGetter(() => {
-      if (!selection || !isCollapsed) return;
-
-      const afterPoint = editor.api.after(selection, {
-        distance: 1,
-        unit: 'character',
-      });
-
-      if (!afterPoint) return;
-
-      return (
-        editor.api.string({
-          anchor: selection.anchor,
-          focus: afterPoint,
-        }) || undefined
-      );
-    }),
-    getCharBefore: createCachedGetter(() => {
-      if (!selection || !isCollapsed) return;
-
-      const beforePoint = editor.api.before(selection, {
-        distance: 1,
-        unit: 'character',
-      });
-
-      if (!beforePoint) return;
-
-      return (
-        editor.api.string({
-          anchor: beforePoint,
-          focus: selection.anchor,
-        }) || undefined
-      );
-    }),
+    getBlockTextBeforeSelection: () => getBlockStartText() ?? '',
+    getCharAfter,
+    getCharBefore,
     isCollapsed,
   };
 };
@@ -91,106 +119,111 @@ const createSelectionContext = ({
 const isTriggerMatch = (trigger: readonly string[] | string, text: string) =>
   Array.isArray(trigger) ? trigger.includes(text) : trigger === text;
 
-export const InputRulesPlugin = createTSlatePlugin({
+export const InputRulesPlugin = createBasePlugin({
   editOnly: true,
   key: 'inputRules',
-}).overrideEditor(
-  ({ editor, tf: { insertBreak, insertData, insertText } }) => ({
-    transforms: {
-      insertBreak() {
-        const selectionContext = createSelectionContext({ editor });
-        let handled = false;
+}).extendExtension(({ editor }) => ({
+  clipboard: {
+    insertData(data, { next }) {
+      const text = data.getData('text/plain') || null;
+      const selectionContext = createSelectionContext({ editor });
+      let handled = false;
 
-        for (const rule of editor.meta.inputRules.insertBreak) {
-          const context: InsertBreakInputRuleContext = {
-            cause: 'insertBreak',
-            insertBreak,
-            pluginKey: rule.pluginKey,
-            ...selectionContext,
-          };
-          if (rule.enabled?.(context) === false) continue;
-          const match = rule.resolve ? rule.resolve(context) : true;
-
-          if (match === undefined) continue;
-          if (rule.apply(context, match) !== false) {
-            handled = true;
-
-            break;
-          }
+      for (const rule of editor.runtime.inputRules.insertData) {
+        const context: InsertDataInputRuleContext = {
+          cause: 'insertData',
+          data,
+          insertData: (nextData) => {
+            next(nextData);
+          },
+          pluginKey: rule.pluginKey,
+          text,
+          ...selectionContext,
+        };
+        if (rule.enabled?.(context) === false) continue;
+        if (
+          rule.mimeTypes?.length &&
+          !rule.mimeTypes.some((type) => dataTransferHasMime(data, type))
+        ) {
+          continue;
         }
 
-        if (handled) return;
+        const match = rule.resolve ? rule.resolve(context) : true;
 
-        insertBreak();
-      },
-      insertData(data) {
-        const text = data.getData('text/plain') || null;
-        const selectionContext = createSelectionContext({ editor });
-        let handled = false;
+        if (match === undefined) continue;
+        if (rule.apply(context, match) !== false) {
+          handled = true;
 
-        for (const rule of editor.meta.inputRules.insertData) {
-          const context: InsertDataInputRuleContext = {
-            cause: 'insertData',
-            data,
-            insertData,
-            pluginKey: rule.pluginKey,
-            text,
-            ...selectionContext,
-          };
-          if (rule.enabled?.(context) === false) continue;
-          if (
-            rule.mimeTypes &&
-            rule.mimeTypes.length > 0 &&
-            !rule.mimeTypes.some((type) => !!context.data.getData(type))
-          ) {
-            continue;
-          }
-
-          const match = rule.resolve ? rule.resolve(context) : true;
-
-          if (match === undefined) continue;
-          if (rule.apply(context, match) !== false) {
-            handled = true;
-
-            break;
-          }
+          break;
         }
+      }
 
-        if (handled) return;
+      if (handled) return true;
 
-        insertData(data);
-      },
-      insertText(text, options) {
-        const rules = editor.meta.inputRules.insertText.byTrigger[text] ?? [];
-        const selectionContext = createSelectionContext({ editor });
-        let handled = false;
-
-        for (const rule of rules) {
-          const context: InsertTextInputRuleContext = {
-            cause: 'insertText',
-            insertText,
-            options,
-            pluginKey: rule.pluginKey,
-            text,
-            ...selectionContext,
-          };
-          if (!isTriggerMatch(rule.trigger, context.text)) continue;
-          if (rule.enabled?.(context) === false) continue;
-
-          const match = rule.resolve ? rule.resolve(context) : true;
-
-          if (match === undefined) continue;
-          if (rule.apply(context, match) !== false) {
-            handled = true;
-
-            break;
-          }
-        }
-
-        if (handled) return;
-
-        insertText(text, options);
-      },
+      return next(data);
     },
-  })
-);
+  },
+  transforms: {
+    insertBreak({ next }) {
+      const selectionContext = createSelectionContext({ editor });
+      let handled = false;
+
+      for (const rule of editor.runtime.inputRules.insertBreak) {
+        const context: InsertBreakInputRuleContext = {
+          cause: 'insertBreak',
+          insertBreak: () => {
+            next();
+          },
+          pluginKey: rule.pluginKey,
+          ...selectionContext,
+        };
+        if (rule.enabled?.(context) === false) continue;
+        const match = rule.resolve ? rule.resolve(context) : true;
+
+        if (match === undefined) continue;
+        if (rule.apply(context, match) !== false) {
+          handled = true;
+
+          break;
+        }
+      }
+
+      if (handled) return true;
+
+      return next();
+    },
+    insertText({ next, options, text }) {
+      const rules = editor.runtime.inputRules.insertText.byTrigger[text] ?? [];
+      const selectionContext = createSelectionContext({ editor });
+      let handled = false;
+
+      for (const rule of rules) {
+        const context: InsertTextInputRuleContext = {
+          cause: 'insertText',
+          insertText: (nextText, nextOptions) => {
+            next({ options: nextOptions, text: nextText });
+          },
+          options,
+          pluginKey: rule.pluginKey,
+          text,
+          ...selectionContext,
+        };
+        if (!isTriggerMatch(rule.trigger, context.text)) continue;
+        if (rule.enabled?.(context) === false) continue;
+
+        const match = rule.resolve ? rule.resolve(context) : true;
+
+        if (match === undefined) continue;
+        if (rule.apply(context, match) !== false) {
+          handled = true;
+
+          break;
+        }
+      }
+
+      if (handled) return true;
+
+      return next();
+    },
+  },
+}));

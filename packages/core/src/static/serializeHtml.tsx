@@ -7,16 +7,18 @@ import type { PlateStaticProps } from './components/PlateStatic';
 
 import { PlateStatic } from './components/PlateStatic';
 import { stripHtmlClassNames } from './utils/stripHtmlClassNames';
-import { stripSlateDataAttributes } from './utils/stripSlateDataAttributes';
+import { stripPliteDataAttributes } from './utils/stripPliteDataAttributes';
+
+type ReactDOMServerModule = typeof import('react-dom/server');
 
 const getReactDOMServer = async () => {
-  const ReactDOMServer = (await import('react-dom/server')).default;
+  const ReactDOMServer = await import('react-dom/server');
 
   return ReactDOMServer;
 };
 
 const renderComponentToHtml = <P extends {}>(
-  ReactDOMServer: any,
+  ReactDOMServer: ReactDOMServerModule,
   Component: React.ComponentType<P>,
   props: P
 ): string =>
@@ -69,7 +71,7 @@ export const serializeHtml = async <
     });
   }
   if (stripDataAttributes) {
-    htmlString = stripSlateDataAttributes(htmlString);
+    htmlString = stripPliteDataAttributes(htmlString);
   }
 
   return htmlString;

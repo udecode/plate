@@ -1,5 +1,6 @@
 import {
   HistoryPlugin,
+  type ExtendConfig,
   type PluginConfig,
   createBaseEditor,
   createBasePlugin,
@@ -39,6 +40,24 @@ type CalloutConfig = PluginConfig<
   {
     setVariant: (variant: 'info' | 'warning') => void;
   }
+>;
+
+type ExtendConfigBase = PluginConfig<
+  'extendConfig',
+  { baseOption: true },
+  { baseApi: () => 'base' },
+  { extendConfig: { baseTx: () => void } },
+  { baseSelector: () => boolean },
+  { baseState: 'base' }
+>;
+
+type ExtendedFullConfig = ExtendConfig<
+  ExtendConfigBase,
+  { extraOption: 1 },
+  { extraApi: () => 2 },
+  { extendConfig: { extraTx: (value: 'tx') => void } },
+  { extraSelector: () => 3 },
+  { extraState: 4 }
 >;
 
 const CalloutPlugin = createBasePlugin<CalloutConfig>({
@@ -127,10 +146,6 @@ const calloutVariant: 'info' | 'warning' = basePlateEditor.getOptions(
 const calloutDismissible: boolean | undefined = basePlateEditor.getOptions(
   ConfiguredCalloutPlugin
 ).dismissible;
-const inlineHistorySaving: boolean | undefined =
-  inlineHistoryEditor.api.history.isSaving();
-const coreHistorySaving: boolean | undefined =
-  coreHistoryEditor.api.history.isSaving();
 const overrideLabel: string = overrideEditor.api.overrideLabel();
 const scopedLabel: 'scoped' = getEditorPlugin(
   overrideEditor,
@@ -139,20 +154,48 @@ const scopedLabel: 'scoped' = getEditorPlugin(
 const pluginScopedLabel: 'plugin-scoped' =
   overrideEditor.api.originalOverride.pluginScopedLabel();
 
+declare const extendedFullConfigApi: ExtendedFullConfig['api'];
+declare const extendedFullConfigOptions: ExtendedFullConfig['options'];
+declare const extendedFullConfigSelectors: ExtendedFullConfig['selectors'];
+declare const extendedFullConfigState: NonNullable<ExtendedFullConfig['state']>;
+declare const extendedFullConfigTx: ExtendedFullConfig['tx'];
+
+const extendedFullBaseOption: true = extendedFullConfigOptions.baseOption;
+const extendedFullExtraOption: 1 = extendedFullConfigOptions.extraOption;
+const extendedFullBaseApi: 'base' = extendedFullConfigApi.baseApi();
+const extendedFullExtraApi: 2 = extendedFullConfigApi.extraApi();
+const extendedFullBaseSelector: boolean =
+  extendedFullConfigSelectors.baseSelector();
+const extendedFullExtraSelector: 3 =
+  extendedFullConfigSelectors.extraSelector();
+const extendedFullBaseState: 'base' = extendedFullConfigState.baseState;
+const extendedFullExtraState: 4 = extendedFullConfigState.extraState;
+
+extendedFullConfigTx.extendConfig.baseTx();
+extendedFullConfigTx.extendConfig.extraTx('tx');
+
 basePlateEditor.api.setVariant('info');
 basePlateEditor.api.setVariant('warning');
 inlineHistoryEditor.update((tx) => tx.history.undo());
+inlineHistoryEditor.update.history.skip(() => {});
 coreHistoryEditor.update((tx) => tx.history.redo());
+coreHistoryEditor.update.history.merge(() => {});
 
 void boldEnabled;
 void boldHotkey;
 void calloutDismissible;
 void calloutVariant;
-void coreHistorySaving;
-void inlineHistorySaving;
 void overrideLabel;
 void pluginScopedLabel;
 void scopedLabel;
+void extendedFullBaseApi;
+void extendedFullBaseOption;
+void extendedFullBaseSelector;
+void extendedFullBaseState;
+void extendedFullExtraApi;
+void extendedFullExtraOption;
+void extendedFullExtraSelector;
+void extendedFullExtraState;
 
 // @ts-expect-error invalid configured option value
 CalloutPlugin.configure({ options: { variant: 'danger' } });
@@ -169,3 +212,9 @@ basePlateEditor.getOptions(BoldPlugin).enabled = 'yes';
 // @ts-expect-error editor-level override APIs must not keep stale first-plugin literals
 const staleOverrideLabel: 'original' = overrideEditor.api.overrideLabel();
 void staleOverrideLabel;
+
+// @ts-expect-error selector extension must not land in the tx slot
+extendedFullConfigTx.extendConfig.extraSelector();
+
+// @ts-expect-error tx extension must not land in the selector slot
+extendedFullConfigSelectors.extraTx('tx');

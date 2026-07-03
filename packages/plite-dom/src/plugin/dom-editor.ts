@@ -2,6 +2,7 @@ import {
   type Node,
   NodeApi,
   type Path,
+  PointApi,
   type Point,
   type Range,
   RangeApi,
@@ -9,12 +10,16 @@ import {
   TextApi,
   type Value,
 } from '@platejs/plite';
+import scrollIntoViewIfNeeded, {
+  type StandardBehaviorOptions,
+} from 'scroll-into-view-if-needed';
 import {
   getSelection as editorGetSelection,
   hasPath as editorHasPath,
   isVoid as editorIsVoid,
   point as editorPoint,
   range as editorRange,
+  setEditorFocused,
   unhangRange as editorUnhangRange,
   void as editorVoid,
 } from '@platejs/plite/internal';
@@ -104,7 +109,7 @@ export interface DOMEditorCapability {
   assertEventRange: (event: any) => Range;
   findKey: (node: Node) => Key;
   assertPath: (node: Node) => Path;
-  focus: (options?: { retries: number }) => void;
+  focus: (options?: { retries?: number }) => void;
   getWindow: () => Window;
   hasDOMNode: (target: DOMNode, options?: { editable?: boolean }) => boolean;
   hasEditableTarget: (target: EventTarget | null) => target is DOMNode;
@@ -122,6 +127,10 @@ export interface DOMEditorCapability {
   resolveEventRange: (event: any) => Range | null;
   resolvePath: (node: Node) => Path | null;
   resolveRangeRect: (range: Range) => DOMRect | null;
+  scrollIntoView: (
+    target: ScrollIntoViewTarget,
+    options?: ScrollIntoViewOptions
+  ) => void;
   resolvePliteNode: (domNode: DOMNode) => Node | null;
   resolvePlitePoint: (
     domPoint: DOMPoint,
@@ -180,6 +189,10 @@ export interface DOMEditorClipboardCapability {
 export interface DOMApi extends Omit<DOMEditorCapability, 'clipboard'> {}
 
 export interface DOMClipboardApi extends DOMEditorClipboardCapability {}
+
+export type ScrollIntoViewOptions = StandardBehaviorOptions | boolean;
+
+export type ScrollIntoViewTarget = DOMRange | Point | Range;
 
 /** Error thrown when Plite cannot resolve a DOM node, point, or range. */
 export class PliteDOMResolutionError extends Error {
@@ -277,7 +290,7 @@ export interface DOMEditorInterface {
   /**
    * Focus the editor.
    */
-  focus: (editor: DOMEditor<any>, options?: { retries: number }) => void;
+  focus: (editor: DOMEditor<any>, options?: { retries?: number }) => void;
 
   /**
    * Return the host window of the current editor.
@@ -388,6 +401,15 @@ export interface DOMEditorInterface {
    * Resolve a Plite range to its DOM bounding rectangle.
    */
   resolveRangeRect: (editor: DOMEditor<any>, range: Range) => DOMRect | null;
+
+  /**
+   * Scroll a Plite point/range or native DOM range into view.
+   */
+  scrollIntoView: (
+    editor: DOMEditor<any>,
+    target: ScrollIntoViewTarget,
+    options?: ScrollIntoViewOptions
+  ) => void;
 
   /**
    * Resolve a Plite node from a native DOM node.
@@ -786,6 +808,7 @@ export const DOMEditor: DOMEditorInterface = {
     const el = DOMEditor.assertDOMNode(editor, editor);
     const root = DOMEditor.findDocumentOrShadowRoot(editor);
     IS_FOCUSED.set(editor, false);
+    setEditorFocused(editor, false);
 
     if (root.activeElement === el) {
       el.blur();
@@ -954,7 +977,7 @@ export const DOMEditor: DOMEditorInterface = {
     return range;
   },
 
-  findKey: (editor, node) => {
+  findKey: (_editor, node) => {
     let key = NODE_TO_KEY.get(node);
 
     if (!key) {
@@ -980,7 +1003,9 @@ export const DOMEditor: DOMEditorInterface = {
 
   resolvePath: (editor, node) => resolvePliteNodePath(editor, node),
 
-  focus: (editor, options = { retries: 50 }) => {
+  focus: (editor, options = {}) => {
+    const retries = options.retries ?? 50;
+
     // Return if no dom node is associated with the editor, which means the editor is not yet mounted
     // or has been unmounted. This can happen especially, while retrying to focus the editor.
     if (!EDITOR_TO_ELEMENT.get(editor)) {
@@ -990,12 +1015,12 @@ export const DOMEditor: DOMEditorInterface = {
     // Retry setting focus if the editor has pending operations.
     // The DOM (selection) is unstable while changes are applied.
     // Retry until retries are exhausted or editor is focused.
-    if (options.retries <= 0) {
+    if (retries <= 0) {
       return;
     }
     if (IS_NODE_MAP_DIRTY.get(editor)) {
       setTimeout(() => {
-        DOMEditor.focus(editor, { retries: options.retries - 1 });
+        DOMEditor.focus(editor, { retries: retries - 1 });
       }, 10);
       return;
     }
@@ -1057,6 +1082,7 @@ export const DOMEditor: DOMEditorInterface = {
       // IS_FOCUSED should be set before calling el.focus() to ensure that
       // FocusedContext is updated to the correct value
       IS_FOCUSED.set(editor, true);
+      setEditorFocused(editor, true);
       const activeElement = root.activeElement;
       const activeElementWithBlur = activeElement as
         | (Element & { blur?: () => void })
@@ -1094,6 +1120,7 @@ export const DOMEditor: DOMEditorInterface = {
     }
 
     IS_FOCUSED.set(editor, true);
+    setEditorFocused(editor, true);
     trySyncDomSelection();
   },
 
@@ -1421,6 +1448,48 @@ export const DOMEditor: DOMEditorInterface = {
 
   resolveRangeRect: (editor, range) =>
     DOMEditor.resolveDOMRange(editor, range)?.getBoundingClientRect() ?? null,
+
+  scrollIntoView: (editor, target, options = { scrollMode: 'if-needed' }) => {
+    const run = () => {
+      const domRange = PointApi.isPoint(target)
+        ? DOMEditor.resolveDOMRange(editor, { anchor: target, focus: target })
+        : RangeApi.isRange(target)
+          ? DOMEditor.resolveDOMRange(editor, target)
+          : target;
+
+      if (!domRange) return;
+
+      const leafElement = (
+        isDOMElement(domRange.startContainer)
+          ? domRange.startContainer
+          : domRange.startContainer.parentElement
+      ) as HTMLElement | null;
+
+      if (!leafElement) return;
+
+      const hadOwnRect = Object.hasOwn(leafElement, 'getBoundingClientRect');
+      const originalGetBoundingClientRect = leafElement.getBoundingClientRect;
+
+      leafElement.getBoundingClientRect =
+        domRange.getBoundingClientRect.bind(domRange);
+
+      try {
+        scrollIntoViewIfNeeded(leafElement, options);
+      } finally {
+        if (hadOwnRect) {
+          leafElement.getBoundingClientRect = originalGetBoundingClientRect;
+        } else {
+          Reflect.deleteProperty(leafElement, 'getBoundingClientRect');
+        }
+      }
+    };
+
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(run);
+    } else {
+      run();
+    }
+  },
 
   resolvePliteNode: (editor, domNode) => {
     let domEl = isDOMElement(domNode) ? domNode : domNode.parentElement;
@@ -2014,6 +2083,8 @@ export const createDOMEditorCapability = (
     resolveEventRange: (event) => DOMEditor.resolveEventRange(editor, event),
     resolvePath: (node) => DOMEditor.resolvePath(editor, node),
     resolveRangeRect: (range) => DOMEditor.resolveRangeRect(editor, range),
+    scrollIntoView: (target, options) =>
+      DOMEditor.scrollIntoView(editor, target, options),
     resolvePliteNode: (domNode) => DOMEditor.resolvePliteNode(editor, domNode),
     resolvePlitePoint: (domPoint, options) =>
       DOMEditor.resolvePlitePoint(editor, domPoint, options),

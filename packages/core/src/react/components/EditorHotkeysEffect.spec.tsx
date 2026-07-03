@@ -112,7 +112,7 @@ describe('EditorHotkeysEffect', () => {
 
     it('does not call preventDefault when handler returns false', async () => {
       const handlerReturningFalse = mock().mockReturnValue(false);
-      editor.meta.shortcuts = {
+      editor.runtime.shortcuts = {
         'mod+x': {
           keys: 'mod+x',
           handler: handlerReturningFalse,
@@ -133,7 +133,7 @@ describe('EditorHotkeysEffect', () => {
 
     it('call preventDefault when handler returns undefined (default behavior)', async () => {
       const handlerReturningUndefined = mock().mockReturnValue(undefined);
-      editor.meta.shortcuts = {
+      editor.runtime.shortcuts = {
         'mod+y': {
           keys: 'mod+y',
           handler: handlerReturningUndefined,
@@ -154,7 +154,7 @@ describe('EditorHotkeysEffect', () => {
 
     it('call preventDefault when handler returns true', async () => {
       const handlerReturningTrue = mock().mockReturnValue(true);
-      editor.meta.shortcuts = {
+      editor.runtime.shortcuts = {
         'mod+z': {
           keys: 'mod+z',
           handler: handlerReturningTrue,
@@ -175,7 +175,7 @@ describe('EditorHotkeysEffect', () => {
 
     it('does not call preventDefault when preventDefault option is explicitly set to false', async () => {
       const handlerReturningTrue = mock().mockReturnValue(true);
-      editor.meta.shortcuts = {
+      editor.runtime.shortcuts = {
         'mod+a': {
           keys: 'mod+a',
           handler: handlerReturningTrue,
@@ -197,7 +197,7 @@ describe('EditorHotkeysEffect', () => {
 
     it('does not call preventDefault when preventDefault option is explicitly set (regardless of handler return)', async () => {
       const handlerReturningFalse = mock().mockReturnValue(false);
-      editor.meta.shortcuts = {
+      editor.runtime.shortcuts = {
         'mod+s': {
           keys: 'mod+s',
           handler: handlerReturningFalse,

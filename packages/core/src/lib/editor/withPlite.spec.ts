@@ -1,54 +1,44 @@
+import { createEditor, type Value } from '@platejs/plite';
 import {
-  createEditor,
-  type EditorUpdateTransaction,
-  type Value,
-} from '@platejs/plite';
-import { ParagraphPlugin, ReactPlugin } from '../../react';
+  NavigationFeedbackPlugin,
+  ParagraphPlugin,
+  ReactPlugin,
+} from '../../react';
 import { extendPlateEditor } from '../../react/editor/withPlate';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorPlugin';
 import { InputRulesPlugin } from '../plugins/input-rules/internal/InputRulesPlugin';
-import type { PluginTx } from '../plugin/BasePlugin';
 import {
-  type BasePlugin,
   AstPlugin,
   AffinityPlugin,
   createBasePlugin,
+  createBaseEditor,
   DebugPlugin,
   DOMPlugin,
+  ElementStatePlugin,
   HistoryPlugin,
   HtmlPlugin,
-  LengthPlugin,
-  NavigationFeedbackPlugin,
   OverridePlugin,
   ParserPlugin,
-  SlateExtensionPlugin,
   extendBaseEditor,
 } from '../index';
 
 const coreKeys = [
   'root',
   DebugPlugin.key,
-  SlateExtensionPlugin.key,
+  ElementStatePlugin.key,
   DOMPlugin.key,
-  NavigationFeedbackPlugin.key,
   HistoryPlugin.key,
   InputRulesPlugin.key,
   OverridePlugin.key,
   ParserPlugin.key,
-  LengthPlugin.key,
   HtmlPlugin.key,
   AstPlugin.key,
   AffinityPlugin.key,
   ParagraphPlugin.key,
   EventEditorPlugin.key,
+  NavigationFeedbackPlugin.key,
 ];
-
-type TxPluginTransaction = EditorUpdateTransaction & {
-  txPlugin: {
-    bold: () => void;
-  };
-};
 
 const TestBoldPlugin = createBasePlugin({
   key: 'bold',
@@ -70,7 +60,7 @@ describe('extendPlateEditor', () => {
       });
 
       expect(editor.id).toBe('1');
-      expect(editor.read((state: any) => state.history())).toBeDefined();
+      expect(editor.read((state) => state.history())).toBeDefined();
       expect(editor.runtime.key).toBeDefined();
       expect(editor.runtime.pluginList.map((plugin) => plugin.key)).toEqual(
         coreKeys
@@ -80,19 +70,19 @@ describe('extendPlateEditor', () => {
       ).toEqual(coreKeys);
       expect(Object.keys(editor.plugins)).toEqual(coreKeys);
       expect(
-        (editor.getPlugin(SlateExtensionPlugin).handlers as any).onKeyDown
+        (editor.getPlugin(DOMPlugin).handlers as any).onKeyDown
       ).toBeDefined();
 
       expect(editor.read.children()).toEqual([
         { children: [{ text: '' }], type: 'p' },
       ]);
-      expect(editor.api.dom.isReadOnly()).toBe(false);
+      expect(editor.read.view.isReadOnly()).toBe(false);
     });
 
     it('executes tx-backed plugin commands through update on the current editor runtime', () => {
       const TxPlugin = createBasePlugin({
         key: 'txPlugin',
-      }).extendTx(() => (tx: EditorUpdateTransaction) => ({
+      }).extendTx(() => (tx) => ({
         bold: () => tx.marks.add('bold', true),
       }));
       const editor = extendPlateEditor(createEditor(), {
@@ -104,9 +94,7 @@ describe('extendPlateEditor', () => {
         value: [{ children: [{ text: 'text' }], type: 'p' }],
       });
 
-      editor.update<PluginTx<'txPlugin', TxPluginTransaction['txPlugin']>>(
-        (tx) => tx.txPlugin.bold()
-      );
+      editor.update((tx) => tx.txPlugin.bold());
 
       expect(editor.read.children()[0].children[0]).toMatchObject({
         bold: true,
@@ -144,7 +132,7 @@ describe('extendPlateEditor', () => {
           isVoid: true,
           type: 'mention',
         },
-      }).extendTx(({ type }) => (tx: EditorUpdateTransaction) => ({
+      }).extendTx(({ type }) => (tx) => ({
         insert: () => {
           tx.nodes.insert([{ children: [{ text: '' }], type }, { text: ' ' }]);
         },
@@ -162,15 +150,9 @@ describe('extendPlateEditor', () => {
       expect(editor.read.schema.isInline(mentionElement)).toBe(true);
       expect(editor.read.schema.isVoid(mentionElement)).toBe(true);
 
-      editor.update(
-        (
-          tx: EditorUpdateTransaction & {
-            mention: { insert: () => void };
-          }
-        ) => {
-          tx.mention.insert();
-        }
-      );
+      editor.update((tx) => {
+        tx.mention.insert();
+      });
 
       expect(editor.read.children()[0]).toMatchObject({
         children: [
@@ -228,7 +210,7 @@ describe('extendPlateEditor', () => {
 
   describe('when plugins is an empty array', () => {
     it('only have core plugins', () => {
-      const editor = extendPlateEditor<Value, BasePlugin>(createEditor(), {
+      const editor = extendPlateEditor(createEditor(), {
         id: '1',
         plugins: [],
       });
@@ -515,21 +497,40 @@ describe('extendPlateEditor', () => {
     });
   });
 
-  describe('when configuring core plugins', () => {
-    it('correctly configure the length plugin', () => {
-      const editor = extendBaseEditor(createEditor(), {
-        id: '1',
-        rootPlugin: (plugin) =>
-          plugin.configurePlugin(LengthPlugin, {
-            options: {
-              maxLength: 100,
-            },
-          }),
-      });
-
-      const options = editor.getOptions(LengthPlugin);
-      expect(options.maxLength).toBe(100);
+  it('forwards maxLength to the Plite runtime', () => {
+    const editor = createBaseEditor({
+      autoSelect: 'end',
+      maxLength: 5,
+      value: [{ children: [{ text: '' }], type: 'p' }],
     });
+
+    editor.update.text.insert('Hello world');
+
+    expect(editor.read.text.string([])).toBe('Hello');
+  });
+
+  it('can disable affinity from base editor options', () => {
+    const editor = createBaseEditor({
+      affinity: false,
+    });
+
+    expect(editor.runtime.pluginList.map((plugin) => plugin.key)).not.toContain(
+      AffinityPlugin.key
+    );
+  });
+
+  it('syncs explicit readOnly into the Plite view state', () => {
+    const editor = extendBaseEditor(createEditor(), {
+      readOnly: true,
+    });
+
+    expect(editor.read.view.isReadOnly()).toBe(true);
+  });
+
+  it('preserves existing Plite readOnly state when readOnly is omitted', () => {
+    const editor = extendBaseEditor(createEditor({ readOnly: true }));
+
+    expect(editor.read.view.isReadOnly()).toBe(true);
   });
 
   it('handle value, selection, and autoSelect options correctly', () => {
@@ -555,8 +556,12 @@ describe('extendPlateEditor', () => {
       value,
     });
     const expectedStartSelection = {
-      anchor: editorWithAutoSelectStart.read((state) => state.points.start([])),
-      focus: editorWithAutoSelectStart.read((state) => state.points.start([])),
+      anchor: editorWithAutoSelectStart.read((state) =>
+        state.points.start([], { required: true })
+      ),
+      focus: editorWithAutoSelectStart.read((state) =>
+        state.points.start([], { required: true })
+      ),
     };
     expect(editorWithAutoSelectStart.read.selection()).toEqual(
       expectedStartSelection
@@ -568,8 +573,12 @@ describe('extendPlateEditor', () => {
       value,
     });
     const expectedEndSelection = {
-      anchor: editorWithAutoSelectEnd.read((state) => state.points.end([])),
-      focus: editorWithAutoSelectEnd.read((state) => state.points.end([])),
+      anchor: editorWithAutoSelectEnd.read((state) =>
+        state.points.end([], { required: true })
+      ),
+      focus: editorWithAutoSelectEnd.read((state) =>
+        state.points.end([], { required: true })
+      ),
     };
     expect(editorWithAutoSelectEnd.read.selection()).toEqual(
       expectedEndSelection

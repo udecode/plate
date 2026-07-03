@@ -16,6 +16,7 @@ import {
   type Point,
   PointApi,
   RangeApi,
+  TextApi,
   type Element as PliteElement,
 } from '../interfaces';
 import {
@@ -102,6 +103,31 @@ const shouldRemoveEmptyForwardStartBlock = (
       plan.start,
       editorPoint(editor, plan.effectiveStartBlockPath, { edge: 'end' })
     )
+  );
+};
+
+const shouldClearDeletedMarksAtMarkedSuffix = (
+  editor: Editor,
+  deletedMarks: Record<string, unknown>
+) => {
+  const selection = getCurrentSelection(editor);
+
+  if (!selection || !RangeApi.isCollapsed(selection)) {
+    return false;
+  }
+
+  const { anchor } = selection;
+
+  if (anchor.offset !== 0 || !NodeApi.has(editor, anchor.path)) {
+    return false;
+  }
+
+  const node = NodeApi.get(editor, anchor.path);
+
+  return (
+    TextApi.isText(node) &&
+    node.text.length > 0 &&
+    TextApi.equals(node, { text: '', ...deletedMarks }, { loose: true })
   );
 };
 
@@ -1180,9 +1206,21 @@ export const deleteText: TextMutationMethods['delete'] = (
           return;
         }
 
-        const deletedMarks = target.isCollapsed
-          ? null
-          : getConsistentRangeTextMarks(editor, target.effectiveRange);
+        const deletedMarks = getConsistentRangeTextMarks(
+          editor,
+          target.effectiveRange
+        );
+        const setDeletedMarks = () => {
+          if (!deletedMarks || !getCurrentSelection(editor)) {
+            return;
+          }
+
+          tx.setMarks(
+            shouldClearDeletedMarksAtMarkedSuffix(editor, deletedMarks)
+              ? {}
+              : deletedMarks
+          );
+        };
         const wholeTopLevelBlockRange = getWholeTopLevelBlockRange(
           editor,
           target
@@ -1192,9 +1230,7 @@ export const deleteText: TextMutationMethods['delete'] = (
           wholeTopLevelBlockRange &&
           deleteWholeTopLevelBlockRange(editor, wholeTopLevelBlockRange, tx)
         ) {
-          if (deletedMarks && getCurrentSelection(editor)) {
-            tx.setMarks(deletedMarks);
-          }
+          setDeletedMarks();
           return;
         }
 
@@ -1203,9 +1239,7 @@ export const deleteText: TextMutationMethods['delete'] = (
         reconcileDeleteStructure(editor, target, removal);
         cleanupDeleteLeafLifecycle(editor, target);
         resolveDeleteSelection(editor, target, removal, tx);
-        if (deletedMarks && getCurrentSelection(editor)) {
-          tx.setMarks(deletedMarks);
-        }
+        setDeletedMarks();
       };
 
       const root = getLocationRoot(at);

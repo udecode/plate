@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-import { createBasePlugin } from '../lib';
+import { type RenderElementProps, createBasePlugin } from '../lib';
 import { createStaticEditor } from './editor/withStatic';
 import { pipeRenderElementStatic } from './pipeRenderElementStatic';
 
@@ -22,15 +22,15 @@ describe('pipeRenderElementStatic', () => {
     });
     const markup = ReactDOMServer.renderToStaticMarkup(
       pipeRenderElementStatic(editor, {
-        renderElement: renderElement as any,
+        renderElement,
       })({
-        attributes: {},
+        attributes: { 'data-plite-node': 'element', ref: null },
         children: 'Body',
         element: {
           children: [{ text: 'Body' }],
           type: 'p',
         },
-      } as any)!
+      } satisfies RenderElementProps)
     );
 
     expect(renderElement).not.toHaveBeenCalled();
@@ -38,24 +38,30 @@ describe('pipeRenderElementStatic', () => {
   });
 
   it('uses the fallback renderElement prop when there is no matching element plugin', () => {
-    const renderElement = mock(({ children }: any) => (
-      <mark data-kind="fallback">{children}</mark>
-    ));
+    let fallbackCalled = false;
     const editor = createStaticEditor();
     const result = pipeRenderElementStatic(editor, {
-      renderElement: renderElement as any,
+      renderElement: ({ children }) => {
+        fallbackCalled = true;
+
+        return <mark data-kind="fallback">{children}</mark>;
+      },
     })({
-      attributes: {},
+      attributes: { 'data-plite-node': 'element', ref: null },
       children: 'Body',
       element: {
         children: [{ text: 'Body' }],
         type: 'quote',
       },
-    } as any) as any;
+    } satisfies RenderElementProps);
 
-    expect(renderElement).toHaveBeenCalled();
-    expect(result.type).toBe('mark');
-    expect(result.props['data-kind']).toBe('fallback');
+    expect(fallbackCalled).toBe(true);
+    expect(result).toEqual(
+      expect.objectContaining({
+        props: expect.objectContaining({ 'data-kind': 'fallback' }),
+        type: 'mark',
+      })
+    );
   });
 
   it('renders belowRootNodes around the default PliteElement output', () => {
@@ -70,14 +76,14 @@ describe('pipeRenderElementStatic', () => {
     });
     const markup = ReactDOMServer.renderToStaticMarkup(
       pipeRenderElementStatic(editor)({
-        attributes: {},
+        attributes: { 'data-plite-node': 'element', ref: null },
         children: 'Body',
         element: {
           children: [{ text: 'Body' }],
           id: 'block-1',
           type: 'quote',
         },
-      } as any)!
+      } satisfies RenderElementProps)
     );
 
     expect(markup).toContain('Body');

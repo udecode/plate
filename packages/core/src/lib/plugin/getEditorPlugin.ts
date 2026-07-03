@@ -26,8 +26,13 @@ export function getEditorPlugin(
     editor,
     plugin: plugin as any,
     setOption: ((keyOrOptions: any, value: any) =>
-      editor.setOption(plugin, keyOrOptions, value)) as any,
-    setOptions: ((options: any) => editor.setOptions(plugin, options)) as any,
+      (editor.setOption as (...args: any[]) => void)(
+        plugin,
+        keyOrOptions,
+        value
+      )) as any,
+    setOptions: ((options: any) =>
+      (editor.setOptions as (...args: any[]) => void)(plugin, options)) as any,
     type: plugin.node.type,
     getOption: (key: any, ...args: any) =>
       (editor.getOption as any)(plugin, key, ...args),

@@ -4,7 +4,7 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
-import { createSlatePlugin } from '../../lib';
+import { createBasePlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { PlateSlate } from '../components/PlateSlate';
 import { createPlateEditor } from '../editor/withPlate';
@@ -21,7 +21,7 @@ const createValue = () =>
   ] as any;
 
 const renderPlugin = (editor: ReturnType<typeof createPlateEditor>) => {
-  const element = editor.children[0] as any;
+  const element = editor.read.children()[0] as any;
   const plugin = editor.getPlugin({ key: element.type })!;
   const renderElement = pluginRenderElement(editor, plugin as any);
 
@@ -50,16 +50,16 @@ describe('pluginRenderElement', () => {
     });
 
     const { container } = renderPlugin(editor);
-    const element = container.querySelector('[data-slate-node="element"]');
+    const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toBeInTheDocument();
-    expect(element).toHaveClass('slate-p');
+    expect(element).toHaveClass('plite-p');
   });
 
   it('keeps element context available for custom node components', () => {
     const editor = createPlateEditor({
       plugins: [
-        createSlatePlugin({
+        createBasePlugin({
           key: 'p',
           node: {
             isElement: true,
@@ -90,10 +90,10 @@ describe('pluginRenderElement', () => {
     expect(getByTestId('paragraph')).toHaveAttribute('data-marker', 'yes');
   });
 
-  it('preserves Slate children for void render.as tags', () => {
+  it('preserves Plite children for void render.as tags', () => {
     const editor = createPlateEditor({
       plugins: [
-        createSlatePlugin({
+        createBasePlugin({
           key: 'hr',
           node: {
             isElement: true,
@@ -114,7 +114,7 @@ describe('pluginRenderElement', () => {
     });
 
     const { container } = renderPlugin(editor);
-    const element = container.querySelector('[data-slate-node="element"]');
+    const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toBeInTheDocument();
     expect(element?.tagName).toBe('DIV');

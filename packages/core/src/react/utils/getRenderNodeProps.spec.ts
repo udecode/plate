@@ -1,4 +1,4 @@
-import { createSlatePlugin } from '../../lib';
+import { createBasePlugin } from '../../lib';
 import { createPlateEditor } from '../editor/withPlate';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
@@ -14,7 +14,7 @@ describe('getRenderNodeProps', () => {
         },
       ],
     } as any);
-    const element = editor.children[0] as any;
+    const element = editor.read.children()[0] as any;
 
     const result = getRenderNodeProps({
       disableInjectNodeProps: true,
@@ -34,27 +34,26 @@ describe('getRenderNodeProps', () => {
 
     expect(result.api).toBe(editor.api);
     expect(result.editor).toBe(editor);
-    expect(result.tf).toBe(editor.transforms);
-    expect(result.attributes?.className).toContain('slate-p');
+    expect(result.attributes?.className).toContain('plite-p');
     expect(result.attributes?.className).toContain('attr-class');
     expect(result.attributes?.className).toContain('user-class');
     expect(result.attributes?.style).toBeUndefined();
   });
 
   it('keeps plugin props, allowed attrs, and injected node props on the full path', () => {
-    const ParagraphPlugin = createSlatePlugin({
+    const ParagraphPlugin = createBasePlugin({
       key: 'p',
       node: {
         dangerouslyAllowAttributes: ['target'],
         isElement: true,
-        props: ({ editor }) => ({
+        props: (({ editor }: any) => ({
           'data-has-editor': editor ? 'yes' : 'no',
           title: undefined,
-        }),
+        })) as any,
         type: 'p',
       },
     });
-    const AlignPlugin = createSlatePlugin({
+    const AlignPlugin = createBasePlugin({
       inject: {
         nodeProps: {
           nodeKey: 'align',
@@ -75,16 +74,16 @@ describe('getRenderNodeProps', () => {
         },
       ],
     } as any);
-    const element = editor.children[0] as any;
+    const element = editor.read.children()[0] as any;
 
     const result = getRenderNodeProps({
       attributes: {
-        'data-slate-align': 'center',
+        'data-plite-align': 'center',
         ignored: 'nope',
         target: '_blank',
       },
       editor,
-      plugin: editor.getPlugin(ParagraphPlugin),
+      plugin: editor.getPlugin(ParagraphPlugin as any) as any,
       props: {
         attributes: {},
         children: null,
@@ -99,10 +98,10 @@ describe('getRenderNodeProps', () => {
       style: { textAlign: 'center' },
       target: '_blank',
     });
-    expect(result.attributes?.ignored).toBeUndefined();
+    expect((result.attributes as any)?.ignored).toBeUndefined();
     expect(result.attributes?.title).toBeUndefined();
-    expect(result.attributes?.className).toContain('slate-p');
+    expect(result.attributes?.className).toContain('plite-p');
     expect(result.attributes?.className).toContain('user-class');
-    expect(result.attributes?.className).toContain('slate-align-center');
+    expect(result.attributes?.className).toContain('plite-align-center');
   });
 });

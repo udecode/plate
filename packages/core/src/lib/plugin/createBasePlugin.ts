@@ -1,48 +1,158 @@
-import { type Modify, isDefined } from '@udecode/utils';
+import { isDefined } from '@udecode/utils';
 
-import type { BaseEditor } from '../editor/BaseEditor';
-import type { AnyPluginConfig, PluginConfig } from './PluginBase';
-import type { BasePlugin, BasePluginMethods, BasePlugins } from './BasePlugin';
+import type { BaseEditor } from '../editor/SlateEditor';
+import type {
+  AnyPluginConfig,
+  AnyPluginTx,
+  InferApi,
+  InferOptions,
+  InferSelectors,
+  InferTx,
+  NodeComponent,
+  PluginConfig,
+  WithAnyKey,
+} from './SlatePlugin';
+import type {
+  AnyBasePlugin,
+  BasePlugin,
+  BasePluginContext,
+  BasePlugins,
+  NodeStaticProps,
+  Parser,
+  PlateEditorExtensionInput,
+} from './BasePlugin';
 
 import { isFunction } from '../../internal/utils/isFunction';
 import { mergePlugins } from '../../internal/utils/mergePlugins';
+
+type PluginInputInject<C extends AnyPluginConfig> = Omit<
+  NonNullable<BasePlugin<C>['inject']>,
+  'nodeProps' | 'targetPluginToInject'
+> & {
+  nodeProps?: Record<string, any> &
+    NonNullable<BasePlugin<C>['inject']>['nodeProps'];
+  targetPluginToInject?: (
+    ctx: BasePluginContext<C> & { targetPlugin: string }
+  ) => Partial<BasePlugin<AnyPluginConfig>>;
+};
+
+type PluginInputRender<C extends AnyPluginConfig> = Omit<
+  NonNullable<BasePlugin<C>['render']>,
+  'as'
+> & {
+  as?: keyof HTMLElementTagNameMap | NodeComponent;
+};
+
+type CreateBasePluginInput<C extends AnyPluginConfig = PluginConfig> = Record<
+  string,
+  unknown
+> & {
+  api?: InferApi<C>;
+  extensions?: never;
+  inject?: PluginInputInject<C> | null;
+  key?: C['key'];
+  node?: Record<string, any> & {
+    props?: NodeStaticProps<C>;
+  };
+  options?: InferOptions<C>;
+  parser?: Parser<WithAnyKey<C>>;
+  parsers?: Record<string, any> & {
+    html?: Record<string, any> & {
+      deserializer?: Record<string, any> & {
+        parse?: (options: any) => any;
+        query?: (options: { element: HTMLElement }) => boolean;
+      };
+    };
+  };
+  plugins?: readonly unknown[];
+  render?: PluginInputRender<C> | null;
+  selectors?: InferSelectors<C>;
+  tx?: InferTx<C>;
+};
+
+type PluginInputConfig<C extends AnyPluginConfig> = CreateBasePluginInput<C>;
 
 type BasePluginConfig<
   K extends string = any,
   O = {},
   A = {},
-  T = {},
+  Tx extends AnyPluginTx = {},
   S = {},
-> = Omit<
-  Partial<
-    Modify<
-      BasePlugin<PluginConfig<K, O, A, T, S>>,
-      { node?: Partial<BasePlugin<PluginConfig<K, O, A, T, S>>['node']> }
-    >
-  >,
-  keyof BasePluginMethods | 'optionsStore'
->;
+  State = {},
+> = PluginInputConfig<PluginConfig<K, O, A, Tx, S, State>>;
 
-type TypedBasePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
-  Partial<
-    Modify<
-      BasePlugin<C>,
-      {
-        node?: Partial<BasePlugin<C>['node']>;
-      }
-    >
-  >,
-  keyof BasePluginMethods | 'optionsStore'
->;
+type TypedBasePluginConfig<C extends AnyPluginConfig = PluginConfig> =
+  PluginInputConfig<C>;
+
+type NoInferConfig<T> = [T][T extends any ? 0 : never];
+
+type ExplicitTypedBasePluginConfig<C extends AnyPluginConfig> = [C] extends [
+  never,
+]
+  ? never
+  : TypedBasePluginConfig<NoInferConfig<C>>;
+
+type InferNestedPluginConfig<P> =
+  P extends BasePlugin<infer C> ? C : P extends AnyPluginConfig ? P : never;
+
+type InferNestedPluginConfigs<P> = P extends readonly unknown[]
+  ? InferNestedPluginConfig<P[number]>
+  : never;
 
 const extensionArrayKeys = [
   '__apiExtensions',
+  '__editorExtensions',
   '__selectorExtensions',
   '__txExtensions',
 ] as const;
 
-const preserveExtensionArrays = <P>(basePlugin: any, nextPlugin: P): P => {
-  const nextPluginRecord = nextPlugin as any;
+type ExtensionArrayKey = (typeof extensionArrayKeys)[number];
+type ExtensionArrayRecord = Partial<Record<ExtensionArrayKey, unknown[]>>;
+
+const PLATE_IMPLICIT_EXTENSION_NAME = Symbol.for(
+  'plate.core.implicitExtensionName'
+);
+
+type PlateEditorExtensionRecord = Record<PropertyKey, unknown> & {
+  key?: unknown;
+  name?: unknown;
+};
+
+const isObjectRecord = (
+  extension: unknown
+): extension is PlateEditorExtensionRecord =>
+  typeof extension === 'object' && extension !== null;
+
+const hasOwnName = (
+  extension: unknown
+): extension is PlateEditorExtensionRecord & { name: unknown } =>
+  isObjectRecord(extension) && Object.hasOwn(extension, 'name');
+
+const hasOwnKey = (
+  extension: unknown
+): extension is PlateEditorExtensionRecord & { key: unknown } =>
+  isObjectRecord(extension) && Object.hasOwn(extension, 'key');
+
+const omitExtensionKey = (extension: PlateEditorExtensionRecord) => {
+  const { key: _key, ...extensionWithoutKey } = extension;
+
+  return extensionWithoutKey;
+};
+
+const markImplicitExtensionName = <T extends object>(extension: T): T => {
+  Object.defineProperty(extension, PLATE_IMPLICIT_EXTENSION_NAME, {
+    configurable: true,
+    value: true,
+  });
+
+  return extension;
+};
+
+const preserveExtensionArrays = <P extends object>(
+  basePlugin: ExtensionArrayRecord,
+  nextPlugin: P
+): P => {
+  const nextPluginRecord = nextPlugin as P & ExtensionArrayRecord;
 
   for (const key of extensionArrayKeys) {
     const baseExtensions = basePlugin[key] ?? [];
@@ -61,6 +171,37 @@ const preserveExtensionArrays = <P>(basePlugin: any, nextPlugin: P): P => {
   return nextPlugin;
 };
 
+const normalizePlateEditorExtensions = (
+  pluginKey: string,
+  input: PlateEditorExtensionInput | undefined,
+  extensionKey?: string
+) => {
+  if (!input) return [];
+
+  const extensions = Array.isArray(input) ? input : [input];
+
+  return extensions.map((extension, index) => {
+    const hasExplicitName = hasOwnName(extension);
+    const key =
+      extensionKey ?? (hasOwnKey(extension) ? extension.key : undefined);
+    const name =
+      typeof key === 'string'
+        ? `${pluginKey}:${key}`
+        : extensions.length === 1
+          ? pluginKey
+          : `${pluginKey}:${index}`;
+    const extensionWithoutKey = hasOwnKey(extension)
+      ? omitExtensionKey(extension)
+      : extension;
+    const normalized = {
+      ...extensionWithoutKey,
+      name: hasExplicitName ? extension.name : name,
+    };
+
+    return hasExplicitName ? normalized : markImplicitExtensionName(normalized);
+  });
+};
+
 /**
  * Creates a new Plate plugin with the given configuration.
  *
@@ -68,7 +209,8 @@ const preserveExtensionArrays = <P>(basePlugin: any, nextPlugin: P): P => {
  *   - The plugin's key is required and specified by the K generic.
  *   - The `__extensions` array stores functions to be applied when `resolvePlugin`
  *       is called with an editor.
- *   - The `extend` method adds new extensions to be applied later.
+ *   - The `extendExtension` method installs Plite editor extensions.
+ *   - The `extend` method adds plugin configuration to be applied later.
  *   - The `extendPlugin` method extends an existing plugin (including nested
  *       plugins) or adds a new one if not found.
  *
@@ -94,11 +236,11 @@ const preserveExtensionArrays = <P>(basePlugin: any, nextPlugin: P): P => {
  * @template K - The literal type of the plugin key.
  * @template O - The type of the plugin options.
  * @template A - The type of the plugin utilities.
- * @template T - Reserved legacy generic slot. New plugin commands use `tx`.
+ * @template Tx - The plugin tx groups.
  * @template S - The type of the plugin storage.
- * @param {Partial<BasePlugin<K, O, A, T, S>>} config - The configuration
+ * @param {Partial<BasePlugin<K, O, A, Tx, S>>} config - The configuration
  *   object for the plugin.
- * @returns {BasePlugin<K, O, A, T, S>} A new Plate plugin instance with the
+ * @returns {BasePlugin<K, O, A, Tx, S>} A new Plate plugin instance with the
  *   following properties and methods:
  *
  *   - All properties from the input config, merged with default values.
@@ -108,25 +250,53 @@ const preserveExtensionArrays = <P>(basePlugin: any, nextPlugin: P): P => {
  *   - `extendPlugin`: A method to extend an existing plugin (including nested
  *       plugins) or add a new one if not found.
  */
-export function createBasePlugin<C extends AnyPluginConfig>(
+export function createBasePlugin<
+  const K extends string,
+  O = {},
+  const A extends Record<string, any> = {},
+  Tx extends AnyPluginTx = {},
+  S = {},
+  const P extends readonly unknown[] = readonly [],
+>(
+  config: Omit<BasePluginConfig<K, O, A, Tx, S>, 'api' | 'key' | 'plugins'> & {
+    api: A;
+    key: K;
+    plugins?: P;
+  }
+): BasePlugin<PluginConfig<K, O, A, Tx, S> | InferNestedPluginConfigs<P>>;
+export function createBasePlugin<C extends AnyPluginConfig = never>(
   config:
-    | ((editor: BaseEditor) => TypedBasePluginConfig<C>)
-    | TypedBasePluginConfig<C>
+    | ((editor: BaseEditor) => ExplicitTypedBasePluginConfig<C>)
+    | ExplicitTypedBasePluginConfig<C>
 ): BasePlugin<C>;
+export function createBasePlugin<
+  const K extends string,
+  O = {},
+  A = {},
+  Tx extends AnyPluginTx = {},
+  S = {},
+  const P extends readonly unknown[] = readonly [],
+>(
+  config: BasePluginConfig<K, O, A, Tx, S> & {
+    key: K;
+    plugins?: P;
+  }
+): BasePlugin<PluginConfig<K, O, A, Tx, S> | InferNestedPluginConfigs<P>>;
 export function createBasePlugin<
   K extends string = any,
   O = {},
   A = {},
-  T = {},
+  Tx extends AnyPluginTx = {},
   S = {},
 >(
   config?:
-    | ((editor: BaseEditor) => BasePluginConfig<K, O, A, T, S>)
-    | BasePluginConfig<K, O, A, T, S>
-): BasePlugin<PluginConfig<K, O, A, T, S>>;
+    | ((editor: BaseEditor) => BasePluginConfig<K, O, A, Tx, S>)
+    | BasePluginConfig<K, O, A, Tx, S>
+): BasePlugin<PluginConfig<K, O, A, Tx, S>>;
 export function createBasePlugin(config: any = {}): any {
   let baseConfig: Partial<BasePlugin>;
   let initialExtension: any;
+  const recreatePlugin = createBasePlugin as (config: any) => any;
 
   if (isFunction(config)) {
     baseConfig = { key: '' };
@@ -142,6 +312,7 @@ export function createBasePlugin(config: any = {}): any {
       key,
       __apiExtensions: [],
       __configuration: null,
+      __editorExtensions: [],
       __extensions: initialExtension ? [initialExtension] : [],
       __selectorExtensions: [],
       __txExtensions: [],
@@ -160,7 +331,6 @@ export function createBasePlugin(config: any = {}): any {
       render: {},
       rules: {},
       shortcuts: {},
-      editorExtensions: [],
       inputRules: [],
       tx: {},
     },
@@ -176,10 +346,13 @@ export function createBasePlugin(config: any = {}): any {
     newPlugin.__configuration = (ctx) =>
       isFunction(config) ? config(ctx as any) : config;
 
-    return preserveExtensionArrays(plugin, createBasePlugin(newPlugin) as any);
+    return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
   };
 
-  plugin.configurePlugin = (p, config) => {
+  plugin.configurePlugin = ((
+    p: BasePlugin<any> | { key: string },
+    config: any
+  ) => {
     const newPlugin = { ...plugin };
 
     const configureNestedPlugin = (
@@ -193,7 +366,7 @@ export function createBasePlugin(config: any = {}): any {
 
           return preserveExtensionArrays(
             nestedPlugin,
-            createBasePlugin({
+            recreatePlugin({
               ...nestedPlugin,
               __configuration: (ctx: any) =>
                 isFunction(config) ? config(ctx) : config,
@@ -213,7 +386,7 @@ export function createBasePlugin(config: any = {}): any {
         return nestedPlugin;
       });
 
-      return { found, plugins: updatedPlugins };
+      return { found, plugins: updatedPlugins as BasePlugins };
     };
 
     const result = configureNestedPlugin(newPlugin.plugins as any);
@@ -221,8 +394,8 @@ export function createBasePlugin(config: any = {}): any {
 
     // We're not adding a new plugin if not found
 
-    return preserveExtensionArrays(plugin, createBasePlugin(newPlugin));
-  };
+    return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
+  }) as typeof plugin.configurePlugin;
 
   plugin.extendEditorApi = (extension) => {
     const newPlugin = { ...plugin };
@@ -231,7 +404,7 @@ export function createBasePlugin(config: any = {}): any {
       { extension, isPluginSpecific: false },
     ];
 
-    return preserveExtensionArrays(plugin, createBasePlugin(newPlugin) as any);
+    return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
   };
 
   plugin.extendSelectors = (extension) => {
@@ -241,7 +414,7 @@ export function createBasePlugin(config: any = {}): any {
       extension,
     ];
 
-    return preserveExtensionArrays(plugin, createBasePlugin(newPlugin) as any);
+    return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
   };
 
   plugin.extendApi = (extension) => {
@@ -251,46 +424,39 @@ export function createBasePlugin(config: any = {}): any {
       { extension, isPluginSpecific: true },
     ];
 
-    return preserveExtensionArrays(plugin, createBasePlugin(newPlugin) as any);
+    return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
   };
 
-  plugin.extendTx = (extension) => {
+  plugin.extendTx = (extension: any) => {
     const newPlugin = { ...plugin };
+    const txExtension = ((ctx: any) => ({
+      [ctx.plugin.key]: extension(ctx),
+    })) as any;
+
+    txExtension.__plateOwnTxGroup = true;
+
     newPlugin.__txExtensions = [
       ...(newPlugin.__txExtensions as any),
-      (ctx) => ({
-        [ctx.plugin.key]: extension(ctx),
-      }),
+      txExtension,
     ];
 
-    return preserveExtensionArrays(plugin, createBasePlugin(newPlugin) as any);
+    return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
   };
 
   plugin.extendTxGroup = (key, extension) => {
     const newPlugin = { ...plugin };
+    const txExtension = ((ctx: any) => ({
+      [key]: extension(ctx),
+    })) as any;
+
+    txExtension.__plateTxGroupKey = key;
+
     newPlugin.__txExtensions = [
       ...(newPlugin.__txExtensions as any),
-      (ctx) => ({
-        [key]: extension(ctx),
-      }),
+      txExtension,
     ];
 
-    return preserveExtensionArrays(plugin, createBasePlugin(newPlugin) as any);
-  };
-
-  plugin.overrideEditor = (extension) => {
-    const newPlugin = { ...plugin };
-    newPlugin.__apiExtensions = [
-      ...(newPlugin.__apiExtensions as any),
-      {
-        extension,
-        isOverride: true,
-        isLegacyTransform: false,
-        isPluginSpecific: false,
-      },
-    ];
-
-    return preserveExtensionArrays(plugin, createBasePlugin(newPlugin) as any);
+    return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
   };
 
   plugin.extend = (extendConfig) => {
@@ -305,12 +471,31 @@ export function createBasePlugin(config: any = {}): any {
       newPlugin = mergePlugins(newPlugin, extendConfig as any);
     }
 
-    return preserveExtensionArrays(plugin, createBasePlugin(newPlugin) as any);
+    return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
+  };
+
+  plugin.extendExtension = (extensionOrKey: any, maybeExtension?: any) => {
+    const newPlugin = { ...plugin };
+    const hasKeyArgument = typeof extensionOrKey === 'string';
+    const extension = hasKeyArgument ? maybeExtension : extensionOrKey;
+    const extensionKey = hasKeyArgument ? extensionOrKey : undefined;
+
+    newPlugin.__editorExtensions = [
+      ...(newPlugin.__editorExtensions as any),
+      (ctx: any) =>
+        normalizePlateEditorExtensions(
+          ctx.plugin.key,
+          isFunction(extension) ? extension(ctx) : extension,
+          extensionKey
+        ),
+    ];
+
+    return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
   };
 
   plugin.clone = () => mergePlugins(plugin);
 
-  plugin.extendPlugin = (p, extendConfig) => {
+  plugin.extendPlugin = ((p: AnyBasePlugin | { key: string }, extendConfig) => {
     const newPlugin = { ...plugin };
 
     const extendNestedPlugin = (
@@ -323,7 +508,7 @@ export function createBasePlugin(config: any = {}): any {
 
           return preserveExtensionArrays(
             nestedPlugin,
-            createBasePlugin({
+            recreatePlugin({
               ...nestedPlugin,
               __extensions: [
                 ...(nestedPlugin.__extensions as any),
@@ -346,7 +531,7 @@ export function createBasePlugin(config: any = {}): any {
         return nestedPlugin;
       });
 
-      return { found, plugins: updatedPlugins };
+      return { found, plugins: updatedPlugins as BasePlugins };
     };
 
     const result = extendNestedPlugin(newPlugin.plugins as any);
@@ -355,7 +540,7 @@ export function createBasePlugin(config: any = {}): any {
     // If the plugin wasn't found at any level, add it at the top level
     if (!result.found) {
       newPlugin.plugins.push(
-        createBasePlugin({
+        recreatePlugin({
           key: p.key,
           __extensions: [
             (ctx: any) =>
@@ -367,8 +552,8 @@ export function createBasePlugin(config: any = {}): any {
       );
     }
 
-    return preserveExtensionArrays(plugin, createBasePlugin(newPlugin));
-  };
+    return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
+  }) as typeof plugin.extendPlugin;
 
   plugin.withComponent = (component) =>
     plugin.extend({

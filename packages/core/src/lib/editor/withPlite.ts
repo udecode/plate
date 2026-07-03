@@ -1,115 +1,61 @@
 import {
+  createEditor,
   defineEditorExtension,
   ElementApi,
   NodeApi,
   OperationApi,
-  PathApi,
-  RangeApi,
-  type EditorElementSpec,
-  type Location,
-  type Node,
+  type Editor,
+  type EditorExtensionInput,
   type Path,
+  PathApi,
   type Point,
   type Selection,
   type Value,
 } from '@platejs/plite';
-import { pathRef, pathRefs } from '@platejs/plite/internal';
+import {
+  getOperationRoot,
+  MAIN_ROOT_KEY,
+  setEditorMaxLength,
+  setEditorReadOnly,
+} from '@platejs/plite/internal';
 import { nanoid } from 'nanoid';
 
 import type { NoInfer } from '../../internal/types';
 import type { PluginStoreFactory } from '../../internal/plugin/resolvePlugins';
-import {
-  createCurrentRuntimeEditor,
-  getCurrentRuntimeTransforms,
-  installCurrentRuntimeInputRulesExtension,
-  installCurrentRuntimeTransforms,
-  type CurrentRuntimeEditor as Editor,
-} from '../../internal/currentRuntimeBridge';
-import type { NodeComponents } from '../plugin/BasePlugin';
-import type { AnyEditorPlugin } from '../plugin/EditorPlugin';
-import type { ChunkingConfig } from '../plugins/chunking';
-import type { NavigationFeedbackConfig } from '../plugins/navigation-feedback';
+import { createPlateChangeHandlersExtension } from '../../internal/plugin/plateChangeHandlers';
+import type {
+  AnyPluginConfig,
+  NodeComponents,
+  PluginConfig,
+  WithRequiredKey,
+} from '../plugin/SlatePlugin';
+import type {
+  AnyBasePlugin,
+  BasePlugin,
+  BasePluginContext,
+  InjectNodeProps,
+  PlatePluginTxGroup,
+} from '../plugin/BasePlugin';
 import type { NodeIdConfig } from '../plugins/node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from '../plugins/paragraph/BaseParagraphPlugin';
-import type {
-  InferPlugins,
-  BasePlateEditor,
-  EditorPluginInput,
-  TBasePlateEditor,
-} from './BasePlateEditor';
+import type { InferPlugins, BaseEditor, BasePluginInput } from './SlateEditor';
 
 import { resolvePlugins } from '../../internal/plugin/resolvePlugins';
 import { pipeTransformInitialValue } from '../../internal/plugin/pipeTransformInitialValue';
-import { createEditorPlugin } from '../plugin/createEditorPlugin';
+import { createBasePlugin } from '../plugin/createBasePlugin';
 import {
   getPluginByType,
   getPluginType,
-  getEditorPluginInstance,
-} from '../plugin/getEditorPluginInstance';
-import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
-import { installPlateRuntimeTxExtensions } from '../../internal/editor/runtimeTxExtensions';
+  getSlatePlugin,
+} from '../plugin/getSlatePlugin';
+import { getEditorPlugin } from '../plugin/getEditorPlugin';
+import {
+  type CorePluginConfig,
+  getCorePlugins,
+} from '../plugins/getCorePlugins';
+import { deserializeHtml } from '../plugins/html';
 
-const installPlateRuntimeStateMirrors = (editor: BasePlateEditor) => {
-  const defineMirror = (key: PropertyKey, descriptor: PropertyDescriptor) => {
-    if (Object.hasOwn(editor, key)) return;
-
-    Object.defineProperty(editor, key, {
-      configurable: true,
-      enumerable: true,
-      ...descriptor,
-    });
-  };
-
-  defineMirror('children', {
-    get: () => editor.read((state) => state.value.root()) as Value,
-    set: (value: Value) => {
-      editor.update((tx) => {
-        tx.value.replace({ children: value, selection: null });
-      });
-    },
-  });
-  defineMirror('selection', {
-    get: () => editor.read((state) => state.selection.get()),
-    set: (selection: Selection) => {
-      editor.update((tx) => {
-        if (selection) {
-          tx.selection.set(selection);
-        } else {
-          tx.selection.clear();
-        }
-      });
-    },
-  });
-  defineMirror('marks', {
-    get: () => editor.read((state) => state.marks.get()),
-    set: (marks: BasePlateEditor['marks']) => {
-      editor.update((tx) => {
-        tx.marks.set(marks);
-      });
-    },
-  });
-  defineMirror('operations', {
-    get: () => editor.read((state) => [...state.value.operations()]),
-  });
-  defineMirror('history', {
-    get: () =>
-      editor.read((state: any) => state.history?.get?.()) ?? editor.api.history,
-  });
-  defineMirror('undo', {
-    value: () => {
-      editor.update((tx) => {
-        (tx as any).history?.undo?.();
-      });
-    },
-  });
-  defineMirror('redo', {
-    value: () => {
-      editor.update((tx) => {
-        (tx as any).history?.redo?.();
-      });
-    },
-  });
-};
+type PluginLookupInput = AnyBasePlugin | WithRequiredKey<BasePluginInput>;
 
 const getBaseRuntimeChildren = (node: unknown) =>
   node &&
@@ -164,19 +110,44 @@ const getBaseRuntimeValueEdgePoint = (
   };
 };
 
+const getBaseRuntimeTextPointAtPath = (
+  value: Readonly<Value>,
+  path: Path,
+  offset: number
+): Point | null => {
+  const nextPath = [...path];
+  let node = getBaseRuntimeNodeAtPath(value, nextPath);
+
+  while (node && !isBaseRuntimeTextNode(node)) {
+    const children = getBaseRuntimeChildren(node);
+
+    if (!children || children.length === 0) return null;
+
+    nextPath.push(0);
+    node = children[0];
+  }
+
+  if (!isBaseRuntimeTextNode(node)) return null;
+
+  return {
+    offset: Math.min(offset, node.text.length),
+    path: nextPath,
+  };
+};
+
 const normalizeBaseInitialValue = <V extends Value>(
-  editor: BasePlateEditor,
+  editor: BaseEditor,
   value: unknown
 ): V => {
   if (typeof value === 'string') {
-    return editor.api.html.deserialize({ element: value }) as V;
+    return deserializeHtml(editor, { element: value }) as V;
   }
 
   if (Array.isArray(value) && value.length > 0) {
     return value as V;
   }
 
-  const currentValue = editor.read((state) => state.value.root()) as V;
+  const currentValue = editor.read.children() as V;
 
   return currentValue.length > 0
     ? currentValue
@@ -189,7 +160,7 @@ const normalizeBaseInitialValue = <V extends Value>(
 };
 
 const resolveBaseInitialSelection = (
-  editor: BasePlateEditor,
+  editor: BaseEditor,
   value: Readonly<Value>,
   selection?: Selection,
   autoSelect?: boolean | 'end' | 'start'
@@ -198,7 +169,7 @@ const resolveBaseInitialSelection = (
     if (!point) return null;
 
     try {
-      const node = editor.api.node(point.path)?.[0];
+      const node = editor.read.nodes.get(point.path)?.[0];
 
       if (node && NodeApi.isText(node)) return point;
     } catch {}
@@ -206,15 +177,22 @@ const resolveBaseInitialSelection = (
     return null;
   };
   const resolvePoint = (point: Point) => {
+    const transformedPoint = getBaseRuntimeTextPointAtPath(
+      value,
+      point.path,
+      point.offset
+    );
+
     try {
       return (
         asTextPoint(point) ??
-        asTextPoint(editor.api.start(point.path)) ??
-        asTextPoint(editor.api.start([]))
+        transformedPoint ??
+        asTextPoint(editor.read.points.start(point.path)) ??
+        asTextPoint(editor.read.points.start([]))
       );
     } catch {
       try {
-        return asTextPoint(editor.api.start([]));
+        return asTextPoint(editor.read.points.start([]));
       } catch {
         return null;
       }
@@ -235,8 +213,8 @@ const resolveBaseInitialSelection = (
   return point ? { anchor: point, focus: point } : null;
 };
 
-const initializeBasePlateEditor = <V extends Value>(
-  editor: BasePlateEditor,
+const initializeBaseEditor = <V extends Value>(
+  editor: BaseEditor,
   {
     autoSelect,
     selection,
@@ -245,14 +223,10 @@ const initializeBasePlateEditor = <V extends Value>(
     onReady,
   }: {
     autoSelect?: boolean | 'end' | 'start';
-    onReady?: (ctx: {
-      editor: BasePlateEditor;
-      isAsync: boolean;
-      value: V;
-    }) => void;
+    onReady?: (ctx: { editor: BaseEditor; isAsync: boolean; value: V }) => void;
     selection?: Selection;
     shouldNormalizeEditor?: boolean;
-    value?: ((editor: BasePlateEditor) => Promise<V> | V) | V | string | null;
+    value?: ((editor: BaseEditor) => Promise<V> | V) | V | string | null;
   }
 ) => {
   const applyValue = (nextValueInput: unknown, isAsync = false) => {
@@ -267,7 +241,7 @@ const initializeBasePlateEditor = <V extends Value>(
 
     pipeTransformInitialValue(editor);
 
-    const currentValue = editor.read((state) => state.value.root()) as V;
+    const currentValue = editor.read.children() as V;
     const nextSelection = resolveBaseInitialSelection(
       editor,
       currentValue,
@@ -293,7 +267,7 @@ const initializeBasePlateEditor = <V extends Value>(
     onReady?.({
       editor,
       isAsync,
-      value: editor.read((state) => state.value.root()) as V,
+      value: editor.read.children() as V,
     });
   };
 
@@ -314,390 +288,8 @@ const initializeBasePlateEditor = <V extends Value>(
   applyValue(value);
 };
 
-const installPlateRuntimeApiFacade = (editor: BasePlateEditor) => {
-  const pliteApi = editor.api as Record<PropertyKey, unknown>;
-  const plateApi = Object.create(null) as Record<PropertyKey, unknown>;
-  const matchesObject = (node: Node, objectMatch: Record<string, unknown>) =>
-    Object.entries(objectMatch).every(([key, expected]) => {
-      const actual = (node as Record<string, unknown>)[key];
-
-      return Array.isArray(expected)
-        ? expected.includes(actual)
-        : actual === expected;
-    });
-  const normalizeMatch = (match: unknown) => {
-    if (!match || typeof match === 'function') return match;
-    if (typeof match !== 'object') return;
-
-    return (node: Node) =>
-      matchesObject(node, match as Record<string, unknown>);
-  };
-  const normalizeNodeOptions = (options: Record<string, unknown> = {}) => {
-    const match = normalizeMatch(options.match);
-
-    return match ? { ...options, match } : options;
-  };
-  const normalizeBlockOptions = (options: Record<string, unknown> = {}) => {
-    if (!options.block) return normalizeNodeOptions(options);
-
-    const optionMatch = normalizeMatch(options.match);
-
-    return {
-      ...options,
-      match: (node: Node, path: Path) =>
-        ElementApi.isElement(node) &&
-        !isInline(node) &&
-        (typeof optionMatch === 'function'
-          ? (optionMatch as (node: Node, path: Path) => boolean)(node, path)
-          : true),
-    };
-  };
-  const matchesNodeOptions = (
-    node: Node,
-    path: Path,
-    options: Record<string, unknown>
-  ) => {
-    const match = normalizeMatch(options.match);
-
-    return typeof match === 'function'
-      ? (match as (node: Node, path: Path) => boolean)(node, path)
-      : true;
-  };
-  const getElementPlugin = (element: unknown) =>
-    ElementApi.isElement(element) && typeof element.type === 'string'
-      ? getPluginByType(editor, element.type)
-      : null;
-  const isInline = (element: unknown) =>
-    ElementApi.isElement(element) &&
-    (getElementPlugin(element)?.node.isInline === true ||
-      editor.read((state) => state.schema.isInline(element)));
-  const getBlockPath = (point: Point) =>
-    editor.read(
-      (state) =>
-        state.nodes.above({
-          at: point,
-          match: (node) =>
-            ElementApi.isElement(node) && state.schema.isBlock(node),
-        })?.[1]
-    );
-
-  Object.assign(plateApi, {
-    above: (options: Record<string, unknown> = {}) => {
-      const atTarget =
-        (options.at as Location | undefined) ??
-        editor.read((state) => state.selection.get());
-      const at = RangeApi.isRange(atTarget) ? atTarget.anchor : atTarget;
-
-      if (!at) return;
-
-      return editor.read((state) =>
-        state.nodes.above(normalizeNodeOptions({ ...options, at }) as never)
-      );
-    },
-    after: (at: unknown, options: Record<string, unknown> = {}) =>
-      editor.read((state) => state.points.after(at as never, options)),
-    before: (at: unknown, options: Record<string, unknown> = {}) =>
-      editor.read((state) => state.points.before(at as never, options)),
-    block: (options: Record<string, unknown> = {}) => {
-      const atTarget =
-        (options.at as Location | undefined) ??
-        editor.read((state) => state.selection.get());
-      const at = RangeApi.isRange(atTarget) ? atTarget.anchor : atTarget;
-
-      if (!at) return;
-
-      const optionMatch = normalizeMatch(options.match);
-
-      if (Array.isArray(at) && !options.above) {
-        const entry = editor.read((state) => state.nodes.get(at as never));
-
-        if (
-          entry?.[0] &&
-          ElementApi.isElement(entry[0]) &&
-          !isInline(entry[0]) &&
-          (typeof optionMatch === 'function'
-            ? (optionMatch as (node: Node, path: Path) => boolean)(
-                entry[0],
-                entry[1]
-              )
-            : true)
-        ) {
-          return entry;
-        }
-      }
-
-      return editor.read((state) =>
-        state.nodes.above({
-          ...options,
-          at,
-          match: (node: Node, path: Path) =>
-            ElementApi.isElement(node) &&
-            !isInline(node) &&
-            (typeof optionMatch === 'function'
-              ? (optionMatch as (node: Node, path: Path) => boolean)(node, path)
-              : true),
-        } as never)
-      );
-    },
-    end: (at: unknown) => editor.read((state) => state.points.end(at as never)),
-    edges: (at: unknown) =>
-      editor.read((state) => state.ranges.edges(at as never)),
-    isBlock: (element: unknown) =>
-      ElementApi.isElement(element) && !isInline(element),
-    isCollapsed: () =>
-      editor.read((state) => {
-        const selection = state.selection.get();
-
-        return !!selection && RangeApi.isCollapsed(selection);
-      }),
-    isAt: (options: Record<string, unknown> = {}) => {
-      const selection =
-        (options.at as Selection | undefined) ??
-        editor.read((state) => state.selection.get());
-
-      if (!selection) return false;
-
-      const anchorBlockPath = getBlockPath(selection.anchor);
-      const focusBlockPath = getBlockPath(selection.focus);
-      const sameBlock =
-        !!anchorBlockPath &&
-        !!focusBlockPath &&
-        PathApi.equals(anchorBlockPath, focusBlockPath);
-
-      if (options.block && !sameBlock) return false;
-      if (options.blocks && sameBlock) return false;
-
-      const target =
-        (options.block || options.start || options.end) && anchorBlockPath
-          ? anchorBlockPath
-          : selection;
-
-      if (options.match) {
-        const match = normalizeMatch(options.match);
-        const matched = editor.read((state) =>
-          state.nodes.above({
-            at: selection.anchor,
-            match: (node: Node, path: Path) =>
-              typeof match === 'function'
-                ? (match as (node: Node, path: Path) => boolean)(node, path)
-                : true,
-          } as never)
-        );
-
-        if (!matched) {
-          return false;
-        }
-      }
-
-      if (
-        options.start &&
-        !editor.read((state) =>
-          state.points.isStart(RangeApi.start(selection), target as Location)
-        )
-      ) {
-        return false;
-      }
-
-      if (
-        options.end &&
-        !editor.read((state) =>
-          state.points.isEnd(RangeApi.end(selection), target as Location)
-        )
-      ) {
-        return false;
-      }
-
-      return true;
-    },
-    isInline,
-    isElementStateEmpty: (element: unknown) =>
-      ElementApi.isElement(element) &&
-      Object.keys(NodeApi.extractProps(element)).every((key) => key === 'type'),
-    isEmpty: (
-      at?: Location | unknown,
-      options: Record<string, unknown> = {}
-    ) => {
-      if (ElementApi.isElement(at)) {
-        return editor.read((state) => state.nodes.isEmpty(at));
-      }
-
-      const location =
-        (at as Location | undefined) ??
-        editor.read((state) => state.selection.get()) ??
-        [];
-
-      if (options.block) {
-        const block = (
-          plateApi.block as (options: Record<string, unknown>) => unknown
-        )({
-          at: location,
-        }) as [unknown, Location] | undefined;
-
-        return (
-          !block ||
-          editor.read((state) => state.nodes.isEmpty(block[0] as never))
-        );
-      }
-
-      return editor.read((state) => state.text.string(location).length === 0);
-    },
-    isEnd: (point: Point, at: Location) =>
-      editor.read((state) => state.points.isEnd(point, at)),
-    isExpanded: () =>
-      editor.read((state) => {
-        const selection = state.selection.get();
-
-        return !!selection && RangeApi.isExpanded(selection);
-      }),
-    isComposing: () => editor.dom?.composing === true,
-    isFocused: () =>
-      editor.read((state: any) => state.dom?.focused?.() ?? false) ||
-      (editor.dom as { focused?: boolean } | undefined)?.focused === true,
-    isSelectable: (element: unknown) =>
-      !ElementApi.isElement(element) ||
-      (getElementPlugin(element)?.node.isSelectable !== false &&
-        editor.read((state) => state.schema.isSelectable(element))),
-    isStart: (point: Point, at: Location) =>
-      editor.read((state) => state.points.isStart(point, at)),
-    isVoid: (element: unknown) =>
-      ElementApi.isElement(element) &&
-      (getElementPlugin(element)?.node.isVoid === true ||
-        editor.read((state) => state.schema.isVoid(element))),
-    markableVoid: (element: unknown) =>
-      ElementApi.isElement(element) &&
-      (getElementPlugin(element)?.node.isMarkableVoid === true ||
-        editor.read((state) => state.schema.markableVoid(element))),
-    hasPath: (path: unknown) =>
-      Array.isArray(path) &&
-      editor.read((state) => state.nodes.hasPath(path as never)),
-    next: (options: Record<string, unknown> = {}) =>
-      editor.read((state) =>
-        state.nodes.next(normalizeBlockOptions(options) as never)
-      ),
-    node: (atOrOptions: any) =>
-      editor.read((state) => {
-        if (
-          atOrOptions &&
-          typeof atOrOptions === 'object' &&
-          'id' in atOrOptions
-        ) {
-          return state.nodes.find({
-            at: atOrOptions.at ?? [],
-            match: (node: unknown) =>
-              ElementApi.isElement(node) && node.id === atOrOptions.id,
-            voids: true,
-          });
-        }
-
-        if (
-          atOrOptions &&
-          typeof atOrOptions === 'object' &&
-          !Array.isArray(atOrOptions) &&
-          ('at' in atOrOptions || 'match' in atOrOptions)
-        ) {
-          const options = normalizeNodeOptions(atOrOptions);
-          const at = options.at ?? [];
-
-          if (Array.isArray(at)) {
-            try {
-              const entry = state.nodes.get(at as never);
-
-              if (entry && matchesNodeOptions(entry[0], entry[1], options)) {
-                return entry;
-              }
-            } catch {
-              // Fall through to ancestor/query search below.
-            }
-          }
-
-          try {
-            const above = state.nodes.above(options as never);
-
-            if (above) return above;
-          } catch {
-            // Fall through to find.
-          }
-
-          try {
-            return state.nodes.find(options as never);
-          } catch {
-            return;
-          }
-        }
-
-        try {
-          return state.nodes.get(atOrOptions as never);
-        } catch {
-          return;
-        }
-      }),
-    nodes: (options: Record<string, unknown> = {}) =>
-      editor.read((state) =>
-        state.nodes.entries(normalizeNodeOptions(options) as never)
-      ),
-    parent: (at: unknown) =>
-      editor.read((state) => {
-        try {
-          return state.nodes.parent(at as never);
-        } catch {
-          return;
-        }
-      }),
-    pathRef: (path: Location, options?: Record<string, unknown>) =>
-      pathRef(editor, path as never, options as never),
-    pathRefs: () => pathRefs(editor),
-    onChange: () => {},
-    range: (at: unknown, to?: unknown) =>
-      editor.read((state) => {
-        if (at === 'before' && to) {
-          const point = RangeApi.isRange(to)
-            ? RangeApi.start(to)
-            : state.points.start(to as never);
-          const before = state.points.before(point);
-
-          return before ? { anchor: before, focus: point } : undefined;
-        }
-
-        return state.ranges.get(at as never, to as never);
-      }),
-    scrollIntoView: () => {},
-    previous: (options: Record<string, unknown> = {}) =>
-      editor.read((state) =>
-        state.nodes.previous(normalizeBlockOptions(options) as never)
-      ),
-    some: (options: Record<string, unknown> = {}) =>
-      editor.read((state) =>
-        state.nodes.some(normalizeNodeOptions(options) as never)
-      ),
-    start: (at: unknown) =>
-      editor.read((state) => state.points.start(at as never)),
-    string: (at: unknown, options?: Record<string, unknown>) =>
-      editor.read((state) => state.text.string(at as never, options)),
-  });
-
-  for (const property of Reflect.ownKeys(pliteApi)) {
-    if (Reflect.has(plateApi, property)) continue;
-
-    const descriptor = Reflect.getOwnPropertyDescriptor(pliteApi, property);
-
-    if (descriptor) {
-      Reflect.defineProperty(plateApi, property, {
-        ...descriptor,
-        configurable: true,
-      });
-    }
-  }
-
-  Object.defineProperty(editor, 'api', {
-    configurable: true,
-    enumerable: true,
-    writable: true,
-    value: plateApi,
-  });
-};
-
-const installPlateNormalizeRulesExtension = (editor: BasePlateEditor) => {
-  const hasNormalizeRules = editor.meta.pluginList.some(
+const installPlateNormalizeRulesExtension = (editor: BaseEditor) => {
+  const hasNormalizeRules = editor.runtime.pluginList.some(
     (plugin) => plugin.rules?.normalize || plugin.rules?.match
   );
 
@@ -717,7 +309,7 @@ const installPlateNormalizeRulesExtension = (editor: BasePlateEditor) => {
 
           const plugin = getPluginByType(editor, node.type);
           const normalizeRules = plugin?.rules.normalize;
-          const overridePlugin = editor.meta.pluginCache.rules.match
+          const overridePlugin = editor.runtime.pluginCache.rules.match
             .map((key) => editor.getPlugin({ key }))
             .find(
               (candidate) =>
@@ -733,7 +325,7 @@ const installPlateNormalizeRulesExtension = (editor: BasePlateEditor) => {
             );
           const effectiveNormalizeRules =
             overridePlugin?.rules.normalize ?? normalizeRules;
-          const text = editor.read((state) => state.text.string(path as never));
+          const text = editor.read.text.string(path as never);
 
           if (effectiveNormalizeRules?.removeEmpty && text.length === 0) {
             tx.nodes.remove({ at: path });
@@ -741,43 +333,6 @@ const installPlateNormalizeRulesExtension = (editor: BasePlateEditor) => {
           }
 
           next();
-        },
-      },
-    })
-  );
-};
-
-const installPlateLengthExtension = (editor: BasePlateEditor) => {
-  const plugin = editor.meta.pluginList.find(
-    (candidate) => (candidate as { runtimeLength?: boolean }).runtimeLength
-  );
-
-  if (!plugin) return;
-
-  editor.extend(
-    defineEditorExtension({
-      name: 'plate:length:plite',
-      operations: {
-        apply({ operation, next }) {
-          next(operation);
-
-          const maxLength = (
-            editor.getOptions(plugin) as { maxLength?: number } | undefined
-          )?.maxLength;
-
-          if (!maxLength) return;
-
-          const length = editor.read((state) => state.text.string([]).length);
-
-          if (length <= maxLength) return;
-
-          editor.update((tx) => {
-            tx.text.delete({
-              distance: length - maxLength,
-              reverse: true,
-              unit: 'character',
-            });
-          });
         },
       },
     })
@@ -815,13 +370,13 @@ const getRuntimeNodeText = (node: unknown): string => {
 };
 
 const getRuntimeDescendant = (
-  editor: BasePlateEditor,
+  editor: BaseEditor,
   path: number[],
   root?: string
 ) => {
   try {
     const rootValue = editor.read((state) =>
-      state.value.root(root === 'main' ? undefined : (root as never))
+      root === MAIN_ROOT_KEY ? state.children() : state.root(root as never)
     );
     let node: unknown = rootValue;
 
@@ -840,12 +395,12 @@ const getRuntimeDescendant = (
 };
 
 const getMergeOverrideRules = (
-  editor: BasePlateEditor,
+  editor: BaseEditor,
   rule: string,
   node: Record<string, unknown>,
   path: number[]
 ) => {
-  for (const key of editor.meta.pluginCache.rules.match) {
+  for (const key of editor.runtime.pluginCache.rules.match) {
     const plugin = editor.getPlugin({ key });
     const match = plugin?.rules?.match;
 
@@ -869,7 +424,7 @@ const getMergeOverrideRules = (
 };
 
 const shouldRemoveEmptyMergeTarget = (
-  editor: BasePlateEditor,
+  editor: BaseEditor,
   node: Record<string, unknown>,
   path: number[]
 ) => {
@@ -895,64 +450,238 @@ const getMergeNodeProperties = (node: { children: unknown[] }) => {
   return properties;
 };
 
-const createPlateElementSpec = (
-  plugin: AnyEditorPlugin
-): EditorElementSpec | null => {
-  const { node } = plugin;
-  const type = node?.type;
+const PLATE_IMPLICIT_EXTENSION_NAME = Symbol.for(
+  'plate.core.implicitExtensionName'
+);
 
-  if (!type) return null;
+const isRecord = (value: unknown): value is Record<PropertyKey, unknown> =>
+  typeof value === 'object' && value !== null;
 
-  const hasSchemaBehavior =
-    node.isInline !== undefined ||
-    node.isMarkableVoid !== undefined ||
-    node.isSelectable !== undefined ||
-    node.isVoid !== undefined;
+const isPlainObject = (value: unknown): value is Record<PropertyKey, unknown> =>
+  isRecord(value) && Object.getPrototypeOf(value) === Object.prototype;
 
-  if (!hasSchemaBehavior) return null;
+const isImplicitPlateEditorExtension = (
+  extension: unknown
+): extension is Record<PropertyKey, unknown> & { name: string } =>
+  isRecord(extension) &&
+  extension[PLATE_IMPLICIT_EXTENSION_NAME] === true &&
+  typeof extension.name === 'string';
 
-  const spec: EditorElementSpec = { type };
-
-  if (node.isInline === true) {
-    spec.inline = true;
-  }
-  if (node.isSelectable === false) {
-    spec.selectable = false;
-  }
-  if (node.isMarkableVoid === true) {
-    spec.markableVoid = true;
-  }
-  if (node.isVoid === true) {
-    spec.void =
-      node.isInline === true
-        ? node.isMarkableVoid === true
-          ? 'markable-inline'
-          : 'inline'
-        : 'block';
-  }
-
-  return spec;
-};
-
-const installPlateElementSpecsExtension = (editor: BasePlateEditor) => {
-  const elements = editor.meta.pluginList.flatMap((plugin) => {
-    const spec = createPlateElementSpec(plugin);
-
-    return spec ? [spec] : [];
+const markImplicitPlateEditorExtension = <T extends object>(
+  extension: T
+): T => {
+  Object.defineProperty(extension, PLATE_IMPLICIT_EXTENSION_NAME, {
+    configurable: true,
+    value: true,
   });
 
-  if (elements.length === 0) return;
-
-  editor.extend(
-    defineEditorExtension({
-      elements,
-      name: 'plate:element-specs:plite',
-    })
-  );
+  return extension;
 };
 
-const installPlateMergeRulesExtension = (editor: BasePlateEditor) => {
-  const hasMergeRules = editor.meta.pluginList.some(
+const mergeEditorExtensionValue = (base: unknown, next: unknown): unknown => {
+  if (Array.isArray(base) && Array.isArray(next)) {
+    return [...base, ...next];
+  }
+
+  if (isPlainObject(base) && isPlainObject(next)) {
+    return mergeEditorExtensionObjects(base, next);
+  }
+
+  return next;
+};
+
+const mergeEditorExtensionObjects = (
+  base: Record<PropertyKey, unknown>,
+  next: Record<PropertyKey, unknown>
+) => {
+  const merged: Record<PropertyKey, unknown> = { ...base };
+
+  for (const [key, value] of Object.entries(next)) {
+    merged[key] = mergeEditorExtensionValue(merged[key], value);
+  }
+
+  return markImplicitPlateEditorExtension(merged);
+};
+
+const mergeImplicitPlateEditorExtensions = (extensions: unknown[]) => {
+  const mergedExtensions: unknown[] = [];
+  const implicitIndexByName = new Map<string, number>();
+
+  for (const extension of extensions) {
+    if (!isImplicitPlateEditorExtension(extension)) {
+      if (isRecord(extension) && typeof extension.name === 'string') {
+        implicitIndexByName.delete(extension.name);
+      }
+
+      mergedExtensions.push(extension);
+      continue;
+    }
+
+    const index = implicitIndexByName.get(extension.name);
+
+    if (index === undefined) {
+      implicitIndexByName.set(extension.name, mergedExtensions.length);
+      mergedExtensions.push(extension);
+      continue;
+    }
+
+    mergedExtensions[index] = mergeEditorExtensionObjects(
+      mergedExtensions[index] as Record<PropertyKey, unknown>,
+      extension
+    );
+  }
+
+  return mergedExtensions;
+};
+
+const normalizePlateEditorExtensions = (extensions: unknown) => {
+  if (!extensions) return [];
+
+  return Array.isArray(extensions) ? extensions : [extensions];
+};
+
+const resolvePlateEditorExtensions = (
+  editor: BaseEditor,
+  plugin: AnyBasePlugin
+) =>
+  mergeImplicitPlateEditorExtensions(
+    (plugin.__editorExtensions ?? []).flatMap((extension) =>
+      normalizePlateEditorExtensions(
+        extension(getEditorPlugin(editor, plugin as any) as never)
+      )
+    )
+  );
+
+const installPlateEditorExtensions = (editor: BaseEditor) => {
+  for (const plugin of editor.runtime.pluginList) {
+    const extensions = resolvePlateEditorExtensions(editor, plugin);
+
+    for (const extension of extensions) {
+      editor.extend(extension as EditorExtensionInput);
+    }
+  }
+};
+
+type PlateRuntimePluginContext = BasePluginContext<AnyPluginConfig>;
+type PlateRuntimePluginInput = Parameters<BaseEditor['getOptions']>[0];
+
+const plateTxExtensionCleanups = new WeakMap<object, () => void>();
+
+const asPlateArg = <T>(value: unknown): T => value as T;
+
+const asPluginInput = (plugin: AnyBasePlugin): PlateRuntimePluginInput =>
+  plugin as unknown as PlateRuntimePluginInput;
+
+const createPlateRuntimePluginContext = (
+  editor: BaseEditor,
+  plugin: AnyBasePlugin
+): PlateRuntimePluginContext =>
+  ({
+    api: editor.api,
+    editor,
+    plugin,
+    type: plugin.node?.type ?? plugin.key,
+    getOption: ((key: PropertyKey, ...args: unknown[]) =>
+      (editor.getOption as unknown as (...input: unknown[]) => unknown)(
+        plugin,
+        key,
+        ...args
+      )) as PlateRuntimePluginContext['getOption'],
+    getOptions: () => editor.getOptions(asPluginInput(plugin)),
+    setOption: (key: string | Record<string, unknown>, value?: unknown) => {
+      const pluginInput = asPluginInput(plugin);
+
+      if (typeof key === 'string') {
+        editor.setOption(
+          pluginInput,
+          asPlateArg<Parameters<BaseEditor['setOption']>[1]>(key),
+          asPlateArg<Parameters<BaseEditor['setOption']>[2]>(value)
+        );
+        return;
+      }
+
+      editor.setOptions(
+        pluginInput,
+        asPlateArg<Parameters<BaseEditor['setOptions']>[1]>(key)
+      );
+    },
+    setOptions: (
+      options:
+        | ((state: Record<string, unknown>) => void)
+        | Record<string, unknown>
+    ) => {
+      editor.setOptions(
+        asPluginInput(plugin),
+        asPlateArg<Parameters<BaseEditor['setOptions']>[1]>(options)
+      );
+    },
+  }) as PlateRuntimePluginContext;
+
+const collectPlateTxGroupFactories = (editor: BaseEditor) => {
+  const txGroups = new Map<string, PlatePluginTxGroup[]>();
+  const addGroup = (groupKey: string, groupFactory: unknown) => {
+    if (!groupFactory) return;
+
+    const list = txGroups.get(groupKey) ?? [];
+
+    list.push(groupFactory as PlatePluginTxGroup);
+    txGroups.set(groupKey, list);
+  };
+
+  editor.runtime.pluginList.forEach((plugin: AnyBasePlugin) => {
+    plugin.__txExtensions.forEach((txExtension) => {
+      Object.entries(
+        txExtension(createPlateRuntimePluginContext(editor, plugin))
+      ).forEach(([groupKey, groupFactory]) => {
+        addGroup(groupKey, groupFactory);
+      });
+    });
+
+    Object.entries(plugin.tx ?? {}).forEach(([groupKey, groupFactory]) => {
+      addGroup(groupKey, groupFactory);
+    });
+  });
+
+  return txGroups;
+};
+
+const installPlateRuntimeTxExtensions = (editor: BaseEditor) => {
+  plateTxExtensionCleanups.get(editor)?.();
+  plateTxExtensionCleanups.delete(editor);
+
+  const txGroups = collectPlateTxGroupFactories(editor);
+
+  if (txGroups.size === 0) return;
+
+  const tx = Object.create(null) as Record<string, PlatePluginTxGroup>;
+
+  txGroups.forEach((groupFactories, groupKey) => {
+    tx[groupKey] = (transaction, runtimeEditor, context) => {
+      const group = Object.create(null) as Record<string, unknown>;
+
+      groupFactories.forEach((groupFactory) => {
+        Object.assign(
+          group,
+          groupFactory(transaction, runtimeEditor as BaseEditor, context as any)
+        );
+      });
+
+      return group;
+    };
+  });
+
+  const cleanup = editor.extend(
+    defineEditorExtension({
+      name: 'plate-plugin-tx',
+      tx,
+    })
+  );
+
+  plateTxExtensionCleanups.set(editor, cleanup);
+};
+
+const installPlateMergeRulesExtension = (editor: BaseEditor) => {
+  const hasMergeRules = editor.runtime.pluginList.some(
     (plugin) => plugin.rules?.merge || plugin.rules?.match
   );
 
@@ -975,11 +704,13 @@ const installPlateMergeRulesExtension = (editor: BasePlateEditor) => {
               operation.path
             )
           ) {
+            const operationExplicitRoot =
+              'root' in operation ? operation.root : undefined;
             const nextPath = PathApi.next(operation.path);
             const nextNode = getRuntimeDescendant(
               editor,
               nextPath,
-              (operation as { root?: string }).root
+              getOperationRoot(operation)
             );
 
             if (isRuntimeElementNode(nextNode)) {
@@ -991,7 +722,7 @@ const installPlateMergeRulesExtension = (editor: BasePlateEditor) => {
                 next({
                   node: operation.node.children[index],
                   path: [...operation.path, index],
-                  root: (operation as { root?: string }).root,
+                  root: operationExplicitRoot,
                   type: 'remove_node',
                 } as never);
               }
@@ -1000,7 +731,7 @@ const installPlateMergeRulesExtension = (editor: BasePlateEditor) => {
                 path: nextPath,
                 position: 0,
                 properties: getMergeNodeProperties(nextNode),
-                root: (operation as { root?: string }).root,
+                root: operationExplicitRoot,
                 type: 'merge_node',
               } as never);
               return;
@@ -1044,7 +775,9 @@ const installPlateMergeRulesExtension = (editor: BasePlateEditor) => {
   );
 };
 
-export type BaseWithSlateOptions<P extends EditorPluginInput = CorePlugin> = {
+export type BaseExtendBaseEditorOptions<
+  P extends BasePluginInput = CorePluginConfig,
+> = {
   /**
    * Unique identifier for the editor instance.
    *
@@ -1057,19 +790,7 @@ export type BaseWithSlateOptions<P extends EditorPluginInput = CorePlugin> = {
    */
   userId?: string | null;
   /**
-   * Determines which mark/element to apply at boundaries between different
-   * marks, based on cursor movement using the left/right arrow keys.
-   *
-   * Example: <text bold>Bold</text><cursor><text italic>Italic</text>
-   *
-   * If the cursor moved here from the left (via → key), typing applies
-   * **bold**.
-   *
-   * If the cursor moved here from the right (via ← key), typing applies
-   * _italic_.
-   *
-   * Without mark affinity, the preceding mark (**bold**) is always applied
-   * regardless of direction.
+   * Enable mark/element affinity.
    *
    * @default true
    */
@@ -1084,34 +805,13 @@ export type BaseWithSlateOptions<P extends EditorPluginInput = CorePlugin> = {
    * - `'start'`: Select the start of the editor
    */
   autoSelect?: boolean | 'end' | 'start';
-  /**
-   * Configure Plite's chunking optimization, which reduces latency while
-   * typing. Set to `false` to disable.
-   *
-   * @default true
-   * @see https://docs.slatejs.org/walkthroughs/09-performance
-   */
-  chunking?: ChunkingConfig['options'] | boolean;
   /** Specifies the component for each plugin key. */
   components?: NodeComponents;
-  /** Specifies the component for each plugin key. */
-  // components?: Partial<
-  //   Record<KeyofNodePlugins<InferPlugins<P[]>>, NodeComponent | null>
-  // >;
   /**
    * Specifies the maximum number of characters allowed in the editor. When the
    * limit is reached, further input will be prevented.
    */
   maxLength?: number;
-  /**
-   * Configuration for the built-in navigation feedback plugin.
-   *
-   * This core plugin flashes the landed target after navigation jumps such as
-   * TOC, footnote, search, or custom outline movement.
-   *
-   * @default { duration: 1600 }
-   */
-  navigationFeedback?: NavigationFeedbackConfig['options'] | boolean;
   /**
    * Configuration for automatic node ID generation and management.
    *
@@ -1132,11 +832,6 @@ export type BaseWithSlateOptions<P extends EditorPluginInput = CorePlugin> = {
    * @default createVanillaStore from zustand-x/vanilla
    */
   optionsStoreFactory?: PluginStoreFactory;
-  // override?: {
-  //   components?: Partial<
-  //     Record<KeyofNodePlugins<InferPlugins<P[]>>, NodeComponent | null>
-  //   >;
-  // };
   /**
    * Array of plugins to be loaded into the editor. Plugins extend the editor's
    * functionality and define custom behavior.
@@ -1175,31 +870,19 @@ export type BaseWithSlateOptions<P extends EditorPluginInput = CorePlugin> = {
   skipInitialization?: boolean;
 };
 
-export type WithSlateOptions<
+export type ExtendBaseEditorOptions<
   V extends Value = Value,
-  P extends EditorPluginInput = CorePlugin,
-> = BaseWithSlateOptions<P> &
+  P extends BasePluginInput = CorePluginConfig,
+> = BaseExtendBaseEditorOptions<P> &
   Pick<
-    Partial<AnyEditorPlugin>,
+    Partial<AnyBasePlugin>,
     | 'api'
     | 'decorate'
-    | 'extendEditor'
     | 'inject'
     | 'transformInitialValue'
-    | 'normalizeInitialValue'
     | 'options'
     | 'override'
   > & {
-    // override?: {
-    //   /** Enable or disable plugins */
-    //   enabled?: Partial<Record<KeyofPlugins<InferPlugins<P[]>>, boolean>>;
-    //   plugins?: Partial<
-    //     Record<
-    //       KeyofPlugins<InferPlugins<P[]>>,
-    //       PartialEditorPlugin<AnyPluginConfig>
-    //     >
-    //   >;
-    // };
     /**
      * Initial content for the editor.
      *
@@ -1213,18 +896,18 @@ export type WithSlateOptions<
      * @default [{ type: 'p'; children: [{ text: '' }] }]
      */
     value?:
-      | ((editor: BasePlateEditor) => Promise<NoInfer<V>> | NoInfer<V>)
+      | ((editor: BaseEditor) => Promise<NoInfer<V>> | NoInfer<V>)
       | NoInfer<V>
       | string
       | null;
     /** Function to configure the root plugin */
-    rootPlugin?: (plugin: AnyEditorPlugin) => AnyEditorPlugin;
+    rootPlugin?: (plugin: AnyBasePlugin) => AnyBasePlugin;
     /**
      * Callback called when the editor is ready (after initialization
      * completes).
      */
     onReady?: (ctx: {
-      editor: BasePlateEditor;
+      editor: BaseEditor;
       isAsync: boolean;
       value: NoInfer<V>;
     }) => void;
@@ -1236,27 +919,25 @@ export type WithSlateOptions<
  * @remarks
  *   This function supports server-side usage as it doesn't include React-specific
  *   features like component rendering or hooks integration.
- * @see {@link createBasePlateEditor} for a higher-level non-React editor creation function.
+ * @see {@link createBaseEditor} for a higher-level non-React editor creation function.
  * @see {@link createPlateEditor} for a React-specific version of editor creation.
  * @see {@link usePlateEditor} for a memoized React version.
- * @see {@link withPlate} for the React-specific enhancement function.
+ * @see {@link extendPlateEditor} for the React-specific enhancement function.
  */
-export const withPlite = <
+export const extendBaseEditor = <
   V extends Value = Value,
-  P extends EditorPluginInput = CorePlugin,
+  P extends BasePluginInput = CorePluginConfig,
 >(
   e: Editor,
   {
     id,
-    affinity = true,
+    affinity,
     autoSelect,
-    chunking = true,
     maxLength,
-    navigationFeedback,
     nodeId,
     optionsStoreFactory,
     plugins = [],
-    readOnly = false,
+    readOnly,
     rootPlugin,
     selection,
     shouldNormalizeEditor,
@@ -1265,52 +946,50 @@ export const withPlite = <
     value,
     onReady,
     ...pluginConfig
-  }: WithSlateOptions<V, P> = {}
-): TBasePlateEditor<V, InferPlugins<P[]>> => {
-  const editor = e as unknown as BasePlateEditor;
+  }: ExtendBaseEditorOptions<V, P> = {}
+): BaseEditor<V, CorePluginConfig | InferPlugins<P[]>> => {
+  const editor = e as unknown as BaseEditor;
 
-  editor.meta = editor.meta ?? ({} as BasePlateEditor['meta']);
+  editor.runtime = editor.runtime ?? ({} as BaseEditor['runtime']);
   editor.id = id ?? editor.id ?? nanoid();
-  editor.meta.key = editor.meta.key ?? nanoid();
-  editor.meta.isFallback = false;
-  editor.meta.userId = userId;
-  installPlateRuntimeApiFacade(editor);
-  installCurrentRuntimeTransforms(editor);
-  installPlateRuntimeStateMirrors(editor);
-  editor.dom = {
-    composing: false,
-    currentKeyboardEvent: null,
-    focused: false,
-    prevSelection: null,
-    readOnly,
-  };
+  editor.runtime.key = editor.runtime.key ?? nanoid();
+  editor.runtime.isFallback = false;
+  editor.runtime.userId = userId;
+  if (readOnly !== undefined) {
+    setEditorReadOnly(editor, readOnly);
+  }
+  if (maxLength !== undefined) {
+    setEditorMaxLength(editor, maxLength);
+  }
 
-  editor.getPlugin = ((plugin) =>
-    getEditorPluginInstance(editor, plugin)) as BasePlateEditor['getPlugin'];
+  editor.getPlugin = ((plugin: PluginLookupInput) =>
+    getSlatePlugin(editor, plugin)) as BaseEditor['getPlugin'];
   editor.getType = (pluginKey) => getPluginType(editor, pluginKey);
-  editor.getInjectProps = (plugin) => {
-    const nodeProps =
-      editor.getPlugin<AnyEditorPlugin>(plugin).inject?.nodeProps ??
-      ({} as any);
+  editor.getInjectProps = (<C extends AnyPluginConfig = PluginConfig>(
+    plugin: WithRequiredKey<C>
+  ): InjectNodeProps<C> => {
+    const resolvedPlugin = getSlatePlugin(editor, plugin) as BasePlugin<C>;
+    const nodeProps = (resolvedPlugin.inject?.nodeProps ??
+      {}) as InjectNodeProps<C>;
 
     nodeProps.nodeKey = nodeProps.nodeKey ?? editor.getType(plugin.key);
     nodeProps.styleKey = nodeProps.styleKey ?? nodeProps.nodeKey;
 
     return nodeProps;
-  };
+  }) satisfies BaseEditor['getInjectProps'];
   editor.getOptionsStore = (plugin) =>
-    getEditorPluginInstance(editor, plugin).optionsStore;
+    getSlatePlugin(editor, plugin).optionsStore;
   editor.getOptions = (plugin) => {
     const store = editor.getOptionsStore(plugin);
 
-    if (!store) return getEditorPluginInstance(editor, plugin).options;
+    if (!store) return getSlatePlugin(editor, plugin).options;
 
     return editor.getOptionsStore(plugin).get('state');
   };
-  editor.getOption = (plugin, key, ...args) => {
-    const store = editor.getOptionsStore(plugin);
+  editor.getOption = ((plugin: any, key: PropertyKey, ...args: unknown[]) => {
+    const store = editor.getOptionsStore(plugin as never) as any;
 
-    if (!store) return editor.getPlugin(plugin).options[key];
+    if (!store) return editor.getPlugin(plugin).options[key as never];
 
     if (!(key in store.get('state')) && !(key in store.selectors)) {
       editor.api.debug.error(
@@ -1321,7 +1000,7 @@ export const withPlite = <
     }
 
     return (store.get as any)(key, ...args);
-  };
+  }) as BaseEditor['getOption'];
   editor.setOption = ((plugin, key, value) => {
     const store = editor.getOptionsStore(plugin);
 
@@ -1336,7 +1015,7 @@ export const withPlite = <
     }
 
     store.set(key, value);
-  }) as BasePlateEditor['setOption'];
+  }) as BaseEditor['setOption'];
   editor.setOptions = ((plugin, options) => {
     const store = editor.getOptionsStore(plugin);
 
@@ -1348,20 +1027,16 @@ export const withPlite = <
     } else if (typeof options === 'function') {
       store.set('state', options);
     }
-  }) as BasePlateEditor['setOptions'];
+  }) as BaseEditor['setOptions'];
 
-  // Plugin initialization code
   const pluginList = [...plugins];
   const corePlugins = getCorePlugins({
     affinity,
-    chunking,
-    maxLength,
-    navigationFeedback,
     nodeId,
     plugins: pluginList,
   });
 
-  let rootPluginInstance = createEditorPlugin({
+  let rootPluginInstance: AnyBasePlugin = (createBasePlugin as any)({
     key: 'root',
     priority: 10_000,
     ...pluginConfig,
@@ -1373,40 +1048,21 @@ export const withPlite = <
       },
     },
     plugins: [...corePlugins, ...pluginList],
-  });
+  }) as AnyBasePlugin;
 
-  // Apply rootPlugin configuration if provided
   if (rootPlugin) {
     rootPluginInstance = rootPlugin(rootPluginInstance) as any;
   }
 
   resolvePlugins(editor, [rootPluginInstance], optionsStoreFactory);
-  installCurrentRuntimeInputRulesExtension(editor);
-  installPlateElementSpecsExtension(editor);
+  installPlateEditorExtensions(editor);
+  editor.extend(createPlateChangeHandlersExtension(editor));
   installPlateRuntimeTxExtensions(editor);
-  installPlateLengthExtension(editor);
   installPlateMergeRulesExtension(editor);
   installPlateNormalizeRulesExtension(editor);
 
-  /** Ignore normalizeNode overrides if shouldNormalizeNode returns false */
-  const legacyTransforms = getCurrentRuntimeTransforms(editor) as unknown as {
-    normalizeNode: (...args: any[]) => any;
-  };
-  const normalizeNode = legacyTransforms.normalizeNode;
-  legacyTransforms.normalizeNode = (
-    ...args: Parameters<typeof normalizeNode>
-  ) => {
-    if (!editor.api.shouldNormalizeNode(args[0] as never)) {
-      return;
-    }
-
-    return normalizeNode(...args);
-  };
-  editor.normalizeNode =
-    legacyTransforms.normalizeNode as BasePlateEditor['normalizeNode'];
-
   if (!skipInitialization) {
-    initializeBasePlateEditor(editor, {
+    initializeBaseEditor(editor, {
       autoSelect,
       selection,
       shouldNormalizeEditor,
@@ -1418,12 +1074,13 @@ export const withPlite = <
   return editor as any;
 };
 
-export type CreateBasePlateEditorOptions<
+export type CreateBaseEditorOptions<
   V extends Value = Value,
-  P extends readonly EditorPluginInput[] = readonly CorePlugin[],
-> = Omit<WithSlateOptions<V, InferPlugins<P>>, 'plugins'> & {
+  P extends
+    readonly CreateBaseEditorPluginInput[] = readonly CreateBaseEditorPluginInput[],
+> = Omit<ExtendBaseEditorOptions<V, BasePluginInput>, 'plugins'> & {
   /**
-   * Initial editor to be extended with `withPlite`.
+   * Initial editor to be extended with `extendBaseEditor`.
    *
    * @default createEditor()
    */
@@ -1435,23 +1092,43 @@ export type CreateBasePlateEditorOptions<
   plugins?: P;
 };
 
+type CreateBaseEditorPluginInput<C extends AnyPluginConfig = AnyPluginConfig> =
+  | BasePlugin<C>
+  | AnyPluginConfig
+  | (WithRequiredKey<C> & {
+      readonly __config: C;
+    });
+
+type InferCreateBaseEditorPluginConfig<P> = P extends {
+  readonly __config: infer C extends AnyPluginConfig;
+}
+  ? C
+  : P extends BasePlugin<infer C>
+    ? C
+    : P extends AnyPluginConfig
+      ? P
+      : never;
+
+type InferCreateBaseEditorPlugins<P extends readonly unknown[]> =
+  InferCreateBaseEditorPluginConfig<P[number]>;
+
 /**
- * Creates a Plite editor (non-React version).
+ * Creates a base Plate editor (non-React version).
  *
- * This function creates a fully configured Plate editor instance that can be
- * used in non-React environments or server-side contexts. It applies all the
- * specified plugins and configurations to create a functional editor.
+ * This function creates a fully configured base editor on top of Plite for
+ * non-React environments or server-side contexts. It applies the specified
+ * plugins and configuration to create a functional editor.
  *
  * Examples:
  *
  * ```ts
- * const editor = createBasePlateEditor({
+ * const editor = createBaseEditor({
  *   plugins: [ParagraphPlugin, HeadingPlugin],
  *   value: [{ type: 'p', children: [{ text: 'Hello world!' }] }],
  * });
  *
  * // Editor with custom configuration
- * const editor = createBasePlateEditor({
+ * const editor = createBaseEditor({
  *   plugins: [ParagraphPlugin],
  *   maxLength: 1000,
  *   nodeId: { idCreator: () => uuidv4() },
@@ -1459,7 +1136,7 @@ export type CreateBasePlateEditorOptions<
  * });
  *
  * // Server-side editor
- * const editor = createBasePlateEditor({
+ * const editor = createBaseEditor({
  *   plugins: [ParagraphPlugin],
  *   value: '<p>HTML content</p>',
  *   skipInitialization: true,
@@ -1468,16 +1145,36 @@ export type CreateBasePlateEditorOptions<
  *
  * @see {@link createPlateEditor} for a React-specific version of editor creation.
  * @see {@link usePlateEditor} for a memoized React version.
- * @see {@link withPlite} for the underlying function that applies Plite enhancements to an editor.
+ * @see {@link extendBaseEditor} for the underlying function that applies base Plate enhancements to an editor.
  */
-export const createBasePlateEditor = <
+export function createBaseEditor<
   V extends Value = Value,
-  const P extends readonly EditorPluginInput[] = readonly CorePlugin[],
+  const P extends readonly CreateBaseEditorPluginInput[] = readonly [],
+>(
+  options: CreateBaseEditorOptions<V, P> & { plugins: P }
+): BaseEditor<V, InferCreateBaseEditorPlugins<P>>;
+export function createBaseEditor<V extends Value = Value>(
+  options?: CreateBaseEditorOptions<V>
+): BaseEditor<V, CorePluginConfig>;
+export function createBaseEditor<
+  V extends Value = Value,
+  const P extends readonly CreateBaseEditorPluginInput[] = readonly [],
 >({
-  editor = createCurrentRuntimeEditor(),
+  editor,
   ...options
-}: CreateBasePlateEditorOptions<V, P> = {}) =>
-  withPlite<V, InferPlugins<P>>(
-    editor,
-    options as WithSlateOptions<V, InferPlugins<P>>
-  );
+}: CreateBaseEditorOptions<V, P> = {}): BaseEditor<
+  V,
+  InferCreateBaseEditorPlugins<P>
+> {
+  const baseEditor =
+    editor ??
+    createEditor({
+      maxLength: options.maxLength,
+      readOnly: options.readOnly,
+    });
+
+  return extendBaseEditor<V, BasePluginInput>(
+    baseEditor,
+    options as unknown as ExtendBaseEditorOptions<V, InferPlugins<P>>
+  ) as unknown as BaseEditor<V, InferCreateBaseEditorPlugins<P>>;
+}

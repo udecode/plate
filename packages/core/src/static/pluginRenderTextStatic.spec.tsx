@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { createBasePlugin } from '../lib';
+import { type RenderTextProps, createBasePlugin } from '../lib';
 import { createStaticEditor } from './editor/withStatic';
 import {
   pipeRenderTextStatic,
@@ -16,7 +16,7 @@ describe('pluginRenderTextStatic', () => {
       textProps: {
         className: 'comment-text',
         'data-tone': 'warm',
-      } as any,
+      },
       type: 'comment',
     },
   });
@@ -31,57 +31,72 @@ describe('pluginRenderTextStatic', () => {
         editor,
         editor.getPlugin(CommentPlugin)
       )({
+        attributes: { 'data-plite-node': 'text', ref: null },
         children: 'plain',
         text: { text: 'plain' },
-      } as any)
+      } satisfies RenderTextProps)
     ).toBe('plain');
   });
 
   it('uses component overrides for matching text nodes', () => {
-    const CustomText = ({ children }: any) => (
+    const CustomText = ({ children }: { children: React.ReactNode }) => (
       <mark data-kind="custom">{children}</mark>
     );
     const editor = createStaticEditor({
       components: {
         comment: CustomText,
-      } as any,
+      },
       plugins: [CommentPlugin],
     });
     const result = pluginRenderTextStatic(
       editor,
       editor.getPlugin(CommentPlugin)
     )({
-      attributes: {},
+      attributes: { 'data-plite-node': 'text', ref: null },
       children: 'hi',
       text: { comment: true, text: 'hi' },
-    } as any) as any;
+    } satisfies RenderTextProps);
 
-    expect(result.type).toBe(CustomText);
-    expect(result.props.children).toBe('hi');
+    expect(result).toEqual(
+      expect.objectContaining({
+        props: expect.objectContaining({ children: 'hi' }),
+        type: CustomText,
+      })
+    );
   });
 
   it('merges plugin text props before delegating to renderText', () => {
     const editor = createStaticEditor({
       plugins: [CommentPlugin],
     });
-    const renderText = mock(({ attributes, children }) => (
-      <span
-        data-class={attributes.className}
-        data-tone={attributes['data-tone']}
-      >
-        {children}
-      </span>
-    ));
+    let renderTextCalled = false;
     const result = pipeRenderTextStatic(editor, {
-      renderText: renderText as any,
+      renderText: ({ attributes, children }) => {
+        renderTextCalled = true;
+
+        return (
+          <span
+            data-class={attributes.className}
+            data-tone={attributes['data-tone']}
+          >
+            {children}
+          </span>
+        );
+      },
     })({
-      attributes: { className: 'base' },
+      attributes: { 'data-plite-node': 'text', className: 'base', ref: null },
       children: 'hi',
       text: { comment: true, text: 'hi' },
-    } as any) as any;
+    } satisfies RenderTextProps);
 
-    expect(renderText).toHaveBeenCalled();
-    expect(result.props['data-class']).toBe('comment-text');
-    expect(result.props['data-tone']).toBe('warm');
+    expect(renderTextCalled).toBe(true);
+    expect(result).toEqual(
+      expect.objectContaining({
+        props: expect.objectContaining({
+          'data-class': 'comment-text',
+          'data-tone': 'warm',
+        }),
+      })
+    );
   });
 });

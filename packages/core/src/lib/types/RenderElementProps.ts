@@ -8,6 +8,7 @@ export type RenderElementFn = (
 
 export type RenderElementProps<N extends Element = Element> = {
   attributes: {
+    [key: string]: unknown;
     'data-plite-node': 'element';
     ref: any;
     className?: string;

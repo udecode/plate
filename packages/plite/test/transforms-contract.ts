@@ -459,6 +459,78 @@ describe('plite transforms contract', () => {
     ]);
   });
 
+  it('blocks.reset strips block props while preserving requested keys', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'heading-one',
+          key: 'keep-me',
+          foo: 'drop-me',
+          children: [{ text: 'Title' }],
+        } as Descendant,
+      ],
+      selection: collapsedSelection([0, 0], 0),
+      marks: null,
+    });
+
+    editor.update((tx) => {
+      tx.blocks.reset({ type: 'paragraph' }, { at: [0], preserve: ['key'] });
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'paragraph',
+        key: 'keep-me',
+        children: [{ text: 'Title' }],
+      },
+    ]);
+  });
+
+  it('blocks.toggle exposes the semantic block toggle API directly', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+      selection: collapsedSelection([0, 0], 0),
+      marks: null,
+    });
+
+    editor.update.blocks.toggle('blockquote', { defaultType: 'paragraph' });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      { type: 'blockquote', children: [{ text: 'one' }] },
+    ]);
+
+    editor.update.blocks.toggle('blockquote', { defaultType: 'paragraph' });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+    ]);
+  });
+
+  it('blocks.lift exposes the semantic block lift API directly', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'quote',
+          children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+        } as Descendant,
+      ],
+      selection: null,
+      marks: null,
+    });
+
+    editor.update.blocks.lift({ at: [0, 0] });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+    ]);
+  });
+
   it('insertNodes can split the highest selected block for root-level insertion', () => {
     const editor = createEditor();
 
@@ -677,6 +749,71 @@ describe('plite transforms contract', () => {
           { text: '' },
         ],
       },
+    ]);
+  });
+
+  it('toggleNodes switches an inactive block to the target type', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+      selection: collapsedSelection([0, 0], 0),
+      marks: null,
+    });
+
+    editor.update((tx) => {
+      tx.nodes.toggle('blockquote', { defaultType: 'paragraph' });
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      { type: 'blockquote', children: [{ text: 'one' }] },
+    ]);
+  });
+
+  it('toggleNodes switches an active block to the default type', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [{ type: 'blockquote', children: [{ text: 'one' }] }],
+      selection: collapsedSelection([0, 0], 0),
+      marks: null,
+    });
+
+    editor.update((tx) => {
+      tx.nodes.toggle('blockquote', { defaultType: 'paragraph' });
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+    ]);
+  });
+
+  it('toggleNodes wraps and unwraps an active block when wrap is true', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+      selection: collapsedSelection([0, 0], 0),
+      marks: null,
+    });
+
+    editor.update((tx) => {
+      tx.nodes.toggle('code-block', { wrap: true });
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'code-block',
+        children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+      },
+    ]);
+
+    editor.update((tx) => {
+      tx.nodes.toggle('code-block', { wrap: true });
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      { type: 'paragraph', children: [{ text: 'one' }] },
     ]);
   });
 

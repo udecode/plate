@@ -39,6 +39,7 @@ import type {
   EditorStatePatch,
   EditorStateView,
   EditorTransaction,
+  EditorTransactionBlocksApi,
   EditorTransactionFragmentApi,
   EditorTransactionSelectionApi,
   EditorUpdateContext,
@@ -54,7 +55,7 @@ import type {
   StateFieldValueInput,
   Value,
 } from '../interfaces/editor';
-import type { Element } from '../interfaces/element';
+import type { Element, ElementIn } from '../interfaces/element';
 import { LocationApi, type Location, type Span } from '../interfaces/location';
 import {
   type Ancestor,
@@ -81,9 +82,13 @@ import {
   setRuntimeId,
 } from '../utils/runtime-ids';
 import { cloneFrozen, cloneValue } from './clone';
+import { notifyEditorChangeListeners } from './change-events';
 import { buildDirtyRegion, completeCommit } from './commit-shape';
 import { getEditorRuntime, getEditorSchema } from './editor-runtime';
-import { getExtensionRegistry } from './extension-registry';
+import {
+  getExtensionRegistry,
+  hasChangeListeners as hasExtensionChangeListeners,
+} from './extension-registry';
 import {
   cacheFullRootReplaceSnapshotIndexes,
   getFullRootReplaceCachedSnapshot,
@@ -255,6 +260,10 @@ const DOCUMENT_STATE = new WeakMap<
   Editor,
   Record<string, unknown> | undefined
 >();
+const EDITOR_COMPOSING = new WeakMap<Editor, boolean>();
+const EDITOR_FOCUSED = new WeakMap<Editor, boolean>();
+const EDITOR_MAX_LENGTH = new WeakMap<Editor, number | undefined>();
+const EDITOR_READ_ONLY = new WeakMap<Editor, boolean>();
 const LAST_COMMIT = new WeakMap<Editor, EditorCommit | null>();
 const SNAPSHOT_CACHE = new WeakMap<Editor, EditorSnapshot>();
 const TRANSACTION_CHANGED = new WeakMap<Editor, boolean>();
@@ -2216,8 +2225,9 @@ const getStateView = <
     }),
     value: () => getEditorDocumentValue(editor),
     view: Object.freeze({
-      isFocused: () => false,
-      isReadOnly: () => false,
+      isComposing: () => EDITOR_COMPOSING.get(editor) ?? false,
+      isFocused: () => EDITOR_FOCUSED.get(editor) ?? false,
+      isReadOnly: () => EDITOR_READ_ONLY.get(editor) ?? false,
       root: () => MAIN_ROOT_KEY,
     }),
   } satisfies EditorCoreStateView<V>;
@@ -2301,8 +2311,97 @@ const getUpdateView = <
     runWithMutationRoot(editor, getMutationRoot(editor), fn);
   const runLocationMutation = <T>(location: Location, fn: () => T) =>
     runWithMutationRoot(editor, getLocationMutationRoot(editor, location), fn);
+  const toggleBlock: EditorTransactionBlocksApi<V>['toggle'] = (
+    type,
+    {
+      at = getCurrentSelection(editor) ?? undefined,
+      defaultType = 'p',
+      someOptions,
+      wrap,
+      ...options
+    } = {}
+  ) => {
+    if (!at) return;
+
+    const typeMatch = (node: PliteNode, path: Path) =>
+      NodeApi.isElement(node) &&
+      node.type === type &&
+      (someOptions?.match?.(node, path) ?? true);
+    const isActive = state.nodes.some({
+      at,
+      ...someOptions,
+      match: typeMatch,
+    });
+
+    if (wrap) {
+      if (isActive) {
+        runMutation({ at }, () =>
+          transforms.unwrapNodes({ at, match: typeMatch, ...options })
+        );
+      } else {
+        runMutation({ at }, () =>
+          transforms.wrapNodes({ children: [], type } as ElementIn<V>, {
+            at,
+            ...options,
+          })
+        );
+      }
+
+      return;
+    }
+
+    if (isActive && type === defaultType) return;
+
+    runMutation({ at }, () =>
+      transforms.setNodes(
+        { type: isActive ? defaultType : type },
+        { at, ...options }
+      )
+    );
+  };
+  const resetBlock: EditorTransactionBlocksApi<V>['reset'] = (
+    props,
+    { preserve = [], ...options } = {}
+  ) => {
+    const exactEntry =
+      options.at && LocationApi.isPath(options.at)
+        ? state.nodes.get(options.at)
+        : undefined;
+    const entry =
+      exactEntry &&
+      NodeApi.isElement(exactEntry[0]) &&
+      state.schema.isBlock(exactEntry[0]) &&
+      (options.match?.(exactEntry[0], exactEntry[1]) ?? true)
+        ? exactEntry
+        : state.nodes.block(options);
+
+    if (!entry) return;
+
+    const [block, path] = entry;
+    const preserved = new Set(preserve);
+    const nextProps = props as Record<string, unknown>;
+    const propsToUnset = Object.keys(NodeApi.extractProps(block)).filter(
+      (key) => !preserved.has(key) && !(key in nextProps)
+    );
+
+    runMutation({ at: path }, () => {
+      transforms.withoutNormalizing(() => {
+        for (const key of propsToUnset) {
+          transforms.unsetNodes(key, { at: path });
+        }
+
+        transforms.setNodes(props, { at: path });
+      });
+    });
+  };
   const tx = {
     ...state,
+    blocks: Object.freeze({
+      lift: (options) =>
+        runMutation(options, () => transforms.liftNodes(options)),
+      reset: resetBlock,
+      toggle: toggleBlock,
+    }),
     break: Object.freeze({
       insert: () => runSelectionMutation(() => transforms.insertBreak()),
       insertSoft: () =>
@@ -2356,6 +2455,7 @@ const getUpdateView = <
         runMutation(options, () => transforms.setNodes(props, options)),
       split: (options) =>
         runMutation(options, () => transforms.splitNodes(options)),
+      toggle: toggleBlock,
       unset: (props, options) =>
         runMutation(options, () => transforms.unsetNodes(props, options)),
       unwrap: (options) =>
@@ -2861,6 +2961,40 @@ export const getCurrentSelection = (editor: Editor): Selection =>
 
 export const getCurrentSelectionRoot = (editor: Editor): string =>
   getSelectionStateRoot(editor);
+
+export const setEditorComposing = (editor: Editor, composing: boolean) => {
+  EDITOR_COMPOSING.set(editor, composing);
+};
+
+export const setEditorFocused = (editor: Editor, focused: boolean) => {
+  EDITOR_FOCUSED.set(editor, focused);
+};
+
+const normalizeEditorMaxLength = (maxLength: number | undefined) => {
+  if (maxLength === undefined) {
+    return;
+  }
+
+  if (!Number.isSafeInteger(maxLength) || maxLength < 0) {
+    throw new Error('[Plite] maxLength must be a non-negative safe integer.');
+  }
+
+  return maxLength;
+};
+
+export const getEditorMaxLength = (editor: Editor): number | undefined =>
+  EDITOR_MAX_LENGTH.get(editor);
+
+export const setEditorMaxLength = (
+  editor: Editor,
+  maxLength: number | undefined
+) => {
+  EDITOR_MAX_LENGTH.set(editor, normalizeEditorMaxLength(maxLength));
+};
+
+export const setEditorReadOnly = (editor: Editor, readOnly: boolean) => {
+  EDITOR_READ_ONLY.set(editor, readOnly);
+};
 
 export const getPublicSelection = (editor: Editor): Selection =>
   getCurrentSelection(editor);
@@ -4080,8 +4214,11 @@ export const runEditorTransaction = (
   }
 
   if (isOuter) {
-    const needsPreviousSnapshot = hasListeners(editor);
-    const needsFullPreviousSnapshot = hasSnapshotListeners(editor);
+    const needsExtensionChangeSnapshot = hasExtensionChangeListeners(editor);
+    const needsPreviousSnapshot =
+      hasListeners(editor) || needsExtensionChangeSnapshot;
+    const needsFullPreviousSnapshot =
+      hasSnapshotListeners(editor) || needsExtensionChangeSnapshot;
     const childrenRoot = getCurrentChildrenRoot(editor);
     const previousSnapshot = needsPreviousSnapshot
       ? profileCoreDuration('transaction-previous-snapshot', () =>
@@ -4488,6 +4625,15 @@ export const runEditorTransaction = (
           );
         }
 
+        if (snapshot?.previousSnapshot && hasExtensionChangeListeners(editor)) {
+          profileCoreDuration('notify-extension-change-listeners', () =>
+            notifyEditorChangeListeners(
+              editor,
+              change,
+              snapshot.previousSnapshot!
+            )
+          );
+        }
         profileCoreDuration('notify-listeners', () =>
           notifyListeners(editor, change)
         );
@@ -4556,6 +4702,10 @@ export const initializePublicState = <
   ROOTS.set(editor, initialValue.roots);
   CURRENT_CHILDREN_ROOT.set(editor, MAIN_ROOT_KEY);
   DOCUMENT_STATE.set(editor, initialValue.meta);
+  EDITOR_COMPOSING.set(editor, false);
+  EDITOR_FOCUSED.set(editor, false);
+  setEditorMaxLength(editor, options.maxLength);
+  EDITOR_READ_ONLY.set(editor, options.readOnly ?? false);
   seedRuntimeIds(initialChildren, editor);
   const initialSelectionRoot =
     getPublicExplicitRangeRoot(options.initialSelection) ?? MAIN_ROOT_KEY;

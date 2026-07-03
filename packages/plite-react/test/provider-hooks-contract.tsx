@@ -131,6 +131,50 @@ describe('plite-react provider hooks contract', () => {
     expect(seen.at(-1)).toBe(editorB);
   });
 
+  test('Editable maxLength overrides the runtime limit while mounted', () => {
+    const selection = {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    };
+    const editor = createReactEditor({
+      initialSelection: selection,
+      initialValue: [{ type: 'block', children: [{ text: '' }] }],
+      maxLength: 10,
+    });
+
+    const rendered = render(
+      <Plite editor={editor}>
+        <Editable maxLength={3} />
+      </Plite>
+    );
+
+    act(() => {
+      editor.update.text.insert('abcdef');
+    });
+
+    expect(editor.read.text.string([])).toBe('abc');
+
+    rendered.rerender(
+      <Plite editor={editor}>
+        <Editable maxLength={5} />
+      </Plite>
+    );
+
+    act(() => {
+      editor.update.text.insert('def');
+    });
+
+    expect(editor.read.text.string([])).toBe('abcde');
+
+    rendered.unmount();
+
+    act(() => {
+      editor.update.text.insert('fghij');
+    });
+
+    expect(editor.read.text.string([])).toBe('abcdefghij');
+  });
+
   test('Plite publishes editor commits from child mount layout effects', () => {
     const editor = createReactEditor({ initialValue });
     const onChange = jest.fn();

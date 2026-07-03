@@ -80,7 +80,7 @@ describe('Plate', () => {
 
   describe('useEditorValue()', () => {
     describe('when initialValue is defined', () => {
-      it('returns the initial value reference', async () => {
+      it('returns the initial value', async () => {
         const initialValue: Value = [
           { children: [{ text: 'test' }], type: 'p' },
         ];
@@ -91,21 +91,24 @@ describe('Plate', () => {
         );
         const { result } = renderHook(() => useEditorValue(), { wrapper });
 
-        expect(result.current).toBe(initialValue);
+        expect(result.current).toEqual(initialValue);
       });
     });
 
     describe('when editor with children is defined', () => {
       it('returns the editor children', async () => {
         const editor = createPlateEditor();
-        editor.children = [{ children: [{ text: 'value' }], type: 'p' }];
+        editor.update.value.replace({
+          children: [{ children: [{ text: 'value' }], type: 'p' }],
+          selection: null,
+        });
 
         const wrapper = ({ children }: any) => (
           <Plate editor={editor}>{children}</Plate>
         );
         const { result } = renderHook(() => useEditorValue(), { wrapper });
 
-        expect(result.current).toBe(editor.children);
+        expect(result.current).toBe(editor.read.children());
       });
     });
 
@@ -134,7 +137,7 @@ describe('Plate', () => {
         <Plate editor={editor}>{children}</Plate>
       );
 
-      const { result } = renderHook(() => useEditorRef().meta.pluginList, {
+      const { result } = renderHook(() => useEditorRef().runtime.pluginList, {
         wrapper,
       });
 
@@ -195,7 +198,7 @@ describe('Plate', () => {
       }).result.current;
 
     const getIsFallback = (wrapper: any) =>
-      renderHook(() => useEditorRef().meta.isFallback, { wrapper }).result
+      renderHook(() => useEditorRef().runtime.isFallback, { wrapper }).result
         .current;
 
     describe('when Plate exists', () => {
@@ -279,26 +282,25 @@ describe('Plate', () => {
 
       const plugins = [
         createBasePlugin({
-          editorExtensions: [
-            defineEditorExtension({
-              name: 'test:path-normalizer',
-              normalizers: {
-                node({ entry, next, tx }) {
-                  const [node, path] = entry;
-
-                  if (path.length && node.path !== path) {
-                    fn();
-                    tx.nodes.set({ path }, { at: path });
-                    return;
-                  }
-
-                  next();
-                },
-              },
-            }),
-          ],
           key: 'a',
-        }),
+        }).extendExtension(
+          defineEditorExtension({
+            name: 'test:path-normalizer',
+            normalizers: {
+              node({ entry, next, tx }) {
+                const [node, path] = entry;
+
+                if (path.length && node.path !== path) {
+                  fn();
+                  tx.nodes.set({ path }, { at: path });
+                  return;
+                }
+
+                next();
+              },
+            },
+          })
+        ),
       ];
 
       const editor = createPlateEditor({
@@ -314,7 +316,7 @@ describe('Plate', () => {
 
       expect(fn).not.toHaveBeenCalled();
 
-      expect(editor.children).not.toStrictEqual([
+      expect(editor.read.children()).not.toStrictEqual([
         { children: [{ text: '' }], path: [0] },
       ]);
     });
@@ -357,7 +359,7 @@ describe('Plate', () => {
       const TestComponent = ({ dep }: { dep: number }) => {
         const editor = usePlateEditor({ id: 'test' }, [dep]);
 
-        editor.meta.key = dep;
+        editor.runtime.key = dep;
 
         return (
           <Plate editor={editor}>
@@ -464,7 +466,12 @@ describe('Plate', () => {
       );
 
       const paragraphEl = getByTestId('paragraph');
-      expect(Object.keys(paragraphEl.dataset)).toEqual(['slateNode', 'testid']);
+      expect(Object.keys(paragraphEl.dataset)).toEqual([
+        'pliteNode',
+        'testid',
+        'plitePath',
+        'pliteRuntimeId',
+      ]);
 
       const boldEl = getByTestId('bold');
       expect(Object.keys(boldEl.dataset)).toEqual(['testid']);
@@ -477,9 +484,11 @@ describe('Plate', () => {
 
       const paragraphEl = getByTestId('paragraph');
       expect(Object.keys(paragraphEl.dataset)).toEqual([
-        'slateNode',
+        'pliteNode',
         'myParagraphAttribute',
         'testid',
+        'plitePath',
+        'pliteRuntimeId',
       ]);
 
       const boldEl = getByTestId('bold');

@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-import { createBasePlugin } from '../lib';
+import { type RenderElementProps, createBasePlugin } from '../lib';
 import { createStaticEditor } from './editor/withStatic';
 import { pluginRenderElementStatic } from './pluginRenderElementStatic';
 
@@ -17,9 +17,7 @@ describe('pluginRenderElementStatic', () => {
       render: {
         aboveNodes:
           () =>
-          ({ children }: any) => (
-            <section data-role="above">{children}</section>
-          ),
+          ({ children }) => <section data-role="above">{children}</section>,
       },
     });
     const BelowPlugin = createBasePlugin({
@@ -27,13 +25,13 @@ describe('pluginRenderElementStatic', () => {
       render: {
         belowNodes:
           () =>
-          ({ children }: any) => <div data-role="below">{children}</div>,
+          ({ children }) => <div data-role="below">{children}</div>,
       },
     });
     const RootPlugin = createBasePlugin({
       key: 'root-extra',
       render: {
-        belowRootNodes: ({ element }: any) => (
+        belowRootNodes: ({ element }) => (
           <aside data-id={element.id} data-role="root" />
         ),
       },
@@ -46,14 +44,14 @@ describe('pluginRenderElementStatic', () => {
         editor,
         editor.getPlugin(ParagraphPlugin)
       )({
-        attributes: {},
+        attributes: { 'data-plite-node': 'element', ref: null },
         children: 'Body',
         element: {
           children: [{ text: 'Body' }],
           id: 'block-1',
           type: 'p',
         },
-      } as any)!
+      } satisfies RenderElementProps)
     );
 
     expect(markup).toContain('data-role="above"');

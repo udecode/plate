@@ -10,7 +10,7 @@ describe('createBasePlugin', () => {
     // Test plugin creation with a function
     const functionPlugin = createBasePlugin<
       PluginConfig<'functionPlugin', { editorId: string }>
-    >((editor: any) => ({
+    >((editor) => ({
       key: 'functionPlugin',
       options: { editorId: editor.id },
     }));
@@ -132,7 +132,7 @@ describe('createBasePlugin', () => {
     // Test plugin creation with a function
     const functionPlugin = createBasePlugin<
       PluginConfig<'functionPlugin', { editorId: string }>
-    >((editor: any) => ({
+    >((editor) => ({
       key: 'functionPlugin',
       options: { editorId: editor.id },
     }));

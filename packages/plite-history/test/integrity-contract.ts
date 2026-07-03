@@ -92,7 +92,7 @@ describe('plite-history integrity contract', () => {
     assert.deepEqual(getVisibleState(editor), before);
   });
 
-  it('history.run({ newBatch: true }) splits once then merges the rest of the scope', () => {
+  it('editor.update.history.newBatch(fn) starts a fresh batch for the transaction', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
@@ -104,11 +104,9 @@ describe('plite-history integrity contract', () => {
       tx.text.insert('a');
     });
 
-    editor.api.history.run({ newBatch: true }, () => {
-      write(editor, (tx) => {
-        tx.text.insert('b');
-        tx.text.insert('c');
-      });
+    editor.update.history.newBatch((tx) => {
+      tx.text.insert('b');
+      tx.text.insert('c');
     });
 
     assert.equal(getHistory(editor).undos.length, 2);
@@ -122,7 +120,7 @@ describe('plite-history integrity contract', () => {
     assert.equal(getText(editor), 'one');
   });
 
-  it('history.run({ merge: false }) forces a fresh batch', () => {
+  it('tx.history.newBatch() forces a fresh batch', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
@@ -134,10 +132,9 @@ describe('plite-history integrity contract', () => {
       tx.text.insert('a');
     });
 
-    editor.api.history.run({ merge: false }, () => {
-      write(editor, (tx) => {
-        tx.text.insert('b');
-      });
+    editor.update((tx) => {
+      tx.history.newBatch();
+      tx.text.insert('b');
     });
 
     assert.equal(getHistory(editor).undos.length, 2);
@@ -149,7 +146,7 @@ describe('plite-history integrity contract', () => {
     assert.equal(getText(editor), 'one');
   });
 
-  it('history.run({ save: false }) suppresses history recording', () => {
+  it('editor.update.history.skip(fn) suppresses history recording', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
@@ -157,10 +154,8 @@ describe('plite-history integrity contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    editor.api.history.run({ save: false }, () => {
-      write(editor, (tx) => {
-        tx.text.insert('a');
-      });
+    editor.update.history.skip((tx) => {
+      tx.text.insert('a');
     });
 
     assert.equal(getText(editor), 'onea');

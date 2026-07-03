@@ -29,36 +29,36 @@ describe('withHOC', () => {
   ));
 
   it('renders component with HOC', () => {
-    const WithHOC = withHOC(HOC, Component);
+    const Composed = withHOC(HOC, Component);
 
-    const { container } = render(<WithHOC myProp="component-prop" />);
+    const { container } = render(<Composed myProp="component-prop" />);
 
     (expect(container) as any).toHaveTextContent('component-prop');
   });
 
   it('renders component with HOC and HOC props', () => {
-    const WithHOC = withHOC(HOC, Component, { myProp: 'hoc-prop' });
+    const Composed = withHOC(HOC, Component, { myProp: 'hoc-prop' });
 
-    const { container } = render(<WithHOC myProp="component-prop" />);
+    const { container } = render(<Composed myProp="component-prop" />);
 
     (expect(container) as any).toHaveTextContent('hoc-prop');
   });
 
   it('renders component with HOC and HOC ref', () => {
     const hocRef = { current: { myRef: 'hoc-ref' } };
-    const WithHOC = withHOC(HOC, Component, undefined, hocRef);
+    const Composed = withHOC(HOC, Component, undefined, hocRef);
 
-    const { container } = render(<WithHOC myProp="component-prop" />);
+    const { container } = render(<Composed myProp="component-prop" />);
 
     (expect(container) as any).toHaveTextContent('ref-present');
   });
 
   it('renders component with HOC and component ref', () => {
     const componentRef = { current: { myRef: 'component-ref' } };
-    const WithHOC = withHOC(HOC, Component);
+    const Composed = withHOC(HOC, Component);
 
     const { container } = render(
-      <WithHOC ref={componentRef} myProp="component-prop" />
+      <Composed ref={componentRef} myProp="component-prop" />
     );
 
     (expect(container) as any).toHaveTextContent('ref-present');

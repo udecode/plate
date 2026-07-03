@@ -320,6 +320,52 @@ describe('plite-react projections and selection contract', () => {
     ]);
   });
 
+  test('refreshDecorations refreshes stable Editable decorate output', async () => {
+    const editor = createEditor();
+    let highlighted = false;
+
+    editorReplace(editor, {
+      children: [{ children: [{ text: 'Hello world!' }] }],
+      selection: null,
+    });
+
+    const rendered = render(
+      <Plite editor={editor}>
+        <Editable
+          decorate={([node, path]) =>
+            highlighted && TextApi.isText(node)
+              ? [
+                  {
+                    data: { external: true },
+                    range: {
+                      anchor: { path, offset: 0 },
+                      focus: { path, offset: 5 },
+                    },
+                  },
+                ]
+              : []
+          }
+          renderSegment={renderSegment}
+        />
+      </Plite>
+    );
+
+    expect(getProjectedSegments(rendered.container)).toEqual([
+      { text: 'Hello world!', decorations: [] },
+    ]);
+
+    highlighted = true;
+
+    await act(async () => {
+      editor.api.react.refreshDecorations();
+    });
+
+    expect(getProjectedSegments(rendered.container)).toEqual([
+      { text: 'Hello', decorations: ['external'] },
+      { text: ' world!', decorations: [] },
+    ]);
+  });
+
   test('projects decorations across inline element boundaries', () => {
     const editor = createEditor();
 

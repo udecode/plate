@@ -14,12 +14,12 @@ export type BoxStaticProps = React.ComponentProps<'div'> & {
   as?: React.ElementType;
 };
 
-export type PliteRenderElementProps<
+export type SlateRenderElementProps<
   N extends Element = Element,
   C extends AnyPluginConfig = PluginConfig,
 > = PliteRenderNodeProps<C> & RenderElementProps<N>;
 
-export type PliteRenderLeafProps<
+export type SlateRenderLeafProps<
   N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
 > = PliteRenderNodeProps<C> & RenderLeafProps<N>;
@@ -30,9 +30,10 @@ export type PliteRenderNodeProps<C extends AnyPluginConfig = PluginConfig> =
     className?: string;
     /** @see {@link NodeProps} */
     nodeProps?: AnyObject;
+    style?: React.CSSProperties;
   };
 
-export type PliteRenderTextProps<
+export type SlateRenderTextProps<
   N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
 > = PliteRenderNodeProps<C> & RenderTextProps<N>;

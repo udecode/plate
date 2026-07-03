@@ -7,6 +7,7 @@ import {
   type Selection,
   type TargetFreshnessRequest,
 } from '@platejs/plite';
+import { setEditorFocused } from '@platejs/plite/internal';
 import {
   containsShadowAware,
   type DOMRange,
@@ -950,8 +951,10 @@ export const applyEditableDOMSelectionChange = ({
   if (activeElement === editorElement) {
     state.latestElement = activeElement;
     IS_FOCUSED.set(editor, true);
+    setEditorFocused(editor, true);
   } else {
     IS_FOCUSED.delete(editor);
+    setEditorFocused(editor, false);
   }
 
   if (!domSelection) {

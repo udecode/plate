@@ -126,8 +126,6 @@ describe('isSelectOutside', () => {
     it('handle elements with data-plite-editor attribute', () => {
       const mockDiv = document.createElement('div');
       const editorElement = document.createElement('div');
-      // The querySelector in the source has a missing closing bracket: '[data-plite-editor="true"'
-      // This means it will match any element with data-plite-editor that starts with "true"
       editorElement.dataset.pliteEditor = 'true';
       mockDiv.append(editorElement);
 
@@ -139,7 +137,6 @@ describe('isSelectOutside', () => {
     it('does not match elements with data-plite-editor set to other values', () => {
       const mockDiv = document.createElement('div');
       const editorElement = document.createElement('div');
-      // Due to the missing closing bracket, this won't match
       editorElement.dataset.pliteEditor = 'false';
       mockDiv.append(editorElement);
 

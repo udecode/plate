@@ -1,18 +1,17 @@
-// Components
 export {
-  type RenderPlaceholderProps,
-  DefaultPlaceholder,
   Editable,
-  Slate,
-} from 'slate-react';
+  Plite as Slate,
+  useEditorComposing,
+  useEditorFocused,
+  useEditorReadOnly,
+  useElementSelected,
+  usePliteHistory,
+} from '@platejs/plite-react';
 
-// Hooks
-export {
-  useComposing,
-  useFocused,
-  useReadOnly,
-  useSelected,
-} from 'slate-react';
-
-// Plugin
-export { withReact, useSlateStatic } from 'slate-react';
+export type {
+  PliteHistoryController,
+  PliteHistoryFocusPolicy,
+  UseElementSelectedMode,
+  UseElementSelectedOptions,
+  UsePliteHistoryOptions,
+} from '@platejs/plite-react';

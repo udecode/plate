@@ -1,15 +1,17 @@
 /** @jsx jsxt */
 
-import { BoldPlugin } from '@platejs/basic-nodes/react';
 import { jsxt } from '@platejs/test-utils';
 
-import { createPlateTestEditor } from '../__tests__/createPlateTestEditor';
-
 jsxt;
-import { type PlateEditor, createPlateEditor } from '../editor';
+import { createPlateEditor } from '../editor';
 import { createPlatePlugin } from '../plugin';
 
-it('use custom hotkey for bold', async () => {
+const BoldPlugin = createPlatePlugin({
+  key: 'bold',
+  node: { isLeaf: true },
+});
+
+it('uses custom hotkey handler for bold', () => {
   const input = (
     <editor>
       <hp>
@@ -18,7 +20,7 @@ it('use custom hotkey for bold', async () => {
         <focus />
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as any;
 
   const output = (
     <editor>
@@ -26,15 +28,15 @@ it('use custom hotkey for bold', async () => {
         Hello <htext bold>world</htext>
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as any;
 
-  const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+  const editor = createPlateEditor({
     plugins: [
       BoldPlugin.configure({
         handlers: {
           onKeyDown: ({ editor, event }) => {
             if (event.key === 'b' && event.ctrlKey) {
-              editor.tf.toggleMark('bold');
+              editor.update.marks.toggle('bold');
             }
           },
         },
@@ -44,9 +46,12 @@ it('use custom hotkey for bold', async () => {
     value: input.children,
   });
 
-  await triggerKeyboardEvent('mod+b');
+  (editor.getPlugin(BoldPlugin) as any).handlers?.onKeyDown?.({
+    editor,
+    event: { ctrlKey: true, key: 'b' } as KeyboardEvent,
+  });
 
-  expect(editor.children).toEqual(output.children);
+  expect(editor.read.children()).toEqual(output.children);
 });
 
 describe('extend method with shortcuts', () => {
@@ -72,8 +77,8 @@ describe('extend method with shortcuts', () => {
       plugins: [testPlugin],
     });
 
-    expect(editor.meta.shortcuts['testPlugin.bold']).toBeDefined();
-    expect(editor.meta.shortcuts['testPlugin.italic']).toBeDefined();
+    expect(editor.runtime.shortcuts['testPlugin.bold']).toBeDefined();
+    expect(editor.runtime.shortcuts['testPlugin.italic']).toBeDefined();
   });
 
   it('override existing shortcuts in a plugin', () => {
@@ -101,7 +106,7 @@ describe('extend method with shortcuts', () => {
       plugins: [testPlugin],
     });
 
-    editor.meta.shortcuts['testPlugin.bold']?.handler?.({
+    editor.runtime.shortcuts['testPlugin.bold']?.handler?.({
       editor,
       event: {} as KeyboardEvent,
       handler: {} as any,
@@ -135,7 +140,7 @@ describe('extend method with shortcuts', () => {
       plugins: [testPlugin],
     });
 
-    expect(editor.meta.shortcuts['testPlugin.bold']?.keys).toBe('mod+bb');
+    expect(editor.runtime.shortcuts['testPlugin.bold']?.keys).toBe('mod+bb');
   });
 
   it('allow removing shortcuts by setting them to null', () => {
@@ -161,7 +166,7 @@ describe('extend method with shortcuts', () => {
       plugins: [testPlugin],
     });
 
-    expect(editor.meta.shortcuts['testPlugin.bold']).toBeUndefined();
-    expect(editor.meta.shortcuts['testPlugin.italic']).toBeDefined();
+    expect(editor.runtime.shortcuts['testPlugin.bold']).toBeUndefined();
+    expect(editor.runtime.shortcuts['testPlugin.italic']).toBeDefined();
   });
 });

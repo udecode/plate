@@ -51,6 +51,7 @@ import {
 } from './internal/root-location';
 
 type ViewState = {
+  composing: boolean;
   focused: boolean;
   readOnly: boolean;
   root: RootKey;
@@ -84,6 +85,7 @@ const resolvePublicViewRoot = (root: RootKey | undefined): RootKey => {
 
 const createViewApi = (state: ViewState): EditorStateViewApi =>
   Object.freeze({
+    isComposing: () => state.composing,
     isFocused: () => state.focused,
     isReadOnly: () => state.readOnly,
     root: () => state.root,
@@ -546,6 +548,20 @@ const withViewTransaction = <V extends Value>(
 
   return Object.freeze({
     ...state,
+    blocks: Object.freeze<EditorUpdateTransaction<V>['blocks']>({
+      lift: (options) =>
+        runImplicitSelectionMutation(options, () =>
+          transaction.blocks.lift(options)
+        ),
+      reset: (props, options) =>
+        runImplicitSelectionMutation(options, () =>
+          transaction.blocks.reset(props, options)
+        ),
+      toggle: (type, options) =>
+        runImplicitSelectionMutation(options, () =>
+          transaction.blocks.toggle(type, options)
+        ),
+    }),
     break: Object.freeze({
       ...transaction.break,
       insert: () => runSelectionMutation(transaction.break.insert),
@@ -887,7 +903,8 @@ export const createEditorView = <
   options: EditorViewOptions = {}
 ): EditorView<V, TExtensions> => {
   const viewState: ViewState = {
-    focused: false,
+    composing: runtime.editor.read.view.isComposing(),
+    focused: runtime.editor.read.view.isFocused(),
     readOnly: options.readOnly ?? false,
     root: resolvePublicViewRoot(options.root),
   };

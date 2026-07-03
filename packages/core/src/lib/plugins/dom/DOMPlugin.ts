@@ -1,41 +1,145 @@
-import type { Operation, ScrollIntoViewOptions, TRange } from '@platejs/slate';
+import type { EditorUpdateTransaction, Operation, Point } from '@platejs/plite';
+import {
+  type DOMApi,
+  type ScrollIntoViewOptions,
+  dom as pliteDom,
+} from '@platejs/plite-dom';
 
-import { bindFirst } from '@udecode/utils';
+import isUndefined from 'lodash/isUndefined.js';
+import omitBy from 'lodash/omitBy.js';
 
-import type { SlateEditor } from '../../';
+import type { BaseEditor } from '../../editor';
+import { type PluginConfig, createBasePlugin } from '../../plugin';
 
-import { type PluginConfig, createTSlatePlugin } from '../../plugin';
-import { withScrolling } from './withScrolling';
+const AUTO_SCROLL = new WeakMap<object, boolean>();
 
-export const AUTO_SCROLL = new WeakMap<SlateEditor, boolean>();
+const AUTO_SCROLL_FIRST_TARGET = new WeakMap<object, Point>();
 
 export type AutoScrollOperationsMap = Partial<
   Record<Operation['type'], boolean>
 >;
+
+export type ScrollIntoViewTarget = Point;
+
+export type AutoScrollOptions = {
+  mode?: ScrollMode;
+  operations?: AutoScrollOperationsMap;
+  scrollOptions?: ScrollIntoViewOptions;
+};
+
+export type PlateDomApi = {
+  isAutoScrolling: () => boolean;
+};
+
+export type AutoScrollUpdate<TTx extends object = {}> = (
+  tx: EditorUpdateTransaction & TTx
+) => void;
 
 export type DomConfig = PluginConfig<
   'dom',
   {
     /** Choose the first or last matching operation as the scroll target */
     scrollMode?: ScrollMode;
-    /**
-     * Operations map; false to disable an operation, true or undefined to
-     * enable
-     */
+    /** Operations map; true enables scrolling for that operation type. */
     scrollOperations?: AutoScrollOperationsMap;
     /** Options passed to scrollIntoView */
     scrollOptions?: ScrollIntoViewOptions;
-  }
+  },
+  {
+    dom: DOMApi & PlateDomApi;
+  },
+  {
+    dom: {
+      autoScroll: (fn: AutoScrollUpdate, options?: AutoScrollOptions) => void;
+    };
+  },
+  {}
 >;
 
 /** Mode for picking target op when multiple enabled */
 export type ScrollMode = 'first' | 'last';
 
+const beginAutoScroll = (editor: BaseEditor, options?: AutoScrollOptions) => {
+  const prevOptions = editor.getOptions(DOMPlugin);
+  const prevAutoScroll = AUTO_SCROLL.get(editor) ?? false;
+  const prevFirstTarget = AUTO_SCROLL_FIRST_TARGET.get(editor);
+
+  if (options) {
+    const scrollOptions =
+      typeof options.scrollOptions === 'object' && options.scrollOptions
+        ? {
+            ...(typeof prevOptions.scrollOptions === 'object'
+              ? prevOptions.scrollOptions
+              : {}),
+            ...omitBy(options.scrollOptions, isUndefined),
+          }
+        : (options.scrollOptions ?? prevOptions.scrollOptions);
+
+    editor.setOptions(DOMPlugin, {
+      ...prevOptions,
+      scrollOperations: {
+        ...prevOptions.scrollOperations,
+        ...omitBy(options.operations ?? {}, isUndefined),
+      },
+      scrollOptions,
+      ...omitBy(
+        {
+          scrollMode: options.mode,
+        },
+        isUndefined
+      ),
+    });
+  }
+
+  AUTO_SCROLL.set(editor, true);
+
+  return () => {
+    AUTO_SCROLL.set(editor, prevAutoScroll);
+    if (prevFirstTarget) {
+      AUTO_SCROLL_FIRST_TARGET.set(editor, prevFirstTarget);
+    } else {
+      AUTO_SCROLL_FIRST_TARGET.delete(editor);
+    }
+    editor.setOptions(DOMPlugin, prevOptions);
+  };
+};
+
+const scrollOperationIntoView = (editor: BaseEditor, operation: Operation) => {
+  if (AUTO_SCROLL.get(editor) !== true) return;
+
+  const {
+    scrollMode,
+    scrollOperations = {},
+    scrollOptions,
+  } = editor.getOptions(DOMPlugin);
+
+  if (scrollOperations[operation.type] !== true) return;
+  if (!('path' in operation)) return;
+
+  const operationTarget = {
+    offset:
+      'offset' in operation && typeof operation.offset === 'number'
+        ? operation.offset
+        : 0,
+    path: operation.path,
+  };
+  const target =
+    scrollMode === 'first'
+      ? (AUTO_SCROLL_FIRST_TARGET.get(editor) ?? operationTarget)
+      : operationTarget;
+
+  if (scrollMode === 'first' && !AUTO_SCROLL_FIRST_TARGET.has(editor)) {
+    AUTO_SCROLL_FIRST_TARGET.set(editor, target);
+  }
+
+  editor.api.dom.scrollIntoView(target, scrollOptions);
+};
+
 /**
- * Placeholder plugin for DOM interaction, that could be replaced with
- * ReactPlugin.
+ * Plate DOM installs the Plite DOM bridge for base editors, then adds
+ * Plate-owned auto-scroll state and transaction ergonomics.
  */
-export const DOMPlugin = createTSlatePlugin<DomConfig>({
+export const DOMPlugin = createBasePlugin<DomConfig>({
   key: 'dom',
   options: {
     scrollMode: 'last',
@@ -48,71 +152,28 @@ export const DOMPlugin = createTSlatePlugin<DomConfig>({
     },
   },
 })
+  .extendExtension('autoScroll', {
+    operations: {
+      apply({ editor, next, operation }) {
+        next(operation);
+        scrollOperationIntoView(editor, operation);
+      },
+    },
+  })
   .extendEditorApi(({ editor }) => ({
-    isScrolling: () => AUTO_SCROLL.get(editor) ?? false,
-  }))
-  .extendEditorTransforms(({ editor }) => ({
-    withScrolling: bindFirst(withScrolling, editor),
-  }))
-  .overrideEditor(({ api, editor, getOption, tf: { apply } }) => ({
-    transforms: {
-      apply(operation) {
-        if (api.isScrolling()) {
-          apply(operation);
-
-          // Check if this op type is enabled (default true)
-          const scrollOperations = getOption('scrollOperations')!;
-
-          if (!scrollOperations[operation.type]) return;
-
-          // Gather enabled ops in this batch
-          const matched = editor.operations.filter(
-            (op) => !!scrollOperations[op.type]
-          );
-
-          if (matched.length === 0) return;
-
-          const mode = getOption('scrollMode')!;
-
-          // Pick target
-          const targetOp = mode === 'first' ? matched[0] : matched.at(-1);
-
-          if (!targetOp) return;
-
-          const { offset, path } = (targetOp as any).path
-            ? (targetOp as any as { path: number[]; offset?: number })
-            : {};
-
-          if (!path) return;
-
-          const scrollOptions = getOption('scrollOptions')!;
-
-          const scrollTarget = {
-            offset: offset ?? 0,
-            path,
-          };
-
-          api.scrollIntoView(scrollTarget, scrollOptions);
-
-          return;
-        }
-
-        return apply(operation);
-      },
+    dom: {
+      isAutoScrolling: () => AUTO_SCROLL.get(editor) ?? false,
     },
   }))
-  .overrideEditor(({ editor, tf: { apply } }) => ({
-    transforms: {
-      apply(operation) {
-        if (operation.type === 'set_selection') {
-          const { properties } = operation;
-          editor.dom.prevSelection = properties as TRange | null;
-          apply(operation);
-          editor.dom.currentKeyboardEvent = null;
-          return;
-        }
+  .extendTxGroup('dom', ({ editor }) => (tx) => ({
+    autoScroll: (fn: AutoScrollUpdate, options?: AutoScrollOptions) => {
+      const restore = beginAutoScroll(editor, options);
 
-        apply(operation);
-      },
+      try {
+        fn(tx);
+      } finally {
+        restore();
+      }
     },
-  }));
+  }))
+  .extendExtension(pliteDom({ clipboard: false }));

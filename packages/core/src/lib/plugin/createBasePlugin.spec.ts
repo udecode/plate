@@ -267,33 +267,112 @@ describe('createBasePlugin', () => {
       ]);
     });
 
-    it('keeps explicit editor extension names and disambiguates arrays', () => {
+    it('supports plugin-scoped secondary editor extension keys', () => {
       const resolved = resolvePluginTest(
         createBasePlugin({
           key: 'runtime',
-        }).extendExtension([
-          {
-            operations: {
-              apply({ next, operation }) {
-                next(operation);
-              },
+        }).extendExtension('custom', {
+          operations: {
+            apply({ next, operation }) {
+              next(operation);
             },
           },
-          {
-            name: 'custom-runtime',
-            operations: {
-              apply({ next, operation }) {
-                next(operation);
-              },
-            },
-          },
-        ])
+        })
       );
 
       expect(resolveEditorExtensions(resolved)).toMatchObject([
-        { name: 'runtime:0' },
-        { name: 'custom-runtime' },
+        { name: 'runtime:custom' },
       ]);
+    });
+
+    it('preserves symbol properties when normalizing keyed editor extensions', () => {
+      const metadata = Symbol('metadata');
+      const resolved = resolvePluginTest(
+        createBasePlugin({
+          key: 'runtime',
+        }).extendExtension({
+          key: 'custom',
+          [metadata]: 'kept',
+          api: {
+            runtime: {
+              ping: () => 'pong' as const,
+            },
+          },
+        })
+      );
+      const [extension] = resolveEditorExtensions(resolved) as Record<
+        PropertyKey,
+        unknown
+      >[];
+
+      expect(extension.name).toBe('runtime:custom');
+      expect(extension[metadata]).toBe('kept');
+      expect(Object.hasOwn(extension, 'key')).toBe(false);
+    });
+
+    it('merges repeated unnamed editor extensions before Plite install', () => {
+      const plugin = createBasePlugin({
+        key: 'runtime',
+      })
+        .extendExtension({
+          api: {
+            runtime: {
+              first: () => 'first' as const,
+            },
+          },
+          tx: {
+            runtimeFirst: () => ({
+              run: () => 'first-tx' as const,
+            }),
+          },
+        })
+        .extendExtension({
+          api: {
+            runtime: {
+              second: () => 'second' as const,
+            },
+          },
+          tx: {
+            runtimeSecond: () => ({
+              run: () => 'second-tx' as const,
+            }),
+          },
+        });
+
+      const editor = createBaseEditor({ plugins: [plugin] });
+
+      expect(editor.api.runtime.first()).toBe('first');
+      expect(editor.api.runtime.second()).toBe('second');
+
+      editor.update((tx) => {
+        expect(tx.runtimeFirst.run()).toBe('first-tx');
+        expect(tx.runtimeSecond.run()).toBe('second-tx');
+      });
+    });
+
+    it('merges repeated keyed editor extensions before Plite install', () => {
+      const plugin = createBasePlugin({
+        key: 'runtime',
+      })
+        .extendExtension('secondary', {
+          api: {
+            runtime: {
+              first: () => 'first' as const,
+            },
+          },
+        })
+        .extendExtension('secondary', {
+          api: {
+            runtime: {
+              second: () => 'second' as const,
+            },
+          },
+        });
+
+      const editor = createBaseEditor({ plugins: [plugin] });
+
+      expect(editor.api.runtime.first()).toBe('first');
+      expect(editor.api.runtime.second()).toBe('second');
     });
   });
 

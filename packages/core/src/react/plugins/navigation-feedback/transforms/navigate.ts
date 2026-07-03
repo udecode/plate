@@ -1,6 +1,6 @@
 import type { EditorUpdateTransaction, Point } from '@platejs/plite';
 
-import type { BaseEditor } from '../../../editor';
+import type { BaseEditor } from '../../../../lib/editor';
 import type { NavigationNavigateOptions } from '../types';
 
 import { flashTarget } from './flashTarget';
@@ -27,7 +27,8 @@ export const navigate = (
     scrollTarget,
     select,
     target,
-  }: NavigationNavigateOptions
+  }: NavigationNavigateOptions,
+  refreshDecorations: () => void
 ) => {
   if (!editor.read.nodes.get(target.path)) return false;
 
@@ -43,7 +44,7 @@ export const navigate = (
   }
 
   if (focus) {
-    editor.api.dom.focus?.();
+    editor.api.dom.focus();
   }
 
   if (scroll) {
@@ -57,16 +58,20 @@ export const navigate = (
     });
 
     if (point) {
-      editor.api.scrollIntoView?.(point);
+      editor.api.dom.scrollIntoView(point);
     }
   }
 
   if (flash !== false) {
-    flashTarget(editor, {
-      duration: flash?.duration,
-      target,
-      variant: flash?.variant,
-    });
+    flashTarget(
+      editor,
+      {
+        duration: flash?.duration,
+        target,
+        variant: flash?.variant,
+      },
+      refreshDecorations
+    );
   }
 
   return true;

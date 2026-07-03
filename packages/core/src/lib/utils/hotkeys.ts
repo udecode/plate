@@ -86,7 +86,10 @@ const createComposing =
     } = {}
   ) => {
     if (!createHotkey(key)(event)) return false;
-    if (!!composing !== editor.api.dom.isComposing()) return false;
+
+    const isComposing = editor.read.view.isComposing();
+
+    if (!!composing !== isComposing) return false;
 
     return true;
   };

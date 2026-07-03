@@ -18,10 +18,12 @@ import {
   installDOM,
 } from '@platejs/plite-dom/internal';
 import { history, type HistoryExtension } from '@platejs/plite-history';
+import { refreshEditorDecorations } from '../decoration-refresh';
 import {
   getEditorTransformRegistry,
   setEditorTransformRegistry,
 } from '../editable/runtime-editor-api';
+import type { PliteProjectionStoreRefreshOptions } from '../projection-store';
 
 const ANDROID_USER_AGENT_RE = /Android/;
 
@@ -30,6 +32,7 @@ export interface ReactEditorOptions extends DOMEditorOptions {}
 
 /** React capability exposed through `editor.api.react`. */
 export type ReactApi = {
+  refreshDecorations: (options?: PliteProjectionStoreRefreshOptions) => void;
   isComposing: () => boolean;
   isFocused: () => boolean;
   isReadOnly: () => boolean;
@@ -100,8 +103,16 @@ const installReactTransforms = (editor: Editor) => {
   }
 };
 
-const createReactApi = (domApi: DOMApi): ReactApi =>
+const createReactApi = (editor: Editor, domApi: DOMApi): ReactApi =>
   Object.freeze({
+    refreshDecorations: (options) => {
+      refreshEditorDecorations(editor, {
+        ...options,
+        reason: options?.reason ?? 'external',
+        requiresDOMSelectionExport:
+          options?.requiresDOMSelectionExport ?? domApi.isFocused(),
+      });
+    },
     isComposing: () => domApi.isComposing(),
     isFocused: () => domApi.isFocused(),
     isReadOnly: () => domApi.isReadOnly(),
@@ -128,7 +139,7 @@ export const react = (options: ReactEditorOptions = {}): ReactExtension =>
         api: {
           clipboard,
           dom: frozenDOMApi,
-          react: createReactApi(frozenDOMApi),
+          react: createReactApi(editor, frozenDOMApi),
         },
       };
     },

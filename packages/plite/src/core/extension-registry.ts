@@ -4,10 +4,12 @@ import type {
   EditorElementSpec,
   EditorExtensionStateGroup,
   EditorExtensionTxGroup,
+  EditorNodeChangeHandler,
   EditorNodeNormalizer,
   EditorOperationMiddleware,
   EditorQueryGroup,
   EditorQueryMiddlewareMap,
+  EditorTextChangeHandler,
   RegisteredEditorExtension,
   ValueOf,
 } from '../interfaces/editor';
@@ -29,10 +31,12 @@ export type ExtensionRegistry<TEditor extends Editor = Editor> = {
   elementMatchers: EditorElementSpecRegistration[];
   elementSpecs: Map<string, EditorElementSpecRegistration>;
   extensions: Map<string, RegisteredEditorExtension>;
+  nodeChangeListeners: Set<EditorNodeChangeHandler<TEditor>>;
   normalizers: Map<string, EditorNodeNormalizer<TEditor>>;
   operationMiddlewares: Set<EditorOperationMiddleware<TEditor>>;
   queryMiddlewares: Map<string, unknown[]>;
   stateGroups: Map<string, EditorStateGroupRegistration<TEditor>>;
+  textChangeListeners: Set<EditorTextChangeHandler<TEditor>>;
   txGroups: Map<string, EditorTxGroupRegistration<TEditor>>;
 };
 
@@ -83,10 +87,12 @@ export const getExtensionRegistry = <TEditor extends Editor>(
       elementMatchers: [],
       elementSpecs: new Map(),
       extensions: new Map(),
+      nodeChangeListeners: new Set(),
       normalizers: new Map(),
       operationMiddlewares: new Set(),
       queryMiddlewares: new Map(),
       stateGroups: new Map(),
+      textChangeListeners: new Set(),
       txGroups: new Map(),
     };
     EXTENSION_REGISTRIES.set(editor, registry);
@@ -219,6 +225,39 @@ export const registerCommitListener = <TEditor extends Editor>(
   return () => {
     registry.commitListeners.delete(listener);
   };
+};
+
+export const registerNodeChangeListener = <TEditor extends Editor>(
+  editor: TEditor,
+  listener: EditorNodeChangeHandler<TEditor>
+) => {
+  const registry = getExtensionRegistry(editor);
+  registry.nodeChangeListeners.add(listener);
+
+  return () => {
+    registry.nodeChangeListeners.delete(listener);
+  };
+};
+
+export const registerTextChangeListener = <TEditor extends Editor>(
+  editor: TEditor,
+  listener: EditorTextChangeHandler<TEditor>
+) => {
+  const registry = getExtensionRegistry(editor);
+  registry.textChangeListeners.add(listener);
+
+  return () => {
+    registry.textChangeListeners.delete(listener);
+  };
+};
+
+export const hasChangeListeners = (editor: Editor) => {
+  const registry = getExtensionRegistry(editor);
+
+  return (
+    registry.nodeChangeListeners.size > 0 ||
+    registry.textChangeListeners.size > 0
+  );
 };
 
 export const registerOperationMiddleware = <TEditor extends Editor>(

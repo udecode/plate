@@ -6,6 +6,7 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { setEditorReadOnly } from '@platejs/plite/internal';
 import type { DOMRange } from '@platejs/plite-dom';
 import { IS_READ_ONLY } from '@platejs/plite-dom/internal';
 import type {
@@ -134,6 +135,7 @@ export const useEditableRootRuntime = ({
   } = rootRuntimeState;
 
   IS_READ_ONLY.set(editor, readOnly);
+  setEditorReadOnly(editor, readOnly);
   const inputController = useMemo(
     () =>
       createEditableInputController({

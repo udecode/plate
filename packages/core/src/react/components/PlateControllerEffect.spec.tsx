@@ -4,10 +4,10 @@ import React from 'react';
 
 import { act, render, renderHook } from '@testing-library/react';
 import { useAtomStoreValue } from 'jotai-x';
+import * as pliteReactModule from '@platejs/plite-react';
 
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { createPlateEditor } from '../editor';
-import * as slateReactModule from '../slate-react';
 import { PlateController, usePlateControllerLocalStore } from '../stores';
 import { PlateControllerEffect } from './PlateControllerEffect';
 
@@ -55,7 +55,7 @@ const UnmountablePlate = ({
 const FocusedContext = React.createContext(false);
 
 // Hook that uses the context value
-const useFocused = () => React.useContext(FocusedContext);
+const useEditorFocused = () => React.useContext(FocusedContext);
 
 const ControlledFocusedContext = ({
   children,
@@ -77,8 +77,8 @@ const ControlledFocusedContext = ({
 };
 
 describe('ControlledFocusedContext', () => {
-  it('sets useFocused to false', () => {
-    const { result } = renderHook(() => useFocused(), {
+  it('sets useEditorFocused to false', () => {
+    const { result } = renderHook(() => useEditorFocused(), {
       wrapper: ({ children }) => (
         <ControlledFocusedContext initialFocused={false}>
           {children}
@@ -89,8 +89,8 @@ describe('ControlledFocusedContext', () => {
     expect(result.current).toBe(false);
   });
 
-  it('sets useFocused to true', () => {
-    const { result } = renderHook(() => useFocused(), {
+  it('sets useEditorFocused to true', () => {
+    const { result } = renderHook(() => useEditorFocused(), {
       wrapper: ({ children }) => (
         <ControlledFocusedContext initialFocused={true}>
           {children}
@@ -143,10 +143,10 @@ describe('PlateControllerEffect', () => {
           id: 'test',
         });
 
-        // Spy on useFocused to use our context value
+        // Spy on useEditorFocused to use our context value
         const useFocusedSpy = spyOn(
-          slateReactModule,
-          'useFocused'
+          pliteReactModule,
+          'useEditorFocused'
         ).mockImplementation(() => React.useContext(FocusedContext));
 
         const { getByText } = render(

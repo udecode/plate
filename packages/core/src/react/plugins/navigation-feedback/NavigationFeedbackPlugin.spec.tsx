@@ -21,8 +21,8 @@ describe('NavigationFeedbackPlugin', () => {
   it('updates navigation highlight attributes without a selection change', async () => {
     const editor = createPlateEditor({
       value: [{ children: [{ text: 'one' }], type: 'p' }],
-    } as any);
-    const initialSelection = editor.selection;
+    });
+    const initialSelection = editor.read.selection();
 
     const { getByText } = render(
       <Plate editor={editor}>
@@ -31,7 +31,7 @@ describe('NavigationFeedbackPlugin', () => {
     );
 
     const getHighlightedElement = () =>
-      getByText('one').closest('[data-slate-node="element"]') as HTMLElement;
+      getByText('one').closest('[data-plite-node="element"]') as HTMLElement;
 
     expect(
       getHighlightedElement().getAttribute('data-nav-highlight')
@@ -41,18 +41,20 @@ describe('NavigationFeedbackPlugin', () => {
       await Promise.resolve();
     });
 
-    expect(typeof editor.api.redecorate).toBe('function');
+    expect(typeof editor.api.react.refreshDecorations).toBe('function');
 
     act(() => {
-      editor.tf.navigation.flashTarget({
-        target: {
-          path: [0],
-          type: 'node',
-        },
+      editor.update((tx) => {
+        tx.navigation.flashTarget({
+          target: {
+            path: [0],
+            type: 'node',
+          },
+        });
       });
     });
 
-    expect(editor.selection).toEqual(initialSelection);
+    expect(editor.read.selection()).toEqual(initialSelection);
 
     await act(async () => {
       await flushMicrotasks();
@@ -63,7 +65,9 @@ describe('NavigationFeedbackPlugin', () => {
     expect(getHighlightedElement().getAttribute('data-nav-pulse')).toBe('1');
 
     act(() => {
-      editor.tf.navigation.clear();
+      editor.update((tx) => {
+        tx.navigation.clear();
+      });
     });
     expect(editor.api.navigation.activeTarget()).toBeNull();
 
@@ -79,7 +83,7 @@ describe('NavigationFeedbackPlugin', () => {
     const editor = createPlateEditor({
       navigationFeedback: { duration: 1200 },
       value: [{ children: [{ text: 'one' }], type: 'p' }],
-    } as any);
+    });
 
     expect(editor.getOption(NavigationFeedbackPlugin, 'duration')).toBe(1200);
   });

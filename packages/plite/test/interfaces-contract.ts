@@ -57,6 +57,29 @@ describe('plite interfaces contract', () => {
     assert.equal(TextApi.isTextProps({ text: '' }), true);
   });
 
+  it('checks node props while letting callers define metadata', () => {
+    const paragraph = { children: [{ text: '' }], type: 'p' };
+
+    assert.equal(NodeApi.hasProps({ text: '' }), false);
+    assert.equal(NodeApi.hasProps({ bold: true, text: '' }), true);
+    assert.equal(NodeApi.hasProps(paragraph), true);
+    assert.equal(
+      NodeApi.hasProps(paragraph, {
+        ignore: (key) => key === 'type',
+      }),
+      false
+    );
+    assert.equal(
+      NodeApi.hasProps(
+        { ...paragraph, id: 'a' },
+        {
+          ignore: (key) => key === 'type',
+        }
+      ),
+      true
+    );
+  });
+
   it('rejects plain objects as nodes', () => {
     assert.equal(NodeApi.isNode({}), false);
   });

@@ -1,6 +1,10 @@
 import type { NodeEntry, Range } from '@platejs/plite';
 
-import { type EditableProps, type BaseEditor, getBasePlugin } from '../../lib';
+import {
+  type BaseEditor,
+  type EditableProps,
+  getEditorPlugin,
+} from '../../lib';
 
 /**
  * @see {@link Decorate} .
@@ -12,7 +16,7 @@ export const pipeDecorate = (
     | ((ctx: { editor: BaseEditor; entry: NodeEntry }) => Range[] | undefined)
     | null
 ): EditableProps['decorate'] => {
-  if (editor.meta.pluginCache.decorate.length === 0 && !decorateProp) return;
+  if (editor.runtime.pluginCache.decorate.length === 0 && !decorateProp) return;
 
   return (entry: NodeEntry) => {
     let ranges: Range[] = [];
@@ -21,11 +25,11 @@ export const pipeDecorate = (
       if (newRanges?.length) ranges = [...ranges, ...newRanges];
     };
 
-    editor.meta.pluginCache.decorate.forEach((key) => {
+    editor.runtime.pluginCache.decorate.forEach((key) => {
       const plugin = editor.getPlugin({ key });
       addRanges(
         plugin.decorate!({
-          ...(getBasePlugin(editor, plugin) as any),
+          ...getEditorPlugin(editor, plugin),
           entry,
         })
       );

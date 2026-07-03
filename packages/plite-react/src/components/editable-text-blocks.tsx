@@ -13,6 +13,10 @@ import {
   type Text as PliteTextNode,
 } from '@platejs/plite';
 import {
+  getEditorMaxLength,
+  setEditorMaxLength,
+} from '@platejs/plite/internal';
+import {
   DOMCoverage,
   type DOMCoverageBoundary,
   type DOMCoverageCopyPolicy,
@@ -39,6 +43,7 @@ import {
   type PliteDecoration,
   type PliteOverlayProjectionStore,
 } from '../decoration-source';
+import { registerEditorDecorationRefreshSource } from '../decoration-refresh';
 import type { DOMStrategyOptions } from '../dom-strategy/create-segment-plan';
 import { DOMStrategySegmentPlaceholder } from '../dom-strategy/segment-placeholder';
 import {
@@ -176,6 +181,7 @@ export type EditableContentRootSlotOptions = {
   className?: string;
   disableDefaultStyles?: boolean;
   id?: string;
+  maxLength?: number;
   placeholder?: ReactNode;
   readOnly?: boolean;
   spellCheck?: boolean;
@@ -967,7 +973,6 @@ const EditableDescendantNode = React.memo(
 
 const EditableRootGroupInner = <T, TElement extends PliteElementNode>({
   endIndex,
-  groupId,
   placeholder,
   placeholderRef,
   renderElement,
@@ -1046,6 +1051,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
   disableDefaultStyles = false,
   enableVirtualizedRendering = false,
   id,
+  maxLength,
   domStrategy,
   domStrategyLayout,
   onBeforeInput,
@@ -1075,6 +1081,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
       ? (domStrategyOptions.textSync ?? null)
       : null;
   const editor = useEditor();
+  const { runtime } = useRequiredPliteRuntimeContext();
   const editableRoot = editor.read((state) => state.view.root());
   const inheritedReadOnly = useEditorReadOnly();
   const effectiveReadOnly = readOnly || inheritedReadOnly;
@@ -1093,6 +1100,19 @@ const EditableInner = <T, TElement extends PliteElementNode>({
       ),
     [decorateRuntimeScope]
   );
+
+  useIsomorphicLayoutEffect(() => {
+    if (maxLength === undefined) return;
+
+    const runtimeEditor = runtime.editor;
+    const previousMaxLength = getEditorMaxLength(runtimeEditor);
+
+    setEditorMaxLength(runtimeEditor, maxLength);
+
+    return () => {
+      setEditorMaxLength(runtimeEditor, previousMaxLength);
+    };
+  }, [maxLength, runtime.editor]);
   const hasDecorate = Boolean(decorate);
   const decorateSource = React.useMemo(() => {
     if (!hasDecorate) {
@@ -1600,6 +1620,22 @@ const EditableInner = <T, TElement extends PliteElementNode>({
       decorateSource.destroy();
     };
   }, [decorateSource]);
+  React.useEffect(() => {
+    const unregisterDecorateSource = decorateSource
+      ? registerEditorDecorationRefreshSource(editor, decorateSource)
+      : null;
+    const unregisterViewSelectionSource = viewSelectionDecorationSource
+      ? registerEditorDecorationRefreshSource(
+          editor,
+          viewSelectionDecorationSource
+        )
+      : null;
+
+    return () => {
+      unregisterDecorateSource?.();
+      unregisterViewSelectionSource?.();
+    };
+  }, [decorateSource, editor, viewSelectionDecorationSource]);
   React.useEffect(() => {
     decorateCell.current = decorate;
     decorateSource?.refresh({

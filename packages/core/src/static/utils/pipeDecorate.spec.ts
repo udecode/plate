@@ -1,3 +1,5 @@
+import type { Element, NodeEntry, Range } from '@platejs/plite';
+
 import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
 import { pipeDecorate } from './pipeDecorate';
@@ -14,26 +16,25 @@ describe('pipeDecorate', () => {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
       highlight: true,
-    };
+    } satisfies Range & { highlight: true };
     const rangeFromProp = {
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
       comment: true,
-    };
+    } satisfies Range & { comment: true };
     const HighlightPlugin = createBasePlugin({
       key: 'highlight',
-      decorate: () => [rangeFromPlugin as any],
+      decorate: () => [rangeFromPlugin],
     });
     const editor = createBaseEditor({
       plugins: [HighlightPlugin],
     });
-    const decorate = pipeDecorate(editor, () => [rangeFromProp as any])!;
+    const decorate = pipeDecorate(editor, () => [rangeFromProp])!;
+    const entry = [
+      { children: [{ text: 'alpha' }], type: 'p' },
+      [0],
+    ] satisfies NodeEntry<Element>;
 
-    expect(
-      decorate([
-        { children: [{ text: 'alpha' }], type: 'p' } as any,
-        [0],
-      ] as any)
-    ).toEqual([rangeFromPlugin, rangeFromProp]);
+    expect(decorate(entry)).toEqual([rangeFromPlugin, rangeFromProp]);
   });
 });

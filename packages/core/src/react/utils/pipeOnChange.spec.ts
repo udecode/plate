@@ -1,4 +1,4 @@
-import { createEditor } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 
 import { createPlateEditor } from '../editor/withPlate';
 import { createPlatePlugin } from '../plugin/createPlatePlugin';
@@ -7,7 +7,7 @@ import { pipeOnChange } from './pipeOnChange';
 describe('pipeOnChange', () => {
   it('skips edit-only handlers when the editor is read-only', () => {
     const onChange = mock(() => true);
-    const editor = createPlateEditor({
+    const editor = createPlateEditor<Value>({
       plugins: [
         createPlatePlugin({
           editOnly: true,
@@ -15,13 +15,14 @@ describe('pipeOnChange', () => {
           key: 'test',
         }),
       ],
+      readOnly: true,
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
     onChange.mockClear();
-    editor.dom.readOnly = true;
+    const value = [...editor.read.children()] as Value;
 
-    expect(pipeOnChange(editor, editor.children)).toBe(false);
+    expect(pipeOnChange(editor, value)).toBe(false);
     expect(onChange).not.toHaveBeenCalled();
   });
 
@@ -30,8 +31,7 @@ describe('pipeOnChange', () => {
     const second = mock(() => true);
     const third = mock(() => true);
 
-    const editor = createPlateEditor({
-      editor: createEditor(),
+    const editor = createPlateEditor<Value>({
       plugins: [
         createPlatePlugin({
           handlers: { onChange: first },
@@ -52,13 +52,14 @@ describe('pipeOnChange', () => {
     first.mockClear();
     second.mockClear();
     third.mockClear();
+    const value = [...editor.read.children()] as Value;
 
-    expect(pipeOnChange(editor, editor.children)).toBe(true);
+    expect(pipeOnChange(editor, value)).toBe(true);
     expect(first).toHaveBeenCalledTimes(1);
     expect(second).toHaveBeenCalledTimes(1);
     expect(third).not.toHaveBeenCalled();
     expect(second.mock.calls[0]?.[0]).toMatchObject({
-      value: editor.children,
+      value,
     });
   });
 });

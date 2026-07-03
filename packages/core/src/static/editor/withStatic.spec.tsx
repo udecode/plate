@@ -1,14 +1,15 @@
 /** @jsx jsxt */
-import { type Value, createEditor } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 
-import { createSlatePlugin, DOMPlugin } from '../../lib';
+import { createBasePlugin, DOMPlugin } from '../../lib';
+import { createBaseEditor } from '../../lib/editor';
 import { ViewPlugin } from '../plugins/ViewPlugin';
 import { createStaticEditor } from './withStatic';
 
 jsxt;
 
-describe('withStatic', () => {
+describe('extendStaticEditor', () => {
   describe('createStaticEditor', () => {
     it('create an editor with static plugins', () => {
       const editor = createStaticEditor({ id: '1' });
@@ -21,30 +22,30 @@ describe('withStatic', () => {
     it('include ViewPlugin in the plugin list', () => {
       const editor = createStaticEditor();
 
-      const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
+      const pluginKeys = editor.runtime.pluginList.map((plugin) => plugin.key);
       expect(pluginKeys).toContain(DOMPlugin.key);
     });
 
-    it('have ViewPlugin override transforms', () => {
+    it('exposes the ViewPlugin fragment API', () => {
       const editor = createStaticEditor();
 
-      // ViewPlugin overrides DOMPlugin, so we check the DOMPlugin has the override
+      // ViewPlugin extends DOMPlugin, so we check the DOM plugin is installed.
       const domPlugin = editor.getPlugin(DOMPlugin);
       expect(domPlugin).toBeDefined();
 
-      // The override should be applied through the plugin system
-      expect(editor.tf.setFragmentData).toBeDefined();
+      // The API should be applied through the plugin system.
+      expect(editor.api.getFragment).toBeDefined();
     });
   });
 
   describe('when plugins are provided', () => {
     it('add custom plugins after static plugins', () => {
-      const customPlugin = createSlatePlugin({ key: 'custom' });
+      const customPlugin = createBasePlugin({ key: 'custom' });
       const editor = createStaticEditor({
         plugins: [customPlugin],
       });
 
-      const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
+      const pluginKeys = editor.runtime.pluginList.map((plugin) => plugin.key);
       expect(pluginKeys).toContain('custom');
       expect(pluginKeys).toContain(DOMPlugin.key);
 
@@ -55,8 +56,8 @@ describe('withStatic', () => {
     });
 
     it('allow multiple custom plugins', () => {
-      const plugin1 = createSlatePlugin({ key: 'plugin1' });
-      const plugin2 = createSlatePlugin({ key: 'plugin2' });
+      const plugin1 = createBasePlugin({ key: 'plugin1' });
+      const plugin2 = createBasePlugin({ key: 'plugin2' });
 
       const editor = createStaticEditor({
         plugins: [plugin1, plugin2],
@@ -81,7 +82,7 @@ describe('withStatic', () => {
         value: value.children as Value,
       });
 
-      expect(editor.children).toEqual(value.children);
+      expect(editor.read.children()).toEqual(value.children);
     });
 
     it('handle HTML string values', () => {
@@ -91,7 +92,7 @@ describe('withStatic', () => {
         value: htmlString,
       });
 
-      expect(editor.children).toEqual([
+      expect(editor.read.children()).toEqual([
         {
           children: [{ text: 'Hello world' }],
           type: 'p',
@@ -120,7 +121,7 @@ describe('withStatic', () => {
         value: value.children as Value,
       });
 
-      expect(editor.selection).toEqual(selection);
+      expect(editor.read.selection()).toEqual(selection);
     });
   });
 
@@ -139,11 +140,12 @@ describe('withStatic', () => {
         value: value.children as Value,
       });
 
+      const start = editor.read.points.start([]);
       const expectedSelection = {
-        anchor: editor.api.start([]),
-        focus: editor.api.start([]),
+        anchor: start,
+        focus: start,
       };
-      expect(editor.selection as any).toEqual(expectedSelection);
+      expect(editor.read.selection()).toEqual(expectedSelection);
     });
 
     it('auto-select end of document', () => {
@@ -160,17 +162,18 @@ describe('withStatic', () => {
         value: value.children as Value,
       });
 
+      const end = editor.read.points.end([]);
       const expectedSelection = {
-        anchor: editor.api.end([]),
-        focus: editor.api.end([]),
+        anchor: end,
+        focus: end,
       };
-      expect(editor.selection as any).toEqual(expectedSelection);
+      expect(editor.read.selection()).toEqual(expectedSelection);
     });
   });
 
   describe('when using an existing editor', () => {
     it('enhance existing editor with static plugins', () => {
-      const existingEditor = createEditor();
+      const existingEditor = createBaseEditor();
       existingEditor.id = 'existing';
 
       const editor = createStaticEditor({
@@ -182,7 +185,7 @@ describe('withStatic', () => {
     });
 
     it('override existing editor id when new id is provided', () => {
-      const existingEditor = createEditor();
+      const existingEditor = createBaseEditor();
       existingEditor.id = 'old';
 
       const editor = createStaticEditor({
@@ -194,27 +197,27 @@ describe('withStatic', () => {
     });
   });
 
-  describe('integration with withSlate', () => {
+  describe('integration with extendBaseEditor', () => {
     it('properly integrate static plugins with core plugins', () => {
       const editor = createStaticEditor();
 
-      // Should have both core plugins from withSlate and static plugins
-      expect(editor.history).toBeDefined(); // from HistoryPlugin
-      expect(editor.dom).toBeDefined(); // from DOMPlugin
+      // Should have both core plugins from extendBaseEditor and static plugins
+      expect(editor.read((state) => state.history())).toBeDefined(); // from HistoryPlugin
+      expect(editor.read.view.isReadOnly()).toBe(false); // from Plite view
       expect(editor.getPlugin(ViewPlugin)).toBeDefined(); // static plugin
     });
 
     it('maintain plugin order with static plugins first', () => {
-      const customPlugin = createSlatePlugin({ key: 'custom' });
+      const customPlugin = createBasePlugin({ key: 'custom' });
       const editor = createStaticEditor({
         plugins: [customPlugin],
       });
 
-      const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
+      const pluginKeys = editor.runtime.pluginList.map((plugin) => plugin.key);
 
       // ViewPlugin (static) should come before custom plugins
       const viewPluginIndex = pluginKeys.findIndex((key) =>
-        editor.meta.pluginList.find((p) => p.key === key && p === ViewPlugin)
+        editor.runtime.pluginList.find((p) => p.key === key && p === ViewPlugin)
       );
       const customIndex = pluginKeys.indexOf('custom');
 
@@ -251,21 +254,21 @@ describe('withStatic', () => {
   });
 
   describe('plugin functionality', () => {
-    it('have setFragmentData transform from ViewPlugin', () => {
+    it('has getFragment API from ViewPlugin', () => {
       const editor = createStaticEditor();
 
-      expect(editor.tf.setFragmentData).toBeDefined();
-      expect(typeof editor.tf.setFragmentData).toBe('function');
+      expect(editor.api.getFragment).toBeDefined();
+      expect(typeof editor.api.getFragment).toBe('function');
     });
 
-    it('preserve other withSlate options', () => {
+    it('preserve other extendBaseEditor options', () => {
       const editor = createStaticEditor({
         shouldNormalizeEditor: true,
         value: [],
       });
 
       // Should normalize empty value to have at least one paragraph
-      expect(editor.children as any).toEqual([
+      expect(editor.read.children()).toEqual([
         {
           children: [{ text: '' }],
           type: 'p',

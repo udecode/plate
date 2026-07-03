@@ -1,9 +1,11 @@
-import { createSlateEditor, createSlatePlugin } from '../../lib';
+import { ElementApi } from '@platejs/plite';
+
+import { createBaseEditor, createBasePlugin } from '../../lib';
 import { getRenderNodeStaticProps } from './getRenderNodeStaticProps';
 
 describe('getRenderNodeStaticProps', () => {
   it('merges plugin props, allowed attrs, slate classes, and injected node props', () => {
-    const ParagraphPlugin = createSlatePlugin({
+    const ParagraphPlugin = createBasePlugin({
       key: 'p',
       node: {
         dangerouslyAllowAttributes: ['target'],
@@ -15,7 +17,7 @@ describe('getRenderNodeStaticProps', () => {
         type: 'p',
       },
     });
-    const AlignPlugin = createSlatePlugin({
+    const AlignPlugin = createBasePlugin({
       key: 'align',
       inject: {
         nodeProps: {
@@ -25,7 +27,7 @@ describe('getRenderNodeStaticProps', () => {
         },
       },
     });
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [ParagraphPlugin, AlignPlugin],
       value: [
         {
@@ -35,11 +37,15 @@ describe('getRenderNodeStaticProps', () => {
         },
       ],
     });
-    const element = editor.children[0] as any;
+    const element = editor.read.children()[0];
+
+    if (!ElementApi.isElement(element)) {
+      throw new Error('expected element fixture');
+    }
 
     const result = getRenderNodeStaticProps({
       attributes: {
-        'data-slate-align': 'center',
+        'data-plite-align': 'center',
         ignored: 'nope',
         target: '_blank',
       },
@@ -51,24 +57,24 @@ describe('getRenderNodeStaticProps', () => {
         children: null,
         className: 'user-class',
         element,
-      } as any,
+      },
     });
 
     expect(result.attributes).toMatchObject({
       'data-has-editor': 'yes',
-      'data-slate-align': 'center',
+      'data-plite-align': 'center',
       style: { textAlign: 'center' },
       target: '_blank',
     });
     expect(result.attributes?.ignored).toBeUndefined();
     expect(result.attributes?.title).toBeUndefined();
-    expect(result.attributes?.className).toContain('slate-p');
+    expect(result.attributes?.className).toContain('plite-p');
     expect(result.attributes?.className).toContain('user-class');
-    expect(result.attributes?.className).toContain('slate-align-center');
+    expect(result.attributes?.className).toContain('plite-align-center');
   });
 
   it('falls back to editor context and removes empty top-level style objects', () => {
-    const editor = createSlateEditor();
+    const editor = createBaseEditor();
 
     const result = getRenderNodeStaticProps({
       editor,
@@ -77,12 +83,12 @@ describe('getRenderNodeStaticProps', () => {
         children: null,
         style: {},
         text: { text: 'hello' },
-      } as any,
+      },
     });
 
     expect(result.api).toBe(editor.api);
     expect(result.editor).toBe(editor);
-    expect(result.tf).toBe(editor.transforms);
+    expect(result).not.toHaveProperty('tf');
     expect(result.style).toBeUndefined();
   });
 });

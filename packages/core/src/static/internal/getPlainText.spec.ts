@@ -4,7 +4,7 @@ describe('getPlainText', () => {
   const originalGetComputedStyle = globalThis.getComputedStyle;
 
   beforeEach(() => {
-    globalThis.getComputedStyle = mock((element: Element) => {
+    globalThis.getComputedStyle = ((element: Element) => {
       const display =
         element.tagName === 'P'
           ? 'block'
@@ -15,7 +15,7 @@ describe('getPlainText', () => {
       return {
         getPropertyValue: (name: string) => (name === 'display' ? display : ''),
       } as CSSStyleDeclaration;
-    }) as any;
+    }) as typeof globalThis.getComputedStyle;
   });
 
   afterEach(() => {
@@ -25,7 +25,7 @@ describe('getPlainText', () => {
   it('returns text node values directly', () => {
     const textNode = document.createTextNode('hello');
 
-    expect(getPlainText(textNode as any)).toBe('hello');
+    expect(getPlainText(textNode)).toBe('hello');
   });
 
   it('collects nested text and appends newlines for block, list, and br nodes', () => {
@@ -40,6 +40,6 @@ describe('getPlainText', () => {
     list.append(listItem);
     root.append(paragraph, list);
 
-    expect(getPlainText(root as any)).toBe('Hello\nWorld\nItem\n');
+    expect(getPlainText(root)).toBe('Hello\nWorld\nItem\n');
   });
 });

@@ -19,7 +19,7 @@ export function EditorHotkeysEffect({
   return (
     <>
       {Object.entries(
-        editor.meta.shortcuts as Record<string, Shortcut | null | undefined>
+        editor.runtime.shortcuts as Record<string, Shortcut | null | undefined>
       ).map(([hotkeyString, hotkeyConfig]) => {
         if (
           !hotkeyConfig ||

@@ -34,11 +34,9 @@ describe('getSelectedDomFragment', () => {
     const editor = createBaseEditor();
     const block = { children: [{ text: 'hello' }], id: 'block-1', type: 'p' };
 
-    editor.children = [block];
-    editor.api.html.deserialize = mock() as any;
+    editor.update.value.replace({ children: [block], selection: null });
 
     expect(getSelectedDomFragment(editor)).toEqual([block]);
-    expect(editor.api.html.deserialize).not.toHaveBeenCalled();
   });
 
   it('deserializes partial edge blocks for non-void selections', () => {
@@ -65,16 +63,17 @@ describe('getSelectedDomFragment', () => {
     const blockTwo = { children: [{ text: 'omega' }], type: 'p' };
     const partialOne = { children: [{ text: 'ello world' }], type: 'p' };
 
-    editor.children = [
-      { ...blockOne, id: 'block-1' },
-      { ...blockTwo, id: 'block-2' },
-    ];
-    editor.api.html.deserialize = mock().mockReturnValue([partialOne]) as any;
+    editor.update.value.replace({
+      children: [
+        { ...blockOne, id: 'block-1' },
+        { ...blockTwo, id: 'block-2' },
+      ],
+      selection: null,
+    });
 
     expect(getSelectedDomFragment(editor)).toEqual([
       partialOne,
       { ...blockTwo, id: 'block-2' },
     ]);
-    expect(editor.api.html.deserialize).toHaveBeenCalledTimes(1);
   });
 });

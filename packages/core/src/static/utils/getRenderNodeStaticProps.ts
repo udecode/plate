@@ -1,20 +1,29 @@
-import type { Path, TElement, TText } from '@platejs/slate';
+import type { Element, Path, Text } from '@platejs/plite';
 import type { AnyObject } from '@udecode/utils';
+import type React from 'react';
 
 import clsx from 'clsx';
 
-import type { SlateRenderNodeProps } from '../types';
+import type { PliteRenderNodeProps } from '../types';
 
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import {
-  type AnyEditorPlugin,
-  type SlateEditor,
+  type AnyBasePlugin,
+  type BaseEditor,
   getEditorPlugin,
   getPluginNodeProps,
-  getSlateClass,
+  getPluginNodeClass,
 } from '../../lib';
 
-export const getRenderNodeStaticProps = ({
+type StaticNodePropsInput = Partial<PliteRenderNodeProps> &
+  Record<string, unknown> & {
+    attributes?: AnyObject;
+    className?: string;
+    nodeProps?: AnyObject;
+    style?: React.CSSProperties;
+  };
+
+export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
   attributes: nodeAttributes,
   editor,
   node,
@@ -22,24 +31,23 @@ export const getRenderNodeStaticProps = ({
   plugin,
   props,
 }: {
-  editor: SlateEditor;
-  props: SlateRenderNodeProps;
+  editor: BaseEditor;
+  props: TProps;
   attributes?: AnyObject;
-  node?: TElement | TText;
-  /** Pre-computed path to avoid expensive findPath traversal */
+  node?: Element | Text;
+  /** Pre-computed path to avoid expensive node path lookup */
   path?: Path;
-  plugin?: AnyEditorPlugin;
-}): SlateRenderNodeProps => {
+  plugin?: AnyBasePlugin;
+}): TProps & PliteRenderNodeProps => {
   let newProps = {
     ...props,
     ...(plugin
-      ? (getEditorPlugin(editor, plugin) as any)
+      ? getEditorPlugin(editor, plugin)
       : {
           api: editor.api,
           editor,
-          tf: editor.transforms,
         }),
-  };
+  } as TProps & PliteRenderNodeProps;
 
   const { className } = props;
 
@@ -54,15 +62,16 @@ export const getRenderNodeStaticProps = ({
     ...pluginProps,
     attributes: {
       ...pluginProps.attributes,
-      className: clsx(getSlateClass(plugin?.node.type), className) || undefined,
+      className:
+        clsx(getPluginNodeClass(plugin?.node.type), className) || undefined,
     },
-  };
+  } as TProps & PliteRenderNodeProps;
 
   newProps = pipeInjectNodeProps(
     editor,
     newProps,
-    path ? () => path : (node) => editor.api.findPath(node)!
-  );
+    path ? () => path : (node) => editor.read.nodes.pathOf(node)!
+  ) as TProps & PliteRenderNodeProps;
 
   if (newProps.style && Object.keys(newProps.style).length === 0) {
     newProps.style = undefined;

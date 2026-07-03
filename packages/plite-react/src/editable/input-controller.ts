@@ -5,6 +5,7 @@ import type {
   KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 import type { Editor } from '@platejs/plite';
+import { setEditorComposing } from '@platejs/plite/internal';
 import { Hotkeys, isDOMElement, isDOMText } from '@platejs/plite-dom';
 import { IS_COMPOSING } from '@platejs/plite-dom/internal';
 
@@ -430,4 +431,5 @@ export const setEditableComposingState = ({
   }
   setIsComposing(nextValue);
   IS_COMPOSING.set(editor, nextValue);
+  setEditorComposing(editor, nextValue);
 };

@@ -3,4 +3,3 @@
  */
 
 export * from './DOMPlugin';
-export * from './withScrolling';

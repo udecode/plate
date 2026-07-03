@@ -29,7 +29,7 @@ import { History, history } from '../src';
 const PLITE_IMPORT_RE = /import \{ createEditor \} from "@platejs\/plite"/;
 const PLITE_REACT_IMPORT_RE =
   /import \{ usePliteEditor \} from ["']@platejs\/plite-react["']/;
-const HISTORY_RUN_DOC_RE = /editor\.api\.history\.run\(\{ save: false \}/;
+const HISTORY_SKIP_DOC_RE = /editor\.update\.history\.skip\(\(tx\) =>/;
 const USE_PLITE_EDITOR_RE = /const editor = usePliteEditor\(\{/;
 const CREATE_REACT_EDITOR_RE = /createReactEditor/;
 
@@ -100,7 +100,7 @@ describe('plite-history contract', () => {
 
     assert.match(docs, PLITE_IMPORT_RE);
     assert.match(docs, PLITE_REACT_IMPORT_RE);
-    assert.match(docs, HISTORY_RUN_DOC_RE);
+    assert.match(docs, HISTORY_SKIP_DOC_RE);
     assert.match(docs, USE_PLITE_EDITOR_RE);
     assert.doesNotMatch(docs, CREATE_REACT_EDITOR_RE);
   });
@@ -785,17 +785,15 @@ describe('plite-history contract', () => {
       ]);
     });
 
-    headerEditor.api.history.run({ save: false }, () => {
-      write(headerEditor, (tx) => {
-        tx.operations.replay([
-          {
-            node: paragraph('remote'),
-            path: [0],
-            root: 'header',
-            type: 'insert_node',
-          },
-        ]);
-      });
+    headerEditor.update.history.skip((tx) => {
+      tx.operations.replay([
+        {
+          node: paragraph('remote'),
+          path: [0],
+          root: 'header',
+          type: 'insert_node',
+        },
+      ]);
     });
 
     const operation = getHistory(headerEditor).undos[0]?.operations[0];
@@ -825,7 +823,7 @@ describe('plite-history contract', () => {
     );
   });
 
-  it('rebases saved undo batches across local history.run({ save: false }) document edits', () => {
+  it('rebases saved undo batches across local editor.update.history.skip document edits', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('abcdef')], {
@@ -837,10 +835,8 @@ describe('plite-history contract', () => {
       tx.text.insert('X');
     });
 
-    editor.api.history.run({ save: false }, () => {
-      write(editor, (tx) => {
-        tx.text.insert('Y', { at: { path: [0, 0], offset: 0 } });
-      });
+    editor.update.history.skip((tx) => {
+      tx.text.insert('Y', { at: { path: [0, 0], offset: 0 } });
     });
 
     const operation = getHistory(editor).undos[0]?.operations[0];
@@ -856,7 +852,7 @@ describe('plite-history contract', () => {
     assert.equal(editorString(editor, [0]), 'Yabcdef');
   });
 
-  it('drops saved undo batches deleted by local history.run({ save: false }) edits', () => {
+  it('drops saved undo batches deleted by local editor.update.history.skip edits', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('ab')], {
@@ -871,14 +867,12 @@ describe('plite-history contract', () => {
     assert.equal(editorString(editor, [0]), 'aXb');
     assert.equal(getHistory(editor).undos.length, 1);
 
-    editor.api.history.run({ save: false }, () => {
-      write(editor, (tx) => {
-        tx.text.delete({
-          at: {
-            anchor: { path: [0, 0], offset: 0 },
-            focus: { path: [0, 0], offset: 2 },
-          },
-        });
+    editor.update.history.skip((tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 2 },
+        },
       });
     });
 
@@ -892,7 +886,7 @@ describe('plite-history contract', () => {
     assert.equal(getHistory(editor).redos.length, 0);
   });
 
-  it('rebases saved non-main split positions across history.run({ save: false }) text edits', () => {
+  it('rebases saved non-main split positions across editor.update.history.skip text edits', () => {
     const editor = createEditor({
       extensions: [history()],
       initialValue: {
@@ -913,11 +907,9 @@ describe('plite-history contract', () => {
       ]);
     });
 
-    editor.api.history.run({ save: false }, () => {
-      write(editor, (tx) => {
-        tx.text.insert('Y', {
-          at: { offset: 0, path: [0, 0], root: 'header' },
-        });
+    editor.update.history.skip((tx) => {
+      tx.text.insert('Y', {
+        at: { offset: 0, path: [0, 0], root: 'header' },
       });
     });
 

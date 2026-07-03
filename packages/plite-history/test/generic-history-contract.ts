@@ -34,32 +34,31 @@ const directUndoCount: number = editor.read.history.undos().length;
 editor.update((tx) => {
   tx.history.undo();
   tx.history.redo();
+  tx.history.skip();
+  tx.history.merge();
+  tx.history.newBatch();
 });
 editor.update.history.undo();
 editor.update.history.redo();
-
-editor.api.history.run({ save: false }, () => {
-  editor.update((tx) => {
-    tx.text.insert('b');
-  });
+editor.update.history.skip((tx) => {
+  tx.text.insert('b');
 });
-editor.api.history.run({ merge: false }, () => {
-  editor.update((tx) => {
-    tx.text.insert('c');
-  });
+editor.update.history.merge((tx) => {
+  tx.text.insert('c');
 });
-editor.getApi(HistoryExtension).run({ newBatch: true }, () => {
-  editor.update((tx) => {
-    tx.text.insert('d');
-  });
+editor.update.history.newBatch((tx) => {
+  tx.text.insert('d');
 });
 
 const assertHistoryTypeErrors = () => {
   // @ts-expect-error history stacks are read through state.history
-  editor.api.history.undos();
+  editor.api['history'].undos();
 
   // @ts-expect-error undo is a replayable tx action, not an ambient api action
-  editor.api.history.undo();
+  editor.api['history'].undo();
+
+  // @ts-expect-error history controls are tx/update methods, not runtime api methods
+  void editor.api['history'];
 
   // @ts-expect-error history is extension state, not an editor root field
   void editor.history;

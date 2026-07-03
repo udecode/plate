@@ -22,6 +22,9 @@ import {
 
 type DOMTestEditor = ReturnType<typeof createNestedEditor>;
 
+const CANNOT_RESOLVE_DOM_NODE_FROM_PLITE_NODE =
+  /Cannot resolve a DOM node from Plite node/;
+
 const createNestedEditor = () => {
   const editor = createEditor({ extensions: [dom()] });
 
@@ -214,7 +217,7 @@ describe('DOM coverage boundaries', () => {
       const hiddenPoint = { path: [0, 1, 0], offset: 3 };
 
       expect(() => editor.api.dom.assertDOMPoint(hiddenPoint)).toThrow(
-        /Cannot resolve a DOM node from Plite node/
+        CANNOT_RESOLVE_DOM_NODE_FROM_PLITE_NODE
       );
       expect(
         DOMCoverage.resolveDOMPointOrBoundary(editor, hiddenPoint)
@@ -597,7 +600,7 @@ describe('DOM coverage boundaries', () => {
     });
 
     expect(() => editor.api.dom.assertDOMPoint(hiddenPoint)).toThrow(
-      /Cannot resolve a DOM node from Plite node/
+      CANNOT_RESOLVE_DOM_NODE_FROM_PLITE_NODE
     );
     expect(
       DOMCoverage.resolveDOMPointOrBoundary(editor, hiddenPoint)
@@ -786,7 +789,7 @@ describe('DOM coverage boundaries', () => {
       expect(editor.api.dom.resolveDOMRange(hiddenRange)).toBeNull();
       expect(editor.api.dom.resolveRangeRect(hiddenRange)).toBeNull();
       expect(() => editor.api.dom.assertDOMPoint(hiddenPoint)).toThrow(
-        /Cannot resolve a DOM node from Plite node/
+        CANNOT_RESOLVE_DOM_NODE_FROM_PLITE_NODE
       );
       expect(
         DOMCoverage.resolveDOMPointOrBoundary(editor, hiddenPoint)

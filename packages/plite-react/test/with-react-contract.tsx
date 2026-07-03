@@ -20,7 +20,7 @@ const withNavigator = async (userAgent: string, run: () => Promise<void>) => {
     if (descriptor) {
       Object.defineProperty(globalThis, 'navigator', descriptor);
     } else {
-      delete (globalThis as { navigator?: Navigator }).navigator;
+      (globalThis as { navigator?: Navigator }).navigator = undefined;
     }
   }
 };
@@ -53,7 +53,7 @@ test('react() clears pending selection before Android insertText bridge calls', 
         focus: { path: [0, 0], offset: 0 },
       });
 
-      editor.update((tx) => {
+      editor.update(() => {
         editorInsertText(editor, '!');
       });
 

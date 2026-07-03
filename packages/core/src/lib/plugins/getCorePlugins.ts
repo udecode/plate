@@ -1,5 +1,7 @@
 import type { AnyPluginConfig, PluginConfig } from '../plugin/SlatePlugin';
 import type { BasePlugin, InferConfig } from '../plugin/BasePlugin';
+import type { ReactApi } from '@platejs/plite-react';
+import type { HistoryExtensionTypes } from '@platejs/plite-history';
 
 import { AstPlugin } from './AstPlugin';
 import { HistoryPlugin } from './HistoryPlugin';
@@ -7,20 +9,12 @@ import { OverridePlugin } from './override/OverridePlugin';
 import { ParserPlugin } from './ParserPlugin';
 import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
 import { type DomConfig, DOMPlugin } from './dom';
-import { type HtmlConfig, HtmlPlugin } from './html';
+import { type ElementStateConfig, ElementStatePlugin } from './element-state';
+import { type HtmlApi, HtmlPlugin } from './html';
 import { InputRulesPlugin } from './input-rules/internal/InputRulesPlugin';
-import { LengthPlugin } from './length';
-import {
-  type NavigationFeedbackConfig,
-  NavigationFeedbackPlugin,
-} from './navigation-feedback';
 import { type AffinityConfig, AffinityPlugin } from './affinity';
 import { type NodeIdConfig, NodeIdPlugin } from './node-id/NodeIdPlugin';
 import { type ParagraphConfig, BaseParagraphPlugin } from './paragraph';
-import {
-  type SlateExtensionConfig,
-  SlateExtensionPlugin,
-} from './slate-extension';
 
 export type CorePlugin = ReturnType<typeof getCorePlugins>[number];
 
@@ -28,14 +22,19 @@ export type CorePluginConfig =
   | AffinityConfig
   | DebugConfig
   | DomConfig
-  | LengthConfig
-  | NavigationFeedbackConfig
+  | ElementStateConfig
   | NodeIdConfig
   | ParagraphConfig
-  | SlateExtensionConfig
   | PluginConfig<'ast'>
-  | PluginConfig<'history'>
-  | HtmlConfig
+  | PluginConfig<
+      'history',
+      {},
+      {},
+      HistoryExtensionTypes['tx'],
+      {},
+      HistoryExtensionTypes['state']
+    >
+  | PluginConfig<'html'>
   | PluginConfig<'inputRules'>
   | PluginConfig<'override'>
   | PluginConfig<'parser'>;
@@ -43,24 +42,15 @@ export type CorePluginConfig =
 export type GetCorePluginsOptions = {
   /** Enable mark/element affinity. */
   affinity?: boolean;
-  /** Specifies the maximum number of characters allowed in the editor. */
-  maxLength?: number;
-  /** Configure the navigation feedback plugin. */
-  navigationFeedback?: NavigationFeedbackConfig['options'] | boolean;
   /** Configure the node id plugin. */
   nodeId?: NodeIdConfig['options'] | boolean;
-  /** Initial read-only state for base editors. */
-  readOnly?: boolean;
   /** Override the core plugins using the same key. */
   plugins?: AnyPluginConfig[];
 };
 
 export const getCorePlugins = ({
   affinity,
-  maxLength,
-  navigationFeedback,
   nodeId,
-  readOnly,
   plugins = [],
 }: GetCorePluginsOptions) => {
   // Disable nodeId by default in test environment for deterministic tests
@@ -71,26 +61,12 @@ export const getCorePlugins = ({
 
   const corePlugins = [
     DebugPlugin as BasePlugin<DebugConfig>,
-    SlateExtensionPlugin,
-    DOMPlugin.configure({
-      options: {
-        readOnly: readOnly ?? false,
-      },
-    }),
-    NavigationFeedbackPlugin.configure({
-      enabled: navigationFeedback !== false,
-      options:
-        typeof navigationFeedback === 'boolean'
-          ? undefined
-          : navigationFeedback,
-    }),
+    ElementStatePlugin,
+    DOMPlugin,
     HistoryPlugin,
     InputRulesPlugin,
     OverridePlugin,
     ParserPlugin,
-    maxLength
-      ? LengthPlugin.configure({ options: { maxLength } })
-      : LengthPlugin,
     HtmlPlugin,
     AstPlugin,
     NodeIdPlugin.configure({
@@ -127,15 +103,14 @@ export const getCorePlugins = ({
   return resolvedCorePlugins;
 };
 
-export type CorePluginApi = SlateExtensionConfig['api'] &
-  NavigationFeedbackConfig['api'] &
-  DebugConfig['api'] &
+export type CorePluginApi = ElementStateConfig['api'] & {
+  react: ReactApi;
+} & DebugConfig['api'] &
   DomConfig['api'] &
   InferConfig<typeof HistoryPlugin>['api'] &
-  HtmlConfig['api'];
+  HtmlApi;
 
-export type CorePluginTx = NavigationFeedbackConfig['tx'] &
-  DomConfig['tx'] &
+export type CorePluginTx = DomConfig['tx'] &
   InferConfig<typeof HistoryPlugin>['tx'] &
   InferConfig<typeof NodeIdPlugin>['tx'];
 
@@ -158,13 +133,6 @@ export type DebugConfig = PluginConfig<
       log: (message: string, type?: DebugErrorType, details?: any) => void;
       warn: (message: string, type?: DebugErrorType, details?: any) => void;
     };
-  }
->;
-
-export type LengthConfig = PluginConfig<
-  'length',
-  {
-    maxLength: number;
   }
 >;
 

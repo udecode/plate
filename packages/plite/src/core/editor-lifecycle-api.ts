@@ -266,6 +266,7 @@ export const createEditorUpdateApi = <
     ) as EditorUpdateMethods<V>[TGroup];
 
   const methods = {
+    blocks: createGroup('blocks'),
     break: createGroup('break'),
     fragment: createGroup('fragment'),
     marks: createGroup('marks'),

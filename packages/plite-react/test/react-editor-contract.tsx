@@ -21,6 +21,15 @@ describe('plite-react DOM capability contract', () => {
     return event;
   };
 
+  test('editor.api.react.refreshDecorations is a stable React API method', () => {
+    const editor = createReactEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
+    });
+
+    expect(typeof editor.api.react.refreshDecorations).toBe('function');
+    expect(() => editor.api.react.refreshDecorations()).not.toThrow();
+  });
+
   test('editor.api.dom.focus initializes a null selection at the top of the document', async () => {
     const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
     const editor = createReactEditor({ initialValue });

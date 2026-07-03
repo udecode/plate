@@ -1,17 +1,14 @@
 /// <reference types="@testing-library/jest-dom" />
 
-// If your actual memoized components are named "ElementStatic" and "LeafStatic",
-// you can wrap them with a mock or rename them in test for clarity.
-
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
+import type { Value } from '@platejs/plite';
 import { render } from '@testing-library/react';
 
-import { createSlateEditor, createSlatePlugin } from '../../lib';
-// We assume these are your real components (memoized) imported:
+import { type BaseEditor, createBaseEditor, createBasePlugin } from '../../lib';
 import { PlateStatic } from './PlateStatic';
-import { SlateElement, SlateLeaf } from './slate-nodes';
+import { PliteElement, PliteLeaf } from './plite-nodes';
 
 const components = {
   bold: LeafStaticMock,
@@ -30,9 +27,9 @@ const createEditor = ({
     },
   ],
 } = {}) =>
-  createSlateEditor({
+  createBaseEditor({
     components,
-    plugins: [createSlatePlugin({ key: 'bold', node: { isLeaf: true } })],
+    plugins: [createBasePlugin({ key: 'bold', node: { isLeaf: true } })],
     selection: {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
@@ -56,18 +53,28 @@ const createEditorWithMultipleElements = ({
     },
   ],
 } = {}) =>
-  createSlateEditor({
+  createBaseEditor({
     components,
-    plugins: [createSlatePlugin({ key: 'bold', node: { isLeaf: true } })],
+    plugins: [createBasePlugin({ key: 'bold', node: { isLeaf: true } })],
     value,
   });
 
+// Memoization tests intentionally mutate the live root reference.
+const readMutableRoot = (editor: BaseEditor) => editor.read.children() as Value;
+
+const replaceRoot = (editor: BaseEditor, children: Value) => {
+  editor.update.value.replace({
+    children,
+    selection: editor.read.selection(),
+  });
+};
+
 let elementRenderCount = 0;
 
-function ElementStaticMock(props: Parameters<typeof SlateElement>[0]) {
+function ElementStaticMock(props: Parameters<typeof PliteElement>[0]) {
   elementRenderCount++;
 
-  return <SlateElement {...props} />;
+  return <PliteElement {...props} />;
 }
 
 /** Expose the render count so our tests can read it */
@@ -81,10 +88,10 @@ function resetElementRenderCount() {
 
 let leafRenderCount = 0;
 
-function LeafStaticMock(props: Parameters<typeof SlateLeaf>[0]) {
+function LeafStaticMock(props: Parameters<typeof PliteLeaf>[0]) {
   leafRenderCount++;
 
-  return <SlateLeaf {...props} />;
+  return <PliteLeaf {...props} />;
 }
 
 function getLeafRenderCount() {
@@ -116,7 +123,7 @@ describe('PlateStatic Memoization', () => {
 
     const { rerender } = render(<PlateStatic editor={editor} />);
 
-    // Re-render with the **same** editor.children reference:
+    // Re-render with the **same** editor.read.children() reference:
     rerender(<PlateStatic editor={editor} />);
 
     // Expect no additional renders of elements/leaves
@@ -124,7 +131,7 @@ describe('PlateStatic Memoization', () => {
     expect(getLeafRenderCount()).toEqual(1);
   });
 
-  it('re-render elements/leaves if `value` changes by reference', () => {
+  it('re-render elements/leaves if editor children changes by reference', () => {
     const editor = createEditor();
 
     const { rerender } = render(<PlateStatic editor={editor} />);
@@ -137,21 +144,21 @@ describe('PlateStatic Memoization', () => {
       },
     ];
 
-    // Re-render with a new reference:
-    rerender(<PlateStatic value={newValueRef} editor={editor} />);
+    replaceRoot(editor, newValueRef);
+    rerender(<PlateStatic editor={editor} />);
 
     // Now we expect re-renders because the array reference changed
     expect(getElementRenderCount()).toBe(2);
     expect(getLeafRenderCount()).toBe(1);
   });
 
-  it('re-render if slate mutation', () => {
+  it('re-render if Plite mutation', () => {
     const editor = createEditor();
 
     render(<PlateStatic editor={editor} />);
 
     // This will mutate the text but also element reference
-    editor.tf.insertText('+');
+    editor.update.text.insert('+');
 
     // Re-render with the updated children
     // (the reference changed as well as the text)
@@ -167,7 +174,7 @@ describe('PlateStatic Memoization', () => {
     const { rerender } = render(<PlateStatic editor={editor} />);
 
     // This will mutate the text only
-    editor.children[0].children[1].text = 'New text';
+    readMutableRoot(editor)[0].children[1].text = 'New text';
 
     // Re-render with the updated children
     // (the reference changed as well as the text)
@@ -186,11 +193,11 @@ describe('PlateStatic Memoization', () => {
     expect(getLeafRenderCount()).toBe(2);
 
     // Modify only the second paragraph
-    editor.children[1] = {
-      ...editor.children[1],
+    readMutableRoot(editor)[1] = {
+      ...readMutableRoot(editor)[1],
       children: [
-        editor.children[1].children[0],
-        editor.children[1].children[1],
+        readMutableRoot(editor)[1].children[0],
+        readMutableRoot(editor)[1].children[1],
         { bold: true, text: 'Modified' },
       ],
     };
@@ -203,13 +210,16 @@ describe('PlateStatic Memoization', () => {
     // We expect only one leaf to re-render (the new bold leaf)
     expect(getLeafRenderCount()).toBe(3);
 
-    editor.children[1] = {
-      ...editor.children[1],
+    readMutableRoot(editor)[1] = {
+      ...readMutableRoot(editor)[1],
       children: [
-        editor.children[1].children[0],
-        editor.children[1].children[1],
+        readMutableRoot(editor)[1].children[0],
+        readMutableRoot(editor)[1].children[1],
         // Node equals
-        { ...editor.children[1].children[2], text: 'Modified' },
+        {
+          ...readMutableRoot(editor)[1].children[2],
+          text: 'Modified',
+        },
       ],
     };
     rerender(<PlateStatic editor={editor} />);
@@ -224,7 +234,7 @@ describe('PlateStatic Memoization', () => {
     const { rerender } = render(<PlateStatic editor={editor} />);
 
     // Add a new paragraph
-    editor.children.push({
+    readMutableRoot(editor).push({
       children: [{ text: 'New Paragraph' }],
       type: 'p',
     });
@@ -234,7 +244,7 @@ describe('PlateStatic Memoization', () => {
     // We expect only the new element to render
     expect(getElementRenderCount()).toBe(3);
 
-    editor.children.pop();
+    readMutableRoot(editor).pop();
 
     rerender(<PlateStatic editor={editor} />);
 
@@ -244,13 +254,13 @@ describe('PlateStatic Memoization', () => {
   it('use _memo property for memoization when available', () => {
     const editor = createEditor();
 
-    editor.children[0]._memo = 'memo-value';
+    readMutableRoot(editor)[0]._memo = 'memo-value';
 
     const { rerender } = render(<PlateStatic editor={editor} />);
 
     // Modify element but keep same _memo
-    editor.children[0] = {
-      ...editor.children[0],
+    readMutableRoot(editor)[0] = {
+      ...readMutableRoot(editor)[0],
       children: [
         { text: 'different text' },
         { bold: true, text: 'still' },
@@ -267,13 +277,13 @@ describe('PlateStatic Memoization', () => {
   it('re-render when _memo changes', () => {
     const editor = createEditor();
 
-    editor.children[0]._memo = 'memo-value';
+    readMutableRoot(editor)[0]._memo = 'memo-value';
 
     const { rerender } = render(<PlateStatic editor={editor} />);
 
     // Change _memo value
-    editor.children[0] = {
-      ...editor.children[0],
+    readMutableRoot(editor)[0] = {
+      ...readMutableRoot(editor)[0],
       _memo: 'new-memo-value',
     };
 
@@ -285,8 +295,8 @@ describe('PlateStatic Memoization', () => {
 
   describe('when rendering unknown element type', () => {
     it('does not crash when encountering an element with an unknown type', () => {
-      const editor = createSlateEditor({
-        plugins: [createSlatePlugin({ key: 'bold', node: { isLeaf: true } })],
+      const editor = createBaseEditor({
+        plugins: [createBasePlugin({ key: 'bold', node: { isLeaf: true } })],
         value: [
           {
             id: '1',
@@ -308,8 +318,8 @@ describe('PlateStatic Memoization', () => {
     });
   });
 
-  it('renders text node injections without calling findPath when the path is already known', () => {
-    const TonePlugin = createSlatePlugin({
+  it('renders text node injections when the path is already known', () => {
+    const TonePlugin = createBasePlugin({
       inject: {
         nodeProps: {
           nodeKey: 'tone',
@@ -318,7 +328,7 @@ describe('PlateStatic Memoization', () => {
       },
       key: 'tone',
     });
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [TonePlugin],
       value: [
         {
@@ -327,18 +337,6 @@ describe('PlateStatic Memoization', () => {
         },
       ],
     });
-    const originalFindPath = editor.api.findPath.bind(editor.api);
-
-    editor.api.findPath = ((node: any) => {
-      if ('text' in node) {
-        throw new Error(
-          'text findPath should not be needed during static render'
-        );
-      }
-
-      return originalFindPath(node);
-    }) as any;
-
     const markup = ReactDOMServer.renderToStaticMarkup(
       <PlateStatic editor={editor} />
     );

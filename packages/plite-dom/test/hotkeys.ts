@@ -1,5 +1,7 @@
 import { Hotkeys, isHotkey, type KeyboardEventLike } from '../src/index';
 
+const MAC_OS_X_USER_AGENT = /Mac OS X/;
+
 const event = ({
   altKey = false,
   code = '',
@@ -91,7 +93,7 @@ describe('plite-dom hotkeys', () => {
         event({ ctrlKey: true, key: 'ArrowLeft', shiftKey: true })
       )
     ).toBe(true);
-    if (!/Mac OS X/.test(globalThis.navigator?.userAgent ?? '')) {
+    if (!MAC_OS_X_USER_AGENT.test(globalThis.navigator?.userAgent ?? '')) {
       expect(
         Hotkeys.isExtendWordForward(
           event({ altKey: true, key: 'ArrowRight', shiftKey: true })

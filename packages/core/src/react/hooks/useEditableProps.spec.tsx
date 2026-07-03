@@ -2,7 +2,7 @@ import React from 'react';
 
 import { renderHook } from '@testing-library/react';
 
-import { createSlatePlugin } from '../../lib';
+import { createBasePlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { createPlateEditor } from '../editor';
 import { useEditableProps } from './useEditableProps';
@@ -14,7 +14,7 @@ describe('useEditableProps', () => {
 
       const editor = createPlateEditor({
         plugins: [
-          createSlatePlugin({
+          createBasePlugin({
             key: 'a',
             decorate: () => {
               decorate();
@@ -32,7 +32,7 @@ describe('useEditableProps', () => {
         wrapper,
       });
       const decorateProp = result.current.decorate!;
-      const entry = [editor.children[0], [0]] as any;
+      const entry = [editor.read.children()[0], [0]] as any;
 
       expect(decorateProp).toBeDefined();
 

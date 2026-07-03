@@ -15,6 +15,7 @@ export type RenderTextProps<N extends Text = Text> = {
    * `data-plite-node="text"` and `ref`.
    */
   attributes: {
+    [key: string]: unknown;
     'data-plite-node': 'text';
     ref: any;
     className?: string;

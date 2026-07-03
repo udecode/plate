@@ -5,6 +5,7 @@ import {
   useCallback,
 } from 'react';
 import { NodeApi, PathApi, type Range, RangeApi } from '@platejs/plite';
+import { setEditorFocused } from '@platejs/plite/internal';
 import {
   containsShadowAware,
   type DOMElement,
@@ -224,7 +225,7 @@ export const applyEditableBlur = ({
   editor,
   event,
   onBlur,
-  readOnly,
+  readOnly: _readOnly,
   state,
 }: {
   editor: ReactRuntimeEditor;
@@ -297,13 +298,14 @@ export const applyEditableBlur = ({
   }
 
   IS_FOCUSED.delete(editor);
+  setEditorFocused(editor, false);
 };
 
 export const applyEditableFocus = ({
   editor,
   event,
   onFocus,
-  readOnly,
+  readOnly: _readOnly,
   state,
 }: {
   editor: ReactRuntimeEditor;
@@ -334,6 +336,7 @@ export const applyEditableFocus = ({
     }
 
     IS_FOCUSED.set(editor, true);
+    setEditorFocused(editor, true);
     return true;
   }
 
@@ -933,7 +936,7 @@ export const handleWebKitShadowDOMBeforeInput = ({
 export const useEditableSelectionReconciler = ({
   androidInputManagerRef,
   editor,
-  inputController,
+  inputController: _inputController,
   rootRef,
   scrollSelectionIntoView,
   partialDOMBackedSelection,

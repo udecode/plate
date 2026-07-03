@@ -368,6 +368,68 @@ describe('NodeIdPlugin', () => {
     expect((editor.read.children()[1] as any)._id).toBeUndefined();
   });
 
+  it('preserves unique inserted ids', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        NodeIdPlugin.configure({
+          options: {
+            idCreator: createStringIdFactory(),
+          },
+        }),
+      ],
+      value: [
+        { children: [{ text: 'existing' }], id: 'existing-id', type: 'p' },
+      ],
+    });
+
+    editor.update.operations.replay([
+      {
+        node: {
+          children: [{ text: 'inserted' }],
+          id: 'unique-id',
+          type: 'p',
+        } as any,
+        path: [1],
+        type: 'insert_node',
+      },
+    ]);
+
+    expect(editor.read.children()[1]).toMatchObject({
+      children: [{ text: 'inserted' }],
+      id: 'unique-id',
+      type: 'p',
+    });
+  });
+
+  it('does not assign ids to inserted text leaves by default', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        NodeIdPlugin.configure({
+          options: {
+            idCreator: createStringIdFactory(),
+          },
+        }),
+      ],
+      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+    });
+
+    editor.update.operations.replay([
+      {
+        node: {
+          text: ' marked',
+          type: 'mark-like',
+        } as any,
+        path: [0, 1],
+        type: 'insert_node',
+      },
+    ]);
+
+    expect((editor.read.children()[0] as any).children[1]).toEqual({
+      text: ' marked',
+      type: 'mark-like',
+    });
+  });
+
   it('generates ids for nested inserted duplicates with one document scan', () => {
     const onDuplicateIdScan = mock();
     const editor = createBaseEditor({

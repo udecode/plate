@@ -11,6 +11,7 @@ import type {
   Node,
   NodeEntry,
   NodeIn,
+  NodeOperation,
   NodeProps,
   Operation,
   Path,
@@ -22,6 +23,7 @@ import type {
   Span,
   Text,
   TextIn,
+  TextOperation,
 } from '..';
 import {
   defineCommand as defineEditorCommand,
@@ -162,6 +164,7 @@ export type EditorStateSelectionApi = (() => Selection) & {
 };
 
 export type EditorStateViewApi = {
+  isComposing: () => boolean;
   isFocused: () => boolean;
   isReadOnly: () => boolean;
   root: () => RootKey;
@@ -407,6 +410,21 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       position?: number;
       voids?: boolean;
     }) => void;
+    toggle: (
+      type: string,
+      options?: {
+        at?: Location;
+        compare?: PropsCompare;
+        defaultType?: string;
+        hanging?: boolean;
+        merge?: PropsMerge;
+        mode?: MaximizeMode;
+        someOptions?: EditorNodesOptions<NodeIn<V>>;
+        split?: boolean;
+        voids?: boolean;
+        wrap?: boolean;
+      }
+    ) => void;
     unset: <T extends NodeIn<V>>(
       props: string | string[],
       options?: {
@@ -436,6 +454,20 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       }
     ) => void;
   };
+
+export type EditorBlockResetOptions<T extends Element = Element> =
+  EditorBlockOptions<T> & {
+    preserve?: readonly string[];
+  };
+
+export type EditorTransactionBlocksApi<V extends Value = Value> = {
+  lift: EditorTransactionNodesApi<V>['lift'];
+  reset: <T extends ElementIn<V>>(
+    props: Partial<NodeProps<T>>,
+    options?: EditorBlockResetOptions<T>
+  ) => void;
+  toggle: EditorTransactionNodesApi<V>['toggle'];
+};
 
 export type EditorStatePointsApi = {
   after: (at: Location, options?: EditorAfterOptions) => Point | undefined;
@@ -652,6 +684,7 @@ export type EditorCoreUpdateTransaction<V extends Value = Value> = Omit<
   EditorCoreStateView<V>,
   'marks' | 'nodes' | 'operations' | 'selection' | 'text' | 'value'
 > & {
+  blocks: EditorTransactionBlocksApi<V>;
   break: EditorTransactionBreakApi;
   fragment: EditorTransactionFragmentApi<V>;
   marks: EditorTransactionMarksApi<V>;
@@ -694,6 +727,7 @@ type EditorBivariantMethods<T> = {
 };
 
 export type EditorCoreUpdateMethods<V extends Value = Value> = {
+  blocks: EditorBivariantMethods<EditorTransactionBlocksApi<V>>;
   break: EditorBivariantMethods<EditorTransactionBreakApi>;
   fragment: EditorBivariantMethods<
     Pick<EditorTransactionFragmentApi<V>, 'delete' | 'insert'>
@@ -711,6 +745,7 @@ export type EditorCoreUpdateMethods<V extends Value = Value> = {
       | 'remove'
       | 'set'
       | 'split'
+      | 'toggle'
       | 'unset'
       | 'unwrap'
       | 'wrap'
@@ -1317,6 +1352,8 @@ export type CreateEditorOptions<
   extensions?: TExtensions;
   initialSelection?: Selection;
   initialValue?: InitialValue<V>;
+  maxLength?: number;
+  readOnly?: boolean;
 };
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
@@ -1656,6 +1693,40 @@ export type EditorCommitContext<TEditor extends BaseEditor<any, any> = Editor> =
 export type EditorCommitHandler<TEditor extends BaseEditor<any, any> = Editor> =
   (context: EditorCommitContext<TEditor>) => void;
 
+export type EditorNotifiedNodeOperation<V extends Value = Value> = Extract<
+  NodeOperation<V>,
+  { type: 'insert_node' | 'remove_node' | 'set_node' }
+>;
+
+export type EditorNodeChangeContext<
+  TEditor extends BaseEditor<any, any> = Editor,
+> = {
+  commit: EditorCommit<ValueOf<TEditor>>;
+  editor: TEditor;
+  node: DescendantIn<ValueOf<TEditor>>;
+  operation: EditorNotifiedNodeOperation<ValueOf<TEditor>>;
+  prevNode: DescendantIn<ValueOf<TEditor>>;
+};
+
+export type EditorTextChangeContext<
+  TEditor extends BaseEditor<any, any> = Editor,
+> = {
+  commit: EditorCommit<ValueOf<TEditor>>;
+  editor: TEditor;
+  node: DescendantIn<ValueOf<TEditor>>;
+  operation: TextOperation;
+  prevText: string;
+  text: string;
+};
+
+export type EditorNodeChangeHandler<
+  TEditor extends BaseEditor<any, any> = Editor,
+> = (context: EditorNodeChangeContext<TEditor>) => void;
+
+export type EditorTextChangeHandler<
+  TEditor extends BaseEditor<any, any> = Editor,
+> = (context: EditorTextChangeContext<TEditor>) => void;
+
 export type EditorExtensionSetupOutput<
   TEditor extends BaseEditor<any> = Editor,
 > = {
@@ -1665,6 +1736,8 @@ export type EditorExtensionSetupOutput<
   elements?: readonly EditorElementSpec[];
   normalizers?: EditorNormalizerMiddlewareMap<TEditor>;
   onCommit?: EditorCommitHandler<TEditor>;
+  onNodeChange?: EditorNodeChangeHandler<TEditor>;
+  onTextChange?: EditorTextChangeHandler<TEditor>;
   operations?: EditorExtensionOperations<TEditor>;
   queries?: EditorQueryMiddlewareMap<TEditor>;
   state?: EditorExtensionStateGroups<TEditor>;
@@ -1685,6 +1758,8 @@ export type EditorExtension<
   name: string;
   normalizers?: EditorNormalizerMiddlewareMap<TEditor>;
   onCommit?: EditorCommitHandler<TEditor>;
+  onNodeChange?: EditorNodeChangeHandler<TEditor>;
+  onTextChange?: EditorTextChangeHandler<TEditor>;
   operations?: EditorExtensionOperations<TEditor>;
   options?: TOptions;
   peerDependencies?: readonly string[];
@@ -1979,10 +2054,12 @@ export type EditorExtensionRegistry = {
   commands: Map<string, unknown[]>;
   commitListeners: Set<EditorCommitListener>;
   extensions: Map<string, RegisteredEditorExtension>;
+  nodeChangeListeners: Set<EditorNodeChangeHandler>;
   normalizers: Map<string, EditorNodeNormalizer>;
   operationMiddlewares: Set<EditorOperationMiddleware>;
   queryMiddlewares: Map<string, unknown[]>;
   stateGroups: Map<string, unknown>;
+  textChangeListeners: Set<EditorTextChangeHandler>;
   txGroups: Map<string, unknown>;
 };
 
@@ -2065,7 +2142,26 @@ export interface EditorAfterOptions {
 }
 
 export interface EditorBeforeOptions {
+  /**
+   * Return the point after the matched text or predicate instead of the point
+   * before it.
+   */
+  afterMatch?: boolean;
   distance?: number;
+  /** Return the current block start when a match is not found before crossing blocks. */
+  matchBlockStart?: boolean;
+  /** Interpret `matchString` entries as regular expressions. */
+  matchByRegex?: boolean;
+  /** Lookup backward until one of these strings is matched. */
+  matchString?: readonly string[] | string;
+  /** Lookup backward until this predicate returns true. */
+  match?: (value: {
+    at: Location;
+    beforePoint: Point;
+    beforeString: string;
+  }) => boolean;
+  /** Continue looking past non-matching text until block start. */
+  skipInvalid?: boolean;
   unit?: TextUnitAdjustment;
   voids?: boolean;
 }

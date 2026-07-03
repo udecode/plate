@@ -1,4 +1,5 @@
 import { createBaseEditor } from '../../editor';
+import { getEditorPlugin } from '../../plugin';
 import { HtmlPlugin } from './HtmlPlugin';
 
 describe('HtmlPlugin', () => {
@@ -8,28 +9,16 @@ describe('HtmlPlugin', () => {
     expect(editor.getPlugin(HtmlPlugin).parser.format).toBe('text/html');
   });
 
-  it('deserializes through api.html using the parsed document body', () => {
+  it('deserializes the parsed document body', () => {
     const editor = createBaseEditor();
-    const fragment = [{ children: [{ text: 'Hello' }], type: 'p' }] as any;
-    const deserializeSpy = spyOn(
-      editor.api.html,
-      'deserialize'
-    ).mockReturnValue(fragment);
 
     const result = editor.getPlugin(HtmlPlugin).parser.deserialize?.({
-      api: editor.api,
+      ...getEditorPlugin(editor, HtmlPlugin),
       data: '<p>Hello</p>',
-    } as any);
+      dataTransfer: new DataTransfer(),
+      mimeType: 'text/html',
+    });
 
-    expect(result).toBe(fragment);
-    expect(deserializeSpy).toHaveBeenCalledTimes(1);
-    expect(
-      (deserializeSpy.mock.calls[0]?.[0]?.element as HTMLElement).tagName
-    ).toBe('BODY');
-    expect(
-      (deserializeSpy.mock.calls[0]?.[0]?.element as HTMLElement).innerHTML
-    ).toBe('<p>Hello</p>');
-
-    deserializeSpy.mockRestore();
+    expect(result).toEqual([{ children: [{ text: 'Hello' }], type: 'p' }]);
   });
 });

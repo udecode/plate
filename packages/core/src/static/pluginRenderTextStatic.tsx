@@ -2,25 +2,25 @@ import React from 'react';
 
 import clsx from 'clsx';
 
-import type { RenderTextProps, BaseEditor, BasePlugin } from '..';
+import type { RenderTextProps, AnyBasePlugin, BaseEditor } from '..';
 
 import { PliteText } from './components';
 import { getNodeDataAttributes } from './utils/getNodeDataAttributes';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
-export type SlateRenderText = (
+export type PliteRenderText = (
   props: RenderTextProps
-) => React.ReactElement<any> | undefined;
+) => React.ReactNode | undefined;
 
 export const pluginRenderTextStatic = (
   editor: BaseEditor,
-  plugin: BasePlugin
-): SlateRenderText =>
+  plugin: AnyBasePlugin
+): PliteRenderText =>
   function render(nodeProps) {
     const { children, text } = nodeProps;
 
     if (text[plugin.node.type ?? plugin.key]) {
-      const Component = editor.meta.components?.[plugin.key] as any;
+      const Component = editor.runtime.components?.[plugin.key] as any;
       const Text = Component ?? PliteText;
 
       // const dataAttributes = getPluginDataAttributes(editor, plugin, text);
@@ -49,12 +49,12 @@ export const pluginRenderTextStatic = (
 /** @see {@link RenderText} */
 export const pipeRenderTextStatic = (
   editor: BaseEditor,
-  { renderText: renderTextProp }: { renderText?: SlateRenderText } = {}
-): SlateRenderText => {
-  const renderTexts: SlateRenderText[] = [];
-  const textPropsPlugins: BasePlugin[] = [];
+  { renderText: renderTextProp }: { renderText?: PliteRenderText } = {}
+): PliteRenderText => {
+  const renderTexts: PliteRenderText[] = [];
+  const textPropsPlugins: AnyBasePlugin[] = [];
 
-  editor.meta.pluginCache.node.isText.forEach((key) => {
+  editor.runtime.pluginCache.node.isText.forEach((key) => {
     const plugin = editor.getPlugin({ key });
 
     if (plugin) {
@@ -62,7 +62,7 @@ export const pipeRenderTextStatic = (
     }
   });
 
-  editor.meta.pluginCache.node.textProps.forEach((key) => {
+  editor.runtime.pluginCache.node.textProps.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     if (plugin) {
       textPropsPlugins.push(plugin as any);

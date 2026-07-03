@@ -2,11 +2,10 @@ import type { KeyboardEvent } from 'react';
 
 import { parseHotkey } from 'is-hotkey';
 
-import { getCurrentRuntimeTransforms } from '../../internal/currentRuntimeBridge';
-import { createPlateEditor } from '../editor';
-import { onPliteReactKeyDown } from './PliteReactExtensionPlugin';
+import { createPlateEditor } from '../../editor';
+import { onPlateReactKeyDown } from './ReactPlugin';
 
-type KeyboardRuntimeTransforms = {
+type KeyboardRuntimeCommands = {
   escape: () => boolean;
   moveLine: (options: { reverse: boolean }) => boolean;
   selectAll: () => boolean;
@@ -21,7 +20,7 @@ const keyboardValue = [
 ];
 
 const createKeyboardEditor = (
-  transforms: Partial<KeyboardRuntimeTransforms> = {}
+  commands: Partial<KeyboardRuntimeCommands> = {}
 ) => {
   const editor = createPlateEditor({
     selection: {
@@ -31,7 +30,12 @@ const createKeyboardEditor = (
     value: keyboardValue,
   });
 
-  Object.assign(getCurrentRuntimeTransforms(editor), transforms);
+  editor.extend({
+    api: {
+      keyboard: commands,
+    },
+    name: 'test-keyboard',
+  });
 
   return editor;
 };
@@ -57,12 +61,12 @@ const triggerKeyboardEvent = (
 ) => {
   const event = createKeyboardEvent(hotkey);
 
-  onPliteReactKeyDown({ editor, event });
+  onPlateReactKeyDown({ editor, event });
 
   return event;
 };
 
-describe('PliteReactExtensionPlugin keyboard shortcuts', () => {
+describe('ReactPlugin keyboard shortcuts', () => {
   describe('moveLine', () => {
     it('call moveLine with reverse: true on ArrowUp', () => {
       const moveLineMock = mock().mockReturnValue(false);

@@ -1,8 +1,14 @@
 import { getSelectedDomNode } from './getSelectedDomNode';
 
+type MockRange = Pick<Range, 'cloneContents'>;
+type MockSelection = {
+  getRangeAt: Selection['getRangeAt'];
+  rangeCount: number;
+};
+
 describe('getSelectedDomNode', () => {
-  let mockSelection: Selection;
-  let mockRange: Range;
+  let mockSelection: MockSelection;
+  let mockRange: MockRange;
   let originalGetSelection: typeof window.getSelection;
 
   beforeEach(() => {
@@ -11,17 +17,17 @@ describe('getSelectedDomNode', () => {
 
     // Create mock range
     mockRange = {
-      cloneContents: mock(),
-    } as any;
+      cloneContents: mock(() => document.createDocumentFragment()),
+    };
 
     // Create mock selection
     mockSelection = {
-      getRangeAt: mock(() => mockRange),
+      getRangeAt: mock(() => mockRange as Range),
       rangeCount: 1,
-    } as any;
+    };
 
     // Mock window.getSelection
-    window.getSelection = mock(() => mockSelection);
+    window.getSelection = mock(() => mockSelection as Selection);
   });
 
   afterEach(() => {
@@ -101,7 +107,7 @@ describe('getSelectedDomNode', () => {
     });
 
     it('returns undefined when rangeCount is 0', () => {
-      (mockSelection as any).rangeCount = 0;
+      mockSelection.rangeCount = 0;
 
       const result = getSelectedDomNode();
 
@@ -110,7 +116,7 @@ describe('getSelectedDomNode', () => {
     });
 
     it('handle negative rangeCount', () => {
-      (mockSelection as any).rangeCount = -1;
+      mockSelection.rangeCount = -1;
       // Setup mock to return an empty fragment
       const emptyFragment = document.createDocumentFragment();
       emptyFragment.append(document.createTextNode('undefined'));
@@ -127,7 +133,7 @@ describe('getSelectedDomNode', () => {
 
   describe('edge cases', () => {
     it('handle getRangeAt throwing an error', () => {
-      mockSelection.getRangeAt = mock(() => {
+      mockSelection.getRangeAt = mock((): Range => {
         throw new Error('Index out of bounds');
       });
 
@@ -136,7 +142,7 @@ describe('getSelectedDomNode', () => {
     });
 
     it('handle cloneContents throwing an error', () => {
-      mockRange.cloneContents = mock(() => {
+      mockRange.cloneContents = mock((): DocumentFragment => {
         throw new Error('Failed to clone');
       });
 

@@ -6,18 +6,18 @@ import { PliteElement } from './components/plite-nodes';
 import { getPluginDataAttributes } from './utils';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
-export type SlateRenderElement = (
+export type PliteRenderElement = (
   props: RenderElementProps
-) => React.ReactElement<any> | undefined;
+) => React.ReactNode | undefined;
 
 export const pluginRenderElementStatic = (
   editor: BaseEditor,
   plugin: AnyBasePlugin
-): SlateRenderElement =>
+): PliteRenderElement =>
   function render(nodeProps) {
     const element = nodeProps.element;
 
-    const Component = editor.meta.components?.[plugin.key] as any;
+    const Component = editor.runtime.components?.[plugin.key] as any;
     const Element = Component ?? PliteElement;
 
     let { children } = nodeProps;
@@ -37,7 +37,7 @@ export const pluginRenderElementStatic = (
       props: nodeProps as any,
     }) as any;
 
-    editor.meta.pluginCache.render.belowNodes.forEach((key) => {
+    editor.runtime.pluginCache.render.belowNodes.forEach((key) => {
       const hoc = editor.getPlugin({ key }).render.belowNodes!({
         ...nodeProps,
         key,
@@ -54,7 +54,7 @@ export const pluginRenderElementStatic = (
       <Element {...defaultProps} {...nodeProps}>
         {children}
 
-        {editor.meta.pluginCache.render.belowRootNodes.map((key) => {
+        {editor.runtime.pluginCache.render.belowRootNodes.map((key) => {
           const plugin = editor.getPlugin({ key }) as any;
           const Component = plugin.render.belowRootNodes;
 
@@ -63,7 +63,7 @@ export const pluginRenderElementStatic = (
       </Element>
     );
 
-    editor.meta.pluginCache.render.aboveNodes.forEach((key) => {
+    editor.runtime.pluginCache.render.aboveNodes.forEach((key) => {
       const hoc = editor.getPlugin({ key }).render.aboveNodes!({
         ...nodeProps,
         key,

@@ -18,7 +18,7 @@ export const pipeOnNodeChange = (
     const plugin = editor.getPlugin({ key });
 
     // Skip if plugin not found or readOnly
-    if (!plugin || editor.api.dom.isReadOnly()) {
+    if (!plugin || editor.read.view.isReadOnly()) {
       return false;
     }
 

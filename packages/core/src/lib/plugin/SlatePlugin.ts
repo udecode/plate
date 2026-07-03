@@ -1,692 +1,602 @@
-import type {
-  DecoratedRange,
-  Descendant,
-  EditorApi,
-  EditorTransforms,
-  NodeEntry,
-  NodeOperation,
-  Path,
-  TElement,
-  TextOperation,
-  TText,
-  Value,
-} from '@platejs/slate';
-import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
+import type { Element, Path, Text } from '@platejs/plite';
+import type { AnyObject, Nullable } from '@udecode/utils';
+import type { Draft } from 'mutative';
+import type { TStateApi } from 'zustand-x';
 
-import type {
-  SlateElementProps,
-  SlateRenderElementProps,
-  SlateRenderLeafProps,
-  SlateRenderTextProps,
-} from '../../static';
-import type { SlateEditor } from '../editor';
-import type { CorePluginApi, CorePluginTransforms } from '../plugins';
-import type {
-  InputRulesConfig,
-  InputRulesDefinition,
-} from '../plugins/input-rules/types';
-import type {
-  AnyPluginConfig,
-  BaseDeserializer,
-  BaseHtmlDeserializer,
-  BaseInjectProps,
-  BasePlugin,
-  BasePluginContext,
-  BaseSerializer,
-  BaseTransformOptions,
-  GetInjectNodePropsOptions,
-  GetInjectNodePropsReturnType,
-  InferApi,
-  InferOptions,
-  InferSelectors,
-  InferTransforms,
-  MatchRules,
-  NodeComponent,
-  NodeComponents,
-  ParserOptions,
-  PluginConfig,
-  WithAnyKey,
-} from './BasePlugin';
-import type { HandlerReturnType } from './HandlerReturnType';
+export type AnyPluginTx = Record<string, unknown>;
 
-export type AnyEditorPlugin = EditorPlugin<AnyPluginConfig>;
+export type AnyPluginConfig = {
+  key: any;
+  options: any;
+  api: any;
+  state?: any;
+  tx: any;
+  selectors: any;
+};
 
-export type AnySlatePlugin = SlatePlugin<AnyPluginConfig>;
+export type BaseDeserializer = AnyObject & {
+  /**
+   * Deserialize an element. Overrides plugin.isElement.
+   *
+   * @default plugin.isElement
+   */
+  isElement?: boolean;
+  /**
+   * Deserialize a leaf. Overrides plugin.isLeaf.
+   *
+   * @default plugin.isLeaf
+   */
+  isLeaf?: boolean;
+};
+
+export type BaseHtmlDeserializer = BaseDeserializer & {
+  /** List of HTML attribute names to store their values in `node.attributes`. */
+  attributeNames?: string[];
+  rules?: {
+    /**
+     * Deserialize an element:
+     *
+     * - If this option (string) is in the element attribute names.
+     * - If this option (object) values match the element attributes.
+     */
+    validAttribute?: Record<string, string[] | string> | string;
+    /** Valid element `className`. */
+    validClassName?: string;
+    /** Valid element `nodeName`. Set '*' to allow any node name. */
+    validNodeName?: string[] | string;
+    /**
+     * Valid element style values. Can be a list of string (only one match is
+     * needed).
+     */
+    validStyle?: Partial<
+      Record<keyof CSSStyleDeclaration, string[] | string | undefined>
+    >;
+  }[];
+  /** Whether or not to include deserialized children on this node */
+  withoutChildren?: boolean;
+};
+
+export type BaseInjectProps = {
+  /**
+   * Object whose keys are node values and values are classNames which will be
+   * extended.
+   */
+  classNames?: Record<string, string>;
+  /**
+   * Default node value. The node key would be unset if the node value =
+   * defaultNodeValue.
+   */
+  defaultNodeValue?: any;
+  /** Node key to map to the styles. */
+  nodeKey?: string;
+  /**
+   * Style key to override.
+   *
+   * @default nodeKey
+   */
+  styleKey?: string;
+  /** List of supported node values. */
+  validNodeValues?: any[];
+};
+
+export type PluginBase<C extends AnyPluginConfig = PluginConfig> = {
+  /** Type-only config anchor used by public helper inference. */
+  readonly __config: C;
+  /** Unique identifier for this plugin. */
+  key: C['key'];
+  /** API methods provided by this plugin. */
+  api: InferApi<C>;
+  /**
+   * An array of plugin keys that this plugin depends on. These plugins will be
+   * loaded before this plugin.
+   */
+  dependencies: string[];
+  inject: Nullable<{
+    /** Plugin keys of elements to exclude the children from */
+    excludeBelowPlugins?: string[];
+    /** Plugin keys of elements to exclude */
+    excludePlugins?: string[];
+    /** Whether to filter blocks */
+    isBlock?: boolean;
+    /** Whether to filter elements */
+    isElement?: boolean;
+    /** Whether to filter leaves */
+    isLeaf?: boolean;
+    /** Filter nodes with path above this level. */
+    maxLevel?: number;
+    /**
+     * Plugin keys used by {@link InjectNodeProps} and the targetPluginToInject
+     * function. For plugin injection by key, use the inject.plugins property.
+     *
+     * @default [ParagraphPlugin.key]
+     */
+    targetPlugins?: string[];
+  }>;
+  /** Node-specific configuration for this plugin. */
+  node: PluginBaseNode<C>;
+  /** Extended properties used by any plugin as options. */
+  options: InferOptions<C>;
+  /** Store for managing plugin options. */
+  optionsStore: TStateApi<
+    C['options'],
+    [['zustand/mutative-x', never]],
+    {},
+    C['selectors']
+  >;
+  override: {
+    /** Enable or disable plugins */
+    enabled?: Partial<Record<string, boolean>>;
+  };
+  /**
+   * Defines the order in which plugins are registered and executed.
+   *
+   * Plugins with higher priority values are registered and executed before
+   * those with lower values. This affects two main aspects:
+   *
+   * 1. Plugin Order: Plugins with higher priority will be added to the editor
+   *    earlier.
+   * 2. Execution Order: For operations that involve multiple plugins (e.g., editor
+   *    methods), plugins with higher priority will be processed first.
+   *
+   * @default 100
+   */
+  priority: number;
+  render: Nullable<{
+    /**
+     * Renders a component above the `Editable` component but within the `Plite`
+     * wrapper. Useful for adding UI elements that should appear above the
+     * editable area.
+     */
+    aboveEditable?: React.FC<{ children: React.ReactNode }>;
+    /**
+     * Renders a component above the `Plite` wrapper. This is the outermost
+     * render position in the editor structure.
+     */
+    abovePlite?: React.FC<{ children: React.ReactNode }>;
+    /**
+     * Specifies the HTML tag name to use when rendering the node component.
+     * Only used when no custom `component` is provided for the plugin.
+     *
+     * @default 'div' for elements, 'span' for leaves
+     */
+    as?: keyof HTMLElementTagNameMap;
+    /**
+     * Renders a component below leaf nodes when `isLeaf: true` and
+     * `isDecoration: false`. Use `render.node` instead when `isDecoration:
+     * true`.
+     */
+    leaf?: NodeComponent;
+    /**
+     * Renders a component for:
+     *
+     * - Elements nodes if `isElement: true`
+     * - Below text nodes if `isLeaf: true` and `isDecoration: false`
+     * - Below leaf if `isLeaf: true` and `isDecoration: true`
+     */
+    node?: NodeComponent;
+  }>;
+  rules: {
+    /**
+     * Defines actions on insert break based on block state.
+     *
+     * - `'default'`: Default behavior
+     * - `'exit'`: Exit the current block
+     * - `'lift'`: Lift the current block out of the nearest matching ancestor
+     * - `'reset'`: Reset block to default paragraph type
+     * - `'lineBreak'`: Insert newline character
+     * - `'deleteExit'`: Delete backward then exit
+     */
+    break?: BreakRules;
+    /**
+     * Defines actions on delete based on block state.
+     *
+     * - `'default'`: Default behavior
+     * - `'lift'`: Lift the current block out of the nearest matching ancestor
+     * - `'reset'`: Reset block to default paragraph type
+     */
+    delete?: DeleteRules;
+    /** Defines the behavior of merging nodes. */
+    merge?: MergeRules;
+    /** Defines the behavior of normalizing nodes. */
+    normalize?: NormalizeRules;
+    /** Defines the behavior of selection. */
+    selection?: SelectionRules;
+  };
+  /** Selectors for the plugin. */
+  selectors: InferSelectors<C>;
+  /**
+   * Configures edit-only behavior for various plugin functionalities.
+   *
+   * - If `true` (boolean):
+   *
+   *   - `render`, `handlers`, and `inject.nodeProps` are active only when the
+   *       editor is NOT read-only.
+   * - If an object ({@link EditOnlyConfig}): Allows fine-grained control:
+   *
+   *   - `render`: Edit-only by default (true if not specified). Set to `false` to
+   *       always be active.
+   *   - `handlers`: Edit-only by default (true if not specified). Set to `false` to
+   *       always be active.
+   *   - `inject` (for `inject.nodeProps`): Edit-only by default (true if not
+   *       specified). Set to `false` to always be active.
+   *   - `transformInitialValue`: NOT edit-only by default (false if not specified).
+   *       Set to `true` to make it edit-only.
+   */
+  editOnly?: EditOnlyConfig | boolean;
+  /**
+   * Enables or disables the plugin. Used by Plate to determine if the plugin
+   * should be used.
+   */
+  enabled?: boolean;
+};
+
+export type PluginBaseContext<C extends AnyPluginConfig = PluginConfig> = {
+  api: C['api'];
+  setOptions: (
+    options:
+      | ((state: Draft<Partial<InferOptions<C>>>) => void)
+      | Partial<InferOptions<C>>
+  ) => void;
+  type: string;
+  getOption: <
+    K extends keyof InferOptions<C> | keyof InferSelectors<C> | 'state',
+  >(
+    key: K,
+    ...args: K extends keyof InferSelectors<C>
+      ? Parameters<InferSelectors<C>[K]>
+      : unknown[]
+  ) => K extends 'state'
+    ? InferOptions<C>
+    : K extends keyof InferSelectors<C>
+      ? ReturnType<InferSelectors<C>[K]>
+      : K extends keyof InferOptions<C>
+        ? InferOptions<C>[K]
+        : never;
+  getOptions: () => InferOptions<C>;
+  setOption: <K extends keyof InferOptions<C>>(
+    optionKey: K,
+    value: InferOptions<C>[K]
+  ) => void;
+};
+
+export type PluginBaseNode<C extends AnyPluginConfig = PluginConfig> = {
+  /**
+   * Specifies the type identifier for this plugin's nodes.
+   *
+   * For elements (when {@link isElement} is `true`):
+   *
+   * - The {@link NodeComponent} will be used for any node where `node.type ===
+   *   type`.
+   *
+   * For leaves/marks (when {@link isLeaf} is `true`):
+   *
+   * - The {@link NodeComponent} will be used for any leaf where `node[type] ===
+   *   true`.
+   *
+   * This property is crucial for Plate to correctly match nodes to their
+   * respective plugins.
+   *
+   * @default plugin.key
+   */
+  type: string;
+  component?: NodeComponent | null;
+  /**
+   * Controls which (if any) attribute names in the `attributes` property of an
+   * element will be passed as `nodeProps` to the {@link NodeComponent}, and
+   * subsequently rendered as DOM attributes.
+   *
+   * WARNING: If used improperly, this property WILL make your application
+   * vulnerable to cross-site scripting (XSS) or information exposure attacks.
+   *
+   * For example, if the `href` attribute is allowed and the component passes
+   * `nodeProps` to an `<a>` element, then attackers can direct users to open a
+   * document containing a malicious link element:
+   *
+   * { type: 'link', url: 'https://safesite.com/', attributes: { href:
+   * 'javascript:alert("xss")' }, children: [{ text: 'Click me' }], }
+   *
+   * The same is true of the `src` attribute when passed to certain HTML
+   * elements, such as `<iframe>`.
+   *
+   * If the `style` attribute (or another attribute that can load URLs, such as
+   * `background`) is allowed, then attackers can direct users to open a
+   * document that will send a HTTP request to an arbitrary URL. This can leak
+   * the victim's IP address or confirm to the attacker that the victim opened
+   * the document.
+   *
+   * Before allowing any attribute name, ensure that you thoroughly research and
+   * assess any potential risks associated with it.
+   *
+   * @default [ ]
+   */
+  dangerouslyAllowAttributes?: string[];
+  /**
+   * Indicates if this plugin's elements are primarily containers for other
+   * content. Container elements are typically unwrapped when querying
+   * fragments.
+   *
+   * Examples: table, tr, td, column, column_group
+   *
+   * @default false
+   */
+  isContainer?: boolean;
+  /**
+   * Indicates if this plugin's nodes can be rendered as decorated leaf. Set to
+   * false to render node component only once per text node.
+   *
+   * @default true
+   */
+  isDecoration?: boolean;
+  /**
+   * Indicates if this plugin's nodes should be rendered as elements. Used by
+   * Plate for {@link NodeComponent} rendering as elements.
+   */
+  isElement?: boolean;
+  /**
+   * Indicates if this plugin's elements should be treated as inline. Used by
+   * the inlineVoid core plugin.
+   */
+  isInline?: boolean;
+  /**
+   * Indicates if this plugin's nodes should be rendered as leaves. Used by
+   * Plate for {@link NodeComponent} rendering as leaves.
+   */
+  isLeaf?: boolean;
+  /**
+   * Indicates if this plugin's void elements should be markable. Used by the
+   * inlineVoid core plugin.
+   */
+  isMarkableVoid?: boolean;
+  /**
+   * Returns whether an element prop is inert metadata for empty-state checks.
+   *
+   * Props not claimed by a plugin are treated as meaningful state.
+   */
+  isMetadataProp?: (
+    options: PluginBaseContext<C> & {
+      key: string;
+      node: Element;
+      value: unknown;
+    }
+  ) => boolean;
+  /**
+   * Whether the node is selectable.
+   *
+   * @default true
+   */
+  isSelectable?: boolean;
+  /**
+   * Indicates whether this element enforces strict sibling type constraints.
+   * Set to true `true` when the element only allows specific siblings (e.g.,
+   * `td` can only have `td` siblings, `column` can only have `column` siblings)
+   * and prevents standard text blocks like paragraphs from being inserted as
+   * siblings.
+   */
+  isStrictSiblings?: boolean;
+  /**
+   * Property used by `inlineVoid` core plugin to set elements of this `type` as
+   * void.
+   */
+  isVoid?: boolean;
+  /**
+   * Function that returns an object of data attributes to be added to the
+   * element.
+   */
+  toDataAttributes?: (
+    options: PluginBaseContext<C> & { node: Element }
+  ) => AnyObject | undefined;
+};
+
+export type BaseSerializer = AnyObject;
+
+export type BaseTransformOptions = GetInjectNodePropsOptions & {
+  nodeValue?: any;
+  value?: any;
+};
+
+// -----------------------------------------------------------------------------
+
+export type BreakRules = {
+  /** Action when Enter is pressed in an empty block. */
+  empty?: 'default' | 'deleteExit' | 'exit' | 'lift' | 'none' | 'reset';
+  /**
+   * Action when Enter is pressed at the end of an empty line. This is typically
+   * used with `default: 'lineBreak'`.
+   *
+   * Example:
+   *
+   * ```tsx
+   *     <blockquote>
+   *     This is some text\n
+   *     |
+   *     </blockquote>
+   * ```
+   */
+  emptyLineEnd?: 'default' | 'deleteExit' | 'exit';
+  /**
+   * Default action when Enter is pressed. Defaults to splitting the block.
+   * Use `'none'` to handle Enter without changing the document.
+   */
+  default?: 'default' | 'deleteExit' | 'exit' | 'lineBreak' | 'none';
+  /** If true, the new block after splitting will be reset to the default type. */
+  splitReset?: boolean;
+};
+
+export type MergeRules = {
+  /** Whether to remove the node when it's empty. */
+  removeEmpty?: boolean;
+};
+
+export type NormalizeRules = {
+  /** Whether to remove nodes with empty text. */
+  removeEmpty?: boolean;
+};
+
+export type DeleteRules = {
+  /**
+   * Action when Backspace is pressed at the start of the block. This applies
+   * whether the block is empty or not.
+   *
+   * Example:
+   *
+   * ```tsx
+   *     <blockquote>
+   *     |Text
+   *     </blockquote>
+   * ```
+   */
+  start?: 'default' | 'lift' | 'reset';
+  /** Action when Backspace is pressed and the block is empty. */
+  empty?: 'default' | 'reset';
+};
+
+export type SelectionRules = {
+  /**
+   * Defines the selection behavior at the boundaries of nodes.
+   *
+   * - `directional`: Selection affinity is determined by the direction of cursor
+   *   movement. Maintains inward or outward affinity based on approach.
+   * - `outward`: Forces outward affinity. Typing at the edge of a mark will not
+   *   apply the mark to new text.
+   * - `hard`: Creates a 'hard' edge that requires two key presses to move across.
+   *   Uses offset-based navigation.
+   * - `default`: Uses Plite's default behavior.
+   */
+  affinity?: 'default' | 'directional' | 'hard' | 'outward';
+};
+
+export type MatchRules =
+  | 'break.default'
+  | 'break.empty'
+  | 'break.emptyLineEnd'
+  | 'break.splitReset'
+  | 'delete.empty'
+  | 'delete.start'
+  | 'merge.removeEmpty'
+  | 'normalize.removeEmpty'
+  | 'selection.affinity';
+
+export type EditOnlyConfig = {
+  /**
+   * If true, `handlers` are only active when the editor is not read-only.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  handlers?: boolean;
+  /**
+   * If true, `inject.nodeProps` is only active when the editor is not
+   * read-only.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  inject?: boolean;
+  /**
+   * If true, `transformInitialValue` is only called when the editor is not
+   * read-only.
+   *
+   * @default false (This is an exception. It's not edit-only by default, even if `editOnly` is true or an object, unless explicitly set to true here).
+   */
+  transformInitialValue?: boolean;
+  /**
+   * If true, `render` functions are only active when the editor is not
+   * read-only.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  render?: boolean;
+};
+
+export type ExtendConfig<
+  C extends PluginConfig,
+  EO = {},
+  EA = {},
+  ETx extends AnyPluginTx = {},
+  ES = {},
+  EState = {},
+> = {
+  key: C['key'];
+  api: C['api'] & EA;
+  options: C['options'] & EO;
+  selectors: C['selectors'] & ES;
+  state: C['state'] & EState;
+  tx: C['tx'] & ETx;
+};
+
+export type GetInjectNodePropsOptions = {
+  /** Existing className. */
+  className?: string;
+
+  /** Style value or className key. */
+  element?: Element;
+
+  /** Current node path when the node is rendered with path context. */
+  path?: Path;
+
+  /** Existing style. */
+  style?: AnyObject;
+
+  /** Style value or className key. */
+  text?: Text;
+};
+
+export type GetInjectNodePropsReturnType = AnyObject & {
+  className?: string;
+  style?: AnyObject;
+};
+
+export type InferKey<P> = P extends { key: infer K } ? K : never;
+
+export type InferApi<P> = P extends { api: infer A } ? A : never;
+
+export type InferPluginApi<P extends AnyPluginConfig> =
+  InferApi<P> extends Record<P['key'], infer TApi> ? TApi : {};
+
+export type InferOptions<P> = P extends { options: infer O } ? O : never;
+
+export type InferSelectors<P> = P extends { selectors: infer S } ? S : never;
+
+export type InferState<P> = P extends { state?: infer State } ? State : {};
+
+export type InferTx<P> = P extends { tx: infer Tx } ? Tx : never;
+
+export type InferPluginTx<P extends AnyPluginConfig> =
+  InferTx<P> extends Record<P['key'], infer TTx> ? TTx : {};
 
 /**
- * Property used by Plate to decorate editor ranges. If the function returns
- * undefined then no ranges are modified. If the function returns an array the
- * returned ranges are merged with the ranges called by other plugins.
+ * Renders a component for Plite Nodes (elements if `isElement: true` or leaves
+ * if `isLeaf: true`) that match this plugin's type. This is the primary render
+ * method for plugin-specific node content.
+ *
+ * @default DefaultElement for elements, DefaultLeaf for leaves
  */
-export type Decorate<C extends AnyPluginConfig = PluginConfig> = (
-  ctx: SlatePluginContext<C> & { entry: NodeEntry }
-) => DecoratedRange[] | undefined;
+export type NodeComponent<T = any> = React.FC<T>;
 
-// -----------------------------------------------------------------------------
+export type NodeComponents = Record<string, NodeComponent>;
 
-export type Deserializer<C extends AnyPluginConfig = PluginConfig> =
-  BaseDeserializer & {
-    parse?: (
-      options: AnyObject & SlatePluginContext<C> & { element: any }
-    ) => Partial<Descendant> | undefined | void;
-    query?: (
-      options: AnyObject & SlatePluginContext<C> & { element: any }
-    ) => boolean;
-  };
-
-export type EditorPlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
-  SlatePlugin<C>,
-  keyof SlatePluginMethods | 'override' | 'plugins'
->;
-
-/** Plate plugin overriding the `editor` methods. Naming convention is `with*`. */
-export type ExtendEditor<C extends AnyPluginConfig = PluginConfig> = (
-  ctx: SlatePluginContext<C>
-) => SlateEditor;
-
-export type ExtendEditorApi<
-  C extends AnyPluginConfig = PluginConfig,
-  EA = {},
-> = (ctx: SlatePluginContext<C>) => EA &
-  Deep2Partial<EditorApi & CorePluginApi> & {
-    [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
-      ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
-      : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
-        ? {
-            [N in keyof InferApi<C>[K]]?: (
-              ...args: Parameters<InferApi<C>[K][N]>
-            ) => ReturnType<InferApi<C>[K][N]>;
-          }
-        : never;
-  };
-
-export type ExtendEditorTransforms<
-  C extends AnyPluginConfig = PluginConfig,
-  EA = {},
-> = (ctx: SlatePluginContext<C>) => EA &
-  Deep2Partial<EditorTransforms & CorePluginTransforms> & {
-    [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
-      ...args: any[]
-    ) => any
-      ? (
-          ...args: Parameters<InferTransforms<C>[K]>
-        ) => ReturnType<InferTransforms<C>[K]>
-      : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
-        ? {
-            [N in keyof InferTransforms<C>[K]]?: (
-              ...args: Parameters<InferTransforms<C>[K][N]>
-            ) => ReturnType<InferTransforms<C>[K][N]>;
-          }
-        : never;
-  };
-
-export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
-  BaseHtmlDeserializer & {
-    /**
-     * Whether to disable the default node props parsing logic. By default, all
-     * data-slate-* attributes will be parsed into node props.
-     *
-     * @default false
-     */
-    disableDefaultNodeProps?: boolean;
-    parse?: (
-      options: SlatePluginContext<C> & { element: HTMLElement; node: AnyObject }
-    ) => Partial<Descendant> | undefined | void;
-    query?: (
-      options: SlatePluginContext<C> & { element: HTMLElement }
-    ) => boolean;
-    toNodeProps?: (
-      options: SlatePluginContext<C> & { element: HTMLElement }
-    ) => Partial<Descendant> | undefined | void;
-  };
-
-export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> =
-  BaseSerializer & {
-    parse?: (options: SlatePluginContext<C> & { node: Descendant }) => string;
-    query?: (options: SlatePluginContext<C> & { node: Descendant }) => boolean;
-  };
-
-export type InferConfig<P> = P extends SlatePlugin<infer C> ? C : never;
-
-export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
-  BaseInjectProps & {
-    query?: (
-      options: NonNullable<NonNullable<InjectNodeProps>> &
-        SlatePluginContext<C> & { nodeProps: GetInjectNodePropsOptions }
-    ) => boolean;
-    transformClassName?: (options: TransformOptions<C>) => any;
-    transformNodeValue?: (options: TransformOptions<C>) => any;
-    transformProps?: (
-      options: TransformOptions<C> & { props: GetInjectNodePropsReturnType }
-    ) => AnyObject | undefined;
-    transformStyle?: (options: TransformOptions<C>) => CSSStyleDeclaration;
-  };
-
-export type LeafStaticProps<C extends AnyPluginConfig = PluginConfig> =
-  | ((props: SlateRenderLeafProps<TText, C>) => AnyObject | undefined)
-  | AnyObject;
-
-export type NodeStaticProps<C extends AnyPluginConfig = PluginConfig> =
-  | ((
-      props: SlateRenderElementProps<TElement, C> &
-        SlateRenderLeafProps<TText, C>
-    ) => AnyObject | undefined)
-  | AnyObject;
-
-/** @deprecated Use {@link RenderStaticNodeWrapper} instead. */
-export type NodeStaticWrapperComponent<
-  C extends AnyPluginConfig = PluginConfig,
-> = (
-  props: NodeStaticWrapperComponentProps<C>
-) => NodeStaticWrapperComponentReturnType<C>;
-
-/** @deprecated Use {@link RenderStaticNodeWrapperProps} instead. */
-export interface NodeStaticWrapperComponentProps<
-  C extends AnyPluginConfig = PluginConfig,
-> extends SlateRenderElementProps<TElement, C> {
-  key: string;
-}
-
-// -----------------------------------------------------------------------------
-
-/** @deprecated Use {@link RenderStaticNodeWrapperFunction} instead. */
-export type NodeStaticWrapperComponentReturnType<
-  C extends AnyPluginConfig = PluginConfig,
-> = React.FC<SlateRenderElementProps<TElement, C>> | undefined;
-
-export type TransformInitialValue<C extends AnyPluginConfig = PluginConfig> = (
-  ctx: SlatePluginContext<C> & { value: Value }
-) => Value;
-
-/** @deprecated Use {@link TransformInitialValue} instead. */
-export type NormalizeInitialValue<C extends AnyPluginConfig = PluginConfig> = (
-  ctx: SlatePluginContext<C> & { value: Value }
-) => Value | void;
-
-export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
-  ctx: SlatePluginContext<C>
-) => {
-  api?: Deep2Partial<EditorApi & CorePluginApi> & {
-    [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
-      ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
-      : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
-        ? {
-            [N in keyof InferApi<C>[K]]?: (
-              ...args: Parameters<InferApi<C>[K][N]>
-            ) => ReturnType<InferApi<C>[K][N]>;
-          }
-        : never;
-  };
-  transforms?: Deep2Partial<EditorTransforms & CorePluginTransforms> & {
-    [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
-      ...args: any[]
-    ) => any
-      ? (
-          ...args: Parameters<InferTransforms<C>[K]>
-        ) => ReturnType<InferTransforms<C>[K]>
-      : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
-        ? {
-            [N in keyof InferTransforms<C>[K]]?: (
-              ...args: Parameters<InferTransforms<C>[K][N]>
-            ) => ReturnType<InferTransforms<C>[K][N]>;
-          }
-        : never;
-  };
+export type ParserOptions = {
+  data: string;
+  dataTransfer: DataTransfer;
+  mimeType: string;
 };
 
-export type Parser<C extends AnyPluginConfig = PluginConfig> = {
-  format?: string[] | string;
-  mimeTypes?: string[];
-  deserialize?: (
-    options: ParserOptions & SlatePluginContext<C>
-  ) => Descendant[] | undefined;
-  preInsert?: (
-    options: ParserOptions & SlatePluginContext<C> & { fragment: Descendant[] }
-  ) => HandlerReturnType;
-  query?: (options: ParserOptions & SlatePluginContext<C>) => boolean;
-  transformData?: (options: ParserOptions & SlatePluginContext<C>) => string;
-  transformFragment?: (
-    options: ParserOptions & SlatePluginContext<C> & { fragment: Descendant[] }
-  ) => Descendant[];
-};
-
-export type PartialEditorPlugin<C extends AnyPluginConfig = PluginConfig> =
-  Omit<Partial<EditorPlugin<C>>, 'node'> & {
-    node?: Partial<EditorPlugin<C>['node']>;
-  };
-
-export type RenderStaticNodeWrapper<C extends AnyPluginConfig = PluginConfig> =
-  (props: RenderStaticNodeWrapperProps<C>) => RenderStaticNodeWrapperFunction;
-
-export type RenderStaticNodeWrapperFunction =
-  | ((hocProps: SlateRenderElementProps) => React.ReactNode)
-  | undefined;
-
-export interface RenderStaticNodeWrapperProps<
-  C extends AnyPluginConfig = PluginConfig,
-> extends SlateRenderElementProps<TElement, C> {
-  key: string;
-}
-
-export type Serializer<C extends AnyPluginConfig = PluginConfig> =
-  BaseSerializer & {
-    parse?: (
-      options: AnyObject & SlatePluginContext<C> & { node: Descendant }
-    ) => any;
-    query?: (
-      options: AnyObject & SlatePluginContext<C> & { node: Descendant }
-    ) => boolean;
-  };
-
-/** The `PlatePlugin` interface is a base interface for all plugins. */
-export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
-  BasePlugin<C> &
-    Nullable<{
-      decorate?: Decorate<WithAnyKey<C>>;
-      extendEditor?: ExtendEditor<WithAnyKey<C>>;
-      transformInitialValue?: TransformInitialValue<WithAnyKey<C>>;
-      /** @deprecated Use `transformInitialValue` instead. */
-      normalizeInitialValue?: NormalizeInitialValue<WithAnyKey<C>>;
-    }> &
-    SlatePluginMethods<C> & {
-      handlers: Nullable<{
-        onNodeChange?: (
-          ctx: SlatePluginContext<C> & {
-            node: Descendant;
-            operation: NodeOperation;
-            prevNode: Descendant;
-          }
-        ) => HandlerReturnType;
-        onTextChange?: (
-          ctx: SlatePluginContext<C> & {
-            node: Descendant;
-            operation: TextOperation;
-            prevText: string;
-            text: string;
-          }
-        ) => HandlerReturnType;
-      }>;
-      inject: Nullable<{
-        nodeProps?: InjectNodeProps<WithAnyKey<C>>;
-        plugins?: Record<string, PartialEditorPlugin<AnyPluginConfig>>;
-        targetPluginToInject?: (
-          ctx: SlatePluginContext<C> & { targetPlugin: string }
-        ) => Partial<SlatePlugin<AnyPluginConfig>>;
-      }>;
-      node: {
-        /** Override `data-slate-leaf` element attributes */
-        leafProps?: LeafStaticProps<WithAnyKey<C>>;
-        /** Override node attributes */
-        props?: NodeStaticProps<WithAnyKey<C>>;
-        /** Override `data-slate-node="text"` element attributes */
-        textProps?: TextStaticProps<WithAnyKey<C>>;
-      };
-      override: {
-        components?: NodeComponents;
-        plugins?: Record<string, PartialEditorPlugin<AnyPluginConfig>>;
-      };
-      parser: Nullable<Parser<WithAnyKey<C>>>;
-      parsers:
-        | (Record<
-            string,
-            {
-              deserializer?: Deserializer<WithAnyKey<C>>;
-              serializer?: Serializer<WithAnyKey<C>>;
-            }
-          > & { html?: never })
-        | {
-            html?: Nullable<{
-              deserializer?: HtmlDeserializer<WithAnyKey<C>>;
-              serializer?: HtmlSerializer<WithAnyKey<C>>;
-            }>;
-          };
-      /**
-       * Recursive plugin support to allow having multiple plugins in a single
-       * plugin. Plate eventually flattens all the plugins into the editor.
-       */
-      plugins: any[];
-      render: Nullable<{
-        /**
-         * When other plugins' `node` components are rendered, this function can
-         * return an optional wrapper function that turns a `node`'s props to a
-         * wrapper React node as its parent. Useful for wrapping or decorating
-         * nodes with additional UI elements.
-         *
-         * NOTE: The function can run React hooks. NOTE: Do not run React hooks
-         * in the wrapper function. It is not equivalent to a React component.
-         */
-        aboveNodes?: RenderStaticNodeWrapper<WithAnyKey<C>>;
-        /**
-         * When other plugins' `node` components are rendered, this function can
-         * return an optional wrapper function that turns a `node`'s props to a
-         * wrapper React node. The wrapper node is the `node`'s child and its
-         * original children's parent. Useful for wrapping or decorating nodes
-         * with additional UI elements.
-         *
-         * NOTE: The function can run React hooks. NOTE: Do not run React hooks
-         * in the wrapper function. It is not equivalent to a React component.
-         */
-        belowNodes?: RenderStaticNodeWrapper<WithAnyKey<C>>;
-        /** Renders a component above the main Slate component, as its sibling. */
-        aboveSlate?: () => React.ReactElement<any> | null;
-        /** Renders a component after the main editor container. */
-        afterContainer?: () => React.ReactElement<any> | null;
-        /**
-         * Renders a component after the `Editable` component. This is the last
-         * render position within the editor structure.
-         */
-        afterEditable?: () => React.ReactElement<any> | null;
-        /** Renders a component before the main editor container. */
-        beforeContainer?: () => React.ReactElement<any> | null;
-        /** Renders a component before the `Editable` component. */
-        beforeEditable?: () => React.ReactElement<any> | null;
-        /**
-         * Function to render content below the root element but above its
-         * children. Similar to belowNodes but renders directly in the element
-         * rather than wrapping. Multiple plugins can provide this, and all
-         * their content will be rendered in sequence.
-         */
-        belowRootNodes?: (
-          props: SlateElementProps<TElement, AnySlatePlugin>
-        ) => React.ReactNode;
-      }>;
-      rules: {
-        /**
-         * Function to determine if this plugin's rules should apply to a node.
-         * Used to override behavior based on node properties beyond just type
-         * matching.
-         *
-         * Example: List plugin sets `match: ({ node }) => !!node.listStyleType`
-         * to override paragraph behavior when the paragraph is a list item.
-         *
-         * @default type === node.type
-         */
-        match?: (
-          options: {
-            node: TElement;
-            path: Path;
-            rule: MatchRules;
-          } & SlatePluginContext<C>
-        ) => boolean;
-      };
-      /**
-       * Keyboard shortcuts configuration mapping shortcut names to their key
-       * combinations and handlers. Each shortcut can link to a transform
-       * method, an API method, or use a custom handler function.
-       */
-      shortcuts: Partial<
-        Record<
-          | (string & {})
-          | Exclude<
-              keyof InferApi<C>[C['key']],
-              keyof InferTransforms<C>[C['key']]
-            >
-          | keyof InferTransforms<C>[C['key']],
-          SlateShortcut | null
-        >
-      >;
-      inputRules: InputRulesDefinition | InputRulesConfig;
-    };
-
-export type SlatePluginConfig<
+export type PluginConfig<
   K extends string = any,
   O = {},
   A = {},
-  T = {},
+  Tx extends AnyPluginTx = {},
   S = {},
-  EO = {},
-  EA = {},
-  ET = {},
-  ES = {},
-> = Partial<
-  Omit<
-    SlatePlugin<PluginConfig<K, Partial<O>, A, T, S>>,
-    keyof SlatePluginMethods | 'api' | 'node' | 'optionsStore' | 'transforms'
-  > & {
-    api: EA;
-    node: Partial<SlatePlugin['node']>;
-    options: EO;
-    selectors: ES;
-    transforms: ET;
-  }
+  State = {},
+> = { key: K; api: A; options: O; selectors: S; state?: State; tx: Tx };
+
+export type WithAnyKey<C extends AnyPluginConfig = PluginConfig> = PluginConfig<
+  any,
+  InferOptions<C>,
+  InferApi<C>,
+  InferTx<C>,
+  InferSelectors<C>,
+  InferState<C>
 >;
 
-export type SlatePluginContext<C extends AnyPluginConfig = PluginConfig> =
-  BasePluginContext<C> & { editor: SlateEditor; plugin: EditorPlugin<C> };
-
-export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
-  __apiExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
-  __configuration: ((ctx: SlatePluginContext<AnyPluginConfig>) => any) | null;
-  __extensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
-  __selectorExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
-  clone: () => SlatePlugin<C>;
-  configure: (
-    config:
-      | ((
-          ctx: SlatePluginContext<C>
-        ) => SlatePluginConfig<
-          C['key'],
-          InferOptions<C>,
-          InferApi<C>,
-          InferTransforms<C>,
-          InferSelectors<C>
-        >)
-      | SlatePluginConfig<
-          C['key'],
-          InferOptions<C>,
-          InferApi<C>,
-          InferTransforms<C>,
-          InferSelectors<C>
-        >
-  ) => SlatePlugin<C>;
-  configurePlugin: <P extends AnySlatePlugin>(
-    plugin: Partial<P>,
-    config:
-      | ((
-          ctx: SlatePluginContext<P>
-        ) => SlatePluginConfig<
-          any,
-          InferOptions<P>,
-          InferApi<P>,
-          InferTransforms<P>,
-          InferSelectors<P>
-        >)
-      | SlatePluginConfig<
-          any,
-          InferOptions<P>,
-          InferApi<P>,
-          InferTransforms<P>,
-          InferSelectors<P>
-        >
-  ) => SlatePlugin<C>;
-  extend: <EO = {}, EA = {}, ET = {}, ES = {}>(
-    extendConfig:
-      | ((
-          ctx: SlatePluginContext<C>
-        ) => SlatePluginConfig<
-          C['key'],
-          InferOptions<C>,
-          InferApi<C>,
-          InferTransforms<C>,
-          InferSelectors<C>,
-          EO,
-          EA,
-          ET,
-          ES
-        >)
-      | SlatePluginConfig<
-          C['key'],
-          InferOptions<C>,
-          InferApi<C>,
-          InferTransforms<C>,
-          InferSelectors<C>,
-          EO,
-          EA,
-          ET,
-          ES
-        >
-  ) => SlatePlugin<
-    PluginConfig<
-      C['key'],
-      EO & InferOptions<C>,
-      EA & InferApi<C>,
-      ET & InferTransforms<C>,
-      ES & InferSelectors<C>
-    >
-  >;
-  extendApi: <
-    EA extends Record<string, (...args: any[]) => any> = Record<string, never>,
-  >(
-    extension: (ctx: SlatePluginContext<C>) => EA
-  ) => SlatePlugin<
-    PluginConfig<
-      C['key'],
-      InferOptions<C>,
-      InferApi<C> & Record<C['key'], EA>,
-      InferTransforms<C>,
-      InferSelectors<C>
-    >
-  >;
-  extendEditorApi: <
-    EA extends Record<
-      string,
-      ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
-    > = Record<string, never>,
-  >(
-    extension: ExtendEditorApi<C, EA>
-  ) => SlatePlugin<
-    PluginConfig<
-      C['key'],
-      InferOptions<C>,
-      {
-        [K in keyof (EA & InferApi<C>)]: (EA & InferApi<C>)[K] extends (
-          ...args: any[]
-        ) => any
-          ? (EA & InferApi<C>)[K]
-          : { [N in keyof (EA & InferApi<C>)[K]]: (EA & InferApi<C>)[K][N] };
-      },
-      InferTransforms<C>,
-      InferSelectors<C>
-    >
-  >;
-  extendEditorTransforms: <
-    ET extends Record<
-      string,
-      ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
-    > = Record<string, never>,
-  >(
-    extension: ExtendEditorTransforms<C, ET>
-  ) => SlatePlugin<
-    PluginConfig<
-      C['key'],
-      InferOptions<C>,
-      InferApi<C>,
-      {
-        [K in keyof (ET & InferTransforms<C>)]: (ET &
-          InferTransforms<C>)[K] extends (...args: any[]) => any
-          ? (ET & InferTransforms<C>)[K]
-          : {
-              [N in keyof (ET & InferTransforms<C>)[K]]: (ET &
-                InferTransforms<C>)[K][N];
-            };
-      },
-      InferSelectors<C>
-    >
-  >;
-  extendPlugin: <P extends AnySlatePlugin, EO = {}, EA = {}, ET = {}, ES = {}>(
-    plugin: Partial<P>,
-    extendConfig:
-      | ((
-          ctx: SlatePluginContext<P>
-        ) => SlatePluginConfig<
-          any,
-          InferOptions<P>,
-          InferApi<P>,
-          InferTransforms<P>,
-          InferSelectors<P>,
-          EO,
-          EA,
-          ET,
-          ES
-        >)
-      | SlatePluginConfig<
-          any,
-          InferOptions<P>,
-          InferApi<P>,
-          InferTransforms<P>,
-          InferSelectors<P>,
-          EO,
-          EA,
-          ET,
-          ES
-        >
-  ) => SlatePlugin<C>;
-  extendSelectors: <
-    ES extends Record<string, (...args: any[]) => any> = Record<string, never>,
-  >(
-    extension: (ctx: SlatePluginContext<C>) => ES
-  ) => SlatePlugin<
-    PluginConfig<
-      C['key'],
-      InferOptions<C>,
-      InferApi<C>,
-      InferTransforms<C>,
-      ES & InferSelectors<C>
-    >
-  >;
-  extendTransforms: <
-    ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
-  >(
-    extension: (ctx: SlatePluginContext<C>) => ET
-  ) => SlatePlugin<
-    PluginConfig<
-      C['key'],
-      InferOptions<C>,
-      InferApi<C>,
-      InferTransforms<C> & Record<C['key'], ET>,
-      InferSelectors<C>
-    >
-  >;
-  overrideEditor: (override: OverrideEditor<C>) => SlatePlugin<C>;
-  /** Returns a new instance of the plugin with the component. */
-  withComponent: (component: NodeComponent) => SlatePlugin<C>;
-  __resolved?: boolean;
-};
-
-export type SlatePlugins = AnySlatePlugin[];
-
-export type TextStaticProps<C extends AnyPluginConfig = PluginConfig> =
-  | ((props: SlateRenderTextProps<TText, C>) => AnyObject | undefined)
-  | AnyObject;
-
-export type TransformOptions<C extends AnyPluginConfig = PluginConfig> =
-  BaseTransformOptions & SlatePluginContext<C>;
-
-export type SlateShortcut = {
-  keys?: (({} & string)[][] | readonly string[] | string) | null;
-  delimiter?: string;
-  description?: string;
-  document?: Document;
-  enabled?: Trigger;
-  enableOnContentEditable?: boolean;
-  enableOnFormTags?: boolean;
-  ignoreEventWhenPrevented?: boolean;
-  ignoreModifiers?: boolean;
-  keydown?: boolean;
-  keyup?: boolean;
-  preventDefault?: Trigger;
-  priority?: number;
-  scopes?: readonly string[] | string;
-  splitKey?: string;
-  useKey?: boolean;
-  handler?: (ctx: {
-    editor: SlateEditor;
-    event: KeyboardEvent;
-    eventDetails: any;
-  }) => boolean | void;
-  ignoreEventWhen?: (e: KeyboardEvent) => boolean;
-};
-
-type Trigger =
-  | ((keyboardEvent: KeyboardEvent, hotkeysEvent: any) => boolean)
-  | boolean;
+export type WithRequiredKey<P = {}> =
+  | (P extends { key: string } ? P : never)
+  | { key: string };

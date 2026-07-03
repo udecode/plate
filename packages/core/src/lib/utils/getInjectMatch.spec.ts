@@ -1,4 +1,5 @@
 import { createBaseEditor } from '../editor';
+import type { AnyPluginConfig } from '../plugin';
 import { createBasePlugin } from '../plugin';
 import { getInjectMatch } from './getInjectMatch';
 
@@ -17,7 +18,12 @@ const LinkPlugin = createBasePlugin({
   node: { isElement: true, isInline: true, type: 'a' },
 });
 
-const createMatchEditor = (plugin: ReturnType<typeof createBasePlugin>) =>
+const createMatchEditor = <
+  C extends AnyPluginConfig,
+  P extends { key: string; readonly __config: C },
+>(
+  plugin: P
+) =>
   createBaseEditor({
     plugins: [ParagraphPlugin, QuotePlugin, LinkPlugin, plugin],
     value: [

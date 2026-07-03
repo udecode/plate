@@ -1,45 +1,50 @@
-import { type Editor, type Value, createEditor } from '@platejs/slate';
-
-import type { AnyPluginConfig } from '../../lib/plugin';
-import type { CorePlugin } from '../../lib/plugins';
+import { createEditor, type Editor, type Value } from '@platejs/plite';
+import type { CorePluginConfig } from '../../lib/plugins';
 
 import {
-  type CreateSlateEditorOptions,
-  type WithSlateOptions,
-  withSlate,
+  type BaseEditor,
+  type BasePluginInput,
+  type CreateBaseEditorOptions,
+  type InferPluginConfig,
+  extendBaseEditor,
 } from '../../lib/editor';
 import { getStaticPlugins } from '../plugins/getStaticPlugins';
 
 type CreateStaticEditorOptions<
   V extends Value = Value,
-  P extends AnyPluginConfig = CorePlugin,
-> = CreateSlateEditorOptions<V, P> & {};
+  P extends readonly BasePluginInput[] = readonly [],
+> = CreateBaseEditorOptions<V, P>;
 
-type WithStaticOptions<
-  V extends Value = Value,
-  P extends AnyPluginConfig = CorePlugin,
-> = WithSlateOptions<V, P> & {};
+type StaticPluginInput<P extends readonly BasePluginInput[] = readonly []> =
+  | ReturnType<typeof getStaticPlugins>[number]
+  | P[number];
 
-const withStatic = <
+type StaticEditorPlugins<P extends readonly BasePluginInput[] = readonly []> =
+  | CorePluginConfig
+  | InferPluginConfig<StaticPluginInput<P>>;
+
+const extendStaticEditor = <
   V extends Value = Value,
-  P extends AnyPluginConfig = CorePlugin,
+  const P extends readonly BasePluginInput[] = readonly [],
 >(
   editor: Editor,
-  options: WithStaticOptions<V, P> = {}
+  options: CreateStaticEditorOptions<V, P> = {}
 ) => {
-  const { plugins = [], ..._rest } = options;
+  const { plugins = [] } = options;
 
-  const staticPlugins = getStaticPlugins() as any;
-
-  options.plugins = [...staticPlugins, ...plugins];
-
-  return withSlate<V, P>(editor, options);
+  return extendBaseEditor<V, StaticPluginInput<P>>(editor, {
+    ...options,
+    plugins: [...getStaticPlugins(), ...plugins],
+  });
 };
 
 export const createStaticEditor = <
   V extends Value = Value,
-  P extends AnyPluginConfig = CorePlugin,
+  const P extends readonly BasePluginInput[] = readonly [],
 >({
   editor = createEditor(),
   ...options
-}: CreateStaticEditorOptions<V, P> = {}) => withStatic<V, P>(editor, options);
+}: CreateStaticEditorOptions<V, P> = {}): BaseEditor<
+  V,
+  StaticEditorPlugins<P>
+> => extendStaticEditor<V, P>(editor, options);

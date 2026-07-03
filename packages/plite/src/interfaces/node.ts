@@ -73,6 +73,10 @@ export type NodeProps<N = Node> = N extends { children: unknown }
     ? Omit<N, 'text'>
     : Omit<N, 'getChildren'>;
 
+export interface NodeHasPropsOptions {
+  ignore?: (key: string, value: unknown, node: Node) => boolean;
+}
+
 export interface NodeAncestorsOptions {
   reverse?: boolean;
 }
@@ -219,6 +223,11 @@ export interface NodeInterface {
    * Extract props from a Node.
    */
   extractProps: (node: Node) => NodeProps;
+
+  /**
+   * Check if a node has props after the caller's metadata policy is applied.
+   */
+  hasProps: (node: Node, options?: NodeHasPropsOptions) => boolean;
 
   /**
    * Get the first leaf node entry in a root node from a path.
@@ -654,6 +663,14 @@ export const NodeApi: NodeInterface = {
       : node;
 
     return properties;
+  },
+
+  hasProps(node: Node, options: NodeHasPropsOptions = {}): boolean {
+    const { ignore } = options;
+
+    return Object.entries(NodeApi.extractProps(node)).some(
+      ([key, value]) => !ignore?.(key, value, node)
+    );
   },
 
   first(root: Node, path: Path): NodeEntry {

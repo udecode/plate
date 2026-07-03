@@ -92,10 +92,10 @@ const reactValue: ValueOf<typeof reactEditor> = [
   { type: 'paragraph', children: [{ text: 'one', bold: true }] },
 ];
 
-historyOnlyEditor.api.history.run({ save: false }, () => {});
+historyOnlyEditor.update.history.skip(() => {});
 historyOnlyEditor.read((state) => state.history.undos());
 historyOnlyEditor.update((tx) => tx.history.undo());
-manualReactHistoryEditor.api.history.run({ save: false }, () => {});
+manualReactHistoryEditor.update.history.skip(() => {});
 manualReactHistoryEditor.api.react.isComposing();
 manualReactHistoryEditor.api.dom.focus();
 manualReactHistoryEditor.read((state) => state.history.undos());
@@ -116,7 +116,7 @@ historyReactEditor.update((tx) => {
   tx.history.undo();
 });
 
-historyReactEditor.api.history.run({ save: false }, () => {});
+historyReactEditor.update.history.skip(() => {});
 historyReactEditor.api.dom.focus();
 historyReactEditor.api.clipboard.writeSelection(dataTransfer);
 historyReactEditor.api.react.isFocused();
@@ -131,7 +131,7 @@ defaultHistoryReactEditor.update((tx) => {
   tx.history.undo();
 });
 
-defaultHistoryReactEditor.api.history.run({ save: false }, () => {});
+defaultHistoryReactEditor.update.history.skip(() => {});
 const typedDefaultReactEditor: ReactEditor<CustomValue> =
   defaultHistoryReactEditor;
 const typedNamespaceReactEditor: PliteReact.ReactEditor<CustomValue> =
@@ -145,10 +145,10 @@ const typedNoHistoryReactEditor: ReactEditor<
   readonly [typeof DisabledHistoryExtension]
 > = noHistoryReactEditor;
 
-typedDefaultReactEditor.api.history.run({ save: false }, () => {});
+typedDefaultReactEditor.update.history.skip(() => {});
 typedDefaultReactEditor.api.dom.focus();
 typedDefaultReactEditor.api.react.isComposing();
-typedNamespaceReactEditor.api.history.run({ save: false }, () => {});
+typedNamespaceReactEditor.update.history.skip(() => {});
 const customApiResult: 'pong' = typedCustomApiReactEditor.api.customApi.ping();
 
 // @ts-expect-error Plite React no longer exports extension-owned renderer maps
@@ -163,8 +163,8 @@ type _NoEditableCommandContext = PliteReact.EditableCommandContext;
 // @ts-expect-error ReactEditor exposes DOM through api.dom, not root dom
 void typedDefaultReactEditor.dom;
 
-// @ts-expect-error disabled history does not contribute public ReactEditor api
-typedNoHistoryReactEditor.api.history.run({ save: false }, () => {});
+// @ts-expect-error disabled history does not contribute update history helpers
+typedNoHistoryReactEditor.update.history.skip(() => {});
 
 // @ts-expect-error disabled default history removes state history
 noHistoryReactEditor.read((state) => state.history.undos());
@@ -172,8 +172,8 @@ noHistoryReactEditor.read((state) => state.history.undos());
 // @ts-expect-error disabled default history removes tx history
 noHistoryReactEditor.update((tx) => tx.history.undo());
 
-// @ts-expect-error disabled default history removes history api
-noHistoryReactEditor.api.history.run({ save: false }, () => {});
+// @ts-expect-error disabled default history removes update history helpers
+noHistoryReactEditor.update.history.skip(() => {});
 
 const selectorOptions: EditorSelectorOptions<typeof historyReactEditor> = {
   shouldUpdate: (operations, change) => {
@@ -231,7 +231,7 @@ const HookProbe = () => {
     tx.history.undo();
   });
 
-  hookEditor.api.history.run({ save: false }, () => {});
+  hookEditor.update.history.skip(() => {});
   hookEditor.api.dom.focus();
   hookEditor.api.react.isComposing();
 

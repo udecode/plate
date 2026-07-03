@@ -1,21 +1,21 @@
-import type { TElement, TText } from '@platejs/slate';
+import type { Element, Text } from '@platejs/plite';
+import { keyToDataAttribute } from '@platejs/plite-dom/internal';
 
 import {
-  type AnyEditorPlugin,
-  type SlateEditor,
+  type AnyBasePlugin,
+  type BaseEditor,
   getEditorPlugin,
-  keyToDataAttribute,
 } from '../../lib';
 
 export const getNodeDataAttributes = (
-  editor: SlateEditor,
-  node: TElement | TText,
+  editor: BaseEditor,
+  node: Element | Text,
   {
     isElement,
     isLeaf,
     isText,
   }: { isElement?: boolean; isLeaf?: boolean; isText?: boolean }
-) => {
+): Record<string, unknown> => {
   const dataAttributes = Object.keys(node).reduce(
     (acc, key) => {
       if (typeof node[key] === 'object') return acc;
@@ -41,16 +41,16 @@ export const getNodeDataAttributes = (
       acc[attributeName] = node[key];
       return acc;
     },
-    {} as Record<string, any>
+    {} as Record<string, unknown>
   );
 
   return dataAttributes;
 };
 
 export const getPluginDataAttributes = (
-  editor: SlateEditor,
-  plugin: AnyEditorPlugin,
-  node: TElement | TText
+  editor: BaseEditor,
+  plugin: AnyBasePlugin,
+  node: Element
 ) => {
   const isElement = plugin.node.isElement;
   const isLeaf = plugin.node.isLeaf && plugin.node.isDecoration === true;
@@ -61,10 +61,9 @@ export const getPluginDataAttributes = (
     isLeaf,
     isText,
   });
-
   const customAttributes =
     plugin.node.toDataAttributes?.({
-      ...(plugin ? (getEditorPlugin(editor, plugin) as any) : {}),
+      ...getEditorPlugin(editor, plugin),
       node,
     }) ?? {};
 

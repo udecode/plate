@@ -3,4 +3,3 @@
  */
 
 export * from './ReactPlugin';
-export * from './withPlateReact';
