@@ -35,6 +35,13 @@ export type NumberingOptions = {
 };
 
 export type DocumentOptions = {
+  /**
+   * Fetch remote HTTP(S) images while converting HTML to DOCX.
+   *
+   * Disabled by default because fetching attacker-controlled image URLs can
+   * expose server-side environments to SSRF. Prefer trusted data URIs.
+   */
+  allowRemoteImages?: boolean;
   complexScriptFontSize?: number | string | null;
   createdAt?: Date;
   creator?: string;

@@ -30,7 +30,7 @@ export type HtmlToDocxOptions = DocumentOptions;
  * Convert HTML content to a DOCX blob.
  *
  * This function uses @turbodocx/html-to-docx to create a valid DOCX file
- * from HTML content with proper support for images, tables, and styling.
+ * from HTML content with proper support for data URI images, tables, and styling.
  *
  * @param html - The HTML content to convert
  * @param options - Optional document configuration (orientation, margins, etc.)

@@ -63,6 +63,7 @@ export type ParagraphBorders = {
 };
 
 export type DocumentOptions = {
+  allowRemoteImages: boolean;
   complexScriptFontSize: number;
   createdAt: Date;
   creator: string;
@@ -118,6 +119,7 @@ const defaultFont = 'Times New Roman';
 const defaultFontSize = 22;
 const defaultLang = 'en-US';
 const defaultDocumentOptions: DocumentOptions = {
+  allowRemoteImages: false,
   complexScriptFontSize: defaultFontSize,
   createdAt: new Date(),
   creator: applicationName,

@@ -61,6 +61,7 @@ type MediaFileResponse = {
 };
 
 type DocxDocumentInstance = {
+  allowRemoteImages?: boolean;
   availableDocumentSpace: number;
   createDocumentRelationships: (
     filename: string,
@@ -177,7 +178,11 @@ export const buildImage = async (
       return null;
     }
 
-    if (imageSource && isValidUrl(imageSource)) {
+    if (
+      docxDocumentInstance.allowRemoteImages &&
+      imageSource &&
+      isValidUrl(imageSource)
+    ) {
       const base64String = (await imageToBase64(imageSource).catch(() => {})) as
         | string
         | undefined;
@@ -230,7 +235,7 @@ export const buildImage = async (
 
         base64Uri = `data:${mimeType};base64,${base64String}`;
       }
-    } else if (imageSource) {
+    } else if (imageSource?.startsWith('data:')) {
       base64Uri = decodeURIComponent(imageSource);
     }
     if (base64Uri) {

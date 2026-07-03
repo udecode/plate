@@ -185,6 +185,7 @@ export interface FooterResult {
 
 /** DocxDocument constructor properties */
 export interface DocxDocumentProperties {
+  allowRemoteImages?: boolean;
   complexScriptFontSize?: number | null;
   createdAt?: Date;
   creator?: string;
@@ -333,6 +334,7 @@ async function generateSectionXML(
 }
 
 class DocxDocument {
+  allowRemoteImages: boolean;
   availableDocumentSpace: number;
   complexScriptFontSize: number;
   createdAt: Date;
@@ -380,6 +382,7 @@ class DocxDocument {
   constructor(properties: DocxDocumentProperties) {
     this.zip = properties.zip;
     this.htmlString = properties.htmlString;
+    this.allowRemoteImages = properties.allowRemoteImages === true;
     this.orientation = properties.orientation || defaultOrientation;
     this.pageSize = properties.pageSize || defaultDocumentOptions.pageSize;
 

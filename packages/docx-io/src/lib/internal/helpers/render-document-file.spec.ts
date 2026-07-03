@@ -12,6 +12,13 @@ import {
 } from './render-document-file';
 
 describe('render-document-file helpers', () => {
+  let fetchSpy: ReturnType<typeof spyOn> | undefined;
+
+  afterEach(() => {
+    fetchSpy?.mockRestore();
+    fetchSpy = undefined;
+  });
+
   it('skips webp images before creating media files', async () => {
     const docxDocument = {
       createMediaFile: mock(),
@@ -22,6 +29,26 @@ describe('render-document-file helpers', () => {
         properties: { src: 'https://example.com/image.webp' },
       } as any)
     ).resolves.toBeNull();
+    expect(docxDocument.createMediaFile).not.toHaveBeenCalled();
+  });
+
+  it('does not fetch remote images by default', async () => {
+    const mockFetch = (async () => {
+      throw new Error('unexpected fetch');
+    }) as unknown as typeof fetch;
+
+    fetchSpy = spyOn(globalThis, 'fetch').mockImplementation(mockFetch);
+    const docxDocument = {
+      allowRemoteImages: false,
+      createMediaFile: mock(),
+    } as any;
+
+    await expect(
+      buildImage(docxDocument, {
+        properties: { src: 'https://example.com/image.png' },
+      } as any)
+    ).resolves.toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
     expect(docxDocument.createMediaFile).not.toHaveBeenCalled();
   });
 

@@ -49,6 +49,7 @@ interface VTree {
 }
 
 interface NormalizedDocumentOptions {
+  allowRemoteImages?: boolean;
   complexScriptFontSize?: number | null;
   createdAt?: Date;
   creator?: string;
@@ -197,6 +198,8 @@ const normalizeDocumentOptions = (
   const result: NormalizedDocumentOptions = {};
 
   // Copy over non-transformed properties
+  if (documentOptions.allowRemoteImages !== undefined)
+    result.allowRemoteImages = documentOptions.allowRemoteImages;
   if (documentOptions.createdAt !== undefined)
     result.createdAt = documentOptions.createdAt;
   if (documentOptions.creator !== undefined)
