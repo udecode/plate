@@ -39,5 +39,14 @@
     "types": ["node", "@testing-library/jest-dom", "bun-types", "jest"]
   },
   "include": ["**/*", "tooling/config/global.d.ts"],
-  "exclude": ["node_modules", "**/node_modules", "dist", "**/dist"]
+  "exclude": [
+    "node_modules",
+    "**/node_modules",
+    "dist",
+    "**/dist",
+    "packages/**/src/**/*.spec.*",
+    "packages/**/src/**/*.test.*",
+    "packages/**/src/**/*-contract.*",
+    "packages/**/src/**/*.slow.*"
+  ]
 }

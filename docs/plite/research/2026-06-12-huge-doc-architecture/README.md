@@ -1059,7 +1059,7 @@ What changed:
 
 - Browser-event kernel traces now pass compact `operations: []`, matching the
   existing keydown trace discipline instead of falling back to
-  `state.value.operations()`.
+  `state.operations()`.
 - DOM input repair traces also pass compact operations.
 - `runtime-before-input-events.ts` now exposes
   `shouldFlushSelectionChangeBeforeDOMBeforeInput()`.

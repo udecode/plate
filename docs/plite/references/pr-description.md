@@ -344,48 +344,13 @@ Open debt:
 - Some legacy-oracle tests still use node data markers such as `void: true`.
   Treat those as fixture data matched into explicit string specs, not supported
   `EditorElementSpec.void` config.
-- Non-node document state fields are an architecture-ready follow-up, not a
-  current PR claim. The accepted target is `defineStateField`, canonical
-  `Value = { roots, state? }`, `InitialValue` normalization,
-  `state.getField`, `tx.setField`, root-explicit operations, root-aware
-  `Point`/`Range`, `createEditorRuntime`, `createEditorView`,
-  `statePatches`, `dirtyStateKeys`, the `'state'` source,
-  `useStateFieldValue`, and `useSetStateField`, with comments external by
-  default. Do not add fixed or improved issue counts for this target until the
-  core/root/history/collab/react contracts in
-  `docs/plans/2026-05-20-plite-non-node-editor-state-architecture-ralplan.md`
-  pass in `Plate repo root`. Current execution proof covers the first nine
-  vertical slices: `createEditor` accepts legacy children, `{ children, state }`,
-  and `{ roots, state }` `initialValue` shapes and exposes canonical rooted
-  `state.value.get()` output; committed content operations include
-  `root: 'main'`, `Path` stays numeric/root-local, and `Point`/`Range` transforms
-  ignore operations from other roots; `createEditorRuntime` owns the shared
-  editor value while `createEditorView` creates root-bound read/update facades
-  with view-local root, focus, and read-only policy; `defineStateField`
-  installs persisted descriptors with initial values and `state.getField`;
-  `tx.setField` emits operation-free `statePatches`, `dirtyStateKeys`, and the
-  `'state'` commit source, with a guard for large shared/history fields that
-  omit patch hooks; `plite-history` stores state patches in history batches and
-  undoes/redoes title changes as operation-free historic commits; collaboration
-  adapters can import shared state patches through `tx.statePatches.replay` and
-  export only `collab: 'shared'` patches through
-  `Editor.getCollabStatePatches`; React exposes `useStateFieldValue` and
-  `useSetStateField`, with field subscriptions filtered by `dirtyStateKeys`;
-  the examples app has a browser-proven `Document State` route that edits
-  document title/settings through state fields, keeps body content separate,
-  undoes/redoes state patches, and imports a remote title patch. Current
-  focused performance/release proof covers editor-store, history-retained
-  memory, collab-readiness, React rerender-breadth, and root `bun check`; two
-  field/root-specific benchmark script names remain missing harness coverage,
-  not passed proof. The multi-root React DX target is one canonical
-  `<Plite editor={editor}>` provider with multiple `<Editable root="...">`
-  surfaces. `PliteRuntime`, `<Plite root="...">`, `createEditorView`,
-  `usePliteRuntimeState`, and `usePliteViewState` remain advanced substrate
-  APIs for custom hosts. This is a non-claim API target for multi-root/header-
-  footer examples, not an added issue count. A follow-up non-claim API target
-  adds package-owned `usePliteHistory` and `usePliteRootChrome` so the canonical
-  example does not teach app-owned history shortcut parsing, stack reads,
-  selection metadata, active-root command routing, or RAF focus repair.
+- Non-node document meta is represented by `EditorDocumentValue.meta`; root
+  content stays in `children` and named `roots`. Do not add fixed or improved
+  issue counts for document meta until the current `children`/`roots`/`meta`
+  contracts, history behavior, collaboration adapters, React selectors, and
+  examples have explicit proof in the Plate repo root. The multi-root React DX
+  target is one canonical `<Plite editor={editor}>` provider with multiple
+  `<Editable root="...">` surfaces.
 - Structural delete and normalization now have focused core package proof for
   #4121/#2500/#3965/#3950. #5811 is improved by deterministic normalization
   loop detection. #1654 is improved by wiring existing `isIsolating` schema
@@ -790,7 +755,7 @@ Accepted current source shape:
   normalization, with `next(overrides)`, built-in fallback delegation, cleanup,
   extension-local registration ids, scoped normalizer `tx`, and double-next
   proof.
-- Scoped normalizer `tx` exposes model repair APIs and `value.get()`, but not
+- Scoped normalizer `tx` exposes model repair APIs and `value()`, but not
   recursive normalization controls, operation replay, or whole-value
   replacement.
 - Operation and commit extension slots answer old `apply` and `onChange`

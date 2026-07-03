@@ -26,7 +26,7 @@ Recommended Plite policy:
 
 - If a model/app/remote edit overlaps the active composition range, terminate
   composition ownership before applying the edit.
-- The app/model edit wins the document state.
+- The app/model edit wins the document value.
 - A later stale `compositionend` must be idempotent and must not insert the
   stale composed text a second time.
 - If the edit is outside the active composition range, keep composition alive

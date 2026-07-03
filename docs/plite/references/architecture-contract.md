@@ -33,8 +33,8 @@ The current public runtime shape is:
 
 ```ts
 editor.read((state) => {
-  state.selection.get();
-  state.value.get();
+  state.selection();
+  state.value();
 });
 
 editor.update((tx) => {
@@ -463,8 +463,8 @@ The public surface stays small:
 
 ```ts
 editor.read((state) => {
-  state.selection.get();
-  state.value.get();
+  state.selection();
+  state.value();
 });
 
 editor.update((tx) => {
@@ -533,9 +533,9 @@ App and demo instrumentation follows the same rule: observe commits through
 
 The committed editor state should be immutable and boring:
 
-- `state.value.get()` reads committed document value
-- `state.selection.get()` reads committed selection
-- `state.marks.get()` reads committed marks
+- `state.value()` reads committed document value
+- `state.selection()` reads committed selection
+- `state.marks()` reads committed marks
 - mutable fields are internal or compatibility mirrors, not primary read paths
 - transaction draft state is private
 - reading committed state does not mutate anything

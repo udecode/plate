@@ -18,8 +18,8 @@ This is the public runtime shape:
 
 ```ts
 editor.read((state) => {
-  const selection = state.selection.get()
-  const children = state.value.get().roots.main ?? []
+  const selection = state.selection()
+  const children = state.value().roots.main ?? []
 })
 
 editor.update((tx) => {

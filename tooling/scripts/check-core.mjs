@@ -31,7 +31,7 @@ const packageTestTargets = [
     name: 'Core',
     dir: coreDir,
     roots: ['src'],
-    bunArgs: [],
+    bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
   },
   {
     name: 'Plite',

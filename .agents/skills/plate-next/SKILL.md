@@ -85,6 +85,10 @@ Rules:
 - No hacks. Do not route displaced product/plugin behavior into bridge files,
   helper dumps, `any` casts, duplicate Plate wrappers around Plite APIs, or
   fake aliases.
+- Do not add local structural type guards around Plite-owned editor APIs. A
+  helper like `type DOMResolver` / `hasDOMResolver` for
+  `editor.api.dom.resolveDOMNode` is a failed migration: either call the typed
+  Plite API directly or fix the owning Plite/Plate API type.
 - Never type inferred types in tests or examples. If `origin/main` relied on
   inline callback inference, keep that shape. Do not add local helper aliases
   like `PreInsertOptions`, explicit callback parameter annotations, or

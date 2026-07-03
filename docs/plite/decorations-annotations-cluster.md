@@ -40,7 +40,7 @@ Users want decorations that:
 - span siblings
 - bridge inline boundaries
 - operate from higher-order nodes
-- preview or mask content without mutating document state
+- preview or mask content without mutating document value
 
 Related pressure:
 
