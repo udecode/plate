@@ -1,5 +1,13 @@
 # @platejs/docx-io
 
+## 53.3.2
+
+### Patch Changes
+
+- [#5053](https://github.com/udecode/plate/pull/5053) by [@zbeyens](https://github.com/zbeyens) – Skip remote image URLs by default during DOCX export.
+
+  **Migration:** Convert trusted remote images to data URIs before calling `htmlToDocxBlob`, or pass `allowRemoteImages: true` only when the HTML source is trusted.
+
 ## 53.1.0
 
 ### Minor Changes
