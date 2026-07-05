@@ -3,22 +3,43 @@
 import React from 'react';
 
 import type { Value } from '@platejs/plite';
+import { useEditorViewState } from '@platejs/plite-react';
 
 import { act, render, waitFor } from '@testing-library/react';
 
 import { createPlateEditor } from '../editor';
-import { usePlateEditorReadOnly } from '../stores';
+import { useEditorRef } from '../stores';
 import { Plate } from './Plate';
+import { PlateContainer } from './PlateContainer';
 import { PlateContent } from './PlateContent';
 
 const value: Value = [{ children: [{ text: 'one' }], type: 'p' }];
 
-const ReadOnlyProbe = () => (
-  <span data-testid="read-only">{String(usePlateEditorReadOnly())}</span>
-);
+const ReadOnlyProbe = () => {
+  const editor = useEditorRef();
+  const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
+
+  return <span data-testid="read-only">{String(readOnly)}</span>;
+};
 
 describe('PlateContent', () => {
-  it('syncs readOnly and disabled into the Plate store', async () => {
+  it('renders inside the Plate container without mutating editor runtime', () => {
+    const editor = createPlateEditor({ value });
+    const { getByTestId } = render(
+      <Plate editor={editor}>
+        <PlateContainer data-testid="plate-shell">
+          <PlateContent data-testid="runtime-editable" />
+        </PlateContainer>
+      </Plate>
+    );
+
+    expect(getByTestId('plate-shell')).toContainElement(
+      getByTestId('runtime-editable')
+    );
+    expect(Object.hasOwn(editor.runtime, 'uid')).toBe(false);
+  });
+
+  it('syncs readOnly and disabled into the Plite view state', async () => {
     const editor = createPlateEditor({ value });
 
     const Shell = ({

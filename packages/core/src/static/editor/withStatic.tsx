@@ -30,10 +30,10 @@ const extendStaticEditor = <
   editor: Editor,
   options: CreateStaticEditorOptions<V, P> = {}
 ) => {
-  const { plugins = [] } = options;
+  const { id: _id, plugins = [], ...extendOptions } = options;
 
   return extendBaseEditor<V, StaticPluginInput<P>>(editor, {
-    ...options,
+    ...extendOptions,
     plugins: [...getStaticPlugins(), ...plugins],
   });
 };
@@ -42,9 +42,10 @@ export const createStaticEditor = <
   V extends Value = Value,
   const P extends readonly BasePluginInput[] = readonly [],
 >({
-  editor = createEditor(),
+  editor,
+  id,
   ...options
 }: CreateStaticEditorOptions<V, P> = {}): BaseEditor<
   V,
   StaticEditorPlugins<P>
-> => extendStaticEditor<V, P>(editor, options);
+> => extendStaticEditor<V, P>(editor ?? createEditor({ id }), options);

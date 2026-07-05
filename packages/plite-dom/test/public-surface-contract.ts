@@ -104,6 +104,7 @@ const expectedPliteDOMRuntimeRootExports = [
   'splitDecorationsByChild',
   'targetRange',
   'verifyDiffState',
+  'writeDOMFragmentData',
 ];
 
 describe('plite-dom public surface contract', () => {
@@ -358,6 +359,7 @@ describe('plite-dom public surface contract', () => {
         'assertPliteRange',
         'blur',
         'deselect',
+        'editable',
         'findDocumentOrShadowRoot',
         'findKey',
         'focus',
@@ -377,6 +379,8 @@ describe('plite-dom public surface contract', () => {
         'resolveEventRange',
         'resolvePath',
         'resolveRangeRect',
+        'root',
+        'scroll',
         'scrollIntoView',
         'resolvePliteNode',
         'resolvePlitePoint',
@@ -402,6 +406,7 @@ describe('plite-dom public surface contract', () => {
           'assertPliteRange',
           'blur',
           'deselect',
+          'editable',
           'findDocumentOrShadowRoot',
           'findKey',
           'focus',
@@ -421,6 +426,8 @@ describe('plite-dom public surface contract', () => {
           'resolveEventRange',
           'resolvePath',
           'resolveRangeRect',
+          'root',
+          'scroll',
           'scrollIntoView',
           'resolvePliteNode',
           'resolvePlitePoint',

@@ -259,16 +259,13 @@ export const createBlockStartInputRule = <TMatch extends object = {}>(
 
       if (config.mode === 'wrap') {
         editor.update.blocks.toggle(node, {
-          defaultType: editor.getType('p'),
           wrap: true,
         });
         return true;
       }
 
       if (config.mode === 'toggle') {
-        editor.update.blocks.toggle(node, {
-          defaultType: editor.getType('p'),
-        });
+        editor.update.blocks.toggle(node);
         return true;
       }
 

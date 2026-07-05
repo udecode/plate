@@ -71,6 +71,10 @@ import type {
   Value,
 } from './interfaces';
 
+let nextEditorId = 0;
+
+const createEditorId = () => `plite-editor-${++nextEditorId}`;
+
 const isMergeableApiCapability = (
   capability: unknown
 ): capability is Record<PropertyKey, unknown> =>
@@ -291,6 +295,7 @@ export function createEditor<
 
   const baseEditor: Editor<V, TExtensions> = {
     api,
+    id: options.id ?? createEditorId(),
     getApi: getApi as Editor<V, TExtensions>['getApi'],
     read,
     subscribe: (listener) => subscribe(editor, listener),

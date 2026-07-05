@@ -57,6 +57,26 @@ describe('PlateEditor', () => {
       editor.api.debug.nonExistentMethod;
     });
 
+    it('strips static metadata from editable normalized values', () => {
+      const editor = createPlateEditor({
+        shouldNormalizeEditor: true,
+        value: [
+          {
+            _memo: 'static-element',
+            children: [{ _memo: 'static-leaf', text: 'body' }],
+            type: 'p',
+          },
+        ],
+      });
+
+      expect(editor.read.children()).toEqual([
+        {
+          children: [{ text: 'body' }],
+          type: 'p',
+        },
+      ]);
+    });
+
     it('combines core and custom plugin APIs with createPlateEditor', () => {
       const editor = createPlateEditor({
         plugins: [DebugPlugin, TextFormattingPlugin, ImagePlugin],

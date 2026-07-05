@@ -71,8 +71,23 @@ export {
 export { useDOMStrategyVirtualOffset } from './hooks/use-dom-strategy-virtual-offset';
 export { useEditor } from './hooks/use-editor';
 export { useEditorComposing } from './hooks/use-editor-composing';
+export {
+  useEditorEditableElement,
+  useEditorRootElement,
+  useEditorScrollElement,
+  useEditorScrollElementRef,
+} from './hooks/use-editor-dom-scope';
 export { useEditorFocused } from './hooks/use-editor-focused';
-export { useEditorReadOnly } from './hooks/use-editor-read-only';
+export {
+  EditorReadOnlyProvider,
+  type EditorReadOnlyProviderProps,
+  useEditorReadOnly,
+  useOptionalEditorReadOnly,
+} from './hooks/use-editor-read-only';
+export {
+  type EditorRuntimeStateSelectorOptions,
+  useEditorRuntimeState,
+} from './hooks/use-editor-runtime-state';
 export { useEditorSelection } from './hooks/use-editor-selection';
 export {
   type EditorSelectorOptions,
@@ -80,6 +95,10 @@ export {
   useEditorSelector,
   useEditorState,
 } from './hooks/use-editor-selector';
+export {
+  type EditorViewStateSelectorOptions,
+  useEditorViewState,
+} from './hooks/use-editor-view-state';
 // Hooks
 export { useElement } from './hooks/use-element';
 export { useElementPath } from './hooks/use-element-path';

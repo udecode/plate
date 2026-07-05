@@ -7,7 +7,6 @@ import {
   type Selection,
   type TargetFreshnessRequest,
 } from '@platejs/plite';
-import { setEditorFocused } from '@platejs/plite/internal';
 import {
   containsShadowAware,
   type DOMRange,
@@ -53,7 +52,10 @@ import type {
 } from './input-state';
 import { isEditableOutsideFocusBoundarySettling } from './input-state';
 import { readModelSelectionDOMPreference } from './model-selection-dom-preference';
-import { getSelection as editorGetSelection } from './runtime-editor-api';
+import {
+  getSelection as editorGetSelection,
+  setEditorFocused,
+} from './runtime-editor-api';
 import {
   readLiveSelection,
   readRuntimeSelection,

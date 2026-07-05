@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { NodeApi } from '@platejs/slate';
+import { useEditorReadOnly } from '@platejs/plite-react';
 import clsx from 'clsx';
 
 import type { EditableProps } from '../../lib';
@@ -9,7 +9,6 @@ import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin';
 
 import { PlateLeaf } from '../components';
-import { useReadOnly } from '../slate-react';
 import { getRenderNodeProps } from './getRenderNodeProps';
 import { type RenderLeaf, pluginRenderLeaf } from './pluginRenderLeaf';
 
@@ -20,17 +19,23 @@ const HARD_AFFINITY_SPACER_STYLE = {
 } as const;
 
 const isActiveHardAffinityBoundary = (editor: PlateEditor, text: any) => {
-  if (!editor.api.isCollapsed()) return false;
+  const match = editor.read((state) => {
+    if (!state.selection.isCollapsed()) return;
 
-  const focus = editor.selection?.focus;
+    const focus = state.selection()?.focus;
 
-  if (!focus) return false;
+    if (!focus) return;
 
-  const selectedText = NodeApi.get(editor, focus.path);
+    const selectedText = state.nodes.get(focus.path)?.[0];
 
-  if (selectedText !== text) return false;
+    return selectedText ? { focus, selectedText } : undefined;
+  });
 
-  return focus.offset === 0 || focus.offset === text.text.length;
+  if (!match) return false;
+
+  if (match.selectedText !== text) return false;
+
+  return match.focus.offset === 0 || match.focus.offset === text.text.length;
 };
 
 /** @see {@link RenderLeaf} */
@@ -53,15 +58,15 @@ export const pipeRenderLeaf = (
   const renderLeafEntryByKey = new Map<string, true>();
   const leafPropsPlugins: AnyEditorPlatePlugin[] = [];
   const hasInjectNodeProps =
-    editor.meta.pluginCache.inject.nodeProps.length > 0;
+    editor.runtime.pluginCache.inject.nodeProps.length > 0;
 
-  editor.meta.pluginCache.node.isLeaf.forEach((key) => {
+  editor.runtime.pluginCache.node.isLeaf.forEach((key) => {
     const plugin = editor.getPlugin({ key });
 
     if (plugin) {
       const leafKey = plugin.node.type ?? key;
       const canUseSimpleLeaf =
-        editor.meta.pluginCache.inject.nodeProps.length === 0 &&
+        editor.runtime.pluginCache.inject.nodeProps.length === 0 &&
         !plugin.render?.leaf &&
         !plugin.render?.node &&
         !plugin.node.props &&
@@ -71,7 +76,7 @@ export const pipeRenderLeaf = (
 
       if (canUseSimpleLeaf) {
         const entry = {
-          className: plugin.node.type ? `slate-${plugin.node.type}` : undefined,
+          className: plugin.node.type ? `plite-${plugin.node.type}` : undefined,
           editOnly: plugin.editOnly,
           key: leafKey,
           selectionAffinity: plugin.rules.selection?.affinity,
@@ -92,7 +97,7 @@ export const pipeRenderLeaf = (
     }
   });
 
-  editor.meta.pluginCache.node.leafProps.forEach((key) => {
+  editor.runtime.pluginCache.node.leafProps.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     if (plugin) {
       leafPropsPlugins.push(plugin as any);
@@ -119,7 +124,7 @@ export const pipeRenderLeaf = (
 
   return function render({ attributes, ...props }) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const readOnly = useReadOnly();
+    const readOnly = useEditorReadOnly();
     const leaf = props.leaf as Record<string, unknown>;
     let hasActiveSimpleRenderLeaf = false;
     let hasActiveComplexRenderLeaf = false;

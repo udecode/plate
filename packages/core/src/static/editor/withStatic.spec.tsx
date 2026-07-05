@@ -184,7 +184,7 @@ describe('extendStaticEditor', () => {
       expect(editor.getPlugin(ViewPlugin)).toBeDefined();
     });
 
-    it('override existing editor id when new id is provided', () => {
+    it('preserves existing editor id when new id is provided', () => {
       const existingEditor = createBaseEditor();
       existingEditor.id = 'old';
 
@@ -193,7 +193,7 @@ describe('extendStaticEditor', () => {
         editor: existingEditor,
       });
 
-      expect(editor.id).toBe('new');
+      expect(editor.id).toBe('old');
     });
   });
 
@@ -271,6 +271,27 @@ describe('extendStaticEditor', () => {
       expect(editor.read.children()).toEqual([
         {
           children: [{ text: '' }],
+          type: 'p',
+        },
+      ]);
+    });
+
+    it('preserves static _memo metadata during normalization', () => {
+      const editor = createStaticEditor({
+        shouldNormalizeEditor: true,
+        value: [
+          {
+            _memo: 'static-element',
+            children: [{ text: 'body' }],
+            type: 'p',
+          },
+        ],
+      });
+
+      expect(editor.read.children()).toEqual([
+        {
+          _memo: 'static-element',
+          children: [{ text: 'body' }],
           type: 'p',
         },
       ]);

@@ -1,21 +1,17 @@
 import React from 'react';
 
-import type { Range } from '@platejs/plite';
+import type { Range, Value } from '@platejs/plite';
 
 import { act, renderHook } from '@testing-library/react';
 
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { createPlateEditor } from '../editor';
+import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
 import { createPlatePlugin } from '../plugin';
-import {
-  useEditorVersion,
-  useSelectionVersion,
-  useValueVersion,
-} from '../stores';
 import { useSlateProps } from './useSlateProps';
 
 describe('useSlateProps', () => {
-  it('routes slate callbacks through the matching plate callbacks and versions', () => {
+  it('routes slate callbacks through the matching plate callbacks', () => {
     const onChange = mock();
     const onSelectionChange = mock();
     const onValueChange = mock();
@@ -34,58 +30,45 @@ describe('useSlateProps', () => {
     );
     const { result } = renderHook(
       () => ({
-        editorVersion: useEditorVersion(),
         props: useSlateProps({}),
-        selectionVersion: useSelectionVersion(),
-        valueVersion: useValueVersion(),
       }),
       { wrapper }
     );
-    const nextValue = [{ children: [{ text: 'two' }], type: 'p' }];
+    const nextValue: Value = [{ children: [{ text: 'two' }], type: 'p' }];
     const nextSelection: Range = {
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     };
-
     onChange.mockClear();
     onSelectionChange.mockClear();
     onValueChange.mockClear();
 
     expect(result.current.props.editor).toBe(editor);
-    expect(result.current.props.key).toBe(editor.runtime.key);
+    expect(result.current.props.key).toBe(getPlateEditorInstanceKey(editor));
 
     act(() => {
-      result.current.props.onChange!(nextValue as any, editor as any);
+      result.current.props.onChange!(nextValue);
     });
 
-    expect(result.current.editorVersion).toBe(2);
-    expect(result.current.selectionVersion).toBe(1);
-    expect(result.current.valueVersion).toBe(1);
     expect(onChange).toHaveBeenCalledWith({ editor, value: nextValue });
 
     act(() => {
-      result.current.props.onValueChange!(nextValue as any, editor as any);
+      result.current.props.onValueChange!(nextValue);
     });
 
-    expect(result.current.editorVersion).toBe(2);
-    expect(result.current.selectionVersion).toBe(1);
-    expect(result.current.valueVersion).toBe(2);
     expect(onValueChange).toHaveBeenCalledWith({ editor, value: nextValue });
 
     act(() => {
-      result.current.props.onSelectionChange!(nextSelection, editor as any);
+      result.current.props.onSelectionChange!(nextSelection);
     });
 
-    expect(result.current.editorVersion).toBe(2);
-    expect(result.current.selectionVersion).toBe(2);
-    expect(result.current.valueVersion).toBe(2);
     expect(onSelectionChange).toHaveBeenCalledWith({
       editor,
       selection: nextSelection,
     });
   });
 
-  it('increments the editor version without forwarding handled changes', () => {
+  it('does not forward handled changes', () => {
     const handledChange = mock(() => true);
     const onChange = mock();
     const editor = createPlateEditor({
@@ -104,7 +87,6 @@ describe('useSlateProps', () => {
     );
     const { result } = renderHook(
       () => ({
-        editorVersion: useEditorVersion(),
         props: useSlateProps({}),
       }),
       { wrapper }
@@ -114,13 +96,11 @@ describe('useSlateProps', () => {
     onChange.mockClear();
 
     act(() => {
-      result.current.props.onChange!(
-        [{ children: [{ text: 'two' }], type: 'p' }] as any,
-        editor as any
-      );
+      result.current.props.onChange!([
+        { children: [{ text: 'two' }], type: 'p' },
+      ]);
     });
 
-    expect(result.current.editorVersion).toBe(2);
     expect(handledChange).toHaveBeenCalledTimes(1);
     expect(onChange).not.toHaveBeenCalled();
   });

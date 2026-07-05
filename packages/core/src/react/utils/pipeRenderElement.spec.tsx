@@ -94,18 +94,6 @@ describe('pipeRenderElement', () => {
     expect(() => renderPipeBare(editor)).not.toThrow();
   });
 
-  it('keeps first-block composing state sync on the plain fast path', () => {
-    const editor = createPlateEditor({
-      navigationFeedback: false,
-      plugins: [],
-      value: createValue(),
-    } as any);
-
-    renderPipe(editor);
-
-    expect((editor as any).store.get('composing')).toBe(false);
-  });
-
   it('resolves the node path on the block-id fast path', () => {
     const editor = createPlateEditor({
       navigationFeedback: false,

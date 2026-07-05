@@ -3,9 +3,9 @@ import type {
   InferApi,
   InferOptions,
   InferSelectors,
-  InferTransforms,
+  InferTx,
   PluginConfig,
-  SlatePlugin,
+  BasePlugin,
 } from '../../lib';
 import type {
   PlatePlugin,
@@ -17,7 +17,6 @@ type PlatePluginConfig<
   C extends AnyPluginConfig,
   EO = {},
   EA = {},
-  ET = {},
   ES = {},
 > = Omit<
   Partial<
@@ -26,94 +25,67 @@ type PlatePluginConfig<
         C['key'],
         EO & InferOptions<C>,
         EA & InferApi<C>,
-        ET & InferTransforms<C>,
+        InferTx<C>,
         ES & InferSelectors<C>
       >
     >
   >,
-  keyof PlatePluginMethods | 'api' | 'node' | 'options' | 'transforms'
+  keyof PlatePluginMethods | 'api' | 'node' | 'options'
 > & {
   api?: EA & Partial<InferApi<C>>;
   node?: Partial<PlatePlugin<C>['node']>;
   options?: EO & Partial<InferOptions<C>>;
   selectors?: ES & Partial<InferSelectors<C>>;
-  transforms?: ET & Partial<InferTransforms<C>>;
 };
 
-const methodsToWrap: (keyof SlatePlugin)[] = [
+const methodsToWrap = [
   'configure',
   'configurePlugin',
   'extendEditorApi',
   'extendSelectors',
   'extendApi',
-  'extendEditorTransforms',
-  'extendTransforms',
-  'overrideEditor',
+  'extendTx',
+  'extendTxGroup',
   'extend',
   'extendPlugin',
-];
+] as const satisfies readonly (keyof PlatePluginMethods)[];
 
-/**
- * Extends a SlatePlugin to create a React PlatePlugin.
- *
- * @remarks
- *   This function transforms a SlatePlugin into a React PlatePlugin, allowing for
- *   React-specific functionality to be added.
- * @param basePlugin - The base SlatePlugin to be extended.
- * @param extendConfig - A function or object that provides the extension
- *   configuration. If a function, it receives the plugin context and should
- *   return a partial PlatePlugin. If an object, it should be a partial
- *   PlatePlugin configuration.
- * @returns A new PlatePlugin that combines the base SlatePlugin functionality
- *   with React-specific features defined in the extension configuration.
- */
-export function toPlatePlugin<
-  C extends AnyPluginConfig,
-  EO = {},
-  EA = {},
-  ET = {},
-  ES = {},
->(
-  basePlugin: SlatePlugin<C>,
-  extendConfig?:
-    | ((ctx: PlatePluginContext<C>) => PlatePluginConfig<C, EO, EA, ET>)
-    | PlatePluginConfig<C, EO, EA, ET>
-): PlatePlugin<
-  PluginConfig<
-    C['key'],
-    EO & InferOptions<C>,
-    EA & InferApi<C>,
-    ET & InferTransforms<C>,
-    ES & InferSelectors<C>
-  >
-> {
-  const plugin = { ...basePlugin } as unknown as PlatePlugin;
+const extensionArrayKeys = [
+  '__apiExtensions',
+  '__selectorExtensions',
+  '__txExtensions',
+] as const;
 
-  methodsToWrap.forEach((method) => {
-    const originalMethod = plugin[method];
+const preserveExtensionArrays = <P extends PlatePlugin>(
+  basePlugin: PlatePlugin,
+  extendedPlugin: P
+): P => {
+  for (const key of extensionArrayKeys) {
+    const baseExtensions = basePlugin[key] ?? [];
+    const extendedExtensions = extendedPlugin[key] ?? [];
 
-    (plugin as any)[method] = (...args: any[]) => {
-      const slatePlugin = originalMethod(...args);
+    if (baseExtensions.length === 0) continue;
 
-      return toPlatePlugin(slatePlugin);
-    };
-  });
+    extendedPlugin[key] = [
+      ...baseExtensions,
+      ...extendedExtensions.filter(
+        (extension) => !baseExtensions.includes(extension as never)
+      ),
+    ] as P[typeof key];
+  }
 
-  if (!extendConfig) return plugin as any;
+  return extendedPlugin;
+};
 
-  const extendedPlugin = plugin.extend(extendConfig as any);
-
-  return extendedPlugin as any;
-}
-
-type ExtendPluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
+type ExtendPlatePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
   Partial<
     PlatePlugin<
       PluginConfig<
         C['key'],
         Partial<InferOptions<C>>,
         Partial<InferApi<C>>,
-        Partial<InferTransforms<C>>
+        Partial<InferTx<C>>,
+        Partial<InferSelectors<C>>
       >
     >
   >,
@@ -121,34 +93,78 @@ type ExtendPluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
 >;
 
 /**
- * Explicitly typed version of {@link toPlatePlugin}.
+ * Extends a BasePlugin to create a React PlatePlugin.
  *
  * @remarks
- *   This function requires explicit type parameters for both the base plugin
- *   configuration and the extension configuration. Use this when you need
- *   precise control over the plugin's type structure or when type inference
- *   doesn't provide the desired result.
- * @typeParam C - The type of the extension configuration for the PlatePlugin
- *   (required).
- * @typeParam TContext - The type of the base SlatePlugin configuration
- *   (optional).
+ *   This function adapts a BasePlugin into a React PlatePlugin, allowing for
+ *   React-specific functionality to be added.
+ * @param basePlugin - The base BasePlugin to be extended.
+ * @param extendConfig - A function or object that provides the extension
+ *   configuration. If a function, it receives the plugin context and should
+ *   return a partial PlatePlugin. If an object, it should be a partial
+ *   PlatePlugin configuration.
+ * @returns A new PlatePlugin that combines the base BasePlugin functionality
+ *   with React-specific features defined in the extension configuration.
  */
-export function toTPlatePlugin<
+export function toPlatePlugin<
+  C extends AnyPluginConfig,
+  EO = {},
+  EA = {},
+  ES = {},
+>(
+  basePlugin: BasePlugin<C>,
+  extendConfig?:
+    | ((ctx: PlatePluginContext<C>) => PlatePluginConfig<C, EO, EA, ES>)
+    | PlatePluginConfig<C, EO, EA, ES>
+): PlatePlugin<
+  PluginConfig<
+    C['key'],
+    EO & InferOptions<C>,
+    EA & InferApi<C>,
+    InferTx<C>,
+    ES & InferSelectors<C>
+  >
+>;
+
+export function toPlatePlugin<
   C extends AnyPluginConfig = PluginConfig,
   TContext extends AnyPluginConfig = AnyPluginConfig,
 >(
-  basePlugin: SlatePlugin<TContext>,
+  basePlugin: BasePlugin<TContext>,
   extendConfig?:
-    | ((ctx: PlatePluginContext<TContext>) => ExtendPluginConfig<C>)
-    | ExtendPluginConfig<C>
+    | ((ctx: PlatePluginContext<TContext>) => ExtendPlatePluginConfig<C>)
+    | ExtendPlatePluginConfig<C>
 ): PlatePlugin<
   PluginConfig<
     C['key'],
     InferOptions<C>,
     InferApi<C>,
-    InferTransforms<C>,
+    InferTx<C>,
     InferSelectors<C>
   >
-> {
-  return toPlatePlugin(basePlugin as any, extendConfig as any);
+>;
+
+export function toPlatePlugin(
+  basePlugin: BasePlugin<any>,
+  extendConfig?: any
+): PlatePlugin<any> {
+  const plugin = { ...basePlugin } as unknown as PlatePlugin;
+
+  methodsToWrap.forEach((method) => {
+    const originalMethod = plugin[method];
+
+    (plugin as any)[method] = (...args: any[]) => {
+      const basePlugin = (
+        originalMethod as unknown as (...args: any[]) => BasePlugin
+      )(...args);
+
+      return preserveExtensionArrays(plugin, toPlatePlugin(basePlugin));
+    };
+  });
+
+  if (!extendConfig) return plugin as any;
+
+  const extendedPlugin = plugin.extend(extendConfig);
+
+  return preserveExtensionArrays(plugin, extendedPlugin as PlatePlugin) as any;
 }

@@ -23,7 +23,14 @@ export type {
 } from '../plugin/dom-coverage';
 export { DOMCoverage } from '../plugin/dom-coverage';
 export type { DOMEditorInterface } from '../plugin/dom-editor';
-export { createDOMEditorCapability, DOMEditor } from '../plugin/dom-editor';
+export {
+  createDOMEditorCapability,
+  DOMEditor,
+  setEditorDOMEditableElement,
+  setEditorDOMRootElement,
+  setEditorDOMScrollElement,
+  subscribeEditorDOMScope,
+} from '../plugin/dom-editor';
 export {
   getPliteStringCoordinatePlacement,
   getPliteStringLength,
@@ -44,6 +51,10 @@ export {
 export { installDOM } from '../plugin/with-dom';
 export {
   EDITOR_TO_ELEMENT,
+  EDITOR_TO_DOM_EDITABLE,
+  EDITOR_TO_DOM_ROOT,
+  EDITOR_TO_DOM_SCOPE_LISTENERS,
+  EDITOR_TO_DOM_SCROLL,
   EDITOR_TO_FORCE_RENDER,
   EDITOR_TO_KEY_TO_ELEMENT,
   EDITOR_TO_PENDING_ACTION,

@@ -1,21 +1,20 @@
 import React from 'react';
 
+import { useEditorReadOnly } from '@platejs/plite-react';
 import clsx from 'clsx';
 
-import type { EditableProps } from '../../lib';
+import type { AnyBasePlugin, EditableProps } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
-import type { AnyEditorPlatePlugin } from '../plugin';
 
-import { getSlateClass } from '../../lib';
+import { getPluginNodeClass } from '../../lib';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { PlateText } from '../components/plate-nodes';
-import { useReadOnly } from '../slate-react';
 import { getRenderNodeProps } from './getRenderNodeProps';
 import { type RenderText, pluginRenderText } from './pluginRenderText';
 
 type SimpleRenderText = {
   className?: string;
-  plugin: AnyEditorPlatePlugin;
+  plugin: AnyBasePlugin;
   tag: keyof HTMLElementTagNameMap;
   textKey: string;
 };
@@ -34,11 +33,11 @@ export const pipeRenderText = (
   const renderTextByKey = new Map<string, true>();
   const simpleRenderTexts: SimpleRenderText[] = [];
   const simpleRenderTextByKey = new Map<string, true>();
-  const textPropsPlugins: AnyEditorPlatePlugin[] = [];
+  const textPropsPlugins: AnyBasePlugin[] = [];
   const hasInjectNodeProps =
-    editor.meta.pluginCache.inject.nodeProps.length > 0;
+    editor.runtime.pluginCache.inject.nodeProps.length > 0;
 
-  editor.meta.pluginList.forEach((plugin) => {
+  editor.runtime.pluginList.forEach((plugin) => {
     if (plugin.node.isLeaf && plugin.node.isDecoration === false) {
       const canUsePlainText =
         !plugin.render.node &&
@@ -48,7 +47,7 @@ export const pipeRenderText = (
 
       if (canUsePlainText) {
         const entry = {
-          className: getSlateClass(plugin.node.type) || undefined,
+          className: getPluginNodeClass(plugin.node.type) || undefined,
           plugin,
           tag: (plugin.render?.as ?? 'span') as keyof HTMLElementTagNameMap,
           textKey: plugin.node.type ?? plugin.key,
@@ -92,7 +91,7 @@ export const pipeRenderText = (
 
   return function render({ attributes, ...props }) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const readOnly = useReadOnly();
+    const readOnly = useEditorReadOnly();
     const text = props.text as Record<string, unknown>;
     let hasActiveSimpleRenderText = false;
     let hasActiveRenderText = false;

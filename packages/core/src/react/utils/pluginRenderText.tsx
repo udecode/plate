@@ -1,12 +1,13 @@
 import React from 'react';
 
-import type { PlateEditor } from '../editor/PlateEditor';
-import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
+import { useEditorReadOnly } from '@platejs/plite-react';
 
-import { getSlateClass } from '../../lib';
+import type { AnyBasePlugin } from '../../lib';
+import type { PlateEditor } from '../editor/PlateEditor';
+
+import { getPluginNodeClass } from '../../lib';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { type PlateTextProps, PlateText } from '../components/plate-nodes';
-import { useReadOnly } from '../slate-react';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 export type RenderText = (props: PlateTextProps) => React.ReactElement<any>;
@@ -23,16 +24,16 @@ const getSimpleTextAttributes = (props: PlateTextProps, className?: string) => {
 
 /**
  * Get a `Editable.renderText` handler for `plugin.node.type`. If the type is
- * equals to the slate text type and isDecoration is false, render
+ * equals to the plite text type and isDecoration is false, render
  * `plugin.render.node`. Else, return the default text rendering.
  */
 export const pluginRenderText = (
   editor: PlateEditor,
-  plugin: AnyEditorPlatePlugin
+  plugin: AnyBasePlugin
 ): RenderText =>
   function render(nodeProps) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const readOnly = useReadOnly();
+    const readOnly = useEditorReadOnly();
     const {
       render: { node },
     } = plugin;
@@ -44,7 +45,7 @@ export const pluginRenderText = (
     if (text[textKey]) {
       const canUsePlainText =
         !node &&
-        editor.meta.pluginCache.inject.nodeProps.length === 0 &&
+        editor.runtime.pluginCache.inject.nodeProps.length === 0 &&
         !plugin.node.props &&
         !plugin.node.dangerouslyAllowAttributes?.length;
 
@@ -53,7 +54,7 @@ export const pluginRenderText = (
           'span') as keyof HTMLElementTagNameMap;
         const attributes = getSimpleTextAttributes(
           nodeProps,
-          getSlateClass(plugin.node.type) || undefined
+          getPluginNodeClass(plugin.node.type) || undefined
         );
 
         return <Tag {...attributes}>{children}</Tag>;

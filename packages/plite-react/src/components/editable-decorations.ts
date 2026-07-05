@@ -4,17 +4,17 @@ import { NodeApi } from '@platejs/plite';
 import type {
   PliteDecoration,
   PliteDecorationSourceReadContext,
+  PliteRangeDecoration,
 } from '../decoration-source';
+import { toPliteRangeDecorations } from '../decoration-source';
 import type { Editor } from '../editable/runtime-editor-api';
 import { getSnapshotPathKey } from './editable-dom-strategy-helpers';
 
-type EditableDecoration<T = unknown> = Omit<PliteDecoration<T>, 'key'> & {
-  key?: string;
-};
+type EditableDecoration<T = unknown> = PliteRangeDecoration<T>;
 
 type EditableDecorate<T = unknown> = (
   entry: [Descendant, Path],
-  editor: Editor
+  editor?: Editor
 ) => readonly EditableDecoration<T>[];
 
 const EMPTY_DECORATIONS = Object.freeze(
@@ -52,12 +52,11 @@ export const readEditableDecorations = <T>(
 
     const entryDecorations = readDecorations([node, path], editor);
 
-    entryDecorations.forEach((decoration, index) => {
-      decorations.push({
-        ...decoration,
-        key: decoration.key ?? `decorate:${path.join('.') || 'root'}:${index}`,
-      });
-    });
+    decorations.push(
+      ...toPliteRangeDecorations(entryDecorations, {
+        id: `decorate:${path.join('.') || 'root'}`,
+      })
+    );
   };
 
   if (runtimeScope) {

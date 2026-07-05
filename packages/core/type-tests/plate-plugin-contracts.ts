@@ -35,6 +35,29 @@ const MentionPlugin = createPlatePlugin({
   getTrigger: () => getOptions().trigger,
 }));
 
+type ExplicitFactoryConfig = PluginConfig<
+  'explicitFactory',
+  {
+    enabled: boolean;
+  },
+  {
+    explicitFactory: {
+      isEnabled: () => boolean;
+    };
+  }
+>;
+
+const ExplicitFactoryPlugin = createPlatePlugin<ExplicitFactoryConfig>(() => ({
+  key: 'explicitFactory',
+  options: {
+    enabled: false,
+  },
+})).extendApi<ExplicitFactoryConfig['api']['explicitFactory']>(
+  ({ getOptions }) => ({
+    isEnabled: () => getOptions().enabled,
+  })
+);
+
 const ReactFactoryExtensionPlugin = createPlatePlugin({
   key: 'reactFactoryExtension',
   options: {
@@ -47,7 +70,12 @@ const plateEditor = createPlateEditor({
 });
 
 const createdPlateEditor = createPlateEditor({
-  plugins: [ToolbarPlugin, MentionPlugin, ReactFactoryExtensionPlugin],
+  plugins: [
+    ToolbarPlugin,
+    MentionPlugin,
+    ExplicitFactoryPlugin,
+    ReactFactoryExtensionPlugin,
+  ],
 });
 
 const floating: boolean = plateEditor.api.toggleFloating();
@@ -55,6 +83,8 @@ const nestedFloating: boolean = plateEditor.api.plugin.isFloating();
 const mentionTrigger: '@' = plateEditor.api.getTrigger();
 const createdFloating: boolean = createdPlateEditor.api.toggleFloating();
 const createdMentionTrigger: '@' = createdPlateEditor.api.getTrigger();
+const explicitFactoryEnabled: boolean =
+  createdPlateEditor.api.explicitFactory.isEnabled();
 const toolbarFloating: boolean =
   createdPlateEditor.getOptions(ToolbarPlugin).floating;
 const createdMentionOption: '@' =
@@ -63,6 +93,7 @@ const createdMentionOption: '@' =
 void createdFloating;
 void createdMentionOption;
 void createdMentionTrigger;
+void explicitFactoryEnabled;
 void floating;
 void mentionTrigger;
 void nestedFloating;

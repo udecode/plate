@@ -1,19 +1,24 @@
 import React from 'react';
 
-import type { Value } from '@platejs/slate';
+import type { Selection, Value, ValueOf } from '@platejs/plite';
+import type { PliteProps as RuntimePliteProps } from '@platejs/plite-react';
 
 import { useAtomStoreValue } from 'jotai-x';
 
-import { useEditorRef, useIncrementVersion, usePlateStore } from '../stores';
+import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
+import { useEditorRef, usePlateStore } from '../stores';
 import { pipeOnChange } from '../utils/pipeOnChange';
 
 type SlateComponentProps = Omit<
-  React.ComponentProps<typeof import('../slate-react').Slate>,
-  'children'
+  RuntimePliteProps,
+  'children' | 'onChange' | 'onSelectionChange' | 'onValueChange'
 >;
 
 interface PlateSlateProps extends SlateComponentProps {
   key: React.Key;
+  onChange?: (value: Value) => void;
+  onSelectionChange?: (selection: Selection) => void;
+  onValueChange?: (value: Value) => void;
 }
 
 /** Get Slate props stored in a global store. */
@@ -23,44 +28,42 @@ export const useSlateProps = ({ id }: { id?: string }): PlateSlateProps => {
   const onChangeProp = useAtomStoreValue(store, 'onChange');
   const onValueChangeProp = useAtomStoreValue(store, 'onValueChange');
   const onSelectionChangeProp = useAtomStoreValue(store, 'onSelectionChange');
-  const updateVersionEditor = useIncrementVersion('versionEditor', id);
-  const updateVersionSelection = useIncrementVersion('versionSelection', id);
-  const updateVersionValue = useIncrementVersion('versionValue', id);
 
   const onChange = React.useCallback(
-    (newValue: SlateComponentProps['initialValue']) => {
-      updateVersionEditor();
-      const eventIsHandled = pipeOnChange(editor, newValue as Value);
+    (newValue: Value) => {
+      const eventIsHandled = pipeOnChange(editor, newValue);
 
       if (!eventIsHandled) {
-        onChangeProp?.({ editor, value: newValue as Value });
+        onChangeProp?.({
+          editor,
+          value: newValue as ValueOf<typeof editor>,
+        });
       }
     },
-    [editor, onChangeProp, updateVersionEditor]
+    [editor, onChangeProp]
   );
 
-  const onValueChange: SlateComponentProps['onValueChange'] = React.useMemo(
+  const onValueChange: PlateSlateProps['onValueChange'] = React.useMemo(
     () => (value) => {
-      updateVersionValue();
-      onValueChangeProp?.({ editor, value: value as Value });
+      onValueChangeProp?.({
+        editor,
+        value: value as ValueOf<typeof editor>,
+      });
     },
-    [editor, onValueChangeProp, updateVersionValue]
+    [editor, onValueChangeProp]
   );
 
-  const onSelectionChange: SlateComponentProps['onSelectionChange'] =
-    React.useMemo(
-      () => (selection) => {
-        updateVersionSelection();
-        onSelectionChangeProp?.({ editor, selection });
-      },
-      [editor, onSelectionChangeProp, updateVersionSelection]
-    );
+  const onSelectionChange: PlateSlateProps['onSelectionChange'] = React.useMemo(
+    () => (selection) => {
+      onSelectionChangeProp?.({ editor, selection });
+    },
+    [editor, onSelectionChangeProp]
+  );
 
   return React.useMemo(
     () => ({
-      key: editor.meta.key,
+      key: getPlateEditorInstanceKey(editor),
       editor: editor as unknown as SlateComponentProps['editor'],
-      initialValue: editor.children as SlateComponentProps['initialValue'],
       onChange,
       onSelectionChange,
       onValueChange,

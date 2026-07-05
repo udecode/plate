@@ -23,6 +23,8 @@ import {
 import {
   EDITOR_TO_ELEMENT,
   NODE_TO_ELEMENT,
+  setEditorDOMEditableElement,
+  setEditorDOMRootElement,
 } from '@platejs/plite-dom/internal';
 import {
   getPliteNodeElementByPath,
@@ -909,12 +911,16 @@ export const useEditableRootRef = ({
 
         EDITOR_TO_ELEMENT.delete(editor);
         NODE_TO_ELEMENT.delete(editor);
+        setEditorDOMEditableElement(editor, null);
+        setEditorDOMRootElement(editor, null);
 
         if (rootRef.current) {
           detachNativeInputListenersRef.current?.();
           detachNativeInputListenersRef.current = null;
         }
       } else {
+        setEditorDOMRootElement(editor, node);
+        setEditorDOMEditableElement(editor, node);
         detachNativeInputListenersRef.current =
           attachEditableNativeInputListeners({
             node,

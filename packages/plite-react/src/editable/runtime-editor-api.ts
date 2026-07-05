@@ -12,6 +12,7 @@ export {
   getEditorLiveNode,
   getEditorLiveSelection,
   getEditorLiveText,
+  getEditorMaxLength,
   getEditorRuntime,
   getEditorTransformRegistry,
   getOperationCount,
@@ -19,11 +20,16 @@ export {
   markInternalOwnedReplayOperation,
   projectRangeInSnapshot,
   setEditorMarks,
+  setEditorComposing,
+  setEditorFocused,
+  setEditorMaxLength,
+  setEditorReadOnly,
   setEditorRuntime,
   setEditorSelection,
   setEditorTargetRuntime,
   setEditorTransformRegistry,
   withOperationRootChildren,
+  subscribeEditorViewState,
 } from '@platejs/plite/internal';
 
 export const inheritEditorExtensionRegistry = (

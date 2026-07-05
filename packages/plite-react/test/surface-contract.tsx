@@ -182,6 +182,7 @@ const allowedPliteInternalImportFiles = new Set([
 const expectedPliteReactRuntimeRootExports = [
   'Editable',
   'EditableElement',
+  'EditorReadOnlyProvider',
   'Plite',
   'PliteElement',
   'PliteLeaf',
@@ -195,11 +196,18 @@ const expectedPliteReactRuntimeRootExports = [
   'useDecorationSelector',
   'useEditor',
   'useEditorComposing',
+  'useEditorEditableElement',
   'useEditorFocused',
+  'useOptionalEditorReadOnly',
   'useEditorReadOnly',
+  'useEditorRootElement',
+  'useEditorRuntimeState',
+  'useEditorScrollElement',
+  'useEditorScrollElementRef',
   'useEditorSelection',
   'useEditorSelector',
   'useEditorState',
+  'useEditorViewState',
   'useElement',
   'useElementPath',
   'useElementSelected',
@@ -904,9 +912,13 @@ describe('plite-react surface contract', () => {
       'useEditor',
       'useEditorComposing',
       'useEditorFocused',
+      'useOptionalEditorReadOnly',
       'useEditorReadOnly',
+      'useEditorRuntimeState',
       'useEditorSelection',
       'useEditorSelector',
+      'useEditorState',
+      'useEditorViewState',
       'useElement',
       'useElementSelected',
       'usePliteProjectionEntries',
@@ -915,6 +927,35 @@ describe('plite-react surface contract', () => {
         'function'
       );
     }
+  });
+
+  test('outer read-only provider supports shell consumers before Plite', () => {
+    const Probe = () => (
+      <span data-testid="read-only">
+        {String(PliteReact.useOptionalEditorReadOnly())}/
+        {String(PliteReact.useEditorReadOnly())}
+      </span>
+    );
+
+    const { getByTestId, rerender } = render(<Probe />);
+
+    expect(getByTestId('read-only').textContent).toBe('undefined/false');
+
+    rerender(
+      <PliteReact.EditorReadOnlyProvider readOnly>
+        <Probe />
+      </PliteReact.EditorReadOnlyProvider>
+    );
+
+    expect(getByTestId('read-only').textContent).toBe('true/true');
+
+    rerender(
+      <PliteReact.EditorReadOnlyProvider readOnly={false}>
+        <Probe />
+      </PliteReact.EditorReadOnlyProvider>
+    );
+
+    expect(getByTestId('read-only').textContent).toBe('false/false');
   });
 
   test('hook docs explain runtime and root editor names without aliases', () => {

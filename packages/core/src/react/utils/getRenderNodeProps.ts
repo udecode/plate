@@ -7,7 +7,7 @@ import type { PlateEditor } from '../editor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
-import { getSlateClass } from '../../lib';
+import { type AnyBasePlugin, getPluginNodeClass } from '../../lib';
 import { getPluginNodeProps } from '../../lib/utils/getPluginNodeProps';
 import { getEditorPlugin } from '../plugin';
 
@@ -29,13 +29,13 @@ export const getRenderNodeProps = ({
   props: PlateHTMLProps;
   attributes?: AnyObject;
   disableInjectNodeProps?: boolean;
-  plugin?: AnyEditorPlatePlugin;
+  plugin?: AnyBasePlugin | AnyEditorPlatePlugin;
   pluginContext?: AnyObject;
   readOnly?: boolean;
 }): PlateHTMLProps => {
   const hasInjectNodeProps =
     !disableInjectNodeProps &&
-    editor.meta.pluginCache.inject.nodeProps.length > 0;
+    editor.runtime.pluginCache.inject.nodeProps.length > 0;
   const canSkipPluginNodeProps =
     !hasInjectNodeProps &&
     !plugin?.node.props &&
@@ -43,17 +43,17 @@ export const getRenderNodeProps = ({
   const resolvedPluginContext = pluginContext
     ? pluginContext
     : plugin
-      ? (getEditorPlugin(editor, plugin) as any)
+      ? getEditorPlugin(editor as any, plugin as any)
       : {
           api: editor.api,
           editor,
-          tf: editor.transforms,
         };
+  const renderPluginContext = resolvedPluginContext as AnyObject;
   const { className } = props;
 
   let newProps = {
     ...props,
-    ...resolvedPluginContext,
+    ...renderPluginContext,
   };
 
   if (canSkipPluginNodeProps) {
@@ -63,7 +63,7 @@ export const getRenderNodeProps = ({
         ...(props.attributes as any),
         className:
           clsx(
-            getSlateClass(plugin?.node.type),
+            getPluginNodeClass(plugin?.node.type),
             props.attributes?.className,
             className
           ) || undefined,
@@ -92,7 +92,7 @@ export const getRenderNodeProps = ({
       ...pluginProps.attributes,
       className:
         clsx(
-          getSlateClass(plugin?.node.type),
+          getPluginNodeClass(plugin?.node.type),
           pluginProps.attributes?.className,
           className
         ) || undefined,
@@ -103,7 +103,7 @@ export const getRenderNodeProps = ({
     newProps = pipeInjectNodeProps(
       editor,
       newProps,
-      (node) => editor.api.findPath(node)!,
+      (node) => editor.read.nodes.pathOf(node)!,
       readOnly
     ) as PlateHTMLProps;
   }

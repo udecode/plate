@@ -359,8 +359,6 @@ describe('Plate', () => {
       const TestComponent = ({ dep }: { dep: number }) => {
         const editor = usePlateEditor({ id: 'test' }, [dep]);
 
-        editor.runtime.key = dep;
-
         return (
           <Plate editor={editor}>
             <PlateContent />

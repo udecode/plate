@@ -25,7 +25,6 @@ export function PlateSlate({
     <Slate
       key={slateProps.key}
       editor={slateProps.editor}
-      initialValue={slateProps.initialValue}
       onChange={slateProps.onChange}
       onSelectionChange={slateProps.onSelectionChange}
       onValueChange={slateProps.onValueChange}
@@ -34,9 +33,9 @@ export function PlateSlate({
     </Slate>
   );
 
-  editor.meta.pluginCache.render.aboveSlate.forEach((key) => {
+  editor.runtime.pluginCache.render.abovePlite.forEach((key) => {
     const plugin = editor.getPlugin({ key });
-    const AboveSlate = plugin.render.aboveSlate!;
+    const AboveSlate = plugin.render.abovePlite!;
 
     aboveSlate = <AboveSlate>{aboveSlate}</AboveSlate>;
   });

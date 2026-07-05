@@ -5,6 +5,7 @@ import type {
   Point,
   Range,
   RangeRef,
+  RootKey,
   RuntimeId,
   Text,
 } from '@platejs/plite';
@@ -28,6 +29,17 @@ export const NODE_TO_RUNTIME_ID: WeakMap<Node, RuntimeId> = new WeakMap();
  */
 export const EDITOR_TO_WINDOW: WeakMap<Editor, Window> = new WeakMap();
 export const EDITOR_TO_ELEMENT: WeakMap<Editor, HTMLElement> = new WeakMap();
+export const EDITOR_TO_DOM_ROOT: WeakMap<Editor, HTMLElement> = new WeakMap();
+export const EDITOR_TO_DOM_EDITABLE: WeakMap<
+  Editor,
+  Map<RootKey, HTMLElement>
+> = new WeakMap();
+export const EDITOR_TO_DOM_SCROLL: WeakMap<Editor, HTMLElement> =
+  new WeakMap();
+export const EDITOR_TO_DOM_SCOPE_LISTENERS: WeakMap<
+  Editor,
+  Set<() => void>
+> = new WeakMap();
 export const EDITOR_TO_PLACEHOLDER: WeakMap<Editor, string> = new WeakMap();
 export const EDITOR_TO_PLACEHOLDER_ELEMENT: WeakMap<Editor, HTMLElement> =
   new WeakMap();

@@ -5,7 +5,6 @@ import {
   useCallback,
 } from 'react';
 import { NodeApi, PathApi, type Range, RangeApi } from '@platejs/plite';
-import { setEditorFocused } from '@platejs/plite/internal';
 import {
   containsShadowAware,
   type DOMElement,
@@ -62,6 +61,7 @@ import {
   void as editorVoid,
   rangeRef as editorRangeRef,
   hasPath as editorHasPath,
+  setEditorFocused,
   string as editorString,
 } from './runtime-editor-api';
 import { writeRuntimeSelection } from './runtime-mutation-state';

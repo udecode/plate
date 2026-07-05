@@ -1,9 +1,9 @@
 import { type Value, RangeApi } from '@platejs/plite';
-import { setEditorFocused } from '@platejs/plite/internal';
 import { getSelection } from '@platejs/plite-dom';
 import { IS_FOCUSED } from '@platejs/plite-dom/internal';
 
 import { readModelSelectionDOMPreference } from '../editable/model-selection-dom-preference';
+import { setEditorFocused } from '../editable/runtime-editor-api';
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { readPliteViewSelection } from '../view-selection';

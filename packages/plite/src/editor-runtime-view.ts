@@ -952,6 +952,7 @@ export const createEditorView = <
       viewState.focused = true;
     },
     getApi: runtime.editor.getApi,
+    id: runtime.editor.id,
     read: viewRead,
     root: viewState.root,
     runtime,

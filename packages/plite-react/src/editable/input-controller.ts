@@ -5,7 +5,6 @@ import type {
   KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 import type { Editor } from '@platejs/plite';
-import { setEditorComposing } from '@platejs/plite/internal';
 import { Hotkeys, isDOMElement, isDOMText } from '@platejs/plite-dom';
 import { IS_COMPOSING } from '@platejs/plite-dom/internal';
 
@@ -58,6 +57,7 @@ export {
   syncEditableDOMSelectionToEditor,
   syncEditorSelectionFromDOM,
 } from './selection-controller';
+import { setEditorComposing } from './runtime-editor-api';
 
 type DocumentBoundaryKeyboardEvent = Pick<
   KeyboardEvent,

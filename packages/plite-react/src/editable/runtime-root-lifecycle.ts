@@ -1,5 +1,4 @@
 import type { RefObject } from 'react';
-import { setEditorFocused } from '@platejs/plite/internal';
 import {
   containsShadowAware,
   getSelection,
@@ -14,6 +13,7 @@ import {
   getEditableInputTimestamp,
 } from './input-controller';
 import { attachEditableGlobalDragLifecycleListeners } from './input-router';
+import { setEditorFocused } from './runtime-editor-api';
 import { attachEditableSelectionChangeListener } from './selection-reconciler';
 
 export const attachEditableOutsideFocusBoundaryListener = ({

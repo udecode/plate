@@ -13,10 +13,6 @@ import {
   type Text as PliteTextNode,
 } from '@platejs/plite';
 import {
-  getEditorMaxLength,
-  setEditorMaxLength,
-} from '@platejs/plite/internal';
-import {
   DOMCoverage,
   type DOMCoverageBoundary,
   type DOMCoverageCopyPolicy,
@@ -40,7 +36,7 @@ import {
 import {
   composeProjectionSources,
   createDecorationSource,
-  type PliteDecoration,
+  type PliteRangeDecoration,
   type PliteOverlayProjectionStore,
 } from '../decoration-source';
 import { registerEditorDecorationRefreshSource } from '../decoration-refresh';
@@ -63,10 +59,12 @@ import {
 } from '../editable/root-selector-sources';
 import {
   type Editor,
+  getEditorMaxLength,
   isEditor as editorIsEditor,
   isInline as editorIsInline,
   isVoid as editorIsVoid,
   point as editorPoint,
+  setEditorMaxLength,
 } from '../editable/runtime-editor-api';
 import { readRuntimeNode } from '../editable/runtime-live-state';
 import { useEditor } from '../hooks/use-editor';
@@ -184,7 +182,7 @@ export type EditableContentRootSlotOptions = {
   maxLength?: number;
   placeholder?: ReactNode;
   readOnly?: boolean;
-  spellCheck?: boolean;
+  spellCheck?: TextareaHTMLAttributes<HTMLDivElement>['spellCheck'];
   style?: CSSProperties;
   tabIndex?: number;
 };
@@ -631,16 +629,11 @@ const resolveTextZeroWidth = ({
   return { isLineBreak: true };
 };
 
-export type EditableDecoration<T = unknown> = Omit<
-  PliteDecoration<T>,
-  'key'
-> & {
-  key?: string;
-};
+export type EditableDecoration<T = unknown> = PliteRangeDecoration<T>;
 
 export type EditableDecorate<T = unknown> = (
   entry: [Descendant, Path],
-  editor: Editor
+  editor?: Editor
 ) => readonly EditableDecoration<T>[];
 
 export type EditableDOMStrategyLayout = {
@@ -701,7 +694,7 @@ export type EditableProps<
     editor: Editor,
     domRange: globalThis.Range
   ) => void;
-  spellCheck?: boolean;
+  spellCheck?: TextareaHTMLAttributes<HTMLDivElement>['spellCheck'];
   style?: CSSProperties;
 } & Omit<
   TextareaHTMLAttributes<HTMLDivElement>,

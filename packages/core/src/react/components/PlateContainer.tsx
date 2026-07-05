@@ -1,31 +1,35 @@
 import React, { type HTMLAttributes } from 'react';
+import {
+  useEditorViewState,
+  useOptionalEditorReadOnly,
+} from '@platejs/plite-react';
 
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
-import {
-  useEditorContainerRef,
-  useEditorReadOnly,
-  useEditorRef,
-} from '../stores';
+import { useEditorRef, usePlateValue } from '../stores';
 
 export const PlateContainer = ({
   children,
   ...props
 }: HTMLAttributes<HTMLDivElement>) => {
   const editor = useEditorRef();
-  const readOnly = useEditorReadOnly();
+  const plateReadOnly = useOptionalEditorReadOnly();
+  const editorReadOnly = useEditorViewState(editor, (view) =>
+    view.isReadOnly()
+  );
+  const readOnly = plateReadOnly ?? editorReadOnly;
 
-  const containerRef = useEditorContainerRef();
+  const containerRef = usePlateValue('containerRef');
 
   let afterContainer: React.ReactNode = null;
   let beforeContainer: React.ReactNode = null;
 
   const mainContainer = (
-    <div id={editor.meta.uid} ref={containerRef} {...props}>
+    <div ref={containerRef} {...props}>
       {children}
     </div>
   );
 
-  editor.meta.pluginCache.render.beforeContainer.forEach((key) => {
+  editor.runtime.pluginCache.render.beforeContainer.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     if (isEditOnly(readOnly, plugin, 'render')) return;
 
@@ -39,7 +43,7 @@ export const PlateContainer = ({
     );
   });
 
-  editor.meta.pluginCache.render.afterContainer.forEach((key) => {
+  editor.runtime.pluginCache.render.afterContainer.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     if (isEditOnly(readOnly, plugin, 'render')) return;
 

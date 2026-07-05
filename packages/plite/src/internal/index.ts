@@ -121,6 +121,7 @@ export {
   getCachedFullRootReplaceTopLevelRuntimeIds,
   getCurrentMarks as getEditorCurrentMarks,
   getCurrentSelectionRoot as getEditorSelectionRoot,
+  getEditorDefaultBlockType,
   getEditorMaxLength,
   getEditorOperationRoot,
   getLiveNode as getEditorLiveNode,
@@ -131,6 +132,7 @@ export {
   markInternalOwnedReplayOperation,
   setChildren as setEditorChildren,
   setEditorComposing,
+  setEditorDefaultBlockType,
   setEditorFocused,
   setEditorMaxLength,
   setEditorReadOnly,
@@ -138,6 +140,7 @@ export {
   setCurrentSelection as setEditorSelection,
   setTargetRuntime as setEditorTargetRuntime,
   shouldSaveStatePatch,
+  subscribeEditorViewState,
   withOperationRootChildren,
 } from '../core/public-state';
 export { hasTransformMiddleware as hasEditorTransformMiddleware } from '../core/transform-middleware';

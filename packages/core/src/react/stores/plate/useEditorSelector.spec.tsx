@@ -4,7 +4,6 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { createPlateEditor } from '../../editor';
 import { TestPlate as Plate } from '../../__tests__/TestPlate';
-import { usePlateStore } from './createPlateStore';
 import { useEditorSelector } from './useEditorSelector';
 
 describe('useEditorSelector', () => {
@@ -20,16 +19,15 @@ describe('useEditorSelector', () => {
 
     const { result } = renderHook(
       () => {
-        const store = usePlateStore();
         const value = useEditorSelector(
-          (nextEditor) => nextEditor.children.length,
+          (nextEditor) => nextEditor.read.children().length,
           [],
           { equalityFn: (a, b) => a === b }
         );
 
         renderValues.push(value);
 
-        return { store, value };
+        return { value };
       },
       { wrapper }
     );
@@ -38,19 +36,20 @@ describe('useEditorSelector', () => {
     const initialRenderCount = renderValues.length;
 
     act(() => {
-      editor.children = [...editor.children];
-      result.current.store.set('versionEditor', 2);
+      editor.update.selection.set({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      });
     });
 
     expect(result.current.value).toBe(1);
     expect(renderValues).toHaveLength(initialRenderCount);
 
     act(() => {
-      editor.children = [
-        ...editor.children,
+      editor.update.nodes.insert(
         { children: [{ text: 'two' }], type: 'p' },
-      ];
-      result.current.store.set('versionEditor', 3);
+        { at: [1] }
+      );
     });
 
     await waitFor(() => {

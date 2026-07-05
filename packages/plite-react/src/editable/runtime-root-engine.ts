@@ -6,7 +6,6 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { setEditorReadOnly } from '@platejs/plite/internal';
 import type { DOMRange } from '@platejs/plite-dom';
 import { IS_READ_ONLY } from '@platejs/plite-dom/internal';
 import type {
@@ -27,6 +26,7 @@ import { useRuntimeCompositionEngine } from './runtime-composition-engine';
 import { useEditableEventRuntime } from './runtime-event-engine';
 import { useRuntimeKernelTraceEngine } from './runtime-kernel-trace';
 import { useRuntimeRepairEngine } from './runtime-repair-engine';
+import { setEditorReadOnly } from './runtime-editor-api';
 import { useEditableRootGlobalLifecycle } from './runtime-root-lifecycle';
 import { useEditableRootSelectionExport } from './runtime-root-selection-export';
 import { useEditableRootSelectionImport } from './runtime-root-selection-import';

@@ -3,21 +3,14 @@ import { createStore } from 'jotai/vanilla';
 
 import type { Nullable } from '@udecode/utils';
 
-import {
-  type ElementEntry,
-  type Path,
-  type TElement,
-  PathApi,
-} from '@platejs/slate';
+import type { Element, ElementEntry, Path } from '@platejs/plite';
 
 import { createAtomStore } from '../../libs/jotai';
-import { useComposing, useReadOnly } from '../../slate-react';
-import { useEditorRef, usePlateStore } from '../plate';
 
 export const SCOPE_ELEMENT = 'element';
 
 export type ElementStoreState = {
-  element: TElement;
+  element: Element;
   entry: ElementEntry;
   path: Path;
 };
@@ -166,7 +159,7 @@ const findMatchingElementContext = (
   return null;
 };
 
-export const withElementContext = <T,>(
+export const runElementContext = <T,>(
   context: Omit<ElementContextValue, 'parent'>,
   callback: () => T
 ): T => {
@@ -291,26 +284,8 @@ export function ElementProvider({
   return (
     <ElementStoreContext.Provider value={storeContextValue}>
       <ElementContext.Provider value={contextValue}>
-        {path && PathApi.equals(path, [0]) ? <FirstBlockEffect /> : null}
-
         {children}
       </ElementContext.Provider>
     </ElementStoreContext.Provider>
   );
-}
-
-export function FirstBlockEffect() {
-  const editor = useEditorRef();
-  const store = usePlateStore();
-  const composing = useComposing();
-  const readOnly = useReadOnly();
-
-  editor.dom.readOnly = readOnly;
-  editor.dom.composing = composing;
-
-  React.useLayoutEffect(() => {
-    store.set('composing', composing);
-  }, [composing, store]);
-
-  return null;
 }

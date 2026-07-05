@@ -17,7 +17,7 @@ import {
 } from '@platejs/plite/internal';
 import { history } from '@platejs/plite-history';
 
-import { dom } from '../src/index';
+import { dom, writeDOMFragmentData } from '../src/index';
 import {
   DOMCoverage,
   EDITOR_TO_ELEMENT,
@@ -385,6 +385,31 @@ const getRuntimeId = (editor: Editor, path: number[]) => {
 };
 
 describe('plite-dom clipboard boundary', () => {
+  it('writes explicit fragment payloads through the shared Plite DOM writer', () => {
+    const data = new FakeDataTransfer();
+    const fragment = [
+      {
+        type: 'paragraph',
+        children: [{ text: 'alpha' }],
+      },
+    ] satisfies Descendant[];
+
+    const encoded = writeDOMFragmentData(data as unknown as DataTransfer, {
+      clipboardFormatKey: 'x-custom-plite-fragment',
+      fragment,
+      html: ({ clipboardFormatKey, encoded }) =>
+        `<p data-plite-fragment="${encoded}" data-plite-fragment-format="${clipboardFormatKey}">alpha</p>`,
+      text: 'alpha',
+    });
+
+    expect(encoded).not.toBe('');
+    expect(data.getData('application/x-custom-plite-fragment')).toBe(encoded);
+    expect(data.getData('text/plain')).toBe('alpha');
+    expect(data.getData('text/html')).toBe(
+      `<p data-plite-fragment="${encoded}" data-plite-fragment-format="x-custom-plite-fragment">alpha</p>`
+    );
+  });
+
   it('installs DOM host capabilities on the editor instance', () => {
     const editor = createEditor({ extensions: [dom()] });
     const headlessEditor = createEditor();

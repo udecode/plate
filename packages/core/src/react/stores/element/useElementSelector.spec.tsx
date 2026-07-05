@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { act, renderHook } from '@testing-library/react';
+import type { Element, NodeEntry } from '@platejs/plite';
 
 import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { createPlateEditor } from '../../editor';
@@ -21,7 +22,7 @@ describe('useElementSelector', () => {
               type: 'name',
             },
             [0],
-          ] as const,
+          ] as any,
         []
       );
       const ageEntry = React.useMemo(
@@ -33,7 +34,7 @@ describe('useElementSelector', () => {
               type: 'age',
             },
             [0, 0],
-          ] as const,
+          ] as any,
         []
       );
 
@@ -82,10 +83,10 @@ describe('useElementSelector', () => {
   it('skips rerenders when equalityFn treats the derived value as unchanged', () => {
     const editor = createPlateEditor();
     const renderValues: number[] = [];
-    let setEntry: React.Dispatch<React.SetStateAction<any>>;
+    let setEntry: React.Dispatch<React.SetStateAction<NodeEntry<Element>>>;
 
     const wrapper = ({ children }: { children: React.ReactNode }) => {
-      const [entry, updateEntry] = React.useState<any>([
+      const [entry, updateEntry] = React.useState<NodeEntry<Element>>([
         {
           children: [{ text: 'one' }],
           tone: 'red',

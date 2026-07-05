@@ -60,7 +60,7 @@ export type DomConfig = PluginConfig<
 export type ScrollMode = 'first' | 'last';
 
 const beginAutoScroll = (editor: BaseEditor, options?: AutoScrollOptions) => {
-  const prevOptions = editor.getOptions(DOMPlugin);
+  const prevOptions = editor.getOptions(DOMPluginBase);
   const prevAutoScroll = AUTO_SCROLL.get(editor) ?? false;
   const prevFirstTarget = AUTO_SCROLL_FIRST_TARGET.get(editor);
 
@@ -75,7 +75,7 @@ const beginAutoScroll = (editor: BaseEditor, options?: AutoScrollOptions) => {
           }
         : (options.scrollOptions ?? prevOptions.scrollOptions);
 
-    editor.setOptions(DOMPlugin, {
+    editor.setOptions(DOMPluginBase, {
       ...prevOptions,
       scrollOperations: {
         ...prevOptions.scrollOperations,
@@ -100,7 +100,7 @@ const beginAutoScroll = (editor: BaseEditor, options?: AutoScrollOptions) => {
     } else {
       AUTO_SCROLL_FIRST_TARGET.delete(editor);
     }
-    editor.setOptions(DOMPlugin, prevOptions);
+    editor.setOptions(DOMPluginBase, prevOptions);
   };
 };
 
@@ -111,7 +111,7 @@ const scrollOperationIntoView = (editor: BaseEditor, operation: Operation) => {
     scrollMode,
     scrollOperations = {},
     scrollOptions,
-  } = editor.getOptions(DOMPlugin);
+  } = editor.getOptions(DOMPluginBase);
 
   if (scrollOperations[operation.type] !== true) return;
   if (!('path' in operation)) return;
@@ -135,11 +135,7 @@ const scrollOperationIntoView = (editor: BaseEditor, operation: Operation) => {
   editor.api.dom.scrollIntoView(target, scrollOptions);
 };
 
-/**
- * Plate DOM installs the Plite DOM bridge for base editors, then adds
- * Plate-owned auto-scroll state and transaction ergonomics.
- */
-export const DOMPlugin = createBasePlugin<DomConfig>({
+export const DOMPluginBase = createBasePlugin<DomConfig>({
   key: 'dom',
   options: {
     scrollMode: 'last',
@@ -175,5 +171,12 @@ export const DOMPlugin = createBasePlugin<DomConfig>({
         restore();
       }
     },
-  }))
-  .extendExtension(pliteDom({ clipboard: false }));
+  }));
+
+/**
+ * Plate DOM installs the Plite DOM bridge for base editors, then adds
+ * Plate-owned auto-scroll state and transaction ergonomics.
+ */
+export const DOMPlugin = DOMPluginBase.extendExtension(
+  pliteDom({ clipboard: false })
+);

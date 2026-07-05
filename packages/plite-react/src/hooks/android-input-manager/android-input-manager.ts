@@ -9,7 +9,6 @@ import {
   type Range,
   RangeApi,
 } from '@platejs/plite';
-import { setEditorComposing } from '@platejs/plite/internal';
 import {
   applyStringDiff,
   isDOMElement,
@@ -51,6 +50,7 @@ import {
   rangeRef as editorRangeRef,
   leaf as editorLeaf,
   next as editorNext,
+  setEditorComposing,
 } from '../../editable/runtime-editor-api';
 import { writeRuntimeMarks } from '../../editable/runtime-mutation-state';
 import { readRuntimeSelection } from '../../editable/runtime-selection-state';

@@ -69,6 +69,58 @@ const getFragmentText = <V extends Value>(
   fragment: readonly DescendantIn<V>[]
 ) => fragment.map((node) => PliteNode.string(node)).join('\n');
 
+/** HTML payload for a serialized Plite fragment. */
+export type DOMFragmentDataHtml =
+  | ((context: {
+      clipboardFormatKey: string;
+      encoded: string;
+      text: string;
+    }) => string)
+  | string;
+
+/** Payload written to browser clipboard data for a Plite fragment. */
+export type DOMFragmentDataPayload<V extends Value = Value> = {
+  clipboardFormatKey?: string;
+  fragment: readonly DescendantIn<V>[];
+  html: DOMFragmentDataHtml;
+  text?: string;
+  window?: Pick<Window, 'btoa'>;
+};
+
+const encodeDOMFragmentData = <V extends Value>(
+  fragment: readonly DescendantIn<V>[],
+  window?: Pick<Window, 'btoa'>
+) => {
+  const string = JSON.stringify(fragment);
+  const btoa = window?.btoa ?? globalThis.btoa;
+
+  return btoa(encodeURIComponent(string));
+};
+
+/** Write Plite fragment MIME, HTML, and plain-text clipboard payloads. */
+export const writeDOMFragmentData = <V extends Value>(
+  data: Pick<DataTransfer, 'setData'>,
+  {
+    clipboardFormatKey = DEFAULT_CLIPBOARD_FORMAT_KEY,
+    fragment,
+    html,
+    text = getFragmentText(fragment),
+    window,
+  }: DOMFragmentDataPayload<V>
+) => {
+  const encoded = encodeDOMFragmentData(fragment, window);
+  const htmlPayload =
+    typeof html === 'function'
+      ? html({ clipboardFormatKey, encoded, text })
+      : html;
+
+  data.setData(`application/${clipboardFormatKey}`, encoded);
+  data.setData('text/plain', text);
+  data.setData('text/html', htmlPayload);
+
+  return encoded;
+};
+
 const samePoint = (
   left: { offset: number; path: readonly number[] },
   right: { offset: number; path: readonly number[] }
@@ -256,16 +308,14 @@ const writeModelBackedSelectionData = <V extends Value>(
   clipboardFormatKey: string
 ) => {
   const fragment = editor.read((state) => state.fragment());
-  const string = JSON.stringify(fragment);
-  const encoded = DOMEditor.getWindow(editor).btoa(encodeURIComponent(string));
-  const text = getFragmentText(fragment);
 
-  data.setData(`application/${clipboardFormatKey}`, encoded);
-  data.setData('text/plain', text);
-  data.setData(
-    'text/html',
-    `<span data-plite-fragment="${encoded}" ${PLITE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapeHtmlAttribute(clipboardFormatKey)}">${escapeHtmlText(text)}</span>`
-  );
+  writeDOMFragmentData(data, {
+    clipboardFormatKey,
+    fragment,
+    html: ({ clipboardFormatKey, encoded, text }) =>
+      `<span data-plite-fragment="${encoded}" ${PLITE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapeHtmlAttribute(clipboardFormatKey)}">${escapeHtmlText(text)}</span>`,
+    window: DOMEditor.getWindow(editor),
+  });
 };
 
 const getDefaultFragmentAttach = (contents: DocumentFragment) => {
@@ -424,27 +474,34 @@ export const writeDOMSelectionData = <V extends Value>(
     attachElement = span;
   }
 
-  if (!hasPolicyBoundaries) {
-    const fragment = editor.read((state) => state.fragment());
-    const string = JSON.stringify(fragment);
-    const encoded = DOMEditor.getWindow(editor).btoa(
-      encodeURIComponent(string)
-    );
-    attachElement.setAttribute('data-plite-fragment', encoded);
-    attachElement.setAttribute(
-      PLITE_FRAGMENT_FORMAT_ATTRIBUTE,
-      clipboardFormatKey
-    );
-    data.setData(`application/${clipboardFormatKey}`, encoded);
-  }
-
   // Add the content to a <div> so that we can get its inner HTML.
   const div = contents.ownerDocument.createElement('div');
   div.appendChild(contents);
   div.setAttribute('hidden', 'true');
   contents.ownerDocument.body.appendChild(div);
-  data.setData('text/html', div.innerHTML);
-  data.setData('text/plain', getPlainText(div));
+
+  if (!hasPolicyBoundaries) {
+    const fragment = editor.read((state) => state.fragment());
+
+    writeDOMFragmentData(data, {
+      clipboardFormatKey,
+      fragment,
+      html: ({ encoded }) => {
+        attachElement.setAttribute('data-plite-fragment', encoded);
+        attachElement.setAttribute(
+          PLITE_FRAGMENT_FORMAT_ATTRIBUTE,
+          clipboardFormatKey
+        );
+
+        return div.innerHTML;
+      },
+      text: getPlainText(div),
+      window: DOMEditor.getWindow(editor),
+    });
+  } else {
+    data.setData('text/html', div.innerHTML);
+    data.setData('text/plain', getPlainText(div));
+  }
   contents.ownerDocument.body.removeChild(div);
   return data;
 };

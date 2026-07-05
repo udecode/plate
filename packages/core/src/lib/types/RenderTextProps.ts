@@ -17,7 +17,7 @@ export type RenderTextProps<N extends Text = Text> = {
   attributes: {
     [key: string]: unknown;
     'data-plite-node': 'text';
-    ref: any;
+    ref?: any;
     className?: string;
     style?: React.CSSProperties;
   };

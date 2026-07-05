@@ -3,7 +3,15 @@ import {
   getSelection as editorGetSelection,
   string as editorString,
 } from '@platejs/plite/internal';
-import { createReactEditor, Editable, Plite } from '../src';
+import {
+  createReactEditor,
+  Editable,
+  Plite,
+  useEditorEditableElement,
+  useEditorRootElement,
+  useEditorScrollElement,
+  useEditorScrollElementRef,
+} from '../src';
 import { ReactEditor } from '../src/plugin/react-editor';
 
 describe('plite-react DOM capability contract', () => {
@@ -28,6 +36,59 @@ describe('plite-react DOM capability contract', () => {
 
     expect(typeof editor.api.react.refreshDecorations).toBe('function');
     expect(() => editor.api.react.refreshDecorations()).not.toThrow();
+  });
+
+  test('editor.api.dom owns root, editable, and scroll DOM scope', async () => {
+    const editor = createReactEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
+    });
+
+    const ScopeProbe = () => {
+      const root = useEditorRootElement(editor);
+      const editable = useEditorEditableElement(editor);
+      const scroll = useEditorScrollElement(editor);
+      const scrollRef = useEditorScrollElementRef(editor);
+
+      return (
+        <>
+          <div data-testid="scroll-root" ref={scrollRef} />
+          <output
+            data-testid="scope-probe"
+            data-editable={editable?.dataset.pliteEditor ?? ''}
+            data-root={root?.dataset.pliteEditor ?? ''}
+            data-scroll={scroll?.dataset.testid ?? ''}
+          />
+        </>
+      );
+    };
+
+    const rendered = render(
+      <Plite editor={editor}>
+        <ScopeProbe />
+        <Editable aria-label="Body editor" />
+      </Plite>
+    );
+
+    const editable = rendered.container.querySelector('[data-plite-editor]');
+    const scroll = rendered.getByTestId('scroll-root');
+
+    await waitFor(() => {
+      expect(editor.api.dom.root()).toBe(editable);
+      expect(editor.api.dom.editable()).toBe(editable);
+      expect(editor.api.dom.scroll()).toBe(scroll);
+      expect(rendered.getByTestId('scope-probe')).toHaveAttribute(
+        'data-root',
+        'true'
+      );
+      expect(rendered.getByTestId('scope-probe')).toHaveAttribute(
+        'data-editable',
+        'true'
+      );
+      expect(rendered.getByTestId('scope-probe')).toHaveAttribute(
+        'data-scroll',
+        'scroll-root'
+      );
+    });
   });
 
   test('editor.api.dom.focus initializes a null selection at the top of the document', async () => {

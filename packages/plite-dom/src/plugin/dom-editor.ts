@@ -6,6 +6,7 @@ import {
   type Point,
   type Range,
   RangeApi,
+  type RootKey,
   type Editor as EditorType,
   TextApi,
   type Value,
@@ -48,6 +49,10 @@ import { IS_ANDROID, IS_FIREFOX } from '../utils/environment';
 import { Key } from '../utils/key';
 import {
   EDITOR_TO_ELEMENT,
+  EDITOR_TO_DOM_EDITABLE,
+  EDITOR_TO_DOM_ROOT,
+  EDITOR_TO_DOM_SCOPE_LISTENERS,
+  EDITOR_TO_DOM_SCROLL,
   EDITOR_TO_KEY_TO_ELEMENT,
   EDITOR_TO_PENDING_DIFFS,
   EDITOR_TO_SCHEDULE_FLUSH,
@@ -102,9 +107,10 @@ export interface DOMEditor<
   dom: DOMEditorCapability;
 }
 
-export interface DOMEditorCapability {
+export interface DOMApi {
   blur: () => void;
   deselect: () => void;
+  editable: (root?: RootKey) => HTMLElement | null;
   findDocumentOrShadowRoot: () => Document | ShadowRoot;
   assertEventRange: (event: any) => Range;
   findKey: (node: Node) => Key;
@@ -116,7 +122,6 @@ export interface DOMEditorCapability {
   hasRange: (range: Range) => boolean;
   hasSelectableTarget: (target: EventTarget | null) => boolean;
   hasTarget: (target: EventTarget | null) => target is DOMNode;
-  clipboard: DOMEditorClipboardCapability;
   isComposing: () => boolean;
   isFocused: () => boolean;
   isReadOnly: () => boolean;
@@ -127,6 +132,8 @@ export interface DOMEditorCapability {
   resolveEventRange: (event: any) => Range | null;
   resolvePath: (node: Node) => Path | null;
   resolveRangeRect: (range: Range) => DOMRect | null;
+  root: () => HTMLElement | null;
+  scroll: () => HTMLElement | null;
   scrollIntoView: (
     target: ScrollIntoViewTarget,
     options?: ScrollIntoViewOptions
@@ -164,6 +171,11 @@ export interface DOMEditorCapability {
   ) => Range;
 }
 
+export interface DOMEditorCapability extends DOMApi {
+  clipboard: DOMEditorClipboardCapability;
+}
+
+/** Clipboard methods installed by the Plite DOM bridge. */
 export interface DOMEditorClipboardCapability {
   /**
    * Insert data from a `DataTransfer` into the editor.
@@ -185,8 +197,6 @@ export interface DOMEditorClipboardCapability {
    */
   writeSelection: (data: Pick<DataTransfer, 'getData' | 'setData'>) => void;
 }
-
-export interface DOMApi extends Omit<DOMEditorCapability, 'clipboard'> {}
 
 export interface DOMClipboardApi extends DOMEditorClipboardCapability {}
 
@@ -266,6 +276,11 @@ export interface DOMEditorInterface {
    * Deselect the editor.
    */
   deselect: (editor: DOMEditor<any>) => void;
+
+  /**
+   * Resolve the currently mounted editable element for a Plite root.
+   */
+  editable: (editor: DOMEditor<any>, root?: RootKey) => HTMLElement | null;
 
   /**
    * Find the DOM node that implements DocumentOrShadowRoot for the editor.
@@ -401,6 +416,16 @@ export interface DOMEditorInterface {
    * Resolve a Plite range to its DOM bounding rectangle.
    */
   resolveRangeRect: (editor: DOMEditor<any>, range: Range) => DOMRect | null;
+
+  /**
+   * Resolve the mounted editor root element.
+   */
+  root: (editor: DOMEditor<any>) => HTMLElement | null;
+
+  /**
+   * Resolve the scroll element used for editor viewport work.
+   */
+  scroll: (editor: DOMEditor<any>) => HTMLElement | null;
 
   /**
    * Scroll a Plite point/range or native DOM range into view.
@@ -796,6 +821,100 @@ const shouldUseNearestEventPoint = ({
   return !rect || x < rect.left - 8 || x > rect.right + 8;
 };
 
+const getEditorDOMViewRoot = (editor: EditorType<any>, root?: RootKey) =>
+  root ?? editor.read.view.root();
+
+const notifyEditorDOMScopeListeners = (editor: EditorType<any>) => {
+  EDITOR_TO_DOM_SCOPE_LISTENERS.get(editor)?.forEach((listener) => {
+    listener();
+  });
+};
+
+const setWeakElement = (
+  map: WeakMap<EditorType<any>, HTMLElement>,
+  editor: EditorType<any>,
+  element: HTMLElement | null
+) => {
+  if (element) {
+    if (map.get(editor) === element) return false;
+    map.set(editor, element);
+
+    return true;
+  }
+
+  if (!map.has(editor)) return false;
+  map.delete(editor);
+
+  return true;
+};
+
+export const setEditorDOMRootElement = (
+  editor: EditorType<any>,
+  element: HTMLElement | null
+) => {
+  if (setWeakElement(EDITOR_TO_DOM_ROOT, editor, element)) {
+    notifyEditorDOMScopeListeners(editor);
+  }
+};
+
+export const setEditorDOMEditableElement = (
+  editor: EditorType<any>,
+  element: HTMLElement | null,
+  root?: RootKey
+) => {
+  const rootKey = getEditorDOMViewRoot(editor, root);
+  const currentMap = EDITOR_TO_DOM_EDITABLE.get(editor);
+
+  if (element) {
+    const editableMap = currentMap ?? new Map<RootKey, HTMLElement>();
+
+    if (editableMap.get(rootKey) === element) return;
+
+    editableMap.set(rootKey, element);
+    EDITOR_TO_DOM_EDITABLE.set(editor, editableMap);
+    notifyEditorDOMScopeListeners(editor);
+
+    return;
+  }
+
+  if (!currentMap?.has(rootKey)) return;
+
+  currentMap.delete(rootKey);
+
+  if (currentMap.size === 0) {
+    EDITOR_TO_DOM_EDITABLE.delete(editor);
+  }
+
+  notifyEditorDOMScopeListeners(editor);
+};
+
+export const setEditorDOMScrollElement = (
+  editor: EditorType<any>,
+  element: HTMLElement | null
+) => {
+  if (setWeakElement(EDITOR_TO_DOM_SCROLL, editor, element)) {
+    notifyEditorDOMScopeListeners(editor);
+  }
+};
+
+export const subscribeEditorDOMScope = (
+  editor: EditorType<any>,
+  listener: () => void
+) => {
+  const listeners = EDITOR_TO_DOM_SCOPE_LISTENERS.get(editor) ?? new Set();
+
+  listeners.add(listener);
+  EDITOR_TO_DOM_SCOPE_LISTENERS.set(editor, listeners);
+
+  return () => {
+    listeners.delete(listener);
+
+    if (listeners.size === 0) {
+      EDITOR_TO_DOM_SCOPE_LISTENERS.delete(editor);
+    }
+  };
+};
+
 // eslint-disable-next-line no-redeclare
 export const DOMEditor: DOMEditorInterface = {
   androidPendingDiffs: (editor) => EDITOR_TO_PENDING_DIFFS.get(editor),
@@ -829,6 +948,19 @@ export const DOMEditor: DOMEditorInterface = {
         tx.selection.clear();
       });
     }
+  },
+
+  editable: (editor, root) => {
+    const rootKey = getEditorDOMViewRoot(editor, root);
+    const editable = EDITOR_TO_DOM_EDITABLE.get(editor)?.get(rootKey);
+
+    if (editable) return editable;
+
+    if (root === undefined || rootKey === editor.read.view.root()) {
+      return EDITOR_TO_ELEMENT.get(editor) ?? null;
+    }
+
+    return null;
   },
 
   findDocumentOrShadowRoot: (editor) => {
@@ -1222,7 +1354,7 @@ export const DOMEditor: DOMEditorInterface = {
   resolveDOMNode: (editor, node) => {
     const domNode =
       node === editor
-        ? EDITOR_TO_ELEMENT.get(editor)
+        ? DOMEditor.editable(editor)
         : EDITOR_TO_KEY_TO_ELEMENT.get(editor)?.get(
             DOMEditor.findKey(editor, node)
           );
@@ -1448,6 +1580,15 @@ export const DOMEditor: DOMEditorInterface = {
 
   resolveRangeRect: (editor, range) =>
     DOMEditor.resolveDOMRange(editor, range)?.getBoundingClientRect() ?? null,
+
+  root: (editor) =>
+    EDITOR_TO_DOM_ROOT.get(editor) ?? DOMEditor.editable(editor) ?? null,
+
+  scroll: (editor) =>
+    EDITOR_TO_DOM_SCROLL.get(editor) ??
+    DOMEditor.root(editor) ??
+    DOMEditor.editable(editor) ??
+    null,
 
   scrollIntoView: (editor, target, options = { scrollMode: 'if-needed' }) => {
     const run = () => {
@@ -2049,6 +2190,7 @@ export const createDOMEditorCapability = (
   const capability: DOMEditorCapability = {
     blur: () => DOMEditor.blur(editor),
     deselect: () => DOMEditor.deselect(editor),
+    editable: (root) => DOMEditor.editable(editor, root),
     findDocumentOrShadowRoot: () => DOMEditor.findDocumentOrShadowRoot(editor),
     assertEventRange: (event) => DOMEditor.assertEventRange(editor, event),
     findKey: (node) => DOMEditor.findKey(editor, node),
@@ -2083,6 +2225,8 @@ export const createDOMEditorCapability = (
     resolveEventRange: (event) => DOMEditor.resolveEventRange(editor, event),
     resolvePath: (node) => DOMEditor.resolvePath(editor, node),
     resolveRangeRect: (range) => DOMEditor.resolveRangeRect(editor, range),
+    root: () => DOMEditor.root(editor),
+    scroll: () => DOMEditor.scroll(editor),
     scrollIntoView: (target, options) =>
       DOMEditor.scrollIntoView(editor, target, options),
     resolvePliteNode: (domNode) => DOMEditor.resolvePliteNode(editor, domNode),

@@ -1,17 +1,20 @@
-import type { NavigationFeedbackConfig } from '../../lib/plugins/navigation-feedback';
-
-import { ParagraphPlugin, ReactPlugin } from '../plugins';
+import { DOMPluginBase } from '../../lib';
+import { toPlatePlugin } from '../plugin/toPlatePlugin';
+import { ParagraphPlugin } from '../plugins';
 import { EventEditorPlugin } from '../plugins/event-editor/EventEditorPlugin';
 import { NavigationFeedbackPlugin } from '../plugins/navigation-feedback/NavigationFeedbackPlugin';
-import { SlateReactExtensionPlugin } from '../plugins/SlateReactExtensionPlugin';
+import type { NavigationFeedbackConfig } from '../plugins/navigation-feedback/types';
+import { EditableMetadataPlugin } from './internal/EditableMetadataPlugin';
+
+const ReactDOMPlugin = toPlatePlugin(DOMPluginBase, { key: 'dom' });
 
 export const getPlateCorePlugins = ({
   navigationFeedback,
 }: {
-  navigationFeedback?: NavigationFeedbackConfig['options'] | boolean;
+  navigationFeedback?: Partial<NavigationFeedbackConfig['options']> | boolean;
 } = {}) => [
-  SlateReactExtensionPlugin,
-  ReactPlugin,
+  ReactDOMPlugin,
+  EditableMetadataPlugin,
   EventEditorPlugin,
   NavigationFeedbackPlugin.configure({
     enabled: navigationFeedback !== false,

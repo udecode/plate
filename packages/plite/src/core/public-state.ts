@@ -264,6 +264,8 @@ const EDITOR_COMPOSING = new WeakMap<Editor, boolean>();
 const EDITOR_FOCUSED = new WeakMap<Editor, boolean>();
 const EDITOR_MAX_LENGTH = new WeakMap<Editor, number | undefined>();
 const EDITOR_READ_ONLY = new WeakMap<Editor, boolean>();
+const EDITOR_DEFAULT_BLOCK_TYPE = new WeakMap<Editor, string>();
+const EDITOR_VIEW_STATE_LISTENERS = new WeakMap<Editor, Set<() => void>>();
 const LAST_COMMIT = new WeakMap<Editor, EditorCommit | null>();
 const SNAPSHOT_CACHE = new WeakMap<Editor, EditorSnapshot>();
 const TRANSACTION_CHANGED = new WeakMap<Editor, boolean>();
@@ -280,6 +282,13 @@ const MUTATION_VERSION = new WeakMap<Editor, number>();
 const READ_DEPTH = new WeakMap<Editor, number>();
 const SNAPSHOT_VERSION = new WeakMap<Editor, number>();
 const TRANSACTION_DEPTH = new WeakMap<Editor, number>();
+
+const scheduleMicrotask =
+  typeof queueMicrotask === 'function'
+    ? queueMicrotask
+    : (callback: () => void) => {
+        Promise.resolve().then(callback);
+      };
 
 export const getEditorChildrenRoot = (editor: Editor): string | undefined =>
   ACTIVE_CHILDREN_ROOT.get(editor);
@@ -2315,7 +2324,7 @@ const getUpdateView = <
     type,
     {
       at = getCurrentSelection(editor) ?? undefined,
-      defaultType = 'p',
+      defaultType = getEditorDefaultBlockType(editor),
       someOptions,
       wrap,
       ...options
@@ -2963,11 +2972,17 @@ export const getCurrentSelectionRoot = (editor: Editor): string =>
   getSelectionStateRoot(editor);
 
 export const setEditorComposing = (editor: Editor, composing: boolean) => {
+  if ((EDITOR_COMPOSING.get(editor) ?? false) === composing) return;
+
   EDITOR_COMPOSING.set(editor, composing);
+  notifyEditorViewState(editor);
 };
 
 export const setEditorFocused = (editor: Editor, focused: boolean) => {
+  if ((EDITOR_FOCUSED.get(editor) ?? false) === focused) return;
+
   EDITOR_FOCUSED.set(editor, focused);
+  notifyEditorViewState(editor);
 };
 
 const normalizeEditorMaxLength = (maxLength: number | undefined) => {
@@ -2982,6 +2997,29 @@ const normalizeEditorMaxLength = (maxLength: number | undefined) => {
   return maxLength;
 };
 
+const normalizeEditorDefaultBlockType = (defaultBlockType?: string) => {
+  if (defaultBlockType === undefined) return 'p';
+
+  if (defaultBlockType.length === 0) {
+    throw new Error('[Plite] defaultBlockType must be a non-empty string.');
+  }
+
+  return defaultBlockType;
+};
+
+export const getEditorDefaultBlockType = (editor: Editor): string =>
+  EDITOR_DEFAULT_BLOCK_TYPE.get(editor) ?? 'p';
+
+export const setEditorDefaultBlockType = (
+  editor: Editor,
+  defaultBlockType?: string
+) => {
+  EDITOR_DEFAULT_BLOCK_TYPE.set(
+    editor,
+    normalizeEditorDefaultBlockType(defaultBlockType)
+  );
+};
+
 export const getEditorMaxLength = (editor: Editor): number | undefined =>
   EDITOR_MAX_LENGTH.get(editor);
 
@@ -2993,7 +3031,36 @@ export const setEditorMaxLength = (
 };
 
 export const setEditorReadOnly = (editor: Editor, readOnly: boolean) => {
+  if ((EDITOR_READ_ONLY.get(editor) ?? false) === readOnly) return;
+
   EDITOR_READ_ONLY.set(editor, readOnly);
+  notifyEditorViewState(editor);
+};
+
+const notifyEditorViewState = (editor: Editor) => {
+  scheduleMicrotask(() => {
+    EDITOR_VIEW_STATE_LISTENERS.get(editor)?.forEach((listener) => {
+      listener();
+    });
+  });
+};
+
+export const subscribeEditorViewState = (
+  editor: Editor,
+  listener: () => void
+) => {
+  const listeners = EDITOR_VIEW_STATE_LISTENERS.get(editor) ?? new Set();
+
+  listeners.add(listener);
+  EDITOR_VIEW_STATE_LISTENERS.set(editor, listeners);
+
+  return () => {
+    listeners.delete(listener);
+
+    if (listeners.size === 0) {
+      EDITOR_VIEW_STATE_LISTENERS.delete(editor);
+    }
+  };
 };
 
 export const getPublicSelection = (editor: Editor): Selection =>
@@ -4704,6 +4771,7 @@ export const initializePublicState = <
   DOCUMENT_STATE.set(editor, initialValue.meta);
   EDITOR_COMPOSING.set(editor, false);
   EDITOR_FOCUSED.set(editor, false);
+  setEditorDefaultBlockType(editor, options.defaultBlockType);
   setEditorMaxLength(editor, options.maxLength);
   EDITOR_READ_ONLY.set(editor, options.readOnly ?? false);
   seedRuntimeIds(initialChildren, editor);

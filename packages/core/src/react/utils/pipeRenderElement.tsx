@@ -1,8 +1,14 @@
 import React from 'react';
 
+import { useEditorReadOnly } from '@platejs/plite-react';
+
 import type { PlateEditor } from '../editor/PlateEditor';
 
-import { type EditableProps, getPluginByType, getSlateClass } from '../../lib';
+import {
+  type EditableProps,
+  getPluginByType,
+  getPluginNodeClass,
+} from '../../lib';
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import {
@@ -11,7 +17,6 @@ import {
   useBlockIdAttributeRef,
 } from '../components';
 import { useNodePath } from '../hooks';
-import { useReadOnly } from '../slate-react';
 import { ElementProvider } from '../stores';
 import { getRenderNodeProps } from './getRenderNodeProps';
 import { BelowRootNodes, pluginRenderElement } from './pluginRenderElement';
@@ -68,7 +73,8 @@ function useFastInjectedAttributes({
   path: any;
   readOnly: boolean;
 }) {
-  if (editor.meta.pluginCache.inject.nodeProps.length === 0) return attributes;
+  if (editor.runtime.pluginCache.inject.nodeProps.length === 0)
+    return attributes;
 
   return (
     pipeInjectNodeProps(
@@ -76,8 +82,9 @@ function useFastInjectedAttributes({
       {
         attributes,
         element,
+        path,
       },
-      (node) => (node === element ? path : editor.api.findPath(node)!),
+      (node) => (node === element ? path : editor.read.nodes.pathOf(node)!),
       readOnly
     ) as any
   ).attributes;
@@ -98,7 +105,7 @@ function FastElementBody({
   path: any;
   plugin: any;
 }) {
-  const readOnly = useReadOnly();
+  const readOnly = useEditorReadOnly();
   const injectedAttributes = useFastInjectedAttributes({
     attributes,
     editor,
@@ -192,7 +199,7 @@ function FastIntrinsicElementBody({
   renderBelowNodes: boolean;
   tag: keyof HTMLElementTagNameMap;
 }) {
-  const readOnly = useReadOnly();
+  const readOnly = useEditorReadOnly();
   const injectedAttributes = useFastInjectedAttributes({
     attributes,
     editor,
@@ -216,7 +223,7 @@ function FastIntrinsicElementBody({
       plugin,
     } as any;
 
-    editor.meta.pluginCache.render.belowNodes.forEach((key) => {
+    editor.runtime.pluginCache.render.belowNodes.forEach((key) => {
       const wrapperPlugin = editor.getPlugin({ key });
 
       if (isEditOnly(readOnly, wrapperPlugin as any, 'render')) return;
@@ -233,8 +240,8 @@ function FastIntrinsicElementBody({
   }
 
   const fastElementProps = {
-    'data-slate-inline': injectedAttributes['data-slate-inline'],
-    'data-slate-node': 'element',
+    'data-plite-inline': injectedAttributes['data-plite-inline'],
+    'data-plite-node': 'element',
     ...injectedAttributes,
     ref,
     style: {
@@ -292,7 +299,7 @@ function DefaultElementWithPath({
   editor: PlateEditor;
   props: RenderElementProps;
 }) {
-  const readOnly = useReadOnly();
+  const readOnly = useEditorReadOnly();
   const path = useNodePath(props.element)!;
   const ctxProps = getRenderNodeProps({
     // `transformProps` can run hooks, so we need to disable it for default elements.
@@ -323,9 +330,9 @@ export const pipeRenderElement = (
   editor: PlateEditor,
   renderElementProp?: EditableProps['renderElement']
 ): EditableProps['renderElement'] => {
-  const hasAboveNodes = editor.meta.pluginCache.render.aboveNodes.length > 0;
+  const hasAboveNodes = editor.runtime.pluginCache.render.aboveNodes.length > 0;
   const hasBelowRootNodes =
-    editor.meta.pluginCache.render.belowRootNodes.length > 0;
+    editor.runtime.pluginCache.render.belowRootNodes.length > 0;
 
   return function render(props): any {
     const plugin = getPluginByType(editor, props.element.type);
@@ -339,12 +346,12 @@ export const pipeRenderElement = (
         !plugin.node.props &&
         !plugin.node.dangerouslyAllowAttributes?.length
       ) {
-        const readOnly = editor.dom.readOnly;
+        const readOnly = editor.read.view.isReadOnly();
 
         if (isEditOnly(readOnly, plugin as any, 'render')) return null;
 
         const blockId =
-          props.element.id && editor.api.isBlock(props.element)
+          props.element.id && editor.read.schema.isBlock(props.element)
             ? props.element.id
             : undefined;
         const inset = plugin.rules.selection?.affinity === 'directional';
@@ -352,7 +359,7 @@ export const pipeRenderElement = (
           ...(props.attributes as any),
           className:
             [
-              getSlateClass(plugin.node.type),
+              getPluginNodeClass(plugin.node.type),
               (props.attributes as any)?.className,
             ]
               .filter(Boolean)
@@ -363,7 +370,7 @@ export const pipeRenderElement = (
         const Tag = renderAs as keyof HTMLElementTagNameMap;
         const isVoidTag = isIntrinsicTag && isHtmlVoidElementTag(Tag);
         const hasBelowNodeWrappers =
-          editor.meta.pluginCache.render.belowNodes.some((key) => {
+          editor.runtime.pluginCache.render.belowNodes.some((key) => {
             const wrapperPlugin = editor.getPlugin({ key });
 
             return !isEditOnly(readOnly, wrapperPlugin as any, 'render');

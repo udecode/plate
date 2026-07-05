@@ -38,6 +38,17 @@ const createFoundationEditor = () => {
 };
 
 describe('editor foundation contract', () => {
+  it('owns editor identity at creation time', () => {
+    const provided = createEditor({ id: 'custom-editor' });
+    const generatedA = createEditor();
+    const generatedB = createEditor();
+
+    assert.equal(provided.id, 'custom-editor');
+    assert.match(generatedA.id, /^plite-editor-\d+$/);
+    assert.match(generatedB.id, /^plite-editor-\d+$/);
+    assert.notEqual(generatedA.id, generatedB.id);
+  });
+
   it('combines extension namespaces and schema specs without extension namespaces on the editor surface', () => {
     const editor = createFoundationEditor();
 

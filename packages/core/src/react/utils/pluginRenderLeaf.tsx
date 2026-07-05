@@ -1,14 +1,13 @@
 import React from 'react';
 
-import { NodeApi } from '@platejs/slate';
+import { useEditorReadOnly } from '@platejs/plite-react';
 
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
-import { getSlateClass } from '../../lib';
+import { getPluginNodeClass } from '../../lib';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { type PlateLeafProps, PlateLeaf } from '../components/plate-nodes';
-import { useReadOnly } from '../slate-react';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 export type RenderLeaf = (props: PlateLeafProps) => React.ReactElement<any>;
@@ -20,17 +19,23 @@ const HARD_AFFINITY_SPACER_STYLE = {
 } as const;
 
 const isActiveHardAffinityBoundary = (editor: PlateEditor, text: any) => {
-  if (!editor.api.isCollapsed()) return false;
+  const match = editor.read((state) => {
+    if (!state.selection.isCollapsed()) return;
 
-  const focus = editor.selection?.focus;
+    const focus = state.selection()?.focus;
 
-  if (!focus) return false;
+    if (!focus) return;
 
-  const selectedText = NodeApi.get(editor, focus.path);
+    const selectedText = state.nodes.get(focus.path)?.[0];
 
-  if (selectedText !== text) return false;
+    return selectedText ? { focus, selectedText } : undefined;
+  });
 
-  return focus.offset === 0 || focus.offset === text.text.length;
+  if (!match) return false;
+
+  if (match.selectedText !== text) return false;
+
+  return match.focus.offset === 0 || match.focus.offset === text.text.length;
 };
 
 const getSimpleLeafAttributes = (props: PlateLeafProps, className?: string) => {
@@ -47,7 +52,7 @@ const getSimpleLeafAttributes = (props: PlateLeafProps, className?: string) => {
 
 /**
  * Get a `Editable.renderLeaf` handler for `plugin.node.type`. If the type is
- * equals to the slate leaf type, render `plugin.render.node`. Else, return
+ * equals to the plite leaf type, render `plugin.render.node`. Else, return
  * `children`.
  */
 export const pluginRenderLeaf = (
@@ -56,7 +61,7 @@ export const pluginRenderLeaf = (
 ): RenderLeaf =>
   function render(props) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const readOnly = useReadOnly();
+    const readOnly = useEditorReadOnly();
     const {
       render: { leaf: leafComponent, node },
     } = plugin;
@@ -68,7 +73,7 @@ export const pluginRenderLeaf = (
     if (leaf[plugin.node.type]) {
       const canUseSimpleLeaf =
         !Component &&
-        editor.meta.pluginCache.inject.nodeProps.length === 0 &&
+        editor.runtime.pluginCache.inject.nodeProps.length === 0 &&
         !plugin.node.props &&
         !plugin.node.dangerouslyAllowAttributes?.length;
 
@@ -77,7 +82,7 @@ export const pluginRenderLeaf = (
           'span') as keyof HTMLElementTagNameMap;
         const attributes = getSimpleLeafAttributes(
           props,
-          getSlateClass(plugin.node.type) || undefined
+          getPluginNodeClass(plugin.node.type) || undefined
         );
 
         return <Tag {...attributes}>{children}</Tag>;
@@ -88,7 +93,7 @@ export const pluginRenderLeaf = (
           'span') as keyof HTMLElementTagNameMap;
         const attributes = getSimpleLeafAttributes(
           props,
-          getSlateClass(plugin.node.type) || undefined
+          getPluginNodeClass(plugin.node.type) || undefined
         );
         const showBoundarySpacers = isActiveHardAffinityBoundary(editor, text);
 

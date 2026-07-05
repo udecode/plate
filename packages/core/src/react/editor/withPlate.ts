@@ -1,45 +1,95 @@
-import { type Editor, type Value, createEditor } from '@platejs/slate';
+import type { Editor, Value } from '@platejs/plite';
+import { createReactEditor } from '@platejs/plite-react';
 
-import type { AnyPlatePlugin } from '../plugin';
-import type { EventEditorPlugin, SlateReactExtensionPlugin } from '../plugins';
-import type { PlateEditor, TPlateEditor } from './PlateEditor';
+import type { AnyPlatePlugin, PlatePlugin } from '../plugin';
+import type { PlateEditor } from './PlateEditor';
+import type { NavigationFeedbackConfig } from '../plugins/navigation-feedback/types';
 
 import {
   type AnyPluginConfig,
-  type BaseWithSlateOptions,
+  type BasePlugin,
+  type BasePluginInput,
+  type BaseExtendBaseEditorOptions,
   type CorePlugin,
-  type InferPlugins,
-  withSlate,
+  type ExtendBaseEditorOptions,
+  type PluginConfig,
+  extendBaseEditor,
+  type WithRequiredKey,
 } from '../../lib';
 import { createZustandStore } from '../libs/zustand';
 import { getPlateCorePlugins } from './getPlateCorePlugins';
 
 export type PlateCorePlugin =
   | CorePlugin
-  | typeof EventEditorPlugin
-  | typeof SlateReactExtensionPlugin;
+  | ReturnType<typeof getPlateCorePlugins>[number];
 
-export type WithPlateOptions<
+type PlatePluginInput<C extends AnyPluginConfig = AnyPluginConfig> =
+  | AnyPluginConfig
+  | BasePlugin<C>
+  | PlatePlugin<C>
+  | (WithRequiredKey<C> & {
+      readonly __config: C;
+    });
+
+type InferPlateEditorPluginConfig<P> = P extends {
+  readonly __config: infer C extends AnyPluginConfig;
+}
+  ? C
+  : P extends PlatePlugin<infer C>
+    ? C
+    : P extends BasePlugin<infer C>
+      ? C
+      : P extends AnyPluginConfig
+        ? P
+        : PluginConfig;
+
+type InferPlateEditorPlugins<TPlugins extends readonly unknown[]> = [
+  TPlugins[number],
+] extends [never]
+  ? PlateCorePlugin
+  : PlateCorePlugin | InferPlateEditorPluginConfig<TPlugins[number]>;
+
+type InferExistingPlateEditorPlugins<E> =
+  E extends PlateEditor<infer _V, infer P> ? P : never;
+
+type InferPlateEditorValue<E> =
+  E extends PlateEditor<infer V, infer _P>
+    ? V
+    : E extends Editor<infer V, infer _TExtensions>
+      ? V
+      : Value;
+
+type InferExtendedPlateEditorPlugins<E, TPlugins extends readonly unknown[]> =
+  | InferExistingPlateEditorPlugins<E>
+  | InferPlateEditorPlugins<TPlugins>;
+
+export type ExtendPlateEditorOptions<
   V extends Value = Value,
-  P extends AnyPluginConfig = PlateCorePlugin,
-> = BaseWithSlateOptions<P> &
+  TPlugins extends readonly unknown[] = readonly PlatePluginInput[],
+> = Omit<BaseExtendBaseEditorOptions, 'id' | 'plugins'> &
   Pick<
     Partial<AnyPlatePlugin>,
     | 'api'
     | 'decorate'
-    | 'extendEditor'
     | 'handlers'
     | 'inject'
     | 'transformInitialValue'
-    | 'normalizeInitialValue'
     | 'options'
     | 'override'
     | 'priority'
     | 'render'
     | 'shortcuts'
-    | 'transforms'
     | 'useHooks'
   > & {
+    /**
+     * Configuration for the built-in navigation feedback plugin.
+     *
+     * This React plugin flashes the landed target after navigation jumps such as
+     * TOC, footnote, search, or custom outline movement.
+     *
+     * @default { duration: 1600 }
+     */
+    navigationFeedback?: Partial<NavigationFeedbackConfig['options']> | boolean;
     // override?: {
     //   /** Enable or disable plugins */
     //   enabled?: Partial<Record<KeyofPlugins<InferPlugins<P[]>>, boolean>>;
@@ -50,12 +100,16 @@ export type WithPlateOptions<
     //     >
     //   >;
     // };
-    value?: ((editor: PlateEditor) => Promise<V> | V) | V | string;
+    value?:
+      | ((editor: PlateEditor) => Promise<NoInfer<V>> | NoInfer<V>)
+      | V
+      | string;
+    plugins?: TPlugins;
     rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
     onReady?: (ctx: {
       editor: PlateEditor;
       isAsync: boolean;
-      value: V;
+      value: NoInfer<V>;
     }) => void;
   };
 
@@ -67,42 +121,51 @@ export type WithPlateOptions<
  *   event handlers, and React hooks integration.
  * @see {@link createPlateEditor} for a higher-level React editor creation function.
  * @see {@link usePlateEditor} for a memoized version in React components.
- * @see {@link withSlate} for the non-React version of editor enhancement.
+ * @see {@link extendBaseEditor} for the non-React version of editor enhancement.
  */
-export const withPlate = <
-  V extends Value = Value,
-  P extends AnyPluginConfig = PlateCorePlugin,
+export const extendPlateEditor = <
+  const TPlugins extends readonly unknown[] = readonly [],
+  E extends Editor = Editor,
+  V extends Value = InferPlateEditorValue<E>,
 >(
-  e: Editor,
-  options: WithPlateOptions<V, P> = {}
-): TPlateEditor<V, InferPlugins<P[]>> => {
+  e: E,
+  options: ExtendPlateEditorOptions<V, TPlugins> = {}
+): PlateEditor<V, InferExtendedPlateEditorPlugins<E, TPlugins>> => {
   const {
     navigationFeedback,
     optionsStoreFactory,
     plugins = [],
+    readOnly,
     ...rest
   } = options;
 
-  const editor = withSlate<V, P>(e, {
+  const editor = (extendBaseEditor as any)(e, {
     navigationFeedback,
+    readOnly,
     ...rest,
     optionsStoreFactory: optionsStoreFactory ?? createZustandStore,
     plugins: [...getPlateCorePlugins({ navigationFeedback }), ...plugins],
-  } as any) as unknown as TPlateEditor<V, InferPlugins<P[]>>;
+  } as unknown as ExtendBaseEditorOptions<V, BasePluginInput>) as PlateEditor<
+    V,
+    InferExtendedPlateEditorPlugins<E, TPlugins>
+  >;
 
   return editor;
 };
 
 export type CreatePlateEditorOptions<
-  V extends Value = Value,
-  P extends AnyPluginConfig = PlateCorePlugin,
-> = WithPlateOptions<V, P> & {
+  V extends Value,
+  TPlugins extends readonly unknown[],
+> = Omit<ExtendPlateEditorOptions<V, TPlugins>, 'plugins'> & {
+  /** Stable logical identity for the created editor. */
+  id?: string;
   /**
-   * Initial editor to be extended with `withPlate`.
+   * Initial editor to be extended with `extendPlateEditor`.
    *
-   * @default createEditor()
+   * @default createReactEditor()
    */
   editor?: Editor;
+  plugins?: TPlugins;
 };
 
 /**
@@ -134,15 +197,34 @@ export type CreatePlateEditorOptions<
  * });
  * ```
  *
- * @see {@link createSlateEditor} for a non-React version of editor creation.
+ * @see {@link createBaseEditor} for a non-React version of editor creation.
  * @see {@link usePlateEditor} for a memoized version in React components.
- * @see {@link withPlate} for the underlying function that applies Plate enhancements to an editor.
+ * @see {@link extendPlateEditor} for the underlying function that applies Plate enhancements to an editor.
  */
-export const createPlateEditor = <
+export function createPlateEditor<
   V extends Value = Value,
-  P extends AnyPluginConfig = PlateCorePlugin,
->({
-  editor = createEditor(),
-  ...options
-}: CreatePlateEditorOptions<V, P> = {}): TPlateEditor<V, InferPlugins<P[]>> =>
-  withPlate<V, P>(editor, options);
+  const TPlugins extends readonly unknown[] = readonly PlateCorePlugin[],
+>(
+  options?: CreatePlateEditorOptions<V, TPlugins>
+): PlateEditor<V, InferPlateEditorPlugins<TPlugins>>;
+
+export function createPlateEditor<
+  V extends Value = Value,
+  const TPlugins extends readonly unknown[] = readonly PlateCorePlugin[],
+>(
+  options: CreatePlateEditorOptions<V, TPlugins> = {}
+): PlateEditor<V, InferPlateEditorPlugins<TPlugins>> {
+  const { editor, id, ...extendPlateEditorOptions } = options;
+  const baseEditor =
+    editor ??
+    createReactEditor({
+      id,
+      maxLength: options.maxLength,
+      readOnly: options.readOnly,
+    });
+
+  return extendPlateEditor(
+    baseEditor,
+    extendPlateEditorOptions as unknown as ExtendPlateEditorOptions<V, TPlugins>
+  ) as unknown as PlateEditor<V, InferPlateEditorPlugins<TPlugins>>;
+}

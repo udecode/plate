@@ -5,8 +5,8 @@ import type { WritableAtom } from 'jotai/vanilla/atom';
 import { useStableFn } from '@udecode/react-utils';
 import { focusAtom } from 'jotai-optics';
 import { type JotaiStore, useAtomStoreSet, useAtomStoreValue } from 'jotai-x';
+import { useEditorFocused } from '@platejs/plite-react';
 
-import { useFocused } from '../slate-react';
 import {
   plateControllerStore,
   useEditorId,
@@ -53,7 +53,7 @@ export const PlateControllerEffect = ({
 
   const store = usePlateStore(id);
   const primary = useAtomStoreValue(store, 'primary');
-  const focused = useFocused();
+  const focused = useEditorFocused();
 
   // Keep the store up to date for the editor's ID
   React.useEffect(() => {

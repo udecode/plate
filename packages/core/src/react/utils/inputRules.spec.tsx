@@ -390,7 +390,9 @@ describe('input rules', () => {
   it('registers configured match-triggered fences through createPlateEditor', () => {
     const editor = createPlateEditor({
       plugins: [
-        BaseParagraphPlugin,
+        BaseParagraphPlugin.extend({
+          node: { type: 'paragraph' },
+        }),
         createPlatePlugin({
           key: 'code_block',
         }).configure({
@@ -482,7 +484,9 @@ describe('input rules', () => {
     });
     const editor = createPlateEditor({
       plugins: [
-        BaseParagraphPlugin,
+        BaseParagraphPlugin.extend({
+          node: { type: 'paragraph' },
+        }),
         createPlatePlugin({
           key: 'heading',
           node: { isElement: true },
@@ -500,7 +504,7 @@ describe('input rules', () => {
     editor.update.text.insert(' ');
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: '' }], type: 'p' },
+      { children: [{ text: '' }], type: 'paragraph' },
     ]);
   });
 

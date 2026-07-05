@@ -42,7 +42,6 @@ const renderWithStore = ({
       isMounted={isMounted}
       primary
       scope={editor.id}
-      scrollRef={{ current: null }}
     >
       <PlateElement {...createProps(editor, 'block-1')} />
     </PlateStoreProvider>

@@ -32,11 +32,6 @@ export type {
   InferPlugins,
 } from './pluginRuntimeTypes';
 
-type PlateEditorIdentity = {
-  /** Plate editor-store identity. */
-  id: string;
-};
-
 type PlatePluginCache = {
   decorate: string[];
   handlers: {
@@ -75,11 +70,6 @@ type PlatePluginCache = {
 
 type PlateEditorRuntime = {
   runtime: {
-    /**
-     * A key that can be used to uniquely identify the editor. For RSC usage,
-     * use `uid` instead.
-     */
-    key: string;
     /** A record of plugin components. */
     components: NodeComponents;
     /**
@@ -99,11 +89,6 @@ type PlateEditorRuntime = {
     inputRules: ResolvedInputRulesMeta;
     /** Keyboard shortcut registry built from plugins. */
     shortcuts: Record<string, EditorShortcut | null | undefined>;
-    /**
-     * A stable unique identifier that remains constant from Plate RSC to client
-     * hydration.
-     */
-    uid?: string;
   };
 };
 
@@ -233,6 +218,5 @@ export type BaseEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = AnyPluginConfig,
 > = PliteEditorWithPlatePlugins<V, P> &
-  PlateEditorIdentity &
   PlateEditorRuntime &
   PlatePluginRuntime<P>;

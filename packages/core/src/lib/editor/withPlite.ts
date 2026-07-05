@@ -15,10 +15,10 @@ import {
 import {
   getOperationRoot,
   MAIN_ROOT_KEY,
+  setEditorDefaultBlockType,
   setEditorMaxLength,
   setEditorReadOnly,
 } from '@platejs/plite/internal';
-import { nanoid } from 'nanoid';
 
 import type { NoInfer } from '../../internal/types';
 import type { PluginStoreFactory } from '../../internal/plugin/resolvePlugins';
@@ -873,7 +873,7 @@ export type BaseExtendBaseEditorOptions<
 export type ExtendBaseEditorOptions<
   V extends Value = Value,
   P extends BasePluginInput = CorePluginConfig,
-> = BaseExtendBaseEditorOptions<P> &
+> = Omit<BaseExtendBaseEditorOptions<P>, 'id'> &
   Pick<
     Partial<AnyBasePlugin>,
     | 'api'
@@ -930,7 +930,6 @@ export const extendBaseEditor = <
 >(
   e: Editor,
   {
-    id,
     affinity,
     autoSelect,
     maxLength,
@@ -951,8 +950,6 @@ export const extendBaseEditor = <
   const editor = e as unknown as BaseEditor;
 
   editor.runtime = editor.runtime ?? ({} as BaseEditor['runtime']);
-  editor.id = id ?? editor.id ?? nanoid();
-  editor.runtime.key = editor.runtime.key ?? nanoid();
   editor.runtime.isFallback = false;
   editor.runtime.userId = userId;
   if (readOnly !== undefined) {
@@ -1055,6 +1052,7 @@ export const extendBaseEditor = <
   }
 
   resolvePlugins(editor, [rootPluginInstance], optionsStoreFactory);
+  setEditorDefaultBlockType(editor, editor.getType(BaseParagraphPlugin.key));
   installPlateEditorExtensions(editor);
   editor.extend(createPlateChangeHandlersExtension(editor));
   installPlateRuntimeTxExtensions(editor);
@@ -1079,6 +1077,8 @@ export type CreateBaseEditorOptions<
   P extends
     readonly CreateBaseEditorPluginInput[] = readonly CreateBaseEditorPluginInput[],
 > = Omit<ExtendBaseEditorOptions<V, BasePluginInput>, 'plugins'> & {
+  /** Stable logical identity for the created editor. */
+  id?: string;
   /**
    * Initial editor to be extended with `extendBaseEditor`.
    *
@@ -1161,6 +1161,7 @@ export function createBaseEditor<
   const P extends readonly CreateBaseEditorPluginInput[] = readonly [],
 >({
   editor,
+  id,
   ...options
 }: CreateBaseEditorOptions<V, P> = {}): BaseEditor<
   V,
@@ -1169,6 +1170,7 @@ export function createBaseEditor<
   const baseEditor =
     editor ??
     createEditor({
+      id,
       maxLength: options.maxLength,
       readOnly: options.readOnly,
     });

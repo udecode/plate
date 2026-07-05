@@ -1,5 +1,6 @@
 export { defineEditorExtension } from './core/editor-extension';
 export { elementProperty } from './core/element-property';
+export { setEditorReadOnly } from './core/public-state';
 export { defineStateField } from './core/state-field';
 export { createEditor } from './create-editor';
 export { createEditorRuntime, createEditorView } from './editor-runtime-view';

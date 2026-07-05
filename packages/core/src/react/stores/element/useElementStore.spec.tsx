@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import type { TElement } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 
 import { act, render } from '@testing-library/react';
 
@@ -13,7 +13,7 @@ import { useElement } from './useElement';
 import {
   ElementProvider,
   useElementStore,
-  withElementContext,
+  runElementContext,
 } from './useElementStore';
 import { usePath } from './usePath';
 
@@ -33,23 +33,23 @@ describe('ElementProvider', () => {
     return <Plate editor={editor}>{children}</Plate>;
   };
 
-  interface TNameElement extends TElement {
+  interface NameElement extends Element {
     name: string;
     type: 'name';
   }
 
-  interface TAgeElement extends TElement {
+  interface AgeElement extends Element {
     age: number;
     type: 'age';
   }
 
-  const makeNameElement = (name: string): TNameElement => ({
+  const makeNameElement = (name: string): NameElement => ({
     children: [],
     name,
     type: 'name',
   });
 
-  const makeAgeElement = (age: number): TAgeElement => ({
+  const makeAgeElement = (age: number): AgeElement => ({
     age,
     children: [],
     type: 'age',
@@ -117,13 +117,13 @@ describe('ElementProvider', () => {
   };
 
   const NameElementConsumer = ({ label = '' }: ConsumerProps) => {
-    const element = useElement<TNameElement>('name');
+    const element = useElement<NameElement>('name');
 
     return <div>{label + element.name}</div>;
   };
 
   const AgeElementConsumer = ({ label = '' }: ConsumerProps) => {
-    const element = useElement<TAgeElement>('age');
+    const element = useElement<AgeElement>('age');
 
     return <div>{label + element.age}</div>;
   };
@@ -159,7 +159,7 @@ describe('ElementProvider', () => {
     const store = useElementStore('age');
     const age = store.useValue(
       'element',
-      (element: TAgeElement | null) => element?.age ?? null,
+      (element) => (element as AgeElement | null)?.age ?? null,
       []
     );
 
@@ -173,7 +173,7 @@ describe('ElementProvider', () => {
       [ageElement]
     );
 
-    return withElementContext(
+    return runElementContext(
       {
         element: ageElement,
         entry: ageEntry,
@@ -181,7 +181,7 @@ describe('ElementProvider', () => {
         scope: 'age',
       },
       () => {
-        const matchingName = useElement<TNameElement>('name');
+        const matchingName = useElement<NameElement>('name');
         const fallback = useElement();
 
         return (

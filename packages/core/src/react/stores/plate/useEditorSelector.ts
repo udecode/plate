@@ -1,32 +1,35 @@
 import React from 'react';
 
-import { useStoreAtomValue } from 'jotai-x';
-import { selectAtom } from 'jotai/utils';
+import { useEditorRuntimeState } from '@platejs/plite-react';
 
-import type { PlateEditor } from '../../editor';
-
-import { plateStore, usePlateStore } from './createPlateStore';
+import { useEditorRef } from './createPlateStore';
+import type { PlateStoreEditor } from './PlateStore';
 
 export type UseEditorSelectorOptions<T> = {
   id?: string;
-  equalityFn?: (a: T, b: T) => boolean;
+  equalityFn?: (a: T | null, b: T) => boolean;
 };
 
-export const useEditorSelector = <T, E extends PlateEditor = PlateEditor>(
+export const useEditorSelector = <
+  T,
+  E extends PlateStoreEditor = PlateStoreEditor,
+>(
   selector: (editor: E, prev?: T) => T,
   deps: React.DependencyList,
-  { id, equalityFn = (a: T, b: T) => a === b }: UseEditorSelectorOptions<T> = {}
+  { id, equalityFn = (a, b) => a === b }: UseEditorSelectorOptions<T> = {}
 ): T => {
-  const selectorAtom = React.useMemo(
-    () =>
-      selectAtom<{ editor: E }, T>(
-        plateStore.atom.trackedEditor,
-        ({ editor }, prev) => selector(editor, prev),
-        equalityFn
-      ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    deps
-  );
+  const editor = useEditorRef<E>(id);
+  const previousValueRef = React.useRef<T | undefined>(undefined);
 
-  return useStoreAtomValue(usePlateStore(id), selectorAtom);
+  return useEditorRuntimeState(
+    editor,
+    () => {
+      const nextValue = selector(editor, previousValueRef.current);
+
+      previousValueRef.current = nextValue;
+
+      return nextValue;
+    },
+    { deps, equalityFn }
+  );
 };

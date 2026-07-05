@@ -1,5 +1,5 @@
 import React, { type DependencyList } from 'react';
-import type { NodeEntry, TElement } from '@platejs/slate';
+import type { Element, NodeEntry } from '@platejs/plite';
 
 import { useElementStoreContext } from './useElementStore';
 
@@ -9,7 +9,7 @@ type UseElementSelectorOptions<T> = {
 };
 
 export const useElementSelector = <T>(
-  selector: <N extends TElement>(state: NodeEntry<N>, prev?: T) => T,
+  selector: <N extends Element>(state: NodeEntry<N>, prev?: T) => T,
   deps: DependencyList,
   {
     key,
@@ -28,7 +28,7 @@ export const useElementSelector = <T>(
     runtime:
       | NonNullable<ReturnType<typeof useElementStoreContext>>['runtime']
       | null;
-    selector: (<N extends TElement>(state: NodeEntry<N>, prev?: T) => T) | null;
+    selector: (<N extends Element>(state: NodeEntry<N>, prev?: T) => T) | null;
     value: T | undefined;
   }>({
     entry: null,

@@ -808,6 +808,8 @@ export interface BaseEditor<
   TExtensions extends readonly unknown[] = readonly [],
 > {
   api: Readonly<EditorCoreApiGroups & EditorInstalledApiGroups<TExtensions>>;
+  /** Stable logical identity for this editor instance. */
+  id: string;
   getApi: <
     TExtension extends EditorResolvedInstalledExtensions<TExtensions>[number],
   >(
@@ -1349,7 +1351,10 @@ export type CreateEditorOptions<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
 > = {
+  defaultBlockType?: string;
   extensions?: TExtensions;
+  /** Stable logical identity for this editor instance. */
+  id?: string;
   initialSelection?: Selection;
   initialValue?: InitialValue<V>;
   maxLength?: number;

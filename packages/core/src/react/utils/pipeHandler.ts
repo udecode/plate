@@ -2,12 +2,13 @@ import type React from 'react';
 
 import type { EditableProps } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
+import type { AnyEditorPlatePlugin } from '../plugin';
 import type { DOMHandlers } from '../plugin/DOMHandlers';
 
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { getEditorPlugin } from '../plugin/getEditorPlugin';
 
-export const convertDomEventToSyntheticEvent = (
+const convertDomEventToSyntheticEvent = (
   domEvent: Event
 ): React.SyntheticEvent<unknown, unknown> => {
   let propagationStopped = false;
@@ -40,7 +41,7 @@ export const convertDomEventToSyntheticEvent = (
 };
 
 /** Check if an event is overrided by a handler. */
-export const isEventHandled = <
+const isEventHandled = <
   EventType extends React.SyntheticEvent<unknown, unknown>,
 >(
   event: EventType,
@@ -82,9 +83,9 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
     event: any
   ) => boolean | void;
 
-  const relevantPlugins = editor.meta.pluginList.filter(
-    (plugin) => plugin.handlers?.[handlerKey]
-  );
+  const relevantPlugins = (
+    editor.runtime.pluginList as unknown as AnyEditorPlatePlugin[]
+  ).filter((plugin) => plugin.handlers?.[handlerKey]);
 
   if (relevantPlugins.length === 0 && !propsHandler) return;
 
@@ -95,11 +96,15 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
       : event;
 
     const eventIsHandled = relevantPlugins.some((plugin) => {
-      if (isEditOnly(editor.dom.readOnly, plugin, 'handlers')) {
+      if (isEditOnly(editor.read.view.isReadOnly(), plugin, 'handlers')) {
         return false;
       }
 
-      const pluginHandler = plugin.handlers[handlerKey]!;
+      const pluginHandler = plugin.handlers?.[handlerKey] as
+        | ((ctx: any) => boolean | void)
+        | undefined;
+
+      if (!pluginHandler) return false;
 
       const shouldTreatEventAsHandled = pluginHandler({
         ...(getEditorPlugin(editor, plugin) as any),

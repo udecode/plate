@@ -22,6 +22,7 @@ export type {
 export { DOMCoverage } from './plugin/dom-coverage';
 export type {
   DOMApi,
+  DOMEditorClipboardCapability,
   DOMClipboardApi,
   DOMClipboardInsertDataHandler,
   ScrollIntoViewOptions,
@@ -30,6 +31,11 @@ export type {
 export { PliteDOMResolutionError } from './plugin/dom-editor';
 export type { DOMEditorOptions } from './plugin/with-dom';
 export { dom } from './plugin/with-dom';
+export type {
+  DOMFragmentDataHtml,
+  DOMFragmentDataPayload,
+} from './plugin/dom-clipboard-runtime';
+export { writeDOMFragmentData } from './plugin/dom-clipboard-runtime';
 
 // Utils
 export { TRIPLE_CLICK } from './utils/constants';

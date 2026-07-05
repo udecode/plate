@@ -488,8 +488,8 @@ describe('plite transforms contract', () => {
     ]);
   });
 
-  it('blocks.toggle exposes the semantic block toggle API directly', () => {
-    const editor = createEditor();
+  it('blocks.toggle uses the editor default block type', () => {
+    const editor = createEditor({ defaultBlockType: 'paragraph' });
 
     editorReplace(editor, {
       children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
@@ -497,13 +497,13 @@ describe('plite transforms contract', () => {
       marks: null,
     });
 
-    editor.update.blocks.toggle('blockquote', { defaultType: 'paragraph' });
+    editor.update.blocks.toggle('blockquote');
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
       { type: 'blockquote', children: [{ text: 'one' }] },
     ]);
 
-    editor.update.blocks.toggle('blockquote', { defaultType: 'paragraph' });
+    editor.update.blocks.toggle('blockquote');
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
       { type: 'paragraph', children: [{ text: 'one' }] },

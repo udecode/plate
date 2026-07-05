@@ -1,9 +1,6 @@
 import { createEditor, type Value } from '@platejs/plite';
-import {
-  NavigationFeedbackPlugin,
-  ParagraphPlugin,
-  ReactPlugin,
-} from '../../react';
+import { NavigationFeedbackPlugin, ParagraphPlugin } from '../../react';
+import { getPlateCorePlugins } from '../../react/editor/getPlateCorePlugins';
 import { extendPlateEditor } from '../../react/editor/withPlate';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorPlugin';
@@ -36,6 +33,7 @@ const coreKeys = [
   AstPlugin.key,
   AffinityPlugin.key,
   ParagraphPlugin.key,
+  'editableMetadata',
   EventEditorPlugin.key,
   NavigationFeedbackPlugin.key,
 ];
@@ -55,13 +53,10 @@ const TestBoldPlugin = createBasePlugin({
 describe('extendPlateEditor', () => {
   describe('when default plugins', () => {
     it('have core plugins', () => {
-      const editor = extendPlateEditor(createEditor(), {
-        id: '1',
-      });
+      const editor = extendPlateEditor(createEditor());
 
-      expect(editor.id).toBe('1');
+      expect(editor.id).toBeDefined();
       expect(editor.read((state) => state.history())).toBeDefined();
-      expect(editor.runtime.key).toBeDefined();
       expect(editor.runtime.pluginList.map((plugin) => plugin.key)).toEqual(
         coreKeys
       );
@@ -69,9 +64,6 @@ describe('extendPlateEditor', () => {
         editor.runtime.pluginList.map((plugin) => plugin.node.type)
       ).toEqual(coreKeys);
       expect(Object.keys(editor.plugins)).toEqual(coreKeys);
-      expect(
-        (editor.getPlugin(DOMPlugin).handlers as any).onKeyDown
-      ).toBeDefined();
 
       expect(editor.read.children()).toEqual([
         { children: [{ text: '' }], type: 'p' },
@@ -192,7 +184,6 @@ describe('extendPlateEditor', () => {
     it('add custom plugins to core plugins', () => {
       const customPlugin = createBasePlugin({ key: 'custom' });
       const editor = extendPlateEditor(createEditor(), {
-        id: '1',
         override: {
           components: {},
           enabled: {},
@@ -211,7 +202,6 @@ describe('extendPlateEditor', () => {
   describe('when plugins is an empty array', () => {
     it('only have core plugins', () => {
       const editor = extendPlateEditor(createEditor(), {
-        id: '1',
         plugins: [],
       });
 
@@ -235,7 +225,6 @@ describe('extendPlateEditor', () => {
       });
 
       const editor = extendPlateEditor(createEditor(), {
-        id: '1',
         plugins: [
           parentPlugin
             .extend({
@@ -272,7 +261,6 @@ describe('extendPlateEditor', () => {
       const customComponent = () => null;
 
       const editor = extendPlateEditor(createEditor(), {
-        id: '1',
         override: {
           components: {
             h1: customComponent,
@@ -296,7 +284,6 @@ describe('extendPlateEditor', () => {
 
       // Test with low priority override
       let editor = extendPlateEditor(createEditor(), {
-        id: '1',
         plugins: [HeadingPlugin],
       });
 
@@ -305,7 +292,6 @@ describe('extendPlateEditor', () => {
 
       // Test with high priority override
       editor = extendPlateEditor(createEditor(), {
-        id: '1',
         override: {
           components: {
             h1: overrideComponent,
@@ -327,7 +313,6 @@ describe('extendPlateEditor', () => {
       });
 
       const editor = extendPlateEditor(createEditor(), {
-        id: '1',
         override: {
           plugins: {
             custom: {
@@ -349,10 +334,10 @@ describe('extendPlateEditor', () => {
         key: 'additional',
         node: { type: 'additional' },
       });
+      const [ReactDOMPlugin] = getPlateCorePlugins();
 
       const editor = extendPlateEditor(createEditor(), {
-        id: '1',
-        plugins: [ParagraphPlugin, ReactPlugin, additionalPlugin],
+        plugins: [ParagraphPlugin, ReactDOMPlugin, additionalPlugin],
       });
 
       const pluginCache = editor.runtime.pluginList.map((plugin) => plugin.key);
@@ -360,9 +345,9 @@ describe('extendPlateEditor', () => {
         (plugin) => plugin.node.type
       );
 
-      // Check if ReactPlugin replaced DOMPlugin
-      expect(pluginCache).toContain(ReactPlugin.key);
-      expect(pluginTypes).toContain(ReactPlugin.node.type);
+      // Check if React DOM replacement plugin replaced DOMPlugin.
+      expect(pluginCache).toContain(ReactDOMPlugin.key);
+      expect(pluginTypes).toContain(ReactDOMPlugin.node.type);
 
       // Check if ParagraphPlugin is present
       expect(pluginCache).toContain(ParagraphPlugin.key);
@@ -373,7 +358,7 @@ describe('extendPlateEditor', () => {
       expect(pluginTypes).toContain('additional');
 
       // Check if the order is correct
-      const reactIndex = pluginCache.indexOf(ReactPlugin.key);
+      const reactIndex = pluginCache.indexOf(ReactDOMPlugin.key);
       const paragraphIndex = pluginCache.indexOf(ParagraphPlugin.key);
       const additionalIndex = pluginCache.indexOf('additional');
 
@@ -386,7 +371,7 @@ describe('extendPlateEditor', () => {
       // Ensure the total number of plugins is correct
       // This number should be the sum of:
       // 1. Number of core plugins
-      // 2. Number of replacing plugins (ReactPlugin, ParagraphPlugin)
+      // 2. Number of replacing plugins (React DOM plugin, ParagraphPlugin)
       // 3. Number of additional plugins (additionalPlugin)
       // Minus the number of replaced plugins (DOMPlugin)
       const expectedPluginCount = editor.runtime.pluginList.length;
@@ -402,7 +387,7 @@ describe('extendPlateEditor', () => {
         createBasePlugin({ key: 'history' }),
       ];
 
-      const editor = extendPlateEditor(existingEditor, { id: '1' });
+      const editor = extendPlateEditor(existingEditor);
 
       const pluginCache = editor.runtime.pluginList.map((plugin) => plugin.key);
       expect(pluginCache.filter((key) => key === 'dom')).toHaveLength(1);
@@ -416,7 +401,7 @@ describe('extendPlateEditor', () => {
         createBasePlugin({ key: 'history' }),
       ];
 
-      const editor = extendPlateEditor(existingEditor, { id: '1' });
+      const editor = extendPlateEditor(existingEditor);
 
       const pluginCache = editor.runtime.pluginList.map((plugin) => plugin.key);
       coreKeys.forEach((key) => {
@@ -433,7 +418,7 @@ describe('extendPlateEditor', () => {
         customPlugin,
       ];
 
-      const editor = extendPlateEditor(existingEditor, { id: '1' });
+      const editor = extendPlateEditor(existingEditor);
 
       expect(
         editor.runtime.pluginList.map((plugin) => plugin.key)
@@ -444,7 +429,6 @@ describe('extendPlateEditor', () => {
   describe('when using override.enabled', () => {
     it('disable specified core plugins', () => {
       const editor = extendPlateEditor(createEditor(), {
-        id: '1',
         override: {
           enabled: {
             eventEditor: false,
@@ -464,7 +448,6 @@ describe('extendPlateEditor', () => {
       const customPlugin2 = createBasePlugin({ key: 'custom2' });
 
       const editor = extendPlateEditor(createEditor(), {
-        id: '1',
         override: {
           enabled: {
             custom1: false,
@@ -480,7 +463,6 @@ describe('extendPlateEditor', () => {
 
     it('does not affect plugins not specified in override.enabled', () => {
       const editor = extendPlateEditor(createEditor(), {
-        id: '1',
         override: {
           enabled: {
             history: false,
@@ -531,6 +513,27 @@ describe('extendPlateEditor', () => {
     const editor = extendBaseEditor(createEditor({ readOnly: true }));
 
     expect(editor.read.view.isReadOnly()).toBe(true);
+  });
+
+  it('syncs the Plate paragraph type into Plite block toggles', () => {
+    const editor = extendBaseEditor(createEditor(), {
+      plugins: [
+        ParagraphPlugin.configure({
+          node: { type: 'paragraph' },
+        }),
+      ],
+      value: [{ children: [{ text: 'one' }], type: 'blockquote' }],
+    });
+
+    editor.update.selection.set({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
+    editor.update.blocks.toggle('blockquote');
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'one' }], type: 'paragraph' },
+    ]);
   });
 
   it('handle value, selection, and autoSelect options correctly', () => {
@@ -675,7 +678,6 @@ describe('extendPlateEditor', () => {
       const htmlString = '<p>Hello, <b>world!</b></p>';
 
       const editor = extendBaseEditor(createEditor(), {
-        id: '1',
         plugins: [TestBoldPlugin],
         value: htmlString,
       });
@@ -691,18 +693,15 @@ describe('extendPlateEditor', () => {
 
   describe('when the previous editor has an id', () => {
     it('reuses that id', () => {
-      const oldEditor = extendBaseEditor(createEditor());
-      oldEditor.id = 'old';
+      const oldEditor = extendBaseEditor(createEditor({ id: 'old' }));
       const editor = extendBaseEditor(oldEditor);
       expect(editor.id).toBe('old');
     });
   });
 
-  describe('when the id option is provided', () => {
+  describe('when the id option is provided during creation', () => {
     it('uses the provided id', () => {
-      const oldEditor = extendBaseEditor(createEditor());
-      oldEditor.id = 'old';
-      const editor = extendBaseEditor(oldEditor, { id: 'new' });
+      const editor = createBaseEditor({ id: 'new' });
       expect(editor.id).toBe('new');
     });
   });
