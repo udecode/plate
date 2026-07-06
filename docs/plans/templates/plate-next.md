@@ -23,6 +23,9 @@ Plate Next source:
   compatibility
 - broad Core sweep: pending
 - correction-triggered related Core sweep: pending
+- package review mode: pending
+- package review target: pending
+- package file checklist gate: pending
 - completion threshold summary: pending
 
 First checkpoint:
@@ -32,6 +35,9 @@ First checkpoint:
   equivalent broad Core review.
 - If broad Core sweep is in scope, fill the Core drift ledger rows in this
   plan before closing any packet. Keep this template-only.
+- If package review mode is in scope, generate the package file manifest and
+  materialize one checkbox per reviewed file in this plan before
+  implementation. A file checkbox may be checked only when its score is `100`.
 
 Timed checkpoint:
 - requested duration: pending
@@ -49,6 +55,14 @@ Completion threshold:
 - Broad Core sweep may close only when every Core source file has a valid row
   in this plan's Core drift ledger section or a linked plan artifact summarized
   in this plan.
+- Package review mode may close only when every package file row is either
+  checked at score `100` or explicitly deferred for user review with reason,
+  owner, proof needed, and next action. Do not move to the next package while
+  unchecked package rows remain.
+- Core-adjacent package review may close only after
+  `tooling/scripts/check-core.mjs` is updated to include that package, or the
+  plan records why the package is product-only and does not belong in
+  `check:core`.
 - The plan records manifest command, expected row count, actual row count,
   missing row count, extra row count, and top drift rows before closeout.
 - Any drift score `>=2` has an owner, evidence, and next action.
@@ -63,9 +77,11 @@ Completion threshold:
 Verification surface:
 - focused tests / commands: pending
 - package proof: pending
+- shared Core gate: pending
 - source audits: pending
 - related Core sweep query / match count / patched count / deferred count:
   pending
+- package file manifest / row count / checked count / deferred count: pending
 - Plite/Plate gap ledger: pending
 - broad Core drift ledger gate: pending
 - final plan check: `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
@@ -104,9 +120,41 @@ Constraints:
   capped at `75`.
 - If a helper exists only because migration was hard, cut it.
 - Do not use a narrow representative file to close a broad Core sweep.
+- Package review mode is review-first, not migration-first. Freeze scope to the
+  named package plus the smallest Plite/Core owner needed to remove a blocker.
+- Package file rows can be checked `[x]` only at score `100`: no behavior
+  regression versus `origin/main`, no type regression, inline inference
+  preserved, no fake casts/local helper types, no compat sludge, correct
+  Plite/Plate ownership, accepted owner/name/path drift, and focused proof or
+  justified source audit.
+- Green package tests alone do not score a file `100`.
+- Do not move to the next package until every package file row is checked at
+  `100` or explicitly deferred for user review.
+- Core-adjacent package review must update `check:core` coverage before
+  closeout, or explicitly classify the package as not belonging in that gate.
 - For Core-only targets, ignore non-Core package errors unless the package is
   named, touched by the packet, or the failure proves a Core public API
   regression.
+- Direct one-shot Plite API law: prefer `editor.update.foo.bar(...)` and
+  `editor.read.foo(...)` over callback wrappers for one-line reads/writes.
+  Callback form is only for grouped transaction/snapshot logic, shared
+  intermediate state, branching/looping, or missing direct API that is recorded
+  as a Plite gap.
+- Plugin export inference law: plugin constants should infer from
+  `createBasePlugin`, `createPlatePlugin`, `toPlatePlugin`, and chained
+  `.extend*` methods. Do not annotate exports as `BasePlugin<Config>` /
+  `PlatePlugin<Config>` or cast chained plugin results unless the annotation is
+  a true external boundary. If inference fails, fix the builder/generic owner.
+- Empty config inference law: do not create `type FooConfig =
+  PluginConfig<'foo'>` only to call `createBasePlugin<FooConfig>({ key:
+  'foo' })`. Manual plugin config types are only for real options, API, tx,
+  selectors, state, or external public contracts.
+- Plugin editor extension law: plugin-owned editor extension options should be
+  returned directly from `extendExtension`. Do not wrap them in
+  `defineEditorExtension({ name: pluginKey, ... })` just to satisfy types.
+  `extendExtension` must accept both built extensions and raw options; raw
+  options without `name` default to the owning plugin key. Keep explicit names
+  only for genuinely separate extension identities.
 
 Boundaries:
 - allowed edit scope: pending
@@ -145,6 +193,7 @@ Start Gates:
 | Gap policy checked | pending | pending |
 | Related Core sweep policy checked | pending | pending |
 | Review-mode rename freeze checked | pending | pending |
+| Package review checklist initialized when in scope | pending | pending |
 
 Work Checklist:
 - [ ] First checkpoint complete: every explicit prompt requirement, scope
@@ -175,6 +224,32 @@ Work Checklist:
 - [ ] For broad Core sweep, the drift score gate is closed in this plan:
       score `>=2` rows have owner/evidence/next, and score `>=4` rows are not
       closed as `keep-in-plate`.
+- [ ] For package review mode, the package file checklist is generated before
+      implementation, with one checkbox per reviewed file.
+- [ ] For package review mode, every package file row is either checked at
+      score `100` with evidence or left unchecked with deferral reason, owner,
+      proof needed, and next action for user review.
+- [ ] For package review mode, no next package is started before the current
+      package checklist closes or the user explicitly redirects.
+- [ ] For Core-adjacent package review, `tooling/scripts/check-core.mjs` is
+      updated to include the package, or the plan records why the package is
+      product-only and outside `check:core`.
+- [ ] Direct one-shot API audit closed: single-operation
+      `editor.update((tx) => tx.*)` and single-read
+      `editor.read((state) => state.*)` wrappers are replaced with direct
+      methods when available, or each remaining callback is justified as grouped
+      transaction/snapshot logic.
+- [ ] Plugin export inference audit closed: plugin export annotations/casts
+      such as `: BasePlugin<Config>`, `: PlatePlugin<Config>`, and
+      `as BasePlugin<Config>` are removed when inference should own the result,
+      or each remaining annotation is justified as a real external boundary.
+- [ ] Empty config inference audit closed: `PluginConfig<'key'>` aliases and
+      `createBasePlugin<Config>` generics are removed when the config has no
+      typed options, API, tx, selectors, state, or external public contract.
+- [ ] Plugin extension options audit closed: plugin-owned extension options are
+      returned directly from `extendExtension`; `defineEditorExtension` remains
+      only for standalone Plite extensions, existing built extensions, or
+      explicit non-plugin extension identities.
 - [ ] Bridge scoring law applied: forbidden bridges score `0`, direct bridge
       imports/installers are capped, displaced owner files are capped, and no
       capped file is raised to 100 from green checks alone.
@@ -203,7 +278,9 @@ Completion Gates:
 | Best Plate v2 recommendation | pending | Record the recommended current shape and rejected legacy/hack alternatives for the reviewed target | pending |
 | Plite/Plate gap ledger | pending | Record blockers or N/A when no gap blocks the target | pending |
 | Related Core sweep after correction | pending | For each correction, run and record same-class Core search/review results | pending |
+| Package file checklist | pending | Record manifest command, row counts, score-100 rows, unchecked/deferred rows, and proof per file when package review applies | pending |
 | Package/API proof | pending | Run focused typecheck/test/build or record N/A | pending |
+| Shared Core gate coverage | pending | Add Core-adjacent reviewed packages to `tooling/scripts/check-core.mjs`, or record why N/A | pending |
 | Non-Core package error triage | pending | If a proof command reports non-Core failures, classify as named/touched/Core-regression or out-of-scope package drift | pending |
 | Source audit | pending | Run exact audit for removed compatibility names or record N/A | pending |
 | Rename ledger | pending | Update `docs/plans/pre-renaming.md` when a rename is postponed or intentionally kept | pending |
@@ -251,6 +328,26 @@ Core file drift rows:
 |------|-------------|---------|-------|----------|------|
 | pending | pending | pending | pending | pending | pending |
 
+Package file checklist:
+- Applies: pending
+- Package: pending
+- Manifest command: pending
+- Manifest owner:
+  `packages/<package>/src/**/*.{ts,tsx,mts,cts}` plus package-local specs,
+  test-utils, type-tests, fixtures, examples, and docs only when touched.
+- Expected row count: pending
+- Actual row count: pending
+- Checked score-100 count: pending
+- Unchecked/deferred count: pending
+- Missing row count: pending
+- Extra row count: pending
+- Score gate: `[x]` only when score is `100`.
+- Next package blocked until: pending
+
+Package file rows:
+- [ ] `pending` — score: pending — verdict: pending — owner: pending —
+      evidence: pending — next: pending
+
 Packet ledger:
 | Packet | Owner | Hypothesis / smell | Files / commands | Decision | Next |
 |--------|-------|--------------------|------------------|----------|------|
@@ -297,6 +394,7 @@ Final handoff contract:
 - target surface and mode: pending
 - files/APIs reviewed: pending
 - broad Core drift score coverage: pending
+- package file checklist coverage: pending
 - best Plate v2 recommendation: pending
 - verdict matrix summary: pending
 - Plite/Plate gaps or blockers: pending

@@ -106,7 +106,6 @@ export const KEYS = {
   normalizeTypes: 'normalizeTypes',
   ol: 'decimal',
   placeholder: 'placeholder',
-  playwright: 'playwright',
   removeEmptyNodes: 'removeEmptyNodes',
   resetNode: 'resetNode',
   singleBlock: 'singleBlock',

@@ -26,17 +26,17 @@ describe('useFormInputProps', () => {
     const eventWithEKeyEnter = {
       key: 'Enter',
       preventDefault: preventDefaultMock,
-    } as any;
+    };
     // should trigger preventDefault
     const eventWithKeyCode13 = {
       keyCode: 13,
       preventDefault: preventDefaultMock,
-    } as any;
+    };
     // should not trigger preventDefault
     const eventWithIrrelevantKey = {
       keyCode: 30,
       preventDefault: preventDefaultMock,
-    } as any;
+    };
 
     const output = useFormInputProps({
       preventDefaultOnEnterKeydown: true,

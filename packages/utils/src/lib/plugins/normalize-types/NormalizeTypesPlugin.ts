@@ -1,8 +1,7 @@
-import { createTSlatePlugin, type PluginConfig } from '@platejs/core';
-import type { Path } from '@platejs/slate';
+import { createBasePlugin, type PluginConfig } from '@platejs/core';
+import { ElementApi, type Path } from '@platejs/plite';
 
 import { KEYS } from '../../plate-keys';
-import { withNormalizeTypes } from './withNormalizeTypes';
 
 export type NormalizeTypesConfig = PluginConfig<
   'normalizeTypes',
@@ -15,7 +14,7 @@ export type NormalizeTypesConfig = PluginConfig<
      * `type`.
      */
     rules?: Rule[];
-    onError?: (err: any) => void;
+    onError?: (err: unknown) => void;
   }
 >;
 
@@ -28,10 +27,55 @@ type Rule = {
   type?: string;
 };
 
-/** @see {@link withNormalizeTypes} */
-export const NormalizeTypesPlugin = createTSlatePlugin<NormalizeTypesConfig>({
+export const NormalizeTypesPlugin = createBasePlugin<NormalizeTypesConfig>({
   key: KEYS.normalizeTypes,
   options: {
     rules: [],
   },
-}).overrideEditor(withNormalizeTypes);
+}).extendExtension(({ editor, getOptions }) => ({
+  normalizers: {
+    editor({ next, tx }) {
+      const { onError, rules = [] } = getOptions();
+
+      const normalized = rules.some(({ path, strictType, type }) => {
+        const entry = editor.read.nodes.get(path);
+        const node = entry?.[0];
+
+        if (node) {
+          if (
+            strictType &&
+            ElementApi.isElement(node) &&
+            node.type !== strictType
+          ) {
+            tx.nodes.set({ type: strictType }, { at: path });
+
+            return true;
+          }
+
+          return false;
+        }
+
+        const nextType = strictType ?? type;
+
+        if (!nextType) return false;
+
+        try {
+          tx.nodes.insert(
+            { children: [{ text: '' }], type: nextType },
+            { at: path }
+          );
+
+          return true;
+        } catch (error) {
+          onError?.(error);
+
+          return false;
+        }
+      });
+
+      if (normalized) return;
+
+      next();
+    },
+  },
+}));

@@ -42,6 +42,7 @@ import type {
   EditorTransactionBlocksApi,
   EditorTransactionFragmentApi,
   EditorTransactionSelectionApi,
+  EditorToggleMarkOptions,
   EditorUpdateContext,
   EditorUpdateMetadata,
   EditorUpdateOptions,
@@ -52,6 +53,7 @@ import type {
   Selection,
   SnapshotIndex,
   SnapshotInput,
+  SnapshotSelectionInput,
   StateFieldValueInput,
   Value,
 } from '../interfaces/editor';
@@ -1664,6 +1666,52 @@ const createNodesToArray = (editor: Editor): EditorStateNodesApi['toArray'] => {
   return toArray;
 };
 
+type SelectionBlockState = Pick<EditorStateView, 'nodes'>;
+
+const getSelectionBlockEntries = (
+  state: SelectionBlockState,
+  selection: Selection
+) => {
+  if (!selection) {
+    return {
+      endBlock: undefined,
+      startBlock: undefined,
+    };
+  }
+
+  const [startPoint, endPoint] = RangeApi.edges(selection);
+
+  return {
+    endBlock: state.nodes.block({ at: endPoint }),
+    startBlock: state.nodes.block({ at: startPoint }),
+  };
+};
+
+export const isSelectionWithinBlock = (
+  state: SelectionBlockState,
+  selection: Selection
+) => {
+  const { endBlock, startBlock } = getSelectionBlockEntries(state, selection);
+
+  return !!(
+    startBlock &&
+    endBlock &&
+    PathApi.equals(startBlock[1], endBlock[1])
+  );
+};
+
+export const isSelectionAcrossBlocks = (
+  state: SelectionBlockState,
+  selection: Selection
+) => {
+  const { endBlock, startBlock } = getSelectionBlockEntries(state, selection);
+
+  if (!startBlock && !endBlock) return false;
+  if (!startBlock || !endBlock) return true;
+
+  return !PathApi.equals(startBlock[1], endBlock[1]);
+};
+
 const getStateView = <
   V extends Value,
   TExtensions extends readonly unknown[] = readonly [],
@@ -1697,16 +1745,26 @@ const getStateView = <
     executeQueryMiddleware(editor, 'marks', 'get', {}, () =>
       getSelectionMarks(editor)
     )) satisfies EditorStateMarksApi<V>);
+  let state!: EditorCoreStateView<V>;
   const selectionApi = Object.freeze(
     Object.assign(() => getCurrentSelection(editor), {
+      isAcrossBlocks: () =>
+        isSelectionAcrossBlocks(state, getCurrentSelection(editor)),
       isCollapsed: () => {
         const selection = getCurrentSelection(editor);
 
         return !!selection && RangeApi.isCollapsed(selection);
       },
+      isExpanded: () => {
+        const selection = getCurrentSelection(editor);
+
+        return !!selection && RangeApi.isExpanded(selection);
+      },
+      isWithinBlock: () =>
+        isSelectionWithinBlock(state, getCurrentSelection(editor)),
     }) satisfies EditorStateSelectionApi
   );
-  const state = {
+  state = {
     children: () =>
       (getEditorDocumentRoots(editor)[MAIN_ROOT_KEY] ??
         []) as unknown as readonly [...V],
@@ -2440,8 +2498,17 @@ const getUpdateView = <
           runSelectionMutation(() => transforms.removeMark(key)),
         set: (marks: EditorMarks<V> | null) =>
           runSelectionMutation(() => setCurrentMarks(editor, marks)),
-        toggle: (key: string, value: unknown = true) =>
-          runSelectionMutation(() => transforms.toggleMark(key, value)),
+        toggle: (
+          key: string,
+          value?: unknown,
+          options?: EditorToggleMarkOptions
+        ) => {
+          const nextValue = value === undefined ? true : value;
+
+          runSelectionMutation(() =>
+            transforms.toggleMark(key, nextValue, options)
+          );
+        },
       })
     ),
     metadata: Object.freeze({
@@ -2564,7 +2631,10 @@ const getUpdateView = <
     }),
     selection: Object.freeze(
       Object.assign(() => state.selection(), {
+        isAcrossBlocks: () => state.selection.isAcrossBlocks(),
         isCollapsed: () => state.selection.isCollapsed(),
+        isExpanded: () => state.selection.isExpanded(),
+        isWithinBlock: () => state.selection.isWithinBlock(),
         clear: () => runSelectionMutation(() => transforms.deselect()),
         collapse: (options = {}) =>
           runSelectionMutation(() => transforms.collapse(options)),
@@ -4726,13 +4796,72 @@ export const replaceSnapshot = (editor: Editor, input: SnapshotInput) => {
 
       seedRuntimeIdsFromIndex(nextChildren, editor, existingIndex);
       setChildren(editor, nextChildren, { invalidateRuntimeIndex: true });
-      setCurrentSelection(editor, input.selection ?? null);
+      setCurrentSelection(
+        editor,
+        resolveSnapshotSelection(editor, input.selection)
+      );
       setCurrentMarks(editor, input.marks ?? null);
     },
     {
       authority: 'replace',
     }
   );
+};
+
+const resolveSnapshotSelection = (
+  editor: Editor,
+  selection: SnapshotSelectionInput | undefined
+): Selection => {
+  if (selection === 'start' || selection === 'end') {
+    const point = readPointEdge(editor, [], selection);
+
+    return point ? { anchor: point, focus: point } : null;
+  }
+
+  if (!selection) return null;
+
+  const anchor = resolveSnapshotPoint(editor, selection.anchor);
+  const focus = resolveSnapshotPoint(editor, selection.focus);
+
+  return anchor && focus ? { anchor, focus } : null;
+};
+
+const resolveSnapshotPoint = (editor: Editor, point: Point): Point | null => {
+  try {
+    const [node] = getNode(editor, point.path);
+
+    if (NodeApi.isText(node)) {
+      return {
+        offset: Math.min(point.offset, node.text.length),
+        path: point.path,
+      };
+    }
+  } catch {}
+
+  try {
+    const edge = readPointEdge(editor, point.path, 'start');
+
+    if (!edge) {
+      return null;
+    }
+
+    const [node] = getNode(editor, edge.path);
+
+    if (NodeApi.isText(node)) {
+      return {
+        offset: Math.min(point.offset, node.text.length),
+        path: edge.path,
+      };
+    }
+
+    return edge;
+  } catch {}
+
+  try {
+    return readPointEdge(editor, [], 'start') ?? null;
+  } catch {}
+
+  return null;
 };
 
 export const initializePublicState = <

@@ -1,5 +1,5 @@
 import { ParagraphPlugin } from '@platejs/core/react';
-import { createPlateEditor } from 'platejs/react';
+import { createPlateEditor } from '@platejs/core/react';
 
 import { NormalizeTypesPlugin } from './NormalizeTypesPlugin';
 
@@ -19,11 +19,9 @@ describe('NormalizeTypesPlugin Plite runtime', () => {
       value: [{ children: [], type: 'element' }],
     });
 
-    editor.update((tx) => {
-      tx.normalize({ force: true });
-    });
+    editor.update.normalize({ force: true });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         children: [
           { children: [{ text: '' }], type: 'h1' },
@@ -46,11 +44,9 @@ describe('NormalizeTypesPlugin Plite runtime', () => {
       value: [{ children: [{ text: 'title' }], type: 'h2' }],
     });
 
-    editor.update((tx) => {
-      tx.normalize({ force: true });
-    });
+    editor.update.normalize({ force: true });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: 'title' }], type: 'h1' },
     ]);
   });
@@ -72,12 +68,10 @@ describe('NormalizeTypesPlugin Plite runtime', () => {
       value: [{ children: [{ text: 'x' }], type: 'p' }],
     });
 
-    editor.update((tx) => {
-      tx.normalize({ force: true });
-    });
+    editor.update.normalize({ force: true });
 
     expect(errors).toHaveLength(1);
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: 'x' }], type: 'p' },
     ]);
   });

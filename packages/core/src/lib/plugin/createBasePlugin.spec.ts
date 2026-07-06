@@ -1,3 +1,5 @@
+import { defineEditorExtension } from '@platejs/plite';
+
 import {
   resolveCreatePluginTest,
   resolvePluginTest,
@@ -265,6 +267,57 @@ describe('createBasePlugin', () => {
           name: 'runtime',
         },
       ]);
+    });
+
+    it('adds function-returned editor extension options with plugin-derived names', () => {
+      const resolved = resolvePluginTest(
+        createBasePlugin({
+          key: 'runtime',
+        }).extendExtension(({ plugin }) => ({
+          api: {
+            runtime: {
+              key: () => plugin.key,
+            },
+          },
+        }))
+      );
+
+      expect(resolveEditorExtensions(resolved)).toMatchObject([
+        {
+          name: 'runtime',
+        },
+      ]);
+
+      const editor = createBaseEditor({ plugins: [resolved] });
+
+      expect(editor.api.runtime.key()).toBe('runtime');
+    });
+
+    it('keeps built editor extension names', () => {
+      const resolved = resolvePluginTest(
+        createBasePlugin({
+          key: 'runtime',
+        }).extendExtension(
+          defineEditorExtension({
+            name: 'explicit',
+            api: {
+              explicit: {
+                ping: () => 'pong' as const,
+              },
+            },
+          })
+        )
+      );
+
+      expect(resolveEditorExtensions(resolved)).toMatchObject([
+        {
+          name: 'explicit',
+        },
+      ]);
+
+      const editor = createBaseEditor({ plugins: [resolved] });
+
+      expect(editor.api.explicit.ping()).toBe('pong');
     });
 
     it('supports plugin-scoped secondary editor extension keys', () => {

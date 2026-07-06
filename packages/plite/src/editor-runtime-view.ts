@@ -12,6 +12,8 @@ import {
   getCurrentSelection,
   getCurrentSelectionRoot,
   getTargetRuntime,
+  isSelectionAcrossBlocks,
+  isSelectionWithinBlock,
   withEditorOperationRoot,
   withEditorOperationRootChildren,
   withEditorRootChildren,
@@ -33,6 +35,7 @@ import type {
   EditorStateView,
   EditorStateViewApi,
   EditorTransformRegistry,
+  EditorToggleMarkOptions,
   EditorUpdateContext,
   EditorUpdateTransaction,
   EditorView,
@@ -475,8 +478,16 @@ const withViewState = <T extends ViewStateTransformInput>(
   editor: Editor,
   state: T,
   viewState: ViewState
-): T & { view: EditorStateViewApi } =>
-  Object.freeze({
+): T & { view: EditorStateViewApi } => {
+  let scopedState!: T & { view: EditorStateViewApi };
+  const selection = () =>
+    withViewSelection(
+      state.selection(),
+      viewState,
+      getCurrentSelectionRoot(editor)
+    );
+
+  scopedState = Object.freeze({
     ...state,
     children: () =>
       viewState.root === MAIN_ROOT_KEY
@@ -494,25 +505,20 @@ const withViewState = <T extends ViewStateTransformInput>(
     ranges: withRootRanges(editor, state, viewState),
     runtime: withRootRuntime(editor, state, viewState),
     selection: Object.freeze(
-      Object.assign(
-        () =>
-          withViewSelection(
-            state.selection(),
-            viewState,
-            getCurrentSelectionRoot(editor)
-          ),
-        {
-          isCollapsed: () => {
-            const selection = withViewSelection(
-              state.selection(),
-              viewState,
-              getCurrentSelectionRoot(editor)
-            );
+      Object.assign(selection, {
+        isAcrossBlocks: () => isSelectionAcrossBlocks(scopedState, selection()),
+        isCollapsed: () => {
+          const currentSelection = selection();
 
-            return !!selection && RangeApi.isCollapsed(selection);
-          },
-        }
-      )
+          return !!currentSelection && RangeApi.isCollapsed(currentSelection);
+        },
+        isExpanded: () => {
+          const currentSelection = selection();
+
+          return !!currentSelection && RangeApi.isExpanded(currentSelection);
+        },
+        isWithinBlock: () => isSelectionWithinBlock(scopedState, selection()),
+      })
     ),
     text: Object.freeze({
       ...state.text,
@@ -520,6 +526,9 @@ const withViewState = <T extends ViewStateTransformInput>(
     }),
     view: createViewApi(viewState),
   });
+
+  return scopedState;
+};
 
 const withViewTransaction = <V extends Value>(
   editor: Editor,
@@ -593,8 +602,14 @@ const withViewTransaction = <V extends Value>(
           runSelectionMutation(() => transaction.marks.remove(key)),
         set: (marks: Parameters<typeof transaction.marks.set>[0]) =>
           runSelectionMutation(() => transaction.marks.set(marks)),
-        toggle: (key: string, value?: unknown) =>
-          runSelectionMutation(() => transaction.marks.toggle(key, value)),
+        toggle: (
+          key: string,
+          value?: unknown,
+          options?: EditorToggleMarkOptions
+        ) =>
+          runSelectionMutation(() =>
+            transaction.marks.toggle(key, value, options)
+          ),
       }) satisfies typeof transaction.marks
     ),
     nodes: Object.freeze<EditorUpdateTransaction<V>['nodes']>({
@@ -642,7 +657,10 @@ const withViewTransaction = <V extends Value>(
     }),
     selection: Object.freeze(
       Object.assign(() => state.selection(), {
+        isAcrossBlocks: () => state.selection.isAcrossBlocks(),
         isCollapsed: () => state.selection.isCollapsed(),
+        isExpanded: () => state.selection.isExpanded(),
+        isWithinBlock: () => state.selection.isWithinBlock(),
         clear: () => runSelectionMutation(transaction.selection.clear),
         collapse: (options = {}) =>
           runSelectionMutation(() => transaction.selection.collapse(options)),

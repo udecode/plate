@@ -8,6 +8,7 @@ import type {
   EditorUpdateMethods,
   EditorUpdateOptions,
   EditorUpdateTransaction,
+  EditorValueReplaceOptions,
   Value,
 } from '../interfaces';
 
@@ -67,6 +68,28 @@ const ignoredDynamicPropertyNames = new Set([
   'toString',
   'valueOf',
 ]);
+
+const toValueReplaceUpdateOptions = (
+  options?: EditorValueReplaceOptions
+): EditorUpdateOptions | undefined => {
+  if (!options) return;
+
+  const { history, metadata, normalize, tag } = options;
+
+  return {
+    metadata: history
+      ? {
+          ...metadata,
+          history: {
+            ...metadata?.history,
+            mode: history,
+          },
+        }
+      : metadata,
+    skipNormalize: normalize === undefined ? undefined : !normalize,
+    tag,
+  };
+};
 
 const createUpdateExtensionPath = <
   V extends Value,
@@ -284,7 +307,12 @@ export const createEditorUpdateApi = <
       )) as EditorUpdateMethods<V>['setField'],
     statePatches: createGroup('statePatches'),
     text: createGroup('text'),
-    value: createGroup('value'),
+    value: Object.freeze({
+      replace: (input, options) =>
+        update((tx) => {
+          tx.value.replace(input);
+        }, toValueReplaceUpdateOptions(options)),
+    }) as EditorUpdateMethods<V>['value'],
     withoutNormalizing: ((...args) =>
       update((tx) =>
         tx.withoutNormalizing(...args)

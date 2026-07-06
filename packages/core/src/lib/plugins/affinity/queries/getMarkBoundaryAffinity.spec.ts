@@ -3,7 +3,7 @@ import type { EditorMarks, Selection } from '@platejs/plite';
 import { createBaseEditor } from '../../../editor';
 import { getMarkBoundaryAffinity } from './getMarkBoundaryAffinity';
 
-const value = [{ children: [{ text: '' }], type: 'p' }];
+const value = [{ children: [{ text: 'ab' }], type: 'p' }];
 
 const collapsedSelection = (offset: number): Selection => ({
   anchor: { offset, path: [0, 0] },

@@ -3,4 +3,3 @@
  */
 
 export * from './TrailingBlockPlugin';
-export * from './withTrailingBlock';

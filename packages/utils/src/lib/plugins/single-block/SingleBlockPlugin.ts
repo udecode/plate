@@ -1,40 +1,60 @@
-import { createSlatePlugin } from '@platejs/core';
+import { createBasePlugin } from '@platejs/core';
+import { NodeApi } from '@platejs/plite';
 
 import { KEYS } from '../../plate-keys';
 
 /** Forces editor to only have one block. */
-export const SingleBlockPlugin = createSlatePlugin({
+export const SingleBlockPlugin = createBasePlugin({
   key: KEYS.singleBlock,
   override: {
     enabled: {
       [KEYS.trailingBlock]: false,
     },
   },
-}).overrideEditor(({ editor, tf: { normalizeNode } }) => ({
-  transforms: {
-    insertBreak() {
-      editor.tf.insertSoftBreak();
-    },
+}).extendExtension(({ editor }) => ({
+  normalizers: {
+    editor({ next, tx }) {
+      const children = editor.read.children();
 
-    normalizeNode(entry) {
-      const [_node, path] = entry;
+      if (children.length > 1) {
+        const secondNode = children[1];
+        const secondText = NodeApi.string(secondNode);
 
-      if (path.length === 0 && editor.children.length > 1) {
-        editor.tf.withoutNormalizing(() => {
-          // Merge all subsequent blocks into the first block
-          while (editor.children.length > 1) {
-            editor.tf.insertText('\n', { at: editor.api.start([1]) });
-            editor.tf.mergeNodes({
-              at: [1],
-              match: (_, path) => path.length === 1,
-            });
+        if (secondText.length === 0) {
+          const firstBlockEnd = editor.read.points.end([0]);
+
+          if (!firstBlockEnd) {
+            next();
+            return;
           }
-        });
 
+          tx.text.insert('\n', { at: firstBlockEnd });
+          tx.nodes.remove({ at: [1] });
+          return;
+        }
+
+        const secondBlockStart = editor.read.points.start([1]);
+
+        if (!secondBlockStart) {
+          next();
+          return;
+        }
+
+        tx.text.insert('\n', { at: secondBlockStart });
+        tx.nodes.merge({
+          at: [1],
+          match: (_, path) => path.length === 1,
+        });
         return;
       }
 
-      normalizeNode(entry);
+      next();
+    },
+  },
+  transforms: {
+    insertBreak({ tx }) {
+      tx.break.insertSoft();
+      return true;
     },
   },
 }));

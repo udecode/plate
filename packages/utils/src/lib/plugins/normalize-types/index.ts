@@ -3,4 +3,3 @@
  */
 
 export * from './NormalizeTypesPlugin';
-export * from './withNormalizeTypes';

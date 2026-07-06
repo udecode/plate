@@ -4,8 +4,7 @@
   "description": "Plate utils",
   "keywords": [
     "plate",
-    "plugin",
-    "slate"
+    "plugin"
   ],
   "homepage": "https://platejs.org",
   "bugs": {

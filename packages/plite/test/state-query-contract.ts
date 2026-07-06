@@ -27,6 +27,10 @@ describe('state query contract', () => {
       editor.read((state) => state.selection.isCollapsed()),
       true
     );
+    assert.equal(editor.read.selection.isCollapsed(), true);
+    assert.equal(editor.read.selection.isExpanded(), false);
+    assert.equal(editor.read.selection.isWithinBlock(), true);
+    assert.equal(editor.read.selection.isAcrossBlocks(), false);
 
     editor.update((tx) => {
       tx.selection.set({
@@ -39,6 +43,22 @@ describe('state query contract', () => {
       editor.read((state) => state.selection.isCollapsed()),
       false
     );
+    assert.equal(editor.read.selection.isExpanded(), true);
+    assert.equal(editor.read.selection.isWithinBlock(), true);
+    assert.equal(editor.read.selection.isAcrossBlocks(), false);
+
+    editor.update((tx) => {
+      tx.nodes.insert(paragraph('two'), { at: [1] });
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 3 },
+      });
+    });
+
+    assert.equal(editor.read.selection.isCollapsed(), false);
+    assert.equal(editor.read.selection.isExpanded(), true);
+    assert.equal(editor.read.selection.isWithinBlock(), false);
+    assert.equal(editor.read.selection.isAcrossBlocks(), true);
 
     editor.update((tx) => {
       tx.selection.clear();
@@ -48,6 +68,9 @@ describe('state query contract', () => {
       editor.read((state) => state.selection.isCollapsed()),
       false
     );
+    assert.equal(editor.read.selection.isExpanded(), false);
+    assert.equal(editor.read.selection.isWithinBlock(), false);
+    assert.equal(editor.read.selection.isAcrossBlocks(), false);
   });
 
   it('finds a node path by object identity', () => {

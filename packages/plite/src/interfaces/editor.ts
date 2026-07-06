@@ -154,13 +154,33 @@ type BivariantFunction<TFn> = TFn extends (
 export type EditorStateValueApi<V extends Value = Value> =
   () => EditorDocumentValue<V>;
 
+export type SnapshotSelectionInput = Selection | 'end' | 'start';
+
 export type EditorTransactionValueApi<V extends Value = Value> =
   EditorStateValueApi<V> & {
     replace: (input: SnapshotInput<V>) => void;
   };
 
+export type EditorValueReplaceOptions = {
+  history?: EditorHistoryUpdateMetadata['mode'];
+  metadata?: EditorUpdateMetadata;
+  normalize?: boolean;
+  tag?: EditorUpdateTagInput;
+};
+
+export type EditorUpdateValueApi<V extends Value = Value> =
+  EditorStateValueApi<V> & {
+    replace: (
+      input: SnapshotInput<V>,
+      options?: EditorValueReplaceOptions
+    ) => void;
+  };
+
 export type EditorStateSelectionApi = (() => Selection) & {
+  isAcrossBlocks: () => boolean;
   isCollapsed: () => boolean;
+  isExpanded: () => boolean;
+  isWithinBlock: () => boolean;
 };
 
 export type EditorStateViewApi = {
@@ -191,12 +211,20 @@ export type EditorTransactionSelectionApi = EditorStateSelectionApi & {
 export type EditorStateMarksApi<V extends Value = Value> =
   () => EditorMarks<V> | null;
 
+export type EditorToggleMarkOptions = {
+  clear?: string[] | string;
+};
+
 export type EditorTransactionMarksApi<V extends Value = Value> =
   EditorStateMarksApi<V> & {
     add: (key: string, value: unknown) => void;
     remove: (key: string) => void;
     set: (marks: EditorMarks<V> | null) => void;
-    toggle: (key: string, value?: unknown) => void;
+    toggle: (
+      key: string,
+      value?: unknown,
+      options?: EditorToggleMarkOptions
+    ) => void;
   };
 
 export type EditorCanonicalUpdateTag =
@@ -768,7 +796,7 @@ export type EditorCoreUpdateMethods<V extends Value = Value> = {
       'delete' | 'deleteBackward' | 'deleteForward' | 'insert'
     >
   >;
-  value: EditorBivariantMethods<Pick<EditorTransactionValueApi<V>, 'replace'>>;
+  value: EditorBivariantMethods<Pick<EditorUpdateValueApi<V>, 'replace'>>;
   withoutNormalizing: BivariantFunction<
     EditorCoreUpdateTransaction<V>['withoutNormalizing']
   >;
@@ -945,7 +973,11 @@ export interface EditorTransformApi<V extends Value = Value> {
     position?: number;
     voids?: boolean;
   }) => void;
-  toggleMark: (key: string, value?: any) => void;
+  toggleMark: (
+    key: string,
+    value?: any,
+    options?: EditorToggleMarkOptions
+  ) => void;
   unsetNodes: <T extends NodeIn<V>>(
     props: string | string[],
     options?: {
@@ -1075,7 +1107,11 @@ export type EditorTransformMiddlewareArgs<V extends Value = Value> = {
       voids?: boolean;
     };
   };
-  toggleMark: { key: string; value?: unknown };
+  toggleMark: {
+    key: string;
+    options?: EditorToggleMarkOptions;
+    value?: unknown;
+  };
   unsetNodes: {
     props: string | string[];
     options?: {
@@ -1416,7 +1452,7 @@ export type SnapshotDirtyScope = 'none' | 'paths' | 'all';
 
 export type SnapshotInput<V extends Value = Value> = {
   children: V | Descendant[];
-  selection?: Selection;
+  selection?: SnapshotSelectionInput;
   marks?: EditorMarks<V> | null;
 };
 
@@ -2844,7 +2880,12 @@ export interface EditorStaticApi {
    * If the selection is collapsed, the mark is stored for the next inserted
    * text.
    */
-  toggleMark: (editor: Editor, key: string, value?: any) => void;
+  toggleMark: (
+    editor: Editor,
+    key: string,
+    value?: any,
+    options?: EditorToggleMarkOptions
+  ) => void;
 
   unsetNodes: NodeMutationMethods['unsetNodes'];
 
@@ -3512,10 +3553,13 @@ const editorInternalApi: EditorInternalApiTable = {
     );
   },
 
-  toggleMark(editor, key, value = true) {
+  toggleMark(editor, key, value, options) {
+    const nextValue = value === undefined ? true : value;
+
     runInternalEditorWrite(
       editor,
-      () => getEditorTransformRegistry(editor).toggleMark(key, value),
+      () =>
+        getEditorTransformRegistry(editor).toggleMark(key, nextValue, options),
       getImplicitSelectionRoot(editor)
     );
   },

@@ -1,14 +1,14 @@
 import type { PluginConfig } from '@platejs/core';
+import type { PlatePluginContext } from '@platejs/core/react';
 import {
-  createTPlatePlugin,
-  type PlatePluginContext,
+  createPlatePlugin,
   useEditorComposing,
+  useEditorFocused,
   useEditorReadOnly,
   useEditorSelector,
-  useFocused,
   usePluginOption,
 } from '@platejs/core/react';
-import type { Path, TElement } from '@platejs/slate';
+import { type Element, type Path, PathApi } from '@platejs/plite';
 import React from 'react';
 
 import { KEYS } from '../../lib';
@@ -16,20 +16,66 @@ import { KEYS } from '../../lib';
 export type BlockPlaceholderConfig = PluginConfig<
   'blockPlaceholder',
   {
-    _target: { node: TElement; placeholder: string } | null;
+    _target: { node: Element; placeholder: string } | null;
+    className?: string;
     placeholders: Record<string, string>;
     query: (
       context: PlatePluginContext<BlockPlaceholderConfig> & {
-        node: TElement;
+        node: Element;
         path: Path;
       }
     ) => boolean;
-    className?: string;
+  },
+  {},
+  {},
+  {
+    placeholder: (node?: Element) => string | undefined;
   }
 >;
 
-export const BlockPlaceholderPlugin =
-  createTPlatePlugin<BlockPlaceholderConfig>({
+const getBlockPlaceholder = (
+  context: PlatePluginContext<BlockPlaceholderConfig> & {
+    node: Element;
+    path: Path;
+  }
+) => {
+  const { editor, getOptions, node } = context;
+  const { path } = context;
+  const entry = editor.read.nodes.block();
+
+  if (!entry) return;
+
+  const [, blockPath] = entry;
+
+  if (!PathApi.equals(path, blockPath)) return;
+
+  const { placeholders, query } = getOptions();
+  const children = editor.read.children();
+  const firstNode = children[0];
+
+  if (!firstNode) return;
+
+  const isPristineEmptyEditor =
+    children.length === 1 &&
+    editor.read.nodes.isEmpty(firstNode) &&
+    editor.api.isElementStateEmpty(firstNode);
+
+  const placeholder = Object.keys(placeholders).find(
+    (key) => editor.getType(key) === node.type
+  );
+
+  if (
+    query({ ...context, node, path }) &&
+    placeholder &&
+    editor.read.nodes.isEmpty(node) &&
+    !isPristineEmptyEditor
+  ) {
+    return placeholders[placeholder];
+  }
+};
+
+export const BlockPlaceholderPlugin = createPlatePlugin<BlockPlaceholderConfig>(
+  {
     key: KEYS.blockPlaceholder,
     editOnly: true,
     options: {
@@ -41,23 +87,24 @@ export const BlockPlaceholderPlugin =
       query: ({ path }) => path.length === 1,
     },
     useHooks: (ctx) => {
-      const { editor, getOptions, setOption } = ctx;
-      const focused = useFocused();
-
+      const { editor, setOption } = ctx;
+      const focused = useEditorFocused();
       const readOnly = useEditorReadOnly();
       const composing = useEditorComposing();
+
       const entry = useEditorSelector(() => {
         if (
           readOnly ||
           composing ||
           !focused ||
-          !editor.selection ||
-          editor.api.isExpanded()
-        )
+          !editor.read.selection() ||
+          editor.read.selection.isExpanded()
+        ) {
           return null;
+        }
 
-        return editor.api.block();
-      }, [readOnly, composing, focused]);
+        return editor.read.nodes.block();
+      }, [composing, editor, focused, readOnly]);
 
       React.useEffect(() => {
         if (!entry) {
@@ -65,64 +112,45 @@ export const BlockPlaceholderPlugin =
           return;
         }
 
-        const { placeholders, query } = getOptions();
+        const [node, path] = entry;
+        const placeholder = getBlockPlaceholder({ ...ctx, node, path });
 
-        const [element, path] = entry;
-        const firstNode = editor.children[0] as TElement;
-        const isPristineEmptyEditor =
-          editor.children.length === 1 &&
-          editor.api.isEmpty(firstNode) &&
-          editor.api.isElementStateEmpty(firstNode);
-
-        const placeholder = Object.keys(placeholders).find(
-          (key) => editor.getType(key) === element.type
-        );
-
-        if (
-          query({ ...ctx, node: element, path }) &&
-          placeholder &&
-          editor.api.isEmpty(element) &&
-          !isPristineEmptyEditor
-        ) {
-          setOption('_target', {
-            node: element,
-            placeholder: placeholders[placeholder],
-          });
-        } else {
-          setOption('_target', null);
-        }
+        setOption('_target', placeholder ? { node, placeholder } : null);
+        // Keep this effect keyed to the editor state snapshot above; `ctx`
+        // carries stable plugin helpers but is not itself a useful dependency.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [editor, entry, setOption, getOptions]);
+      }, [editor, entry, setOption]);
     },
-  })
-    .extendSelectors(({ getOption }) => ({
-      placeholder: (node: TElement) => {
-        const target = getOption('_target');
+  }
+)
+  .extendSelectors(({ getOption }) => ({
+    placeholder: (node?: Element) => {
+      const target = getOption('_target');
 
-        if (target?.node === node) {
-          return target.placeholder;
-        }
-      },
-    }))
-    .extend({
-      inject: {
-        isBlock: true,
-        nodeProps: {
-          transformProps: (props) => {
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            const placeholder = usePluginOption(
-              props.plugin,
-              'placeholder',
-              props.element!
-            );
+      if (target && target.node === node) {
+        return target.placeholder;
+      }
+    },
+  }))
+  .extend({
+    inject: {
+      isBlock: true,
+      nodeProps: {
+        transformProps: (props) => {
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const placeholder = usePluginOption(
+            props.plugin,
+            'placeholder',
+            props.element
+          );
 
-            if (placeholder) {
-              return {
-                className: props.getOption('className'),
-                placeholder,
-              };
-            }
-          },
+          if (props.element && placeholder) {
+            return {
+              className: props.getOption('className'),
+              placeholder,
+            };
+          }
         },
       },
-    });
+    },
+  });

@@ -1,6 +1,4 @@
-import { type PluginConfig, createBasePlugin } from '../../plugin';
-
-export type ParagraphConfig = PluginConfig<'p'>;
+import { createBasePlugin } from '../../plugin';
 
 export const BaseParagraphPlugin = createBasePlugin({
   key: 'p',

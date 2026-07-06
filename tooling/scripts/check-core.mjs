@@ -6,6 +6,7 @@ import { spawnSync } from 'node:child_process';
 const root = process.cwd();
 const coreDir = join(root, 'packages/core');
 const pliteDir = join(root, 'packages/plite');
+const utilsDir = join(root, 'packages/utils');
 
 const testBatchSizeOverride = process.env.CORE_TEST_BATCH_SIZE;
 
@@ -37,6 +38,12 @@ const packageTestTargets = [
     name: 'Plite',
     dir: pliteDir,
     roots: ['src', 'test'],
+    bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
+  },
+  {
+    name: 'Utils',
+    dir: utilsDir,
+    roots: ['src'],
     bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
   },
 ];
@@ -128,11 +135,12 @@ const runPackageTests = (target) => {
 
 const testInventory = collectTestInventory();
 
-run('typecheck Core + Plite source and tests', 'pnpm', [
+run('typecheck Core + Plite + Utils source and tests', 'pnpm', [
   'turbo',
   'typecheck',
   '--filter=./packages/core',
   '--filter=./packages/plite',
+  '--filter=./packages/utils',
 ]);
 run('type contracts', 'pnpm', [
   'exec',
@@ -143,7 +151,8 @@ run('type contracts', 'pnpm', [
 ]);
 run('lint Core', 'pnpm', ['--filter', '@platejs/core', 'lint']);
 run('lint Plite', 'pnpm', ['--filter', '@platejs/plite', 'lint']);
-run('build Plite artifact for Core runtime tests', 'pnpm', [
+run('lint Utils', 'pnpm', ['--filter', '@platejs/utils', 'lint']);
+run('build Plite artifact for Core/Utils runtime tests', 'pnpm', [
   '--filter',
   '@platejs/plite',
   'build',

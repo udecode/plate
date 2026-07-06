@@ -2,13 +2,10 @@ import {
   createEditor,
   defineEditorExtension,
   ElementApi,
-  NodeApi,
   OperationApi,
   type Editor,
   type EditorExtensionInput,
-  type Path,
   PathApi,
-  type Point,
   type Selection,
   type Value,
 } from '@platejs/plite';
@@ -57,84 +54,6 @@ import { deserializeHtml } from '../plugins/html';
 
 type PluginLookupInput = AnyBasePlugin | WithRequiredKey<BasePluginInput>;
 
-const getBaseRuntimeChildren = (node: unknown) =>
-  node &&
-  typeof node === 'object' &&
-  'children' in node &&
-  Array.isArray((node as { children?: unknown }).children)
-    ? (node as { children: unknown[] }).children
-    : null;
-
-const isBaseRuntimeTextNode = (node: unknown): node is { text: string } =>
-  node !== null &&
-  typeof node === 'object' &&
-  'text' in node &&
-  typeof (node as { text?: unknown }).text === 'string';
-
-const getBaseRuntimeNodeAtPath = (value: Readonly<Value>, path: number[]) => {
-  let node: unknown = value[path[0]];
-
-  for (const index of path.slice(1)) {
-    const children = getBaseRuntimeChildren(node);
-
-    if (!children) return;
-
-    node = children[index];
-  }
-
-  return node;
-};
-
-const getBaseRuntimeValueEdgePoint = (
-  value: Readonly<Value>,
-  edge: 'end' | 'start'
-): Point | null => {
-  if (value.length === 0) return null;
-
-  const path = [edge === 'start' ? 0 : value.length - 1];
-  let node = getBaseRuntimeNodeAtPath(value, path);
-
-  while (!isBaseRuntimeTextNode(node)) {
-    const children = getBaseRuntimeChildren(node);
-
-    if (!children || children.length === 0) return null;
-
-    const nextIndex = edge === 'start' ? 0 : children.length - 1;
-    path.push(nextIndex);
-    node = children[nextIndex];
-  }
-
-  return {
-    offset: edge === 'start' ? 0 : node.text.length,
-    path,
-  };
-};
-
-const getBaseRuntimeTextPointAtPath = (
-  value: Readonly<Value>,
-  path: Path,
-  offset: number
-): Point | null => {
-  const nextPath = [...path];
-  let node = getBaseRuntimeNodeAtPath(value, nextPath);
-
-  while (node && !isBaseRuntimeTextNode(node)) {
-    const children = getBaseRuntimeChildren(node);
-
-    if (!children || children.length === 0) return null;
-
-    nextPath.push(0);
-    node = children[0];
-  }
-
-  if (!isBaseRuntimeTextNode(node)) return null;
-
-  return {
-    offset: Math.min(offset, node.text.length),
-    path: nextPath,
-  };
-};
-
 const normalizeBaseInitialValue = <V extends Value>(
   editor: BaseEditor,
   value: unknown
@@ -159,60 +78,6 @@ const normalizeBaseInitialValue = <V extends Value>(
       ] as V);
 };
 
-const resolveBaseInitialSelection = (
-  editor: BaseEditor,
-  value: Readonly<Value>,
-  selection?: Selection,
-  autoSelect?: boolean | 'end' | 'start'
-) => {
-  const asTextPoint = (point: Point | null | undefined) => {
-    if (!point) return null;
-
-    try {
-      const node = editor.read.nodes.get(point.path)?.[0];
-
-      if (node && NodeApi.isText(node)) return point;
-    } catch {}
-
-    return null;
-  };
-  const resolvePoint = (point: Point) => {
-    const transformedPoint = getBaseRuntimeTextPointAtPath(
-      value,
-      point.path,
-      point.offset
-    );
-
-    try {
-      return (
-        asTextPoint(point) ??
-        transformedPoint ??
-        asTextPoint(editor.read.points.start(point.path)) ??
-        asTextPoint(editor.read.points.start([]))
-      );
-    } catch {
-      try {
-        return asTextPoint(editor.read.points.start([]));
-      } catch {
-        return null;
-      }
-    }
-  };
-
-  if (selection) {
-    const anchor = resolvePoint(selection.anchor);
-    const focus = resolvePoint(selection.focus);
-
-    return anchor && focus ? { anchor, focus } : null;
-  }
-
-  const edge =
-    autoSelect === true ? 'end' : autoSelect === 'start' ? 'start' : autoSelect;
-  const point = edge ? getBaseRuntimeValueEdgePoint(value, edge) : null;
-
-  return point ? { anchor: point, focus: point } : null;
-};
-
 const initializeBaseEditor = <V extends Value>(
   editor: BaseEditor,
   {
@@ -231,37 +96,23 @@ const initializeBaseEditor = <V extends Value>(
 ) => {
   const applyValue = (nextValueInput: unknown, isAsync = false) => {
     const nextValue = normalizeBaseInitialValue<V>(editor, nextValueInput);
+    const selectionInput =
+      selection ??
+      (autoSelect === true
+        ? 'end'
+        : autoSelect === 'start' || autoSelect === 'end'
+          ? autoSelect
+          : null);
 
-    editor.update(
-      (tx) => {
-        tx.value.replace({ children: nextValue, selection: null });
-      },
-      { metadata: { history: { mode: 'skip' } }, skipNormalize: true }
+    editor.update.value.replace(
+      { children: nextValue, selection: selectionInput },
+      { history: 'skip', normalize: false }
     );
 
     pipeTransformInitialValue(editor);
 
-    const currentValue = editor.read.children() as V;
-    const nextSelection = resolveBaseInitialSelection(
-      editor,
-      currentValue,
-      selection,
-      autoSelect
-    );
-
-    if (nextSelection) {
-      editor.update(
-        (tx) => {
-          tx.selection.set(nextSelection);
-        },
-        { metadata: { history: { mode: 'skip' } } }
-      );
-    }
-
     if (shouldNormalizeEditor) {
-      editor.update((tx) => {
-        tx.normalize({ force: true });
-      });
+      editor.update.normalize({ force: true });
     }
 
     onReady?.({

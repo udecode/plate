@@ -2,4 +2,4 @@
 "@platejs/utils": patch
 ---
 
-Synced latest changes from `main` into the beta lane.
+Fix mark toolbar buttons so mutually exclusive marks are cleared only when enabling the target mark.

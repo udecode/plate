@@ -1,5 +1,10 @@
 import { useEditorRef, useEditorSelector } from '@platejs/core/react';
 
+type PreventDefaultMouseEvent = Pick<
+  React.MouseEvent<HTMLButtonElement>,
+  'preventDefault'
+>;
+
 export const useMarkToolbarButtonState = ({
   clear,
   nodeType,
@@ -8,7 +13,7 @@ export const useMarkToolbarButtonState = ({
   clear?: string[] | string;
 }) => {
   const pressed = useEditorSelector(
-    (editor) => editor.api.hasMark(nodeType),
+    (editor) => !!editor.read.marks()?.[nodeType],
     [nodeType]
   );
 
@@ -28,10 +33,12 @@ export const useMarkToolbarButton = (
     props: {
       pressed: state.pressed,
       onClick: () => {
-        editor.tf.toggleMark(state.nodeType, { remove: state.clear });
-        editor.tf.focus();
+        editor.update.marks.toggle(state.nodeType, true, {
+          clear: state.clear,
+        });
+        editor.api.dom?.focus?.();
       },
-      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
+      onMouseDown: (e: PreventDefaultMouseEvent) => {
         e.preventDefault();
       },
     },

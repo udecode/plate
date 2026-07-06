@@ -12,7 +12,7 @@ const applyInsertSoftBreak: EditorStaticApi['insertSoftBreak'] = (editor) => {
     return;
   }
 
-  getEditorTransformRegistry(editor).splitNodes({ always: true });
+  getEditorTransformRegistry(editor).insertText('\n');
 };
 
 export const insertSoftBreak: EditorStaticApi['insertSoftBreak'] = (editor) => {

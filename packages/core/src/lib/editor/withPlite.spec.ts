@@ -587,6 +587,18 @@ describe('extendPlateEditor', () => {
       expectedEndSelection
     );
 
+    const editorWithElementPathSelection = extendBaseEditor(createEditor(), {
+      selection: {
+        anchor: { offset: 0, path: [0] },
+        focus: { offset: 0, path: [0] },
+      },
+      value,
+    });
+    expect(editorWithElementPathSelection.read.selection()).toEqual({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
+
     // Test empty children
     const editorWithEmptyChildren = extendBaseEditor(createEditor());
     expect(editorWithEmptyChildren.read.children()).toEqual([

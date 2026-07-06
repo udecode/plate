@@ -1,6 +1,11 @@
 import React from 'react';
 
-import { createPlateEditor, Plate } from '@platejs/core/react';
+import {
+  createPlateEditor,
+  Plate,
+  type PlateEditor,
+} from '@platejs/core/react';
+import { defineEditorExtension } from '@platejs/plite';
 import { renderHook } from '@testing-library/react';
 
 import {
@@ -8,7 +13,7 @@ import {
   useMarkToolbarButtonState,
 } from './useMarkToolbarButton';
 
-const createWrapper = (editor: ReturnType<typeof createPlateEditor>) =>
+const createWrapper = (editor: PlateEditor) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <Plate editor={editor} suppressInstanceWarning>
@@ -20,10 +25,14 @@ const createWrapper = (editor: ReturnType<typeof createPlateEditor>) =>
 describe('useMarkToolbarButton', () => {
   it('derives pressed state from editor marks', () => {
     const editor = createPlateEditor({
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
-    const hasMarkSpy = spyOn(editor.api, 'hasMark');
-    (hasMarkSpy as any).mockReturnValue(true);
+
+    editor.update.marks.add('bold', true);
 
     const { result } = renderHook(
       () => useMarkToolbarButtonState({ clear: 'italic', nodeType: 'bold' }),
@@ -37,15 +46,29 @@ describe('useMarkToolbarButton', () => {
       nodeType: 'bold',
       pressed: true,
     });
-    expect(hasMarkSpy).toHaveBeenCalledWith('bold');
   });
 
   it('toggles the mark and focuses the editor on click', () => {
     const editor = createPlateEditor({
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
-    const toggleMarkSpy = spyOn(editor.tf, 'toggleMark');
-    const focusSpy = spyOn(editor.tf, 'focus');
+
+    editor.update.marks.add('italic', true);
+    const focusSpy = mock(() => {});
+    editor.extend(
+      defineEditorExtension({
+        api: {
+          dom: {
+            focus: focusSpy,
+          },
+        },
+        name: 'test:dom-focus',
+      })
+    );
 
     const { result } = renderHook(
       () =>
@@ -61,10 +84,80 @@ describe('useMarkToolbarButton', () => {
 
     result.current.props.onClick();
 
-    expect(toggleMarkSpy).toHaveBeenCalledWith('bold', {
-      remove: ['italic'],
-    });
+    const marks = editor.read.marks() as
+      | { bold?: boolean; italic?: boolean }
+      | undefined;
+
+    expect(marks?.bold).toBe(true);
+    expect(marks?.italic).toBeUndefined();
     expect(focusSpy).toHaveBeenCalled();
+  });
+
+  it('removes only the target mark when it is already active', () => {
+    const editor = createPlateEditor({
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'one' }], type: 'p' }],
+    });
+
+    editor.update.marks.add('bold', true);
+    editor.update.marks.add('italic', true);
+
+    const { result } = renderHook(
+      () =>
+        useMarkToolbarButton({
+          clear: ['bold', 'italic'],
+          nodeType: 'bold',
+          pressed: true,
+        }),
+      {
+        wrapper: createWrapper(editor),
+      }
+    );
+
+    result.current.props.onClick();
+
+    const marks = editor.read.marks() as
+      | { bold?: boolean; italic?: boolean }
+      | undefined;
+
+    expect(marks?.bold).toBeUndefined();
+    expect(marks?.italic).toBe(true);
+  });
+
+  it('replaces mutually exclusive marks when enabling a mark', () => {
+    const editor = createPlateEditor({
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'one' }], type: 'p' }],
+    });
+
+    editor.update.marks.add('superscript', true);
+
+    const { result } = renderHook(
+      () =>
+        useMarkToolbarButton({
+          clear: 'superscript',
+          nodeType: 'subscript',
+          pressed: false,
+        }),
+      {
+        wrapper: createWrapper(editor),
+      }
+    );
+
+    result.current.props.onClick();
+
+    const marks = editor.read.marks() as
+      | { subscript?: boolean; superscript?: boolean }
+      | undefined;
+
+    expect(marks?.subscript).toBe(true);
+    expect(marks?.superscript).toBeUndefined();
   });
 
   it('prevents the default mouse down behavior', () => {
@@ -87,7 +180,7 @@ describe('useMarkToolbarButton', () => {
 
     result.current.props.onMouseDown({
       preventDefault,
-    } as unknown as React.MouseEvent<HTMLButtonElement>);
+    });
 
     expect(preventDefault).toHaveBeenCalled();
   });

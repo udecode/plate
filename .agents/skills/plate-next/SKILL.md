@@ -27,6 +27,8 @@ compatibility from becoming the final API.
 - The user invokes `plate-next`.
 - The user asks "why is this file/helper here?" during Plate migration.
 - The user wants a file-by-file or API-by-API Plate v2 cleanup pass.
+- The user wants careful package-by-package migration review before broad Plate
+  package migration.
 - The target is Core, Plate runtime, plugin API, package migration, docs/API
   mismatch, or old Slate compatibility in Plate.
 - The user gives no target and expects autopilot to find the next Plate cleanup
@@ -50,6 +52,7 @@ Same user-facing shape as `auto`:
 - `plate-next editor.api`
 - `plate-next packages/core/src/lib/utils/isType.ts`
 - `plate-next packages/table`
+- `plate-next packages/basic-nodes`
 - `plate-next current tree`
 - `plate-next 2h`
 - `plate-next all core packages full-loop`
@@ -94,6 +97,42 @@ Rules:
   like `PreInsertOptions`, explicit callback parameter annotations, or
   `Parameters<typeof fn>` plumbing just to silence TypeScript. Fix the owning
   API/source typing so the call site stays inferred.
+- Do not declare plugin export types or cast plugin chains to hide inference
+  loss. A plugin export should infer from `createBasePlugin(...)`,
+  `createPlatePlugin(...)`, `toPlatePlugin(...)`, and chained `.extend*`
+  methods. Smells like
+  `export const FooPlugin: BasePlugin<FooConfig> = ...`,
+  `export const FooPlugin: PlatePlugin<FooConfig> = ...`, or
+  `...) as BasePlugin<FooConfig>` are type regressions unless the annotation is
+  a true external boundary. If inference fails, fix the builder/generic owner
+  instead of typing the result.
+- Do not create empty plugin config aliases like
+  `type FooConfig = PluginConfig<'foo'>` just to pass
+  `createBasePlugin<FooConfig>({ key: 'foo' })`. If a plugin has no typed
+  options, API, tx, selectors, or state, let `createBasePlugin` infer from the
+  config object. Manual config types are for real public plugin contracts, not
+  decoration.
+- Do not wrap plugin-owned editor extension options in
+  `defineEditorExtension({ name: pluginKey, ... })`. `extendExtension` should
+  accept a built editor extension or raw extension options; raw options without
+  `name` default to the owning plugin key. Use an explicit `name` only for a
+  genuinely separate extension identity, keyed secondary extension, or
+  standalone Plite extension.
+- Prefer direct one-shot Plite methods over callback boilerplate. A single
+  operation like `editor.update((tx) => { tx.normalize({ force: true }); })`
+  should be `editor.update.normalize({ force: true })`. A single read like
+  `editor.read((state) => state.children())` should be `editor.read.children()`.
+  Use callback form only when grouping multiple reads/writes under one
+  snapshot/transaction, sharing intermediate state, branching/looping, or
+  calling behavior that has no direct one-shot API yet.
+- Never subscribe a component to editor values only to feed a later callback.
+  Hooks like `useNodePath`, `useEditorSelector`, `useEditorValue`,
+  `useElementSelector`, `useEditorReadOnly`, or Plite view selectors are for
+  render-time state. If the value is used only inside `onClick`, `onMouseDown`,
+  `onKeyDown`, command callbacks, toolbar actions, or delayed handlers, read it
+  inside the callback from `editor.read.*` / `editor.api.*` instead. Subscribing
+  for callback-only data is a perf regression with no user-facing gain and
+  caps the file below `100` until fixed or justified as render state.
 - Do not add local fixture-shape aliases in tests, such as
   `type EditorFixture = { children; selection }`, to hide weak hyperscript
   typing. If many tests need the same JSX/editor fixture shape, repair or
@@ -289,6 +328,21 @@ Default suspicion list:
 - explicit callback/helper types in tests that replace inference from
   `createBasePlugin`, `createBaseEditor`, plugin config, tx groups, or editor
   API calls.
+- plugin export annotations/casts that replace inference from
+  `createBasePlugin`, `createPlatePlugin`, `toPlatePlugin`, or chained
+  `.extend*` calls. They cap the file below `100` until removed or justified as
+  a real external boundary.
+- empty config aliases such as `type FooConfig = PluginConfig<'foo'>` paired
+  with `createBasePlugin<FooConfig>`. They cap the file below `100` unless the
+  config type carries a real public contract.
+- `defineEditorExtension({ name: plugin.key, ... })` or
+  `defineEditorExtension({ name: KEYS.foo, ... })` inside a plugin
+  `extendExtension` callback. The plugin builder owns default names and raw
+  option normalization.
+- one-line `editor.read((state) => state.*())` or `editor.update((tx) => {
+  tx.*(); })` wrappers when the direct one-shot method exists. These cap the
+  file below `100` until replaced or justified as grouped transaction/snapshot
+  logic.
 - local JSX/editor fixture aliases in tests, especially `{ children; selection
   }` shapes that should come from `@platejs/test-utils`.
 - duplicate Plate helpers around Plite APIs.
@@ -360,6 +414,58 @@ This rule exists because a targeted parser sweep missed
 prove it looked at that file and every peer, even when the first packet is
 green.
 
+## Package Review Mode
+
+When the target is one package, use package review mode. This is review-first,
+not migration-first.
+
+Package review mode exists for the user's manual review flow: they want to
+review one package carefully, then decide whether the next package is safe. Do
+not treat `plate-next packages/<name>` as permission to sweep the repo or move
+to the next package.
+
+Rules:
+
+- Freeze scope to the named package plus the smallest Plite/Core owner needed
+  to remove a blocker found in that package.
+- Before implementation, generate a package file manifest and materialize one
+  checkbox per reviewed file in the autogoal plan.
+- Manifest inputs:
+  - `packages/<name>/src/**/*.{ts,tsx,mts,cts}`;
+  - package-local specs, test-utils, type-tests, fixtures, and examples when
+    they live outside `src`;
+  - package docs/examples only when the package review touches that public
+    surface.
+- Every file row needs `path`, `score`, `verdict`, `owner`, `evidence`, and
+  `next`.
+- A file row may be checked `[x]` only at score `100`.
+- Score `100` means all of these are true:
+  - no behavior regression versus `origin/main`;
+  - no type regression;
+  - inline inference is preserved, with no fake explicit callback annotations,
+    `as any`, or local helper types hiding weak owner types;
+  - no legacy compat alias, shim, old command fallback, or duplicate wrapper
+    around Plite APIs remains;
+  - Plite/Plate ownership is correct;
+  - owner/name/path drift is either absent or explicitly accepted by the user;
+  - focused package proof or a justified source audit proves the row.
+- Anything below `100` stays unchecked with a concrete reason and next action.
+- Green package tests alone do not make a file `100`.
+- Do not move to the next package until every file is either checked at `100`
+  or explicitly deferred for user review with reason, owner, and proof needed.
+- Safe defects found during package review may be patched, but the loop must
+  keep returning to the current package checklist until it closes or the user
+  redirects.
+- If the package becomes part of the Core/Plite boundary proof, update
+  `tooling/scripts/check-core.mjs` in the same packet before closeout. Core
+  adjacent package review is not done with package-local proof alone.
+- If a reviewed package should not be in `check:core`, record the reason in the
+  plan. Examples: product-only UI package, registry-only package, or package
+  whose failures do not protect Core/Plite substrate.
+- Broad Plate v2 redesign, cross-package migrations, or package-to-package
+  fallout are out of scope unless the current package exposes a real blocker
+  that cannot be fixed in its owner.
+
 ## Loop
 
 Use the dedicated Plate Next plan template unless a public API design fork
@@ -381,6 +487,8 @@ Then loop:
 2. Build the right source map:
    - named file/API: public API, internal bridge, caller graph, tests,
      docs/examples, package exports, and related correction-sweep pattern;
+   - one package: package file manifest plus one plan checkbox per package
+     file, with score `100` as the only checked state;
    - broad Core sweep: full Core manifest plus drift ledger for every file.
 3. Build the extracted-file inventory for the target scope and give every
    untracked/extracted file a bucket before scoring confidence.
@@ -402,8 +510,10 @@ Then loop:
      touched, or the failure proves the Core API broke it.
 11. Run source audits for removed legacy names.
 12. For full Core sweep, close the autogoal template's drift-ledger score gate.
-13. Keep/revert/quarantine the packet in the plan.
-14. Pick the next packet. In timed mode, keep going until the minimum runtime
+13. For package review mode, close the package file checklist or defer
+    unchecked rows for user review before considering the next package.
+14. Keep/revert/quarantine the packet in the plan.
+15. Pick the next packet. In timed mode, keep going until the minimum runtime
     elapsed, then finish or quarantine the active packet.
 
 ## Autopilot Priority
@@ -429,6 +539,23 @@ pnpm --filter @platejs/<touched-package> test
 pnpm --filter @platejs/<touched-package> build
 ```
 
+For package review mode, prefer:
+
+```bash
+pnpm turbo typecheck --filter=./packages/<package>
+pnpm --filter @platejs/<package> test
+pnpm --filter @platejs/<package> build
+```
+
+Use package-local focused tests when available. Run broader gates only when the
+package exports, public type surface, or Core/Plite owner changes make the
+package proof insufficient.
+
+For Core-adjacent package review, `pnpm check:core` is also required after the
+package is added to `tooling/scripts/check-core.mjs`. Do not close a package
+review that hardens Core/Plite behavior while leaving the shared Core gate blind
+to that package.
+
 Use focused tests first. Run broader gates only before closing a risky packet.
 If a broader command reports errors in packages outside the named/touched
 scope, do not fix them in Plate Next by default. Classify them as out-of-scope
@@ -448,6 +575,8 @@ Report:
 
 - target surface and mode;
 - files/APIs reviewed;
+- package file checklist summary when package review mode applies: total rows,
+  score-100 rows, unchecked rows, deferred rows, and next package block;
 - verdict matrix: main-parity-cleanup, move-to-plite, keep-in-plate, hard-cut,
   Plite gap, Plate gap, private-bridge, defer-with-owner;
 - changes made;

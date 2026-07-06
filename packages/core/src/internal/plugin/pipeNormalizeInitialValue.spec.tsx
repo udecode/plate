@@ -96,6 +96,7 @@ describe('pipeNormalizeInitialValue', () => {
         const editor = createBaseEditor({
           plugins,
           selection,
+          value: [{ children: [{ text: 'A' }], count: 0, type: 'p' }],
         });
 
         expect(editor.read.selection()).toEqual(selection);

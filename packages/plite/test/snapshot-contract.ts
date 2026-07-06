@@ -1921,7 +1921,7 @@ it('insertBreak inside a list item splits the item and keeps the list wrapper', 
   });
 });
 
-it('insertSoftBreak splits the current block through its own command', () => {
+it('insertSoftBreak inserts a newline through its own command', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -1946,16 +1946,12 @@ it('insertSoftBreak splits the current block through its own command', () => {
     },
     {
       type: 'paragraph',
-      children: [{ text: '' }],
-    },
-    {
-      type: 'paragraph',
-      children: [{ text: 'beta' }],
+      children: [{ text: '\nbeta' }],
     },
   ]);
   assert.deepEqual(snapshot.selection, {
-    anchor: { path: [2, 0], offset: 0 },
-    focus: { path: [2, 0], offset: 0 },
+    anchor: { path: [1, 0], offset: 1 },
+    focus: { path: [1, 0], offset: 1 },
   });
 });
 

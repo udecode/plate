@@ -359,9 +359,9 @@ export const createEditorTransformRegistry = <V extends Value>(
       runMiddleware('splitNodes', { options }, (args) =>
         splitNodes(getRuntimeEditor(), args.options)
       ),
-    toggleMark: (key, value) =>
-      runMiddleware('toggleMark', { key, value }, (args) =>
-        toggleMark(getEditor(), args.key, args.value)
+    toggleMark: (key, value, options) =>
+      runMiddleware('toggleMark', { key, options, value }, (args) =>
+        toggleMark(getEditor(), args.key, args.value, args.options)
       ),
     unsetNodes: (props, options) =>
       runMiddleware('unsetNodes', { options, props }, (args) =>

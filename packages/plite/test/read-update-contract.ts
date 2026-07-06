@@ -86,6 +86,30 @@ describe('read/update contract', () => {
     assert.equal(editor.read.lastCommit()?.classes.includes('mark'), true);
   });
 
+  it('toggles marks with mutually exclusive clear options', () => {
+    const editor = createEditor();
+
+    replaceEditorValue(editor, {
+      children: [paragraph('one')],
+      selection: {
+        anchor: { path: [0, 0], offset: 3 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+    });
+
+    editor.update.marks.add('superscript', true);
+    editor.update.marks.toggle('subscript', true, { clear: 'superscript' });
+
+    assert.deepEqual(editor.read.marks(), { subscript: true });
+
+    editor.update.marks.add('italic', true);
+    editor.update((tx) => {
+      tx.marks.toggle('subscript', true, { clear: ['italic', 'subscript'] });
+    });
+
+    assert.deepEqual(editor.read.marks(), { italic: true });
+  });
+
   it('sets an exact expanded range without retargeting endpoints', () => {
     const editor = createEditor();
     const selection = {

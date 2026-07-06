@@ -206,6 +206,74 @@ describe('state/tx public API contract', () => {
     assert.equal(state.lastCommit?.selectionChanged, true);
   });
 
+  it('replaces a mounted document with start/end selection intents', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('one')],
+    });
+
+    editor.update.value.replace({
+      children: [paragraph('two')],
+      selection: 'end',
+    });
+
+    assert.deepEqual(editorGetSelection(editor), {
+      anchor: { path: [0, 0], offset: 3 },
+      focus: { path: [0, 0], offset: 3 },
+    });
+
+    editor.update.value.replace({
+      children: [paragraph('three')],
+      selection: 'start',
+    });
+
+    assert.deepEqual(editorGetSelection(editor), {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    });
+  });
+
+  it('repairs replacement selections that point at element paths', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('one')],
+    });
+
+    editor.update.value.replace({
+      children: [paragraph('nested')],
+      selection: {
+        anchor: { path: [0], offset: 0 },
+        focus: { path: [0], offset: 0 },
+      },
+    });
+
+    assert.deepEqual(editorGetSelection(editor), {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    });
+  });
+
+  it('passes direct replacement options into the owning update', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('one')],
+    });
+
+    editor.update.value.replace(
+      {
+        children: [paragraph('two')],
+        selection: 'end',
+      },
+      {
+        history: 'skip',
+        normalize: false,
+        tag: ['external'],
+      }
+    );
+
+    const commit = editorGetLastCommit(editor);
+
+    assert.deepEqual(commit?.metadata.history, { mode: 'skip' });
+    assert.deepEqual(commit?.tags, ['external']);
+  });
+
   const createSeededEditor = () => {
     const editor = createEditor();
 

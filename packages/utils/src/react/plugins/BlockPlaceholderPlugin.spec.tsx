@@ -2,23 +2,46 @@
 
 import React from 'react';
 
-import { createSlatePlugin } from '@platejs/core';
-import { createPlateEditor, PlateTest } from '@platejs/core/react';
+import { createBasePlugin } from '@platejs/core';
+import {
+  createPlateEditor,
+  PlateTest,
+  type PlateEditor,
+} from '@platejs/core/react';
+import type { Element, Value } from '@platejs/plite';
 import { render, waitFor } from '@testing-library/react';
 
-import { BlockPlaceholderPlugin } from './BlockPlaceholderPlugin';
+import {
+  BlockPlaceholderPlugin,
+  type BlockPlaceholderConfig,
+} from './BlockPlaceholderPlugin';
+
+const renderPlaceholderEditor = (
+  editor: PlateEditor,
+  options?: { autoFocus?: boolean; readOnly?: boolean }
+) =>
+  render(
+    <PlateTest
+      editableProps={{ autoFocus: options?.autoFocus ?? false }}
+      editor={editor}
+      readOnly={options?.readOnly}
+      suppressInstanceWarning
+    >
+      {null}
+    </PlateTest>
+  );
 
 const createEditor = (options?: {
   className?: string;
-  nodeId?: any;
+  nodeId?: boolean;
   placeholders?: Record<string, string>;
-  query?: (context: any) => boolean;
+  query?: BlockPlaceholderConfig['options']['query'];
   readOnly?: boolean;
   selection?: {
     anchor: { offset: number; path: number[] };
     focus: { offset: number; path: number[] };
   };
-  value?: any[];
+  value?: Value;
 }) =>
   createPlateEditor({
     plugins: [
@@ -45,51 +68,66 @@ const createEditor = (options?: {
     ],
   });
 
+const getPlaceholder = <TEditor extends PlateEditor>(
+  editor: TEditor,
+  node: Element
+) =>
+  (
+    editor.getOption as (
+      plugin: typeof BlockPlaceholderPlugin,
+      key: 'placeholder',
+      node: Element
+    ) => string | undefined
+  )(BlockPlaceholderPlugin, 'placeholder', node);
+
+const getEditorElement = <TEditor extends PlateEditor>(
+  editor: TEditor,
+  index: number
+): Element => {
+  const node = editor.read.children()[index];
+
+  if (!node) {
+    throw new Error(`Missing editor child at index ${index}`);
+  }
+
+  return node;
+};
+
+const focusEditor = async (editor: PlateEditor) => {
+  await React.act(async () => {
+    editor.api.dom.focus();
+  });
+};
+
 describe('BlockPlaceholderPlugin', () => {
   it('sets the target for an active empty block and injects placeholder props', async () => {
     const editor = createEditor({ className: 'placeholder-class' });
-    const { container } = render(
-      <PlateTest editor={editor} suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
-    const firstNode = editor.children[0] as any;
-    const secondNode = editor.children[1] as any;
+    const { container } = renderPlaceholderEditor(editor);
+    const firstNode = getEditorElement(editor, 0);
+    const secondNode = getEditorElement(editor, 1);
+
+    await focusEditor(editor);
 
     await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toEqual({
-        node: firstNode,
-        placeholder: 'Type something...',
-      });
+      expect(getPlaceholder(editor, firstNode)).toBe('Type something...');
     });
 
-    expect(
-      editor.getOption(BlockPlaceholderPlugin, 'placeholder', firstNode)
-    ).toBe('Type something...');
-    expect(
-      editor.getOption(BlockPlaceholderPlugin, 'placeholder', secondNode)
-    ).toBeUndefined();
+    expect(getPlaceholder(editor, secondNode)).toBeUndefined();
 
-    const element = container.querySelector(
-      '[placeholder="Type something..."]'
-    );
-
-    expect(element).toHaveClass('placeholder-class');
+    await waitFor(() => {
+      expect(
+        container.querySelector('[placeholder="Type something..."]')
+      ).toHaveClass('placeholder-class');
+    });
   });
 
   it('clears the target when the editor is globally empty', async () => {
     const editor = createEditor({
       value: [{ children: [{ text: '' }], type: 'p' }],
     });
-    const { container } = render(
-      <PlateTest editor={editor} suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
+    const { container } = renderPlaceholderEditor(editor);
 
-    await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toBeNull();
-    });
+    expect(getPlaceholder(editor, getEditorElement(editor, 0))).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
@@ -99,15 +137,9 @@ describe('BlockPlaceholderPlugin', () => {
       nodeId: true,
       value: [{ children: [{ text: '' }], id: 'block-1', type: 'p' }],
     });
-    const { container } = render(
-      <PlateTest editor={editor} suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
+    const { container } = renderPlaceholderEditor(editor);
 
-    await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toBeNull();
-    });
+    expect(getPlaceholder(editor, getEditorElement(editor, 0))).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
@@ -123,27 +155,24 @@ describe('BlockPlaceholderPlugin', () => {
         },
       ],
     });
-    const { container } = render(
-      <PlateTest editor={editor} suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
-    const firstNode = editor.children[0] as any;
+    const { container } = renderPlaceholderEditor(editor);
+    const firstNode = getEditorElement(editor, 0);
+
+    await focusEditor(editor);
 
     await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toEqual({
-        node: firstNode,
-        placeholder: 'Type something...',
-      });
+      expect(getPlaceholder(editor, firstNode)).toBe('Type something...');
     });
 
-    expect(
-      container.querySelector('[placeholder="Type something..."]')
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        container.querySelector('[placeholder="Type something..."]')
+      ).toBeInTheDocument();
+    });
   });
 
   it('honors custom node metadata rules for pristine empty blocks', async () => {
-    const CustomMetadataPlugin = createSlatePlugin({
+    const CustomMetadataPlugin = createBasePlugin({
       key: 'customMetadata',
     }).extend({
       node: {
@@ -165,15 +194,9 @@ describe('BlockPlaceholderPlugin', () => {
         },
       ],
     });
-    const { container } = render(
-      <PlateTest editor={editor} suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
+    const { container } = renderPlaceholderEditor(editor);
 
-    await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toBeNull();
-    });
+    expect(getPlaceholder(editor, getEditorElement(editor, 0))).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
@@ -182,15 +205,9 @@ describe('BlockPlaceholderPlugin', () => {
     const editor = createEditor({
       placeholders: { h1: 'Heading...' },
     });
-    const { container } = render(
-      <PlateTest editor={editor} suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
+    const { container } = renderPlaceholderEditor(editor);
 
-    await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toBeNull();
-    });
+    expect(getPlaceholder(editor, getEditorElement(editor, 0))).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
@@ -199,15 +216,9 @@ describe('BlockPlaceholderPlugin', () => {
     const editor = createEditor({
       query: () => false,
     });
-    const { container } = render(
-      <PlateTest editor={editor} suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
+    const { container } = renderPlaceholderEditor(editor);
 
-    await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toBeNull();
-    });
+    expect(getPlaceholder(editor, getEditorElement(editor, 0))).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
@@ -219,30 +230,25 @@ describe('BlockPlaceholderPlugin', () => {
         focus: { offset: 3, path: [1, 0] },
       },
     });
-    const { container } = render(
-      <PlateTest editor={editor} suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
+    const { container } = renderPlaceholderEditor(editor);
 
-    await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toBeNull();
-    });
+    expect(getPlaceholder(editor, getEditorElement(editor, 0))).toBeUndefined();
+
+    expect(container.querySelector('[placeholder]')).toBeNull();
+  });
+
+  it('clears the target when the editor is not focused', async () => {
+    const editor = createEditor();
+    const { container } = renderPlaceholderEditor(editor, { autoFocus: false });
+
+    expect(getPlaceholder(editor, getEditorElement(editor, 0))).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
 
   it('clears the target in read-only mode', async () => {
     const editor = createEditor();
-    const { container } = render(
-      <PlateTest editor={editor} readOnly suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
-
-    await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toBeNull();
-    });
+    const { container } = renderPlaceholderEditor(editor, { readOnly: true });
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });

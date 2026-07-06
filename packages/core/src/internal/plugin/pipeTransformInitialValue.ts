@@ -34,7 +34,10 @@ export const pipeTransformInitialValue = (editor: BaseEditor) => {
         );
       }
 
-      editor.update.value.replace({ children: nextValue, selection: null });
+      editor.update.value.replace(
+        { children: nextValue, selection: editor.read.selection() },
+        { history: 'skip', normalize: false }
+      );
     }
   });
 

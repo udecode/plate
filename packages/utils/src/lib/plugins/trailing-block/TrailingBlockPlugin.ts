@@ -1,12 +1,17 @@
 import {
-  createTSlatePlugin,
+  createBasePlugin,
   type PluginConfig,
-  type SlateEditor,
+  type BaseEditor,
 } from '@platejs/core';
-import type { Path, QueryNodeOptions } from '@platejs/slate';
+import {
+  ElementApi,
+  PathApi,
+  queryNode,
+  type Path,
+  type QueryNodeOptions,
+} from '@platejs/plite';
 
 import { KEYS } from '../../plate-keys';
-import { withTrailingBlock } from './withTrailingBlock';
 
 export type TrailingBlockInsertOptions = {
   at: Path;
@@ -23,7 +28,7 @@ export type TrailingBlockConfig = PluginConfig<
      * Useful when another plugin needs to wrap the insertion, such as
      * disabling suggestions during normalization-generated inserts.
      */
-    insert?: (editor: SlateEditor, options: TrailingBlockInsertOptions) => void;
+    insert?: (editor: BaseEditor, options: TrailingBlockInsertOptions) => void;
     /** Level where the trailing node should be, the first level being 0. */
     level?: number;
     /** Type of the trailing block */
@@ -31,16 +36,57 @@ export type TrailingBlockConfig = PluginConfig<
   } & QueryNodeOptions
 >;
 
-/** @see {@link withTrailingBlock} */
-export const TrailingBlockPlugin = createTSlatePlugin<TrailingBlockConfig>({
+export const TrailingBlockPlugin = createBasePlugin<TrailingBlockConfig>({
   key: KEYS.trailingBlock,
   options: {
     level: 0,
   },
 })
-  .overrideEditor(withTrailingBlock)
   .extend(({ editor }) => ({
     options: {
       type: editor.getType(KEYS.p),
+    },
+  }))
+  .extendExtension(({ editor, getOptions }) => ({
+    normalizers: {
+      editor({ next, tx }) {
+        const { insert, level, type, ...query } = getOptions();
+        const trailingType = type ?? editor.getType(KEYS.p);
+        const lastChild =
+          editor.read.children().length > 0
+            ? editor.read.nodes.last([], { level })
+            : undefined;
+        const lastChildNode = lastChild?.[0];
+        const lastChildType = ElementApi.isElement(lastChildNode)
+          ? lastChildNode.type
+          : undefined;
+
+        if (
+          !lastChildNode ||
+          (lastChildType !== trailingType && queryNode(lastChild, query))
+        ) {
+          const at = lastChild ? PathApi.next(lastChild[1]) : [0];
+          const insertTrailingBlock = () => {
+            tx.nodes.insert(
+              { children: [{ text: '' }], type: trailingType },
+              { at }
+            );
+          };
+
+          if (insert) {
+            insert(editor, {
+              at,
+              insert: insertTrailingBlock,
+              type: trailingType,
+            });
+          } else {
+            insertTrailingBlock();
+          }
+
+          return;
+        }
+
+        next();
+      },
     },
   }));

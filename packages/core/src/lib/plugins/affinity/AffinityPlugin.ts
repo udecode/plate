@@ -8,7 +8,6 @@ import {
 } from '@platejs/plite';
 
 import type { BaseEditor } from '../../editor';
-import type { PluginConfig } from '../../plugin';
 import type { EdgeNodes } from './types';
 
 import { getPluginByType } from '../../plugin';
@@ -24,9 +23,7 @@ export type ElementAffinity = {
   type: string;
 };
 
-export type AffinityConfig = PluginConfig<'affinity'>;
-
-export const AffinityPlugin = createBasePlugin<AffinityConfig>({
+export const AffinityPlugin = createBasePlugin({
   key: 'affinity',
 }).extendExtension(({ editor }) => ({
   transforms: {

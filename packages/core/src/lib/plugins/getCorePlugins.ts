@@ -12,19 +12,19 @@ import { type DomConfig, DOMPlugin } from './dom';
 import { type ElementStateConfig, ElementStatePlugin } from './element-state';
 import { type HtmlApi, HtmlPlugin } from './html';
 import { InputRulesPlugin } from './input-rules/internal/InputRulesPlugin';
-import { type AffinityConfig, AffinityPlugin } from './affinity';
+import { AffinityPlugin } from './affinity';
 import { type NodeIdConfig, NodeIdPlugin } from './node-id/NodeIdPlugin';
-import { type ParagraphConfig, BaseParagraphPlugin } from './paragraph';
+import { BaseParagraphPlugin } from './paragraph';
 
 export type CorePlugin = ReturnType<typeof getCorePlugins>[number];
 
 export type CorePluginConfig =
-  | AffinityConfig
+  | InferConfig<typeof AffinityPlugin>
   | DebugConfig
   | DomConfig
   | ElementStateConfig
   | NodeIdConfig
-  | ParagraphConfig
+  | InferConfig<typeof BaseParagraphPlugin>
   | PluginConfig<'ast'>
   | PluginConfig<
       'history',

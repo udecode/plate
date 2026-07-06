@@ -1,4 +1,4 @@
-import { createPlateEditor } from 'platejs/react';
+import { createPlateEditor } from '@platejs/core/react';
 
 import { SingleBlockPlugin } from './SingleBlockPlugin';
 import { SingleLinePlugin } from './SingleLinePlugin';
@@ -18,19 +18,15 @@ describe('single-block runtime plugins', () => {
       ],
     });
 
-    editor.update((tx) => {
-      tx.normalize({ force: true });
-    });
+    editor.update.normalize({ force: true });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: 'first\nsecond\nthird' }], type: 'p' },
     ]);
 
-    editor.update((tx) => {
-      tx.break.insert();
-    });
+    editor.update.break.insert();
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: 'firs\nt\nsecond\nthird' }], type: 'p' },
     ]);
   });
@@ -48,11 +44,9 @@ describe('single-block runtime plugins', () => {
       ],
     });
 
-    editor.update((tx) => {
-      tx.normalize({ force: true });
-    });
+    editor.update.normalize({ force: true });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: 'firstsecondthird' }], type: 'p' },
     ]);
 
@@ -61,7 +55,7 @@ describe('single-block runtime plugins', () => {
       tx.break.insertSoft();
     });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: 'firstsecondthird' }], type: 'p' },
     ]);
   });

@@ -899,7 +899,7 @@ describe('plite transaction contract', () => {
     });
   });
 
-  it('routes insertSoftBreak through command middleware and preserves structural commit metadata', () => {
+  it('routes insertSoftBreak through command middleware and preserves text commit metadata', () => {
     const editor = createEditor();
     const seenCommands: unknown[] = [];
 
@@ -928,29 +928,30 @@ describe('plite transaction contract', () => {
     const commit = editorGetLastCommit(editor);
 
     assert.deepEqual(seenCommands, [{ type: 'insert_soft_break' }]);
-    assert.deepEqual(editorGetSnapshot(editor).children, [
-      paragraph('o'),
-      paragraph('ne'),
-    ]);
+    assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('o\nne')]);
     assert(commit);
     assert.deepEqual(commit.command, {
       origin: 'command',
       type: 'insert_soft_break',
     });
-    assert.deepEqual(commit.classes, ['structural']);
-    assert.deepEqual(
-      commit.operations.map((operation) => operation.type),
-      ['split_node', 'split_node']
-    );
-    assert.equal(commit.structureChanged, true);
+    assert.deepEqual(commit.classes, ['text']);
+    assert.deepEqual(commit.operations, [
+      {
+        offset: 1,
+        path: [0, 0],
+        text: '\n',
+        type: 'insert_text',
+      },
+    ]);
+    assert.equal(commit.structureChanged, false);
     assert.equal(commit.selectionChanged, true);
     assert.deepEqual(commit.selectionBefore, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
     assert.deepEqual(commit.selectionAfter, {
-      anchor: { path: [1, 0], offset: 0 },
-      focus: { path: [1, 0], offset: 0 },
+      anchor: { path: [0, 0], offset: 2 },
+      focus: { path: [0, 0], offset: 2 },
     });
   });
 

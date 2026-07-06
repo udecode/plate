@@ -1,5 +1,5 @@
-import type { BasePlateEditor } from '@platejs/core';
-import { createPlateEditor } from 'platejs/react';
+import type { BaseEditor } from '@platejs/core';
+import { createPlateEditor } from '@platejs/core/react';
 
 import {
   TrailingBlockPlugin,
@@ -20,11 +20,9 @@ describe('TrailingBlockPlugin Plite runtime', () => {
       ],
     });
 
-    editor.update((tx) => {
-      tx.normalize({ force: true });
-    });
+    editor.update.normalize({ force: true });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: 'one' }], type: 'h1' },
       { children: [{ text: 'two' }], type: 'h1' },
       { children: [{ text: '' }], type: 'p' },
@@ -49,11 +47,9 @@ describe('TrailingBlockPlugin Plite runtime', () => {
       ],
     });
 
-    editor.update((tx) => {
-      tx.normalize({ force: true });
-    });
+    editor.update.normalize({ force: true });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         children: [
           { children: [{ text: 'one' }], type: 'h1' },
@@ -75,11 +71,9 @@ describe('TrailingBlockPlugin Plite runtime', () => {
       value: [{ children: [{ text: 'one' }], type: 'h1' }],
     });
 
-    editor.update((tx) => {
-      tx.normalize({ force: true });
-    });
+    editor.update.normalize({ force: true });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: 'one' }], type: 'h1' },
     ]);
   });
@@ -87,7 +81,7 @@ describe('TrailingBlockPlugin Plite runtime', () => {
   it('allows wrapping the provided trailing-block insert boundary', () => {
     const calls: Array<{ at: number[]; type: string }> = [];
     const insert = (
-      _editor: BasePlateEditor,
+      _editor: BaseEditor,
       { at, insert: runInsert, type }: TrailingBlockInsertOptions
     ) => {
       calls.push({ at, type });
@@ -102,12 +96,10 @@ describe('TrailingBlockPlugin Plite runtime', () => {
       value: [{ children: [{ text: 'one' }], type: 'h1' }],
     });
 
-    editor.update((tx) => {
-      tx.normalize({ force: true });
-    });
+    editor.update.normalize({ force: true });
 
     expect(calls).toEqual([{ at: [1], type: 'p' }]);
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: 'one' }], type: 'h1' },
       { children: [{ text: '' }], type: 'p' },
     ]);

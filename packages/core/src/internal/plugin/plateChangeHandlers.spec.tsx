@@ -41,6 +41,78 @@ describe('plate change handlers', () => {
     });
   });
 
+  it('dispatches inserted and removed node payloads', () => {
+    const onNodeChange = mock();
+    const NodeObserverPlugin = createBasePlugin({
+      handlers: { onNodeChange },
+      key: 'nodeObserver',
+    });
+    const editor = createBaseEditor({
+      plugins: [NodeObserverPlugin],
+      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+    });
+
+    onNodeChange.mockClear();
+
+    editor.update.nodes.insert(
+      { children: [{ text: 'inserted' }], type: 'p' },
+      { at: [1] }
+    );
+    editor.update.nodes.remove({ at: [1] });
+
+    expect(onNodeChange).toHaveBeenCalledTimes(2);
+    expect(onNodeChange.mock.calls[0]?.[0]).toMatchObject({
+      node: {
+        children: [{ text: 'inserted' }],
+        type: 'p',
+      },
+      operation: {
+        path: [1],
+        type: 'insert_node',
+      },
+      prevNode: {
+        children: [{ text: 'inserted' }],
+        type: 'p',
+      },
+    });
+    expect(onNodeChange.mock.calls[1]?.[0]).toMatchObject({
+      node: {
+        children: [{ text: 'inserted' }],
+        type: 'p',
+      },
+      operation: {
+        path: [1],
+        type: 'remove_node',
+      },
+      prevNode: {
+        children: [{ text: 'inserted' }],
+        type: 'p',
+      },
+    });
+  });
+
+  it('does not dispatch node handlers for text operations', () => {
+    const onNodeChange = mock();
+    const NodeObserverPlugin = createBasePlugin({
+      handlers: { onNodeChange },
+      key: 'nodeObserver',
+    });
+    const editor = createBaseEditor({
+      plugins: [NodeObserverPlugin],
+      selection: {
+        anchor: { offset: 5, path: [0, 0] },
+        focus: { offset: 5, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+    });
+
+    onNodeChange.mockClear();
+
+    editor.update.text.insert('!');
+
+    expect(onNodeChange).not.toHaveBeenCalled();
+  });
+
   it('dispatches text change handlers from Plite text change events', () => {
     const onTextChange = mock();
     const TextObserverPlugin = createBasePlugin({
