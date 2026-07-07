@@ -121,6 +121,16 @@ Rules:
   Use callback form only when grouping multiple reads/writes under one
   snapshot/transaction, sharing intermediate state, branching/looping, or
   calling behavior that has no direct one-shot API yet.
+- Transform-backed callbacks must receive and use the active transaction. If a
+  Plate/Core callback runs inside Plite transform middleware or another active
+  transaction lane, its context should expose `tx` and mutations should go
+  through that `tx`. Do not call `editor.update.*` from such callbacks; fix the
+  owning context type and thread `tx` through instead.
+- Consecutive `editor.update.*` calls in one synchronous code path are a
+  transaction smell. If multiple mutations are one logical action, use the
+  existing `tx` from context. If no `tx` exists, prefer a single
+  `editor.update((tx) => { ... })` group as the fallback and classify the
+  missing context as a Plite/Plate gap when the code is transform-backed.
 - Never subscribe a component to editor values only to feed a later callback.
   Hooks like `useNodePath`, `useEditorSelector`, `useEditorValue`,
   `useElementSelector`, `useEditorReadOnly`, or Plite view selectors are for
@@ -339,6 +349,12 @@ Default suspicion list:
   tx.*(); })` wrappers when the direct one-shot method exists. These cap the
   file below `100` until replaced or justified as grouped transaction/snapshot
   logic.
+- transform/input-rule/command callbacks that mutate through `editor.update.*`
+  while an active `tx` should be available. Fix the context owner and pass `tx`;
+  do not scatter local `editor.update` calls inside the callback.
+- multiple consecutive `editor.update.*` calls that implement one user action.
+  They must be one transaction group at minimum, and `tx` from context is the
+  preferred shape when the caller is already inside a transform lane.
 - local JSX/editor fixture aliases in tests, especially `{ children; selection
   }` shapes that should come from `@platejs/test-utils`.
 - duplicate Plate helpers around Plite APIs.
@@ -455,6 +471,19 @@ Rules:
 - If the package becomes part of the Core/Plite boundary proof, update
   `tooling/scripts/check-core.mjs` in the same packet before closeout. Core
   adjacent package review is not done with package-local proof alone.
+- Package metadata diffs are reviewed from real imports, not from old
+  monolith shape. Package source/runtime code must import the direct owner
+  package it uses (`@platejs/core`, `@platejs/plite`, `@platejs/utils`,
+  `@udecode/*`, etc.), not the user-facing `platejs` umbrella. `platejs` is
+  for app/user convenience and aggregate exports, not internal package
+  dependency plumbing. For every `package.json` diff, audit
+  `packages/<name>/src` and runtime entrypoints, then classify each dependency
+  delta as `direct-runtime`, `external-peer`, `test-tooling-convention`, or
+  `cut`. Keep React as a peer when the package exposes React surfaces. Cut
+  dependencies with no source/runtime import. Do not add package-local test
+  harness dependencies like `@platejs/test-utils` only because specs import
+  them unless repo-wide tooling convention or package-local tooling requires
+  it.
 - If a reviewed package should not be in `check:core`, record the reason in the
   plan. Examples: product-only UI package, registry-only package, or package
   whose failures do not protect Core/Plite substrate.

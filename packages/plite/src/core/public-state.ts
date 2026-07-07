@@ -2527,6 +2527,10 @@ const getUpdateView = <
         runMutation(options, () => transforms.moveNodes(options)),
       remove: (options) =>
         runMutation(options, () => transforms.removeNodes(options)),
+      replaceChildren: (children, options) =>
+        runMutation({ at: options.at }, () =>
+          transforms.replaceChildren(children, options)
+        ),
       set: (props, options) =>
         runMutation(options, () => transforms.setNodes(props, options)),
       split: (options) =>

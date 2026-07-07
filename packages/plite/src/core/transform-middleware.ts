@@ -29,6 +29,7 @@ export const EDITOR_TRANSFORM_MIDDLEWARE_KEYS = [
   'moveNodes',
   'removeMark',
   'removeNodes',
+  'replaceChildren',
   'select',
   'setNodes',
   'setPoint',

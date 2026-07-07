@@ -65,6 +65,7 @@ import type {
 import type {
   NodeInsertNodesOptions,
   NodeMutationMethods,
+  NodeReplaceChildrenOptions,
 } from './transforms/node';
 import type {
   SelectionCollapseOptions,
@@ -416,6 +417,10 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       hanging?: boolean;
       voids?: boolean;
     }) => void;
+    replaceChildren: <T extends ElementOrTextIn<V>>(
+      children: T[],
+      options: NodeReplaceChildrenOptions
+    ) => void;
     set: <T extends NodeIn<V>>(
       props: Partial<NodeProps<T>>,
       options?: {
@@ -771,6 +776,7 @@ export type EditorCoreUpdateMethods<V extends Value = Value> = {
       | 'merge'
       | 'move'
       | 'remove'
+      | 'replaceChildren'
       | 'set'
       | 'split'
       | 'toggle'
@@ -947,6 +953,10 @@ export interface EditorTransformApi<V extends Value = Value> {
     hanging?: boolean;
     voids?: boolean;
   }) => void;
+  replaceChildren: <T extends ElementOrTextIn<V>>(
+    children: T[],
+    options: NodeReplaceChildrenOptions
+  ) => void;
   select: (target: Location) => void;
   setNodes: <T extends Node>(
     props: Partial<NodeProps<T>>,
@@ -1079,6 +1089,10 @@ export type EditorTransformMiddlewareArgs<V extends Value = Value> = {
       hanging?: boolean;
       voids?: boolean;
     };
+  };
+  replaceChildren: {
+    children: ElementOrTextIn<V>[];
+    options: NodeReplaceChildrenOptions;
   };
   select: { target: Location };
   setNodes: {
@@ -2863,6 +2877,7 @@ export interface EditorStaticApi {
   removeMark: (editor: Editor, key: string) => void;
 
   removeNodes: NodeMutationMethods['removeNodes'];
+  replaceChildren: NodeMutationMethods['replaceChildren'];
 
   select: SelectionMutationMethods['select'];
 
@@ -3513,6 +3528,15 @@ const editorInternalApi: EditorInternalApiTable = {
     );
   },
 
+  replaceChildren(editor, children, options) {
+    runInternalEditorWrite(
+      editor,
+      () =>
+        getEditorTransformRegistry(editor).replaceChildren(children, options),
+      getWriteRoot(editor, options.at)
+    );
+  },
+
   select(editor, target) {
     runInternalEditorWrite(
       editor,
@@ -3713,6 +3737,7 @@ const {
   reset,
   removeMark,
   removeNodes,
+  replaceChildren,
   select,
   setPoint,
   setNodes,
@@ -3817,6 +3842,7 @@ export {
   registerNormalizer,
   removeMark,
   removeNodes,
+  replaceChildren,
   replace,
   reset,
   select,

@@ -634,6 +634,10 @@ const withViewTransaction = <V extends Value>(
         runImplicitSelectionMutation(options, () =>
           transaction.nodes.remove(options)
         ),
+      replaceChildren: (children, options) =>
+        runImplicitSelectionMutation({ at: options.at }, () =>
+          transaction.nodes.replaceChildren(children, options)
+        ),
       set: (props, options) =>
         runImplicitSelectionMutation(options, () =>
           transaction.nodes.set(props, options)

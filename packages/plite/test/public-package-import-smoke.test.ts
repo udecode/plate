@@ -485,6 +485,7 @@ const internalBridgeRuntimeExportExpectations = {
     'registerNormalizer',
     'removeMark',
     'removeNodes',
+    'replaceChildren',
     'replace',
     'reset',
     'select',

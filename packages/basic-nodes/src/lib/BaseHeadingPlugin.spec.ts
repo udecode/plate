@@ -1,4 +1,5 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import {
   BaseH1Plugin,
@@ -11,21 +12,17 @@ import {
 } from './BaseHeadingPlugin';
 
 describe('BaseHeadingPlugin', () => {
-  afterEach(() => {
-    mock.restore();
-  });
-
   describe('when using default options', () => {
     it('creates plugins for all 6 heading levels', () => {
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [BaseHeadingPlugin],
-      } as any);
+      });
 
       const headingPlugin = editor.getPlugin(BaseHeadingPlugin);
       expect(headingPlugin.plugins).toHaveLength(6);
 
       KEYS.heading.forEach((level, index) => {
-        const plugin = headingPlugin.plugins[index];
+        const plugin = headingPlugin.plugins[index]!;
         expect(plugin.key).toBe(level);
         expect(plugin.node.isElement).toBe(true);
         expect(plugin.parsers.html.deserializer?.rules).toEqual([
@@ -37,20 +34,20 @@ describe('BaseHeadingPlugin', () => {
 
   describe('when configuring custom levels', () => {
     it('creates plugins only for specified levels', () => {
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [
           BaseHeadingPlugin.configure({
             options: { levels: [1, 3, 5] },
           }),
         ],
-      } as any);
+      });
 
       const headingPlugin = editor.getPlugin(BaseHeadingPlugin);
       expect(headingPlugin.plugins).toHaveLength(3);
 
       const expectedLevels = ['h1', 'h3', 'h5'];
       expectedLevels.forEach((level, index) => {
-        const plugin = headingPlugin.plugins[index];
+        const plugin = headingPlugin.plugins[index]!;
         expect(plugin.key).toBe(level);
       });
     });
@@ -58,13 +55,13 @@ describe('BaseHeadingPlugin', () => {
 
   describe('when using a single level', () => {
     it('creates plugins up to the configured level', () => {
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [
           BaseHeadingPlugin.configure({
             options: { levels: 2 },
           }),
         ],
-      } as any);
+      });
 
       const headingPlugin = editor.getPlugin(BaseHeadingPlugin);
       expect(headingPlugin.plugins).toHaveLength(2);
@@ -73,13 +70,13 @@ describe('BaseHeadingPlugin', () => {
 
   describe('nested plugins', () => {
     it('preserves heading element metadata on nested plugins', () => {
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [BaseHeadingPlugin],
-      } as any);
+      });
 
       const headingPlugin = editor.getPlugin(BaseHeadingPlugin);
 
-      headingPlugin.plugins.forEach((plugin: any, index: number) => {
+      headingPlugin.plugins.forEach((plugin, index) => {
         expect(plugin.node.isElement).toBe(true);
         expect(plugin.handlers?.onKeyDown).not.toBeDefined();
         expect(plugin.parsers.html.deserializer?.rules).toEqual([
@@ -89,21 +86,68 @@ describe('BaseHeadingPlugin', () => {
     });
   });
 
-  it.each([
-    ['h1', BaseH1Plugin],
-    ['h2', BaseH2Plugin],
-    ['h3', BaseH3Plugin],
-    ['h4', BaseH4Plugin],
-    ['h5', BaseH5Plugin],
-    ['h6', BaseH6Plugin],
-  ])('binds the %s toggle transform to toggleBlock', (key, plugin) => {
-    const editor = createSlateEditor({
-      plugins: [plugin as any],
-    } as any);
-    const toggleBlockSpy = spyOn(editor.tf, 'toggleBlock');
+  it('binds heading tx groups to block toggles', () => {
+    const h1 = createBaseEditor({
+      plugins: [BaseH1Plugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
+    const h2 = createBaseEditor({
+      plugins: [BaseH2Plugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
+    const h3 = createBaseEditor({
+      plugins: [BaseH3Plugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
+    const h4 = createBaseEditor({
+      plugins: [BaseH4Plugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
+    const h5 = createBaseEditor({
+      plugins: [BaseH5Plugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
+    const h6 = createBaseEditor({
+      plugins: [BaseH6Plugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
 
-    (editor.getTransforms(plugin as any) as any)[key].toggle();
+    h1.update.h1.toggle();
+    h2.update.h2.toggle();
+    h3.update.h3.toggle();
+    h4.update.h4.toggle();
+    h5.update.h5.toggle();
+    h6.update.h6.toggle();
 
-    expect(toggleBlockSpy).toHaveBeenCalledWith(editor.getType(key as any));
+    expect(h1.read.children()[0]).toMatchObject({ type: KEYS.h1 });
+    expect(h2.read.children()[0]).toMatchObject({ type: KEYS.h2 });
+    expect(h3.read.children()[0]).toMatchObject({ type: KEYS.h3 });
+    expect(h4.read.children()[0]).toMatchObject({ type: KEYS.h4 });
+    expect(h5.read.children()[0]).toMatchObject({ type: KEYS.h5 });
+    expect(h6.read.children()[0]).toMatchObject({ type: KEYS.h6 });
   });
 });

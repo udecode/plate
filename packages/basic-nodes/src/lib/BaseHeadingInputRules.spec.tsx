@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
+import { createBaseEditor } from '@platejs/core';
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
 
 import { BaseH1Plugin, BaseH2Plugin, BaseH3Plugin } from './BaseHeadingPlugin';
 import { HeadingRules } from './BasicBlockRules';
@@ -10,7 +10,7 @@ jsxt;
 
 describe('heading input rules', () => {
   it('registers only the configured heading shorthand rules', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseH1Plugin.configure({
           inputRules: [HeadingRules.markdown()],
@@ -19,68 +19,69 @@ describe('heading input rules', () => {
           inputRules: [HeadingRules.markdown()],
         }),
       ],
-    } as any);
+    });
 
     expect(
-      editor.meta.inputRules.plugins.h1.rules.map((rule) => rule.id)
+      editor.runtime.inputRules.plugins.h1.rules.map((rule) => rule.id)
     ).toEqual(['h1.0']);
     expect(
-      editor.meta.inputRules.plugins.h3.rules.map((rule) => rule.id)
+      editor.runtime.inputRules.plugins.h3.rules.map((rule) => rule.id)
     ).toEqual(['h3.0']);
     expect(
-      editor.meta.inputRules.insertText.byTrigger[' '].map((rule) => rule.id)
+      editor.runtime.inputRules.insertText.byTrigger[' '].map((rule) => rule.id)
     ).toEqual(['h1.0', 'h3.0']);
   });
 
   it.each([
     {
       input: (
-        <fragment>
+        <editor>
           <hp>
             #
             <cursor />
             hello
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       output: (
-        <fragment>
+        <editor>
           <hh1>hello</hh1>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       title: 'promotes # into h1 on space',
       plugin: BaseH1Plugin,
     },
     {
       input: (
-        <fragment>
+        <editor>
           <hp>
             ##
             <cursor />
             hello
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       output: (
-        <fragment>
+        <editor>
           <hh2>hello</hh2>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       title: 'promotes ## into h2 on space',
       plugin: BaseH2Plugin,
     },
   ])('$title', ({ input, output, plugin }) => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         plugin.configure({
           inputRules: [HeadingRules.markdown()],
         }),
       ],
-      value: input,
-    } as any);
+      selection: input.selection,
+      value: input.children,
+    });
 
-    editor.tf.insertText(' ');
+    editor.update.text.insert(' ');
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 });

@@ -1,7 +1,8 @@
-import { createSlatePlugin, KEYS, someHtmlElement } from 'platejs';
+import { createBasePlugin, someHtmlElement } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 /** Enables support for underline formatting. */
-export const BaseUnderlinePlugin = createSlatePlugin({
+export const BaseUnderlinePlugin = createBasePlugin({
   key: KEYS.underline,
   node: { isLeaf: true },
   parsers: {
@@ -20,8 +21,8 @@ export const BaseUnderlinePlugin = createSlatePlugin({
     },
   },
   render: { as: 'u' },
-}).extendTransforms(({ editor, type }) => ({
+}).extendTx(({ type }) => (tx) => ({
   toggle: () => {
-    editor.tf.toggleMark(type);
+    tx.marks.toggle(type);
   },
 }));

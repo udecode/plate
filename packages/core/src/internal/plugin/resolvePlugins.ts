@@ -61,7 +61,7 @@ const getPluginShortcutTxCommand = (
   transaction: EditorUpdateTransaction,
   pluginKey: string,
   shortcutKey: string
-): (() => void) | undefined => {
+): (() => unknown) | undefined => {
   const pluginTx = (transaction as unknown as Record<string, unknown>)[
     pluginKey
   ];
@@ -70,7 +70,7 @@ const getPluginShortcutTxCommand = (
 
   const command = (pluginTx as Record<string, unknown>)[shortcutKey];
 
-  return typeof command === 'function' ? (command as () => void) : undefined;
+  return typeof command === 'function' ? (command as () => unknown) : undefined;
 };
 
 const hasOwnPluginTxGroup = (plugin: BasePlugin) => {
@@ -372,8 +372,7 @@ const resolvePluginShortcuts = (editor: BaseEditor) => {
 
                 if (!command) return;
 
-                command();
-                handled = true;
+                handled = command() !== false;
               });
 
               if (handled) return;

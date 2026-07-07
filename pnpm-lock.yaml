@@ -908,9 +908,21 @@ importers:
 
   packages/basic-nodes:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
+      '@udecode/react-hotkeys':
+        specifier: workspace:*
+        version: link:../udecode/react-hotkeys
+      '@udecode/utils':
+        specifier: workspace:^
+        version: link:../udecode/utils
       react:
         specifier: '>=18.0.0'
         version: 19.2.4
@@ -924,9 +936,6 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/basic-styles:
     dependencies:

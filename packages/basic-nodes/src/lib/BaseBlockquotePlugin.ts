@@ -1,16 +1,15 @@
+import { type BaseEditor, createBasePlugin } from '@platejs/core';
 import {
   type Descendant,
+  type Element,
   type Path,
-  type SlateEditor,
-  type TElement,
-  createSlatePlugin,
   ElementApi,
   PathApi,
-  KEYS,
-} from 'platejs';
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 const normalizeBlockquoteChildren = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   children: Descendant[] = []
 ) => {
   const paragraphType = editor.getType(KEYS.p);
@@ -30,8 +29,8 @@ const normalizeBlockquoteChildren = (
   children.forEach((child) => {
     const isBlock =
       ElementApi.isElement(child) &&
-      !editor.api.isInline(child) &&
-      editor.api.isBlock(child);
+      !editor.read.schema.isInline(child) &&
+      editor.read.schema.isBlock(child);
 
     if (isBlock) {
       flushInlineNodes();
@@ -57,8 +56,8 @@ const normalizeBlockquoteChildren = (
 };
 
 const isLiftableBlockquoteChild = (
-  editor: SlateEditor,
-  node: TElement,
+  editor: BaseEditor,
+  node: Element,
   path: Path,
   blockquoteType: string
 ) => {
@@ -66,16 +65,18 @@ const isLiftableBlockquoteChild = (
 
   if (node.type !== paragraphType || node[KEYS.listType]) return false;
 
-  return !!editor.api.above({
+  return !!editor.read.nodes.above({
     at: path,
-    match: (entryNode: TElement, entryPath: Path) =>
-      entryPath.length < path.length && entryNode.type === blockquoteType,
+    match: (entryNode, entryPath) =>
+      ElementApi.isElement(entryNode) &&
+      entryPath.length < path.length &&
+      entryNode.type === blockquoteType,
   });
 };
 
 const shouldLiftOnDeleteStart = (
-  editor: SlateEditor,
-  node: TElement,
+  editor: BaseEditor,
+  node: Element,
   path: Path,
   blockquoteType: string
 ) => {
@@ -84,19 +85,25 @@ const shouldLiftOnDeleteStart = (
   }
 
   const isEmptyBlock =
-    !!editor.selection && editor.api.isEmpty(editor.selection, { block: true });
+    !!editor.read.selection() && editor.read.nodes.isEmpty(node);
 
   if (!isEmptyBlock) return true;
 
-  const parent = editor.api.parent(path);
+  const parent = editor.read.nodes.parent(path);
 
-  if (!parent || parent[0].type !== blockquoteType) return true;
+  if (
+    !parent ||
+    !ElementApi.isElement(parent[0]) ||
+    parent[0].type !== blockquoteType
+  ) {
+    return true;
+  }
 
   return !PathApi.hasPrevious(path);
 };
 
 /** Enables support for block quotes, useful for quotations and passages. */
-export const BaseBlockquotePlugin = createSlatePlugin({
+export const BaseBlockquotePlugin = createBasePlugin({
   key: KEYS.blockquote,
   node: {
     isElement: true,
@@ -123,6 +130,7 @@ export const BaseBlockquotePlugin = createSlatePlugin({
     match: ({ editor, node, path, rule }) => {
       if (!['break.empty', 'delete.start'].includes(rule)) return false;
       if (!path) return false;
+      if (!ElementApi.isElement(node)) return false;
 
       const blockquoteType = editor.getType(KEYS.blockquote);
 
@@ -133,65 +141,69 @@ export const BaseBlockquotePlugin = createSlatePlugin({
       return isLiftableBlockquoteChild(editor, node, path, blockquoteType);
     },
   },
+  shortcuts: {
+    untab: { keys: 'shift+tab' },
+  },
 })
-  .extendTransforms(({ editor, type }) => ({
+  .extendTx(({ editor, type }) => (tx) => ({
     toggle: () => {
-      editor.tf.toggleBlock(type, { wrap: true });
+      tx.blocks.toggle(type, { wrap: true });
+    },
+    untab: () => {
+      const blocks = tx.nodes
+        .toArray<Element>({
+          at: tx.selection() ?? undefined,
+          match: (node, path) =>
+            ElementApi.isElement(node) &&
+            !(node as { indent?: unknown }).indent &&
+            isLiftableBlockquoteChild(editor, node, path, type),
+          mode: 'lowest',
+        })
+        .sort(
+          (a, b) =>
+            b[1].length - a[1].length ||
+            b[1].join('.').localeCompare(a[1].join('.'))
+        );
+
+      if (blocks.length === 0) return false;
+
+      tx.withoutNormalizing(() => {
+        for (const [, path] of blocks) {
+          tx.blocks.lift({
+            at: path,
+          });
+        }
+      });
+
+      return true;
     },
   }))
-  .overrideEditor(({ editor, tf: { normalizeNode, tab }, type }) => ({
-    transforms: {
-      normalizeNode([node, path]) {
-        if (ElementApi.isElement(node) && node.type === type) {
-          const nextChildren = normalizeBlockquoteChildren(
-            editor,
-            node.children as Descendant[]
-          );
-          const shouldNormalizeChildren =
-            nextChildren.length !== node.children.length ||
-            nextChildren.some((child, index) => child !== node.children[index]);
+  .extendExtension(({ editor, type }) => ({
+    normalizers: {
+      node({ entry, next, tx }) {
+        const [node, path] = entry;
 
-          if (shouldNormalizeChildren) {
-            editor.tf.replaceNodes(nextChildren as Descendant[], {
-              at: path,
-              children: true,
-            });
-            return;
-          }
+        if (!ElementApi.isElement(node) || node.type !== type) {
+          next();
+          return;
         }
 
-        normalizeNode([node, path]);
-      },
-      tab(options) {
-        if (options.reverse) {
-          const liftableBlocks = editor.api.blocks({
-            mode: 'lowest',
-            match: (node: TElement, path: Path) =>
-              !(node as { indent?: unknown }).indent &&
-              isLiftableBlockquoteChild(editor, node, path, type),
-          });
+        const nextChildren = normalizeBlockquoteChildren(
+          editor,
+          node.children as Descendant[]
+        );
+        const shouldNormalizeChildren =
+          nextChildren.length !== node.children.length ||
+          nextChildren.some((child, index) => child !== node.children[index]);
 
-          if (liftableBlocks.length > 0) {
-            const blocks = [...liftableBlocks].sort(
-              (a, b) =>
-                b[1].length - a[1].length ||
-                b[1].join('.').localeCompare(a[1].join('.'))
-            );
-
-            editor.tf.withoutNormalizing(() => {
-              for (const [, path] of blocks) {
-                editor.tf.liftBlock({
-                  at: path,
-                  match: { type },
-                });
-              }
-            });
-
-            return true;
-          }
+        if (!shouldNormalizeChildren) {
+          next();
+          return;
         }
 
-        return tab(options);
+        tx.nodes.replaceChildren(nextChildren, {
+          at: path,
+        });
       },
     },
   }));

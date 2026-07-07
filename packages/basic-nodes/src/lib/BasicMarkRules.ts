@@ -1,4 +1,5 @@
-import { createRuleFactory, KEYS } from 'platejs';
+import { createRuleFactory } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 type MarkComboVariant =
   | 'boldItalic'
@@ -14,13 +15,13 @@ const MARK_COMBO_CONFIG = {
     trigger: '*',
   },
   boldItalicUnderline: {
-    end: '***',
+    end: '**',
     marks: [KEYS.underline, KEYS.bold, KEYS.italic],
     start: '___',
     trigger: '*',
   },
   boldUnderline: {
-    end: '**',
+    end: '*',
     marks: [KEYS.underline, KEYS.bold],
     start: '__',
     trigger: '*',

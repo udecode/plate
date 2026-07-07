@@ -1,7 +1,8 @@
-import { createSlatePlugin, KEYS } from 'platejs';
+import { createBasePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 /** Enables support for subscript formatting. */
-export const BaseSubscriptPlugin = createSlatePlugin({
+export const BaseSubscriptPlugin = createBasePlugin({
   key: KEYS.sub,
   node: { isLeaf: true },
   parsers: {
@@ -16,10 +17,10 @@ export const BaseSubscriptPlugin = createSlatePlugin({
   },
   render: { as: 'sub' },
   rules: { selection: { affinity: 'directional' } },
-}).extendTransforms(({ editor, type }) => ({
+}).extendTx(({ editor, type }) => (tx) => ({
   toggle: () => {
-    editor.tf.toggleMark(type, {
-      remove: editor.getType(KEYS.sup),
+    tx.marks.toggle(type, true, {
+      clear: editor.getType(KEYS.sup),
     });
   },
 }));

@@ -49,6 +49,7 @@ const acceptedTransformMiddlewareKeys = [
   'mergeNodes',
   'move',
   'moveNodes',
+  'replaceChildren',
   'removeMark',
   'removeNodes',
   'select',

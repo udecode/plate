@@ -7,6 +7,7 @@ import type {
   NodeIn,
   NodeProps,
   Path,
+  Range,
   Value,
 } from '../../index';
 import type { MaximizeMode, RangeMode } from '../../types/types';
@@ -20,6 +21,13 @@ export interface NodeInsertNodesOptions<T extends Node> {
   select?: boolean;
   voids?: boolean;
   batchDirty?: boolean;
+}
+
+export interface NodeReplaceChildrenOptions {
+  at: Path;
+  count?: number;
+  index?: number;
+  newSelection?: Range | null;
 }
 
 export interface NodeMutationMethods<V extends Value = Value> {
@@ -88,6 +96,16 @@ export interface NodeMutationMethods<V extends Value = Value> {
       hanging?: boolean;
       voids?: boolean;
     }
+  ) => void;
+
+  /**
+   * Replace a range of children under an ancestor node as one logical
+   * `replace_children` operation.
+   */
+  replaceChildren: <T extends ElementOrTextIn<V>>(
+    editor: Editor<V>,
+    children: T[],
+    options: NodeReplaceChildrenOptions
   ) => void;
 
   /**

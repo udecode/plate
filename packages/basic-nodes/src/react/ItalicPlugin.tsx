@@ -1,4 +1,5 @@
-import { Key, toPlatePlugin } from 'platejs/react';
+import { toPlatePlugin } from '@platejs/core/react';
+import { Key } from '@udecode/react-hotkeys';
 
 import { BaseItalicPlugin } from '../lib/BaseItalicPlugin';
 

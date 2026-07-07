@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
+import { createBaseEditor } from '@platejs/core';
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
 
 import {
   BaseBoldPlugin,
@@ -28,46 +28,47 @@ jsxt;
 describe('basic mark input rules', () => {
   it('stays literal until markdown groups are explicitly enabled', () => {
     const input = (
-      <fragment>
+      <editor>
         <hp>
           **hello*
           <cursor />
         </hp>
-      </fragment>
-    ) as any;
+      </editor>
+    );
     const output = (
-      <fragment>
+      <editor>
         <hp>**hello**</hp>
-      </fragment>
-    ) as any;
+      </editor>
+    );
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseBoldPlugin],
-      value: input,
-    } as any);
+      selection: input.selection,
+      value: input.children,
+    });
 
-    editor.tf.insertText('*');
+    editor.update.text.insert('*');
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it.each([
     {
       input: (
-        <fragment>
+        <editor>
           <hp>
             __hello_
             <cursor />
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       output: (
-        <fragment>
+        <editor>
           <hp>
             <htext underline>hello</htext>
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       plugin: BaseUnderlinePlugin.configure({
         inputRules: [UnderlineRules.markdown()],
       }),
@@ -76,20 +77,20 @@ describe('basic mark input rules', () => {
     },
     {
       input: (
-        <fragment>
+        <editor>
           <hp>
             ==hello=
             <cursor />
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       output: (
-        <fragment>
+        <editor>
           <hp>
             <htext highlight>hello</htext>
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       plugin: BaseHighlightPlugin.configure({
         inputRules: [HighlightRules.markdown({ variant: '==' })],
       }),
@@ -98,20 +99,20 @@ describe('basic mark input rules', () => {
     },
     {
       input: (
-        <fragment>
+        <editor>
           <hp>
             ~hello
             <cursor />
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       output: (
-        <fragment>
+        <editor>
           <hp>
-            <htext sub>hello</htext>
+            <htext subscript>hello</htext>
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       plugin: BaseSubscriptPlugin.configure({
         inputRules: [SubscriptRules.markdown()],
       }),
@@ -120,20 +121,20 @@ describe('basic mark input rules', () => {
     },
     {
       input: (
-        <fragment>
+        <editor>
           <hp>
             ^hello
             <cursor />
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       output: (
-        <fragment>
+        <editor>
           <hp>
-            <htext sup>hello</htext>
+            <htext superscript>hello</htext>
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       plugin: BaseSuperscriptPlugin.configure({
         inputRules: [SuperscriptRules.markdown()],
       }),
@@ -142,20 +143,20 @@ describe('basic mark input rules', () => {
     },
     {
       input: (
-        <fragment>
+        <editor>
           <hp>
             **hello*
             <cursor />
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       output: (
-        <fragment>
+        <editor>
           <hp>
             <htext bold>hello</htext>
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       plugin: BaseBoldPlugin.configure({
         inputRules: [BoldRules.markdown({ variant: '*' })],
       }),
@@ -164,20 +165,20 @@ describe('basic mark input rules', () => {
     },
     {
       input: (
-        <fragment>
+        <editor>
           <hp>
             *hello
             <cursor />
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       output: (
-        <fragment>
+        <editor>
           <hp>
             <htext italic>hello</htext>
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       plugin: BaseItalicPlugin.configure({
         inputRules: [ItalicRules.markdown({ variant: '*' })],
       }),
@@ -186,20 +187,20 @@ describe('basic mark input rules', () => {
     },
     {
       input: (
-        <fragment>
+        <editor>
           <hp>
             `hello
             <cursor />
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       output: (
-        <fragment>
+        <editor>
           <hp>
             <htext code>hello</htext>
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       plugin: BaseCodePlugin.configure({
         inputRules: [CodeRules.markdown()],
       }),
@@ -208,20 +209,20 @@ describe('basic mark input rules', () => {
     },
     {
       input: (
-        <fragment>
+        <editor>
           <hp>
             ~~hello~
             <cursor />
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       output: (
-        <fragment>
+        <editor>
           <hp>
             <htext strikethrough>hello</htext>
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       plugin: BaseStrikethroughPlugin.configure({
         inputRules: [StrikethroughRules.markdown()],
       }),
@@ -230,22 +231,22 @@ describe('basic mark input rules', () => {
     },
     {
       input: (
-        <fragment>
+        <editor>
           <hp>
             **hello*
             <cursor />
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       output: (
-        <fragment>
+        <editor>
           <hp>
             <htext bold italic>
               hello
             </htext>
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       plugin: BaseBoldPlugin.configure({
         inputRules: [MarkComboRules.markdown({ variant: 'boldItalic' })],
       }),
@@ -254,22 +255,22 @@ describe('basic mark input rules', () => {
     },
     {
       input: (
-        <fragment>
+        <editor>
           <hp>
             __hello*
             <cursor />
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       output: (
-        <fragment>
+        <editor>
           <hp>
             <htext underline bold>
               hello
             </htext>
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       plugin: BaseBoldPlugin.configure({
         inputRules: [MarkComboRules.markdown({ variant: 'boldUnderline' })],
       }),
@@ -278,22 +279,22 @@ describe('basic mark input rules', () => {
     },
     {
       input: (
-        <fragment>
+        <editor>
           <hp>
             ___hello**
             <cursor />
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       output: (
-        <fragment>
+        <editor>
           <hp>
             <htext underline bold italic>
               hello
             </htext>
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       plugin: BaseBoldPlugin.configure({
         inputRules: [
           MarkComboRules.markdown({ variant: 'boldItalicUnderline' }),
@@ -304,22 +305,22 @@ describe('basic mark input rules', () => {
     },
     {
       input: (
-        <fragment>
+        <editor>
           <hp>
             __hello*
             <cursor />
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       output: (
-        <fragment>
+        <editor>
           <hp>
             <htext underline italic>
               hello
             </htext>
           </hp>
-        </fragment>
-      ) as any,
+        </editor>
+      ),
       plugin: BaseBoldPlugin.configure({
         inputRules: [MarkComboRules.markdown({ variant: 'italicUnderline' })],
       }),
@@ -327,15 +328,16 @@ describe('basic mark input rules', () => {
       title: 'formats combined italic underline delimiters',
     },
   ])('$title', ({ input, output, plugin, text }) => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [plugin],
-      value: input,
-    } as any);
-
-    text.forEach((step) => {
-      editor.tf.insertText(step);
+      selection: input.selection,
+      value: input.children,
     });
 
-    expect(input.children).toEqual(output.children);
+    text.forEach((step) => {
+      editor.update.text.insert(step);
+    });
+
+    expect(editor.read.children()).toEqual(output.children);
   });
 });

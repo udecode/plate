@@ -79,6 +79,7 @@ export {
   registerNormalizer,
   removeMark,
   removeNodes,
+  replaceChildren,
   replace,
   reset,
   select,

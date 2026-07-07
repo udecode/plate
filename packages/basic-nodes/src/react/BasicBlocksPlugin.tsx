@@ -1,4 +1,4 @@
-import { createPlatePlugin } from 'platejs/react';
+import { createPlatePlugin } from '@platejs/core/react';
 
 import { BlockquotePlugin } from './BlockquotePlugin';
 import { HeadingPlugin } from './HeadingPlugin';

@@ -32,6 +32,7 @@ import {
   mergeNodes,
   moveNodes,
   removeNodes,
+  replaceChildren,
   setNodes,
   splitNodes,
   unsetNodes,
@@ -326,6 +327,10 @@ export const createEditorTransformRegistry = <V extends Value>(
     removeNodes: (options) =>
       runMiddleware('removeNodes', { options }, (args) =>
         removeNodes(getRuntimeEditor(), args.options)
+      ),
+    replaceChildren: (children, options) =>
+      runMiddleware('replaceChildren', { children, options }, (args) =>
+        replaceChildren(getRuntimeEditor(), args.children, args.options)
       ),
     select: (target) =>
       runMiddleware('select', { target }, (args) =>

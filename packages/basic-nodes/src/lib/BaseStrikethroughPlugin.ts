@@ -1,7 +1,8 @@
-import { createSlatePlugin, KEYS, someHtmlElement } from 'platejs';
+import { createBasePlugin, someHtmlElement } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 /** Enables support for strikethrough formatting. */
-export const BaseStrikethroughPlugin = createSlatePlugin({
+export const BaseStrikethroughPlugin = createBasePlugin({
   key: KEYS.strikethrough,
   node: { isLeaf: true },
   parsers: {
@@ -21,8 +22,8 @@ export const BaseStrikethroughPlugin = createSlatePlugin({
   },
   render: { as: 's' },
   rules: { selection: { affinity: 'directional' } },
-}).extendTransforms(({ editor, type }) => ({
+}).extendTx(({ type }) => (tx) => ({
   toggle: () => {
-    editor.tf.toggleMark(type);
+    tx.marks.toggle(type);
   },
 }));

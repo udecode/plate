@@ -164,7 +164,7 @@ export const InputRulesPlugin = createBasePlugin({
     },
   },
   transforms: {
-    insertBreak({ next }) {
+    insertBreak({ next, tx }) {
       const selectionContext = createSelectionContext({ editor });
       let handled = false;
 
@@ -175,6 +175,7 @@ export const InputRulesPlugin = createBasePlugin({
             next();
           },
           pluginKey: rule.pluginKey,
+          tx,
           ...selectionContext,
         };
         if (rule.enabled?.(context) === false) continue;
@@ -192,7 +193,7 @@ export const InputRulesPlugin = createBasePlugin({
 
       return next();
     },
-    insertText({ next, options, text }) {
+    insertText({ next, options, text, tx }) {
       const rules = editor.runtime.inputRules.insertText.byTrigger[text] ?? [];
       const selectionContext = createSelectionContext({ editor });
       let handled = false;
@@ -206,6 +207,7 @@ export const InputRulesPlugin = createBasePlugin({
           options,
           pluginKey: rule.pluginKey,
           text,
+          tx,
           ...selectionContext,
         };
         if (!isTriggerMatch(rule.trigger, context.text)) continue;

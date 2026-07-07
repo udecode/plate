@@ -4,6 +4,7 @@
 
 export * from './applyDeepToNodes';
 export * from './defaultsDeepToNodes';
+export * from './getFragmentProp';
 export * from './getInjectMatch';
 export * from './getInjectedPlugins';
 export * from './getPluginNodeProps';

@@ -1,9 +1,9 @@
-import { createSlatePlugin } from 'platejs';
+import { createBasePlugin } from '@platejs/core';
 
 import { BaseBlockquotePlugin } from './BaseBlockquotePlugin';
 import { BaseHeadingPlugin } from './BaseHeadingPlugin';
 import { BaseHorizontalRulePlugin } from './BaseHorizontalRulePlugin';
 
-export const BaseBasicBlocksPlugin = createSlatePlugin({
+export const BaseBasicBlocksPlugin = createBasePlugin({
   plugins: [BaseBlockquotePlugin, BaseHeadingPlugin, BaseHorizontalRulePlugin],
 });

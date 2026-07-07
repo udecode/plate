@@ -56,17 +56,12 @@ type CreateBasePluginInput<C extends AnyPluginConfig = PluginConfig> = Record<
   };
   options?: InferOptions<C>;
   parser?: Parser<WithAnyKey<C>>;
-  parsers?: Record<string, any> & {
-    html?: Record<string, any> & {
-      deserializer?: Record<string, any> & {
-        parse?: (options: any) => any;
-        query?: (options: { element: HTMLElement }) => boolean;
-      };
-    };
-  };
+  parsers?: BasePlugin<C>['parsers'];
   plugins?: readonly unknown[];
   render?: PluginInputRender<C> | null;
+  rules?: BasePlugin<C>['rules'];
   selectors?: InferSelectors<C>;
+  shortcuts?: BasePlugin<C>['shortcuts'];
   tx?: InferTx<C>;
 };
 

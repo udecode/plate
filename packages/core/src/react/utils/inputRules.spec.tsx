@@ -60,6 +60,42 @@ describe('input rules', () => {
     expect(apply).toHaveBeenCalledTimes(1);
   });
 
+  it('passes the active transaction to insertText rules', () => {
+    let applyCount = 0;
+    const editor = createPlateEditor({
+      plugins: [
+        createPlatePlugin({
+          key: 'testPlugin',
+        }).configure({
+          inputRules: [
+            defineInputRule({
+              apply: ({ tx }) => {
+                applyCount += 1;
+                tx.text.insert('handled');
+
+                return true;
+              },
+              target: 'insertText',
+              trigger: '*',
+            }),
+          ],
+        }),
+      ],
+      value: [{ children: [{ text: '' }], type: 'p' }],
+    } as any);
+
+    editor.update.selection.set({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
+    editor.update.text.insert('*');
+
+    expect(applyCount).toBe(1);
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'handled' }], type: 'p' },
+    ]);
+  });
+
   it('dispatches configured insertBreak rules through the core runtime', () => {
     const apply = mock(() => true);
     const editor = createPlateEditor({
@@ -87,6 +123,41 @@ describe('input rules', () => {
     expect(apply).toHaveBeenCalledTimes(1);
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'hello' }], type: 'p' },
+    ]);
+  });
+
+  it('passes the active transaction to insertBreak rules', () => {
+    let applyCount = 0;
+    const editor = createPlateEditor({
+      plugins: [
+        createPlatePlugin({
+          key: 'testPlugin',
+        }).configure({
+          inputRules: [
+            defineInputRule({
+              apply: ({ tx }) => {
+                applyCount += 1;
+                tx.text.insert('!');
+
+                return true;
+              },
+              target: 'insertBreak',
+            }),
+          ],
+        }),
+      ],
+      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+    } as any);
+
+    editor.update.selection.set({
+      anchor: { offset: 5, path: [0, 0] },
+      focus: { offset: 5, path: [0, 0] },
+    });
+    editor.update.break.insert();
+
+    expect(applyCount).toBe(1);
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'hello!' }], type: 'p' },
     ]);
   });
 

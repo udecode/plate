@@ -1,5 +1,45 @@
+import type { Range } from '@platejs/plite';
+
+import { createBaseEditor } from '../../editor';
 import { createRuleFactory } from './createRuleFactory';
 import type { BlockStartInputRuleMatch, InsertTextInputRule } from './types';
+
+const resolveInsertTextRule = <TMatch>(
+  rule: InsertTextInputRule<TMatch>,
+  {
+    blockText,
+    pluginKey,
+    range,
+  }: {
+    blockText: string;
+    pluginKey: string;
+    range: Range;
+  }
+) => {
+  const editor = createBaseEditor();
+  let match: TMatch | undefined;
+
+  editor.update((tx) => {
+    match = rule.resolve?.({
+      cause: 'insertText',
+      editor,
+      getBlockEntry: () => undefined,
+      getBlockStartRange: () => range,
+      getBlockStartText: () => blockText,
+      getBlockTextBeforeSelection: () => blockText,
+      getCharAfter: () => undefined,
+      getCharBefore: () => undefined,
+      insertText: () => {},
+      isCollapsed: true,
+      options: undefined,
+      pluginKey,
+      text: ' ',
+      tx,
+    });
+  });
+
+  return match;
+};
 
 describe('createRuleFactory', () => {
   it('passes config defaults into block-start match resolvers when no public options are provided', () => {
@@ -15,20 +55,10 @@ describe('createRuleFactory', () => {
       focus: { offset: 1, path: [0, 0] },
     };
 
-    const match = rule.resolve?.({
-      cause: 'insertText',
-      editor: {} as any,
-      getBlockEntry: () => undefined,
-      getBlockStartRange: () => range as any,
-      getBlockStartText: () => '>',
-      getBlockTextBeforeSelection: () => '>',
-      getCharAfter: () => undefined,
-      getCharBefore: () => undefined,
-      insertText: () => {},
-      isCollapsed: true,
-      options: undefined,
+    const match = resolveInsertTextRule(rule, {
+      blockText: '>',
       pluginKey: 'blockquote',
-      text: ' ',
+      range,
     });
 
     expect(match).toEqual({ range, text: '>' });
@@ -49,20 +79,10 @@ describe('createRuleFactory', () => {
       focus: { offset: 2, path: [0, 0] },
     };
 
-    const match = rule.resolve?.({
-      cause: 'insertText',
-      editor: {} as any,
-      getBlockEntry: () => undefined,
-      getBlockStartRange: () => range as any,
-      getBlockStartText: () => '3.',
-      getBlockTextBeforeSelection: () => '3.',
-      getCharAfter: () => undefined,
-      getCharBefore: () => undefined,
-      insertText: () => {},
-      isCollapsed: true,
-      options: undefined,
+    const match = resolveInsertTextRule(rule, {
+      blockText: '3.',
       pluginKey: 'list',
-      text: ' ',
+      range,
     });
 
     expect(match).toEqual({ range, start: 3, text: '3.' });

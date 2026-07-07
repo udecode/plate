@@ -1,4 +1,9 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import {
+  type AnyBasePlugin,
+  createBaseEditor,
+  getEditorPlugin,
+} from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import {
   BaseBoldPlugin,
@@ -8,16 +13,46 @@ import {
   BaseUnderlinePlugin,
 } from './index';
 
-const getDeserializerQuery = (plugin: any) =>
-  createSlateEditor({
+const getDeserializerQuery = (plugin: AnyBasePlugin) => {
+  const editor = createBaseEditor({
     plugins: [plugin],
-  } as any).getPlugin(plugin).parsers.html.deserializer.query;
+  });
+  const resolvedPlugin = editor.getPlugin(plugin);
+  const query = resolvedPlugin.parsers.html?.deserializer?.query;
+
+  if (!query) {
+    throw new Error(`Missing HTML query for ${plugin.key}`);
+  }
+
+  const pluginContext = getEditorPlugin(editor, resolvedPlugin);
+
+  return (element: HTMLElement) => query({ ...pluginContext, element });
+};
+
+const parseElement = (html: string) => {
+  const element = new DOMParser().parseFromString(html, 'text/html').body
+    .firstElementChild;
+
+  if (!(element instanceof HTMLElement)) {
+    throw new Error(`Expected HTMLElement for ${html}`);
+  }
+
+  return element;
+};
+
+const queryElement = (html: string, selector: string) => {
+  const element = new DOMParser()
+    .parseFromString(html, 'text/html')
+    .querySelector(selector);
+
+  if (!(element instanceof HTMLElement)) {
+    throw new Error(`Expected HTMLElement for ${selector}`);
+  }
+
+  return element;
+};
 
 describe('BaseMarkPlugins', () => {
-  afterEach(() => {
-    mock.restore();
-  });
-
   it.each([
     [
       'bold',
@@ -43,46 +78,94 @@ describe('BaseMarkPlugins', () => {
       KEYS.strikethrough,
       '<s><span style="text-decoration: none">text</span></s>',
     ],
-  ])('vetoes %s parsing when a descendant resets the style and toggles the mark', (_label, plugin, key, html) => {
-    const element = new DOMParser().parseFromString(html, 'text/html').body
-      .firstElementChild!;
+  ])('vetoes %s parsing when a descendant resets the style', (_label, plugin, _key, html) => {
     const query = getDeserializerQuery(plugin);
-    const editor = createSlateEditor({
-      plugins: [plugin],
-    } as any);
-    const toggleMarkSpy = spyOn(editor.tf, 'toggleMark');
 
-    expect(query({ element })).toBe(false);
-
-    (editor.getTransforms(plugin as any) as any)[key].toggle();
-
-    expect(toggleMarkSpy).toHaveBeenCalledWith(editor.getType(key as any));
+    expect(query(parseElement(html))).toBe(false);
   });
 
   it('skips inline code parsing inside pre blocks and paragraphs styled as code', () => {
     const query = getDeserializerQuery(BaseCodePlugin);
-    const preCode = new DOMParser()
-      .parseFromString('<pre><code>const a = 1;</code></pre>', 'text/html')
-      .querySelector('code')!;
-    const paragraphCode = new DOMParser()
-      .parseFromString(
-        '<p style="font-family: Consolas"><code>const b = 2;</code></p>',
-        'text/html'
-      )
-      .querySelector('code')!;
 
-    expect(query({ element: preCode })).toBe(false);
-    expect(query({ element: paragraphCode })).toBe(false);
+    expect(
+      query(queryElement('<pre><code>const a = 1;</code></pre>', 'code'))
+    ).toBe(false);
+    expect(
+      query(
+        queryElement(
+          '<p style="font-family: Consolas"><code>const b = 2;</code></p>',
+          'code'
+        )
+      )
+    ).toBe(false);
   });
 
   it('toggles the code mark', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseCodePlugin],
-    } as any);
-    const toggleMarkSpy = spyOn(editor.tf, 'toggleMark');
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
 
-    (editor.getTransforms(BaseCodePlugin as any) as any).code.toggle();
+    editor.update.code.toggle();
 
-    expect(toggleMarkSpy).toHaveBeenCalledWith(editor.getType(KEYS.code));
+    expect(editor.read.children()[0]?.children[0]).toMatchObject({
+      code: true,
+      text: 'text',
+    });
+  });
+
+  it('toggles basic marks through typed tx groups', () => {
+    const bold = createBaseEditor({
+      plugins: [BaseBoldPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
+    const italic = createBaseEditor({
+      plugins: [BaseItalicPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
+    const underline = createBaseEditor({
+      plugins: [BaseUnderlinePlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
+    const strikethrough = createBaseEditor({
+      plugins: [BaseStrikethroughPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
+
+    bold.update.bold.toggle();
+    italic.update.italic.toggle();
+    underline.update.underline.toggle();
+    strikethrough.update.strikethrough.toggle();
+
+    expect(bold.read.children()[0]?.children[0]).toMatchObject({ bold: true });
+    expect(italic.read.children()[0]?.children[0]).toMatchObject({
+      italic: true,
+    });
+    expect(underline.read.children()[0]?.children[0]).toMatchObject({
+      underline: true,
+    });
+    expect(strikethrough.read.children()[0]?.children[0]).toMatchObject({
+      strikethrough: true,
+    });
   });
 });

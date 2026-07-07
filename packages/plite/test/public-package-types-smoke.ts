@@ -168,6 +168,10 @@ type _PublicEditorLifecycleMethods = [
   ExpectAssignable<void, ReturnType<typeof editor.update.blocks.lift>>,
   ExpectAssignable<void, ReturnType<typeof editor.update.text.insert>>,
   ExpectAssignable<void, ReturnType<typeof editor.update.nodes.insert>>,
+  ExpectAssignable<
+    void,
+    ReturnType<typeof editor.update.nodes.replaceChildren>
+  >,
   ExpectAssignable<void, ReturnType<typeof editor.update.marks.toggle>>,
 ];
 type PublicUnknownPredicateInputs = [

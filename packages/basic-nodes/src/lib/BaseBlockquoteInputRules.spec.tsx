@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { BaseParagraphPlugin, KEYS } from 'platejs';
+import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
 import { BaseBlockquotePlugin } from './BaseBlockquotePlugin';
 import { BlockquoteRules } from './BasicBlockRules';
@@ -14,40 +14,41 @@ jsxt;
 describe('basic block input rules', () => {
   it('wraps a paragraph in blockquote when markdown group is enabled', () => {
     const input = (
-      <fragment>
+      <editor>
         <hp>
           {'>'}
           <cursor />
           hello
         </hp>
-      </fragment>
-    ) as any;
+      </editor>
+    );
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseParagraphPlugin,
         BaseBlockquotePlugin.configure({
           inputRules: [BlockquoteRules.markdown()],
         }),
       ],
-      value: input,
-    } as any);
+      selection: input.selection,
+      value: input.children,
+    });
 
-    editor.tf.insertText(' ');
+    editor.update.text.insert(' ');
 
-    expect(input.children).toEqual(
+    expect(editor.read.children()).toEqual(
       (
-        <fragment>
+        <editor>
           <hblockquote>
             <hp>hello</hp>
           </hblockquote>
-        </fragment>
+        </editor>
       ).children
     );
   });
 
   it('wraps a paragraph in a nested blockquote when already inside a quote', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseParagraphPlugin,
         BaseBlockquotePlugin.configure({
@@ -64,11 +65,11 @@ describe('basic block input rules', () => {
           type: KEYS.blockquote,
         },
       ],
-    } as any);
+    });
 
-    editor.tf.insertText(' ');
+    editor.update.text.insert(' ');
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         children: [
           {
@@ -79,14 +80,14 @@ describe('basic block input rules', () => {
         type: KEYS.blockquote,
       },
     ]);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 0, 0, 0] },
     });
   });
 
   it('inserts an hr and trailing paragraph from --- shorthand', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseParagraphPlugin,
         BaseHorizontalRulePlugin.configure({
@@ -98,11 +99,11 @@ describe('basic block input rules', () => {
         focus: { offset: 2, path: [0, 0] },
       },
       value: [{ children: [{ text: '--' }], type: KEYS.p }],
-    } as any);
+    });
 
-    editor.tf.insertText('-');
+    editor.update.text.insert('-');
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         type: KEYS.hr,
       },

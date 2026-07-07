@@ -3,6 +3,7 @@ export * from './lift-nodes';
 export * from './merge-nodes';
 export * from './move-nodes';
 export * from './remove-nodes';
+export * from './replace-children';
 export * from './set-nodes';
 export * from './split-nodes';
 export * from './unset-nodes';

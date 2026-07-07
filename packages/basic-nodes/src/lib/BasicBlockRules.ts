@@ -1,4 +1,6 @@
-import { createRuleFactory, KEYS } from 'platejs';
+import { createRuleFactory } from '@platejs/core';
+import { ElementApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 const HEADING_KEY_RE = /^h([1-6])$/;
 const THEMATIC_BREAK_DASH_RE = /^(--|—)$/;
@@ -25,18 +27,25 @@ export const BlockquoteRules = {
     marker: '>',
     trigger: ' ',
     enabled: ({ editor }) =>
-      !editor.api.some({
-        match: {
-          type: [editor.getType(KEYS.codeBlock)],
-        },
+      !editor.read.nodes.some({
+        match: (node) =>
+          ElementApi.isElement(node) &&
+          node.type === editor.getType(KEYS.codeBlock),
       }),
     match: ({ marker }) => marker,
-    apply: ({ editor }, match) => {
-      editor.tf.delete({ at: match.range });
-      editor.tf.wrapNodes(
-        { children: [], type: editor.getType(KEYS.blockquote) },
+    apply: ({ editor, getBlockEntry, tx }, match) => {
+      const blockEntry = getBlockEntry();
+
+      if (!blockEntry) return;
+
+      tx.text.delete({ at: match.range });
+      tx.nodes.wrap(
         {
-          match: (node) => editor.api.isBlock(node),
+          children: [],
+          type: editor.getType(KEYS.blockquote),
+        },
+        {
+          at: blockEntry[1],
         }
       );
 
@@ -51,13 +60,13 @@ export const HorizontalRuleRules = {
     variant: '-',
     match: ({ variant }) => (variant === '_' ? '___' : THEMATIC_BREAK_DASH_RE),
     trigger: ({ variant }) => (variant === '_' ? ' ' : '-'),
-    apply: ({ editor, variant }) => {
+    apply: ({ tx, variant }) => {
       if (variant === '_') {
-        editor.tf.deleteBackward('character');
+        tx.text.deleteBackward({ unit: 'character' });
       }
 
-      editor.tf.setNodes({ type: KEYS.hr });
-      editor.tf.insertNodes({
+      tx.nodes.set({ type: KEYS.hr });
+      tx.nodes.insert({
         children: [{ text: '' }],
         type: KEYS.p,
       });

@@ -12,6 +12,7 @@ import type {
   MatchBlockFenceOptions,
   MatchBlockStartOptions,
   MatchDelimitedInlineOptions,
+  InsertTextInputRuleContext,
   SelectionInputRuleContext,
   TextSubstitutionInputRuleConfig,
   TextSubstitutionMatch,
@@ -122,7 +123,7 @@ export const createMarkInputRule = (
         end: config.end,
       };
     },
-    apply: ({ editor, pluginKey }, match) => {
+    apply: ({ editor, pluginKey, tx }, match) => {
       const marks = config.marks
         ? [...config.marks]
         : [config.mark ?? pluginKey];
@@ -130,7 +131,7 @@ export const createMarkInputRule = (
       const selection = editor.read.selection();
 
       if (selection && match.beforeEndMatchPoint !== selection.anchor) {
-        editor.update.text.delete({
+        tx.text.delete({
           at: {
             anchor: match.beforeEndMatchPoint,
             focus: selection.anchor,
@@ -138,7 +139,7 @@ export const createMarkInputRule = (
         });
       }
 
-      editor.update.selection.set({
+      tx.selection.set({
         anchor: match.afterStartMatchPoint,
         focus: match.beforeEndMatchPoint,
       });
@@ -146,19 +147,17 @@ export const createMarkInputRule = (
       marks.forEach((mark) => {
         const key = editor.getType(mark);
 
-        editor.update.marks.add(key, true);
+        tx.marks.add(key, true);
       });
 
-      editor.update.selection.collapse({ edge: 'end' });
+      tx.selection.collapse({ edge: 'end' });
 
       const markKeys = marks.map((mark) => editor.getType(mark));
 
-      editor.update((tx) => {
-        markKeys.forEach((key) => {
-          tx.marks.remove(key);
-        });
+      markKeys.forEach((key) => {
+        tx.marks.remove(key);
       });
-      editor.update.text.delete({
+      tx.text.delete({
         at: {
           anchor: match.beforeStartMatchPoint,
           focus: match.afterStartMatchPoint,
@@ -248,28 +247,28 @@ export const createBlockStartInputRule = <TMatch extends object = {}>(
     apply: (context, match) => {
       if (config.apply) return config.apply(context, match);
 
-      const { editor, pluginKey } = context;
+      const { editor, pluginKey, tx } = context;
       const defaultMatch = match as BlockStartInputRuleMatch;
 
       if (config.removeMatchedText !== false) {
-        editor.update.text.delete({ at: defaultMatch.range });
+        tx.text.delete({ at: defaultMatch.range });
       }
 
       const node = editor.getType(config.node ?? pluginKey);
 
       if (config.mode === 'wrap') {
-        editor.update.blocks.toggle(node, {
+        tx.blocks.toggle(node, {
           wrap: true,
         });
         return true;
       }
 
       if (config.mode === 'toggle') {
-        editor.update.blocks.toggle(node);
+        tx.blocks.toggle(node);
         return true;
       }
 
-      editor.update.nodes.set(
+      tx.nodes.set(
         { type: node },
         {
           match: (entryNode) =>
@@ -569,6 +568,7 @@ const resolveTextSubstitution = ({
 
 const applyTextSubstitution = (
   editor: BaseEditor,
+  tx: InsertTextInputRuleContext['tx'],
   match: TextSubstitutionMatch | undefined
 ) => {
   const selection = editor.read.selection();
@@ -576,7 +576,7 @@ const applyTextSubstitution = (
   if (!selection || !match) return false;
 
   if (match.end) {
-    editor.update.text.delete({
+    tx.text.delete({
       at: {
         anchor: match.points.beforeEndMatchPoint,
         focus: selection.anchor,
@@ -588,20 +588,20 @@ const applyTextSubstitution = (
     ? match.pattern.format[1]
     : match.pattern.format;
 
-  editor.update.text.insert(formatEnd);
+  tx.text.insert(formatEnd);
 
   if (match.points.beforeStartMatchPoint && match.points.afterStartMatchPoint) {
     const formatStart = Array.isArray(match.pattern.format)
       ? match.pattern.format[0]
       : match.pattern.format;
 
-    editor.update.text.delete({
+    tx.text.delete({
       at: {
         anchor: match.points.beforeStartMatchPoint,
         focus: match.points.afterStartMatchPoint,
       },
     });
-    editor.update.text.insert(formatStart, {
+    tx.text.insert(formatStart, {
       at: match.points.beforeStartMatchPoint,
     });
   }
@@ -633,7 +633,7 @@ export const createTextSubstitutionInputRule = ({
 
       return resolveTextSubstitution({ candidates, editor });
     },
-    apply: ({ editor }, match: TextSubstitutionMatch) =>
-      applyTextSubstitution(editor, match),
+    apply: ({ editor, tx }, match: TextSubstitutionMatch) =>
+      applyTextSubstitution(editor, tx, match),
   });
 };

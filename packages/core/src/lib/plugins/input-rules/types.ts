@@ -1,10 +1,12 @@
 import type {
   Element,
+  EditorUpdateTransaction,
   NodeEntry,
   Path,
   Point,
   Range,
   TextInsertTextOptions,
+  ValueOf,
 } from '@platejs/plite';
 
 import type { BaseEditor } from '../../editor';
@@ -28,12 +30,18 @@ export type SelectionInputRuleContext<TEditor extends BaseEditor = BaseEditor> =
     pluginKey: string;
   };
 
+export type TransformInputRuleContext<TEditor extends BaseEditor = BaseEditor> =
+  {
+    tx: EditorUpdateTransaction<ValueOf<TEditor>>;
+  };
+
 export type InsertBreakInputRuleContext<
   TEditor extends BaseEditor = BaseEditor,
-> = SelectionInputRuleContext<TEditor> & {
-  cause: 'insertBreak';
-  insertBreak: () => void;
-};
+> = SelectionInputRuleContext<TEditor> &
+  TransformInputRuleContext<TEditor> & {
+    cause: 'insertBreak';
+    insertBreak: () => void;
+  };
 
 export type InsertDataInputRuleContext<
   TEditor extends BaseEditor = BaseEditor,
@@ -46,12 +54,13 @@ export type InsertDataInputRuleContext<
 
 export type InsertTextInputRuleContext<
   TEditor extends BaseEditor = BaseEditor,
-> = SelectionInputRuleContext<TEditor> & {
-  cause: 'insertText';
-  insertText: (text: string, options?: TextInsertTextOptions) => void;
-  options?: TextInsertTextOptions;
-  text: string;
-};
+> = SelectionInputRuleContext<TEditor> &
+  TransformInputRuleContext<TEditor> & {
+    cause: 'insertText';
+    insertText: (text: string, options?: TextInsertTextOptions) => void;
+    options?: TextInsertTextOptions;
+    text: string;
+  };
 
 export type BaseInputRule<
   TContext extends SelectionInputRuleContext = SelectionInputRuleContext,

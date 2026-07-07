@@ -258,6 +258,27 @@ describe('resolvePlugins', () => {
     expect(result).toBe(false);
   });
 
+  it('does not prevent default when a tx shortcut command returns false', () => {
+    const untab = mock(() => false);
+    const editor = createBaseEditor({
+      plugins: [
+        createBasePlugin({
+          key: 'shortcutTxFalse',
+          shortcuts: {
+            untab: { keys: 'shift+tab' },
+          },
+        }).extendTx(() => () => ({ untab })),
+      ],
+    });
+
+    const result = editor.runtime.shortcuts['shortcutTxFalse.untab']?.handler?.(
+      {} as any
+    );
+
+    expect(untab).toHaveBeenCalledTimes(1);
+    expect(result).toBe(false);
+  });
+
   it('does not treat foreign tx groups as plugin shortcut commands', () => {
     const replace = mock();
     const editor = createBaseEditor({
