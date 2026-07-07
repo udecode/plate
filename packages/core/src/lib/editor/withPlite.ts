@@ -1,17 +1,12 @@
 import {
   createEditor,
   defineEditorExtension,
-  ElementApi,
-  OperationApi,
   type Editor,
   type EditorExtensionInput,
-  PathApi,
   type Selection,
   type Value,
 } from '@platejs/plite';
 import {
-  getOperationRoot,
-  MAIN_ROOT_KEY,
   setEditorDefaultBlockType,
   setEditorMaxLength,
   setEditorReadOnly,
@@ -40,11 +35,7 @@ import type { InferPlugins, BaseEditor, BasePluginInput } from './SlateEditor';
 import { resolvePlugins } from '../../internal/plugin/resolvePlugins';
 import { pipeTransformInitialValue } from '../../internal/plugin/pipeTransformInitialValue';
 import { createBasePlugin } from '../plugin/createBasePlugin';
-import {
-  getPluginByType,
-  getPluginType,
-  getSlatePlugin,
-} from '../plugin/getSlatePlugin';
+import { getPluginType, getSlatePlugin } from '../plugin/getSlatePlugin';
 import { getEditorPlugin } from '../plugin/getEditorPlugin';
 import {
   type CorePluginConfig,
@@ -137,168 +128,6 @@ const initializeBaseEditor = <V extends Value>(
   }
 
   applyValue(value);
-};
-
-const installPlateNormalizeRulesExtension = (editor: BaseEditor) => {
-  const hasNormalizeRules = editor.runtime.pluginList.some(
-    (plugin) => plugin.rules?.normalize || plugin.rules?.match
-  );
-
-  if (!hasNormalizeRules) return;
-
-  editor.extend(
-    defineEditorExtension({
-      name: 'plate:normalize-rules:plite',
-      normalizers: {
-        node({ entry, next, tx }) {
-          const [node, path] = entry;
-
-          if (!ElementApi.isElement(node) || typeof node.type !== 'string') {
-            next();
-            return;
-          }
-
-          const plugin = getPluginByType(editor, node.type);
-          const normalizeRules = plugin?.rules.normalize;
-          const overridePlugin = editor.runtime.pluginCache.rules.match
-            .map((key) => editor.getPlugin({ key }))
-            .find(
-              (candidate) =>
-                candidate.rules?.normalize &&
-                candidate.rules.match?.({
-                  editor,
-                  node,
-                  path,
-                  plugin: candidate,
-                  rule: 'normalize.removeEmpty',
-                  type: candidate.node.type,
-                } as never)
-            );
-          const effectiveNormalizeRules =
-            overridePlugin?.rules.normalize ?? normalizeRules;
-          const text = editor.read.text.string(path as never);
-
-          if (effectiveNormalizeRules?.removeEmpty && text.length === 0) {
-            tx.nodes.remove({ at: path });
-            return;
-          }
-
-          next();
-        },
-      },
-    })
-  );
-};
-
-const getRuntimeChildren = (node: unknown) =>
-  node &&
-  typeof node === 'object' &&
-  'children' in node &&
-  Array.isArray((node as { children?: unknown }).children)
-    ? (node as { children: unknown[] }).children
-    : null;
-
-const isRuntimeTextNode = (node: unknown): node is { text: string } =>
-  node !== null &&
-  typeof node === 'object' &&
-  'text' in node &&
-  typeof (node as { text?: unknown }).text === 'string';
-
-const isRuntimeElementNode = (node: unknown): node is { children: unknown[] } =>
-  node !== null &&
-  typeof node === 'object' &&
-  !isRuntimeTextNode(node) &&
-  Array.isArray((node as { children?: unknown }).children);
-
-const getRuntimeNodeText = (node: unknown): string => {
-  if (isRuntimeTextNode(node)) return node.text;
-
-  const children = getRuntimeChildren(node);
-
-  if (!children) return '';
-
-  return children.map(getRuntimeNodeText).join('');
-};
-
-const getRuntimeDescendant = (
-  editor: BaseEditor,
-  path: number[],
-  root?: string
-) => {
-  try {
-    const rootValue = editor.read((state) =>
-      root === MAIN_ROOT_KEY ? state.children() : state.root(root as never)
-    );
-    let node: unknown = rootValue;
-
-    for (const index of path) {
-      const children = getRuntimeChildren(node);
-
-      if (!children?.[index]) return;
-
-      node = children[index];
-    }
-
-    return node;
-  } catch {
-    return;
-  }
-};
-
-const getMergeOverrideRules = (
-  editor: BaseEditor,
-  rule: string,
-  node: Record<string, unknown>,
-  path: number[]
-) => {
-  for (const key of editor.runtime.pluginCache.rules.match) {
-    const plugin = editor.getPlugin({ key });
-    const match = plugin?.rules?.match;
-
-    if (
-      plugin?.rules?.merge &&
-      typeof match === 'function' &&
-      match({
-        editor,
-        node,
-        path,
-        plugin,
-        rule,
-        type: plugin.node.type,
-      } as never)
-    ) {
-      return plugin.rules.merge;
-    }
-  }
-
-  return null;
-};
-
-const shouldRemoveEmptyMergeTarget = (
-  editor: BaseEditor,
-  node: Record<string, unknown>,
-  path: number[]
-) => {
-  const type = typeof node.type === 'string' ? node.type : undefined;
-  const plugin = type ? getPluginByType(editor, type) : undefined;
-
-  if (!plugin) return true;
-  if (!plugin.rules?.merge?.removeEmpty) return false;
-
-  const overrideRules = getMergeOverrideRules(
-    editor,
-    'merge.removeEmpty',
-    node,
-    path
-  );
-
-  return overrideRules?.removeEmpty !== false;
-};
-
-const getMergeNodeProperties = (node: { children: unknown[] }) => {
-  const { children: _children, ...properties } = node;
-
-  return properties;
 };
 
 const PLATE_IMPLICIT_EXTENSION_NAME = Symbol.for(
@@ -529,101 +358,6 @@ const installPlateRuntimeTxExtensions = (editor: BaseEditor) => {
   );
 
   plateTxExtensionCleanups.set(editor, cleanup);
-};
-
-const installPlateMergeRulesExtension = (editor: BaseEditor) => {
-  const hasMergeRules = editor.runtime.pluginList.some(
-    (plugin) => plugin.rules?.merge || plugin.rules?.match
-  );
-
-  if (!hasMergeRules) return;
-
-  editor.extend(
-    defineEditorExtension({
-      name: 'plate:merge-rules:plite',
-      operations: {
-        apply({ operation, next }) {
-          if (
-            OperationApi.isRemoveNodeOperation(operation) &&
-            isRuntimeElementNode(operation.node) &&
-            operation.node.children.length > 0 &&
-            operation.path.length > 0 &&
-            getRuntimeNodeText(operation.node).length === 0 &&
-            !shouldRemoveEmptyMergeTarget(
-              editor,
-              operation.node as Record<string, unknown>,
-              operation.path
-            )
-          ) {
-            const operationExplicitRoot =
-              'root' in operation ? operation.root : undefined;
-            const nextPath = PathApi.next(operation.path);
-            const nextNode = getRuntimeDescendant(
-              editor,
-              nextPath,
-              getOperationRoot(operation)
-            );
-
-            if (isRuntimeElementNode(nextNode)) {
-              for (
-                let index = operation.node.children.length - 1;
-                index >= 0;
-                index--
-              ) {
-                next({
-                  node: operation.node.children[index],
-                  path: [...operation.path, index],
-                  root: operationExplicitRoot,
-                  type: 'remove_node',
-                } as never);
-              }
-
-              next({
-                path: nextPath,
-                position: 0,
-                properties: getMergeNodeProperties(nextNode),
-                root: operationExplicitRoot,
-                type: 'merge_node',
-              } as never);
-              return;
-            }
-          }
-
-          next(operation);
-        },
-      },
-      queries: {
-        nodes: {
-          shouldMergeNodesRemovePrevNode({ current, next, previous }) {
-            const [previousNode, previousPath] = previous;
-            const [, currentPath] = current;
-
-            if (
-              isRuntimeTextNode(previousNode) &&
-              previousNode.text === '' &&
-              previousPath.at(-1) !== 0
-            ) {
-              return true;
-            }
-
-            if (
-              isRuntimeElementNode(previousNode) &&
-              getRuntimeNodeText(previousNode).length === 0 &&
-              PathApi.isSibling(previousPath, currentPath)
-            ) {
-              return shouldRemoveEmptyMergeTarget(
-                editor,
-                previousNode as Record<string, unknown>,
-                previousPath
-              );
-            }
-
-            return next({ current, previous });
-          },
-        },
-      },
-    })
-  );
 };
 
 export type BaseExtendBaseEditorOptions<
@@ -907,8 +641,6 @@ export const extendBaseEditor = <
   installPlateEditorExtensions(editor);
   editor.extend(createPlateChangeHandlersExtension(editor));
   installPlateRuntimeTxExtensions(editor);
-  installPlateMergeRulesExtension(editor);
-  installPlateNormalizeRulesExtension(editor);
 
   if (!skipInitialization) {
     initializeBaseEditor(editor, {
