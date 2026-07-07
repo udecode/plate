@@ -8,6 +8,8 @@ const coreDir = join(root, 'packages/core');
 const pliteDir = join(root, 'packages/plite');
 const utilsDir = join(root, 'packages/utils');
 const basicNodesDir = join(root, 'packages/basic-nodes');
+const basicStylesDir = join(root, 'packages/basic-styles');
+const indentDir = join(root, 'packages/indent');
 
 const testBatchSizeOverride = process.env.CORE_TEST_BATCH_SIZE;
 
@@ -50,6 +52,18 @@ const packageTestTargets = [
   {
     name: 'Basic Nodes',
     dir: basicNodesDir,
+    roots: ['src'],
+    bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
+  },
+  {
+    name: 'Basic Styles',
+    dir: basicStylesDir,
+    roots: ['src'],
+    bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
+  },
+  {
+    name: 'Indent',
+    dir: indentDir,
     roots: ['src'],
     bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
   },
@@ -142,14 +156,20 @@ const runPackageTests = (target) => {
 
 const testInventory = collectTestInventory();
 
-run('typecheck Core + Plite + Utils + Basic Nodes source and tests', 'pnpm', [
-  'turbo',
-  'typecheck',
-  '--filter=./packages/core',
-  '--filter=./packages/plite',
-  '--filter=./packages/utils',
-  '--filter=./packages/basic-nodes',
-]);
+run(
+  'typecheck Core + Plite + Utils + Basic Nodes + Basic Styles + Indent source and tests',
+  'pnpm',
+  [
+    'turbo',
+    'typecheck',
+    '--filter=./packages/core',
+    '--filter=./packages/plite',
+    '--filter=./packages/utils',
+    '--filter=./packages/basic-nodes',
+    '--filter=./packages/basic-styles',
+    '--filter=./packages/indent',
+  ]
+);
 run('type contracts', 'pnpm', [
   'exec',
   'tsc',
@@ -161,6 +181,8 @@ run('lint Core', 'pnpm', ['--filter', '@platejs/core', 'lint']);
 run('lint Plite', 'pnpm', ['--filter', '@platejs/plite', 'lint']);
 run('lint Utils', 'pnpm', ['--filter', '@platejs/utils', 'lint']);
 run('lint Basic Nodes', 'pnpm', ['--filter', '@platejs/basic-nodes', 'lint']);
+run('lint Basic Styles', 'pnpm', ['--filter', '@platejs/basic-styles', 'lint']);
+run('lint Indent', 'pnpm', ['--filter', '@platejs/indent', 'lint']);
 run('build Plite artifact for Core/Utils runtime tests', 'pnpm', [
   '--filter',
   '@platejs/plite',

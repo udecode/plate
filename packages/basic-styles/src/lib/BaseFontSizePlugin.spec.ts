@@ -1,12 +1,13 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { createBaseEditor, getEditorPlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseFontSizePlugin } from './BaseFontSizePlugin';
 
 describe('BaseFontSizePlugin', () => {
   it('parses html font-size styles into leaf marks', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseFontSizePlugin],
-    } as any);
+    });
     const plugin = editor.getPlugin(BaseFontSizePlugin);
     const parse = plugin.parsers!.html!.deserializer!.parse!;
 
@@ -15,27 +16,33 @@ describe('BaseFontSizePlugin', () => {
     });
     expect(
       parse({
+        ...getEditorPlugin(editor, plugin),
         element: {
           style: { fontSize: '18px' },
-        },
+        } as HTMLElement,
+        node: {},
         type: KEYS.fontSize,
-      } as any)
+      })
     ).toEqual({
       [KEYS.fontSize]: '18px',
     });
   });
 
-  it('forwards addMark through the editor mark transform', () => {
-    const editor = createSlateEditor({
+  it('sets font size through the typed tx group', () => {
+    const editor = createBaseEditor({
       plugins: [BaseFontSizePlugin],
-    } as any);
-    const addMarks = mock();
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
 
-    (editor as any).tf.addMarks = addMarks;
-    (editor as any).tf.fontSize.addMark('24px');
+    editor.update.fontSize.set('24px');
 
-    expect(addMarks).toHaveBeenCalledWith({
+    expect(editor.read.children()[0]?.children[0]).toMatchObject({
       [KEYS.fontSize]: '24px',
+      text: 'text',
     });
   });
 });

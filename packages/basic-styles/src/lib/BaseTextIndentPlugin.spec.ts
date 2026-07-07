@@ -1,12 +1,17 @@
-import { BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  getEditorPlugin,
+} from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseTextIndentPlugin } from './BaseTextIndentPlugin';
 
 describe('BaseTextIndentPlugin', () => {
   it('exposes the default injected block contract', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseTextIndentPlugin],
-    } as any);
+    });
     const plugin = editor.getPlugin(BaseTextIndentPlugin);
     const nodeProps = plugin.inject.nodeProps!;
     const transformNodeValue = nodeProps.transformNodeValue!;
@@ -19,9 +24,10 @@ describe('BaseTextIndentPlugin', () => {
     });
     expect(
       transformNodeValue({
+        ...getEditorPlugin(editor, plugin),
         getOptions: () => editor.getOptions(BaseTextIndentPlugin),
         nodeValue: 2,
-      } as any)
+      })
     ).toBe('48px');
   });
 
@@ -32,22 +38,23 @@ describe('BaseTextIndentPlugin', () => {
         unit: 'em',
       },
     });
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, TextIndentPlugin],
-    } as any);
+    });
     const plugin = editor.getPlugin(TextIndentPlugin);
     const nodeProps = plugin.inject.nodeProps!;
 
     expect(
       nodeProps.transformNodeValue!({
+        ...getEditorPlugin(editor, plugin),
         getOptions: () => editor.getOptions(TextIndentPlugin),
         nodeValue: 3,
-      } as any)
+      })
     ).toBe('30em');
   });
 
-  it('applies and clears text indent through node updates', () => {
-    const editor = createSlateEditor({
+  it('applies and clears text indent through the typed tx group', () => {
+    const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseTextIndentPlugin],
       value: [
         {
@@ -55,13 +62,13 @@ describe('BaseTextIndentPlugin', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
     const nodeKey = editor.getType(KEYS.textIndent);
 
-    editor.tf.setNodes({ [nodeKey]: 2 }, { at: [0] });
-    expect((editor.children[0] as any)[nodeKey]).toBe(2);
+    editor.update.textIndent.set(2, { at: [0] });
+    expect(editor.read.children()[0]).toMatchObject({ [nodeKey]: 2 });
 
-    editor.tf.unsetNodes(nodeKey, { at: [0] });
-    expect((editor.children[0] as any)[nodeKey]).toBeUndefined();
+    editor.update.textIndent.unset({ at: [0] });
+    expect(editor.read.children()[0]).not.toHaveProperty(nodeKey);
   });
 });

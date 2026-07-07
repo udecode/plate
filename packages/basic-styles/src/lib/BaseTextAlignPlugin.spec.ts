@@ -1,14 +1,18 @@
-import { BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  getEditorPlugin,
+} from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseTextAlignPlugin } from './BaseTextAlignPlugin';
 
 describe('BaseTextAlignPlugin', () => {
-  it('exposes the injected block contract and bound setNodes transform', () => {
-    const editor = createSlateEditor({
+  it('exposes the injected block contract and typed tx group', () => {
+    const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseTextAlignPlugin],
-    } as any);
+    });
     const plugin = editor.getPlugin(BaseTextAlignPlugin);
-    const transforms = editor.getTransforms(BaseTextAlignPlugin) as any;
 
     expect(plugin.inject.isBlock).toBe(true);
     expect(plugin.inject.targetPlugins).toEqual([KEYS.p]);
@@ -17,50 +21,54 @@ describe('BaseTextAlignPlugin', () => {
       styleKey: 'textAlign',
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     });
-    expect(typeof (editor as any).tf.textAlign?.setNodes).toBe('function');
-    expect(typeof transforms.textAlign.setNodes).toBe('function');
+    expect(typeof editor.update.textAlign.set).toBe('function');
   });
 
   it('parses text-align styles through the injected target plugin deserializer', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseTextAlignPlugin],
-    } as any);
+    });
     const plugin = editor.getPlugin(BaseTextAlignPlugin);
     const targetPlugin = plugin.inject.targetPluginToInject!({
-      editor,
-      plugin,
-    } as any);
+      ...getEditorPlugin(editor, plugin),
+      targetPlugin: KEYS.p,
+    });
     const parse = targetPlugin.parsers!.html!.deserializer!.parse!;
     const node: Record<string, unknown> = {};
 
     parse({
+      ...getEditorPlugin(editor, plugin),
       element: {
         style: { textAlign: 'center' },
-      },
+      } as HTMLElement,
       node,
-    } as any);
+    });
 
     expect(node).toEqual({
       [editor.getType(KEYS.textAlign)]: 'center',
     });
   });
 
-  it('applies and clears text alignment through the shared transform', () => {
-    const editor = createSlateEditor({
+  it('applies and clears text alignment through the typed tx group', () => {
+    const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseTextAlignPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
       value: [
         {
           children: [{ text: 'One' }],
           type: 'p',
         },
       ],
-    } as any);
+    });
     const nodeKey = editor.getType(KEYS.textAlign);
 
-    (editor as any).tf.textAlign.setNodes('center', { at: [] });
-    expect((editor.children[0] as any)[nodeKey]).toBe('center');
+    editor.update.textAlign.set('center');
+    expect(editor.read.children()[0]).toMatchObject({ [nodeKey]: 'center' });
 
-    (editor as any).tf.textAlign.setNodes('start', { at: [] });
-    expect((editor.children[0] as any)[nodeKey]).toBeUndefined();
+    editor.update.textAlign.set('start');
+    expect(editor.read.children()[0]).not.toHaveProperty(nodeKey);
   });
 });

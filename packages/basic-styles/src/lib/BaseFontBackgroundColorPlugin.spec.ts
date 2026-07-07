@@ -1,12 +1,13 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { createBaseEditor, getEditorPlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseFontBackgroundColorPlugin } from './BaseFontBackgroundColorPlugin';
 
 describe('BaseFontBackgroundColorPlugin', () => {
   it('parses html background-color styles into leaf marks', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseFontBackgroundColorPlugin],
-    } as any);
+    });
     const plugin = editor.getPlugin(BaseFontBackgroundColorPlugin);
     const parse = plugin.parsers!.html!.deserializer!.parse!;
 
@@ -15,27 +16,33 @@ describe('BaseFontBackgroundColorPlugin', () => {
     });
     expect(
       parse({
+        ...getEditorPlugin(editor, plugin),
         element: {
           style: { backgroundColor: 'rgb(255, 255, 0)' },
-        },
+        } as HTMLElement,
+        node: {},
         type: KEYS.backgroundColor,
-      } as any)
+      })
     ).toEqual({
       [KEYS.backgroundColor]: 'rgb(255, 255, 0)',
     });
   });
 
-  it('forwards addMark through the editor mark transform', () => {
-    const editor = createSlateEditor({
+  it('sets background color through the typed tx group', () => {
+    const editor = createBaseEditor({
       plugins: [BaseFontBackgroundColorPlugin],
-    } as any);
-    const addMarks = mock();
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
 
-    (editor as any).tf.addMarks = addMarks;
-    (editor as any).tf.backgroundColor.addMark('yellow');
+    editor.update.backgroundColor.set('yellow');
 
-    expect(addMarks).toHaveBeenCalledWith({
+    expect(editor.read.children()[0]?.children[0]).toMatchObject({
       [KEYS.backgroundColor]: 'yellow',
+      text: 'text',
     });
   });
 });

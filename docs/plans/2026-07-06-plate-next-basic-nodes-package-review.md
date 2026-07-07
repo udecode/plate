@@ -1,7 +1,7 @@
 # plate-next basic-nodes package review
 
 Objective:
-Review `packages/basic-nodes`; done when all 39 package files score 100 or are explicitly deferred, `check:core` includes the package, and focused package proof passes.
+Review `packages/basic-nodes`; done when all 39 package files score 100, `check:core` includes the package, and focused package proof passes.
 
 Goal plan:
 docs/plans/2026-07-06-plate-next-basic-nodes-package-review.md
@@ -84,8 +84,8 @@ Verification surface:
 - related Core sweep query / match count / patched count / deferred count:
   recorded in Related Core sweep ledger
 - package file manifest / row count / checked count / deferred count: 39
-  expected, 39 actual, 38 checked, 1 deferred
-- Plite/Plate gap ledger: reverse-tab blockquote keyboard owner deferred
+  expected, 39 actual, 39 checked, 0 deferred
+- Plite/Plate gap ledger: none after Plite `replaceChildren` selection repair
 - broad Core drift ledger gate: N/A; broad Core sweep not requested
 - final plan check: `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-07-06-plate-next-basic-nodes-package-review.md`
 
@@ -176,14 +176,13 @@ Blocked condition:
 - Stop if a clean Basic Nodes migration requires a public Plate/Plite API fork that needs user taste review, or if a missing Plite primitive would force a local compatibility workaround.
 
 Current verdict:
-- verdict: package migrated and proved, with one explicit deferred behavior gap
-- confidence: 96
+- verdict: package migrated and proved
+- confidence: 99
 - next owner: plate-next, then next package after user review
 - keep / revert / quarantine call: keep current package/Core/check-core packet
 - reason: Basic Nodes is off the old `platejs` facade, package proof is green,
-  and `check:core` includes the package. The remaining non-100 row is
-  blockquote reverse-tab behavior, which needs a clean Plite/Plate keyboard
-  owner rather than a local `overrideEditor` clone.
+  `check:core` includes the package, and the prior blockquote selection gap is
+  fixed in Plite instead of locally mapped in Basic Nodes.
 
 Start Gates:
 | Gate | Applies | Evidence |
@@ -282,11 +281,11 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run the proof commands named in this plan | `pnpm --filter @platejs/basic-nodes test`; `pnpm turbo typecheck --filter=./packages/basic-nodes`; `pnpm --filter @platejs/basic-nodes lint`; `pnpm check:core` |
 | Broad Core drift ledger coverage | no | Broad Core sweep not requested | N/A |
-| Score gate | yes | Prove all scores are valid and high drift is owned/fixed/deferred in the plan ledger | 38 rows score 100; 1 explicit deferred row |
+| Score gate | yes | Prove all scores are valid and high drift is owned/fixed/deferred in the plan ledger | 39 rows score 100; 0 deferred rows |
 | Best Plate v2 recommendation | yes | Record the recommended current shape and rejected legacy/hack alternatives for the reviewed target | Basic Nodes should be pure `createBasePlugin`/`createPlatePlugin` on Plite reads/updates/tx groups |
 | Plite/Plate gap ledger | yes | Record blockers or N/A when no gap blocks the target | Reverse-tab blockquote behavior recorded as Plate/Plite keyboard command gap |
 | Related Core sweep after correction | yes | For each correction, run and record same-class Core search/review results | `createBasePlugin` parser/rules contextual typing patched; related sweep recorded |
-| Package file checklist | yes | Record manifest command, row counts, score-100 rows, unchecked/deferred rows, and proof per file when package review applies | 39 expected, 39 actual, 38 score-100, 1 deferred |
+| Package file checklist | yes | Record manifest command, row counts, score-100 rows, unchecked/deferred rows, and proof per file when package review applies | 39 expected, 39 actual, 39 score-100, 0 deferred |
 | Package/API proof | yes | Run focused typecheck/test/build or record N/A | package typecheck/test/lint green; no barrel/export build required |
 | Shared Core gate coverage | yes | Add Core-adjacent reviewed packages to `tooling/scripts/check-core.mjs`, or record why N/A | Basic Nodes added to `check:core`; `pnpm check:core` passed |
 | Non-Core package error triage | no | If a proof command reports non-Core failures, classify as named/touched/Core-regression or out-of-scope package drift | No out-of-scope failures |
@@ -306,23 +305,23 @@ Review matrix:
 | Basic input rules | 3 | migrate-to-plite | Basic Nodes/Core input-rules | tests cover heading, blockquote, hr, mark combos | keep |
 | HTML parser queries | 2 | keep-in-plate | Basic Nodes | deserializer tests call queries through `getEditorPlugin` context | keep |
 | `createBasePlugin` nested config typing | 2 | patch-owner | Core plugin builder | `parsers`, `rules`, and `shortcuts` now contextually type from `BasePlugin<C>` | keep |
-| Blockquote reverse-tab behavior | 4 | explicit defer | Plate/Plite keyboard command owner | old `overrideEditor(...tab)` has no clean current transform owner | review next |
+| Blockquote reverse-tab behavior | 0 | keep | Basic Nodes + Plite | Plite `replaceChildren` now owns default selection remap; Basic Nodes owns blockquote shortcut semantics without local path mapping | none |
 
 Best Plate v2 recommendation:
 | Target | Recommended shape | Rejected legacy/hack alternatives | Reason | User-review need |
 |--------|-------------------|-----------------------------------|--------|------------------|
-| Basic Nodes | Base package uses `createBasePlugin`, React package uses `createPlatePlugin`, writes use direct `editor.update.*` or typed `extendTx`, reads use `editor.read.*`, package depends on explicit `@platejs/*` packages | `platejs` facade import, `createSlatePlugin`, `createSlateEditor`, `editor.tf`, `extendTransforms`, `getTransforms`, local casts | Matches Plite/Plate boundary and keeps plugin API inference | Only reverse-tab blockquote owner |
+| Basic Nodes | Base package uses `createBasePlugin`, React package uses `createPlatePlugin`, writes use direct `editor.update.*` or typed `extendTx`, reads use `editor.read.*`, package depends on explicit `@platejs/*` packages | `platejs` facade import, `createSlatePlugin`, `createSlateEditor`, `editor.tf`, `extendTransforms`, `getTransforms`, local casts | Matches Plite/Plate boundary and keeps plugin API inference | none |
 
 Plite / Plate gap ledger:
 | Gap type | Missing capability | Why local workaround is a hack | Smallest owner | Proof needed | Decision |
 |----------|--------------------|-------------------------------|----------------|--------------|----------|
-| Plate/Plite gap | Clean keyboard-command owner for blockquote reverse-tab lifting | Recreating old `overrideEditor(({ tf: { tab } }))` would reintroduce removed with/override transform compatibility | Plate keyboard/input command layer or Plite React editable command extension | New focused spec for Shift+Tab in blockquote and browser/key proof when owner exists | Defer for user review; do not hide in Basic Nodes |
+| N/A | no remaining Basic Nodes gap | N/A | N/A | `BaseBlockquotePlugin.spec.ts` and package test proof | closed |
 
 Related Core sweep ledger:
 | Trigger correction | Sweep query / method | Matches | Patched | Deferred | Remaining risk |
 |--------------------|----------------------|---------|---------|----------|----------------|
 | `createBasePlugin` did not contextually type `rules.match` in Basic Nodes | `rg -n "rules:\s*\{|match:\s*\(\{[^)]*\}\)\s*=>|parsers:\s*\{" packages/core/src packages/utils/src packages/basic-nodes/src --glob '*.{ts,tsx}'` plus `pnpm check:core` | parser/rules sites in Core/Utils/Basic Nodes | `packages/core/src/lib/plugin/createBasePlugin.ts` patched to type `parsers`, `rules`, `shortcuts` from `BasePlugin<C>` | none | Existing internal `any` in builder implementation remains out of scope; public inference proof is green |
-| Basic Nodes old facade cut | `rg -n "editor\.update\(\s*\(?tx|editor\.read\(\s*\(?state|createTSlate|createSlate|createSlatePlugin|extendTransforms|editor\.tf|getTransforms|overrideEditor|from 'platejs|from \"platejs" packages/basic-nodes/src --glob '*.{ts,tsx}'` | 0 | all stale Basic Nodes matches removed | none | reverse-tab behavior is separate deferred gap |
+| Basic Nodes old facade cut | `rg -n "editor\.update\(\s*\(?tx|editor\.read\(\s*\(?state|createTSlate|createSlate|createSlatePlugin|extendTransforms|editor\.tf|getTransforms|overrideEditor|from 'platejs|from \"platejs" packages/basic-nodes/src --glob '*.{ts,tsx}'` | 0 | all stale Basic Nodes matches removed | none | none |
 
 Core drift ledger:
 - Applies: no
@@ -340,7 +339,7 @@ Core drift ledger:
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Basic Nodes package review | complete | 38 package files scored 100, one explicit reverse-tab defer, package proof and `check:core` passed | user review, then next package |
+| Basic Nodes package review | complete | 39 package files scored 100, package proof and `check:core` passed | next package |
 
 Core file drift rows:
 | Path | Drift score | Verdict | Owner | Evidence | Next |
@@ -356,8 +355,8 @@ Package file checklist:
   test-utils, type-tests, fixtures, examples, and docs only when touched.
 - Expected row count: 39
 - Actual row count: 39
-- Checked score-100 count: 38
-- Unchecked/deferred count: 1
+- Checked score-100 count: 39
+- Unchecked/deferred count: 0
 - Missing row count: 0
 - Extra row count: 0
 - Score gate: `[x]` only when score is `100`.
@@ -369,7 +368,7 @@ Package file rows:
 - [x] `packages/basic-nodes/src/lib/BaseBasicMarksPlugin.ts` — score: 100 — verdict: migrate-to-plite — owner: Basic Nodes — evidence: `createBasePlugin`, no facade import — next: none
 - [x] `packages/basic-nodes/src/lib/BaseBlockquoteInputRules.spec.tsx` — score: 100 — verdict: keep — owner: Basic Nodes tests — evidence: real `createBaseEditor`, nested blockquote proof green — next: none
 - [x] `packages/basic-nodes/src/lib/BaseBlockquotePlugin.spec.ts` — score: 100 — verdict: keep — owner: Basic Nodes tests — evidence: toggle and normalization behavior proof green — next: none
-- [ ] `packages/basic-nodes/src/lib/BaseBlockquotePlugin.ts` — score: deferred — verdict: Plate/Plite gap — owner: Plate/Plite keyboard command owner — evidence: migrated toggle/rules/normalizer prove green; old `overrideEditor` reverse-tab behavior has no clean current owner — next: review reverse-tab owner before scoring 100
+- [x] `packages/basic-nodes/src/lib/BaseBlockquotePlugin.ts` — score: 100 — verdict: keep — owner: Basic Nodes + Plite — evidence: reverse-tab behavior and child normalization proof green; Plite owns `replaceChildren` selection remap, Basic Nodes no longer owns a local path mapper — next: none
 - [x] `packages/basic-nodes/src/lib/BaseBoldPlugin.ts` — score: 100 — verdict: migrate-to-plite — owner: Basic Nodes — evidence: inferred tx group and parser proof green — next: none
 - [x] `packages/basic-nodes/src/lib/BaseCodePlugin.ts` — score: 100 — verdict: migrate-to-plite — owner: Basic Nodes — evidence: parser query and tx toggle proof green — next: none
 - [x] `packages/basic-nodes/src/lib/BaseHeadingInputRules.spec.tsx` — score: 100 — verdict: keep — owner: Basic Nodes tests — evidence: runtime input-rule registry and behavior proof green — next: none
@@ -409,7 +408,7 @@ Packet ledger:
 |--------|-------|--------------------|------------------|----------|------|
 | Basic Nodes facade cut | Basic Nodes | package still imported old `platejs` facade | `packages/basic-nodes/src/**`, package proof | keep | none |
 | Core builder typing | Core plugin builder | `createBasePlugin` did not infer nested `rules`/`parsers` callbacks | `packages/core/src/lib/plugin/createBasePlugin.ts`, `check:core` | keep | none |
-| Blockquote reverse-tab | Plate/Plite keyboard owner | old override transform cannot be copied cleanly | `BaseBlockquotePlugin.ts`, owner search | defer | user review / future owner packet |
+| Blockquote reverse-tab | Basic Nodes + Plite | Plite selection remap was missing for child replacement | `BaseBlockquotePlugin.ts`, Plite `replaceChildren`, focused package tests | keep | none |
 
 Extracted file ledger:
 | Path | Bucket | Origin/main owner check | Decision | Proof |
@@ -427,12 +426,12 @@ Changed list:
 | code/runtime/API | `packages/basic-nodes` migrated to `@platejs/core`, `@platejs/plite`, `@platejs/utils`; `createBasePlugin` contextual typing tightened; `check:core` includes Basic Nodes |
 | tests/proof | Basic Nodes tests migrated from `createSlateEditor`/`editor.tf` to `createBaseEditor`/direct Plite APIs; mark combo and blockquote behavior specs green |
 | docs/templates/skills | this autogoal plan updated |
-| reverted/quarantined packets | reverse-tab blockquote behavior deferred; no dirty local compat clone |
+| reverted/quarantined packets | none |
 
 Needs your attention:
 | Rank | Item | Why | Anchor | Recommendation |
 |------|------|-----|--------|----------------|
-| 1 | Blockquote Shift+Tab behavior | Old `overrideEditor` implemented reverse-tab lifting; current Plite/Plate route has no clean tab command owner | `packages/basic-nodes/src/lib/BaseBlockquotePlugin.ts` | Defer until keyboard command owner is designed; do not re-add override transform sludge |
+| N/A | None | Basic Nodes package rows are all score 100 after the Plite selection remap repair | N/A | Move to next package |
 
 Findings:
 - Basic Nodes had no migrated source diff at start and still used `platejs`,
@@ -448,8 +447,8 @@ Findings:
 Decisions and tradeoffs:
 - Keep the Basic Nodes migration packet.
 - Do not clone old blockquote `overrideEditor(...tab)` behavior locally.
-- Treat reverse-tab blockquote lifting as a real Plate/Plite keyboard command
-  gap, not as a Basic Nodes workaround.
+- Keep reverse-tab blockquote lifting in Basic Nodes shortcut semantics while
+  Plite owns generic child replacement selection remap.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
@@ -460,7 +459,7 @@ Error attempts:
 Verification evidence:
 - `rg -n "from 'platejs|from \"platejs|createSlate|createTSlate|createSlatePlugin|editor\.tf|extendTransforms|overrideEditor|getTransforms|editor\.children|editor\.selection| as any|: any|\bany\b" packages/basic-nodes/src --glob '*.{ts,tsx}'` — no matches.
 - `pnpm turbo typecheck --filter=./packages/basic-nodes` — pass.
-- `pnpm --filter @platejs/basic-nodes test` — 34 pass, 0 fail.
+- `pnpm --filter @platejs/basic-nodes test` — 38 pass, 0 fail after the Plite `replaceChildren` selection repair.
 - `pnpm --filter @platejs/basic-nodes lint` — pass.
 - `pnpm check:core` — pass, including Core, Plite, Utils, and Basic Nodes.
 
@@ -471,25 +470,25 @@ Final handoff contract:
   `packages/core/src/lib/plugin/createBasePlugin.ts`, and
   `tooling/scripts/check-core.mjs`.
 - broad Core drift score coverage: N/A; only smallest Core owner patch.
-- package file checklist coverage: 38 score-100 rows, 1 explicit deferred row.
+- package file checklist coverage: 39 score-100 rows, 0 deferred rows.
 - best Plate v2 recommendation: keep Basic Nodes as thin Plate/Plite plugins,
   with tx groups on `extendTx` and no old facade or transform compatibility.
-- verdict matrix summary: keep package migration; keep Core typing patch; defer
-  blockquote reverse-tab.
-- Plite/Plate gaps or blockers: blockquote reverse-tab keyboard command owner.
+- verdict matrix summary: keep package migration; keep Core typing patch; no
+  deferred Basic Nodes rows.
+- Plite/Plate gaps or blockers: none for Basic Nodes.
 - related Core sweep query/matches/patched/deferred: recorded above.
 - changes made: Basic Nodes migration, package deps, Core builder typing,
   check-core inclusion, plan update.
 - tests/proof commands: recorded above.
 - old compatibility names audited: no Basic Nodes matches.
-- needs attention: reverse-tab blockquote owner.
-- next best Plate Next packet: user review of this package, then next package.
+- needs attention: none for Basic Nodes.
+- next best Plate Next packet: `packages/basic-styles`.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Basic Nodes package review closed except one explicit deferred row |
-| Where am I going? | User review, then next package |
+| Where am I? | Basic Nodes package review closed |
+| Where am I going? | `packages/basic-styles` package review |
 | What is the goal? | Review `packages/basic-nodes` with per-file scoring and proof |
 | What have I learned? | See Findings |
 | What have I done? | See Timeline |
@@ -502,5 +501,4 @@ Timeline:
 - 2026-07-06 Package proof and `check:core` passed.
 
 Open risks:
-- Blockquote reverse-tab behavior is intentionally deferred for a clean
-  keyboard command owner. This is the only non-100 package source row.
+- None for Basic Nodes.

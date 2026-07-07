@@ -30,6 +30,26 @@ export interface NodeReplaceChildrenOptions {
   newSelection?: Range | null;
 }
 
+export interface NodeSetNodesOptions<T extends Node = Node> {
+  at?: Location;
+  match?: NodeMatch<T>;
+  mode?: MaximizeMode;
+  hanging?: boolean;
+  split?: boolean;
+  voids?: boolean;
+  compare?: PropsCompare;
+  merge?: PropsMerge;
+}
+
+export interface NodeUnsetNodesOptions<T extends Node = Node> {
+  at?: Location;
+  match?: NodeMatch<T>;
+  mode?: MaximizeMode;
+  hanging?: boolean;
+  split?: boolean;
+  voids?: boolean;
+}
+
 export interface NodeMutationMethods<V extends Value = Value> {
   /**
    * Insert nodes in the editor
@@ -114,16 +134,7 @@ export interface NodeMutationMethods<V extends Value = Value> {
   setNodes: <T extends NodeIn<V>>(
     editor: Editor<V>,
     props: Partial<NodeProps<T>>,
-    options?: {
-      at?: Location;
-      match?: NodeMatch<T>;
-      mode?: MaximizeMode;
-      hanging?: boolean;
-      split?: boolean;
-      voids?: boolean;
-      compare?: PropsCompare;
-      merge?: PropsMerge;
-    }
+    options?: NodeSetNodesOptions<T>
   ) => void;
 
   /**
@@ -148,14 +159,7 @@ export interface NodeMutationMethods<V extends Value = Value> {
   unsetNodes: <T extends NodeIn<V>>(
     editor: Editor<V>,
     props: string | string[],
-    options?: {
-      at?: Location;
-      match?: NodeMatch<T>;
-      mode?: MaximizeMode;
-      hanging?: boolean;
-      split?: boolean;
-      voids?: boolean;
-    }
+    options?: NodeUnsetNodesOptions<T>
   ) => void;
 
   /**

@@ -1,6 +1,7 @@
-import { type SlateEditor, createSlatePlugin, KEYS } from 'platejs';
+import { createBasePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
-export const BaseFontColorPlugin = createSlatePlugin({
+export const BaseFontColorPlugin = createBasePlugin({
   key: KEYS.color,
   inject: {
     nodeProps: {
@@ -19,7 +20,7 @@ export const BaseFontColorPlugin = createSlatePlugin({
             },
           },
         ],
-        parse({ element, type }: { element: HTMLElement; type: string }) {
+        parse({ element, type }) {
           if (element.style.color) {
             return { [type]: element.style.color };
           }
@@ -27,10 +28,8 @@ export const BaseFontColorPlugin = createSlatePlugin({
       },
     },
   },
-}).extendTransforms(({ editor }: { editor: SlateEditor }) => ({
-  addMark: (value: string) => {
-    editor.tf.addMarks({
-      [KEYS.color]: value,
-    });
+}).extendTx(({ type }) => (tx) => ({
+  set: (value: string) => {
+    tx.marks.add(type, value);
   },
 }));

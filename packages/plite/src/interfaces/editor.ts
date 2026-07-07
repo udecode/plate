@@ -66,6 +66,8 @@ import type {
   NodeInsertNodesOptions,
   NodeMutationMethods,
   NodeReplaceChildrenOptions,
+  NodeSetNodesOptions,
+  NodeUnsetNodesOptions,
 } from './transforms/node';
 import type {
   SelectionCollapseOptions,
@@ -960,16 +962,7 @@ export interface EditorTransformApi<V extends Value = Value> {
   select: (target: Location) => void;
   setNodes: <T extends Node>(
     props: Partial<NodeProps<T>>,
-    options?: {
-      at?: Location;
-      match?: NodeMatch<T>;
-      mode?: MaximizeMode;
-      hanging?: boolean;
-      split?: boolean;
-      voids?: boolean;
-      compare?: PropsCompare;
-      merge?: PropsMerge;
-    }
+    options?: NodeSetNodesOptions<T>
   ) => void;
   setNormalizing: (isNormalizing: boolean) => void;
   setPoint: (props: Partial<Point>, options?: SelectionSetPointOptions) => void;
@@ -1097,16 +1090,7 @@ export type EditorTransformMiddlewareArgs<V extends Value = Value> = {
   select: { target: Location };
   setNodes: {
     props: Partial<NodeProps<NodeIn<V>>>;
-    options?: {
-      at?: Location;
-      match?: NodeMatch<NodeIn<V>>;
-      mode?: MaximizeMode;
-      hanging?: boolean;
-      split?: boolean;
-      voids?: boolean;
-      compare?: PropsCompare;
-      merge?: PropsMerge;
-    };
+    options?: NodeSetNodesOptions<NodeIn<V>>;
   };
   setPoint: { options?: SelectionSetPointOptions; props: Partial<Point> };
   setSelection: { props: Partial<Range> };
@@ -1128,14 +1112,7 @@ export type EditorTransformMiddlewareArgs<V extends Value = Value> = {
   };
   unsetNodes: {
     props: string | string[];
-    options?: {
-      at?: Location;
-      match?: NodeMatch<NodeIn<V>>;
-      mode?: MaximizeMode;
-      hanging?: boolean;
-      split?: boolean;
-      voids?: boolean;
-    };
+    options?: NodeUnsetNodesOptions<NodeIn<V>>;
   };
   unwrapNodes: {
     options?: {

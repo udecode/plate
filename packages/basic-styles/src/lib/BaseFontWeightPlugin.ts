@@ -1,6 +1,7 @@
-import { type SlateEditor, createSlatePlugin, KEYS } from 'platejs';
+import { createBasePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
-export const BaseFontWeightPlugin = createSlatePlugin({
+export const BaseFontWeightPlugin = createBasePlugin({
   key: KEYS.fontWeight,
   inject: {
     nodeProps: {
@@ -18,16 +19,14 @@ export const BaseFontWeightPlugin = createSlatePlugin({
             },
           },
         ],
-        parse: ({ element, type }: { element: HTMLElement; type: string }) => ({
+        parse: ({ element, type }) => ({
           [type]: element.style.fontWeight,
         }),
       },
     },
   },
-}).extendTransforms(({ editor }: { editor: SlateEditor }) => ({
-  addMark: (value: string) => {
-    editor.tf.addMarks({
-      [KEYS.fontWeight]: value,
-    });
+}).extendTx(({ type }) => (tx) => ({
+  set: (value: string) => {
+    tx.marks.add(type, value);
   },
 }));

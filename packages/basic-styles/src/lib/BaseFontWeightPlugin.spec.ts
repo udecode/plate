@@ -1,12 +1,13 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { createBaseEditor, getEditorPlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseFontWeightPlugin } from './BaseFontWeightPlugin';
 
 describe('BaseFontWeightPlugin', () => {
   it('parses html font-weight styles into leaf marks', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseFontWeightPlugin],
-    } as any);
+    });
     const plugin = editor.getPlugin(BaseFontWeightPlugin);
     const parse = plugin.parsers!.html!.deserializer!.parse!;
 
@@ -15,27 +16,33 @@ describe('BaseFontWeightPlugin', () => {
     });
     expect(
       parse({
+        ...getEditorPlugin(editor, plugin),
         element: {
           style: { fontWeight: '700' },
-        },
+        } as HTMLElement,
+        node: {},
         type: KEYS.fontWeight,
-      } as any)
+      })
     ).toEqual({
       [KEYS.fontWeight]: '700',
     });
   });
 
-  it('forwards addMark through the editor mark transform', () => {
-    const editor = createSlateEditor({
+  it('sets font weight through the typed tx group', () => {
+    const editor = createBaseEditor({
       plugins: [BaseFontWeightPlugin],
-    } as any);
-    const addMarks = mock();
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
 
-    (editor as any).tf.addMarks = addMarks;
-    (editor as any).tf.fontWeight.addMark('bold');
+    editor.update.fontWeight.set('bold');
 
-    expect(addMarks).toHaveBeenCalledWith({
+    expect(editor.read.children()[0]?.children[0]).toMatchObject({
       [KEYS.fontWeight]: 'bold',
+      text: 'text',
     });
   });
 });

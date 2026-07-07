@@ -1,43 +1,45 @@
-import type { Value } from 'platejs';
-import { BaseParagraphPlugin } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { BaseParagraphPlugin } from '@platejs/core';
+import type { Value } from '@platejs/plite';
+import { createPlateEditor } from '@platejs/core/react';
 
 import { BaseIndentPlugin } from './BaseIndentPlugin';
 
-type IndentRuntimePlugin = typeof BaseIndentPlugin | typeof BaseParagraphPlugin;
-
 describe('BaseIndentPlugin Plite runtime', () => {
   it('caps matching block indent during normalization', () => {
-    const editor = createPlateEditor<Value, IndentRuntimePlugin>({
+    const value: Value = [
+      { children: [{ text: 'One' }], indent: 4, type: 'p' },
+    ];
+
+    const editor = createPlateEditor({
       plugins: [
         BaseParagraphPlugin,
         BaseIndentPlugin.configure({
           options: { indentMax: 2 },
         }),
       ],
-      value: [{ children: [{ text: 'One' }], indent: 4, type: 'p' }],
+      value,
     });
 
-    editor.update((tx) => {
-      tx.normalize({ force: true });
-    });
+    editor.update.normalize({ force: true });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: 'One' }], indent: 2, type: 'p' },
     ]);
   });
 
   it('unsets indent when the block no longer matches target types', () => {
-    const editor = createPlateEditor<Value, IndentRuntimePlugin>({
+    const value: Value = [
+      { children: [{ text: 'One' }], indent: 2, type: 'quote' },
+    ];
+
+    const editor = createPlateEditor({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin],
-      value: [{ children: [{ text: 'One' }], indent: 2, type: 'quote' }],
+      value,
     });
 
-    editor.update((tx) => {
-      tx.normalize({ force: true });
-    });
+    editor.update.normalize({ force: true });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: 'One' }], type: 'quote' },
     ]);
   });

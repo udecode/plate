@@ -939,9 +939,15 @@ importers:
 
   packages/basic-styles:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       react:
         specifier: '>=18.0.0'
         version: 19.2.4
@@ -955,9 +961,6 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/browser:
     devDependencies:
@@ -1586,6 +1589,15 @@ importers:
 
   packages/indent:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
+      '@platejs/plite':
+        specifier: workspace:^
+        version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       react:
         specifier: '>=18.0.0'
         version: 19.2.4
@@ -1599,9 +1611,6 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/juice:
     dependencies:

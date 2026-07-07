@@ -1,17 +1,12 @@
-import {
-  type SetNodesOptions,
-  type SlateEditor,
-  createSlatePlugin,
-  KEYS,
-} from 'platejs';
-
-import { setLineHeight } from './transforms';
+import { createBasePlugin, getInjectMatch } from '@platejs/core';
+import type { Element, NodeSetNodesOptions } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 /**
  * Enables support for text alignment, useful to align your content to left,
  * right and center it.
  */
-export const BaseLineHeightPlugin = createSlatePlugin({
+export const BaseLineHeightPlugin = createBasePlugin({
   key: KEYS.lineHeight,
   inject: {
     isBlock: true,
@@ -20,17 +15,11 @@ export const BaseLineHeightPlugin = createSlatePlugin({
       nodeKey: 'lineHeight',
     },
     targetPlugins: [KEYS.p],
-    targetPluginToInject: ({
-      editor,
-      plugin,
-    }: {
-      editor: SlateEditor;
-      plugin: { key: string };
-    }) => ({
+    targetPluginToInject: ({ editor, plugin }) => ({
       parsers: {
         html: {
           deserializer: {
-            parse: ({ element }: { element: HTMLElement }) => {
+            parse: ({ element }) => {
               if (element.style.lineHeight) {
                 return {
                   [editor.getType(plugin.key)]: element.style.lineHeight,
@@ -42,7 +31,25 @@ export const BaseLineHeightPlugin = createSlatePlugin({
       },
     }),
   },
-}).extendTransforms(({ editor }: { editor: SlateEditor }) => ({
-  setNodes: (value: number, options?: SetNodesOptions) =>
-    setLineHeight(editor, value, options),
+}).extendTx(({ editor, plugin, type }) => (tx) => ({
+  set: (value: number, options?: NodeSetNodesOptions<Element>) => {
+    const { defaultNodeValue, nodeKey = type } = editor.getInjectProps(plugin);
+    const match = getInjectMatch(editor, plugin);
+
+    if (value === defaultNodeValue) {
+      tx.nodes.unset(nodeKey, {
+        match,
+        ...options,
+      });
+      return;
+    }
+
+    tx.nodes.set(
+      { [nodeKey]: value },
+      {
+        match,
+        ...options,
+      }
+    );
+  },
 }));
