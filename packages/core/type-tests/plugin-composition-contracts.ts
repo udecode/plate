@@ -112,15 +112,17 @@ const basePlateEditor = createBaseEditor({
   ],
 });
 
-const childLevel: 1 | 2 = basePlateEditor.getOptions(ChildPlugin).level;
-const childMode: ChildMode = basePlateEditor.getOptions(ChildPlugin).mode;
+const childLevel: 1 | 2 = basePlateEditor
+  .plugin(ChildPlugin)
+  .getOptions().level;
+const childMode: ChildMode = basePlateEditor
+  .plugin(ChildPlugin)
+  .getOptions().mode;
 const childLabel: ChildLabel = basePlateEditor.api.getLabel();
 const childModeFromPartialApi: ChildMode = basePlateEditor.api.getMode();
-const isLevelTwo: boolean = basePlateEditor.getOption(
-  ChildPlugin,
-  'isLevel',
-  2
-);
+const isLevelTwo: boolean = basePlateEditor
+  .plugin(ChildPlugin)
+  .getOption('isLevel', 2);
 const formatTone: FormatTone = basePlateEditor.api.format();
 const inspected: 'inspector' = basePlateEditor.api.inspect();
 
@@ -190,7 +192,7 @@ GrandparentPlugin.configurePlugin(ChildPlugin, () => ({
 }));
 
 // @ts-expect-error invalid merged selector argument
-basePlateEditor.getOption(ChildPlugin, 'isLevel', 3);
+basePlateEditor.plugin(ChildPlugin).getOption('isLevel', 3);
 
 basePlateEditor.update((tx) => {
   // @ts-expect-error invalid nested tx argument

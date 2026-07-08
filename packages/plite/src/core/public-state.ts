@@ -2461,6 +2461,8 @@ const getUpdateView = <
       });
     });
   };
+  let txRecord!: EditorUpdateTransaction<V, TExtensions>;
+
   const tx = {
     ...state,
     blocks: Object.freeze({
@@ -2687,15 +2689,19 @@ const getUpdateView = <
         replace: (input: SnapshotInput<V>) => replaceSnapshot(editor, input),
       })
     ),
-    withoutNormalizing: (fn: () => void) => transforms.withoutNormalizing(fn),
+    withoutNormalizing: (fn) =>
+      transforms.withoutNormalizing(() => {
+        fn({ tx: txRecord });
+      }),
   } satisfies EditorCoreUpdateTransaction<V>;
 
-  const txRecord = tx as unknown as Record<string, unknown>;
+  txRecord = tx as unknown as EditorUpdateTransaction<V, TExtensions>;
+  const txExtensionRecord = txRecord as unknown as Record<string, unknown>;
 
   for (const [groupName, registration] of getExtensionRegistry(editor)
     .txGroups) {
-    txRecord[groupName] = registration.factory(
-      txRecord as never,
+    txExtensionRecord[groupName] = registration.factory(
+      txExtensionRecord as never,
       editor as never,
       getUpdateContext(editor) as never
     );

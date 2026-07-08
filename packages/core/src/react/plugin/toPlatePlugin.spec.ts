@@ -175,7 +175,7 @@ describe('toPlatePlugin type tests', () => {
     editor.api.plugin.getSyntaxState();
     editor.api.plugin.getLanguage();
 
-    expect(editor.getOptions(CodeBlockPlugin)).toEqual({
+    expect(editor.plugin(CodeBlockPlugin).getOptions()).toEqual({
       hotkey: ['mod+opt+8', 'mod+shift+8'],
       syntax: true,
       syntaxPopularFirst: false,
@@ -227,9 +227,9 @@ describe('toPlatePlugin type tests', () => {
     );
 
     expect(
-      createPlateEditor({ plugins: [CodeBlockPlugin] }).getOptions(
-        CodeBlockPlugin
-      )
+      createPlateEditor({ plugins: [CodeBlockPlugin] })
+        .plugin(CodeBlockPlugin)
+        .getOptions()
     ).toEqual({
       hotkey: ['mod+opt+8', 'mod+shift+8'],
       syntax: true,
@@ -343,7 +343,7 @@ describe('toPlatePlugin type tests', () => {
 
     editor.api.plugin.getLanguage();
 
-    expect(editor.getOptions(CodeBlockPlugin)).toEqual({
+    expect(editor.plugin(CodeBlockPlugin).getOptions()).toEqual({
       hotkey: ['mod+opt+8', 'mod+shift+8'],
       syntax: true,
       syntaxPopularFirst: false,
@@ -401,9 +401,9 @@ describe('toPlatePlugin type tests', () => {
     );
 
     expect(
-      createPlateEditor({ plugins: [CodeBlockPlugin2] }).getOptions(
-        CodeBlockPlugin2
-      )
+      createPlateEditor({ plugins: [CodeBlockPlugin2] })
+        .plugin(CodeBlockPlugin2)
+        .getOptions()
     ).toEqual({
       hotkey: ['mod+opt+8', 'mod+shift+8'],
       syntax: true,

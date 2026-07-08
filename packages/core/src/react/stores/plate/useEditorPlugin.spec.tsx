@@ -40,7 +40,7 @@ describe('useEditorPlugin', () => {
     expect(result.current).toBe(firstContext);
 
     act(() => {
-      editor.setOption(CounterPlugin, 'value', 2);
+      editor.plugin(CounterPlugin).setOption('value', 2);
     });
 
     expect(result.current.getOptions()).toEqual({ value: 2 });

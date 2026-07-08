@@ -16,7 +16,7 @@ describe('CsvPlugin', () => {
       mimeType: 'text/plain',
     };
 
-    expect(editor.getOptions(CsvPlugin)).toEqual({
+    expect(editor.plugin(CsvPlugin).getOptions()).toEqual({
       errorTolerance: 0.25,
       parseOptions: {
         header: true,

@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { PlateEditor } from 'platejs/react';
+import type { PlateEditor } from '@platejs/core/react';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
+import { createPlateEditor } from '@platejs/core/react';
 
 import * as domUtils from '../../../lib';
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
@@ -13,7 +13,7 @@ jsxt;
 
 describe('moveSelection', () => {
   let editor: PlateEditor;
-  let querySelectorSelectableSpy: ReturnType<typeof spyOn>;
+  let querySelectorSelectableSpy: AnyTestMock;
   let querySelectorSelectableMock: ReturnType<typeof mock>;
 
   beforeEach(() => {
@@ -58,22 +58,24 @@ describe('moveSelection', () => {
   describe('when pressing arrow down without shift', () => {
     it('set anchor to block below the bottom-most and select it alone', () => {
       // Suppose block1, block2 selected
-      editor.setOption(
-        BlockSelectionPlugin,
-        'selectedIds',
-        new Set(['block1', 'block2'])
-      );
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption('selectedIds', new Set(['block1', 'block2']));
       // anchor = block1 (arbitrary choice)
-      editor.setOption(BlockSelectionPlugin, 'anchorId', 'block1');
+      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'block1');
 
       // Move selection DOWN => below bottom-most (which is block2) => block3
       moveSelection(editor, 'down');
 
       // Should now only have block3 in selection
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['block3']);
 
-      const anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      const anchorId = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('anchorId');
       expect(anchorId).toBe('block3');
     });
   });
@@ -81,20 +83,22 @@ describe('moveSelection', () => {
   describe('when pressing arrow up without shift', () => {
     it('set anchor to block above the top-most and select it alone', () => {
       // Suppose block2, block3 selected, anchor is block3
-      editor.setOption(
-        BlockSelectionPlugin,
-        'selectedIds',
-        new Set(['block2', 'block3'])
-      );
-      editor.setOption(BlockSelectionPlugin, 'anchorId', 'block3');
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption('selectedIds', new Set(['block2', 'block3']));
+      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'block3');
 
       // Move selection UP => above top-most (which is block2) => block1
       moveSelection(editor, 'up');
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['block1']);
 
-      const anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      const anchorId = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('anchorId');
       expect(anchorId).toBe('block1');
     });
   });
@@ -102,69 +106,69 @@ describe('moveSelection', () => {
   describe('when only one block is selected', () => {
     it('maintain current selection if there is no block above/below', () => {
       // Only block1 selected, anchor = block1
-      editor.setOption(
-        BlockSelectionPlugin,
-        'selectedIds',
-        new Set(['block1'])
-      );
-      editor.setOption(BlockSelectionPlugin, 'anchorId', 'block1');
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption('selectedIds', new Set(['block1']));
+      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'block1');
 
       // Move up => block1 is the top-most => no block above => maintain block1
       moveSelection(editor, 'up');
 
-      let selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      let selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['block1']);
-      let anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      let anchorId = editor.plugin(BlockSelectionPlugin).getOption('anchorId');
       expect(anchorId).toBe('block1');
 
       // Only block3 selected, anchor = block3
-      editor.setOption(
-        BlockSelectionPlugin,
-        'selectedIds',
-        new Set(['block3'])
-      );
-      editor.setOption(BlockSelectionPlugin, 'anchorId', 'block3');
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption('selectedIds', new Set(['block3']));
+      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'block3');
 
       // Move down => block3 is the bottom-most => no block below => maintain block3
       moveSelection(editor, 'down');
 
-      selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['block3']);
-      anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      anchorId = editor.plugin(BlockSelectionPlugin).getOption('anchorId');
       expect(anchorId).toBe('block3');
     });
 
     it('maintain current selection when multiple blocks are selected and no prev/next block exists', () => {
       // block1 and block2 selected at the top
-      editor.setOption(
-        BlockSelectionPlugin,
-        'selectedIds',
-        new Set(['block1', 'block2'])
-      );
-      editor.setOption(BlockSelectionPlugin, 'anchorId', 'block1');
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption('selectedIds', new Set(['block1', 'block2']));
+      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'block1');
 
       // Move up => no block above block1 => maintain current selection
       moveSelection(editor, 'up');
 
-      let selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      let selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['block1']);
-      let anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      let anchorId = editor.plugin(BlockSelectionPlugin).getOption('anchorId');
       expect(anchorId).toBe('block1');
 
       // block2 and block3 selected at the bottom
-      editor.setOption(
-        BlockSelectionPlugin,
-        'selectedIds',
-        new Set(['block2', 'block3'])
-      );
-      editor.setOption(BlockSelectionPlugin, 'anchorId', 'block3');
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption('selectedIds', new Set(['block2', 'block3']));
+      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'block3');
 
       // Move down => no block below block3 => maintain current selection
       moveSelection(editor, 'down');
 
-      selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['block3']);
-      anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      anchorId = editor.plugin(BlockSelectionPlugin).getOption('anchorId');
       expect(anchorId).toBe('block3');
     });
   });
@@ -194,39 +198,43 @@ describe('moveSelection', () => {
       });
 
       // Select child1
-      editor.setOption(
-        BlockSelectionPlugin,
-        'selectedIds',
-        new Set(['child1'])
-      );
-      editor.setOption(BlockSelectionPlugin, 'anchorId', 'child1');
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption('selectedIds', new Set(['child1']));
+      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'child1');
 
       // Move selection UP => no previous sibling => should select parent1
       moveSelection(editor, 'up');
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['parent1']);
 
-      const anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      const anchorId = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('anchorId');
       expect(anchorId).toBe('parent1');
     });
 
     it('keeps the selection unchanged at the root without a previous sibling', () => {
       // Using the original test value
-      editor.setOption(
-        BlockSelectionPlugin,
-        'selectedIds',
-        new Set(['block1'])
-      );
-      editor.setOption(BlockSelectionPlugin, 'anchorId', 'block1');
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption('selectedIds', new Set(['block1']));
+      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'block1');
 
       // Move up from the first block at root level
       moveSelection(editor, 'up');
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['block1']);
 
-      const anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      const anchorId = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('anchorId');
       expect(anchorId).toBe('block1');
     });
   });
@@ -301,7 +309,7 @@ describe('moveSelection', () => {
         ],
       });
 
-      editor.setOption(BlockSelectionPlugin, 'isSelectable', (node) => {
+      editor.plugin(BlockSelectionPlugin).setOption('isSelectable', (node) => {
         // Only table and tr are selectable
         return node.type === 'table' || node.type === 'tr';
       });
@@ -309,46 +317,64 @@ describe('moveSelection', () => {
 
     it('move from first tr to second tr in table', () => {
       // Select tr1
-      editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['tr1']));
-      editor.setOption(BlockSelectionPlugin, 'anchorId', 'tr1');
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption('selectedIds', new Set(['tr1']));
+      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'tr1');
 
       // Move down
       moveSelection(editor, 'down');
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['tr2']);
 
-      const anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      const anchorId = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('anchorId');
       expect(anchorId).toBe('tr2');
     });
 
     it('keeps the selection unchanged at the last row', () => {
       // Select tr2
-      editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['tr2']));
-      editor.setOption(BlockSelectionPlugin, 'anchorId', 'tr2');
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption('selectedIds', new Set(['tr2']));
+      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'tr2');
 
       // Move down
       moveSelection(editor, 'down');
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['tr2']);
 
-      const anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      const anchorId = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('anchorId');
       expect(anchorId).toBe('tr2');
     });
 
     it('skip non-selectable td cells', () => {
       // Select td11
-      editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['td11']));
-      editor.setOption(BlockSelectionPlugin, 'anchorId', 'td11');
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption('selectedIds', new Set(['td11']));
+      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'td11');
 
       // Move down
       moveSelection(editor, 'down');
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['tr2']);
 
-      const anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      const anchorId = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('anchorId');
       expect(anchorId).toBe('tr2');
     });
   });
@@ -411,74 +437,79 @@ describe('moveSelection', () => {
       });
 
       // For testing, let's skip columns
-      editor.setOption(
-        BlockSelectionPlugin,
-        'isSelectable',
-        (node) => node.type !== 'column'
-      );
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption('isSelectable', (node) => node.type !== 'column');
     });
 
     it('move to previous sibling when not first child', () => {
       // Select child2
-      editor.setOption(
-        BlockSelectionPlugin,
-        'selectedIds',
-        new Set(['child2'])
-      );
-      editor.setOption(BlockSelectionPlugin, 'anchorId', 'child2');
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption('selectedIds', new Set(['child2']));
+      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'child2');
 
       // Move up => should select child1
       moveSelection(editor, 'up');
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['child1']);
 
-      const anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      const anchorId = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('anchorId');
       expect(anchorId).toBe('child1');
     });
 
     it('move to parents previous block if first child and skipping columns', () => {
       // Select grandchild2
-      editor.setOption(
-        BlockSelectionPlugin,
-        'selectedIds',
-        new Set(['grandchild2'])
-      );
-      editor.setOption(BlockSelectionPlugin, 'anchorId', 'grandchild2');
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption('selectedIds', new Set(['grandchild2']));
+      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'grandchild2');
 
       // Move up => should select grandchild1 (since columns are not selectable)
       moveSelection(editor, 'up');
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['grandchild1']);
 
-      const anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      const anchorId = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('anchorId');
       expect(anchorId).toBe('grandchild1');
     });
 
     it('handle deeper nesting with non-selectable parents', () => {
       // Make column_group1 not selectable as well
-      editor.setOption(
-        BlockSelectionPlugin,
-        'isSelectable',
-        (node) => node.type !== 'column' && node.type !== 'column_group'
-      );
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption(
+          'isSelectable',
+          (node) => node.type !== 'column' && node.type !== 'column_group'
+        );
 
       // Select grandchild1
-      editor.setOption(
-        BlockSelectionPlugin,
-        'selectedIds',
-        new Set(['grandchild1'])
-      );
-      editor.setOption(BlockSelectionPlugin, 'anchorId', 'grandchild1');
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption('selectedIds', new Set(['grandchild1']));
+      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'grandchild1');
 
       // Move up => should skip column1 and column_group1, select child2
       moveSelection(editor, 'up');
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['child2']);
 
-      const anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      const anchorId = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('anchorId');
       expect(anchorId).toBe('child2');
     });
   });

@@ -1,6 +1,7 @@
 import type { EditorUpdateTransaction, Operation, Point } from '@platejs/plite';
 import {
   type DOMApi,
+  type DOMClipboardApi,
   type ScrollIntoViewOptions,
   dom as pliteDom,
 } from '@platejs/plite-dom';
@@ -46,6 +47,7 @@ export type DomConfig = PluginConfig<
     scrollOptions?: ScrollIntoViewOptions;
   },
   {
+    clipboard: DOMClipboardApi;
     dom: DOMApi & PlateDomApi;
   },
   {
@@ -60,7 +62,7 @@ export type DomConfig = PluginConfig<
 export type ScrollMode = 'first' | 'last';
 
 const beginAutoScroll = (editor: BaseEditor, options?: AutoScrollOptions) => {
-  const prevOptions = editor.getOptions(DOMPluginBase);
+  const prevOptions = editor.plugin(DOMPluginBase).getOptions();
   const prevAutoScroll = AUTO_SCROLL.get(editor) ?? false;
   const prevFirstTarget = AUTO_SCROLL_FIRST_TARGET.get(editor);
 
@@ -75,7 +77,7 @@ const beginAutoScroll = (editor: BaseEditor, options?: AutoScrollOptions) => {
           }
         : (options.scrollOptions ?? prevOptions.scrollOptions);
 
-    editor.setOptions(DOMPluginBase, {
+    editor.plugin(DOMPluginBase).setOptions({
       ...prevOptions,
       scrollOperations: {
         ...prevOptions.scrollOperations,
@@ -100,7 +102,7 @@ const beginAutoScroll = (editor: BaseEditor, options?: AutoScrollOptions) => {
     } else {
       AUTO_SCROLL_FIRST_TARGET.delete(editor);
     }
-    editor.setOptions(DOMPluginBase, prevOptions);
+    editor.plugin(DOMPluginBase).setOptions(prevOptions);
   };
 };
 
@@ -111,7 +113,7 @@ const scrollOperationIntoView = (editor: BaseEditor, operation: Operation) => {
     scrollMode,
     scrollOperations = {},
     scrollOptions,
-  } = editor.getOptions(DOMPluginBase);
+  } = editor.plugin(DOMPluginBase).getOptions();
 
   if (scrollOperations[operation.type] !== true) return;
   if (!('path' in operation)) return;
@@ -177,6 +179,4 @@ export const DOMPluginBase = createBasePlugin<DomConfig>({
  * Plate DOM installs the Plite DOM bridge for base editors, then adds
  * Plate-owned auto-scroll state and transaction ergonomics.
  */
-export const DOMPlugin = DOMPluginBase.extendExtension(
-  pliteDom({ clipboard: false })
-);
+export const DOMPlugin = DOMPluginBase.extendExtension(pliteDom());

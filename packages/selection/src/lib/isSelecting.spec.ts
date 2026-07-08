@@ -1,35 +1,40 @@
+import { createBaseEditor } from '@platejs/core';
+
+import { BlockSelectionPlugin } from '../react/BlockSelectionPlugin';
 import { isSelecting } from './isSelecting';
 
 describe('isSelecting', () => {
   it('returns true when the editor selection is expanded', () => {
-    const editor = {
-      api: {
-        isExpanded: () => true,
+    const editor = createBaseEditor({
+      plugins: [BlockSelectionPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
       },
-      getOption: () => false,
-    } as any;
+      value: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
+    });
 
     expect(isSelecting(editor)).toBe(true);
   });
 
   it('returns true when block selection says some blocks are being selected', () => {
-    const editor = {
-      api: {
-        isExpanded: () => false,
-      },
-      getOption: () => true,
-    } as any;
+    const editor = createBaseEditor({
+      plugins: [BlockSelectionPlugin],
+      value: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
+    });
+
+    editor
+      .plugin(BlockSelectionPlugin)
+      .setOption('selectedIds', new Set(['block1']));
 
     expect(isSelecting(editor)).toBe(true);
   });
 
   it('returns false when neither selection state is active', () => {
-    const editor = {
-      api: {
-        isExpanded: () => false,
-      },
-      getOption: () => false,
-    } as any;
+    const editor = createBaseEditor({
+      plugins: [BlockSelectionPlugin],
+      value: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
+    });
 
     expect(isSelecting(editor)).toBe(false);
   });

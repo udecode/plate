@@ -7,7 +7,7 @@ export const insertEmoji = <TEmoji extends Emoji = Emoji>(
   editor: SlateEditor,
   emoji: TEmoji
 ) => {
-  const { createEmojiNode } = editor.getOptions(BaseEmojiPlugin);
+  const { createEmojiNode } = editor.plugin(BaseEmojiPlugin).getOptions();
 
   const emojiNode = createEmojiNode!(emoji);
   editor.tf.insertNodes(emojiNode);

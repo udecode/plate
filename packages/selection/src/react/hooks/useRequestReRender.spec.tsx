@@ -3,8 +3,8 @@ import { renderHook, act } from '@testing-library/react';
 import { useRequestReRender } from './useRequestReRender';
 
 describe('useRequestReRender', () => {
-  let rafSpy: ReturnType<typeof spyOn>;
-  let cancelSpy: ReturnType<typeof spyOn>;
+  let rafSpy: AnyTestMock;
+  let cancelSpy: AnyTestMock;
   let queued: FrameRequestCallback | null;
 
   beforeEach(() => {

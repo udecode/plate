@@ -44,6 +44,7 @@ import {
 import { deserializeHtml } from '../plugins/html';
 
 type PluginLookupInput = AnyBasePlugin | WithRequiredKey<BasePluginInput>;
+type PluginContextLookupInput = PluginLookupInput | string;
 
 const normalizeBaseInitialValue = <V extends Value>(
   editor: BaseEditor,
@@ -243,59 +244,13 @@ const installPlateEditorExtensions = (editor: BaseEditor) => {
 };
 
 type PlateRuntimePluginContext = BasePluginContext<AnyPluginConfig>;
-type PlateRuntimePluginInput = Parameters<BaseEditor['getOptions']>[0];
 
 const plateTxExtensionCleanups = new WeakMap<object, () => void>();
-
-const asPlateArg = <T>(value: unknown): T => value as T;
-
-const asPluginInput = (plugin: AnyBasePlugin): PlateRuntimePluginInput =>
-  plugin as unknown as PlateRuntimePluginInput;
 
 const createPlateRuntimePluginContext = (
   editor: BaseEditor,
   plugin: AnyBasePlugin
-): PlateRuntimePluginContext =>
-  ({
-    api: editor.api,
-    editor,
-    plugin,
-    type: plugin.node?.type ?? plugin.key,
-    getOption: ((key: PropertyKey, ...args: unknown[]) =>
-      (editor.getOption as unknown as (...input: unknown[]) => unknown)(
-        plugin,
-        key,
-        ...args
-      )) as PlateRuntimePluginContext['getOption'],
-    getOptions: () => editor.getOptions(asPluginInput(plugin)),
-    setOption: (key: string | Record<string, unknown>, value?: unknown) => {
-      const pluginInput = asPluginInput(plugin);
-
-      if (typeof key === 'string') {
-        editor.setOption(
-          pluginInput,
-          asPlateArg<Parameters<BaseEditor['setOption']>[1]>(key),
-          asPlateArg<Parameters<BaseEditor['setOption']>[2]>(value)
-        );
-        return;
-      }
-
-      editor.setOptions(
-        pluginInput,
-        asPlateArg<Parameters<BaseEditor['setOptions']>[1]>(key)
-      );
-    },
-    setOptions: (
-      options:
-        | ((state: Record<string, unknown>) => void)
-        | Record<string, unknown>
-    ) => {
-      editor.setOptions(
-        asPluginInput(plugin),
-        asPlateArg<Parameters<BaseEditor['setOptions']>[1]>(options)
-      );
-    },
-  }) as PlateRuntimePluginContext;
+): PlateRuntimePluginContext => getEditorPlugin(editor, plugin);
 
 const collectPlateTxGroupFactories = (editor: BaseEditor) => {
   const txGroups = new Map<string, PlatePluginTxGroup[]>();
@@ -546,6 +501,11 @@ export const extendBaseEditor = <
 
   editor.getPlugin = ((plugin: PluginLookupInput) =>
     getSlatePlugin(editor, plugin)) as BaseEditor['getPlugin'];
+  editor.plugin = ((plugin: PluginContextLookupInput) =>
+    getEditorPlugin(
+      editor,
+      typeof plugin === 'string' ? { key: plugin } : plugin
+    )) as BaseEditor['plugin'];
   editor.getType = (pluginKey) => getPluginType(editor, pluginKey);
   editor.getInjectProps = (<C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
@@ -561,55 +521,6 @@ export const extendBaseEditor = <
   }) satisfies BaseEditor['getInjectProps'];
   editor.getOptionsStore = (plugin) =>
     getSlatePlugin(editor, plugin).optionsStore;
-  editor.getOptions = (plugin) => {
-    const store = editor.getOptionsStore(plugin);
-
-    if (!store) return getSlatePlugin(editor, plugin).options;
-
-    return editor.getOptionsStore(plugin).get('state');
-  };
-  editor.getOption = ((plugin: any, key: PropertyKey, ...args: unknown[]) => {
-    const store = editor.getOptionsStore(plugin as never) as any;
-
-    if (!store) return editor.getPlugin(plugin).options[key as never];
-
-    if (!(key in store.get('state')) && !(key in store.selectors)) {
-      editor.api.debug.error(
-        `editor.getOption: ${key as string} option is not defined in plugin ${plugin.key}.`,
-        'OPTION_UNDEFINED'
-      );
-      return;
-    }
-
-    return (store.get as any)(key, ...args);
-  }) as BaseEditor['getOption'];
-  editor.setOption = ((plugin, key, value) => {
-    const store = editor.getOptionsStore(plugin);
-
-    if (!store) return;
-
-    if (!(key in store.get('state'))) {
-      editor.api.debug.error(
-        `editor.setOption: ${String(key)} option is not defined in plugin ${plugin.key}.`,
-        'OPTION_UNDEFINED'
-      );
-      return;
-    }
-
-    store.set(key, value);
-  }) as BaseEditor['setOption'];
-  editor.setOptions = ((plugin, options) => {
-    const store = editor.getOptionsStore(plugin);
-
-    if (!store) return;
-    if (typeof options === 'object') {
-      store.set('state', (draft) => {
-        Object.assign(draft, options);
-      });
-    } else if (typeof options === 'function') {
-      store.set('state', options);
-    }
-  }) as BaseEditor['setOptions'];
 
   const pluginList = [...plugins];
   const corePlugins = getCorePlugins({
@@ -677,10 +588,7 @@ export type CreateBaseEditorOptions<
 
 type CreateBaseEditorPluginInput<C extends AnyPluginConfig = AnyPluginConfig> =
   | BasePlugin<C>
-  | AnyPluginConfig
-  | (WithRequiredKey<C> & {
-      readonly __config: C;
-    });
+  | AnyPluginConfig;
 
 type InferCreateBaseEditorPluginConfig<P> = P extends {
   readonly __config: infer C extends AnyPluginConfig;

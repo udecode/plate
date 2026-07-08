@@ -5,7 +5,7 @@ import { BaseTodoListPlugin } from '../BaseTodoListPlugin';
 /** Insert todo list item if selection in li>p. TODO: test */
 export const insertTodoListItem = (editor: SlateEditor): boolean => {
   const { inheritCheckStateOnLineEndBreak, inheritCheckStateOnLineStartBreak } =
-    editor.getOptions(BaseTodoListPlugin);
+    editor.plugin(BaseTodoListPlugin).getOptions();
   const todoType = editor.getType(KEYS.listTodoClassic);
 
   if (!editor.selection) {

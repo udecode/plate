@@ -34,7 +34,7 @@ describe('addMarkSuggestion', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
     editor.tf.addMark('bold', true);
 
     const data = getInlineSuggestionData(
@@ -79,7 +79,7 @@ describe('addMarkSuggestion', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
     editor.tf.addMark('italic', true);
 
     const dataList = editor
@@ -122,7 +122,7 @@ describe('addMarkSuggestion', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
     editor.tf.addMark('bold', true);
 
     const node = editor.children[0].children[0] as any;

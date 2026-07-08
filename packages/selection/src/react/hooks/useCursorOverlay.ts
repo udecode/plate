@@ -1,15 +1,21 @@
 import React from 'react';
 
-import type { TRange, UnknownObject } from 'platejs';
+import type { Range } from '@platejs/plite';
+import { useIsomorphicLayoutEffect } from '@udecode/react-utils';
+import type { UnknownObject } from '@udecode/utils';
 
 import {
-  useEditorContainerRef,
   useEditorRef,
-  useIsomorphicLayoutEffect,
+  usePlateValue,
   usePluginOption,
-} from 'platejs/react';
+} from '@platejs/core/react';
 
-import type { CursorOverlayState, CursorState, SelectionRect } from '../types';
+import {
+  FROZEN_EMPTY_ARRAY,
+  type CursorOverlayState,
+  type CursorState,
+  type SelectionRect,
+} from '../types';
 
 import { CursorOverlayPlugin } from '../CursorOverlayPlugin';
 import { getCursorOverlayState } from '../queries/getCursorOverlayState';
@@ -31,9 +37,7 @@ export type UseCursorOverlayOptions = {
   refreshOnResize?: boolean;
 };
 
-export const FROZEN_EMPTY_ARRAY = Object.freeze(
-  []
-) as unknown as SelectionRect[];
+export { FROZEN_EMPTY_ARRAY } from '../types';
 
 export const useCursorOverlay = <TCursorData extends UnknownObject>({
   minSelectionWidth = 1,
@@ -43,14 +47,14 @@ export const useCursorOverlay = <TCursorData extends UnknownObject>({
   refresh: () => void;
 } => {
   const editor = useEditorRef();
-  const containerRef = useEditorContainerRef();
+  const containerRef = usePlateValue('containerRef');
 
   const cursorStates = usePluginOption(
     CursorOverlayPlugin,
     'cursors'
   ) as Record<string, CursorState<TCursorData>>;
 
-  const selectionRectCache = React.useRef<WeakMap<TRange, SelectionRect[]>>(
+  const selectionRectCache = React.useRef<WeakMap<Range, SelectionRect[]>>(
     new WeakMap()
   );
 

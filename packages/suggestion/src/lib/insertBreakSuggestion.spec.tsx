@@ -48,7 +48,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.insertBreak();
 
@@ -81,7 +81,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.insertText('1');
 
@@ -121,7 +121,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.deleteBackward();
 
@@ -155,7 +155,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.deleteBackward();
 
@@ -179,7 +179,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.deleteBackward('line');
     editor.tf.deleteBackward('character');
@@ -229,7 +229,7 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', false);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', false);
 
     editor.tf.deleteBackward();
 
@@ -263,7 +263,7 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', false);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', false);
 
     editor.tf.deleteBackward();
 

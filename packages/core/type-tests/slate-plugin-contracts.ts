@@ -139,13 +139,15 @@ const overrideEditor = createBaseEditor({
 });
 
 const boldHotkey: string = basePlateEditor.api.toggleBold();
-const boldEnabled: true = basePlateEditor.getOptions(BoldPlugin).enabled;
-const calloutVariant: 'info' | 'warning' = basePlateEditor.getOptions(
-  ConfiguredCalloutPlugin
-).variant;
-const calloutDismissible: boolean | undefined = basePlateEditor.getOptions(
-  ConfiguredCalloutPlugin
-).dismissible;
+const boldEnabled: true = basePlateEditor
+  .plugin(BoldPlugin)
+  .getOptions().enabled;
+const calloutVariant: 'info' | 'warning' = basePlateEditor
+  .plugin(ConfiguredCalloutPlugin)
+  .getOptions().variant;
+const calloutDismissible: boolean | undefined = basePlateEditor
+  .plugin(ConfiguredCalloutPlugin)
+  .getOptions().dismissible;
 const overrideLabel: string = overrideEditor.api.overrideLabel();
 const scopedLabel: 'scoped' = getEditorPlugin(
   overrideEditor,
@@ -207,7 +209,7 @@ basePlateEditor.api.notReal();
 basePlateEditor.api.setVariant('danger');
 
 // @ts-expect-error boolean option must stay boolean
-basePlateEditor.getOptions(BoldPlugin).enabled = 'yes';
+basePlateEditor.plugin(BoldPlugin).getOptions().enabled = 'yes';
 
 // @ts-expect-error editor-level override APIs must not keep stale first-plugin literals
 const staleOverrideLabel: 'original' = overrideEditor.api.overrideLabel();

@@ -42,7 +42,7 @@ export const setSuggestionNodes = (
       id: suggestionId,
       createdAt: options?.createdAt ?? Date.now(),
       type: 'remove',
-      userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+      userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
     };
 
     const props = {

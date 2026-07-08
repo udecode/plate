@@ -24,7 +24,7 @@ export const getMergedOptionsDeserialize = (
     disallowedNodes: PluginDisallowedNodes,
     remarkPlugins: PluginRemarkPlugins,
     rules: PluginRules,
-  } = editor.getOptions(MarkdownPlugin);
+  } = editor.plugin(MarkdownPlugin).getOptions();
 
   const mergedRules = {
     ...buildRules(editor),

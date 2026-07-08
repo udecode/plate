@@ -99,13 +99,13 @@ export const streamDeserializeMd = (
 };
 
 const withoutDeserializeInMdx = (editor: PlateEditor, input: string) => {
-  const mdxName = editor.getOption(AIChatPlugin, '_mdxName');
+  const mdxName = editor.plugin(AIChatPlugin).getOption('_mdxName');
 
   if (mdxName) {
     const isMdxEnd = input.includes(`</${mdxName}>`);
 
     if (isMdxEnd) {
-      editor.setOption(AIChatPlugin, '_mdxName', null);
+      editor.plugin(AIChatPlugin).setOption('_mdxName', null);
       return false;
     }
     return [
@@ -123,6 +123,6 @@ const withoutDeserializeInMdx = (editor: PlateEditor, input: string) => {
 
   // Avoid incorrect detection in the code block
   if (input.startsWith(`<${newMdxName}`)) {
-    editor.setOption(AIChatPlugin, '_mdxName', newMdxName ?? null);
+    editor.plugin(AIChatPlugin).setOption('_mdxName', newMdxName ?? null);
   }
 };

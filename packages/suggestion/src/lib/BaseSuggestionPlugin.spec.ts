@@ -86,7 +86,7 @@ describe('BaseSuggestionPlugin', () => {
     const editor = createEditor();
     const api = editor.getApi(BaseSuggestionPlugin).suggestion;
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     expect(api.suggestionData(editor.children[0].children[0] as any)).toEqual(
       inlineSuggestion
@@ -96,9 +96,9 @@ describe('BaseSuggestionPlugin', () => {
     );
 
     api.withoutSuggestions(() => {
-      expect(editor.getOptions(BaseSuggestionPlugin).isSuggesting).toBe(false);
+      expect(editor.plugin(BaseSuggestionPlugin).getOptions().isSuggesting).toBe(false);
     });
 
-    expect(editor.getOptions(BaseSuggestionPlugin).isSuggesting).toBe(true);
+    expect(editor.plugin(BaseSuggestionPlugin).getOptions().isSuggesting).toBe(true);
   });
 });

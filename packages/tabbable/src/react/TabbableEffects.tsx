@@ -28,7 +28,7 @@ export function TabbableEffects() {
     if (readOnly) return;
 
     const { globalEventListener, insertTabbableEntries, isTabbable, query } =
-      editor.getOptions(BaseTabbablePlugin);
+      editor.plugin(BaseTabbablePlugin).getOptions();
 
     const editorDOMNode = editor.api.toDOMNode(editor);
 

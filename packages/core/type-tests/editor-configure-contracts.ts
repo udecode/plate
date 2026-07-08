@@ -68,7 +68,9 @@ const plateEditor = createPlateEditor({
   ],
 });
 
-const nestedLevel: 1 | 2 = basePlateEditor.getOptions(ChildPlugin).level;
+const nestedLevel: 1 | 2 = basePlateEditor
+  .plugin(ChildPlugin)
+  .getOptions().level;
 const nestedApiLevel: 1 | 2 = basePlateEditor.api.plugin.getLevel();
 const plateValue: readonly [{ children: [{ text: string }]; type: 'p' }] =
   plateEditor.read.children();

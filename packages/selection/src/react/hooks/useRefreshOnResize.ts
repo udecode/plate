@@ -1,13 +1,13 @@
 import React from 'react';
 
-import type { TRange } from 'platejs';
+import type { Range } from '@platejs/plite';
 
 import type { SelectionRect } from '../types';
 
 import { useRequestReRender } from './useRequestReRender';
 
 export type UseRefreshOnResizeOptions = {
-  selectionRectCache: React.MutableRefObject<WeakMap<TRange, SelectionRect[]>>;
+  selectionRectCache: React.MutableRefObject<WeakMap<Range, SelectionRect[]>>;
   containerRef?: React.RefObject<HTMLElement | null>;
   refreshOnResize?: boolean;
 };

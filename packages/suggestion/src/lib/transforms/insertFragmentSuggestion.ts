@@ -39,14 +39,14 @@ export const insertFragmentSuggestion = (
           id,
           createdAt,
           type: 'insert',
-          userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+          userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
         };
       } else {
         n[KEYS.suggestion] = {
           id,
           createdAt,
           type: 'insert',
-          userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+          userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
         };
       }
     });

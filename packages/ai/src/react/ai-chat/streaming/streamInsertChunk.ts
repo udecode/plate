@@ -70,7 +70,7 @@ export function streamInsertChunk(
   options: SteamInsertChunkOptions = {}
 ) {
   const insertOptions = withPreviewElementProps(editor, options);
-  const { _blockChunks, _blockPath } = editor.getOptions(AIChatPlugin);
+  const { _blockChunks, _blockPath } = editor.plugin(AIChatPlugin).getOptions();
 
   if (_blockPath === null) {
     const blocks = streamDeserializeMd(editor, chunk);
@@ -91,8 +91,8 @@ export function streamInsertChunk(
         }
       );
 
-      editor.setOption(AIChatPlugin, '_blockPath', getCurrentBlockPath(editor));
-      editor.setOption(AIChatPlugin, '_blockChunks', chunk);
+      editor.plugin(AIChatPlugin).setOption('_blockPath', getCurrentBlockPath(editor));
+      editor.plugin(AIChatPlugin).setOption('_blockChunks', chunk);
 
       if (blocks.length > 1) {
         const nextBlocks = blocks.slice(1);
@@ -112,7 +112,7 @@ export function streamInsertChunk(
           getNextPath(nextPath, nextBlocks.length)
         )!;
 
-        editor.setOption(AIChatPlugin, '_blockPath', lastBlock[1]);
+        editor.plugin(AIChatPlugin).setOption('_blockPath', lastBlock[1]);
 
         const lastBlockChunks = streamSerializeMd(
           editor,
@@ -122,7 +122,7 @@ export function streamInsertChunk(
           chunk
         );
 
-        editor.setOption(AIChatPlugin, '_blockChunks', lastBlockChunks);
+        editor.plugin(AIChatPlugin).setOption('_blockChunks', lastBlockChunks);
       }
     }
   } else {
@@ -179,7 +179,7 @@ export function streamInsertChunk(
           serializedBlock === tempBlockChunks &&
           blockText === serializedBlock
         ) {
-          editor.setOption(AIChatPlugin, '_blockChunks', tempBlockChunks);
+          editor.plugin(AIChatPlugin).setOption('_blockChunks', tempBlockChunks);
         } else {
           editor.tf.replaceNodes(
             nodesWithProps(editor, [tempBlocks[0]], insertOptions),
@@ -197,16 +197,12 @@ export function streamInsertChunk(
             tempBlockChunks
           );
 
-          editor.setOption(
-            AIChatPlugin,
-            '_blockChunks',
-            // one block includes multiple children
+          editor.plugin(AIChatPlugin).setOption('_blockChunks', // one block includes multiple children
             tempBlocks[0].type === getPluginType(editor, KEYS.codeBlock) ||
               tempBlocks[0].type === getPluginType(editor, KEYS.table) ||
               tempBlocks[0].type === getPluginType(editor, KEYS.equation)
               ? tempBlockChunks
-              : serializedBlock
-          );
+              : serializedBlock);
         }
       } else {
         const serializedBlock = streamSerializeMd(
@@ -225,7 +221,7 @@ export function streamInsertChunk(
           }
         );
 
-        editor.setOption(AIChatPlugin, '_blockChunks', serializedBlock);
+        editor.plugin(AIChatPlugin).setOption('_blockChunks', serializedBlock);
       }
     } else {
       editor.tf.replaceNodes(
@@ -247,7 +243,7 @@ export function streamInsertChunk(
           }
         );
 
-        editor.setOption(AIChatPlugin, '_blockPath', newEndBlockPath);
+        editor.plugin(AIChatPlugin).setOption('_blockPath', newEndBlockPath);
 
         const endBlock = editor.api.node(newEndBlockPath)![0];
 
@@ -259,7 +255,7 @@ export function streamInsertChunk(
           tempBlockChunks
         );
 
-        editor.setOption(AIChatPlugin, '_blockChunks', serializedBlock);
+        editor.plugin(AIChatPlugin).setOption('_blockChunks', serializedBlock);
       }
     }
   }

@@ -1,18 +1,18 @@
-import { type SlateEditor, getEditorPlugin } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 /** Select inserted blocks from the last operations. */
-export const selectInsertedBlocks = (editor: SlateEditor) => {
-  const { setOption } = getEditorPlugin(editor, BlockSelectionPlugin);
+export const selectInsertedBlocks = (editor: BaseEditor) => {
+  const { setOption } = editor.plugin(BlockSelectionPlugin);
 
   const ids = new Set<string>();
 
-  editor.operations.forEach((op) => {
+  editor.read.operations().forEach((op) => {
     if (
       op.type === 'insert_node' &&
       op.node.id &&
-      editor.api.isBlock(op.node)
+      editor.read.schema.isBlock(op.node)
     ) {
       ids.add(op.node.id as string);
     }

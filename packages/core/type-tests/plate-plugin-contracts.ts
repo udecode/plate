@@ -85,10 +85,12 @@ const createdFloating: boolean = createdPlateEditor.api.toggleFloating();
 const createdMentionTrigger: '@' = createdPlateEditor.api.getTrigger();
 const explicitFactoryEnabled: boolean =
   createdPlateEditor.api.explicitFactory.isEnabled();
-const toolbarFloating: boolean =
-  createdPlateEditor.getOptions(ToolbarPlugin).floating;
-const createdMentionOption: '@' =
-  createdPlateEditor.getOptions(MentionPlugin).trigger;
+const toolbarFloating: boolean = createdPlateEditor
+  .plugin(ToolbarPlugin)
+  .getOptions().floating;
+const createdMentionOption: '@' = createdPlateEditor
+  .plugin(MentionPlugin)
+  .getOptions().trigger;
 
 void createdFloating;
 void createdMentionOption;
@@ -106,4 +108,4 @@ plateEditor.api.notReal();
 createdPlateEditor.api.plugin.isFloating(true);
 
 // @ts-expect-error literal option type must stay stable
-createdPlateEditor.getOptions(MentionPlugin).trigger = '#';
+createdPlateEditor.plugin(MentionPlugin).getOptions().trigger = '#';

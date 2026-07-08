@@ -85,16 +85,16 @@ describe('BasePlugin store', () => {
     const p1 = createBasePlugin({ key: 'plugin1', options: { value: 1 } });
     const editor = createBaseEditor({ plugins: [p1] });
 
-    expect(editor.getOptions(p1)).toEqual({ value: 1 });
+    expect(editor.plugin(p1).getOptions()).toEqual({ value: 1 });
   });
 
   it('update plugin options when setOption is called', () => {
     const p1 = createBasePlugin({ key: 'plugin1', options: { value: 1 } });
     const editor = createBaseEditor({ plugins: [p1] });
 
-    editor.setOption(p1, 'value', 2);
+    editor.plugin(p1).setOption('value', 2);
 
-    expect(editor.getOptions(p1)).toEqual({ value: 2 });
+    expect(editor.plugin(p1).getOptions()).toEqual({ value: 2 });
   });
 
   it('handle nested options in the store', () => {
@@ -104,9 +104,9 @@ describe('BasePlugin store', () => {
     });
     const editor = createBaseEditor({ plugins: [p1] });
 
-    editor.setOption(p1, 'nested', { value: 2 });
+    editor.plugin(p1).setOption('nested', { value: 2 });
 
-    expect(editor.getOptions(p1)).toEqual({ nested: { value: 2 } });
+    expect(editor.plugin(p1).getOptions()).toEqual({ nested: { value: 2 } });
   });
 
   it('maintain separate stores for each plugin', () => {
@@ -114,17 +114,17 @@ describe('BasePlugin store', () => {
     const p2 = createBasePlugin({ key: 'plugin2', options: { value: 2 } });
     const editor = createBaseEditor({ plugins: [p1, p2] });
 
-    editor.setOption(p1, 'value', 3);
+    editor.plugin(p1).setOption('value', 3);
 
-    expect(editor.getOptions(p1)).toEqual({ value: 3 });
-    expect(editor.getOptions(p2)).toEqual({ value: 2 });
+    expect(editor.plugin(p1).getOptions()).toEqual({ value: 3 });
+    expect(editor.plugin(p2).getOptions()).toEqual({ value: 2 });
   });
 
   it('handle plugins with no initial options', () => {
     const p1 = createBasePlugin({ key: 'plugin1' });
     const editor = createBaseEditor({ plugins: [p1] });
 
-    expect(editor.getOptions(p1)).toEqual({});
+    expect(editor.plugin(p1).getOptions()).toEqual({});
   });
 
   it('preserve other plugin properties when updating store', () => {
@@ -135,9 +135,9 @@ describe('BasePlugin store', () => {
     });
     const editor = createBaseEditor({ plugins: [p1] });
 
-    editor.setOption(p1, 'value', 2);
+    editor.plugin(p1).setOption('value', 2);
 
-    expect(editor.getOptions(p1)).toEqual({ value: 2 });
+    expect(editor.plugin(p1).getOptions()).toEqual({ value: 2 });
     expect(editor.getPlugin(p1).node.type).toBe('test');
   });
 
@@ -161,8 +161,8 @@ describe('BasePlugin store', () => {
 
       const editor = createStoreEditor([p1]);
 
-      expect(editor.getOption(p1, 'doubleValue')).toBe(2);
-      expect(editor.getOption(p1, 'param', 2, 2)).toBe(5);
+      expect(editor.plugin(p1).getOption('doubleValue')).toBe(2);
+      expect(editor.plugin(p1).getOption('param', 2, 2)).toBe(5);
     });
 
     it('allow chaining multiple extendSelectors calls', () => {
@@ -179,8 +179,8 @@ describe('BasePlugin store', () => {
 
       const editor = createStoreEditor([p1]);
 
-      expect(editor.getOption(p1, 'doubleValue', 2)).toBe(2);
-      expect(editor.getOption(p1, 'tripleValue')).toBe(6);
+      expect(editor.plugin(p1).getOption('doubleValue', 2)).toBe(2);
+      expect(editor.plugin(p1).getOption('tripleValue')).toBe(6);
     });
 
     it('update extended selectors when options change', () => {
@@ -193,11 +193,11 @@ describe('BasePlugin store', () => {
 
       const editor = createStoreEditor([p1]);
 
-      expect(editor.getOption(p1, 'doubleValue')).toBe(2);
+      expect(editor.plugin(p1).getOption('doubleValue')).toBe(2);
 
-      editor.setOption(p1, 'value', 2);
+      editor.plugin(p1).setOption('value', 2);
 
-      expect(editor.getOption(p1, 'doubleValue')).toBe(4);
+      expect(editor.plugin(p1).getOption('doubleValue')).toBe(4);
     });
   });
 });
@@ -208,9 +208,9 @@ describe('PlatePlugin usePluginOption', () => {
       const p1 = createBasePlugin({ key: 'plugin1', options: { value: 1 } });
       const editor = createStoreEditor([p1]);
 
-      editor.setOption(p1, 'value', 2);
+      editor.plugin(p1).setOption('value', 2);
 
-      expect(editor.getOptions(p1)).toEqual({ value: 2 });
+      expect(editor.plugin(p1).getOptions()).toEqual({ value: 2 });
     });
 
     it('merge multiple options', () => {
@@ -220,9 +220,9 @@ describe('PlatePlugin usePluginOption', () => {
       });
       const editor = createStoreEditor([p1]);
 
-      editor.setOptions(p1, { other: 'updated', value: 2 });
+      editor.plugin(p1).setOptions({ other: 'updated', value: 2 });
 
-      expect(editor.getOptions(p1)).toEqual({
+      expect(editor.plugin(p1).getOptions()).toEqual({
         other: 'updated',
         untouched: 1,
         value: 2,
@@ -236,11 +236,14 @@ describe('PlatePlugin usePluginOption', () => {
       });
       const editor = createStoreEditor([p1]);
 
-      editor.setOptions(p1, (draft) => {
+      editor.plugin(p1).setOptions((draft) => {
         draft.other = 'updated';
       });
 
-      expect(editor.getOptions(p1)).toEqual({ other: 'updated', value: 1 });
+      expect(editor.plugin(p1).getOptions()).toEqual({
+        other: 'updated',
+        value: 1,
+      });
     });
 
     it('update nested options', () => {
@@ -250,9 +253,9 @@ describe('PlatePlugin usePluginOption', () => {
       });
       const editor = createStoreEditor([p1]);
 
-      editor.setOption(p1, 'nested', { subValue: 'updated' });
+      editor.plugin(p1).setOption('nested', { subValue: 'updated' });
 
-      expect(editor.getOptions(p1)).toEqual({
+      expect(editor.plugin(p1).getOptions()).toEqual({
         nested: { subValue: 'updated' },
       });
     });
@@ -285,7 +288,7 @@ describe('PlatePlugin usePluginOption', () => {
       (expect(getByTestId('test-component')) as any).toHaveTextContent('1');
 
       act(() => {
-        editor.setOption(p1, 'value', 2);
+        editor.plugin(p1).setOption('value', 2);
       });
 
       (expect(getByTestId('test-component')) as any).toHaveTextContent('2');
@@ -305,7 +308,7 @@ describe('PlatePlugin usePluginOption', () => {
       (expect(getByTestId('test-nested')) as any).toHaveTextContent('initial');
 
       act(() => {
-        editor.setOptions(p1, { nested: { subValue: 'updated' } });
+        editor.plugin(p1).setOptions({ nested: { subValue: 'updated' } });
       });
 
       (expect(getByTestId('test-nested')) as any).toHaveTextContent('updated');
@@ -331,7 +334,7 @@ describe('PlatePlugin usePluginOption', () => {
       expect(renderCount).toBe(1);
 
       act(() => {
-        editor.setOption(p1, 'other', 'updated');
+        editor.plugin(p1).setOption('other', 'updated');
       });
 
       expect(renderCount).toBe(1);
@@ -348,7 +351,7 @@ describe('PlatePlugin usePluginOption', () => {
 
       // Setting an existing option should work
       expect(() => {
-        editor.setOption(p1, 'existingOption', 'value');
+        editor.plugin(p1).setOption('existingOption', 'value');
       }).not.toThrow(new PlateError('', ''));
     });
 
@@ -376,7 +379,7 @@ describe('PlatePlugin usePluginOption', () => {
       (expect(getByTestId('test-hook')) as any).toHaveTextContent('2');
 
       act(() => {
-        editor.setOption(p1, 'value', 2);
+        editor.plugin(p1).setOption('value', 2);
       });
 
       (expect(getByTestId('test-hook')) as any).toHaveTextContent('4');

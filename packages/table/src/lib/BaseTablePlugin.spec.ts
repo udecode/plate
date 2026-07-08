@@ -55,17 +55,17 @@ describe('BaseTablePlugin', () => {
       plugins: [BaseTablePlugin],
     } as any);
 
-    editor.setOption(BaseTablePlugin, '_selectedCellIds', ['c1']);
-    editor.setOption(BaseTablePlugin, '_selectedTableIds', ['t1']);
+    editor.plugin(BaseTablePlugin).setOption('_selectedCellIds', ['c1']);
+    editor.plugin(BaseTablePlugin).setOption('_selectedTableIds', ['t1']);
 
-    expect(editor.getOption(BaseTablePlugin, 'isCellSelected', 'c1')).toBe(
+    expect(editor.plugin(BaseTablePlugin).getOption('isCellSelected', 'c1')).toBe(
       true
     );
-    expect(editor.getOption(BaseTablePlugin, 'isSelectingCell')).toBe(true);
-    expect(editor.getOption(BaseTablePlugin, 'selectedCellIds')).toEqual([
+    expect(editor.plugin(BaseTablePlugin).getOption('isSelectingCell')).toBe(true);
+    expect(editor.plugin(BaseTablePlugin).getOption('selectedCellIds')).toEqual([
       'c1',
     ]);
-    expect(editor.getOption(BaseTablePlugin, 'selectedTableIds')).toEqual([
+    expect(editor.plugin(BaseTablePlugin).getOption('selectedTableIds')).toEqual([
       't1',
     ]);
   });

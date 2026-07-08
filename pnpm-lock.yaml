@@ -2098,9 +2098,24 @@ importers:
 
   packages/selection:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/plite-dom':
+        specifier: workspace:^
+        version: link:../plite-dom
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
+      '@udecode/react-utils':
+        specifier: workspace:*
+        version: link:../udecode/react-utils
+      '@udecode/utils':
+        specifier: workspace:*
+        version: link:../udecode/utils
       copy-to-clipboard:
         specifier: ^3.3.3
         version: 3.3.3

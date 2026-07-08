@@ -46,7 +46,7 @@ export const addMarkSuggestion = (
             [key]: value,
           },
           type: 'update',
-          userId: editor.getOptions(BaseSuggestionPlugin).currentUserId,
+          userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId,
         },
         [KEYS.suggestion]: true,
       },

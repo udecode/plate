@@ -22,7 +22,7 @@ export const useTableElement = () => {
     props: {
       onMouseDown: () => {
         // until cell dnd is supported, we collapse the selection on mouse down
-        if (editor.getOption(TablePlugin, 'isSelectingCell')) {
+        if (editor.plugin(TablePlugin).getOption('isSelectingCell')) {
           editor.tf.collapse();
         }
       },

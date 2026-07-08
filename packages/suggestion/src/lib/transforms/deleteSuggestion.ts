@@ -193,7 +193,7 @@ export const deleteSuggestion = (
               id,
               createdAt,
               type: 'remove',
-              userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+              userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
             },
             [KEYS.suggestion]: true,
           },
@@ -302,7 +302,7 @@ export const deleteSuggestion = (
                   createdAt,
                   type: 'remove',
                   userId:
-                    editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+                    editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
                   ...(isPreviousBlockVoid ? {} : { isLineBreak: true }),
                 },
               },

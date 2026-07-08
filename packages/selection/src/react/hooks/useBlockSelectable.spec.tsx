@@ -8,7 +8,7 @@ const useEditorPluginMock = mock();
 const useElementMock = mock();
 const usePathMock = mock();
 
-mock.module('platejs/react', async () => ({
+mock.module('@platejs/core/react', async () => ({
   useEditorPlugin: useEditorPluginMock,
   useElement: useElementMock,
   usePath: usePathMock,
@@ -16,6 +16,45 @@ mock.module('platejs/react', async () => ({
 
 const loadModule = async () =>
   import(`./useBlockSelectable?test=${Math.random().toString(36).slice(2)}`);
+
+const createContextMenuEditor = ({
+  add = mock(),
+  selectedIds = new Set<string>(),
+  selection,
+  setOption = mock(),
+}: {
+  add?: AnyTestMock;
+  selectedIds?: Set<string>;
+  selection?: unknown;
+  setOption?: AnyTestMock;
+} = {}) =>
+  ({
+    api: {
+      blockSelection: { add },
+    },
+    getPlugin: () => ({ node: { type: 'p' } }),
+    plugin: () => ({
+      api: {
+        blockSelection: { add },
+      },
+      getOption: () => false,
+      getOptions: () => ({
+        enableContextMenu: true,
+        selectedIds,
+      }),
+      setOption,
+    }),
+    read: {
+      nodes: {
+        above: () => [{ id: 'a', type: 'p' }, [0]],
+        pathOf: () => [0],
+      },
+      schema: {
+        isVoid: () => false,
+      },
+      selection: () => selection,
+    },
+  }) as any;
 
 describe('useBlockSelectable', () => {
   afterEach(() => {
@@ -28,9 +67,11 @@ describe('useBlockSelectable', () => {
   describe('addOnContextMenu', () => {
     it('does nothing when context menus are disabled', () => {
       const editor = {
-        getOptions: () => ({
-          enableContextMenu: false,
-          selectedIds: new Set<string>(),
+        plugin: () => ({
+          getOptions: () => ({
+            enableContextMenu: false,
+            selectedIds: new Set<string>(),
+          }),
         }),
       } as any;
       const stopPropagation = mock();
@@ -45,24 +86,11 @@ describe('useBlockSelectable', () => {
 
     it('stops propagation when right click is on a focused unselected non-void block', () => {
       const stopPropagation = mock();
-      const editor = {
-        api: {
-          above: () => [{ id: 'a', type: 'p' }, [0]],
-          findPath: () => [0],
-          isVoid: () => false,
-        },
-        getApi: () => ({
-          blockSelection: { add: mock() },
-        }),
-        getOption: () => false,
-        getOptions: () => ({
-          enableContextMenu: true,
-          selectedIds: new Set<string>(),
-        }),
+      const editor = createContextMenuEditor({
         selection: {
           focus: { offset: 0, path: [0, 0] },
         },
-      } as any;
+      });
 
       addOnContextMenu(editor, {
         element: { id: 'a', type: 'p' } as any,
@@ -77,20 +105,7 @@ describe('useBlockSelectable', () => {
 
     it('adds to the current block selection on shift right click', () => {
       const add = mock();
-      const editor = {
-        api: {
-          above: () => {},
-          findPath: () => [0],
-          isVoid: () => false,
-        },
-        getApi: () => ({
-          blockSelection: { add },
-        }),
-        getOptions: () => ({
-          enableContextMenu: true,
-          selectedIds: new Set<string>(),
-        }),
-      } as any;
+      const editor = createContextMenuEditor({ add });
 
       addOnContextMenu(editor, {
         element: { id: 'a', type: 'p' } as any,
@@ -105,21 +120,10 @@ describe('useBlockSelectable', () => {
 
     it('replaces the selection when the clicked block was not already selected', () => {
       const setOption = mock();
-      const editor = {
-        api: {
-          above: () => {},
-          findPath: () => [0],
-          isVoid: () => false,
-        },
-        getApi: () => ({
-          blockSelection: { add: mock() },
-        }),
-        getOptions: () => ({
-          enableContextMenu: true,
-          selectedIds: new Set(['b']),
-        }),
+      const editor = createContextMenuEditor({
+        selectedIds: new Set(['b']),
         setOption,
-      } as any;
+      });
 
       addOnContextMenu(editor, {
         element: { id: 'a', type: 'p' } as any,
@@ -128,27 +132,24 @@ describe('useBlockSelectable', () => {
         } as any,
       });
 
-      expect(setOption).toHaveBeenCalledWith(
-        expect.anything(),
-        'selectedIds',
-        new Set(['a'])
-      );
+      expect(setOption).toHaveBeenCalledWith('selectedIds', new Set(['a']));
     });
   });
 
   describe('useBlockSelectable', () => {
     it('returns selectable props when the block is selectable', async () => {
       const editor = {
-        getApi: () => ({
+        api: {
           blockSelection: {
             add: mock(),
             isSelectable: () => true,
           },
-        }),
+        },
         getOptions: () => ({
           enableContextMenu: true,
           selectedIds: new Set<string>(),
         }),
+        getPlugin: () => ({ node: { type: 'p' } }),
       } as any;
 
       useElementMock.mockReturnValue({ id: 'a', type: 'p' });

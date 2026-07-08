@@ -17,6 +17,7 @@ declare namespace jasmine {
 }
 
 declare var mock: ((implementation?: (...args: any[]) => any) => AnyTestMock) & {
+  module(id: string, factory: () => any): void | Promise<void>;
   restore(): void;
 };
 declare function spyOn(...args: any[]): Spy;

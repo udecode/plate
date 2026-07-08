@@ -15,7 +15,7 @@ describe('BaseIndentPlugin', () => {
     const plugin = editor.getPlugin(BaseIndentPlugin);
     const nodeProps = plugin.inject.nodeProps!;
 
-    expect(editor.getOptions(BaseIndentPlugin)).toEqual({
+    expect(editor.plugin(BaseIndentPlugin).getOptions()).toEqual({
       offset: 24,
       unit: 'px',
     });
@@ -25,7 +25,7 @@ describe('BaseIndentPlugin', () => {
     expect(
       nodeProps.transformNodeValue!({
         ...getEditorPlugin(editor, plugin),
-        getOptions: () => editor.getOptions(BaseIndentPlugin),
+        getOptions: () => editor.plugin(BaseIndentPlugin).getOptions(),
         nodeValue: 2,
       })
     ).toBe('48px');

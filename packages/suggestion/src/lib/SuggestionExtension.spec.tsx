@@ -48,7 +48,7 @@ const testSuggestionData = {
 
 describe('SuggestionExtension', () => {
   describe('insertText', () => {
-    describe('when editor.getOptions(SuggestionPlugin).isSuggesting is not defined', () => {
+    describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is not defined', () => {
       it('does not add marks', () => {
         const input = (
           <editor>
@@ -73,7 +73,7 @@ describe('SuggestionExtension', () => {
           selection: input.selection,
           value: input.children,
         });
-        editor.setOption(BaseSuggestionPlugin, 'isSuggesting', false);
+        editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', false);
 
         editor.update((tx) => tx.text.insert('test'));
 
@@ -81,7 +81,7 @@ describe('SuggestionExtension', () => {
       });
     });
 
-    describe('when editor.getOptions(SuggestionPlugin).isSuggesting is defined', () => {
+    describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is defined', () => {
       describe('when cursor is not in suggestion mark', () => {
         it('add marks and suggestion data', () => {
           const input = (
@@ -98,7 +98,7 @@ describe('SuggestionExtension', () => {
             selection: input.selection,
             value: input.children,
           });
-          editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+          editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
           editor.update((tx) => tx.text.insert('test'));
 
@@ -193,7 +193,7 @@ describe('SuggestionExtension', () => {
           selection: input.selection,
           value: input.children,
         });
-        editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+        editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
         editor.update((tx) => tx.text.insert('test'));
 
@@ -203,7 +203,7 @@ describe('SuggestionExtension', () => {
   });
 });
 
-describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true', () => {
   describe('delete backward', () => {
     describe('when there is no point before', () => {
       it('does not add a new suggestion id', () => {
@@ -234,7 +234,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
           selection: input.selection,
           value: input.children,
         });
-        editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+        editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
         editor.update((tx) => tx.text.deleteBackward());
 
@@ -274,7 +274,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
           selection: input.selection,
           value: input.children,
         });
-        editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+        editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
         editor.update((tx) => tx.text.deleteBackward());
 
@@ -318,7 +318,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
         selection: input.selection,
         value: input.children,
       });
-      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
       editor.update((tx) => tx.text.deleteBackward());
 
@@ -355,7 +355,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
         selection: input.selection,
         value: input.children,
       });
-      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
       editor.update((tx) => tx.text.deleteBackward());
 
@@ -391,7 +391,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
         selection: input.selection,
         value: input.children,
       });
-      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
       editor.update((tx) => tx.text.deleteBackward());
 
@@ -427,7 +427,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
         selection: input.selection,
         value: input.children,
       });
-      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
       editor.update((tx) => tx.text.deleteBackward({ unit: 'character' }));
 
@@ -463,7 +463,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
         selection: input.selection,
         value: input.children,
       });
-      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
       editor.update((tx) => tx.text.deleteBackward({ unit: 'character' }));
 
@@ -527,7 +527,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
         selection: input.selection,
         value: input.children,
       });
-      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
       editor.update((tx) => tx.text.deleteBackward({ unit: 'character' }));
 
@@ -592,7 +592,7 @@ describe('when point before is not marked', () => {
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.update((tx) => tx.text.deleteBackward());
 
@@ -627,7 +627,7 @@ describe('when point before is marked', () => {
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.update((tx) => tx.text.deleteBackward());
 
@@ -659,7 +659,7 @@ describe('when delete line', () => {
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.update((tx) => tx.text.deleteBackward({ unit: 'line' }));
 
@@ -674,7 +674,7 @@ describe('when delete line', () => {
   });
 });
 
-describe('delete forward when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+describe('delete forward when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true', () => {
   it('marks the next character as a remove suggestion', () => {
     const input = (
       <editor>
@@ -690,7 +690,7 @@ describe('delete forward when editor.getOptions(SuggestionPlugin).isSuggesting i
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.update((tx) => tx.text.deleteForward());
 
@@ -705,7 +705,7 @@ describe('delete forward when editor.getOptions(SuggestionPlugin).isSuggesting i
   });
 });
 
-describe('delete fragment when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+describe('delete fragment when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true', () => {
   it('turns the selected text into a remove suggestion and collapses at the start', () => {
     const input = (
       <editor>
@@ -722,7 +722,7 @@ describe('delete fragment when editor.getOptions(SuggestionPlugin).isSuggesting 
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.update((tx) => tx.fragment.delete());
 
@@ -764,7 +764,7 @@ describe('delete fragment when editor.getOptions(SuggestionPlugin).isSuggesting 
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.update((tx) => tx.fragment.delete());
 
@@ -955,7 +955,7 @@ describe('insert text when cursor is expanded', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.update((tx) => tx.text.insert('1'));
 
@@ -999,7 +999,7 @@ describe('insert text when cursor is expanded', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.update((tx) => tx.text.insert('X'));
 
@@ -1064,7 +1064,7 @@ describe('insert text when cursor is expanded', () => {
   });
 });
 
-describe('insertBreak when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+describe('insertBreak when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true', () => {
   it('inserts a newline suggestion inside nested blocks instead of splitting structure', () => {
     const input = (
       <editor>
@@ -1081,7 +1081,7 @@ describe('insertBreak when editor.getOptions(SuggestionPlugin).isSuggesting is t
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.update((tx) => tx.break.insert());
 
@@ -1096,7 +1096,7 @@ describe('insertBreak when editor.getOptions(SuggestionPlugin).isSuggesting is t
   });
 });
 
-describe('insertNodes when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+describe('insertNodes when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true', () => {
   it('wraps inserted blocks with block suggestion metadata', () => {
     const input = (
       <editor>
@@ -1112,7 +1112,7 @@ describe('insertNodes when editor.getOptions(SuggestionPlugin).isSuggesting is t
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.update((tx) => {
       tx.nodes.insert({
@@ -1142,7 +1142,7 @@ describe('insertNodes when editor.getOptions(SuggestionPlugin).isSuggesting is t
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.update((tx) => {
       tx.nodes.insert({
@@ -1159,7 +1159,7 @@ describe('insertNodes when editor.getOptions(SuggestionPlugin).isSuggesting is t
   });
 });
 
-describe('removeNodes when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+describe('removeNodes when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true', () => {
   it('marks every matched block with the same remove suggestion metadata', () => {
     const input = (
       <editor>
@@ -1179,7 +1179,7 @@ describe('removeNodes when editor.getOptions(SuggestionPlugin).isSuggesting is t
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.update((tx) => {
       tx.nodes.remove({
@@ -1211,7 +1211,7 @@ describe('removeNodes when editor.getOptions(SuggestionPlugin).isSuggesting is t
         },
       ],
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.update((tx) => {
       tx.nodes.remove({

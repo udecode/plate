@@ -3,7 +3,7 @@ import { type PlateEditor, usePluginOption } from 'platejs/react';
 import { AIChatPlugin } from '../AIChatPlugin';
 
 export function getLastAssistantMessage(editor: PlateEditor) {
-  const messages = editor.getOptions(AIChatPlugin).chat.messages;
+  const messages = editor.plugin(AIChatPlugin).getOptions().chat.messages;
 
   return messages?.findLast((message) => message.role === 'assistant');
 }

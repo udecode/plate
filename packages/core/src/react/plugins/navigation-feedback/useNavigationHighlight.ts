@@ -2,11 +2,8 @@ import React from 'react';
 
 import { type Element, type Path, PathApi, type Text } from '@platejs/plite';
 
-import type {
-  NavigationFeedbackActiveTarget,
-  NavigationFeedbackStoredTarget,
-} from './types';
-import { NavigationFeedbackPluginKey } from './types';
+import type { NavigationFeedbackActiveTarget } from './types';
+import { NavigationFeedbackPlugin } from './NavigationFeedbackPlugin';
 import {
   useEditorPluginOption,
   useEditorRef,
@@ -20,9 +17,9 @@ export const useNavigationHighlight = (target?: NavigationHighlightTarget) => {
   const currentElementPath = useElementContext()?.path ?? null;
   const storedTarget = useEditorPluginOption(
     editor,
-    NavigationFeedbackPluginKey,
+    NavigationFeedbackPlugin,
     'activeTarget'
-  ) as NavigationFeedbackStoredTarget | null;
+  );
 
   return React.useMemo<NavigationFeedbackActiveTarget | null>(() => {
     const path = storedTarget?.pathRef.current;

@@ -1,8 +1,12 @@
-import type { UnknownObject } from 'platejs';
+import type { UnknownObject } from '@udecode/utils';
 
-import type { CursorOverlayState, CursorState, SelectionRect } from '../types';
+import {
+  FROZEN_EMPTY_ARRAY,
+  type CursorOverlayState,
+  type CursorState,
+  type SelectionRect,
+} from '../types';
 
-import { FROZEN_EMPTY_ARRAY } from '../hooks';
 import { getCaretPosition } from './getCaretPosition';
 
 /** Get cursor overlay state from selection rects. */

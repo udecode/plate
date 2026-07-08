@@ -22,7 +22,7 @@ const getAcceptedInsertFocusPoint = (editor: PlateEditor): Point | null => {
 };
 
 export const acceptAIChat = (editor: PlateEditor) => {
-  const mode = editor.getOption(AIChatPlugin, 'mode');
+  const mode = editor.plugin(AIChatPlugin).getOption('mode');
 
   if (mode === 'insert') {
     const ai = editor.getTransforms(BaseAIPlugin).ai;

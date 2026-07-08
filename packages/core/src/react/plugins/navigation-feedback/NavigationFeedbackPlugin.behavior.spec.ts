@@ -172,7 +172,7 @@ describe('NavigationFeedbackPlugin', () => {
       variant: 'navigated',
     });
     expect(
-      editor.getOption(NavigationFeedbackPlugin, 'activeTarget')
+      editor.plugin(NavigationFeedbackPlugin).getOption('activeTarget')
     ).toMatchObject({
       cycle: 1,
       duration: 1600,
@@ -181,7 +181,7 @@ describe('NavigationFeedbackPlugin', () => {
       variant: 'navigated',
     });
     expect(
-      editor.getOption(NavigationFeedbackPlugin, 'activeTarget')?.pathRef
+      editor.plugin(NavigationFeedbackPlugin).getOption('activeTarget')?.pathRef
         .current
     ).toEqual([1]);
     expect(editor.api.navigation.isTarget([1])).toBe(true);
@@ -206,7 +206,7 @@ describe('NavigationFeedbackPlugin', () => {
 
     expect(editor.api.navigation.activeTarget()).toBeNull();
     expect(
-      editor.getOption(NavigationFeedbackPlugin, 'activeTarget')
+      editor.plugin(NavigationFeedbackPlugin).getOption('activeTarget')
     ).toBeNull();
     expect(editor.api.navigation.isTarget([0])).toBe(false);
   });
@@ -217,7 +217,9 @@ describe('NavigationFeedbackPlugin', () => {
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
-    expect(editor.getOption(NavigationFeedbackPlugin, 'duration')).toBe(1200);
+    expect(editor.plugin(NavigationFeedbackPlugin).getOption('duration')).toBe(
+      1200
+    );
   });
 
   it('can disable the navigation feedback plugin from editor options', () => {

@@ -3,11 +3,7 @@ import { renderHook } from '@testing-library/react';
 const useEditorRefMock = mock();
 const usePluginOptionMock = mock();
 
-mock.module('../BlockSelectionPlugin', () => ({
-  BlockSelectionPlugin: { key: 'blockSelection' },
-}));
-
-mock.module('platejs/react', async () => ({
+mock.module('@platejs/core/react', async () => ({
   useEditorRef: useEditorRefMock,
   usePluginOption: usePluginOptionMock,
 }));
@@ -31,9 +27,10 @@ describe('useBlockSelectionNodes', () => {
     ];
 
     useEditorRefMock.mockReturnValue({
-      api: {
-        blocks: mock(() => blocks),
-        prop: mock(),
+      read: {
+        nodes: {
+          toArray: mock(() => blocks),
+        },
       },
     });
     usePluginOptionMock.mockReturnValue(new Set(['a', 'b']));
@@ -46,16 +43,15 @@ describe('useBlockSelectionNodes', () => {
 
   it('returns fragment nodes and derived props from the selection', async () => {
     const blocks = [
-      [{ id: 'a', type: 'p' }, [0]],
-      [{ id: 'b', type: 'p' }, [1]],
+      [{ dir: 'rtl', id: 'a', type: 'p' }, [0]],
+      [{ dir: 'rtl', id: 'b', type: 'p' }, [1]],
     ];
-    const prop = { dir: 'rtl' };
-    const propSpy = mock(() => prop);
 
     useEditorRefMock.mockReturnValue({
-      api: {
-        blocks: mock(() => blocks),
-        prop: propSpy,
+      read: {
+        nodes: {
+          toArray: mock(() => blocks),
+        },
       },
     });
     usePluginOptionMock.mockReturnValue(new Set(['a', 'b']));
@@ -71,16 +67,9 @@ describe('useBlockSelectionNodes', () => {
     );
 
     expect(fragment.current).toEqual([
-      { id: 'a', type: 'p' },
-      { id: 'b', type: 'p' },
+      { dir: 'rtl', id: 'a', type: 'p' },
+      { dir: 'rtl', id: 'b', type: 'p' },
     ]);
-    expect(fragmentProp.current).toEqual(prop);
-    expect(propSpy).toHaveBeenCalledWith({
-      key: 'dir',
-      nodes: [
-        { id: 'a', type: 'p' },
-        { id: 'b', type: 'p' },
-      ],
-    });
+    expect(fragmentProp.current).toBe('rtl');
   });
 });

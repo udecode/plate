@@ -715,6 +715,14 @@ export type EditorStateView<
   TExtensions extends readonly unknown[] = readonly [],
 > = EditorCoreStateView<V> & EditorInstalledStateGroups<V, TExtensions>;
 
+export type EditorWithoutNormalizingContext<TTx> = {
+  tx: TTx;
+};
+
+export type EditorWithoutNormalizing<TTx> = (
+  fn: (context: EditorWithoutNormalizingContext<TTx>) => void
+) => void;
+
 export type EditorCoreUpdateTransaction<V extends Value = Value> = Omit<
   EditorCoreStateView<V>,
   'marks' | 'nodes' | 'operations' | 'selection' | 'text' | 'value'
@@ -736,13 +744,18 @@ export type EditorCoreUpdateTransaction<V extends Value = Value> = Omit<
   statePatches: EditorTransactionStatePatchesApi;
   text: EditorTransactionTextApi;
   value: EditorTransactionValueApi<V>;
-  withoutNormalizing: (fn: () => void) => void;
+  withoutNormalizing: EditorWithoutNormalizing<EditorCoreUpdateTransaction<V>>;
 };
 
 export type EditorUpdateTransaction<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-> = EditorCoreUpdateTransaction<V> & EditorInstalledTxGroups<V, TExtensions>;
+> = Omit<EditorCoreUpdateTransaction<V>, 'withoutNormalizing'> &
+  EditorInstalledTxGroups<V, TExtensions> & {
+    withoutNormalizing: EditorWithoutNormalizing<
+      EditorUpdateTransaction<V, TExtensions>
+    >;
+  };
 
 export type EditorReadMethods<
   V extends Value = Value,
@@ -819,8 +832,12 @@ type EditorExtensionUpdateMethods<TGroups> = {
 export type EditorUpdateMethods<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-> = EditorCoreUpdateMethods<V> &
-  EditorExtensionUpdateMethods<EditorInstalledTxGroups<V, TExtensions>>;
+> = Omit<EditorCoreUpdateMethods<V>, 'withoutNormalizing'> &
+  EditorExtensionUpdateMethods<EditorInstalledTxGroups<V, TExtensions>> & {
+    withoutNormalizing: BivariantFunction<
+      EditorUpdateTransaction<V, TExtensions>['withoutNormalizing']
+    >;
+  };
 
 export type EditorUpdate<
   V extends Value = Value,

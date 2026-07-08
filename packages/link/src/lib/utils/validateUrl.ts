@@ -7,7 +7,7 @@ const MARKDOWN_HEADING_PATTERN = /^#{1,6}\s+/;
 
 export const validateUrl = (editor: SlateEditor, url: string): boolean => {
   const { allowedSchemes, dangerouslySkipSanitization, isUrl } =
-    editor.getOptions(BaseLinkPlugin);
+    editor.plugin(BaseLinkPlugin).getOptions();
   const customIsUrl = isUrl && isUrl !== defaultIsUrl ? isUrl : undefined;
 
   // Allow internal links starting with /

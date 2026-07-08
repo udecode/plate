@@ -71,14 +71,7 @@ const createEditor = (options?: {
 const getPlaceholder = <TEditor extends PlateEditor>(
   editor: TEditor,
   node: Element
-) =>
-  (
-    editor.getOption as (
-      plugin: typeof BlockPlaceholderPlugin,
-      key: 'placeholder',
-      node: Element
-    ) => string | undefined
-  )(BlockPlaceholderPlugin, 'placeholder', node);
+) => editor.plugin(BlockPlaceholderPlugin).getOption('placeholder', node);
 
 const getEditorElement = <TEditor extends PlateEditor>(
   editor: TEditor,

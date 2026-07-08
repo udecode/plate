@@ -66,7 +66,7 @@ export const deserializeCsv = (
   } & CsvParseOptions
 ): SlateEditor['children'] | undefined => {
   const { errorTolerance, parseOptions: pluginParseOptions } =
-    editor.getOptions(CsvPlugin);
+    editor.plugin(CsvPlugin).getOptions();
 
   // Verify it's a csv string
   const testCsv = parseCsv<unknown[]>(data, { preview: 2 });

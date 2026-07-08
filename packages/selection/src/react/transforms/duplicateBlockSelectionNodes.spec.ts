@@ -1,11 +1,11 @@
-import { createBasePlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { duplicateBlockSelectionNodes } from './duplicateBlockSelectionNodes';
 
 describe('duplicateBlockSelectionNodes', () => {
   it('duplicates selected blocks through the editor update transaction', () => {
-    const editor = createBasePlateEditor({
+    const editor = createBaseEditor({
       plugins: [BlockSelectionPlugin],
       value: [
         {
@@ -21,19 +21,13 @@ describe('duplicateBlockSelectionNodes', () => {
       ],
     }) as any;
 
-    editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['block1']));
-
-    const update = editor.update;
-    const updateSpy = mock((callback: (tx: unknown) => unknown) =>
-      update(callback)
-    );
-
-    editor.update = updateSpy;
+    editor
+      .plugin(BlockSelectionPlugin)
+      .setOption('selectedIds', new Set(['block1']));
 
     duplicateBlockSelectionNodes(editor);
 
-    expect(updateSpy).toHaveBeenCalled();
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         id: 'block1',
         children: [{ text: 'One' }],

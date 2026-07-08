@@ -1,17 +1,15 @@
 import type React from 'react';
 
-import { type TElement, KEYS, PathApi } from 'platejs';
+import { type Element, PathApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 import {
   type PlateEditor,
   useEditorPlugin,
   useElement,
   usePath,
-} from 'platejs/react';
+} from '@platejs/core/react';
 
-import {
-  type BlockSelectionConfig,
-  BlockSelectionPlugin,
-} from '../BlockSelectionPlugin';
+import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
 
 /** Add block selection when right click on a block. */
 export const addOnContextMenu = (
@@ -25,19 +23,21 @@ export const addOnContextMenu = (
     element,
     event,
   }: {
-    element: TElement;
+    element: Element;
     event: React.MouseEvent<HTMLDivElement, MouseEvent>;
     disabledWhenFocused?: boolean;
   }
 ) => {
-  const { enableContextMenu, selectedIds } =
-    editor.getOptions(BlockSelectionPlugin);
+  const blockSelection = editor.plugin<BlockSelectionConfig>(
+    KEYS.blockSelection
+  );
+  const { enableContextMenu, selectedIds } = blockSelection.getOptions();
 
   if (!enableContextMenu) return;
 
-  if (editor.selection?.focus && disabledWhenFocused) {
-    const nodeEntry = editor.api.above<TElement>();
-    const elementPath = editor.api.findPath(element);
+  if (editor.read.selection()?.focus && disabledWhenFocused) {
+    const nodeEntry = editor.read.nodes.above<Element>();
+    const elementPath = editor.read.nodes.pathOf(element);
 
     if (
       nodeEntry &&
@@ -45,11 +45,7 @@ export const addOnContextMenu = (
       PathApi.isCommon(elementPath, nodeEntry[1])
     ) {
       const id = nodeEntry[0].id as string | undefined;
-      const isSelected = editor.getOption(
-        BlockSelectionPlugin,
-        'isSelected',
-        id
-      );
+      const isSelected = blockSelection.getOption('isSelected', id);
       const isOpenAlways =
         (event.target as HTMLElement).dataset?.plateOpenContextMenu === 'true';
 
@@ -57,7 +53,11 @@ export const addOnContextMenu = (
        * When "block selected or is void or has openContextMenu props", right
        * click can always open the context menu.
        */
-      if (!isSelected && !editor.api.isVoid(nodeEntry[0]) && !isOpenAlways) {
+      if (
+        !isSelected &&
+        !editor.read.schema.isVoid(nodeEntry[0]) &&
+        !isOpenAlways
+      ) {
         return event.stopPropagation();
       }
     }
@@ -67,12 +67,12 @@ export const addOnContextMenu = (
 
   if (id) {
     if (event?.shiftKey) {
-      editor.getApi(BlockSelectionPlugin).blockSelection.add(id);
+      blockSelection.api.blockSelection.add(id);
     } else {
       const clickAlreadySelected = selectedIds?.has(id);
 
       if (!clickAlreadySelected) {
-        editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set([id]));
+        blockSelection.setOption('selectedIds', new Set([id]));
       }
     }
   }

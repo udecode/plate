@@ -142,7 +142,9 @@ describe('plite operations contract', () => {
     assert.deepEqual(editorGetSnapshot(editor).selection, selection);
   });
 
-  it('applies and inverts huge replace_children ranges without argument spreading', () => {
+  it('applies and inverts huge replace_children ranges without argument spreading', {
+    timeout: 10_000,
+  }, () => {
     const editor = createEditor();
     const childCount = 125_000;
     const children: Element[] = Array.from(

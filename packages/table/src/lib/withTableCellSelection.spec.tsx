@@ -501,7 +501,7 @@ describe('withTableCellSelection', () => {
       const editor = createTableEditor(input);
 
       expect(
-        editor.getOption(BaseTablePlugin, 'selectedCellIds')
+        editor.plugin(BaseTablePlugin).getOption('selectedCellIds')
       ).toStrictEqual(['c11', 'c12', 'c21', 'c22']);
       expect(
         editor
@@ -513,11 +513,11 @@ describe('withTableCellSelection', () => {
           .getOption(BaseTablePlugin, 'selectedTables')
           ?.map((table: TElement) => table.type)
       ).toStrictEqual(['table']);
-      expect(editor.getOption(BaseTablePlugin, 'isSelectingCell')).toBe(true);
-      expect(editor.getOption(BaseTablePlugin, 'isCellSelected', 'c12')).toBe(
+      expect(editor.plugin(BaseTablePlugin).getOption('isSelectingCell')).toBe(true);
+      expect(editor.plugin(BaseTablePlugin).getOption('isCellSelected', 'c12')).toBe(
         true
       );
-      expect(editor.getOption(BaseTablePlugin, 'selectedCell', 'c21')?.id).toBe(
+      expect(editor.plugin(BaseTablePlugin).getOption('selectedCell', 'c21')?.id).toBe(
         'c21'
       );
     });
@@ -550,15 +550,15 @@ describe('withTableCellSelection', () => {
 
       const editor = createTableEditor(input);
 
-      expect(editor.getOption(BaseTablePlugin, 'selectedCellIds')).toBeNull();
-      expect(editor.getOption(BaseTablePlugin, 'selectedCells')).toBeNull();
-      expect(editor.getOption(BaseTablePlugin, 'selectedTables')).toBeNull();
-      expect(editor.getOption(BaseTablePlugin, 'isSelectingCell')).toBe(false);
-      expect(editor.getOption(BaseTablePlugin, 'isCellSelected', 'c11')).toBe(
+      expect(editor.plugin(BaseTablePlugin).getOption('selectedCellIds')).toBeNull();
+      expect(editor.plugin(BaseTablePlugin).getOption('selectedCells')).toBeNull();
+      expect(editor.plugin(BaseTablePlugin).getOption('selectedTables')).toBeNull();
+      expect(editor.plugin(BaseTablePlugin).getOption('isSelectingCell')).toBe(false);
+      expect(editor.plugin(BaseTablePlugin).getOption('isCellSelected', 'c11')).toBe(
         false
       );
       expect(
-        editor.getOption(BaseTablePlugin, 'selectedCell', 'c11')
+        editor.plugin(BaseTablePlugin).getOption('selectedCell', 'c11')
       ).toBeNull();
     });
 
@@ -589,7 +589,7 @@ describe('withTableCellSelection', () => {
       editor.tf.setNodes({ background: 'red' }, { at: [0, 0, 0] });
 
       expect(
-        editor.getOption(BaseTablePlugin, 'selectedCell', 'c11')
+        editor.plugin(BaseTablePlugin).getOption('selectedCell', 'c11')
       ).toMatchObject({
         background: 'red',
         id: 'c11',
@@ -628,12 +628,12 @@ describe('withTableCellSelection', () => {
       });
 
       expect(
-        editor.getOption(BaseTablePlugin, 'selectedCellIds')
+        editor.plugin(BaseTablePlugin).getOption('selectedCellIds')
       ).toStrictEqual(['c11', 'c12']);
 
       editor.tf.select(editor.api.start([0, 0, 0])!);
 
-      expect(editor.getOption(BaseTablePlugin, 'selectedCellIds')).toBeNull();
+      expect(editor.plugin(BaseTablePlugin).getOption('selectedCellIds')).toBeNull();
     });
 
     it('updates selected cell ids for unmerged tables when merge is enabled', () => {
@@ -671,7 +671,7 @@ describe('withTableCellSelection', () => {
       });
 
       expect(
-        editor.getOption(BaseTablePlugin, 'selectedCellIds')
+        editor.plugin(BaseTablePlugin).getOption('selectedCellIds')
       ).toStrictEqual(['c11', 'c12', 'c21', 'c22']);
     });
   });

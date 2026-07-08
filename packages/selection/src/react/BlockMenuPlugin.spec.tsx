@@ -1,5 +1,5 @@
-import { KEYS } from 'platejs';
-import { createPlateEditor, createTPlatePlugin } from 'platejs/react';
+import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
+import { KEYS } from '@platejs/utils';
 
 import type { BlockSelectionConfig } from './BlockSelectionPlugin';
 
@@ -9,7 +9,7 @@ import {
   BlockMenuPlugin,
 } from './BlockMenuPlugin';
 
-const BlockSelectionApiFixture = createTPlatePlugin<BlockSelectionConfig>({
+const BlockSelectionApiFixture = createPlatePlugin<BlockSelectionConfig>({
   key: KEYS.blockSelection,
   options: {
     selectedIds: new Set<string>(),
@@ -31,29 +31,28 @@ describe('BlockMenuPlugin', () => {
 
     api.blockMenu.show('block-a', { x: 12, y: 34 });
 
-    expect(editor.getOptions(BlockMenuPlugin)).toMatchObject({
+    expect(editor.plugin(BlockMenuPlugin).getOptions()).toMatchObject({
       openId: 'block-a',
       position: { x: 12, y: 34 },
     });
 
     api.blockMenu.hide();
 
-    expect(editor.getOptions(BlockMenuPlugin)).toMatchObject({
+    expect(editor.plugin(BlockMenuPlugin).getOptions()).toMatchObject({
       openId: null,
       position: { x: -10_000, y: -10_000 },
     });
 
     api.blockMenu.showContextMenu('block-b', { x: 56, y: 78 });
 
-    expect(editor.getOptions(BlockMenuPlugin)).toMatchObject({
+    expect(editor.plugin(BlockMenuPlugin).getOptions()).toMatchObject({
       openId: BLOCK_CONTEXT_MENU_ID,
       position: { x: 56, y: 78 },
     });
     expect(
       [
-        ...(editor.getOptions<BlockSelectionConfig['options']>(
-          BlockSelectionApiFixture
-        ).selectedIds ?? new Set<string>()),
+        ...(editor.plugin(BlockSelectionApiFixture).getOptions().selectedIds ??
+          new Set<string>()),
       ].sort()
     ).toEqual(['block-b']);
   });

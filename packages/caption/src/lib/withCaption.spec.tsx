@@ -55,7 +55,7 @@ describe('withCaption', () => {
       type: 'set_selection',
     } as any);
 
-    expect(editor.getOption(BaseCaptionPlugin, 'focusEndPath')).toEqual([0]);
+    expect(editor.plugin(BaseCaptionPlugin).getOption('focusEndPath')).toEqual([0]);
   });
 
   it('skips the delayed focus when the caption is empty', () => {
@@ -77,7 +77,7 @@ describe('withCaption', () => {
       type: 'set_selection',
     } as any);
 
-    expect(editor.getOption(BaseCaptionPlugin, 'focusEndPath')).toBeNull();
+    expect(editor.plugin(BaseCaptionPlugin).getOption('focusEndPath')).toBeNull();
   });
 
   it('moves focus into the caption when moving down from an allowed block', () => {
@@ -96,7 +96,7 @@ describe('withCaption', () => {
     );
 
     expect(editor.tf.moveLine({ reverse: false })).toBe(true);
-    expect(editor.getOption(BaseCaptionPlugin, 'focusEndPath')).toEqual([0]);
+    expect(editor.plugin(BaseCaptionPlugin).getOption('focusEndPath')).toEqual([0]);
   });
 
   it('still moves focus into an empty caption when moving down from an allowed block', () => {
@@ -115,7 +115,7 @@ describe('withCaption', () => {
     );
 
     expect(editor.tf.moveLine({ reverse: false })).toBe(true);
-    expect(editor.getOption(BaseCaptionPlugin, 'focusEndPath')).toEqual([0]);
+    expect(editor.plugin(BaseCaptionPlugin).getOption('focusEndPath')).toEqual([0]);
   });
 
   it('falls through when moving down from a block that does not allow captions', () => {
@@ -141,6 +141,6 @@ describe('withCaption', () => {
     } as any);
 
     expect(editor.tf.moveLine({ reverse: false })).toBe(false);
-    expect(editor.getOption(BaseCaptionPlugin, 'focusEndPath')).toBeNull();
+    expect(editor.plugin(BaseCaptionPlugin).getOption('focusEndPath')).toBeNull();
   });
 });

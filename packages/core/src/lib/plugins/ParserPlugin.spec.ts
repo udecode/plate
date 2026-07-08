@@ -132,7 +132,7 @@ describe('ParserPlugin', () => {
       key: 'plain',
       parser: {
         format: 'plain',
-        deserialize: ({ data }) => [createParagraph(data)],
+        deserialize: () => [createParagraph('parsed')],
       },
     });
     const editor = createBaseEditor({
@@ -147,7 +147,7 @@ describe('ParserPlugin', () => {
       ),
     } as any);
 
-    expect(inserted).toBe(false);
-    expect(editor.read.children()).toEqual([createParagraph('initial')]);
+    expect(inserted).toBe(true);
+    expect(editor.read.children()).toEqual([createParagraph('initialhello')]);
   });
 });

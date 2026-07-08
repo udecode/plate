@@ -1,4 +1,4 @@
-import { createBasePlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { insertBlocksAndSelect } from './insertBlocksAndSelect';
@@ -10,7 +10,7 @@ import {
 } from './setBlockSelectionNodes';
 
 const createBlockSelectionEditor = () =>
-  createBasePlateEditor({
+  createBaseEditor({
     plugins: [BlockSelectionPlugin],
     value: [
       {
@@ -26,21 +26,9 @@ const createBlockSelectionEditor = () =>
     ],
   }) as any;
 
-const spyOnUpdate = (editor: any) => {
-  const update = editor.update;
-  const updateSpy = mock((callback: (tx: unknown) => unknown) =>
-    update(callback)
-  );
-
-  editor.update = updateSpy;
-
-  return updateSpy;
-};
-
 describe('block selection document transforms', () => {
-  it('inserts blocks through the editor update transaction', () => {
+  it('inserts blocks through the editor update API', () => {
     const editor = createBlockSelectionEditor();
-    const updateSpy = spyOnUpdate(editor);
 
     insertBlocksAndSelect(
       editor,
@@ -54,62 +42,63 @@ describe('block selection document transforms', () => {
       { at: [1] }
     );
 
-    expect(updateSpy).toHaveBeenCalled();
-    expect(editor.children.map((node: any) => node.id)).toEqual([
+    expect(editor.read.children().map((node: any) => node.id)).toEqual([
       'block1',
       'block3',
       'block2',
     ]);
   });
 
-  it('removes selected blocks through the editor update transaction', () => {
+  it('removes selected blocks through the editor update API', () => {
     const editor = createBlockSelectionEditor();
-    const updateSpy = spyOnUpdate(editor);
 
-    editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['block1']));
+    editor
+      .plugin(BlockSelectionPlugin)
+      .setOption('selectedIds', new Set(['block1']));
 
     removeBlockSelectionNodes(editor);
 
-    expect(updateSpy).toHaveBeenCalled();
-    expect(editor.children.map((node: any) => node.id)).toEqual(['block2']);
+    expect(editor.read.children().map((node: any) => node.id)).toEqual([
+      'block2',
+    ]);
   });
 
-  it('sets selected block element props through the editor update transaction', () => {
+  it('sets selected block element props through the editor update API', () => {
     const editor = createBlockSelectionEditor();
-    const updateSpy = spyOnUpdate(editor);
 
-    editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['block1']));
+    editor
+      .plugin(BlockSelectionPlugin)
+      .setOption('selectedIds', new Set(['block1']));
 
     setBlockSelectionNodes(editor, { align: 'center' } as any);
 
-    expect(updateSpy).toHaveBeenCalled();
-    expect(editor.children[0].align).toBe('center');
-    expect(editor.children[1].align).toBeUndefined();
+    expect(editor.read.children()[0].align).toBe('center');
+    expect(editor.read.children()[1].align).toBeUndefined();
   });
 
-  it('sets selected block indentation through the editor update transaction', () => {
+  it('sets selected block indentation through the editor update API', () => {
     const editor = createBlockSelectionEditor();
-    const updateSpy = spyOnUpdate(editor);
 
-    editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['block1']));
+    editor
+      .plugin(BlockSelectionPlugin)
+      .setOption('selectedIds', new Set(['block1']));
 
     setBlockSelectionIndent(editor, 2);
     setBlockSelectionIndent(editor, -5);
 
-    expect(updateSpy).toHaveBeenCalledTimes(2);
-    expect(editor.children[0].indent).toBe(0);
+    expect(editor.read.children()[0].indent).toBe(0);
   });
 
-  it('sets selected text props through the editor update transaction', () => {
+  it('sets selected text props through the editor update API', () => {
     const editor = createBlockSelectionEditor();
-    const updateSpy = spyOnUpdate(editor);
 
-    editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['block1']));
+    editor
+      .plugin(BlockSelectionPlugin)
+      .setOption('selectedIds', new Set(['block1']));
 
     setBlockSelectionTexts(editor, { bold: true } as any);
 
-    expect(updateSpy).toHaveBeenCalled();
-    expect(editor.children[0].children[0].bold).toBe(true);
-    expect(editor.children[1].children[0].bold).toBeUndefined();
+    expect(editor.read.children()[0].children[0].bold).toBe(true);
+    expect(editor.read.children()[1].children[0].bold).toBeUndefined();
   });
 });

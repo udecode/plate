@@ -1,10 +1,11 @@
-import { type SlateEditor, getEditorPlugin, PathApi } from 'platejs';
-
+import type { BaseEditor } from '@platejs/core';
+import { PathApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { selectInsertedBlocks } from './selectInsertedBlocks';
 
-export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
-  const { api } = getEditorPlugin(editor, BlockSelectionPlugin);
+export const pasteSelectedBlocks = (editor: BaseEditor, e: ClipboardEvent) => {
+  const { api } = editor.plugin(BlockSelectionPlugin);
 
   const entries = api.blockSelection.getNodes();
 
@@ -12,19 +13,19 @@ export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
     const entry = entries.at(-1)!;
     const [node, path] = entry;
 
-    if (!editor.api.isEmpty(node as any)) {
+    if (!editor.read.nodes.isEmpty(node)) {
       const at = PathApi.next(path);
 
-      editor.tf.insertNodes(editor.api.create.block({}, at), {
-        at,
-        select: true,
-      });
+      editor.update.nodes.insert(
+        { children: [{ text: '' }], type: editor.getType(KEYS.p) },
+        {
+          at,
+          select: true,
+        }
+      );
     }
 
-    // quick fix until we find a way to merge history
-    // editor.tf.withoutMerging(() => {
-    editor.tf.insertData(e.clipboardData!);
-    // });
+    editor.api.clipboard.insertData(e.clipboardData!);
 
     selectInsertedBlocks(editor);
   }

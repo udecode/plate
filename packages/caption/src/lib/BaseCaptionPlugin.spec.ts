@@ -16,9 +16,9 @@ describe('BaseCaptionPlugin', () => {
       visibleId: null,
     });
 
-    editor.setOption(BaseCaptionPlugin, 'visibleId', 'caption-1');
+    editor.plugin(BaseCaptionPlugin).setOption('visibleId', 'caption-1');
 
-    expect(editor.getOption(BaseCaptionPlugin, 'visibleId')).toBe('caption-1');
+    expect(editor.plugin(BaseCaptionPlugin).getOption('visibleId')).toBe('caption-1');
     expect(BaseCaptionPlugin.runtimeCaption).toBe(true);
   });
 });

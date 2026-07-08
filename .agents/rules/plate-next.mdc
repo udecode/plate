@@ -93,6 +93,13 @@ Rules:
   like `PreInsertOptions`, explicit callback parameter annotations, or
   `Parameters<typeof fn>` plumbing just to silence TypeScript. Fix the owning
   API/source typing so the call site stays inferred.
+- Never annotate local variables whose initializer should infer the type. A
+  line like `const selectedEntries: NodeEntry<TIdElement>[] =
+  editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
+  hides whether the owner API infers correctly. Remove the annotation and fix
+  the source API if inference is weak. Keep annotations only for genuinely
+  uninferrable locals such as empty arrays, deliberate narrowing/widening,
+  exported/public signatures, or external boundary callbacks.
 - Do not declare plugin export types or cast plugin chains to hide inference
   loss. A plugin export should infer from `createBasePlugin(...)`,
   `createPlatePlugin(...)`, `toPlatePlugin(...)`, and chained `.extend*`
@@ -126,6 +133,13 @@ Rules:
   transaction lane, its context should expose `tx` and mutations should go
   through that `tx`. Do not call `editor.update.*` from such callbacks; fix the
   owning context type and thread `tx` through instead.
+- `editor.update` callbacks must never call `editor.update.*` again. If a
+  callback is already inside `editor.update(...)`,
+  `editor.update.withoutNormalizing(...)`, transform middleware, or another
+  active transaction lane, all editor mutations in that callback must use the
+  active `tx`. `withoutNormalizing` callbacks should receive `({ tx })`, and
+  nested calls like `editor.update.withoutNormalizing(() => {
+  editor.update.selection.set(...) })` are bugs, not style issues.
 - Consecutive `editor.update.*` calls in one synchronous code path are a
   transaction smell. If multiple mutations are one logical action, use the
   existing `tx` from context. If no `tx` exists, prefer a single
@@ -150,6 +164,22 @@ Rules:
   editor/plugin construction is part of the reviewed API shape; if inline
   inference fails, fix the source typing or explicitly classify a
   Plite/Plate gap instead of reshaping the test.
+- Root plugin option helpers are forbidden public API. Do not use or re-add
+  `editor.getOption(...)`, `editor.getOptions(...)`, `editor.setOption(...)`,
+  or `editor.setOptions(...)`. Package code should use the scoped plugin portal:
+  `editor.plugin(FooPlugin).getOption(...)`,
+  `editor.plugin(FooPlugin).getOptions()`,
+  `editor.plugin(FooPlugin).setOption(...)`, and
+  `editor.plugin(FooPlugin).setOptions(...)` when importing the plugin object is
+  cycle-safe. `usePluginOption(FooPlugin, ...)` remains the render-subscription
+  path. A fallback like `editor.plugin<FooConfig>(KEYS.foo)` or
+  `{ key: KEYS.foo }` needs a concrete owner reason: plugin self-definition
+  cycle, React hook/component imported by the plugin itself, non-React layer
+  that must not import a React plugin, or intentionally decoupled cross-package
+  code. For plugin-owned helper graphs, do not look the plugin up by key; pass
+  `api`, `getOption`, `getOptions`, `setOption`, or `tx` from the plugin
+  extension context, or make the helper a thin wrapper around the typed plugin
+  API/tx group.
 - If the correct answer needs missing substrate, stop and name the exact
   `Plite gap` or `Plate gap` instead of inventing a local workaround.
 - Rename churn is forbidden by default in review mode. Do not rename files,
@@ -179,7 +209,7 @@ Rules:
 - In review-mode final answers, separate:
   - `best Plate v2 migration now`;
   - `Plite/Plate gap or blocker`;
-  - `related Core sweep result`;
+  - `related scoped sweep result`;
   - `do not do`.
 
 Concrete correction:
@@ -224,25 +254,33 @@ For each gap, name:
 
 ## Correction Sweep Law
 
-Every correction creates a related-surface sweep. Do not fix one file and stop
-while the same smell remains elsewhere in Core.
+Every correction creates a related-surface sweep. The sweep is scoped to the
+active mode. Do not silently turn a package review into a repo-wide migration.
 
 After any code/template/API correction:
 
 1. Derive the sweep pattern from the exact correction: old symbol, deleted
    wrapper, bridge file, helper shape, plugin owner, Plite primitive, or type
    cast class.
-2. Run focused `rg`/caller searches across `packages/core/src` and relevant
-   `packages/core/type-tests`.
-3. Review every match in the same class, not just the first one.
-4. Apply the same correction when it is clearly safe.
-5. If a match is not safe, add it to the plan as `defer-with-owner`,
-   `Plite gap`, or `Plate gap` with proof needed.
+2. Run focused `rg`/caller searches inside the active scope:
+   - named file/API: target owner plus the smallest caller graph needed to
+     prove the decision;
+   - package review: the named package plus the smallest Plite/Core owner that
+     blocks that package;
+   - Core review: `packages/core/src` and relevant `packages/core/type-tests`;
+   - broad sweep/full-loop: the explicitly requested broad manifest.
+3. Review every match in that scoped class, not just the first one.
+4. Apply the same correction only inside the active scope when it is clearly
+   safe.
+5. If a broader audit finds matches outside the active scope, do not patch
+   them. Add them to the plan as `defer-with-owner`, `Plite gap`, `Plate gap`,
+   or `next-package-candidate` with proof needed.
 6. Record the sweep query, match count, patched count, deferred count, and
    remaining risk before handoff.
 
 This is narrower than a full Core sweep. It is mandatory after a correction,
-even for one-by-one review.
+even for one-by-one review, but it is not permission to update unrelated
+packages, docs, examples, or generated surfaces.
 
 ## Extracted File Recovery Law
 
@@ -334,6 +372,11 @@ Default suspicion list:
 - explicit callback/helper types in tests that replace inference from
   `createBasePlugin`, `createBaseEditor`, plugin config, tx groups, or editor
   API calls.
+- local variable annotations that duplicate an obvious initializer type,
+  especially `const x: NodeEntry<...>[] = editor.read...`,
+  `const x: Value = [...]`, or `const x: PlateEditor = create...` when the
+  initializer should own inference. Empty arrays and external boundaries are
+  the exception, not the default.
 - plugin export annotations/casts that replace inference from
   `createBasePlugin`, `createPlatePlugin`, `toPlatePlugin`, or chained
   `.extend*` calls. They cap the file below `100` until removed or justified as
@@ -352,6 +395,10 @@ Default suspicion list:
 - transform/input-rule/command callbacks that mutate through `editor.update.*`
   while an active `tx` should be available. Fix the context owner and pass `tx`;
   do not scatter local `editor.update` calls inside the callback.
+- nested `editor.update.*` calls inside any `editor.update` callback,
+  especially `editor.update.withoutNormalizing(() => { editor.update.* })`.
+  The owning API should pass `({ tx })`, and the callback must mutate through
+  that `tx`.
 - multiple consecutive `editor.update.*` calls that implement one user action.
   They must be one transaction group at minimum, and `tx` from context is the
   preferred shape when the caller is already inside a transform lane.
@@ -440,6 +487,17 @@ Rules:
 
 - Freeze scope to the named package plus the smallest Plite/Core owner needed
   to remove a blocker found in that package.
+- Do not update docs, examples, package callers outside the named package,
+  unrelated packages, generated registries, or broad repo surfaces from package
+  mode. If the same API smell appears elsewhere, record it as a deferred row or
+  next package candidate.
+- A hard-cut decision discovered in one package still lands package by package.
+  Do not run a global caller rewrite unless the user explicitly says
+  `all packages`, `current tree`, `full-loop`, `sweep`, or names the broader
+  owner.
+- If a package packet needs a Plite/Core fix, patch only that smallest owner
+  and the package proof needed for the current package. Do not opportunistically
+  migrate every consumer of the new owner API.
 - Before implementation, generate a package file manifest and materialize one
   checkbox per reviewed file in the autogoal plan.
 - Manifest inputs:
@@ -490,6 +548,9 @@ Rules:
 - Broad Plate v2 redesign, cross-package migrations, or package-to-package
   fallout are out of scope unless the current package exposes a real blocker
   that cannot be fixed in its owner.
+- Package-mode final handoff must include `out-of-scope matches discovered`
+  when a source audit found broader callers. Those rows are routing hints, not
+  permission to patch them.
 
 ## Loop
 
@@ -526,14 +587,18 @@ Then loop:
    implementation until the plan is accepted.
 7. If the smell is source shape, route to `architecture-cleanup`.
 8. If the decision is safe, implement the smallest cleanup packet.
-9. After every correction, run the related Core sweep required by Correction
-   Sweep Law and patch/defer all same-class matches.
+9. After every correction, run the related scoped sweep required by Correction
+   Sweep Law inside the active scope and patch/defer all scoped same-class
+   matches. In package review mode, broader matches become deferred rows, not
+   edits.
 10. Run focused proof: package typecheck/test/build when needed, plus `pnpm brl`
    if exports/barrels changed.
    - For Core-only targets, prefer `pnpm check:core` and Core-focused tests.
      Non-Core package failures are not blockers unless that package is named,
      touched, or the failure proves the Core API broke it.
-11. Run source audits for removed legacy names.
+11. Run source audits for removed legacy names. In package review mode, audit
+    broadly only to discover risk; patch only the named package and required
+    owner.
 12. For full Core sweep, close the autogoal template's drift-ledger score gate.
 13. For package review mode, close the package file checklist or defer
     unchecked rows for user review before considering the next package.
@@ -605,7 +670,9 @@ Report:
 - verdict matrix: main-parity-cleanup, move-to-plite, keep-in-plate, hard-cut,
   Plite gap, Plate gap, private-bridge, defer-with-owner;
 - changes made;
-- related Core sweep query, match count, patched count, deferred count;
+- related scoped sweep query, active scope, match count, patched count,
+  deferred count;
+- out-of-scope matches discovered during package review;
 - tests/proof commands;
 - old compatibility names audited;
 - Plite/Plate gaps or blockers;

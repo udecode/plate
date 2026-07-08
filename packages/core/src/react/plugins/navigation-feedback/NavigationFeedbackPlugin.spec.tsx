@@ -85,6 +85,8 @@ describe('NavigationFeedbackPlugin', () => {
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
-    expect(editor.getOption(NavigationFeedbackPlugin, 'duration')).toBe(1200);
+    expect(editor.plugin(NavigationFeedbackPlugin).getOption('duration')).toBe(
+      1200
+    );
   });
 });

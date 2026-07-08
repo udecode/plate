@@ -24,7 +24,7 @@ export const insertTextSuggestion = (editor: SlateEditor, text: string) => {
             id: resId ?? id,
             createdAt,
             type: 'insert',
-            userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+            userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
           },
           suggestion: true,
           text,

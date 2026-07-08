@@ -36,7 +36,7 @@ describe('removeMarkSuggestion', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
     editor.tf.removeMark('bold');
 
     const data = getInlineSuggestionData(
@@ -81,7 +81,7 @@ describe('removeMarkSuggestion', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
     editor.tf.removeMark('bold');
 
     const dataList = editor
@@ -124,7 +124,7 @@ describe('removeMarkSuggestion', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
     editor.tf.removeMark('bold');
 
     const node = editor.children[0].children[0] as any;

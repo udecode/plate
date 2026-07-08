@@ -14,7 +14,6 @@ import {
   type ExtendBaseEditorOptions,
   type PluginConfig,
   extendBaseEditor,
-  type WithRequiredKey,
 } from '../../lib';
 import { createZustandStore } from '../libs/zustand';
 import { getPlateCorePlugins } from './getPlateCorePlugins';
@@ -26,10 +25,7 @@ export type PlateCorePlugin =
 type PlatePluginInput<C extends AnyPluginConfig = AnyPluginConfig> =
   | AnyPluginConfig
   | BasePlugin<C>
-  | PlatePlugin<C>
-  | (WithRequiredKey<C> & {
-      readonly __config: C;
-    });
+  | PlatePlugin<C>;
 
 type InferPlateEditorPluginConfig<P> = P extends {
   readonly __config: infer C extends AnyPluginConfig;

@@ -3,10 +3,6 @@ import { renderHook } from '@testing-library/react';
 const extractSelectableIdsMock = mock();
 const useEditorPluginMock = mock();
 
-mock.module('../BlockSelectionPlugin', () => ({
-  BlockSelectionPlugin: { key: 'blockSelection' },
-}));
-
 class SelectionAreaMock {
   handlers = new Map<string, Function>();
   clearSelection = mock();
@@ -35,7 +31,7 @@ mock.module('../../lib', async () => ({
   extractSelectableIds: extractSelectableIdsMock,
 }));
 
-mock.module('platejs/react', async () => ({
+mock.module('@platejs/core/react', async () => ({
   useEditorPlugin: useEditorPluginMock,
 }));
 

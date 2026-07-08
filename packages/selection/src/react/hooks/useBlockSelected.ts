@@ -1,4 +1,4 @@
-import { useElement, usePluginOption } from 'platejs/react';
+import { useElement, usePluginOption } from '@platejs/core/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 

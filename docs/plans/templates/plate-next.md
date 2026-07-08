@@ -22,7 +22,7 @@ Plate Next source:
 - review target: best Plate v2 migration on top of Plite, not legacy
   compatibility
 - broad Core sweep: pending
-- correction-triggered related Core sweep: pending
+- correction-triggered related scoped sweep: pending
 - package review mode: pending
 - package review target: pending
 - package file checklist gate: pending
@@ -51,7 +51,7 @@ Completion threshold:
 - Named file/API work may close from a scoped source map and focused proof.
 - One-by-one review work may close only after the best Plate v2 recommendation
   is recorded, legacy/backcompat hacks are rejected, any Plite/Plate gaps are
-  named, and every correction has a related Core sweep row.
+  named, and every correction has a related scoped sweep row.
 - Broad Core sweep may close only when every Core source file has a valid row
   in this plan's Core drift ledger section or a linked plan artifact summarized
   in this plan.
@@ -79,7 +79,7 @@ Verification surface:
 - package proof: pending
 - shared Core gate: pending
 - source audits: pending
-- related Core sweep query / match count / patched count / deferred count:
+- related scoped sweep query / active scope / match count / patched count / deferred count:
   pending
 - package file manifest / row count / checked count / deferred count: pending
 - Plite/Plate gap ledger: pending
@@ -96,8 +96,14 @@ Constraints:
   dumps, `any` casts, duplicated wrappers, command fallbacks, or fake aliases.
 - If clean migration is blocked, record a `Plite gap` or `Plate gap` instead of
   inventing a compatibility workaround.
-- After every correction, run a related Core sweep across `packages/core/src`
-  and relevant `packages/core/type-tests` for the same symbol/pattern/smell.
+- After every correction, run a related sweep only inside the active mode
+  scope. Package review mode is scoped to the named package plus the smallest
+  Plite/Core owner needed to unblock that package. Broader matches become
+  deferred rows or next-package candidates, not edits.
+- In package review mode, do not update docs, examples, package callers outside
+  the named package, unrelated packages, generated registries, or broad repo
+  surfaces unless the user explicitly broadens scope with `all packages`,
+  `current tree`, `full-loop`, `sweep`, or the broader owner name.
 - Review-mode rename freeze: keep current `HEAD` names/paths while behavior and
   API drift are under review. Put desirable later renames in
   `docs/plans/pre-renaming.md`; do not turn the active diff into Added/Deleted
@@ -122,11 +128,14 @@ Constraints:
 - Do not use a narrow representative file to close a broad Core sweep.
 - Package review mode is review-first, not migration-first. Freeze scope to the
   named package plus the smallest Plite/Core owner needed to remove a blocker.
+- Package hard cuts land package by package. A broad audit can discover
+  outside-scope callers, but the plan must record them as deferred rows instead
+  of patching them in the current package packet.
 - Package file rows can be checked `[x]` only at score `100`: no behavior
   regression versus `origin/main`, no type regression, inline inference
-  preserved, no fake casts/local helper types, no compat sludge, correct
-  Plite/Plate ownership, accepted owner/name/path drift, and focused proof or
-  justified source audit.
+  preserved, no inferred local type annotations, no fake casts/local helper
+  types, no compat sludge, correct Plite/Plate ownership, accepted
+  owner/name/path drift, and focused proof or justified source audit.
 - Green package tests alone do not score a file `100`.
 - Do not move to the next package until every package file row is checked at
   `100` or explicitly deferred for user review.
@@ -140,6 +149,11 @@ Constraints:
   Callback form is only for grouped transaction/snapshot logic, shared
   intermediate state, branching/looping, or missing direct API that is recorded
   as a Plite gap.
+- Active transaction law: no `editor.update.*` call may appear inside an
+  `editor.update(...)`, `editor.update.withoutNormalizing(...)`, transform
+  middleware, or other active transaction callback. The callback must receive
+  and use the active `tx`; `withoutNormalizing` callbacks should be
+  `({ tx }) => { ... }`.
 - Plugin export inference law: plugin constants should infer from
   `createBasePlugin`, `createPlatePlugin`, `toPlatePlugin`, and chained
   `.extend*` methods. Do not annotate exports as `BasePlugin<Config>` /
@@ -155,6 +169,26 @@ Constraints:
   `extendExtension` must accept both built extensions and raw options; raw
   options without `name` default to the owning plugin key. Keep explicit names
   only for genuinely separate extension identities.
+- Inferred local type law: do not annotate local variables whose initializer
+  should infer the type. Smells like `const entries: NodeEntry<T>[] =
+  editor.read...` or `const value: Value = [...]` hide type regressions at the
+  owner API. Remove the annotation and fix the source API if inference is weak.
+  Keep annotations only for uninferrable locals such as empty arrays,
+  deliberate narrowing/widening, exported/public signatures, or external
+  boundary callbacks.
+- Plugin option law: root plugin option helpers are forbidden public API. Do
+  not use or re-add `editor.getOption(...)`, `editor.getOptions(...)`,
+  `editor.setOption(...)`, or `editor.setOptions(...)`. Package code should use
+  scoped plugin portals by default (`editor.plugin(FooPlugin).getOption(...)`,
+  `editor.plugin(FooPlugin).getOptions()`,
+  `editor.plugin(FooPlugin).setOption(...)`,
+  `editor.plugin(FooPlugin).setOptions(...)`). `usePluginOption(FooPlugin, ...)`
+  remains the render-subscription path. Key+generic fallbacks need an owner
+  reason: plugin self-definition cycle, React hook/component imported by the
+  plugin itself, non-React layer that must not import a React plugin, or
+  intentionally decoupled cross-package code. Plugin-owned helper graphs should
+  receive plugin context (`api`, `getOption`, `getOptions`, `setOption`, `tx`)
+  or be thin wrappers over the typed plugin API/tx group.
 
 Boundaries:
 - allowed edit scope: pending
@@ -191,7 +225,7 @@ Start Gates:
 | Output budget strategy recorded | pending | pending |
 | Public API fork routing checked | pending | pending |
 | Gap policy checked | pending | pending |
-| Related Core sweep policy checked | pending | pending |
+| Related scoped sweep policy checked | pending | pending |
 | Review-mode rename freeze checked | pending | pending |
 | Package review checklist initialized when in scope | pending | pending |
 
@@ -212,8 +246,9 @@ Work Checklist:
       alias, or displaced product/plugin behavior is kept as a shortcut.
 - [ ] Gap ledger updated for every blocker: exact missing Plite or Plate
       capability, why local workaround is wrong, smallest owner, and proof.
-- [ ] After every correction, related Core sweep row is added with query,
-      match count, patched count, deferred count, and remaining risk.
+- [ ] After every correction, related scoped sweep row is added with query,
+      active scope, match count, patched count, deferred count, and remaining
+      risk. In package review mode, broader matches are deferred, not patched.
 - [ ] For broad Core sweep, the Core drift ledger in this plan, or linked from
       this plan, has one row per Core source file before closeout.
 - [ ] For broad Core sweep, every Core file row has `path`, `drift_score`,
@@ -277,7 +312,7 @@ Completion Gates:
 | Score gate | pending | Prove all scores are valid and high drift is owned/fixed/deferred in the plan ledger | pending |
 | Best Plate v2 recommendation | pending | Record the recommended current shape and rejected legacy/hack alternatives for the reviewed target | pending |
 | Plite/Plate gap ledger | pending | Record blockers or N/A when no gap blocks the target | pending |
-| Related Core sweep after correction | pending | For each correction, run and record same-class Core search/review results | pending |
+| Related scoped sweep after correction | pending | For each correction, run and record same-class search/review results inside the active scope | pending |
 | Package file checklist | pending | Record manifest command, row counts, score-100 rows, unchecked/deferred rows, and proof per file when package review applies | pending |
 | Package/API proof | pending | Run focused typecheck/test/build or record N/A | pending |
 | Shared Core gate coverage | pending | Add Core-adjacent reviewed packages to `tooling/scripts/check-core.mjs`, or record why N/A | pending |
@@ -305,10 +340,10 @@ Plite / Plate gap ledger:
 |----------|--------------------|-------------------------------|----------------|--------------|----------|
 | pending | pending | pending | pending | pending | pending |
 
-Related Core sweep ledger:
-| Trigger correction | Sweep query / method | Matches | Patched | Deferred | Remaining risk |
-|--------------------|----------------------|---------|---------|----------|----------------|
-| pending | pending | pending | pending | pending | pending |
+Related scoped sweep ledger:
+| Trigger correction | Active scope | Sweep query / method | Matches | Patched | Deferred | Remaining risk |
+|--------------------|--------------|----------------------|---------|---------|----------|----------------|
+| pending | pending | pending | pending | pending | pending | pending |
 
 Core drift ledger:
 - Applies: pending
@@ -363,6 +398,11 @@ Out-of-scope package drift:
 |-------------------|---------------|---------------------------|--------------|
 | pending | pending | pending | pending |
 
+Out-of-scope matches discovered:
+| Pattern / API | Outside-scope owners | Why not patched now | Next package / owner |
+|---------------|----------------------|---------------------|----------------------|
+| pending | pending | pending | pending |
+
 Changed list:
 | Group | Current-run changes |
 |-------|---------------------|
@@ -398,7 +438,8 @@ Final handoff contract:
 - best Plate v2 recommendation: pending
 - verdict matrix summary: pending
 - Plite/Plate gaps or blockers: pending
-- related Core sweep query/matches/patched/deferred: pending
+- related scoped sweep query/active scope/matches/patched/deferred: pending
+- out-of-scope matches discovered: pending
 - changes made: pending
 - tests/proof commands: pending
 - old compatibility names audited: pending

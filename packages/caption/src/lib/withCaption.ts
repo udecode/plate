@@ -57,7 +57,7 @@ export const withCaption: OverrideEditor<CaptionConfig> = ({
                 NodeApi.string({ children: node.caption } as any).length > 0
               ) {
                 setTimeout(() => {
-                  editor.setOption(BaseCaptionPlugin, 'focusEndPath', entry[1]);
+                  editor.plugin(BaseCaptionPlugin).setOption('focusEndPath', entry[1]);
                 }, 0);
               }
             }
@@ -78,7 +78,7 @@ export const withCaption: OverrideEditor<CaptionConfig> = ({
 
             if (!entry) return;
 
-            editor.setOption(BaseCaptionPlugin, 'focusEndPath', entry[1]);
+            editor.plugin(BaseCaptionPlugin).setOption('focusEndPath', entry[1]);
 
             return true;
           }

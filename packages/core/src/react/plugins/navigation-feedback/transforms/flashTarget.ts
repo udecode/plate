@@ -5,7 +5,7 @@ import type {
   NavigationFeedbackStoredTarget,
 } from '../types';
 
-import { NavigationFeedbackPluginKey } from '../types';
+import { NavigationFeedbackPluginKey } from '../internal/navigationFeedbackPluginKey';
 
 const NAVIGATION_FEEDBACK_TIMEOUT = new WeakMap<
   BaseEditor,
@@ -56,17 +56,16 @@ export const clearNavigationFeedbackTarget = (
   refreshDecorations: () => void,
   pulse?: number
 ) => {
-  const storedTarget = editor.getOption(
-    NavigationFeedbackPluginKey,
-    'activeTarget'
-  );
+  const storedTarget = editor
+    .plugin(NavigationFeedbackPluginKey)
+    .getOption('activeTarget');
 
   if (!storedTarget) return false;
   if (pulse !== undefined && storedTarget.pulse !== pulse) return false;
 
   clearNavigationTimeout(editor);
   clearNavigationPathRef(storedTarget);
-  editor.setOption(NavigationFeedbackPluginKey, 'activeTarget', null);
+  editor.plugin(NavigationFeedbackPluginKey).setOption('activeTarget', null);
   refreshDecorations();
 
   return true;
@@ -82,12 +81,11 @@ export const flashTarget = (
   const pulse = nextPulse(editor);
   const timeoutMs =
     duration ??
-    editor.getOption(NavigationFeedbackPluginKey, 'duration') ??
+    editor.plugin(NavigationFeedbackPluginKey).getOption('duration') ??
     800;
-  const previousTarget = editor.getOption(
-    NavigationFeedbackPluginKey,
-    'activeTarget'
-  );
+  const previousTarget = editor
+    .plugin(NavigationFeedbackPluginKey)
+    .getOption('activeTarget');
 
   clearNavigationTimeout(editor);
   clearNavigationPathRef(previousTarget);
@@ -101,7 +99,9 @@ export const flashTarget = (
     variant,
   };
 
-  editor.setOption(NavigationFeedbackPluginKey, 'activeTarget', activeTarget);
+  editor
+    .plugin(NavigationFeedbackPluginKey)
+    .setOption('activeTarget', activeTarget);
   refreshDecorations();
 
   const timeoutId = setTimeout(() => {

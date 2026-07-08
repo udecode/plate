@@ -115,7 +115,7 @@ export const useDropNode = (
           orientation,
         });
 
-        const onDropFiles = editor.getOptions(DndPlugin).onDropFiles;
+        const onDropFiles = editor.plugin(DndPlugin).getOptions().onDropFiles;
 
         if (!result || !onDropFiles) return;
 

@@ -15,7 +15,7 @@ const headingDepth: Record<string, number> = {
 };
 
 export const getHeadingList = (editor: SlateEditor) => {
-  const options = editor.getOptions(BaseTocPlugin);
+  const options = editor.plugin(BaseTocPlugin).getOptions();
 
   if (options.queryHeading) {
     return options.queryHeading(editor);

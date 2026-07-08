@@ -12,16 +12,16 @@ describe('AIChatPlugin', () => {
       value: [{ children: [{ text: 'x' }], type: 'p' }],
     });
 
-    editor.setOption(AIChatPlugin, 'streaming', true);
-    editor.setOption(AIChatPlugin, '_blockChunks', 'abc');
-    editor.setOption(AIChatPlugin, '_blockPath', [0]);
-    editor.setOption(AIChatPlugin, '_mdxName', 'foo');
+    editor.plugin(AIChatPlugin).setOption('streaming', true);
+    editor.plugin(AIChatPlugin).setOption('_blockChunks', 'abc');
+    editor.plugin(AIChatPlugin).setOption('_blockPath', [0]);
+    editor.plugin(AIChatPlugin).setOption('_mdxName', 'foo');
 
     editor.getApi(AIChatPlugin).aiChat.stop();
 
-    expect(editor.getOption(AIChatPlugin, 'streaming')).toBe(false);
-    expect(editor.getOption(AIChatPlugin, '_blockChunks')).toBe('');
-    expect(editor.getOption(AIChatPlugin, '_blockPath')).toBeNull();
-    expect(editor.getOption(AIChatPlugin, '_mdxName')).toBeNull();
+    expect(editor.plugin(AIChatPlugin).getOption('streaming')).toBe(false);
+    expect(editor.plugin(AIChatPlugin).getOption('_blockChunks')).toBe('');
+    expect(editor.plugin(AIChatPlugin).getOption('_blockPath')).toBeNull();
+    expect(editor.plugin(AIChatPlugin).getOption('_mdxName')).toBeNull();
   });
 });

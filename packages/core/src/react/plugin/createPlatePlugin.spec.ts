@@ -140,4 +140,29 @@ describe('withComponent method', () => {
 
     expect(1).toBe(1);
   });
+
+  it('exposes plugin context as a Plate editor method', () => {
+    type MethodConfig = PluginConfig<
+      'methodPlugin',
+      { enabled: boolean },
+      { method: { isEnabled: () => boolean } }
+    >;
+
+    const MethodPlugin = createPlatePlugin<MethodConfig>({
+      key: 'methodPlugin',
+      options: { enabled: true },
+    }).extendEditorApi<MethodConfig['api']>(({ getOption }) => ({
+      method: {
+        isEnabled: () => getOption('enabled'),
+      },
+    }));
+
+    const editor = createPlateEditor({ plugins: [MethodPlugin] });
+    const pluginContext = editor.plugin(MethodPlugin);
+    const keyedContext = editor.plugin<MethodConfig>('methodPlugin');
+
+    expect(pluginContext.getOption('enabled') satisfies boolean).toBe(true);
+    expect(pluginContext.api.method.isEnabled() satisfies boolean).toBe(true);
+    expect(keyedContext.getOptions().enabled satisfies boolean).toBe(true);
+  });
 });

@@ -37,7 +37,7 @@ export const getSuggestionUserId = (node: TNode) =>
   getSuggestionUserIds(node)[0];
 
 export const isCurrentUserSuggestion = (editor: SlateEditor, node: TText) => {
-  const { currentUserId } = editor.getOptions(BaseSuggestionPlugin);
+  const { currentUserId } = editor.plugin(BaseSuggestionPlugin).getOptions();
 
   return getInlineSuggestionData(node)?.userId === currentUserId;
 };

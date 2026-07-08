@@ -2,14 +2,7 @@ import type React from 'react';
 
 import { act, renderHook } from '@testing-library/react';
 
-const requestReRenderMock = mock();
-
-mock.module('./useRequestReRender', () => ({
-  useRequestReRender: () => requestReRenderMock,
-}));
-
-const loadModule = async () =>
-  import(`./useRefreshOnResize?test=${Math.random().toString(36).slice(2)}`);
+import { useRefreshOnResize } from './useRefreshOnResize';
 
 describe('useRefreshOnResize', () => {
   class ResizeObserverMock {
@@ -30,12 +23,21 @@ describe('useRefreshOnResize', () => {
     };
   }
 
-  let resizeObserverSpy: ReturnType<typeof spyOn>;
+  let cancelAnimationFrameSpy: AnyTestMock;
+  let requestAnimationFrameSpy: AnyTestMock;
+  let resizeObserverSpy: AnyTestMock;
   let lastObserver: ResizeObserverMock | null;
 
   beforeEach(() => {
     lastObserver = null;
-    requestReRenderMock.mockReset();
+    requestAnimationFrameSpy = spyOn(
+      globalThis,
+      'requestAnimationFrame'
+    ).mockImplementation((() => 11) as typeof requestAnimationFrame);
+    cancelAnimationFrameSpy = spyOn(
+      globalThis,
+      'cancelAnimationFrame'
+    ).mockImplementation((() => {}) as typeof cancelAnimationFrame);
     resizeObserverSpy = spyOn(
       globalThis as any,
       'ResizeObserver'
@@ -46,15 +48,12 @@ describe('useRefreshOnResize', () => {
   });
 
   afterEach(() => {
+    cancelAnimationFrameSpy.mockRestore();
+    requestAnimationFrameSpy.mockRestore();
     resizeObserverSpy.mockRestore();
   });
 
-  afterAll(() => {
-    mock.restore();
-  });
-
-  it('clears the cache and requests rerender when refresh is called', async () => {
-    const { useRefreshOnResize } = await loadModule();
+  it('clears the cache and requests rerender when refresh is called', () => {
     const selectionRectCache = {
       current: new WeakMap(),
     } as React.MutableRefObject<WeakMap<any, any>>;
@@ -77,12 +76,11 @@ describe('useRefreshOnResize', () => {
     });
 
     expect(selectionRectCache.current.get(token)).toBeUndefined();
-    expect(requestReRenderMock).toHaveBeenCalledWith(false);
+    expect(requestAnimationFrameSpy).toHaveBeenCalledTimes(1);
     expect(resizeObserverSpy).not.toHaveBeenCalled();
   });
 
-  it('observes the container and refreshes on resize when enabled', async () => {
-    const { useRefreshOnResize } = await loadModule();
+  it('observes the container and refreshes on resize when enabled', () => {
     const selectionRectCache = {
       current: new WeakMap(),
     } as React.MutableRefObject<WeakMap<any, any>>;
@@ -111,7 +109,7 @@ describe('useRefreshOnResize', () => {
     });
 
     expect(selectionRectCache.current.get(token)).toBeUndefined();
-    expect(requestReRenderMock).toHaveBeenCalledWith(false);
+    expect(requestAnimationFrameSpy).toHaveBeenCalledTimes(1);
 
     unmount();
 

@@ -226,7 +226,7 @@ describe('acceptSuggestion', () => {
       ],
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.deleteBackward('character');
 

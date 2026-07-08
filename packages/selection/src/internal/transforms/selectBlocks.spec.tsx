@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor, type SlateEditor } from 'platejs';
+import { type BaseEditor, createBaseEditor } from '@platejs/core';
 
 import { BlockSelectionPlugin } from '../../react';
 import { selectBlocks } from './selectBlocks';
@@ -9,10 +9,10 @@ import { selectBlocks } from './selectBlocks';
 jsxt;
 
 describe('selectBlocks', () => {
-  let editor: SlateEditor;
+  let editor: BaseEditor;
 
   beforeEach(() => {
-    editor = createSlateEditor({
+    editor = createBaseEditor({
       plugins: [BlockSelectionPlugin],
       selection: {
         anchor: { offset: 0, path: [0] },
@@ -46,38 +46,42 @@ describe('selectBlocks', () => {
     it('select the specified block', () => {
       selectBlocks(editor, [1]);
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['block2']);
     });
   });
 
   describe('when blocks are already selected', () => {
     beforeEach(() => {
-      editor.setOption(
-        BlockSelectionPlugin,
-        'selectedIds',
-        new Set(['block1', 'block2'])
-      );
+      editor
+        .plugin(BlockSelectionPlugin)
+        .setOption('selectedIds', new Set(['block1', 'block2']));
     });
 
     it('keep existing selection if selecting an already selected block', () => {
       selectBlocks(editor, [0]);
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['block1', 'block2']);
     });
 
     it('select only the new block if selecting an unselected block', () => {
       selectBlocks(editor, [2]);
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['block3']);
     });
   });
 
   describe('with nested blocks', () => {
     beforeEach(() => {
-      editor = createSlateEditor({
+      editor = createBaseEditor({
         plugins: [BlockSelectionPlugin],
         selection: {
           anchor: { offset: 0, path: [0, 0] },
@@ -107,21 +111,25 @@ describe('selectBlocks', () => {
     it('select nested block', () => {
       selectBlocks(editor, [0, 0]);
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['child1']);
     });
 
     it('select parent block', () => {
       selectBlocks(editor, [0]);
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['parent1']);
     });
   });
 
   describe('with non-selectable blocks', () => {
     beforeEach(() => {
-      editor = createSlateEditor({
+      editor = createBaseEditor({
         plugins: [BlockSelectionPlugin],
         selection: {
           anchor: { offset: 0, path: [0, 0, 0] },
@@ -152,14 +160,16 @@ describe('selectBlocks', () => {
     it('select block at path', () => {
       selectBlocks(editor, [0, 0]);
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['tr1']);
     });
   });
 
   describe('with multi-level selection', () => {
     beforeEach(() => {
-      editor = createSlateEditor({
+      editor = createBaseEditor({
         plugins: [BlockSelectionPlugin],
         selection: {
           anchor: { offset: 0, path: [0, 0, 0] },
@@ -223,40 +233,46 @@ describe('selectBlocks', () => {
 
     it('select only blocks at same level', () => {
       // Set selection from div1 to div3
-      editor.selection = {
+      editor.update.selection.set({
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 0, path: [0, 1, 0] },
-      };
+      });
 
       selectBlocks(editor, [0, 0, 0]);
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['div1', 'div2', 'div3']);
     });
 
     it('select only sections when selecting across sections', () => {
       // Set selection from section1 to section2
-      editor.selection = {
+      editor.update.selection.set({
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 1] },
-      };
+      });
 
       selectBlocks(editor, [0, 0]);
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['section1', 'section2']);
     });
 
     it('select only paragraphs when selecting across nested paragraphs', () => {
       // Set selection from p1 to p3
-      editor.selection = {
+      editor.update.selection.set({
         anchor: { offset: 0, path: [0, 0, 0, 0] },
         focus: { offset: 0, path: [0, 1, 0, 0] },
-      };
+      });
 
       selectBlocks(editor, [0, 0, 0, 0]);
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const selectedIds = editor
+        .plugin(BlockSelectionPlugin)
+        .getOption('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['p1', 'p2', 'p3']);
     });
   });

@@ -26,7 +26,7 @@ const _toggleList = (
       return;
     }
 
-    const { validLiChildrenTypes } = editor.getOptions(BaseListPlugin);
+    const { validLiChildrenTypes } = editor.plugin(BaseListPlugin).getOptions();
 
     if (editor.api.isCollapsed() || !editor.api.isAt({ blocks: true })) {
       // selection is collapsed

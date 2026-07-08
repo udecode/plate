@@ -1,5 +1,4 @@
 import type { Value } from '@platejs/plite';
-import type { Draft } from 'mutative';
 import type { TStateApi } from 'zustand-x';
 
 import type {
@@ -14,8 +13,10 @@ import type {
 import type {
   AnyBasePlugin,
   BasePlugin,
+  BasePluginContext,
   EditorShortcut,
   InjectNodeProps,
+  InferConfig,
 } from '../plugin/BasePlugin';
 import type { BaseParagraphPlugin, CorePluginConfig } from '../plugins';
 import type { ResolvedInputRulesMeta } from '../plugins/input-rules/types';
@@ -92,63 +93,12 @@ type PlateEditorRuntime = {
   };
 };
 
-type GetPluginOption = {
-  <
-    PInput extends AnyBasePlugin,
-    C extends AnyPluginConfig = RuntimeInferPluginConfig<PInput>,
-    StateType extends InferOptions<C> = InferOptions<C>,
-    TSelectors extends InferSelectors<C> = InferSelectors<C>,
-    K extends keyof StateType | keyof TSelectors | 'state' =
-      | keyof StateType
-      | keyof TSelectors
-      | 'state',
-  >(
-    plugin: PInput,
-    key: K,
-    ...args: K extends keyof TSelectors ? Parameters<TSelectors[K]> : []
-  ): K extends 'state'
-    ? StateType
-    : K extends keyof TSelectors
-      ? ReturnType<TSelectors[K]>
-      : K extends keyof StateType
-        ? StateType[K]
-        : never;
-  <
-    C extends AnyPluginConfig,
-    StateType extends InferOptions<C> = InferOptions<C>,
-    TSelectors extends InferSelectors<C> = InferSelectors<C>,
-    K extends keyof StateType | keyof TSelectors | 'state' =
-      | keyof StateType
-      | keyof TSelectors
-      | 'state',
-  >(
-    plugin: WithRequiredKey<C>,
-    key: K,
-    ...args: K extends keyof TSelectors ? Parameters<TSelectors[K]> : []
-  ): K extends 'state'
-    ? StateType
-    : K extends keyof TSelectors
-      ? ReturnType<TSelectors[K]>
-      : K extends keyof StateType
-        ? StateType[K]
-        : never;
-};
-
 type PlatePluginRuntime<P extends AnyPluginConfig = AnyPluginConfig> = {
   plugins: BaseEditorPlugins<P>;
-  setOptions: <C extends AnyPluginConfig>(
-    plugin: WithRequiredKey<C>,
-    options:
-      | ((state: Draft<Partial<InferOptions<C>>>) => void)
-      | Partial<InferOptions<C>>
-  ) => void;
+  plugin: GetBasePluginContext;
   getInjectProps: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => InjectNodeProps<C>;
-  getOption: GetPluginOption;
-  getOptions: <C extends AnyPluginConfig = PluginConfig>(
-    plugin: WithRequiredKey<C>
-  ) => InferOptions<C>;
   getOptionsStore: <C extends AnyPluginConfig>(
     plugin: WithRequiredKey<C>
   ) => TStateApi<
@@ -159,11 +109,6 @@ type PlatePluginRuntime<P extends AnyPluginConfig = AnyPluginConfig> = {
   >;
   getPlugin: GetBasePlugin;
   getType: (pluginKey: string) => string;
-  setOption: <C extends AnyPluginConfig, K extends keyof InferOptions<C>>(
-    plugin: WithRequiredKey<C>,
-    optionKey: K,
-    value: InferOptions<C>[K]
-  ) => void;
 };
 
 type GetBasePlugin = {
@@ -173,6 +118,15 @@ type GetBasePlugin = {
   ): RuntimeInferPluginConfig<PInput> extends { node: unknown }
     ? RuntimeInferPluginConfig<PInput>
     : BasePlugin<RuntimeInferPluginConfig<PInput>>;
+};
+
+type PluginWithConfig = { readonly __config: AnyPluginConfig; key: string };
+
+type GetBasePluginContext = {
+  <P extends PluginWithConfig>(plugin: P): BasePluginContext<InferConfig<P>>;
+  <C extends AnyPluginConfig = PluginConfig>(
+    plugin: WithRequiredKey<C> | C['key']
+  ): BasePluginContext<C>;
 };
 
 export type KeyofPlugins<T extends AnyPluginConfig> =

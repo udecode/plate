@@ -25,7 +25,7 @@ describe('BaseTextIndentPlugin', () => {
     expect(
       transformNodeValue({
         ...getEditorPlugin(editor, plugin),
-        getOptions: () => editor.getOptions(BaseTextIndentPlugin),
+        getOptions: () => editor.plugin(BaseTextIndentPlugin).getOptions(),
         nodeValue: 2,
       })
     ).toBe('48px');
@@ -47,7 +47,7 @@ describe('BaseTextIndentPlugin', () => {
     expect(
       nodeProps.transformNodeValue!({
         ...getEditorPlugin(editor, plugin),
-        getOptions: () => editor.getOptions(TextIndentPlugin),
+        getOptions: () => editor.plugin(TextIndentPlugin).getOptions(),
         nodeValue: 3,
       })
     ).toBe('30em');

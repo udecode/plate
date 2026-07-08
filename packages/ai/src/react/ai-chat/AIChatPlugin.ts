@@ -199,7 +199,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
       setOption('open', false);
 
       if (focus) {
-        if (editor.getOption(BlockSelectionPlugin, 'isSelectingSome')) {
+        if (editor.plugin(BlockSelectionPlugin).getOption('isSelectingSome')) {
           editor.getApi(BlockSelectionPlugin).blockSelection.focus();
         } else {
           editor.tf.focus();

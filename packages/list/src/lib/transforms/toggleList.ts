@@ -28,7 +28,7 @@ export const toggleList = <
 ) => {
   const { listRestart, listRestartPolite, listStyleType } = options;
   const { getSiblingListOptions: pluginGetSiblingListOptions } =
-    editor.getOptions(BaseListPlugin);
+    editor.plugin(BaseListPlugin).getOptions();
   const mergedGetSiblingListOptions = {
     ...pluginGetSiblingListOptions,
     ...getSiblingListOptions,

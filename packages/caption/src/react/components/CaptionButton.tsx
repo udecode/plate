@@ -16,10 +16,10 @@ export const useCaptionButton = ({
   props: {
     onClick: () => {
       const path = editor.api.findPath(element);
-      editor.setOption(BaseCaptionPlugin, 'visibleId', element.id as string);
+      editor.plugin(BaseCaptionPlugin).setOption('visibleId', element.id as string);
       setTimeout(() => {
         if (path) {
-          editor.setOption(BaseCaptionPlugin, 'focusEndPath', path);
+          editor.plugin(BaseCaptionPlugin).setOption('focusEndPath', path);
         }
       }, 0);
     },

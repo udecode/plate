@@ -25,7 +25,7 @@ export const getMergedOptionsSerialize = (
     remarkPlugins: PluginRemarkPlugins,
     remarkStringifyOptions: PluginRemarkStringifyOptions,
     rules: PluginRules,
-  } = editor.getOptions(MarkdownPlugin);
+  } = editor.plugin(MarkdownPlugin).getOptions();
 
   const mergedRules = {
     ...buildRules(editor),

@@ -70,20 +70,20 @@ export const useDragNode = (
         isDragging: monitor.isDragging(),
       }),
       end: () => {
-        editor.setOption(DndPlugin, 'isDragging', false);
+        editor.plugin(DndPlugin).setOption('isDragging', false);
         document.body.classList.remove('dragging');
         setIsAboutToDrag(false);
       },
       item(monitor) {
-        editor.setOption(DndPlugin, 'isDragging', true);
-        editor.setOption(DndPlugin, '_isOver', true);
+        editor.plugin(DndPlugin).setOption('isDragging', true);
+        editor.plugin(DndPlugin).setOption('_isOver', true);
         document.body.classList.add('dragging');
 
         const _item = typeof item === 'function' ? item(monitor) : item;
         const [element] = editor.api.node<TElement>({ id: elementId, at: [] })!;
 
         // Check if multiple nodes are selected
-        const currentDraggingId = editor.getOption(DndPlugin, 'draggingId');
+        const currentDraggingId = editor.plugin(DndPlugin).getOption('draggingId');
 
         let id: string[] | string;
 
@@ -97,7 +97,7 @@ export const useDragNode = (
         } else {
           // Single element drag
           id = elementId;
-          editor.setOption(DndPlugin, 'draggingId', elementId);
+          editor.plugin(DndPlugin).setOption('draggingId', elementId);
         }
 
         return {

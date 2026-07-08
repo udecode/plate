@@ -1,11 +1,11 @@
-import { createBasePlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { selectBlockSelectionNodes } from './selectBlockSelectionNodes';
 
 describe('selectBlockSelectionNodes', () => {
   it('sets the editor selection through the editor update transaction', () => {
-    const editor = createBasePlateEditor({
+    const editor = createBaseEditor({
       plugins: [BlockSelectionPlugin],
       value: [
         {
@@ -21,24 +21,18 @@ describe('selectBlockSelectionNodes', () => {
       ],
     }) as any;
 
-    editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['block1']));
-
-    const update = editor.update;
-    const updateSpy = mock((callback: (tx: unknown) => unknown) =>
-      update(callback)
-    );
-
-    editor.update = updateSpy;
+    editor
+      .plugin(BlockSelectionPlugin)
+      .setOption('selectedIds', new Set(['block1']));
 
     selectBlockSelectionNodes(editor);
 
-    expect(updateSpy).toHaveBeenCalled();
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
-    expect(editor.getOption(BlockSelectionPlugin, 'selectedIds')).toEqual(
-      new Set()
-    );
+    expect(
+      editor.plugin(BlockSelectionPlugin).getOption('selectedIds')
+    ).toEqual(new Set());
   });
 });

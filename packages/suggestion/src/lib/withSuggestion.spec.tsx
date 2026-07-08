@@ -40,7 +40,7 @@ const testSuggestionData = {
 
 describe('withSuggestion', () => {
   describe('insertText', () => {
-    describe('when editor.getOptions(SuggestionPlugin).isSuggesting is not defined', () => {
+    describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is not defined', () => {
       it('does not add marks', () => {
         const input = (
           <editor>
@@ -65,7 +65,7 @@ describe('withSuggestion', () => {
           selection: input.selection,
           value: input.children,
         });
-        editor.setOption(BaseSuggestionPlugin, 'isSuggesting', false);
+        editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', false);
 
         editor.tf.insertText('test');
 
@@ -73,7 +73,7 @@ describe('withSuggestion', () => {
       });
     });
 
-    describe('when editor.getOptions(SuggestionPlugin).isSuggesting is defined', () => {
+    describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is defined', () => {
       describe('when cursor is not in suggestion mark', () => {
         it('add marks and suggestion data', () => {
           const input = (
@@ -90,7 +90,7 @@ describe('withSuggestion', () => {
             selection: input.selection,
             value: input.children,
           });
-          editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+          editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
           editor.tf.insertText('test');
 
@@ -185,7 +185,7 @@ describe('withSuggestion', () => {
           selection: input.selection,
           value: input.children,
         });
-        editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+        editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
         editor.tf.insertText('test');
 
@@ -195,7 +195,7 @@ describe('withSuggestion', () => {
   });
 });
 
-describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true', () => {
   describe('delete backward', () => {
     describe('when there is no point before', () => {
       it('does not add a new suggestion id', () => {
@@ -226,7 +226,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
           selection: input.selection,
           value: input.children,
         });
-        editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+        editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
         editor.tf.deleteBackward();
 
@@ -266,7 +266,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
           selection: input.selection,
           value: input.children,
         });
-        editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+        editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
         editor.tf.deleteBackward();
 
@@ -310,7 +310,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
         selection: input.selection,
         value: input.children,
       });
-      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
       editor.tf.deleteBackward();
 
@@ -347,7 +347,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
         selection: input.selection,
         value: input.children,
       });
-      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
       editor.tf.deleteBackward();
 
@@ -383,7 +383,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
         selection: input.selection,
         value: input.children,
       });
-      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
       editor.tf.deleteBackward();
 
@@ -419,7 +419,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
         selection: input.selection,
         value: input.children,
       });
-      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
       editor.tf.deleteBackward('character');
 
@@ -455,7 +455,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
         selection: input.selection,
         value: input.children,
       });
-      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
       editor.tf.deleteBackward('character');
 
@@ -519,7 +519,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
         selection: input.selection,
         value: input.children,
       });
-      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
       editor.tf.deleteBackward('character');
 
@@ -584,7 +584,7 @@ describe('when point before is not marked', () => {
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.deleteBackward();
 
@@ -619,7 +619,7 @@ describe('when point before is marked', () => {
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.deleteBackward();
 
@@ -651,7 +651,7 @@ describe('when delete line', () => {
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.deleteBackward('line');
 
@@ -666,7 +666,7 @@ describe('when delete line', () => {
   });
 });
 
-describe('delete forward when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+describe('delete forward when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true', () => {
   it('marks the next character as a remove suggestion', () => {
     const input = (
       <editor>
@@ -682,7 +682,7 @@ describe('delete forward when editor.getOptions(SuggestionPlugin).isSuggesting i
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.deleteForward();
 
@@ -697,7 +697,7 @@ describe('delete forward when editor.getOptions(SuggestionPlugin).isSuggesting i
   });
 });
 
-describe('delete fragment when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+describe('delete fragment when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true', () => {
   it('turns the selected text into a remove suggestion and collapses at the start', () => {
     const input = (
       <editor>
@@ -714,7 +714,7 @@ describe('delete fragment when editor.getOptions(SuggestionPlugin).isSuggesting 
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.deleteFragment();
 
@@ -756,7 +756,7 @@ describe('delete fragment when editor.getOptions(SuggestionPlugin).isSuggesting 
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.deleteFragment();
 
@@ -945,7 +945,7 @@ describe('insert text when cursor is expanded', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.insertText('1');
 
@@ -989,7 +989,7 @@ describe('insert text when cursor is expanded', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.insertText('X');
 
@@ -1054,7 +1054,7 @@ describe('insert text when cursor is expanded', () => {
   });
 });
 
-describe('insertBreak when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+describe('insertBreak when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true', () => {
   it('inserts a newline suggestion inside nested blocks instead of splitting structure', () => {
     const input = (
       <editor>
@@ -1071,7 +1071,7 @@ describe('insertBreak when editor.getOptions(SuggestionPlugin).isSuggesting is t
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.insertBreak();
 
@@ -1086,7 +1086,7 @@ describe('insertBreak when editor.getOptions(SuggestionPlugin).isSuggesting is t
   });
 });
 
-describe('insertNodes when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+describe('insertNodes when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true', () => {
   it('wraps inserted blocks with block suggestion metadata', () => {
     const input = (
       <editor>
@@ -1102,7 +1102,7 @@ describe('insertNodes when editor.getOptions(SuggestionPlugin).isSuggesting is t
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.insertNodes({
       children: [{ text: 'two' }],
@@ -1130,7 +1130,7 @@ describe('insertNodes when editor.getOptions(SuggestionPlugin).isSuggesting is t
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.insertNodes({
       children: [{ text: '' }],
@@ -1145,7 +1145,7 @@ describe('insertNodes when editor.getOptions(SuggestionPlugin).isSuggesting is t
   });
 });
 
-describe('removeNodes when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+describe('removeNodes when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true', () => {
   it('marks every matched block with the same remove suggestion metadata', () => {
     const input = (
       <editor>
@@ -1165,7 +1165,7 @@ describe('removeNodes when editor.getOptions(SuggestionPlugin).isSuggesting is t
       selection: input.selection,
       value: input.children,
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.removeNodes({
       at: [],
@@ -1195,7 +1195,7 @@ describe('removeNodes when editor.getOptions(SuggestionPlugin).isSuggesting is t
         },
       ],
     });
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.tf.removeNodes({
       at: [],

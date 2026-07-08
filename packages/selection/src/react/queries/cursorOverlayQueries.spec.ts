@@ -1,5 +1,6 @@
-import { type TRange, KEYS } from 'platejs';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import type { Range } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { FROZEN_EMPTY_ARRAY } from '../hooks/useCursorOverlay';
 import { getCaretPosition } from './getCaretPosition';
@@ -12,7 +13,7 @@ describe('selection cursor overlay queries', () => {
   });
 
   describe('getCaretPosition', () => {
-    const forwardRange: TRange = {
+    const forwardRange: Range = {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     };
@@ -38,11 +39,11 @@ describe('selection cursor overlay queries', () => {
     });
 
     it('uses the first rect for backward ranges and collapsed ranges', () => {
-      const backwardRange: TRange = {
+      const backwardRange: Range = {
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       };
-      const collapsedRange: TRange = {
+      const collapsedRange: Range = {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       };
@@ -82,7 +83,7 @@ describe('selection cursor overlay queries', () => {
     });
 
     it('uses frozen empty rects when a cursor has no cached rects', () => {
-      const range: TRange = {
+      const range: Range = {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       };
@@ -111,7 +112,7 @@ describe('selection cursor overlay queries', () => {
     });
 
     it('computes caret positions from the matching rect bucket', () => {
-      const range: TRange = {
+      const range: Range = {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       };
@@ -143,11 +144,13 @@ describe('selection cursor overlay queries', () => {
 
   describe('getSelectionRects', () => {
     it('returns an empty array when the DOM range is missing', () => {
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         value: [{ children: [{ text: 'one' }], type: KEYS.p }],
       });
 
-      spyOn(editor.api, 'toDOMRange').mockReturnValue(undefined as any);
+      spyOn(editor.api.dom, 'resolveDOMRange').mockReturnValue(
+        undefined as any
+      );
 
       expect(
         getSelectionRects(editor, {
@@ -162,20 +165,22 @@ describe('selection cursor overlay queries', () => {
     });
 
     it('returns an empty array when a selected text node has no parent element', () => {
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         value: [{ children: [{ text: 'one' }], type: KEYS.p }],
       });
 
-      const textNode = editor.children[0].children[0];
+      const textNode = editor.read.children()[0].children[0];
 
-      spyOn(editor.api, 'toDOMRange').mockReturnValue({
+      spyOn(editor.api.dom, 'resolveDOMRange').mockReturnValue({
         endContainer: {} as any,
         endOffset: 1,
         startContainer: {} as any,
         startOffset: 0,
       } as any);
-      spyOn(editor.api, 'nodes').mockReturnValue([[textNode as any, [0, 0]]]);
-      spyOn(editor.api, 'toDOMNode').mockReturnValue({
+      spyOn(editor.read.nodes, 'toArray').mockReturnValue([
+        [textNode as any, [0, 0]],
+      ]);
+      spyOn(editor.api.dom, 'resolveDOMNode').mockReturnValue({
         getClientRects: () => ({ item: () => null, length: 0 }),
         parentElement: null,
       } as any);
@@ -193,23 +198,14 @@ describe('selection cursor overlay queries', () => {
     });
 
     it('uses partial DOM ranges for start and end nodes and raw client rects for middle nodes', () => {
-      const editor = createSlateEditor({
-        value: [
-          {
-            children: [{ text: 'one' }, { text: 'two' }, { text: 'three' }],
-            type: KEYS.p,
-          },
-        ],
-      });
-
-      const range: TRange = {
+      const range: Range = {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 2, path: [0, 2] },
       };
       const textEntries = [
-        [editor.children[0].children[0] as any, [0, 0]],
-        [editor.children[0].children[1] as any, [0, 1]],
-        [editor.children[0].children[2] as any, [0, 2]],
+        [{ text: 'one' }, [0, 0]],
+        [{ text: 'two' }, [0, 1]],
+        [{ text: 'three' }, [0, 2]],
       ] as any;
       const domRange = {
         endContainer: { id: 'end' },
@@ -241,21 +237,31 @@ describe('selection cursor overlay queries', () => {
       const setStart = mock();
       const setEnd = mock();
 
-      spyOn(editor.api, 'toDOMRange').mockReturnValue(domRange);
-      spyOn(editor.api, 'nodes').mockReturnValue(textEntries);
-      spyOn(editor.api, 'toDOMNode')
-        .mockReturnValueOnce({
-          getClientRects: () => middleRects,
-          parentElement: {},
-        } as any)
-        .mockReturnValueOnce({
-          getClientRects: () => middleRects,
-          parentElement: {},
-        } as any)
-        .mockReturnValueOnce({
-          getClientRects: () => middleRects,
-          parentElement: {},
-        } as any);
+      const editor = {
+        api: {
+          dom: {
+            resolveDOMNode: mock()
+              .mockReturnValueOnce({
+                getClientRects: () => middleRects,
+                parentElement: {},
+              })
+              .mockReturnValueOnce({
+                getClientRects: () => middleRects,
+                parentElement: {},
+              })
+              .mockReturnValueOnce({
+                getClientRects: () => middleRects,
+                parentElement: {},
+              }),
+            resolveDOMRange: () => domRange,
+          },
+        },
+        read: {
+          nodes: {
+            toArray: () => textEntries,
+          },
+        },
+      } as any;
 
       const createRangeSpy = spyOn(document, 'createRange');
       createRangeSpy

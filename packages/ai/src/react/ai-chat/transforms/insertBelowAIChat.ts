@@ -22,7 +22,7 @@ export const insertBelowAIChat = (
   sourceEditor: SlateEditor,
   { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
 ) => {
-  const { toolName } = editor.getOptions(AIChatPlugin);
+  const { toolName } = editor.plugin(AIChatPlugin).getOptions();
 
   if (toolName === 'generate')
     return insertBelowGenerate(editor, sourceEditor, { format });
@@ -31,7 +31,7 @@ export const insertBelowAIChat = (
     .getApi(BlockSelectionPlugin)
     .blockSelection.getNodes();
 
-  const selectedIds = editor.getOptions(BlockSelectionPlugin).selectedIds;
+  const selectedIds = editor.plugin(BlockSelectionPlugin).getOptions().selectedIds;
 
   editor.getTransforms(BaseAIPlugin).ai.undo();
 
@@ -68,10 +68,7 @@ export const insertBelowGenerate = (
 ) => {
   if (!sourceEditor || sourceEditor.api.isEmpty()) return;
 
-  const isBlockSelecting = editor.getOption(
-    BlockSelectionPlugin,
-    'isSelectingSome'
-  );
+  const isBlockSelecting = editor.plugin(BlockSelectionPlugin).getOption('isSelectingSome');
 
   editor.getApi<AIChatPluginConfig>({ key: KEYS.ai }).aiChat.hide();
 
@@ -84,7 +81,7 @@ export const insertBelowGenerate = (
       .getApi(BlockSelectionPlugin)
       .blockSelection.getNodes();
 
-    const selectedIds = editor.getOptions(BlockSelectionPlugin).selectedIds;
+    const selectedIds = editor.plugin(BlockSelectionPlugin).getOptions().selectedIds;
 
     if (!selectedIds || selectedIds.size === 0) return;
 

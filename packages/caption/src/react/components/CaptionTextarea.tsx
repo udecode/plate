@@ -35,7 +35,7 @@ export const useCaptionTextareaFocus = (
 
       if (path && PathApi.equals(path, focusCaptionPath)) {
         textareaRef.current.focus();
-        editor.setOption(CaptionPlugin, 'focusEndPath', null);
+        editor.plugin(CaptionPlugin).setOption('focusEndPath', null);
       }
     }
   }, [editor, element, focusCaptionPath, textareaRef]);
@@ -151,7 +151,7 @@ export const useCaptionTextarea = ({
     const currentValue = e.target.value;
 
     if (currentValue.length === 0) {
-      editor.setOption(CaptionPlugin, 'visibleId', null);
+      editor.plugin(CaptionPlugin).setOption('visibleId', null);
     }
   };
 

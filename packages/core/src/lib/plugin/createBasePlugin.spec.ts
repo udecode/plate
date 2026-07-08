@@ -156,11 +156,13 @@ describe('createBasePlugin', () => {
         plugins: [extendedPlugin],
       });
 
-      expect(editor.getOptions(childPlugin)).toEqual({
+      expect(editor.plugin(childPlugin).getOptions()).toEqual({
         childOption: 'child',
         extendedOption: 'extended child',
       });
-      expect(editor.getOptions(childPlugin)).not.toHaveProperty('parentOption');
+      expect(editor.plugin(childPlugin).getOptions()).not.toHaveProperty(
+        'parentOption'
+      );
     });
 
     it('can add missing nested plugins and update them later', () => {
@@ -650,7 +652,7 @@ describe('createBasePlugin', () => {
       });
 
       expect(editor.plugins.c.node.isElement).toBe(false);
-      expect(editor.getOptions(grandchild).a).toBe(2);
+      expect(editor.plugin(grandchild).getOptions().a).toBe(2);
     });
   });
 });

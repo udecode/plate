@@ -100,7 +100,7 @@ describe('extendEditorApi method', () => {
 
     const editor = createBaseEditor({ plugins: [extendedPlugin] });
 
-    expect(editor.getOptions(extendedPlugin).baseValue).toBe(20);
+    expect(editor.plugin(extendedPlugin).getOptions().baseValue).toBe(20);
     expect(editor.api.sampleMethod(1)).toBe(21);
     expect(editor.api.anotherMethod()).toBe(41);
   });

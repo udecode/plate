@@ -1,15 +1,18 @@
 import React from 'react';
 
-import { type TElement, KEYS } from 'platejs';
-import { useEditorPlugin } from 'platejs/react';
+import { type Element, ElementApi } from '@platejs/plite';
+import { useEditorPlugin } from '@platejs/core/react';
+import { KEYS } from '@platejs/utils';
 
 import { SelectionArea } from '../../internal';
 import { extractSelectableIds } from '../../lib';
-import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
+import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
 
 export const useSelectionArea = () => {
   const { api, editor, getOption, getOptions, setOption } =
-    useEditorPlugin(BlockSelectionPlugin);
+    useEditorPlugin<BlockSelectionConfig>({
+      key: KEYS.blockSelection,
+    });
 
   const { areaOptions } = getOptions();
 
@@ -26,11 +29,11 @@ export const useSelectionArea = () => {
   });
 
   const onStart = () => {
-    if (editor.api.isFocused()) {
-      editor.tf.blur();
+    if (editor.read.view.isFocused()) {
+      editor.api.dom.blur();
     }
-    if (editor.selection) {
-      editor.tf.deselect();
+    if (editor.read.selection()) {
+      editor.update.selection.clear();
     }
 
     setOption('isSelectionAreaVisible', true);
@@ -38,10 +41,10 @@ export const useSelectionArea = () => {
 
   React.useEffect(() => {
     const selection = new SelectionArea({
-      boundaries: `#${editor.meta.uid}`,
-      container: `#${editor.meta.uid}`,
+      boundaries: `#${editor.id}`,
+      container: `#${editor.id}`,
       document: window.document,
-      selectables: `#${editor.meta.uid} .slate-selectable`,
+      selectables: `#${editor.id} .slate-selectable`,
       selectionAreaClass: 'slate-selection-area',
       ...areaOptions,
     })
@@ -72,9 +75,9 @@ export const useSelectionArea = () => {
 
           const added = new Set(extractSelectableIds(changed.added));
           added.forEach((id) => {
-            const block = editor.api.block({
+            const block = editor.read.nodes.block({
               at: [],
-              match: (n) => !!n.id && n.id === id,
+              match: (n) => ElementApi.isElement(n) && n.id === id,
             });
 
             if (!block) return;
@@ -87,10 +90,12 @@ export const useSelectionArea = () => {
               return;
             }
 
-            const hasAncestor = editor.api.block({
-              above: true,
+            const hasAncestor = editor.read.nodes.above({
               at: block[1],
-              match: (n) => !!n.id && areaRef.current.ids.has(n.id as string),
+              match: (n) =>
+                ElementApi.isElement(n) &&
+                !!n.id &&
+                areaRef.current.ids.has(n.id as string),
             });
 
             if (!hasAncestor) {
@@ -108,18 +113,18 @@ export const useSelectionArea = () => {
           const next = new Set(getOption('selectedIds'));
           const ids = Array.from(next);
 
-          const isTableElement = (element: TElement) =>
+          const isTableElement = (element: Element) =>
             element.type === KEYS.table ||
             element.type === KEYS.tr ||
             element.type === KEYS.th;
 
-          const isTableRowElement = (element: TElement) =>
+          const isTableRowElement = (element: Element) =>
             element.type === KEYS.tr || element.type === KEYS.th;
 
           const getBlockById = (id: string) =>
-            editor.api.block({
+            editor.read.nodes.block({
               at: [],
-              match: (n) => !!n.id && n.id === id,
+              match: (n) => ElementApi.isElement(n) && n.id === id,
             });
 
           const isTableOnlySelection = ids.every((id) => {
@@ -150,15 +155,17 @@ export const useSelectionArea = () => {
               const block = getBlockById(id);
               if (!block || !isTableRowElement(block[0])) return false;
 
-              const table = editor.api.block({
-                above: true,
+              const table = editor.read.nodes.above<Element>({
                 at: block[1],
+                match: (node) => ElementApi.isElement(node),
               });
               if (!table) return false;
 
-              const tableRowIds = table[0].children.map(
-                (tr) => tr.id as string
-              );
+              const tableRowIds = table[0].children
+                .filter((child): child is Element =>
+                  ElementApi.isElement(child)
+                )
+                .map((tr) => tr.id as string);
 
               next.add(table[0].id as string);
               tableRowIds.forEach((trId) => {

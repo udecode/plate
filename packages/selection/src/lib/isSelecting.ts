@@ -1,11 +1,12 @@
-import { type SlateEditor, KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
 
-export const isSelecting = (editor: SlateEditor) => {
-  const isSelectingSome = editor.getOption(
-    { key: KEYS.blockSelection },
-    'isSelectingSome'
-  );
-  const selectionExpanded = editor.api.isExpanded();
+import { KEYS } from '@platejs/utils';
 
-  return selectionExpanded || isSelectingSome;
+export const isSelecting = (editor: BaseEditor) => {
+  const selectedIds = editor
+    .plugin({ key: KEYS.blockSelection })
+    .getOption('selectedIds');
+  const selectionExpanded = editor.read.selection.isExpanded();
+
+  return selectionExpanded || !!selectedIds?.size;
 };

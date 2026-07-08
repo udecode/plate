@@ -45,11 +45,11 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
   editOnly: true,
   handlers: {
     onDragEnd: ({ editor, plugin }) => {
-      editor.setOption(plugin, 'isDragging', false);
-      editor.setOption(plugin, 'dropTarget', { id: null, line: '' });
+      editor.plugin(plugin).setOption('isDragging', false);
+      editor.plugin(plugin).setOption('dropTarget', { id: null, line: '' });
     },
     onDragEnter: ({ editor, plugin }) => {
-      editor.setOption(plugin, '_isOver', true);
+      editor.plugin(plugin).setOption('_isOver', true);
     },
     onDragStart: ({ editor, event, plugin }) => {
       const target = event.target as HTMLElement;
@@ -62,15 +62,15 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
 
       if (!id) return;
 
-      editor.setOption(plugin, 'draggingId', id);
-      editor.setOption(plugin, 'isDragging', true);
-      editor.setOption(plugin, '_isOver', true);
+      editor.plugin(plugin).setOption('draggingId', id);
+      editor.plugin(plugin).setOption('isDragging', true);
+      editor.plugin(plugin).setOption('_isOver', true);
     },
     onDrop: ({ getOptions }) => getOptions().isDragging,
     onFocus: ({ editor, plugin }) => {
-      editor.setOption(plugin, 'isDragging', false);
-      editor.setOption(plugin, 'dropTarget', { id: null, line: '' });
-      editor.setOption(plugin, '_isOver', false);
+      editor.plugin(plugin).setOption('isDragging', false);
+      editor.plugin(plugin).setOption('dropTarget', { id: null, line: '' });
+      editor.plugin(plugin).setOption('_isOver', false);
       editor
         .getOption(plugin, 'multiplePreviewRef')
         ?.current?.replaceChildren();

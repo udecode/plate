@@ -109,10 +109,9 @@ const mentionTrigger: '@' = plateEditor.api.getTrigger();
 const editorSummary: EditorSummary =
   `${plateEditor.api.getVariant()}:${plateEditor.api.getTrigger()}` as const;
 const toolbarDescription: 'toolbar' = plateEditor.api.describeToolbar();
-const isDense: boolean = plateEditor.getOption(
-  ConfiguredLayoutPlugin,
-  'isDense'
-);
+const isDense: boolean = plateEditor
+  .plugin(ConfiguredLayoutPlugin)
+  .getOption('isDense');
 
 plateEditor.update((tx) => {
   tx.layout.setDensity(1);
@@ -146,7 +145,7 @@ plateEditor.update((tx) => {
 });
 
 // @ts-expect-error invalid selector arguments
-plateEditor.getOption(ConfiguredLayoutPlugin, 'isDense', true);
+plateEditor.plugin(ConfiguredLayoutPlugin).getOption('isDense', true);
 
 // @ts-expect-error invalid merged editor api
 plateEditor.api.describeToolbar('extra');

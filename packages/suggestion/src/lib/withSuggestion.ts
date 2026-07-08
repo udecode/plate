@@ -145,7 +145,7 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
                 createdAt,
                 isLineBreak: true,
                 type: 'insert',
-                userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+                userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
               },
             },
             { at: path }
@@ -187,7 +187,7 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
             id: nanoid(),
             createdAt: Date.now(),
             type: 'insert',
-            userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+            userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
           },
         }));
 

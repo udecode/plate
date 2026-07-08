@@ -34,7 +34,7 @@ export const getSuggestionProps = (
     id,
     createdAt,
     type,
-    userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+    userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
   };
 
   if (isElement) {

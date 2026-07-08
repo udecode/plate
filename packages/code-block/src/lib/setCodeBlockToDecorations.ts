@@ -69,7 +69,7 @@ export function codeBlockToDecorations(
   [block, blockPath]: NodeEntry<TCodeBlockElement>
 ): Map<TElement, DecoratedRange[]> {
   const { defaultLanguage, ...options } =
-    editor.getOptions(BaseCodeBlockPlugin);
+    editor.plugin(BaseCodeBlockPlugin).getOptions();
   const lowlight = options.lowlight!;
 
   // Get all code lines and combine their text

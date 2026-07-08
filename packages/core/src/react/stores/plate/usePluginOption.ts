@@ -9,8 +9,44 @@ import type {
   WithRequiredKey,
 } from '../../../lib';
 import type { PlateEditor } from '../../editor';
+import type { InferConfig, PlatePlugin } from '../../plugin';
 
 import { useEditorRef } from './createPlateStore';
+
+type PluginOptionInput =
+  | PlatePlugin<AnyPluginConfig>
+  | WithRequiredKey<AnyPluginConfig>;
+
+type PluginOptionConfig<P> =
+  InferConfig<P> extends infer C extends AnyPluginConfig ? C : never;
+
+type SelectorFn<T> = Extract<NonNullable<T>, (...args: any[]) => any>;
+
+type SelectorArgs<T> =
+  SelectorFn<T> extends (...args: infer A) => any ? A : never;
+
+type SelectorReturn<T> =
+  SelectorFn<T> extends (...args: any[]) => infer R ? R : never;
+
+type PluginOptionKey<C extends AnyPluginConfig> =
+  | 'state'
+  | keyof InferOptions<C>
+  | keyof InferSelectors<C>;
+
+type PluginOptionValue<C extends AnyPluginConfig, K> = K extends 'state'
+  ? InferOptions<C>
+  : K extends keyof InferSelectors<C>
+    ? SelectorReturn<InferSelectors<C>[K]>
+    : K extends keyof InferOptions<C>
+      ? InferOptions<C>[K]
+      : never;
+
+type PluginOptionArgs<C extends AnyPluginConfig, K> = [
+  ...(K extends keyof InferSelectors<C>
+    ? SelectorArgs<InferSelectors<C>[K]>
+    : []),
+  TEqualityChecker<PluginOptionValue<C, K>>?,
+];
 
 /**
  * Hook to access plugin options. For usage outside `<Plate>`, use
@@ -21,65 +57,36 @@ import { useEditorRef } from './createPlateStore';
  *   const doubleValue = usePluginOption(plugin, 'doubleValue', 2);
  */
 export function usePluginOption<
-  C extends AnyPluginConfig,
-  StateType extends InferOptions<C>,
-  TSelectors extends InferSelectors<C>,
-  K extends keyof StateType | keyof TSelectors | 'state',
->(
-  plugin: WithRequiredKey<C>,
-  key: K,
-  ...args: [
-    ...(K extends keyof TSelectors ? Parameters<TSelectors[K]> : unknown[]),
-    TEqualityChecker<
-      K extends 'state'
-        ? StateType
-        : K extends keyof TSelectors
-          ? ReturnType<TSelectors[K]>
-          : K extends keyof StateType
-            ? StateType[K]
-            : never
-    >?,
-  ]
-): K extends 'state'
-  ? StateType
-  : K extends keyof TSelectors
-    ? ReturnType<TSelectors[K]>
-    : K extends keyof StateType
-      ? StateType[K]
-      : never {
+  P extends PluginOptionInput,
+  C extends AnyPluginConfig = PluginOptionConfig<P>,
+  K extends PluginOptionKey<C> = PluginOptionKey<C>,
+>(plugin: P, key: K, ...args: PluginOptionArgs<C, K>): PluginOptionValue<C, K>;
+export function usePluginOption(
+  plugin: PluginOptionInput,
+  key: string,
+  ...args: unknown[]
+): unknown {
   const editor = useEditorRef();
 
-  return useEditorPluginOption(editor, plugin, key, ...args);
+  return useEditorPluginOption(editor, plugin, key as any, ...(args as any));
 }
 
 export function useEditorPluginOption<
-  C extends AnyPluginConfig,
-  StateType extends InferOptions<C>,
-  TSelectors extends InferSelectors<C>,
-  K extends keyof StateType | keyof TSelectors | 'state',
+  P extends PluginOptionInput,
+  C extends AnyPluginConfig = PluginOptionConfig<P>,
+  K extends PluginOptionKey<C> = PluginOptionKey<C>,
 >(
   editor: PlateEditor,
-  plugin: WithRequiredKey<C>,
+  plugin: P,
   key: K,
-  ...args: [
-    ...(K extends keyof TSelectors ? Parameters<TSelectors[K]> : unknown[]),
-    TEqualityChecker<
-      K extends 'state'
-        ? StateType
-        : K extends keyof TSelectors
-          ? ReturnType<TSelectors[K]>
-          : K extends keyof StateType
-            ? StateType[K]
-            : never
-    >?,
-  ]
-): K extends 'state'
-  ? StateType
-  : K extends keyof TSelectors
-    ? ReturnType<TSelectors[K]>
-    : K extends keyof StateType
-      ? StateType[K]
-      : never {
+  ...args: PluginOptionArgs<C, K>
+): PluginOptionValue<C, K>;
+export function useEditorPluginOption(
+  editor: PlateEditor,
+  plugin: PluginOptionInput,
+  key: string,
+  ...args: unknown[]
+): unknown {
   const store = editor.getOptionsStore(plugin);
 
   if (!store) {
@@ -103,7 +110,7 @@ export function useEditorPluginOption<
     return useStoreSelect(
       store,
       (state) => state,
-      args[0] as TEqualityChecker<StateType> | undefined
+      args[0] as TEqualityChecker<unknown> | undefined
     ) as any;
   }
 
@@ -116,8 +123,12 @@ export function useEditorPluginOption<
  * @example
  *   const name = usePluginOptions(plugin, (state) => state.name, equalityFn);
  */
-export function usePluginOptions<C extends AnyPluginConfig, U>(
-  plugin: WithRequiredKey<C>,
+export function usePluginOptions<
+  P extends PluginOptionInput,
+  C extends AnyPluginConfig = PluginOptionConfig<P>,
+  U = unknown,
+>(
+  plugin: P,
   selector: (state: InferOptions<C>) => U,
   {
     id,
@@ -136,9 +147,13 @@ export function usePluginOptions<C extends AnyPluginConfig, U>(
   });
 }
 
-export function useEditorPluginOptions<C extends AnyPluginConfig, U>(
+export function useEditorPluginOptions<
+  P extends PluginOptionInput,
+  C extends AnyPluginConfig = PluginOptionConfig<P>,
+  U = unknown,
+>(
   editor: PlateEditor,
-  plugin: WithRequiredKey<C>,
+  plugin: P,
   selector: (state: InferOptions<C>) => U,
   {
     equalityFn,

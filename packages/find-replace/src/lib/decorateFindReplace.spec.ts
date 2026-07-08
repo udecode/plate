@@ -161,7 +161,7 @@ describe('decorateFindReplace', () => {
 
     const plugin = editor.getPlugin(FindReplacePlugin);
 
-    editor.setOption(FindReplacePlugin, 'search', 'test');
+    editor.plugin(FindReplacePlugin).setOption('search', 'test');
 
     const expected = [
       {

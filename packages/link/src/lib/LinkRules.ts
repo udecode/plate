@@ -71,7 +71,7 @@ const getLinkAutomdMatch = (
   if (!match) return;
 
   const [, linkText, rawUrl] = match;
-  const { transformInput } = editor.getOptions(BaseLinkPlugin);
+  const { transformInput } = editor.plugin(BaseLinkPlugin).getOptions();
   const url = transformInput ? (transformInput(rawUrl) ?? '') : rawUrl;
 
   if (!url || !validateUrl(editor, url)) return;
@@ -97,7 +97,7 @@ const getAutolinkMatch = (
   editor: SlateEditor
 ): LinkTextAutolinkMatch | undefined => {
   const { getUrlHref, isUrl, rangeBeforeOptions } =
-    editor.getOptions(BaseLinkPlugin);
+    editor.plugin(BaseLinkPlugin).getOptions();
   const { selection } = editor;
 
   if (!selection || !editor.api.isCollapsed()) return;
@@ -231,7 +231,7 @@ export const LinkRules = {
                 if (!context.text) return;
 
                 const { getUrlHref } =
-                  context.editor.getOptions(BaseLinkPlugin);
+                  context.editor.plugin(BaseLinkPlugin).getOptions();
                 const url = getUrlHref?.(context.text) ?? context.text;
 
                 if (!validateUrl(context.editor, url)) return;
@@ -249,7 +249,7 @@ export const LinkRules = {
 
                 if (autolinkMatch.shouldLink) {
                   const { keepSelectedTextOnPaste } =
-                    context.editor.getOptions(BaseLinkPlugin);
+                    context.editor.plugin(BaseLinkPlugin).getOptions();
                   const inserted = upsertLink(context.editor, {
                     insertTextInLink: true,
                     text: keepSelectedTextOnPaste

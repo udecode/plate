@@ -21,7 +21,7 @@ describe('MarkdownPlugin', () => {
     });
     const plugin = editor.getPlugin(MarkdownPlugin);
 
-    expect(editor.getOptions(MarkdownPlugin)).toEqual({
+    expect(editor.plugin(MarkdownPlugin).getOptions()).toEqual({
       allowedNodes: null,
       disallowedNodes: null,
       plainMarks: null,

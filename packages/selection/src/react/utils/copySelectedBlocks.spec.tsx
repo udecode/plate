@@ -1,17 +1,96 @@
-/** @jsx jsx */
-
-import { jsx } from '@platejs/test-utils';
 import * as copyToClipboardModule from 'copy-to-clipboard';
-import { createSlateEditor } from 'platejs';
+import type { NodeEntry } from '@platejs/plite';
+import type { TIdElement } from '@platejs/utils';
 
-import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { copySelectedBlocks } from './copySelectedBlocks';
 
-jsx;
+type DataTransferMock = DataTransfer & {
+  getData: AnyTestMock;
+  setData: AnyTestMock;
+};
+
+type CopyOptions = {
+  onCopy?: (dataTransfer: DataTransfer) => void;
+};
+
+const createDataTransfer = (): DataTransferMock =>
+  ({
+    getData: mock((type: string) => {
+      if (type === 'text/plain') return 'mock plain text';
+      if (type === 'text/html') return '<p>mock html</p>';
+
+      return '';
+    }),
+    setData: mock(),
+  }) as DataTransferMock;
+
+const createCopyEditor = (entries: NodeEntry<TIdElement>[]) => {
+  const selectedIds = new Set(entries.map(([node]) => node.id as string));
+  const writeSelection = mock((data: DataTransfer) => {
+    data.setData('text/plain', 'mock plain text');
+    data.setData('text/html', '<p>mock html</p>');
+  });
+  const selection = {
+    clear: mock(),
+    set: mock(),
+  };
+
+  return {
+    api: {
+      blockSelection: {
+        getNodes: () => entries,
+      },
+      clipboard: { writeSelection },
+    },
+    getPlugin: () => ({ node: { type: 'p' } }),
+    plugin: () => ({
+      api: {
+        blockSelection: {
+          getNodes: () => entries,
+        },
+      },
+      getOptions: () => ({ selectedIds }),
+      setOption: mock(),
+    }),
+    read: {
+      nodes: {
+        get: (path: number[]) =>
+          entries.find(
+            ([, entryPath]) => entryPath.join('.') === path.join('.')
+          ),
+        isEmpty: (node: TIdElement) =>
+          node.children.every(
+            (child) =>
+              'text' in child &&
+              typeof child.text === 'string' &&
+              child.text.length === 0
+          ),
+      },
+      points: {
+        after: () => ({ offset: 0, path: [0, 0] }),
+        end: (path: number[]) => ({ offset: 0, path: [...path, 0] }),
+        start: (path: number[]) => ({ offset: 0, path: [...path, 0] }),
+      },
+      selection: () => ({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      }),
+    },
+    setOption: mock(),
+    update: {
+      selection,
+      withoutNormalizing: (fn: (context: { tx: unknown }) => void) =>
+        fn({
+          tx: {
+            selection,
+          },
+        }),
+    },
+  } as any;
+};
 
 describe('copySelectedBlocks', () => {
-  let editor: any;
-  let copyToClipboardSpy: ReturnType<typeof spyOn>;
+  let copyToClipboardSpy: AnyTestMock;
   let copyToClipboardMock: ReturnType<typeof mock>;
 
   beforeEach(() => {
@@ -22,259 +101,157 @@ describe('copySelectedBlocks', () => {
     ).mockImplementation(
       copyToClipboardMock as unknown as (
         text: string,
-        options?: { debug?: boolean; message?: string }
+        options?: CopyOptions
       ) => boolean
     );
   });
 
   afterEach(() => {
-    copyToClipboardSpy?.mockRestore();
+    copyToClipboardSpy.mockRestore();
   });
 
-  describe('when copying blocks with empty content', () => {
-    beforeEach(() => {
-      editor = createSlateEditor({
-        plugins: [BlockSelectionPlugin],
-        value: [
-          {
-            id: 'block1',
-            children: [{ text: 'First block' }],
-            type: 'p',
-          },
-          {
-            id: 'block2',
-            children: [{ text: '' }], // Empty block
-            type: 'p',
-          },
-          {
-            id: 'block3',
-            children: [{ text: '   ' }], // Block with only whitespace
-            type: 'p',
-          },
-          {
-            id: 'block4',
-            children: [{ text: 'Last block' }],
-            type: 'p',
-          },
-        ],
-      });
-
-      // Set selected blocks
-      editor.setOption(
-        BlockSelectionPlugin,
-        'selectedIds',
-        new Set(['block1', 'block2', 'block3', 'block4'])
-      );
-    });
-
-    it('copy empty blocks but not call setFragmentData for them', () => {
-      const mockDataTransfer = {
-        getData: mock((type: string) => {
-          if (type === 'text/plain') return 'mock plain text';
-          if (type === 'text/html') return '<p>mock html</p>';
-          return '';
-        }),
-        setData: mock(),
-      };
-
-      const mockSetFragmentData = mock();
-      editor.tf.setFragmentData = mockSetFragmentData;
-
-      // Mock the blockSelection.getNodes to return the selected entries
-      editor.getApi = mock().mockReturnValue({
-        blockSelection: {
-          getNodes: mock().mockReturnValue([
-            [
-              { id: 'block1', children: [{ text: 'First block' }], type: 'p' },
-              [0],
-            ],
-            [{ id: 'block2', children: [{ text: '' }], type: 'p' }, [1]],
-            [{ id: 'block3', children: [{ text: '   ' }], type: 'p' }, [2]],
-            [
-              { id: 'block4', children: [{ text: 'Last block' }], type: 'p' },
-              [3],
-            ],
-          ]),
+  it('copies selected blocks and writes placeholder HTML for empty blocks', () => {
+    const editor = createCopyEditor([
+      [
+        {
+          id: 'block1',
+          children: [{ text: 'First block' }],
+          type: 'p',
         },
-      });
+        [0],
+      ],
+      [
+        {
+          id: 'block2',
+          children: [{ text: '' }],
+          type: 'p',
+        },
+        [1],
+      ],
+      [
+        {
+          id: 'block3',
+          children: [{ text: '   ' }],
+          type: 'p',
+        },
+        [2],
+      ],
+      [
+        {
+          id: 'block4',
+          children: [{ text: 'Last block' }],
+          type: 'p',
+        },
+        [3],
+      ],
+    ]);
+    const dataTransfer = createDataTransfer();
+    copyToClipboardMock.mockImplementation(
+      (_text: string, options?: CopyOptions) => {
+        options?.onCopy?.(dataTransfer);
 
-      // Mock editor.api.string() to return the text content of each block
-      const stringResults = ['First block', '', '   ', 'Last block'];
-      let stringCallIndex = 0;
-      editor.api.string = mock(() => stringResults[stringCallIndex++]);
-
-      copyToClipboardMock.mockImplementation((_text, options) => {
-        if (options?.onCopy) {
-          options.onCopy(mockDataTransfer as any);
-        }
         return true;
-      });
+      }
+    );
 
-      copySelectedBlocks(editor);
+    expect(copySelectedBlocks(editor)).toBe(true);
+    expect(editor.api.clipboard.writeSelection).toHaveBeenCalledTimes(3);
+    expect(dataTransfer.setData).toHaveBeenCalledWith(
+      'text/plain',
+      expect.any(String)
+    );
 
-      // setFragmentData should only be called for non-empty blocks (block1 and block4)
-      expect(mockSetFragmentData).toHaveBeenCalledTimes(3);
-
-      // Verify the final clipboard data was set
-      expect(mockDataTransfer.setData).toHaveBeenCalledWith(
-        'text/plain',
-        expect.any(String)
-      );
-
-      // Verify HTML includes empty paragraphs for empty blocks
-      const htmlCall = mockDataTransfer.setData.mock.calls.find(
-        (call) => call[0] === 'text/html'
-      );
-      expect(htmlCall).toBeDefined();
-      const htmlContent = htmlCall![1];
-      // Should have 4 divs (one for each block)
-      const divCount = (htmlContent.match(/<div>/g) || []).length;
-      expect(divCount).toBe(4);
-      // Should have empty paragraphs for empty blocks
-      expect(htmlContent).toContain('<p></p>');
-
-      expect(mockDataTransfer.setData).toHaveBeenCalledWith(
-        'application/x-slate-fragment',
-        expect.any(String)
-      );
-    });
+    const htmlCall = dataTransfer.setData.mock.calls
+      .filter((call) => call[0] === 'text/html')
+      .at(-1);
+    expect(htmlCall).toBeDefined();
+    expect(htmlCall![1]).toContain('<p></p>');
+    expect((htmlCall![1].match(/<div>/g) || []).length).toBe(4);
+    expect(dataTransfer.setData).toHaveBeenCalledWith(
+      'application/x-slate-fragment',
+      expect.any(String)
+    );
   });
 
-  describe('when copying blocks with content', () => {
-    beforeEach(() => {
-      editor = createSlateEditor({
-        plugins: [BlockSelectionPlugin],
-        value: [
-          {
-            id: 'block1',
-            children: [{ text: 'First block' }],
-            type: 'p',
-          },
-          {
-            id: 'block2',
-            children: [{ text: 'Second block' }],
-            type: 'p',
-          },
-        ],
-      });
-
-      editor.setOption(
-        BlockSelectionPlugin,
-        'selectedIds',
-        new Set(['block1', 'block2'])
-      );
-    });
-
-    it('copy all selected blocks with content', () => {
-      const mockDataTransfer = {
-        getData: mock((type: string) => {
-          if (type === 'text/plain') return 'mock plain text';
-          if (type === 'text/html') return '<p>mock html</p>';
-          return '';
-        }),
-        setData: mock(),
-      };
-
-      const mockSetFragmentData = mock();
-      editor.tf.setFragmentData = mockSetFragmentData;
-
-      editor.getApi = mock().mockReturnValue({
-        blockSelection: {
-          getNodes: mock().mockReturnValue([
-            [
-              { id: 'block1', children: [{ text: 'First block' }], type: 'p' },
-              [0],
-            ],
-            [
-              { id: 'block2', children: [{ text: 'Second block' }], type: 'p' },
-              [1],
-            ],
-          ]),
+  it('copies selected blocks with content', () => {
+    const editor = createCopyEditor([
+      [
+        {
+          id: 'block1',
+          children: [{ text: 'First block' }],
+          type: 'p',
         },
-      });
+        [0],
+      ],
+      [
+        {
+          id: 'block2',
+          children: [{ text: 'Second block' }],
+          type: 'p',
+        },
+        [1],
+      ],
+    ]);
+    const dataTransfer = createDataTransfer();
+    copyToClipboardMock.mockImplementation(
+      (_text: string, options?: CopyOptions) => {
+        options?.onCopy?.(dataTransfer);
 
-      const stringResults = ['First block', 'Second block'];
-      let stringCallIndex = 0;
-      editor.api.string = mock(() => stringResults[stringCallIndex++]);
-
-      copyToClipboardMock.mockImplementation((_text, options) => {
-        if (options?.onCopy) {
-          options.onCopy(mockDataTransfer as any);
-        }
         return true;
-      });
+      }
+    );
 
-      copySelectedBlocks(editor);
+    expect(copySelectedBlocks(editor)).toBe(true);
+    expect(editor.api.clipboard.writeSelection).toHaveBeenCalledTimes(2);
+    expect(dataTransfer.setData).toHaveBeenCalledWith(
+      'text/plain',
+      expect.any(String)
+    );
+    expect(dataTransfer.setData).toHaveBeenCalledWith(
+      'text/html',
+      expect.any(String)
+    );
+    expect(dataTransfer.setData).toHaveBeenCalledWith(
+      'application/x-slate-fragment',
+      expect.any(String)
+    );
+  });
 
-      // setFragmentData should be called for both blocks
-      expect(mockSetFragmentData).toHaveBeenCalledTimes(2);
-      expect(mockSetFragmentData).toHaveBeenCalledWith(mockDataTransfer);
-
-      // Verify the clipboard data was set
-      expect(mockDataTransfer.setData).toHaveBeenCalledWith(
-        'text/plain',
-        expect.any(String)
-      );
-      expect(mockDataTransfer.setData).toHaveBeenCalledWith(
-        'text/html',
-        expect.any(String)
-      );
-      expect(mockDataTransfer.setData).toHaveBeenCalledWith(
-        'application/x-slate-fragment',
-        expect.any(String)
-      );
-    });
-
-    it('writes to provided clipboard data without starting a synthetic copy', () => {
-      const mockDataTransfer = {
-        getData: mock((type: string) => {
-          if (type === 'text/plain') return 'mock plain text';
-          if (type === 'text/html') return '<p>mock html</p>';
-          return '';
-        }),
-        setData: mock(),
-      };
-
-      const mockSetFragmentData = mock();
-      editor.tf.setFragmentData = mockSetFragmentData;
-
-      editor.getApi = mock().mockReturnValue({
-        blockSelection: {
-          getNodes: mock().mockReturnValue([
-            [
-              { id: 'block1', children: [{ text: 'First block' }], type: 'p' },
-              [0],
-            ],
-            [
-              { id: 'block2', children: [{ text: 'Second block' }], type: 'p' },
-              [1],
-            ],
-          ]),
+  it('writes to provided clipboard data without starting a synthetic copy', () => {
+    const editor = createCopyEditor([
+      [
+        {
+          id: 'block1',
+          children: [{ text: 'First block' }],
+          type: 'p',
         },
-      });
+        [0],
+      ],
+      [
+        {
+          id: 'block2',
+          children: [{ text: 'Second block' }],
+          type: 'p',
+        },
+        [1],
+      ],
+    ]);
+    const dataTransfer = createDataTransfer();
 
-      const copied = (
-        copySelectedBlocks as (
-          editor: any,
-          dataTransfer?: DataTransfer
-        ) => boolean
-      )(editor, mockDataTransfer as any);
-
-      expect(copied).toBe(true);
-      expect(copyToClipboardMock).not.toHaveBeenCalled();
-      expect(mockSetFragmentData).toHaveBeenCalledTimes(2);
-      expect(mockDataTransfer.setData).toHaveBeenCalledWith(
-        'text/plain',
-        expect.any(String)
-      );
-      expect(mockDataTransfer.setData).toHaveBeenCalledWith(
-        'text/html',
-        expect.any(String)
-      );
-      expect(mockDataTransfer.setData).toHaveBeenCalledWith(
-        'application/x-slate-fragment',
-        expect.any(String)
-      );
-    });
+    expect(copySelectedBlocks(editor, dataTransfer)).toBe(true);
+    expect(copyToClipboardMock).not.toHaveBeenCalled();
+    expect(editor.api.clipboard.writeSelection).toHaveBeenCalledTimes(2);
+    expect(dataTransfer.setData).toHaveBeenCalledWith(
+      'text/plain',
+      expect.any(String)
+    );
+    expect(dataTransfer.setData).toHaveBeenCalledWith(
+      'text/html',
+      expect.any(String)
+    );
+    expect(dataTransfer.setData).toHaveBeenCalledWith(
+      'application/x-slate-fragment',
+      expect.any(String)
+    );
   });
 });

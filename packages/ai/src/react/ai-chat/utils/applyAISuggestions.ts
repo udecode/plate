@@ -30,16 +30,16 @@ export const applyAISuggestions = (editor: SlateEditor, content: string) => {
     .getApi({ key: KEYS.cursorOverlay })
     ?.cursorOverlay?.removeCursor('selection');
 
-  const { chatNodes } = editor.getOptions(AIChatPlugin);
+  const { chatNodes } = editor.plugin(AIChatPlugin).getOptions();
 
   // Use chatNodes.length to determine if we're in multi-block edit mode
   // instead of checking current selection state (which may have changed)
   if (chatNodes.length > 1) {
     const setReplaceIds = (ids: string[]) => {
-      editor.setOption(AIChatPlugin, '_replaceIds', ids);
+      editor.plugin(AIChatPlugin).setOption('_replaceIds', ids);
     };
 
-    if (editor.getOption(AIChatPlugin, '_replaceIds').length === 0) {
+    if (editor.plugin(AIChatPlugin).getOption('_replaceIds').length === 0) {
       setReplaceIds(chatNodes.map((node) => node.id as string));
     }
 
@@ -50,7 +50,7 @@ export const applyAISuggestions = (editor: SlateEditor, content: string) => {
         at: [],
         match: (n: TIdElement) =>
           ElementApi.isElement(n) &&
-          editor.getOption(AIChatPlugin, '_replaceIds').includes(n.id),
+          editor.plugin(AIChatPlugin).getOption('_replaceIds').includes(n.id),
       })
     );
 
@@ -180,7 +180,7 @@ export const withoutSuggestionAndComments = (
 
 const getDiffNodes = (editor: SlateEditor, aiContent: string) => {
   /** Original document nodes */
-  const rawChatNodes = editor.getOption(AIChatPlugin, 'chatNodes');
+  const rawChatNodes = editor.plugin(AIChatPlugin).getOption('chatNodes');
 
   let chatNodes = withoutSuggestionAndComments(rawChatNodes);
 

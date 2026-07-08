@@ -13,7 +13,8 @@ import type {
   NavigationFlashTargetOptions,
   NavigationNavigateOptions,
 } from './types';
-import { NAVIGATION_FEEDBACK_KEY, NavigationFeedbackPluginKey } from './types';
+import { NavigationFeedbackPluginKey } from './internal/navigationFeedbackPluginKey';
+import { NAVIGATION_FEEDBACK_KEY } from './types';
 
 export const NavigationFeedbackPlugin =
   createPlatePlugin<NavigationFeedbackConfig>({
@@ -58,10 +59,9 @@ export const NavigationFeedbackPlugin =
         editor.api.react.refreshDecorations();
       };
       const getActiveTarget = () => {
-        const storedTarget = editor.getOption(
-          NavigationFeedbackPluginKey,
-          'activeTarget'
-        );
+        const storedTarget = editor
+          .plugin(NavigationFeedbackPluginKey)
+          .getOption('activeTarget');
         const activeTarget = resolveNavigationFeedbackTarget(storedTarget);
 
         if (!activeTarget && storedTarget) {

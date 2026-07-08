@@ -462,7 +462,7 @@ export type PlatePluginConfig<
 
 export type PlatePluginContext<
   C extends AnyPluginConfig = PluginConfig,
-  E extends PlateEditor = PlateEditor,
+  E extends PlateEditor<any, C> = PlateEditor<any, C>,
 > = PluginBaseContext<C> & {
   editor: E;
   plugin: EditorPlatePlugin<C>;

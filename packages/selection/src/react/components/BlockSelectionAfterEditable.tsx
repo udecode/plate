@@ -1,18 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { isHotkey, KEYS, PathApi } from 'platejs';
+import { isHotkey } from '@platejs/core';
+import { ElementApi, PathApi } from '@platejs/plite';
 import {
   type EditableSiblingComponent,
   useEditorPlugin,
-  useEditorRef,
   usePluginOption,
-} from 'platejs/react';
-
-import {
-  type BlockSelectionConfig,
-  BlockSelectionPlugin,
-} from '../BlockSelectionPlugin';
+} from '@platejs/core/react';
+import { KEYS } from '@platejs/utils';
+import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { useSelectionArea } from '../hooks';
 import {
   copySelectedBlocks,
@@ -21,22 +18,24 @@ import {
 } from '../utils';
 
 export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
-  const editor = useEditorRef();
-  const { api, getOption, getOptions, setOption } =
-    useEditorPlugin<BlockSelectionConfig>({ key: KEYS.blockSelection });
+  const { api, editor, getOption, getOptions, setOption } =
+    useEditorPlugin(BlockSelectionPlugin);
 
   const isSelectingSome = usePluginOption(
     BlockSelectionPlugin,
     'isSelectingSome'
   );
-  const selectedIds = usePluginOption(BlockSelectionPlugin, 'selectedIds');
 
   const removeSelectedBlocks = React.useCallback(
     (options: { selectPrevious?: boolean } = {}) => {
+      const selectedIds = getOption('selectedIds');
       const entries = [
-        ...editor.api.nodes({
+        ...editor.read.nodes.toArray({
           at: [],
-          match: (n) => !!n.id && selectedIds?.has(n.id as string),
+          match: (node) =>
+            ElementApi.isElement(node) &&
+            !!node.id &&
+            !!selectedIds?.has(node.id as string),
         }),
       ];
 
@@ -44,23 +43,21 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
       const firstPath = entries[0]![1];
 
-      editor.tf.withoutNormalizing(() => {
+      editor.update.withoutNormalizing(({ tx }) => {
         for (const [node, path] of [...entries].reverse()) {
-          editor.tf.removeNodes({
+          tx.nodes.remove({
             at: path,
           });
           api.blockSelection.delete(node.id as string);
         }
 
-        if (editor.children.length === 0) {
-          editor.meta._forceFocus = true;
-          editor.tf.focus();
-          editor.meta._forceFocus = false;
+        if (editor.read.children().length === 0) {
+          editor.api.dom.focus();
         } else if (options.selectPrevious) {
           const prevPath = PathApi.previous(firstPath);
 
           if (prevPath) {
-            const prevEntry = editor.api.block({ at: prevPath });
+            const prevEntry = editor.read.nodes.block({ at: prevPath });
 
             if (prevEntry) {
               setOption('selectedIds', new Set([prevEntry[0].id as string]));
@@ -71,7 +68,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
       return firstPath;
     },
-    [editor, api.blockSelection, selectedIds, setOption]
+    [editor, getOption, api.blockSelection, setOption]
   );
 
   useSelectionArea();
@@ -104,7 +101,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      const isReadonly = editor.api.isReadOnly();
+      const isReadonly = editor.read.view.isReadOnly();
       getOptions().onKeyDownSelecting?.(editor, e.nativeEvent);
 
       if (!getOption('isSelectingSome')) return;
@@ -122,7 +119,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
         return;
       }
-      // ESC => unselect all
+      // ESC => clear block selection
       if (isHotkey('escape')(e)) {
         api.blockSelection.deselect();
 
@@ -130,7 +127,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       }
       // Undo/redo
       if (isHotkey('mod+z')(e)) {
-        editor.undo();
+        editor.update.history.undo();
         selectInsertedBlocks(editor);
 
         return;
@@ -142,7 +139,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       }
 
       if (isHotkey('mod+shift+z')(e)) {
-        editor.redo();
+        editor.update.history.redo();
         selectInsertedBlocks(editor);
 
         return;
@@ -150,24 +147,32 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       // Mod+D => duplicate selected blocks
       if (isHotkey('mod+d')(e)) {
         e.preventDefault();
-        editor.getTransforms(BlockSelectionPlugin).blockSelection.duplicate();
+        editor.update.blockSelection.duplicate();
         return;
       }
       // Only continue if we have "some" selection
       if (!getOption('isSelectingSome')) return;
       // Enter => focus first selected block
       if (isHotkey('enter')(e)) {
-        const entry = editor.api.node({
+        const selectedIds = getOption('selectedIds');
+        const entry = editor.read.nodes.find({
           at: [],
-          block: true,
-          match: (n) => !!n.id && selectedIds?.has(n.id as string),
+          match: (n) =>
+            ElementApi.isElement(n) &&
+            editor.read.schema.isBlock(n) &&
+            !!n.id &&
+            !!selectedIds?.has(n.id as string),
         });
 
         if (entry) {
           const [, path] = entry;
-          editor.meta._forceFocus = true;
-          editor.tf.focus({ at: path, edge: 'end' });
-          editor.meta._forceFocus = undefined;
+          const end = editor.read.points.end(path);
+
+          if (end) {
+            editor.update.selection.set(end);
+          }
+
+          editor.api.dom.focus();
           e.preventDefault();
         }
 
@@ -209,26 +214,22 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         const firstPath = removeSelectedBlocks();
 
         if (firstPath) {
-          editor.meta._forceFocus = true;
-          editor.tf.insertNodes(
-            editor.api.create.block({ children: [{ text: e.key }] }),
+          editor.update.nodes.insert(
+            { children: [{ text: e.key }], type: editor.getType(KEYS.p) },
             { at: firstPath }
           );
-          editor.tf.select(firstPath, { edge: 'end' });
-          editor.meta._forceFocus = false;
-          editor.tf.focus();
+          const end = editor.read.points.end(firstPath);
+
+          if (end) {
+            editor.update.selection.set(end);
+          }
+
+          editor.api.dom.focus();
         }
         return;
       }
     },
-    [
-      editor,
-      getOptions,
-      getOption,
-      api.blockSelection,
-      removeSelectedBlocks,
-      selectedIds,
-    ]
+    [editor, getOption, getOptions, api.blockSelection, removeSelectedBlocks]
   );
 
   /** Handle copy / cut / paste in block selection */
@@ -254,7 +255,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
           e.preventDefault();
         }
 
-        if (copied && !editor.api.isReadOnly()) {
+        if (copied && !editor.read.view.isReadOnly()) {
           removeSelectedBlocks();
         }
       }
@@ -266,7 +267,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
     (e: React.ClipboardEvent<HTMLInputElement>) => {
       e.preventDefault();
 
-      if (!editor.api.isReadOnly()) {
+      if (!editor.read.view.isReadOnly()) {
         pasteSelectedBlocks(editor, e.nativeEvent);
       }
     },
