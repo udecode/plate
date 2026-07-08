@@ -125,6 +125,23 @@ Rules:
   `name` default to the owning plugin key. Use an explicit `name` only for a
   genuinely separate extension identity, keyed secondary extension, or
   standalone Plite extension.
+- Preserve original helper owners during package review. If `origin/main`
+  owned real behavior in a transform/query/helper file, keep that file and
+  migrate the logic inside it to Plite/Plate Next APIs. Do not move the
+  algorithm into the plugin file just because the plugin now exposes a tx/API
+  group. The plugin may delegate to the helper with the active `tx`, but the
+  helper remains the reviewed owner.
+- Never replace an old helper body with a wrapper like
+  `editor.plugin(FooPlugin).editor.update((tx) => tx.foo.bar(...))`; that is
+  a fake compatibility transform. Keep the real logic in the original helper
+  file and let plugin tx methods call that helper, passing the active `tx`
+  when mutation is required.
+- Tests for plugin-owned behavior should live beside the plugin, either in the
+  plugin's own spec or a colocated `<PluginName>-<method>.spec.tsx` file. Keep
+  separate helper/spec files only when the helper is genuinely shared by
+  multiple owners, non-plugin product code, too large for inline readability,
+  or a React hook/component/non-plugin utility with a durable owner. Hooks are
+  the explicit exception: keep hooks in hook files.
 - Prefer direct one-shot Plite methods over callback boilerplate. A single
   operation like `editor.update((tx) => { tx.normalize({ force: true }); })`
   should be `editor.update.normalize({ force: true })`. A single read like
@@ -137,6 +154,12 @@ Rules:
   transaction lane, its context should expose `tx` and mutations should go
   through that `tx`. Do not call `editor.update.*` from such callbacks; fix the
   owning context type and thread `tx` through instead.
+- Transform/helper owner files that mutate editor state must require the active
+  `tx` when they are called from a tx/plugin lane. Do not write hybrid helpers
+  with `tx?: EditorUpdateTransaction`, `if (tx) ... else editor.update(...)`,
+  or local `apply(transaction)` wrappers. The one-shot public command belongs
+  on `editor.update.*`; the helper file owns the algorithm and takes the
+  transaction explicitly.
 - `editor.update` callbacks must never call `editor.update.*` again. If a
   callback is already inside `editor.update(...)`,
   `editor.update.withoutNormalizing(...)`, transform middleware, or another
@@ -208,6 +231,12 @@ Rules:
 - If code moved from old Slate/Plate APIs to Plite primitives, preserve the
   existing Plate owner when that owner still describes the product concern, but
   do not preserve a legacy API shape merely for compatibility.
+- When old Plate code used a generic editor range primitive such as
+  `editor.api.nodesRange(entries)` or `editor.api.range(...)`, migrate node
+  entries to `editor.read.ranges.fromEntries(entries)` and normal locations to
+  `editor.read.ranges.get(...)`. Do not hand-roll anchor/focus with point
+  helpers inside a product package; that moves substrate range semantics into
+  the wrong owner.
 - Treat rename/new-plugin/new-wrapper suggestions as later Plate v2 closure
   unless the existing name is actively false or harmful for the current packet.
 - In review-mode final answers, separate:
@@ -495,6 +524,12 @@ Rules:
   unrelated packages, generated registries, or broad repo surfaces from package
   mode. If the same API smell appears elsewhere, record it as a deferred row or
   next package candidate.
+- Do not run `apps/www`, `www` dev server, docs routes, registry demos, or
+  browser proof during package review mode unless the user explicitly targets
+  `apps/www`, `content/docs`, registry/docs UI, or asks for browser/docs proof.
+  Package review proof is package-local plus the smallest Plite/Core owner
+  proof. If content docs were touched only because a Plite/Core API name
+  changed, run source/docs parity at most and record route proof as deferred.
 - A hard-cut decision discovered in one package still lands package by package.
   Do not run a global caller rewrite unless the user explicitly says
   `all packages`, `current tree`, `full-loop`, `sweep`, or names the broader
@@ -513,6 +548,11 @@ Rules:
 - Every file row needs `path`, `score`, `verdict`, `owner`, `evidence`, and
   `next`.
 - A file row may be checked `[x]` only at score `100`.
+- Helper rows may score `100` only when the original owner is preserved or the
+  plan records a concrete accepted reason to move it: shared owner,
+  non-plugin utility, hook/component owner, size/read threshold, or explicit
+  user deferral. "I moved the logic into the plugin because it was small" is
+  not a durable owner decision.
 - Score `100` means all of these are true:
   - no behavior regression versus `origin/main`;
   - no type regression;
@@ -644,6 +684,10 @@ pnpm --filter @platejs/<package> build
 Use package-local focused tests when available. Run broader gates only when the
 package exports, public type surface, or Core/Plite owner changes make the
 package proof insufficient.
+
+Do not start `apps/www` or hit `www` routes from Plate Next package review.
+`www` proof is a separate docs/app lane unless the current target is explicitly
+docs, registry UI, examples, or the user asks for that proof.
 
 For Core-adjacent package review, `pnpm check:core` is also required after the
 package is added to `tooling/scripts/check-core.mjs`. Do not close a package

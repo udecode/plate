@@ -19,13 +19,15 @@ describe('duplicateBlockSelectionNodes', () => {
           type: 'p',
         },
       ],
-    }) as any;
+    });
 
     editor
       .plugin(BlockSelectionPlugin)
       .setOption('selectedIds', new Set(['block1']));
 
-    duplicateBlockSelectionNodes(editor);
+    editor.update((tx) => {
+      duplicateBlockSelectionNodes(editor, tx);
+    });
 
     expect(editor.read.children()).toEqual([
       {

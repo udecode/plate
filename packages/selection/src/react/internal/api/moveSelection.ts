@@ -1,24 +1,24 @@
-import type { TIdElement } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { TIdElement } from '@platejs/utils';
 
-import { type PlateEditor, getEditorPlugin } from 'platejs/react';
+import { ElementApi } from '@platejs/plite';
 
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
 
-export const moveSelection = (
-  editor: PlateEditor,
-  direction: 'down' | 'up'
-) => {
-  const { api, setOption } = getEditorPlugin(editor, BlockSelectionPlugin);
+export const moveSelection = (editor: BaseEditor, direction: 'down' | 'up') => {
+  const { api, setOption } = editor.plugin(BlockSelectionPlugin);
   const blocks = api.blockSelection.getNodes();
 
   if (blocks.length === 0) return;
   if (direction === 'up') {
     const [, topPath] = blocks[0];
 
-    const prevEntry = editor.api.previous<TIdElement>({
+    const prevEntry = editor.read.nodes.previous<TIdElement>({
       at: topPath,
       from: 'parent',
-      match: api.blockSelection.isSelectable,
+      match: (node, path) =>
+        ElementApi.isElement(node) &&
+        api.blockSelection.isSelectable(node, path),
     });
 
     if (prevEntry) {
@@ -29,13 +29,14 @@ export const moveSelection = (
       api.blockSelection.set(blocks[0][0].id);
     }
   } else {
-    // direction === 'down'
     const [, bottomPath] = blocks.at(-1)!;
 
-    const nextEntry = editor.api.next<TIdElement>({
+    const nextEntry = editor.read.nodes.next<TIdElement>({
       at: bottomPath,
       from: 'child',
-      match: api.blockSelection.isSelectable,
+      match: (node, path) =>
+        ElementApi.isElement(node) &&
+        api.blockSelection.isSelectable(node, path),
     });
 
     if (nextEntry) {

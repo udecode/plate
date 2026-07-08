@@ -1,4 +1,5 @@
 import type {
+  Element,
   Editor,
   ElementIn,
   ElementOrTextIn,
@@ -22,6 +23,18 @@ export interface NodeInsertNodesOptions<T extends Node> {
   voids?: boolean;
   batchDirty?: boolean;
 }
+
+export type NodeDuplicateOptions<T extends Node> = Omit<
+  NodeInsertNodesOptions<T>,
+  'at'
+>;
+
+export type BlockDuplicateOptions<T extends Element = Element> = {
+  at?: Location;
+  match?: NodeMatch<T>;
+  mode?: RangeMode;
+  voids?: boolean;
+} & Pick<NodeInsertNodesOptions<T>, 'batchDirty' | 'hanging' | 'select'>;
 
 export interface NodeReplaceChildrenOptions {
   at: Path;

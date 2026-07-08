@@ -93,6 +93,31 @@ describe('withComponent method', () => {
     expect(plugin.extendTx(() => () => ({})).__txExtensions).toHaveLength(2);
   });
 
+  it('extendExtension keeps the Plate plugin wrapper chain', () => {
+    const RuntimePlugin = createPlatePlugin({ key: 'runtime' })
+      .extendExtension({
+        api: {
+          runtime: {
+            key: () => 'runtime' as const,
+          },
+        },
+      })
+      .extendExtension({
+        api: {
+          runtime: {
+            label: () => 'Runtime' as const,
+          },
+        },
+      });
+
+    expect(RuntimePlugin.__editorExtensions).toHaveLength(2);
+
+    const editor = createPlateEditor({ plugins: [RuntimePlugin] });
+
+    expect(editor.api.runtime.key()).toBe('runtime');
+    expect(editor.api.runtime.label()).toBe('Runtime');
+  });
+
   it('infers Plate tx groups on createPlateEditor update callbacks', () => {
     const TxPlugin = createPlatePlugin({ key: 'txPlugin' }).extendTx(
       () => () => ({

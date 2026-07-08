@@ -421,6 +421,7 @@ const withRootRanges = <T extends ViewStateTransformInput>(
     ...state.ranges,
     bookmark: rootBookmarkMethod(state.ranges.bookmark, viewState),
     edges: rootMethod(editor, viewState, state.ranges.edges),
+    fromEntries: rootMethod(editor, viewState, state.ranges.fromEntries),
     get: rootMethod(editor, viewState, state.ranges.get),
     project: rootMethod(editor, viewState, state.ranges.project),
     unhang: rootMethod(editor, viewState, state.ranges.unhang),
@@ -558,6 +559,10 @@ const withViewTransaction = <V extends Value>(
   return Object.freeze({
     ...state,
     blocks: Object.freeze<EditorUpdateTransaction<V>['blocks']>({
+      duplicate: (options) =>
+        runImplicitSelectionMutation(options, () =>
+          transaction.blocks.duplicate(options)
+        ),
       lift: (options) =>
         runImplicitSelectionMutation(options, () =>
           transaction.blocks.lift(options)
@@ -614,6 +619,10 @@ const withViewTransaction = <V extends Value>(
     ),
     nodes: Object.freeze<EditorUpdateTransaction<V>['nodes']>({
       ...state.nodes,
+      duplicate: (entries, options) =>
+        runRootTransform(editor, viewState, () =>
+          transaction.nodes.duplicate(entries, options)
+        ),
       insert: (nodes, options) =>
         runImplicitSelectionMutation(options, () =>
           transaction.nodes.insert(nodes, options)

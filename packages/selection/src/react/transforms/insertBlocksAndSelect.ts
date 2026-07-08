@@ -1,34 +1,36 @@
-import type { PlateEditor } from 'platejs/react';
+import type { BaseEditor } from '@platejs/core';
+import type { EditorUpdateTransaction, Element, Path } from '@platejs/plite';
 
-import { type Path, type TElement, NodeApi, PathApi } from 'platejs';
+import { PathApi } from '@platejs/plite';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 export const insertBlocksAndSelect = (
-  editor: PlateEditor,
-  nodes: TElement[],
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  nodes: Element[],
   { at, insertedCallback }: { at: Path; insertedCallback?: () => void }
 ) => {
-  editor.tf.insertNodes(nodes, { at });
+  const { setOption } = editor.plugin(BlockSelectionPlugin);
 
+  tx.nodes.insert(nodes, { at });
   insertedCallback?.();
 
-  const insertedNodes = [NodeApi.get<TElement>(editor, at)!];
-
+  const insertedNodes = [editor.read.nodes.get<Element>(at)![0]];
   let count = 1;
+  let path = at;
 
   while (count < nodes.length) {
-    at = PathApi.next(at);
-    const nextNode = NodeApi.get<TElement>(editor, at)!;
+    path = PathApi.next(path);
+    const nextNode = editor.read.nodes.get<Element>(path)![0];
     insertedNodes.push(nextNode);
     count++;
   }
 
   setTimeout(() => {
-    editor.setOption(
-      BlockSelectionPlugin,
+    setOption(
       'selectedIds',
-      new Set(insertedNodes.map((n) => n.id as string))
+      new Set(insertedNodes.map((node) => node.id as string))
     );
   }, 0);
 };

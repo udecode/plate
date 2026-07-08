@@ -63,7 +63,9 @@ import type {
   TextUnitAdjustment,
 } from '../types/types';
 import type {
+  BlockDuplicateOptions,
   NodeInsertNodesOptions,
+  NodeDuplicateOptions,
   NodeMutationMethods,
   NodeReplaceChildrenOptions,
   NodeSetNodesOptions,
@@ -388,6 +390,10 @@ export type EditorStateNodesApi = {
 
 export type EditorTransactionNodesApi<V extends Value = Value> =
   EditorStateNodesApi & {
+    duplicate: <T extends ElementOrTextIn<V>>(
+      entries: readonly NodeEntry<T>[],
+      options?: NodeDuplicateOptions<T>
+    ) => void;
     insert: <T extends ElementOrTextIn<V>>(
       nodes: T | T[],
       options?: NodeInsertNodesOptions<T>
@@ -496,6 +502,7 @@ export type EditorBlockResetOptions<T extends Element = Element> =
   };
 
 export type EditorTransactionBlocksApi<V extends Value = Value> = {
+  duplicate: (options?: BlockDuplicateOptions<ElementIn<V>>) => void;
   lift: EditorTransactionNodesApi<V>['lift'];
   reset: <T extends ElementIn<V>>(
     props: Partial<NodeProps<T>>,
@@ -536,6 +543,7 @@ export type EditorStateRangesApi = {
     (at: Location, options: EditorRequiredTrueQueryOptions): [Point, Point];
     (at: Location, options?: EditorReadOptions): [Point, Point] | undefined;
   };
+  fromEntries: (entries: readonly NodeEntry[]) => Range | undefined;
   get: {
     (
       at: Location,
@@ -787,6 +795,7 @@ export type EditorCoreUpdateMethods<V extends Value = Value> = {
     Pick<
       EditorTransactionNodesApi<V>,
       | 'insert'
+      | 'duplicate'
       | 'lift'
       | 'merge'
       | 'move'
@@ -1242,6 +1251,7 @@ export type EditorQueryMiddlewareArgs<_V extends Value = Value> = {
   };
   ranges: {
     edges: { at: Location; options?: EditorReadOptions };
+    fromEntries: { entries: readonly NodeEntry[] };
     get: {
       at: Location;
       options?: EditorReadOptions;
@@ -1304,6 +1314,7 @@ export type EditorQueryMiddlewareResult<V extends Value = Value> = {
   };
   ranges: {
     edges: [Point, Point] | undefined;
+    fromEntries: Range | undefined;
     get: Range | undefined;
     project: readonly ProjectedRangeSegment[];
     unhang: Range;

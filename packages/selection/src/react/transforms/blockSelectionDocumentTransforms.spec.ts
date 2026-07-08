@@ -24,23 +24,26 @@ const createBlockSelectionEditor = () =>
         type: 'p',
       },
     ],
-  }) as any;
+  });
 
 describe('block selection document transforms', () => {
   it('inserts blocks through the editor update API', () => {
     const editor = createBlockSelectionEditor();
 
-    insertBlocksAndSelect(
-      editor,
-      [
-        {
-          id: 'block3',
-          children: [{ text: 'Three' }],
-          type: 'p',
-        },
-      ],
-      { at: [1] }
-    );
+    editor.update((tx) => {
+      insertBlocksAndSelect(
+        editor,
+        tx,
+        [
+          {
+            id: 'block3',
+            children: [{ text: 'Three' }],
+            type: 'p',
+          },
+        ],
+        { at: [1] }
+      );
+    });
 
     expect(editor.read.children().map((node: any) => node.id)).toEqual([
       'block1',
@@ -56,7 +59,9 @@ describe('block selection document transforms', () => {
       .plugin(BlockSelectionPlugin)
       .setOption('selectedIds', new Set(['block1']));
 
-    removeBlockSelectionNodes(editor);
+    editor.update((tx) => {
+      removeBlockSelectionNodes(editor, tx);
+    });
 
     expect(editor.read.children().map((node: any) => node.id)).toEqual([
       'block2',
@@ -70,7 +75,9 @@ describe('block selection document transforms', () => {
       .plugin(BlockSelectionPlugin)
       .setOption('selectedIds', new Set(['block1']));
 
-    setBlockSelectionNodes(editor, { align: 'center' } as any);
+    editor.update((tx) => {
+      setBlockSelectionNodes(editor, tx, { align: 'center' } as any);
+    });
 
     expect(editor.read.children()[0].align).toBe('center');
     expect(editor.read.children()[1].align).toBeUndefined();
@@ -83,8 +90,10 @@ describe('block selection document transforms', () => {
       .plugin(BlockSelectionPlugin)
       .setOption('selectedIds', new Set(['block1']));
 
-    setBlockSelectionIndent(editor, 2);
-    setBlockSelectionIndent(editor, -5);
+    editor.update((tx) => {
+      setBlockSelectionIndent(editor, tx, 2);
+      setBlockSelectionIndent(editor, tx, -5);
+    });
 
     expect(editor.read.children()[0].indent).toBe(0);
   });
@@ -96,7 +105,9 @@ describe('block selection document transforms', () => {
       .plugin(BlockSelectionPlugin)
       .setOption('selectedIds', new Set(['block1']));
 
-    setBlockSelectionTexts(editor, { bold: true } as any);
+    editor.update((tx) => {
+      setBlockSelectionTexts(editor, tx, { bold: true } as any);
+    });
 
     expect(editor.read.children()[0].children[0].bold).toBe(true);
     expect(editor.read.children()[1].children[0].bold).toBeUndefined();

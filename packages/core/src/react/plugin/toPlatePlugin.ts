@@ -42,6 +42,7 @@ const methodsToWrap = [
   'configure',
   'configurePlugin',
   'extendEditorApi',
+  'extendExtension',
   'extendSelectors',
   'extendApi',
   'extendTx',
@@ -52,6 +53,7 @@ const methodsToWrap = [
 
 const extensionArrayKeys = [
   '__apiExtensions',
+  '__editorExtensions',
   '__selectorExtensions',
   '__txExtensions',
 ] as const;

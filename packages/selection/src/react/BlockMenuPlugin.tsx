@@ -1,9 +1,7 @@
-import type { PluginConfig } from 'platejs';
+import type { PluginConfig } from '@platejs/core';
 
-import { KEYS } from 'platejs';
-import { createTPlatePlugin } from 'platejs/react';
-
-import type { BlockSelectionConfig } from './BlockSelectionPlugin';
+import { createPlatePlugin } from '@platejs/core/react';
+import { KEYS } from '@platejs/utils';
 
 export const BLOCK_CONTEXT_MENU_ID = 'context';
 
@@ -30,7 +28,7 @@ export type BlockMenuConfig = PluginConfig<
 
 type OpenId = (string & {}) | typeof BLOCK_CONTEXT_MENU_ID;
 
-export const BlockMenuPlugin = createTPlatePlugin<BlockMenuConfig>({
+export const BlockMenuPlugin = createPlatePlugin<BlockMenuConfig>({
   key: KEYS.blockMenu,
   editOnly: true,
   options: {
@@ -68,8 +66,8 @@ export const BlockMenuPlugin = createTPlatePlugin<BlockMenuConfig>({
     ({ api, editor }) => ({
       showContextMenu: (blockId, position) => {
         editor
-          .getApi<BlockSelectionConfig>({ key: KEYS.blockSelection })
-          .blockSelection?.set(blockId);
+          .plugin({ key: KEYS.blockSelection })
+          .setOption('selectedIds', new Set([blockId]));
         api.blockMenu.show(BLOCK_CONTEXT_MENU_ID, position);
       },
     })

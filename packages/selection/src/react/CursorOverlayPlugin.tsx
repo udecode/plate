@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 
-import type { PluginConfig } from 'platejs';
+import type { PluginConfig } from '@platejs/core';
 
-import { KEYS } from 'platejs';
 import {
   type DOMHandler,
-  createTPlatePlugin,
+  createPlatePlugin,
   usePluginOption,
-} from 'platejs/react';
+} from '@platejs/core/react';
+import { KEYS } from '@platejs/utils';
 
 import type { CursorData, CursorState } from './types';
 
@@ -35,7 +35,7 @@ const getRemoveCursorHandler =
     api.cursorOverlay.removeCursor(id);
   };
 
-export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
+export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
   key: KEYS.cursorOverlay,
   editOnly: {
     render: false,
@@ -45,42 +45,57 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
   .extendApi<CursorOverlayConfig['api']['cursorOverlay']>(
     ({ editor, plugin }) => ({
       addCursor: (id, cursor) => {
-        const newCursors = { ...editor.getOptions(plugin).cursors };
+        const newCursors = { ...editor.plugin(plugin).getOptions().cursors };
         newCursors[id] = {
           id,
           ...cursor,
         };
-        editor.setOption(plugin, 'cursors', newCursors);
+        editor.plugin(plugin).setOption('cursors', newCursors);
       },
       removeCursor: (id) => {
-        const newCursors = { ...editor.getOptions(plugin).cursors };
+        const newCursors = { ...editor.plugin(plugin).getOptions().cursors };
 
         if (!newCursors[id]) return;
 
         delete newCursors[id];
-        editor.setOption(plugin, 'cursors', newCursors);
+        editor.plugin(plugin).setOption('cursors', newCursors);
       },
     })
   )
-  .overrideEditor(({ api, editor, getOptions, tf: { setSelection } }) => ({
-    transforms: {
-      setSelection(props) {
-        if (getOptions().cursors?.selection) {
-          setTimeout(() => {
-            api.cursorOverlay.addCursor('selection', {
-              selection: editor.selection,
-            });
-          }, 0);
-        }
+  .extendExtension(({ api, editor, getOptions }) => {
+    const refreshSelectionCursor = () => {
+      if (!getOptions().cursors?.selection) return;
 
-        setSelection(props);
+      setTimeout(() => {
+        api.cursorOverlay.addCursor('selection', {
+          selection: editor.read.selection(),
+        });
+      }, 0);
+    };
+
+    return {
+      transforms: {
+        select({ next }) {
+          const result = next();
+
+          refreshSelectionCursor();
+
+          return result;
+        },
+        setSelection({ next }) {
+          const result = next();
+
+          refreshSelectionCursor();
+
+          return result;
+        },
       },
-    },
-  }))
+    };
+  })
   .extend(() => ({
     handlers: {
       onBlur: ({ api, editor, event }) => {
-        if (!editor.selection) return;
+        if (!editor.read.selection()) return;
 
         const relatedTarget = event.relatedTarget as HTMLElement;
         const enabled = relatedTarget?.dataset?.plateFocus === 'true';
@@ -88,7 +103,7 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
         if (!enabled) return;
 
         api.cursorOverlay.addCursor('selection', {
-          selection: editor.selection,
+          selection: editor.read.selection(),
         });
       },
       onDragEnd: getRemoveCursorHandler('drag') as any,
@@ -96,7 +111,7 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
       onDragOver: ({ api, editor, event }) => {
         if (
           !editor.plugins.dnd ||
-          editor.getOptions({ key: KEYS.dnd }).isDragging
+          editor.plugin({ key: KEYS.dnd }).getOptions().isDragging
         ) {
           return;
         }
@@ -105,7 +120,7 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
 
         if (types.some((type) => type.startsWith('Files'))) return;
 
-        const range = editor.api.findEventRange(event);
+        const range = editor.api.dom.resolveEventRange(event);
 
         if (!range) return;
 

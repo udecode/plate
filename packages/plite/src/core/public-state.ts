@@ -41,6 +41,7 @@ import type {
   EditorTransaction,
   EditorTransactionBlocksApi,
   EditorTransactionFragmentApi,
+  EditorTransactionNodesApi,
   EditorTransactionSelectionApi,
   EditorToggleMarkOptions,
   EditorUpdateContext,
@@ -772,6 +773,18 @@ const readRange = (
   }
 
   return getEditorRuntime(editor).range(at, to);
+};
+
+const readRangeFromEntries = (
+  editor: Editor,
+  entries: readonly NodeEntry[]
+): Range | undefined => {
+  const first = entries[0];
+  const last = entries.at(-1);
+
+  if (!first || !last) return;
+
+  return readRange(editor, first[1], last[1]);
 };
 
 const areSerializableValuesEqual = (left: unknown, right: unknown): boolean => {
@@ -2187,6 +2200,14 @@ const getStateView = <
           { at, options },
           ({ at, options }) => readRangeEdges(editor, at, options)
         )) as EditorStateRangesApi['edges'],
+      fromEntries: (entries) =>
+        executeQueryMiddleware(
+          editor,
+          'ranges',
+          'fromEntries',
+          { entries },
+          ({ entries }) => readRangeFromEntries(editor, entries)
+        ),
       get: ((
         at: Location,
         toOrOptions?: Location | EditorReadOptions,
@@ -2462,10 +2483,61 @@ const getUpdateView = <
     });
   };
   let txRecord!: EditorUpdateTransaction<V, TExtensions>;
+  const duplicateNodes: EditorTransactionNodesApi<V>['duplicate'] = (
+    entries,
+    options = {}
+  ) => {
+    if (entries.length === 0) return;
+
+    const lastEntry = entries.at(-1)!;
+    const insertPath = PathApi.next(lastEntry[1]);
+    const nodesToInsert = entries.map(([node]) => cloneValue(node));
+
+    txRecord.nodes.insert(nodesToInsert, {
+      ...options,
+      at: insertPath,
+    });
+  };
+  const duplicateBlocks: EditorTransactionBlocksApi<V>['duplicate'] = ({
+    at = state.selection() ?? undefined,
+    batchDirty,
+    hanging,
+    match,
+    mode,
+    select,
+    voids,
+  } = {}) => {
+    if (!at) return;
+
+    const matchesBlock = (node: PliteNode, path: Path) =>
+      NodeApi.isElement(node) &&
+      state.schema.isBlock(node) &&
+      (!match || match(node, path));
+    const entries = LocationApi.isRange(at)
+      ? state.nodes.toArray<ElementIn<V>>({
+          at,
+          match: matchesBlock,
+          mode,
+          voids,
+        })
+      : (() => {
+          const entry = state.nodes.block<ElementIn<V>>({ at });
+
+          return entry && matchesBlock(entry[0], entry[1]) ? [entry] : [];
+        })();
+
+    txRecord.nodes.duplicate(entries, {
+      batchDirty,
+      hanging,
+      select,
+      voids,
+    });
+  };
 
   const tx = {
     ...state,
     blocks: Object.freeze({
+      duplicate: duplicateBlocks,
       lift: (options) =>
         runMutation(options, () => transforms.liftNodes(options)),
       reset: resetBlock,
@@ -2519,6 +2591,7 @@ const getUpdateView = <
     }),
     nodes: Object.freeze({
       ...state.nodes,
+      duplicate: duplicateNodes,
       insert: (nodes, options) =>
         runMutation(options, () => transforms.insertNodes(nodes, options)),
       lift: (options) =>

@@ -4,6 +4,10 @@ import type {
   DecoratedRange,
   Descendant,
   Element,
+  EditorInstalledApiGroups,
+  EditorInstalledStateGroups,
+  EditorInstalledTxGroups,
+  EditorExtension,
   NodeEntry,
   NodeOperation,
   Path,
@@ -99,6 +103,56 @@ export type ExtendEditorApi<
   C extends AnyPluginConfig = PluginConfig,
   EA = {},
 > = (ctx: PlatePluginContext<C>) => EA & Deep2Partial<InferApi<C>>;
+
+export type PlateEditorExtension = Omit<EditorExtension<any, any>, 'name'> & {
+  key?: string;
+  name?: string;
+};
+
+export type PlateEditorExtensionInput =
+  | PlateEditorExtension
+  | readonly PlateEditorExtension[];
+
+type ExtensionInputFromArgument<TExtension> = TExtension extends (
+  ...args: any[]
+) => infer TResult
+  ? NonNullable<TResult>
+  : TExtension;
+
+type ExtensionTuple<TExtension> = TExtension extends readonly unknown[]
+  ? TExtension
+  : readonly [TExtension];
+
+type ExtensionItemWithImplicitName<TExtension> = TExtension extends object
+  ? TExtension extends { name: infer TName }
+    ? TExtension & { name: TName }
+    : TExtension & { name: string }
+  : TExtension;
+
+type ExtensionInputWithImplicitNames<TExtension> =
+  ExtensionInputFromArgument<TExtension> extends infer TInput
+    ? TInput extends readonly unknown[]
+      ? { [K in keyof TInput]: ExtensionItemWithImplicitName<TInput[K]> }
+      : ExtensionItemWithImplicitName<TInput>
+    : never;
+
+type ExtensionApiFromArgument<TExtension> = EditorInstalledApiGroups<
+  ExtensionTuple<ExtensionInputWithImplicitNames<TExtension>>
+>;
+
+type ExtensionStateFromArgument<TExtension> = EditorInstalledStateGroups<
+  Value,
+  ExtensionTuple<ExtensionInputWithImplicitNames<TExtension>>
+>;
+
+type ExtensionTxFromArgument<TExtension> = EditorInstalledTxGroups<
+  Value,
+  ExtensionTuple<ExtensionInputWithImplicitNames<TExtension>>
+>;
+
+export type ExtendPlateEditorExtension<
+  C extends AnyPluginConfig = PluginConfig,
+> = (ctx: PlatePluginContext<C>) => PlateEditorExtensionInput | undefined;
 
 export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
   BaseHtmlDeserializer & {
@@ -656,6 +710,35 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferSelectors<C>
     >
   >;
+  extendExtension: {
+    <const TExtension>(
+      extension: TExtension &
+        (ExtendPlateEditorExtension<C> | PlateEditorExtensionInput)
+    ): PlatePlugin<
+      PluginConfig<
+        C['key'],
+        InferOptions<C>,
+        InferApi<C> & ExtensionApiFromArgument<TExtension>,
+        InferTx<C> & ExtensionTxFromArgument<TExtension>,
+        InferSelectors<C>,
+        InferState<C> & ExtensionStateFromArgument<TExtension>
+      >
+    >;
+    <const TKey extends string, const TExtension>(
+      key: TKey,
+      extension: TExtension &
+        (ExtendPlateEditorExtension<C> | PlateEditorExtensionInput)
+    ): PlatePlugin<
+      PluginConfig<
+        C['key'],
+        InferOptions<C>,
+        InferApi<C> & ExtensionApiFromArgument<TExtension>,
+        InferTx<C> & ExtensionTxFromArgument<TExtension>,
+        InferSelectors<C>,
+        InferState<C> & ExtensionStateFromArgument<TExtension>
+      >
+    >;
+  };
   extendPlugin: <
     P extends AnyPlatePlugin | AnyBasePlugin | { key: string },
     EO = {},

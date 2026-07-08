@@ -1,5 +1,7 @@
-import { type TIdElement, PathApi } from 'platejs';
-import { type PlateEditor, getEditorPlugin } from 'platejs/react';
+import type { BaseEditor } from '@platejs/core';
+import type { TIdElement } from '@platejs/utils';
+
+import { ElementApi, PathApi } from '@platejs/plite';
 
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
 
@@ -18,54 +20,44 @@ import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
  * - Otherwise => shrink from bottom-most (unless bottom-most is the anchor).
  */
 export const shiftSelection = (
-  editor: PlateEditor,
+  editor: BaseEditor,
   direction: 'down' | 'up'
 ) => {
-  const { api, getOption, getOptions, setOption } = getEditorPlugin(
-    editor,
-    BlockSelectionPlugin
-  );
-
+  const { api, getOption, getOptions, setOption } =
+    editor.plugin(BlockSelectionPlugin);
   const blocks = api.blockSelection.getNodes();
 
   if (blocks.length === 0) return;
 
-  // Identify the top-most and bottom-most blocks in the current selection.
   const [topNode, topPath] = blocks[0];
   const [bottomNode, bottomPath] = blocks.at(-1)!;
   let anchorId = getOptions().anchorId;
 
-  // If no anchor is set, default to bottom-most if SHIFT+UP, else top-most if SHIFT+DOWN.
   if (!anchorId) {
     anchorId = (direction === 'up' ? bottomNode.id : topNode.id) as string;
     setOption('anchorId', anchorId);
   }
 
-  // Find the anchor block within the current selection array.
   const anchorIndex = blocks.findIndex(([node]) => node.id === anchorId);
 
   if (anchorIndex === -1) {
-    // If anchor not found in the current selection, fallback:
     setOption('anchorId', bottomNode.id as string);
-
     return;
   }
 
   const anchorIsTop = anchorIndex === 0;
   const anchorIsBottom = anchorIndex === blocks.length - 1;
-
   const newSelected = new Set(getOption('selectedIds'));
 
   if (direction === 'down') {
-    // SHIFT+DOWN
     if (anchorIsTop) {
-      // Expand down => add block below the bottom-most
-      const belowEntry = editor.api.next({
+      const belowEntry = editor.read.nodes.next({
         at: bottomPath,
         mode: 'highest',
-        match: (n, p) =>
-          api.blockSelection.isSelectable(n as any, p) &&
-          !PathApi.isAncestor(p, bottomPath),
+        match: (node, path) =>
+          ElementApi.isElement(node) &&
+          api.blockSelection.isSelectable(node, path) &&
+          !PathApi.isAncestor(path, bottomPath),
       });
 
       if (!belowEntry) return;
@@ -74,17 +66,15 @@ export const shiftSelection = (
 
       newSelected.add(belowNode.id as string);
     } else if (topNode.id && topNode.id !== anchorId) {
-      // anchor is not top => shrink from top-most
-      // remove the top-most from selection unless it's the anchor.
       newSelected.delete(topNode.id as string);
     }
   } else if (anchorIsBottom) {
-    // SHIFT+UP
-    // Expand up => add block above the top-most
-    const aboveEntry = editor.api.previous<TIdElement>({
+    const aboveEntry = editor.read.nodes.previous<TIdElement>({
       at: topPath,
       from: 'parent',
-      match: api.blockSelection.isSelectable,
+      match: (node, path) =>
+        ElementApi.isElement(node) &&
+        api.blockSelection.isSelectable(node, path),
     });
 
     if (!aboveEntry) return;
@@ -93,7 +83,10 @@ export const shiftSelection = (
 
     if (PathApi.isAncestor(abovePath, topPath)) {
       newSelected.forEach((id) => {
-        const entry = editor.api.node({ id, at: abovePath });
+        const entry = editor.read.nodes.find({
+          at: abovePath,
+          match: (node) => node.id === id,
+        });
 
         if (!entry) return;
         if (PathApi.isDescendant(entry[1], abovePath)) {
@@ -109,12 +102,9 @@ export const shiftSelection = (
 
     newSelected.add(aboveNode.id);
   } else if (bottomNode.id && bottomNode.id !== anchorId) {
-    // anchor is not bottom => shrink from bottom-most
     newSelected.delete(bottomNode.id as string);
   }
 
-  // Always ensure the anchor remains selected
   newSelected.add(anchorId!);
-
   setOption('selectedIds', newSelected);
 };

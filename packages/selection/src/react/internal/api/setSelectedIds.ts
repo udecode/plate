@@ -1,27 +1,20 @@
-import { type SlateEditor, getEditorPlugin, KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
 
-import type { BlockSelectionConfig } from '../../BlockSelectionPlugin';
-
+import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
 import { querySelectorSelectable } from '../../../lib';
 import { extractSelectableIds } from '../../../lib/extractSelectableIds';
 
 export const setSelectedIds = (
-  editor: SlateEditor,
-  {
-    added,
-    ids,
-    removed,
-  }: Partial<{
-    added: Element[];
-    removed: Element[];
+  editor: BaseEditor,
+  options: Partial<{
+    added: globalThis.Element[];
+    removed: globalThis.Element[];
   }> & {
     ids?: string[];
   }
 ) => {
-  const { getOptions, setOption } = getEditorPlugin<BlockSelectionConfig>(
-    editor,
-    { key: KEYS.blockSelection }
-  );
+  const { added, ids, removed } = options;
+  const { getOptions, setOption } = editor.plugin(BlockSelectionPlugin);
 
   if (ids) {
     setOption('selectedIds', new Set(ids));
@@ -52,21 +45,17 @@ export const setSelectedIds = (
 };
 
 export const addSelectedRow = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   id: string,
   options: { clear?: boolean; delay?: number } = {}
 ) => {
-  const { api, getOptions, setOption } = getEditorPlugin<BlockSelectionConfig>(
-    editor,
-    { key: KEYS.blockSelection }
-  );
-
+  const { api, getOptions, setOption } = editor.plugin(BlockSelectionPlugin);
   const { clear = true, delay } = options;
-
   const element = querySelectorSelectable(id);
 
   if (!element) return;
-  if (!getOptions().selectedIds!.has(id) && clear) {
+
+  if (!getOptions().selectedIds?.has(id) && clear) {
     setOption('selectedIds', new Set());
   }
 

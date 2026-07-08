@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type BaseEditor, createBaseEditor } from '@platejs/core';
+import { createBaseEditor } from '@platejs/core';
 
 import { BlockSelectionPlugin } from '../../react';
 import { selectBlocks } from './selectBlocks';
@@ -9,7 +9,30 @@ import { selectBlocks } from './selectBlocks';
 jsxt;
 
 describe('selectBlocks', () => {
-  let editor: BaseEditor;
+  let editor = createBaseEditor({
+    plugins: [BlockSelectionPlugin],
+    selection: {
+      anchor: { offset: 0, path: [0] },
+      focus: { offset: 0, path: [0] },
+    },
+    value: [
+      {
+        id: 'block1',
+        children: [{ text: 'Block One' }],
+        type: 'p',
+      },
+      {
+        id: 'block2',
+        children: [{ text: 'Block Two' }],
+        type: 'p',
+      },
+      {
+        id: 'block3',
+        children: [{ text: 'Block Three' }],
+        type: 'p',
+      },
+    ],
+  });
 
   beforeEach(() => {
     editor = createBaseEditor({

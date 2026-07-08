@@ -1,6 +1,7 @@
 import type React from 'react';
 
-import type { TRange, UnknownObject } from 'platejs';
+import type { Range } from '@platejs/plite';
+import type { UnknownObject } from '@udecode/utils';
 
 export type CaretPosition = {
   height: number;
@@ -21,7 +22,7 @@ export interface CursorOverlayState<TCursorData extends Record<string, unknown>>
 
 export type CursorState<TCursorData extends UnknownObject = UnknownObject> = {
   id: any;
-  selection: TRange | null;
+  selection: Range | null;
   data?: TCursorData;
 };
 
@@ -31,3 +32,7 @@ export type SelectionRect = {
   top: number;
   width: number;
 };
+
+export const FROZEN_EMPTY_ARRAY = Object.freeze(
+  []
+) as unknown as SelectionRect[];

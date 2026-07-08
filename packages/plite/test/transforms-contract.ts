@@ -80,6 +80,75 @@ describe('plite transforms contract', () => {
     assert.deepEqual(after.selection, collapsedSelection([0, 1, 0], 0));
   });
 
+  it('duplicateNodes duplicates explicit node entries after the last entry', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        { type: 'paragraph', children: [{ text: 'one' }] },
+        { type: 'paragraph', children: [{ text: 'two' }] },
+      ],
+      selection: null,
+      marks: null,
+    });
+
+    editor.update((tx) => {
+      tx.nodes.duplicate([tx.nodes.get<Element>([0], { required: true })]);
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ]);
+  });
+
+  it('reads a range from node entries', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        { type: 'paragraph', children: [{ text: 'one' }] },
+        { type: 'paragraph', children: [{ text: 'two' }] },
+      ],
+      selection: null,
+      marks: null,
+    });
+
+    assert.deepEqual(
+      editor.read.ranges.fromEntries([
+        editor.read.nodes.get<Element>([0], { required: true }),
+        editor.read.nodes.get<Element>([1], { required: true }),
+      ]),
+      {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 3 },
+      }
+    );
+    assert.equal(editor.read.ranges.fromEntries([]), undefined);
+  });
+
+  it('duplicateNodes duplicates the block at the current selection', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        { type: 'paragraph', children: [{ text: 'one' }] },
+        { type: 'paragraph', children: [{ text: 'two' }] },
+      ],
+      selection: collapsedSelection([0, 0], 1),
+      marks: null,
+    });
+
+    editor.update.blocks.duplicate();
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ]);
+  });
+
   it('insertText keeps the selected mark when replacing a marked leaf', () => {
     const editor = createEditor();
 

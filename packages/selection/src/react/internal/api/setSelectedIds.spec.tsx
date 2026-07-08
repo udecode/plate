@@ -1,7 +1,8 @@
 import { type BaseEditor, createBaseEditor } from '@platejs/core';
 
+import * as domUtils from '../../../lib';
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
-import { setSelectedIds } from './setSelectedIds';
+import { addSelectedRow, setSelectedIds } from './setSelectedIds';
 
 const createTestEditor = () =>
   createBaseEditor({
@@ -37,9 +38,25 @@ const getSelectedIds = (editor: BaseEditor) =>
 
 describe('setSelectedIds', () => {
   let editor: BaseEditor;
+  let querySelectorSelectableSpy: AnyTestMock;
 
   beforeEach(() => {
+    querySelectorSelectableSpy = spyOn(
+      domUtils,
+      'querySelectorSelectable'
+    ).mockImplementation((id: string) => {
+      const element = document.createElement('div');
+
+      element.dataset.blockId = id;
+
+      return element;
+    });
+
     editor = createTestEditor();
+  });
+
+  afterEach(() => {
+    querySelectorSelectableSpy?.mockRestore();
   });
 
   it('replaces the selection when explicit ids are provided', () => {
@@ -69,5 +86,43 @@ describe('setSelectedIds', () => {
     expect(editor.plugin(BlockSelectionPlugin).getOption('isSelecting')).toBe(
       true
     );
+  });
+
+  it('adds a selected row and clears the previous selection by default', () => {
+    editor
+      .plugin(BlockSelectionPlugin)
+      .setOption('selectedIds', new Set(['existing']));
+
+    addSelectedRow(editor, 'row-1');
+
+    expect(getSelectedIds(editor)).toEqual(['row-1']);
+  });
+
+  it('adds a selected row without clearing when requested', () => {
+    editor
+      .plugin(BlockSelectionPlugin)
+      .setOption('selectedIds', new Set(['existing']));
+
+    addSelectedRow(editor, 'row-1', { clear: false });
+
+    expect(getSelectedIds(editor)).toEqual(['existing', 'row-1']);
+  });
+
+  it('removes a selected row after the delay', async () => {
+    addSelectedRow(editor, 'row-1', { delay: 1 });
+
+    expect(getSelectedIds(editor)).toEqual(['row-1']);
+
+    await new Promise((resolve) => setTimeout(resolve, 5));
+
+    expect(getSelectedIds(editor)).toEqual([]);
+  });
+
+  it('exposes addSelectedRow through the block selection API', () => {
+    editor
+      .plugin(BlockSelectionPlugin)
+      .api.blockSelection.addSelectedRow('row-1');
+
+    expect(getSelectedIds(editor)).toEqual(['row-1']);
   });
 });
