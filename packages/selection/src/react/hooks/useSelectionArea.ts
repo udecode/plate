@@ -56,7 +56,7 @@ export const useSelectionArea = () => {
 
         if (!event?.shiftKey) {
           selection.clearSelection();
-          api.blockSelection.clear();
+          api.clear();
         }
       })
       .on('move', ({ store: { changed } }) => {

@@ -1,30 +1,64 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 
-import { deleteSuggestion } from './deleteSuggestion';
+import { deleteSuggestionWithTx } from './deleteSuggestion';
 
 export const deleteFragmentSuggestion = (
-  editor: SlateEditor,
-  { reverse }: { reverse?: boolean } = {}
+  editor: BaseEditor,
+  {
+    moveSelection,
+    reverse,
+  }: { moveSelection?: boolean; reverse?: boolean } = {}
 ) => {
   let resId: string | undefined;
 
-  editor.tf.withoutNormalizing(() => {
-    const selection = editor.selection!;
-
-    const [start, end] = editor.api.edges(selection)!;
-
-    if (reverse) {
-      editor.tf.collapse({ edge: 'end' });
-      resId = deleteSuggestion(
-        editor,
-        { anchor: end, focus: start },
-        { reverse: true }
-      );
-    } else {
-      editor.tf.collapse({ edge: 'start' });
-      resId = deleteSuggestion(editor, { anchor: start, focus: end });
-    }
+  editor.update((tx) => {
+    resId = deleteFragmentSuggestionWithTx(editor, tx, {
+      moveSelection,
+      reverse,
+    });
   });
 
   return resId;
+};
+
+export const deleteFragmentSuggestionWithTx = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  {
+    moveSelection = false,
+    reverse,
+  }: { moveSelection?: boolean; reverse?: boolean } = {}
+) => {
+  const selection = editor.read.selection();
+
+  if (!selection) return;
+
+  const edges = editor.read.ranges.edges(selection);
+
+  if (!edges) return;
+
+  const [start, end] = edges;
+
+  if (reverse) {
+    tx.selection.collapse({ edge: 'end' });
+    return deleteSuggestionWithTx(
+      editor,
+      tx,
+      { anchor: end, focus: start },
+      { reverse: true, unit: 'block' }
+    );
+  }
+
+  tx.selection.collapse({ edge: 'start' });
+
+  return deleteSuggestionWithTx(
+    editor,
+    tx,
+    { anchor: start, focus: end },
+    {
+      moveSelection,
+      unit: 'block',
+    }
+  );
 };

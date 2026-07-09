@@ -173,7 +173,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
         getOptions().selectedIds!.size > 0 &&
         !editor.plugin(BlockMenuPlugin).getOption('openId')
       ) {
-        api.blockSelection.deselect();
+        api.deselect();
       }
     },
   },
@@ -249,7 +249,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
         if (!id) return;
 
         if (event?.shiftKey) {
-          api.blockSelection.add(id);
+          api.add(id);
           return;
         }
 
@@ -399,14 +399,12 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
             at: [],
             mode: 'highest',
             match: (n, p) =>
-              ElementApi.isElement(n) &&
-              !!n.id &&
-              api.blockSelection.isSelectable(n, p),
+              ElementApi.isElement(n) && !!n.id && api.isSelectable(n, p),
           })
           .map((n) => n[0].id as string);
 
         setOption('selectedIds', new Set(ids));
-        api.blockSelection.focus();
+        api.focus();
       },
     })
   )
@@ -416,7 +414,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
       tx: EditorUpdateTransaction,
       next: () => boolean
     ) => {
-      const blocks = api.blockSelection.getNodes();
+      const blocks = api.getNodes();
 
       if (blocks.length === 0) return next();
 
@@ -430,7 +428,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
         tx.selection.set(range);
         const result = next();
 
-        api.blockSelection.set(blocks.map(([node]) => node.id as string));
+        api.set(blocks.map(([node]) => node.id as string));
 
         return result;
       } finally {
@@ -456,7 +454,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
             getOptions().selectedIds!.size > 0 &&
             !editor.plugin(BlockMenuPlugin).getOption('openId')
           ) {
-            api.blockSelection.deselect();
+            api.deselect();
           }
 
           return next();
@@ -467,7 +465,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
             getOptions().selectedIds!.size > 0 &&
             !editor.plugin(BlockMenuPlugin).getOption('openId')
           ) {
-            api.blockSelection.deselect();
+            api.deselect();
           }
 
           return next();

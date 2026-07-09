@@ -1,10 +1,11 @@
-import { createSlateEditor, createSlatePlugin, KEYS } from 'platejs';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from './findSuggestionProps';
 
 describe('findSuggestionProps', () => {
-  const MentionPlugin = createSlatePlugin({
+  const MentionPlugin = createBasePlugin({
     key: KEYS.mention,
     node: {
       isElement: true,
@@ -15,7 +16,7 @@ describe('findSuggestionProps', () => {
   });
 
   it('reuses metadata only for same-type current-user suggestions', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseSuggestionPlugin.configure({
           options: {
@@ -48,7 +49,7 @@ describe('findSuggestionProps', () => {
 
     expect(
       findSuggestionProps(editor, {
-        at: editor.selection!,
+        at: editor.read.selection()!,
         type: 'insert',
       })
     ).toEqual({
@@ -58,7 +59,7 @@ describe('findSuggestionProps', () => {
 
     expect(
       findSuggestionProps(editor, {
-        at: editor.selection!,
+        at: editor.read.selection()!,
         type: 'remove',
       })
     ).not.toEqual({
@@ -68,7 +69,7 @@ describe('findSuggestionProps', () => {
   });
 
   it('falls back to the previous line-break suggestion at the start of the next block', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseSuggestionPlugin.configure({
           options: {
@@ -98,7 +99,7 @@ describe('findSuggestionProps', () => {
 
     expect(
       findSuggestionProps(editor, {
-        at: editor.selection!,
+        at: editor.read.selection()!,
         type: 'insert',
       })
     ).toEqual({
@@ -108,7 +109,7 @@ describe('findSuggestionProps', () => {
   });
 
   it('reuses remove metadata from the adjacent inline void suggestion when continuing backward deletion', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseSuggestionPlugin.configure({
           options: {
@@ -147,7 +148,7 @@ describe('findSuggestionProps', () => {
 
     expect(
       findSuggestionProps(editor, {
-        at: editor.selection!,
+        at: editor.read.selection()!,
         type: 'remove',
       })
     ).toEqual({

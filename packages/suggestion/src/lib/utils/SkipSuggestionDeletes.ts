@@ -1,12 +1,6 @@
-import {
-  type Node,
-  type SlateEditor,
-  type TSuggestionText,
-  ElementApi,
-  KEYS,
-  NodeApi,
-  TextApi,
-} from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import { type Node, ElementApi, NodeApi, TextApi } from '@platejs/plite';
+import { type TSuggestionText, KEYS } from '@platejs/utils';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 
@@ -16,12 +10,12 @@ import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
  * "update" suggestions.
  */
 export const SkipSuggestionDeletes = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   node: Node
 ): string => {
   if (
     TextApi.isText(node) ||
-    (ElementApi.isElement(node) && editor.api.isInline(node))
+    (ElementApi.isElement(node) && editor.read.schema.isInline(node))
   ) {
     if (ElementApi.isElement(node)) {
       return NodeApi.string(node);
@@ -29,14 +23,18 @@ export const SkipSuggestionDeletes = (
     if (!node[KEYS.suggestion]) return node.text;
 
     const suggestionData = editor
-      .getApi(BaseSuggestionPlugin)
-      .suggestion.suggestionData(node as TSuggestionText);
+      .plugin(BaseSuggestionPlugin)
+      .api.suggestionData(node as TSuggestionText);
 
     if (suggestionData?.type === 'remove') return '';
 
     return node.text;
   }
-  return node.children
-    .map((child) => SkipSuggestionDeletes(editor, child))
+  if (!ElementApi.isElement(node) && !NodeApi.isEditor(node)) {
+    return '';
+  }
+
+  return Array.from(NodeApi.children(node, []))
+    .map(([child]) => SkipSuggestionDeletes(editor, child))
     .join('');
 };

@@ -1,9 +1,7 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
-
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from '../utils';
@@ -36,15 +34,15 @@ describe('acceptSuggestion', () => {
           text
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
         <hp>testinsertedtext</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -54,7 +52,7 @@ describe('acceptSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('accept remove suggestion', () => {
@@ -75,15 +73,15 @@ describe('acceptSuggestion', () => {
           text
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
         <hp>testtext</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -93,7 +91,7 @@ describe('acceptSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('accept update suggestion', () => {
@@ -117,7 +115,7 @@ describe('acceptSuggestion', () => {
           text
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
@@ -127,9 +125,9 @@ describe('acceptSuggestion', () => {
           text
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -139,7 +137,7 @@ describe('acceptSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('accept line break suggestion', () => {
@@ -156,16 +154,16 @@ describe('acceptSuggestion', () => {
         <hp suggestion={lineBreakData}>test1</hp>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
         <hp>test1</hp>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -175,7 +173,7 @@ describe('acceptSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('merge nodes when accepting line break remove suggestion', () => {
@@ -192,15 +190,15 @@ describe('acceptSuggestion', () => {
         <hp suggestion={lineBreakData}>test1</hp>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
         <hp>test1test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -210,11 +208,11 @@ describe('acceptSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('merges paragraphs after deleteBackward creates a remove line break suggestion', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: {
         anchor: { offset: 0, path: [1, 0] },
@@ -228,16 +226,16 @@ describe('acceptSuggestion', () => {
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.deleteBackward('character');
+    editor.update.text.deleteBackward({ unit: 'character' });
 
-    const lineBreakData = (editor.children[0] as any).suggestion;
+    const lineBreakData = (editor.read.children()[0] as any).suggestion;
 
     acceptSuggestion(editor, {
       keyId: getSuggestionKey(lineBreakData.id),
       suggestionId: lineBreakData.id,
     } as any);
 
-    expect(editor.children).toEqual(
+    expect(editor.read.children()).toEqual(
       (
         <editor>
           <hp>test1test2</hp>
@@ -276,15 +274,15 @@ describe('acceptSuggestion', () => {
           text
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
         <hp>testinsertedtext</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -295,7 +293,7 @@ describe('acceptSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('accept remove nodes', () => {
@@ -311,15 +309,15 @@ describe('acceptSuggestion', () => {
         <hp suggestion={removeData}>test1</hp>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -329,7 +327,7 @@ describe('acceptSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('accept insert nodes', () => {
@@ -345,16 +343,16 @@ describe('acceptSuggestion', () => {
         <hp>test1</hp>
         <hp suggestion={insertData}>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
         <hp>test1</hp>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -364,6 +362,6 @@ describe('acceptSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 });

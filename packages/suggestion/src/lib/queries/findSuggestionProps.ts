@@ -1,58 +1,55 @@
+import { type BaseEditor, nanoid } from '@platejs/core';
 import {
+  type Element,
   ElementApi,
+  type Location,
   type NodeEntry,
   type Point,
-  type SlateEditor,
-  type TElement,
-  type TLocation,
-  type TSuggestionElement,
-  type TSuggestionText,
-  nanoid,
-} from 'platejs';
+} from '@platejs/plite';
+import type { TSuggestionElement, TSuggestionText } from '@platejs/utils';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData, isCurrentUserSuggestion } from '../utils';
 
 export const findSuggestionProps = (
-  editor: SlateEditor,
-  { at, type }: { at: TLocation; type: 'insert' | 'remove' | 'update' }
+  editor: BaseEditor,
+  { at, type }: { at: Location; type: 'insert' | 'remove' | 'update' }
 ): { id: string; createdAt: number } => {
   const defaultProps = {
     id: nanoid(),
     createdAt: Date.now(),
   };
 
-  const api = editor.getApi(BaseSuggestionPlugin);
+  const api = editor.plugin(BaseSuggestionPlugin).api;
 
   const getInlineElementEntry = (point: Point) =>
-    editor.api.above<TElement>({
+    editor.read.nodes.above<Element>({
       at: point,
       match: (node) =>
         ElementApi.isElement(node) &&
-        editor.api.isInline(node) &&
-        !!api.suggestion.nodeId(node),
+        editor.read.schema.isInline(node) &&
+        !!api.nodeId(node),
     });
 
-  let entry = api.suggestion.node({
+  let entry = api.node({
     at,
     isText: true,
   }) as NodeEntry<TSuggestionText> | undefined;
-  let inlineEntry: NodeEntry<TElement> | undefined;
+  let inlineEntry: NodeEntry<Element> | undefined;
 
   if (!entry) {
-    let start: Point;
-    let end: Point;
+    const edges = editor.read.ranges.edges(at);
 
-    try {
-      [start, end] = editor.api.edges(at)!;
-    } catch {
+    if (!edges) {
       return defaultProps;
     }
 
-    const nextPoint = editor.api.after(end);
+    const [start, end] = edges;
+
+    const nextPoint = editor.read.points.after(end);
 
     if (nextPoint) {
-      entry = api.suggestion.node({
+      entry = api.node({
         at: nextPoint,
         isText: true,
       }) as NodeEntry<TSuggestionText> | undefined;
@@ -63,10 +60,10 @@ export const findSuggestionProps = (
     }
 
     if (!entry && !inlineEntry) {
-      const prevPoint = editor.api.before(start);
+      const prevPoint = editor.read.points.before(start);
 
       if (prevPoint) {
-        entry = api.suggestion.node({
+        entry = api.node({
           at: prevPoint,
           isText: true,
         }) as NodeEntry<TSuggestionText> | undefined;
@@ -76,13 +73,17 @@ export const findSuggestionProps = (
         }
       }
 
-      const blockEntry = editor.api.block({ at: start });
+      const blockEntry = editor.read.nodes.block({ at: start });
 
       // <p>111111<insert_break></p>
       // <p><cursor /></p>
       // in this case we need to find the previous parent node
-      if (!entry && blockEntry && editor.api.isStart(start, blockEntry[1])) {
-        const lineBreak = editor.api.above<TSuggestionElement>({
+      if (
+        !entry &&
+        blockEntry &&
+        editor.read.points.isStart(start, blockEntry[1])
+      ) {
+        const lineBreak = editor.read.nodes.above<TSuggestionElement>({
           at: prevPoint ?? start,
         });
 
@@ -104,13 +105,13 @@ export const findSuggestionProps = (
     isCurrentUserSuggestion(editor, entry[0])
   ) {
     return {
-      id: api.suggestion.nodeId(entry[0]) ?? nanoid(),
+      id: api.nodeId(entry[0]) ?? nanoid(),
       createdAt: getInlineSuggestionData(entry[0])?.createdAt ?? Date.now(),
     };
   }
 
   const inlineSuggestionData =
-    inlineEntry && api.suggestion.suggestionData(inlineEntry[0]);
+    inlineEntry && api.suggestionData(inlineEntry[0]);
 
   if (
     inlineEntry &&
@@ -118,7 +119,7 @@ export const findSuggestionProps = (
     isCurrentUserSuggestion(editor, inlineEntry[0] as any)
   ) {
     return {
-      id: api.suggestion.nodeId(inlineEntry[0]) ?? nanoid(),
+      id: api.nodeId(inlineEntry[0]) ?? nanoid(),
       createdAt: inlineSuggestionData.createdAt ?? Date.now(),
     };
   }

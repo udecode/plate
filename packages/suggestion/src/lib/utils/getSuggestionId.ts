@@ -1,9 +1,8 @@
-import type { TElement, TInlineSuggestionData, TText } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { Element, Text } from '@platejs/plite';
+import { type TInlineSuggestionData, KEYS } from '@platejs/utils';
 
 // the last id is the active id
-export const getSuggestionKeyId = (node: TElement | TText) => {
+export const getSuggestionKeyId = (node: Element | Text) => {
   const ids: string[] = Object.keys(node).filter((key) =>
     key.startsWith(`${KEYS.suggestion}_`)
   );
@@ -11,7 +10,7 @@ export const getSuggestionKeyId = (node: TElement | TText) => {
   return ids.at(-1);
 };
 
-export const getInlineSuggestionData = (node: TElement | TText) => {
+export const getInlineSuggestionData = (node: Element | Text) => {
   const keyId = getSuggestionKeyId(node);
 
   if (!keyId) return;

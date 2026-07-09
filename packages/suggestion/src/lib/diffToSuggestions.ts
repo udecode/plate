@@ -1,18 +1,18 @@
-import { type ComputeDiffOptions, computeDiff } from '@platejs/diff';
+import type { BaseEditor } from '@platejs/core';
 import {
   type Descendant,
-  type SlateEditor,
   type ValueOf,
   ElementApi,
-  KEYS,
   TextApi,
-} from 'platejs';
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
+import { type ComputeDiffOptions, computeDiff } from '@platejs/diff';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 import { getSuggestionProps } from './transforms';
 import { getSuggestionKey } from './utils';
 
-export function diffToSuggestions<E extends SlateEditor>(
+export function diffToSuggestions<E extends BaseEditor>(
   editor: E,
   doc0: Descendant[],
   doc1: Descendant[],
@@ -26,7 +26,7 @@ export function diffToSuggestions<E extends SlateEditor>(
       getSuggestionProps(editor, node, {
         suggestionUpdate: newProperties,
       }),
-    isInline = editor.api.isInline,
+    isInline = editor.read.schema.isInline,
     ...options
   }: Partial<ComputeDiffOptions> = {}
 ): ValueOf<E> {
@@ -65,21 +65,21 @@ export function diffToSuggestions<E extends SlateEditor>(
  * and creation time from the remove suggestion. This allows the UI to treat
  * them as a single suggestion for display and interaction purposes.
  */
-function unifyAdjacentSuggestionIds<E extends SlateEditor>(
+function unifyAdjacentSuggestionIds<E extends BaseEditor>(
   node: Descendant,
   index: number,
   nodes: Descendant[],
   editor: E
 ): Descendant {
-  const api = editor.getApi(BaseSuggestionPlugin);
-  const currentNodeData = api.suggestion.suggestionData(node as any);
+  const api = editor.plugin(BaseSuggestionPlugin).api;
+  const currentNodeData = api.suggestionData(node as any);
 
   if (currentNodeData?.type === 'insert') {
     // Get the previous node if it exists
     const previousNode = index > 0 ? nodes[index - 1] : null;
 
     if (previousNode?.[KEYS.suggestion]) {
-      const previousData = api.suggestion.suggestionData(previousNode as any);
+      const previousData = api.suggestionData(previousNode as any);
 
       if (previousData?.type === 'remove') {
         // Create a new node with the updated suggestion data

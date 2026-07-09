@@ -1,4 +1,4 @@
-import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 import { getTransientSuggestionKey } from './utils/getTransientSuggestionKey';
@@ -18,7 +18,7 @@ describe('BaseSuggestionPlugin', () => {
   };
 
   const createEditor = () =>
-    createSlateEditor({
+    createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseSuggestionPlugin],
       value: [
         {
@@ -57,7 +57,7 @@ describe('BaseSuggestionPlugin', () => {
 
   it('finds inline and block suggestion nodes by id', () => {
     const editor = createEditor();
-    const api = editor.getApi(BaseSuggestionPlugin).suggestion;
+    const api = editor.plugin(BaseSuggestionPlugin).api;
 
     expect(api.node({ at: [], id: 'inline', isText: true })?.[1]).toEqual([
       0, 0,
@@ -67,15 +67,17 @@ describe('BaseSuggestionPlugin', () => {
 
   it('returns suggestion ids for inline and block nodes', () => {
     const editor = createEditor();
-    const api = editor.getApi(BaseSuggestionPlugin).suggestion;
+    const api = editor.plugin(BaseSuggestionPlugin).api;
 
-    expect(api.nodeId(editor.children[0].children[0] as any)).toBe('inline');
-    expect(api.nodeId(editor.children[1] as any)).toBe('block');
+    expect(api.nodeId(editor.read.children()[0].children[0] as any)).toBe(
+      'inline'
+    );
+    expect(api.nodeId(editor.read.children()[1] as any)).toBe('block');
   });
 
   it('filters transient suggestion nodes when requested', () => {
     const editor = createEditor();
-    const api = editor.getApi(BaseSuggestionPlugin).suggestion;
+    const api = editor.plugin(BaseSuggestionPlugin).api;
 
     expect(api.nodes({ transient: true }).map(([, path]) => path)).toEqual([
       [2, 0],
@@ -84,21 +86,25 @@ describe('BaseSuggestionPlugin', () => {
 
   it('returns suggestion data and restores isSuggesting after withoutSuggestions', () => {
     const editor = createEditor();
-    const api = editor.getApi(BaseSuggestionPlugin).suggestion;
+    const api = editor.plugin(BaseSuggestionPlugin).api;
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    expect(api.suggestionData(editor.children[0].children[0] as any)).toEqual(
-      inlineSuggestion
-    );
-    expect(api.suggestionData(editor.children[1] as any)).toEqual(
+    expect(
+      api.suggestionData(editor.read.children()[0].children[0] as any)
+    ).toEqual(inlineSuggestion);
+    expect(api.suggestionData(editor.read.children()[1] as any)).toEqual(
       blockSuggestion
     );
 
     api.withoutSuggestions(() => {
-      expect(editor.plugin(BaseSuggestionPlugin).getOptions().isSuggesting).toBe(false);
+      expect(
+        editor.plugin(BaseSuggestionPlugin).getOptions().isSuggesting
+      ).toBe(false);
     });
 
-    expect(editor.plugin(BaseSuggestionPlugin).getOptions().isSuggesting).toBe(true);
+    expect(editor.plugin(BaseSuggestionPlugin).getOptions().isSuggesting).toBe(
+      true
+    );
   });
 });

@@ -153,6 +153,14 @@ const scopedLabel: 'scoped' = getEditorPlugin(
   overrideEditor,
   OriginalOverridePlugin
 ).api.scopedLabel();
+const portalPluginScopedLabel: 'plugin-scoped' = getEditorPlugin(
+  overrideEditor,
+  OriginalOverridePlugin
+).api.pluginScopedLabel();
+const portalRootPluginScopedLabel: 'plugin-scoped' = getEditorPlugin(
+  overrideEditor,
+  OriginalOverridePlugin
+).editorApi.originalOverride.pluginScopedLabel();
 const pluginScopedLabel: 'plugin-scoped' =
   overrideEditor.api.originalOverride.pluginScopedLabel();
 
@@ -188,6 +196,8 @@ void boldHotkey;
 void calloutDismissible;
 void calloutVariant;
 void overrideLabel;
+void portalPluginScopedLabel;
+void portalRootPluginScopedLabel;
 void pluginScopedLabel;
 void scopedLabel;
 void extendedFullBaseApi;
@@ -214,6 +224,13 @@ basePlateEditor.plugin(BoldPlugin).getOptions().enabled = 'yes';
 // @ts-expect-error editor-level override APIs must not keep stale first-plugin literals
 const staleOverrideLabel: 'original' = overrideEditor.api.overrideLabel();
 void staleOverrideLabel;
+
+const originalOverridePortalApi = getEditorPlugin(
+  overrideEditor,
+  OriginalOverridePlugin
+).api;
+// @ts-expect-error plugin portal API is scoped, not wrapped by plugin key
+originalOverridePortalApi.originalOverride.pluginScopedLabel();
 
 // @ts-expect-error selector extension must not land in the tx slot
 extendedFullConfigTx.extendConfig.extraSelector();

@@ -23,26 +23,32 @@ const options = {
 } as any;
 
 describe('withChangeTracking', () => {
-  it('initializes tracking state', () => {
-    const editor = withChangeTracking(createEditor(), options);
+  it('keeps tracking state off the editor root', () => {
+    const editor = createEditor();
+    const changeTracking = withChangeTracking(editor, options);
 
-    expect(editor.insertedTexts).toEqual([]);
-    expect(editor.removedTexts).toEqual([]);
-    expect(editor.propsChanges).toEqual([]);
-    expect(editor.recordingOperations).toBe(true);
-    expect(typeof editor.applyOperation).toBe('function');
+    expect(changeTracking.editor).toBe(editor);
+    expect('insertedTexts' in editor).toBe(false);
+    expect('removedTexts' in editor).toBe(false);
+    expect('propsChanges' in editor).toBe(false);
+    expect('recordingOperations' in editor).toBe(false);
+    expect('applyOperation' in editor).toBe(false);
+    expect('commitChangesToDiffs' in editor).toBe(false);
+    expect(typeof changeTracking.applyOperation).toBe('function');
+    expect(typeof changeTracking.commitChangesToDiffs).toBe('function');
   });
 
   it('commits removed text back into the document as a delete diff', () => {
-    const editor = withChangeTracking(
+    const changeTracking = withChangeTracking(
       createEditor<Value>({
         initialValue: [{ type: 'p', children: [{ text: 'old' }] }],
       }),
       options
     );
+    const { editor } = changeTracking;
 
     editor.update((tx) => {
-      editor.applyOperation(tx, {
+      changeTracking.applyOperation(tx, {
         type: 'remove_text',
         path: [0, 0],
         offset: 1,
@@ -50,7 +56,7 @@ describe('withChangeTracking', () => {
       });
     });
     editor.update((tx) => {
-      editor.commitChangesToDiffs(tx);
+      changeTracking.commitChangesToDiffs(tx);
     });
 
     expect(editor.read.children()).toEqual([
@@ -70,15 +76,16 @@ describe('withChangeTracking', () => {
   });
 
   it('skips update diffs for inserted ranges while preserving the inserted node props', () => {
-    const editor = withChangeTracking(
+    const changeTracking = withChangeTracking(
       createEditor<Value>({
         initialValue: [{ type: 'p', children: [{ text: 'old' }] }],
       }),
       options
     );
+    const { editor } = changeTracking;
 
     editor.update((tx) => {
-      editor.applyOperation(tx, {
+      changeTracking.applyOperation(tx, {
         type: 'insert_text',
         path: [0, 0],
         offset: 3,
@@ -86,7 +93,7 @@ describe('withChangeTracking', () => {
       });
     });
     editor.update((tx) => {
-      editor.applyOperation(tx, {
+      changeTracking.applyOperation(tx, {
         type: 'set_node',
         path: [0, 0],
         properties: {},
@@ -94,7 +101,7 @@ describe('withChangeTracking', () => {
       });
     });
     editor.update((tx) => {
-      editor.commitChangesToDiffs(tx);
+      changeTracking.commitChangesToDiffs(tx);
     });
 
     expect(editor.read.children()).toEqual([

@@ -48,7 +48,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
           tx.nodes.remove({
             at: path,
           });
-          api.blockSelection.delete(node.id as string);
+          api.delete(node.id as string);
         }
 
         if (editor.read.children().length === 0) {
@@ -68,7 +68,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
       return firstPath;
     },
-    [editor, getOption, api.blockSelection, setOption]
+    [editor, getOption, api, setOption]
   );
 
   useSelectionArea();
@@ -108,20 +108,20 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       if (isHotkey('shift+up')(e)) {
         e.preventDefault();
         e.stopPropagation();
-        api.blockSelection.shiftSelection('up');
+        api.shiftSelection('up');
 
         return;
       }
       if (isHotkey('shift+down')(e)) {
         e.preventDefault();
         e.stopPropagation();
-        api.blockSelection.shiftSelection('down');
+        api.shiftSelection('down');
 
         return;
       }
       // ESC => clear block selection
       if (isHotkey('escape')(e)) {
-        api.blockSelection.deselect();
+        api.deselect();
 
         return;
       }
@@ -133,7 +133,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         return;
       }
       if (isHotkey('mod+a')(e)) {
-        api.blockSelection.selectAll();
+        api.selectAll();
 
         return;
       }
@@ -190,14 +190,14 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       if (isHotkey('up')(e)) {
         e.preventDefault();
         e.stopPropagation();
-        api.blockSelection.moveSelection('up');
+        api.moveSelection('up');
 
         return;
       }
       if (isHotkey('down')(e)) {
         e.preventDefault();
         e.stopPropagation();
-        api.blockSelection.moveSelection('down');
+        api.moveSelection('down');
 
         return;
       }
@@ -229,7 +229,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         return;
       }
     },
-    [editor, getOption, getOptions, api.blockSelection, removeSelectedBlocks]
+    [editor, getOption, getOptions, api, removeSelectedBlocks]
   );
 
   /** Handle copy / cut / paste in block selection */

@@ -421,7 +421,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
     remove: <T extends NodeIn<V>>(options?: {
       at?: Location;
       match?: NodeMatch<T>;
-      mode?: RangeMode;
+      mode?: MaximizeMode;
       hanging?: boolean;
       voids?: boolean;
     }) => void;
@@ -431,16 +431,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
     ) => void;
     set: <T extends NodeIn<V>>(
       props: Partial<NodeProps<T>>,
-      options?: {
-        at?: Location;
-        match?: NodeMatch<T>;
-        mode?: MaximizeMode;
-        hanging?: boolean;
-        split?: boolean;
-        voids?: boolean;
-        compare?: PropsCompare;
-        merge?: PropsMerge;
-      }
+      options?: NodeSetNodesOptions<T>
     ) => void;
     split: <T extends NodeIn<V>>(options?: {
       at?: Location;
@@ -984,7 +975,7 @@ export interface EditorTransformApi<V extends Value = Value> {
   removeNodes: <T extends NodeIn<V>>(options?: {
     at?: Location;
     match?: NodeMatch<T>;
-    mode?: RangeMode;
+    mode?: MaximizeMode;
     hanging?: boolean;
     voids?: boolean;
   }) => void;
@@ -1111,7 +1102,7 @@ export type EditorTransformMiddlewareArgs<V extends Value = Value> = {
     options?: {
       at?: Location;
       match?: NodeMatch<NodeIn<V>>;
-      mode?: RangeMode;
+      mode?: MaximizeMode;
       hanging?: boolean;
       voids?: boolean;
     };

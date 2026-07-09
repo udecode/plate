@@ -30,11 +30,9 @@ describe('CursorOverlayPlugin', () => {
   it('refreshes the stored selection cursor after direct selection changes', async () => {
     const editor = createCursorOverlayEditor();
 
-    editor
-      .plugin(CursorOverlayPlugin)
-      .api.cursorOverlay.addCursor('selection', {
-        selection,
-      });
+    editor.plugin(CursorOverlayPlugin).api.addCursor('selection', {
+      selection,
+    });
 
     editor.update.selection.set(nextSelection);
     await waitForDeferredCursorRefresh();
@@ -49,11 +47,9 @@ describe('CursorOverlayPlugin', () => {
     const editor = createCursorOverlayEditor();
 
     editor.update.selection.set(selection);
-    editor
-      .plugin(CursorOverlayPlugin)
-      .api.cursorOverlay.addCursor('selection', {
-        selection,
-      });
+    editor.plugin(CursorOverlayPlugin).api.addCursor('selection', {
+      selection,
+    });
 
     editor.update.selection.setRange({
       focus: { offset: 4, path: [0, 0] },

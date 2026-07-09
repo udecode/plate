@@ -1,22 +1,15 @@
-import {
-  type EditorNodesOptions,
-  type SlateEditor,
-  type TSuggestionText,
-  type ValueOf,
-  combineMatchOptions,
-  KEYS,
-  TextApi,
-} from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import { type EditorNodesOptions, type Node, TextApi } from '@platejs/plite';
+import { type TSuggestionText, KEYS } from '@platejs/utils';
 
-export const findInlineSuggestionNode = <E extends SlateEditor>(
+export const findInlineSuggestionNode = <E extends BaseEditor>(
   editor: E,
-  options: EditorNodesOptions<ValueOf<E>> = {}
+  options: EditorNodesOptions<Node> = {}
 ) =>
-  editor.api.node<TSuggestionText>({
+  editor.read.nodes.find<TSuggestionText>({
     ...options,
-    match: combineMatchOptions(
-      editor,
-      (n) => TextApi.isText(n) && (n as any)[KEYS.suggestion],
-      options
-    ),
+    match: (node, path) =>
+      TextApi.isText(node) &&
+      !!node[KEYS.suggestion] &&
+      (!options.match || options.match(node, path)),
   });

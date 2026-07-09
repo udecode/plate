@@ -1,24 +1,18 @@
-import {
-  type EditorNodesOptions,
-  type SlateEditor,
-  type TSuggestionText,
-  type ValueOf,
-  combineMatchOptions,
-} from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { EditorNodesOptions, Node } from '@platejs/plite';
+import type { TSuggestionText } from '@platejs/utils';
 
 import { getSuggestionKey } from './getSuggestionKeys';
 
-export const getSuggestionNodeEntries = <E extends SlateEditor>(
+export const getSuggestionNodeEntries = <E extends BaseEditor>(
   editor: E,
   suggestionId: string,
-  { at = [], ...options }: EditorNodesOptions<ValueOf<E>> = {}
+  { at = [], ...options }: EditorNodesOptions<Node> = {}
 ) =>
-  editor.api.nodes<TSuggestionText>({
+  editor.read.nodes.toArray<TSuggestionText>({
     at,
     ...options,
-    match: combineMatchOptions(
-      editor,
-      (n) => !!(n as any)[getSuggestionKey(suggestionId)],
-      options
-    ),
+    match: (node, path) =>
+      !!(node as Record<string, unknown>)[getSuggestionKey(suggestionId)] &&
+      (!options.match || options.match(node, path)),
   });

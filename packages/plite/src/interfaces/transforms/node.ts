@@ -48,6 +48,7 @@ export interface NodeSetNodesOptions<T extends Node = Node> {
   match?: NodeMatch<T>;
   mode?: MaximizeMode;
   hanging?: boolean;
+  marks?: boolean;
   split?: boolean;
   voids?: boolean;
   compare?: PropsCompare;
@@ -125,7 +126,7 @@ export interface NodeMutationMethods<V extends Value = Value> {
     options?: {
       at?: Location;
       match?: NodeMatch<T>;
-      mode?: RangeMode;
+      mode?: MaximizeMode;
       hanging?: boolean;
       voids?: boolean;
     }

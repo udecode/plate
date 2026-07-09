@@ -13,7 +13,7 @@ const writeSelectedBlocksToDataTransfer = (
   const { selectedIds } = editor.plugin(BlockSelectionPlugin).getOptions();
   const selectedEntries = editor
     .plugin(BlockSelectionPlugin)
-    .api.blockSelection.getNodes({ collapseTableRows: true });
+    .api.getNodes({ collapseTableRows: true });
   const selectedFragment = selectedEntries.map(([node]) => node);
 
   if (selectedEntries.length === 0) return false;

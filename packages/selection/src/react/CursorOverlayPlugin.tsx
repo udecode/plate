@@ -32,7 +32,7 @@ export type CursorOverlayConfig = PluginConfig<
 const getRemoveCursorHandler =
   (id: string): DOMHandler<CursorOverlayConfig> =>
   ({ api }) => {
-    api.cursorOverlay.removeCursor(id);
+    api.removeCursor(id);
   };
 
 export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
@@ -67,7 +67,7 @@ export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
       if (!getOptions().cursors?.selection) return;
 
       setTimeout(() => {
-        api.cursorOverlay.addCursor('selection', {
+        api.addCursor('selection', {
           selection: editor.read.selection(),
         });
       }, 0);
@@ -102,7 +102,7 @@ export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
 
         if (!enabled) return;
 
-        api.cursorOverlay.addCursor('selection', {
+        api.addCursor('selection', {
           selection: editor.read.selection(),
         });
       },
@@ -124,7 +124,7 @@ export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
 
         if (!range) return;
 
-        api.cursorOverlay.addCursor('drag', {
+        api.addCursor('drag', {
           selection: range,
         });
       },
@@ -137,9 +137,9 @@ export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
       useEffect(() => {
         if (isSelecting) {
           setTimeout(() => {
-            api.cursorOverlay.removeCursor('selection');
+            api.removeCursor('selection');
           }, 0);
         }
-      }, [isSelecting, setOption, api.cursorOverlay]);
+      }, [isSelecting, setOption, api]);
     },
   }));

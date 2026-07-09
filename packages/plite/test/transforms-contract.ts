@@ -573,6 +573,102 @@ describe('plite transforms contract', () => {
     ]);
   });
 
+  it('setNodes with marks splits and marks selected text', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'before text after' }],
+        } as Descendant,
+      ],
+      selection: null,
+      marks: null,
+    });
+
+    editor.update((tx) => {
+      tx.nodes.set(
+        { suggestion: true },
+        {
+          at: {
+            anchor: { path: [0, 0], offset: 7 },
+            focus: { path: [0, 0], offset: 11 },
+          },
+          marks: true,
+        }
+      );
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'before ' },
+          { suggestion: true, text: 'text' },
+          { text: ' after' },
+        ],
+      },
+    ]);
+  });
+
+  it('setNodes with marks respects the caller match', () => {
+    const editor = createEditor();
+
+    editor.extend(
+      defineEditorExtension({
+        elements: [{ type: 'mention', void: 'markable-inline' }],
+        name: 'mention',
+      })
+    );
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'before text ' },
+            { type: 'mention', children: [{ text: '' }] },
+            { text: ' after text' },
+          ],
+        } as Descendant,
+      ],
+      selection: null,
+      marks: null,
+    });
+
+    editor.update((tx) => {
+      tx.nodes.set(
+        { suggestion: true },
+        {
+          at: {
+            anchor: { path: [0, 0], offset: 7 },
+            focus: { path: [0, 2], offset: 6 },
+          },
+          marks: true,
+          match: (node, path) => {
+            if (!TextApi.isText(node)) return false;
+            const parent = editor.read.nodes.parent(path);
+
+            return !parent || !tx.schema.isInline(parent[0]);
+          },
+        }
+      );
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'before ' },
+          { suggestion: true, text: 'text ' },
+          { type: 'mention', children: [{ text: '' }] },
+          { suggestion: true, text: ' after' },
+          { text: ' text' },
+        ],
+      },
+    ]);
+  });
+
   it('blocks.reset strips block props while preserving requested keys', () => {
     const editor = createEditor();
 

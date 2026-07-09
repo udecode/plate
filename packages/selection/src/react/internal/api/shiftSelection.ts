@@ -25,7 +25,7 @@ export const shiftSelection = (
 ) => {
   const { api, getOption, getOptions, setOption } =
     editor.plugin(BlockSelectionPlugin);
-  const blocks = api.blockSelection.getNodes();
+  const blocks = api.getNodes();
 
   if (blocks.length === 0) return;
 
@@ -56,7 +56,7 @@ export const shiftSelection = (
         mode: 'highest',
         match: (node, path) =>
           ElementApi.isElement(node) &&
-          api.blockSelection.isSelectable(node, path) &&
+          api.isSelectable(node, path) &&
           !PathApi.isAncestor(path, bottomPath),
       });
 
@@ -73,8 +73,7 @@ export const shiftSelection = (
       at: topPath,
       from: 'parent',
       match: (node, path) =>
-        ElementApi.isElement(node) &&
-        api.blockSelection.isSelectable(node, path),
+        ElementApi.isElement(node) && api.isSelectable(node, path),
     });
 
     if (!aboveEntry) return;

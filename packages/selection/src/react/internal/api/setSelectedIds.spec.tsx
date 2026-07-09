@@ -119,9 +119,7 @@ describe('setSelectedIds', () => {
   });
 
   it('exposes addSelectedRow through the block selection API', () => {
-    editor
-      .plugin(BlockSelectionPlugin)
-      .api.blockSelection.addSelectedRow('row-1');
+    editor.plugin(BlockSelectionPlugin).api.addSelectedRow('row-1');
 
     expect(getSelectedIds(editor)).toEqual(['row-1']);
   });

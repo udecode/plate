@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { SlateEditor, TSuggestionData, TSuggestionElement } from 'platejs';
+import { type TSuggestionData, type TSuggestionElement } from '@platejs/utils';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 import { getInlineSuggestionData } from './utils';
@@ -40,9 +40,9 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -50,13 +50,13 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.insertBreak();
+    editor.update.break.insert();
 
-    const data = editor.children[0][
+    const data = editor.read.children()[0][
       BaseSuggestionPlugin.key
     ] as TSuggestionData;
 
-    expect(editor.children).toHaveLength(2);
+    expect(editor.read.children()).toHaveLength(2);
     expect(data).toBeDefined();
     expect(data.id).toBeDefined();
     expect(data.createdAt).toBeDefined();
@@ -73,9 +73,9 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -83,9 +83,11 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.insertText('1');
+    editor.update.text.insert('1');
 
-    const data = getInlineSuggestionData(editor.children[1].children[0] as any);
+    const data = getInlineSuggestionData(
+      editor.read.children()[1].children[0] as any
+    );
 
     expect(data).toBeDefined();
     expect(data?.id === testLineBreakDataInsert.id).toBeTruthy();
@@ -103,7 +105,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
@@ -113,9 +115,9 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -123,9 +125,9 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.deleteBackward();
+    editor.update.text.deleteBackward();
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('does not remove the lineBreak when type is remove', () => {
@@ -137,7 +139,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
@@ -147,9 +149,9 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
         </hp>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -157,9 +159,9 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.deleteBackward();
+    editor.update.text.deleteBackward();
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('reuses the same suggestion id when removing across blocks', () => {
@@ -171,9 +173,9 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -181,23 +183,23 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.deleteBackward('line');
-    editor.tf.deleteBackward('character');
+    editor.update.text.deleteBackward({ unit: 'line' });
+    editor.update.text.deleteBackward({ unit: 'character' });
 
     const lineBreakData = editor
-      .getApi(BaseSuggestionPlugin)
-      .suggestion.isBlockSuggestion(editor.children[0] as any)
-      ? (editor.children[0].suggestion as TSuggestionElement)
+      .plugin(BaseSuggestionPlugin)
+      .api.isBlockSuggestion(editor.read.children()[0] as any)
+      ? (editor.read.children()[0].suggestion as TSuggestionElement)
       : undefined;
 
     const suggestionTextData = getInlineSuggestionData(
-      editor.children[1].children[0] as any
+      editor.read.children()[1].children[0] as any
     );
 
     expect(lineBreakData).toBeDefined();
     expect(suggestionTextData).toBeDefined();
     expect(lineBreakData?.id === suggestionTextData?.id).toBeTruthy();
-    expect(editor.children[1].children[0].text).toBe('test2');
+    expect(editor.read.children()[1].children[0].text).toBe('test2');
   });
 });
 
@@ -211,7 +213,7 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
@@ -221,9 +223,9 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -231,9 +233,9 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', false);
 
-    editor.tf.deleteBackward();
+    editor.update.text.deleteBackward();
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('remove the lineBreak when type is remove', () => {
@@ -245,7 +247,7 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
@@ -255,9 +257,9 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -265,8 +267,8 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', false);
 
-    editor.tf.deleteBackward();
+    editor.update.text.deleteBackward();
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 });

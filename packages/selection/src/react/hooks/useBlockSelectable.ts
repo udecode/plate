@@ -67,7 +67,7 @@ export const addOnContextMenu = (
 
   if (id) {
     if (event?.shiftKey) {
-      blockSelection.api.blockSelection.add(id);
+      blockSelection.api.add(id);
     } else {
       const clickAlreadySelected = selectedIds?.has(id);
 
@@ -86,7 +86,7 @@ export const useBlockSelectable = () => {
   });
 
   return {
-    props: api.blockSelection?.isSelectable(element, path)
+    props: api?.isSelectable(element, path)
       ? {
           className: 'slate-selectable',
           onContextMenu: (

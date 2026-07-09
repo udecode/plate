@@ -1,22 +1,37 @@
-import type { NodeEntry, SlateEditor, TElement, Text } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type {
+  EditorUpdateTransaction,
+  Element,
+  NodeEntry,
+  Text,
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { findSuggestionProps } from '../queries';
 
 export const removeNodesSuggestion = (
-  editor: SlateEditor,
-  nodes: NodeEntry<TElement | Text>[]
+  editor: BaseEditor,
+  nodes: NodeEntry<Element | Text>[]
+) => {
+  editor.update((tx) => {
+    removeNodesSuggestionWithTx(editor, tx, nodes);
+  });
+};
+
+export const removeNodesSuggestionWithTx = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  nodes: NodeEntry<Element | Text>[]
 ) => {
   if (nodes.length === 0) return;
 
   const { id, createdAt } = findSuggestionProps(editor, {
-    at: editor.selection!,
+    at: editor.read.selection()!,
     type: 'remove',
   });
 
   nodes.forEach(([, blockPath]) => {
-    editor.tf.setNodes(
+    tx.nodes.set(
       {
         [KEYS.suggestion]: {
           id,

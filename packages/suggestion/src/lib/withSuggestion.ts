@@ -1,11 +1,17 @@
 import {
-  type OverrideEditor,
-  type TSuggestionElement,
-  ElementApi,
-  KEYS,
+  type BaseEditor,
+  type ExtendPlateEditorExtension,
   nanoid,
+} from '@platejs/core';
+import {
+  type Element,
+  ElementApi,
+  type Range,
+  PathApi,
+  type Text,
   TextApi,
-} from 'platejs';
+} from '@platejs/plite';
+import { type TSuggestionElement, KEYS } from '@platejs/utils';
 
 import {
   type BaseSuggestionConfig,
@@ -13,172 +19,226 @@ import {
 } from './BaseSuggestionPlugin';
 import { findSuggestionProps } from './queries';
 import { addMarkSuggestion } from './transforms/addMarkSuggestion';
-import { deleteFragmentSuggestion } from './transforms/deleteFragmentSuggestion';
-import { deleteSuggestion } from './transforms/deleteSuggestion';
-import { insertFragmentSuggestion } from './transforms/insertFragmentSuggestion';
+import { deleteFragmentSuggestionWithTx } from './transforms/deleteFragmentSuggestion';
+import { deleteSuggestionWithTx } from './transforms/deleteSuggestion';
+import { insertFragmentSuggestionWithTx } from './transforms/insertFragmentSuggestion';
 import { insertTextSuggestion } from './transforms/insertTextSuggestion';
 import { removeMarkSuggestion } from './transforms/removeMarkSuggestion';
-import { removeNodesSuggestion } from './transforms/removeNodesSuggestion';
+import { removeNodesSuggestionWithTx } from './transforms/removeNodesSuggestion';
 import { getInlineSuggestionData, getSuggestionKeyId } from './utils/index';
 
-export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
-  api,
-  editor,
-  getOptions,
-  tf: {
-    addMark,
-    apply,
-    deleteBackward,
-    deleteForward,
-    deleteFragment,
-    insertBreak,
-    insertFragment,
-    insertNodes,
-    insertText,
-    normalizeNode,
-    removeMark,
-    removeNodes,
+const isRangeAcrossBlocks = (editor: BaseEditor, range: Range) => {
+  const anchorBlock = editor.read.nodes.block({ at: range.anchor });
+  const focusBlock = editor.read.nodes.block({ at: range.focus });
+
+  if (!anchorBlock || !focusBlock) return false;
+
+  return !PathApi.equals(anchorBlock[1], focusBlock[1]);
+};
+
+export const withSuggestion: ExtendPlateEditorExtension<
+  BaseSuggestionConfig
+> = ({ api, editor, getOptions }) => ({
+  normalizers: {
+    node({ entry, next, tx }) {
+      api.withoutSuggestions(() => {
+        const [node, path] = entry;
+        const hasSuggestion = !!(node as Record<string, unknown>)[
+          KEYS.suggestion
+        ];
+        const inlineSuggestion =
+          (ElementApi.isElement(node) && editor.read.schema.isInline(node)) ||
+          TextApi.isText(node);
+
+        if (
+          hasSuggestion &&
+          inlineSuggestion &&
+          !getSuggestionKeyId(node as Element)
+        ) {
+          tx.nodes.unset([KEYS.suggestion, 'suggestionData'], {
+            at: path,
+          });
+
+          return;
+        }
+
+        if (
+          hasSuggestion &&
+          inlineSuggestion &&
+          !getInlineSuggestionData(node as Element)?.userId
+        ) {
+          if (getInlineSuggestionData(node as Element)?.type === 'remove') {
+            tx.nodes.unset(
+              [KEYS.suggestion, getSuggestionKeyId(node as Element)!],
+              {
+                at: path,
+              }
+            );
+          } else {
+            tx.nodes.remove({ at: path });
+          }
+
+          return;
+        }
+
+        next();
+      });
+    },
   },
-}) => ({
   transforms: {
-    addMark(key, value) {
-      if (getOptions().isSuggesting && api.isExpanded()) {
-        return addMarkSuggestion(editor, key, value);
+    addMark({ key, next, tx, value }) {
+      if (getOptions().isSuggesting && editor.read.selection.isExpanded()) {
+        addMarkSuggestion(editor, tx, key, value);
+        return true;
       }
 
-      return addMark(key, value);
+      return next();
     },
-    apply(operation) {
-      return apply(operation);
-    },
-    deleteBackward(unit) {
+    deleteBackward({ next, tx, unit }) {
+      const selection = editor.read.selection();
       const resolvedUnit = unit ?? 'character';
-      const selection = editor.selection!;
-      const pointTarget = editor.api.before(selection, {
+
+      if (!selection) return next({ unit: resolvedUnit });
+
+      const pointTarget = editor.read.points.before(selection, {
         unit: resolvedUnit,
       });
 
       if (getOptions().isSuggesting) {
-        const node = editor.api.above<TSuggestionElement>();
-        // without set suggestion when delete backward in block suggestion
-        if (node?.[0][KEYS.suggestion] && !node?.[0].suggestion.isLineBreak) {
-          return deleteBackward(resolvedUnit);
+        const node = editor.read.nodes.above<TSuggestionElement>();
+
+        if (node?.[0][KEYS.suggestion] && !node[0].suggestion.isLineBreak) {
+          return next({ unit: resolvedUnit });
         }
 
-        if (!pointTarget) return;
+        if (!pointTarget) return true;
 
-        deleteSuggestion(
+        deleteSuggestionWithTx(
           editor,
+          tx,
           { anchor: selection.anchor, focus: pointTarget },
-          { reverse: true }
+          { reverse: true, unit: resolvedUnit }
         );
 
-        return;
+        return true;
       }
-      // remove line break when across blocks
-      if (pointTarget) {
-        const isCrossBlock = editor.api.isAt({
-          at: { anchor: selection.anchor, focus: pointTarget },
-          blocks: true,
+
+      if (
+        pointTarget &&
+        isRangeAcrossBlocks(editor, {
+          anchor: selection.anchor,
+          focus: pointTarget,
+        })
+      ) {
+        tx.nodes.unset([KEYS.suggestion], {
+          at: pointTarget,
         });
-
-        if (isCrossBlock) {
-          editor.tf.unsetNodes([KEYS.suggestion], {
-            at: pointTarget,
-          });
-        }
       }
 
-      deleteBackward(resolvedUnit);
+      return next({ unit: resolvedUnit });
     },
-    deleteForward(unit) {
+    deleteForward({ next, tx, unit }) {
+      const selection = editor.read.selection();
       const resolvedUnit = unit ?? 'character';
+
+      if (!selection) return next({ unit: resolvedUnit });
+
       if (getOptions().isSuggesting) {
-        const selection = editor.selection!;
-        const pointTarget = editor.api.after(selection, {
+        const pointTarget = editor.read.points.after(selection, {
           unit: resolvedUnit,
         });
 
-        if (!pointTarget) return;
+        if (!pointTarget) return true;
 
-        deleteSuggestion(editor, {
-          anchor: selection.anchor,
-          focus: pointTarget,
-        });
+        deleteSuggestionWithTx(
+          editor,
+          tx,
+          {
+            anchor: selection.anchor,
+            focus: pointTarget,
+          },
+          { unit: resolvedUnit }
+        );
 
-        return;
+        return true;
       }
 
-      deleteForward(resolvedUnit);
+      return next({ unit: resolvedUnit });
     },
-
-    deleteFragment(direction) {
+    deleteFragment({ next, options, tx }) {
       if (getOptions().isSuggesting) {
-        deleteFragmentSuggestion(editor, { reverse: true });
-
-        return;
+        deleteFragmentSuggestionWithTx(editor, tx, { reverse: true });
+        return true;
       }
 
-      deleteFragment(direction);
+      return next({ options });
     },
+    insertBreak({ next, tx }) {
+      if (!getOptions().isSuggesting) {
+        return next();
+      }
 
-    insertBreak() {
+      const selection = editor.read.selection();
+      const above = editor.read.nodes.above<Element>();
+
+      if (!selection || !above) return true;
+
+      const [node, path] = above;
+
+      if (path.length > 1 || node.type !== editor.getType(KEYS.p)) {
+        insertTextSuggestion(editor, tx, '\n');
+        return true;
+      }
+
+      const { id, createdAt } = findSuggestionProps(editor, {
+        at: selection,
+        type: 'insert',
+      });
+
+      const inserted = next();
+
+      tx.metadata.merge({ history: { mode: 'merge' } });
+      tx.nodes.set(
+        {
+          [KEYS.suggestion]: {
+            id,
+            createdAt,
+            isLineBreak: true,
+            type: 'insert',
+            userId: editor.plugin(BaseSuggestionPlugin).getOptions()
+              .currentUserId!,
+          },
+        },
+        { at: path }
+      );
+
+      return inserted;
+    },
+    insertFragment({ fragment, next, options, tx }) {
       if (getOptions().isSuggesting) {
-        const [node, path] = editor.api.above()!;
-
-        if (path.length > 1 || node.type !== editor.getType(KEYS.p)) {
-          return insertTextSuggestion(editor, '\n');
-        }
-
-        const { id, createdAt } = findSuggestionProps(editor, {
-          at: editor.selection!,
-          type: 'insert',
-        });
-
-        insertBreak();
-
-        editor.tf.withoutMerging(() => {
-          editor.tf.setNodes(
-            {
-              [KEYS.suggestion]: {
-                id,
-                createdAt,
-                isLineBreak: true,
-                type: 'insert',
-                userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
-              },
-            },
-            { at: path }
-          );
-        });
-
-        return;
+        insertFragmentSuggestionWithTx(editor, tx, fragment, () =>
+          next({ fragment, options })
+        );
+        return true;
       }
 
-      insertBreak();
+      return next({ fragment, options });
     },
-
-    insertFragment(fragment) {
-      if (getOptions().isSuggesting) {
-        insertFragmentSuggestion(editor, fragment, { insertFragment });
-
-        return;
-      }
-
-      insertFragment(fragment);
-    },
-
-    insertNodes(nodes, options) {
+    insertNodes({ next, nodes, options }) {
       if (getOptions().isSuggesting) {
         const nodesArray = Array.isArray(nodes) ? nodes : [nodes];
 
-        // TODO: options
-        if (nodesArray.some((n) => n.type === 'slash_input')) {
-          api.suggestion.withoutSuggestions(() => {
-            insertNodes(nodes, options);
+        if (
+          nodesArray.some(
+            (node) => ElementApi.isElement(node) && node.type === 'slash_input'
+          )
+        ) {
+          let result = true;
+          api.withoutSuggestions(() => {
+            result = next({ nodes, options });
           });
 
-          return;
+          return result;
         }
 
         const suggestionNodes = nodesArray.map((node) => ({
@@ -187,97 +247,64 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
             id: nanoid(),
             createdAt: Date.now(),
             type: 'insert',
-            userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
+            userId: editor.plugin(BaseSuggestionPlugin).getOptions()
+              .currentUserId!,
           },
         }));
 
-        return insertNodes(suggestionNodes, options);
+        return next({ nodes: suggestionNodes, options });
       }
 
-      return insertNodes(nodes, options);
+      return next({ nodes, options });
     },
-
-    insertText(text, options) {
+    insertText({ next, options, text, tx }) {
       if (getOptions().isSuggesting) {
-        const node = editor.api.above<TSuggestionElement>();
+        const node = editor.read.nodes.above<TSuggestionElement>();
 
-        if (node?.[0][KEYS.suggestion] && !node?.[0].suggestion.isLineBreak) {
-          return insertText(text, options);
+        if (node?.[0][KEYS.suggestion] && !node[0].suggestion.isLineBreak) {
+          const inserted = next({ options, text });
+          tx.normalize({ force: true });
+
+          return inserted;
         }
 
-        insertTextSuggestion(editor, text);
-
-        return;
+        insertTextSuggestion(editor, tx, text);
+        return true;
       }
 
-      insertText(text, options);
+      return next({ options, text });
     },
+    removeMark({ key, next, tx }) {
+      if (getOptions().isSuggesting && editor.read.selection.isExpanded()) {
+        removeMarkSuggestion(editor, tx, key);
+        return true;
+      }
 
-    normalizeNode(entry) {
-      api.suggestion.withoutSuggestions(() => {
-        const [node, path] = entry;
-
-        const inlineSuggestion =
-          (ElementApi.isElement(node) && editor.api.isInline(node)) ||
-          TextApi.isText(node);
+      return next({ key });
+    },
+    removeNodes({ next, options, tx }) {
+      if (getOptions().isSuggesting) {
+        const nodes = editor.read.nodes.toArray<Element | Text>(options);
 
         if (
-          node[KEYS.suggestion] && // Unset suggestion when there is no suggestion id
-          inlineSuggestion &&
-          !getSuggestionKeyId(node)
+          nodes.some(
+            ([node]) =>
+              ElementApi.isElement(node) && node.type === 'slash_input'
+          )
         ) {
-          editor.tf.unsetNodes([KEYS.suggestion, 'suggestionData'], {
-            at: path,
+          let result = true;
+          api.withoutSuggestions(() => {
+            result = next({ options });
           });
 
-          return;
-        }
-        // Unset suggestion when there is no suggestion user id
-        if (
-          node[KEYS.suggestion] &&
-          inlineSuggestion &&
-          !getInlineSuggestionData(node)?.userId
-        ) {
-          if (getInlineSuggestionData(node)?.type === 'remove') {
-            // Unset deletions
-            editor.tf.unsetNodes([KEYS.suggestion, getSuggestionKeyId(node)!], {
-              at: path,
-            });
-          } else {
-            // Remove additions
-            editor.tf.removeNodes({ at: path });
-          }
-
-          return;
+          return result;
         }
 
-        normalizeNode(entry);
-      });
-    },
-    removeMark(key) {
-      if (getOptions().isSuggesting && api.isExpanded()) {
-        return removeMarkSuggestion(editor, key);
+        removeNodesSuggestionWithTx(editor, tx, nodes);
+        return true;
       }
 
-      return removeMark(key);
-    },
-    // Remove nodes by block selection
-    removeNodes(options) {
-      if (getOptions().isSuggesting) {
-        const nodes = [...editor.api.nodes(options)];
-
-        if (nodes.some(([n]) => n.type === 'slash_input')) {
-          api.suggestion.withoutSuggestions(() => {
-            removeNodes(options);
-          });
-
-          return;
-        }
-
-        return removeNodesSuggestion(editor, nodes);
-      }
-
-      return removeNodes(options);
+      return next({ options });
     },
   },
 });

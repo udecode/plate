@@ -1,13 +1,10 @@
+import type { BaseEditor } from '@platejs/core';
+import { type Text, ElementApi, PathApi, TextApi } from '@platejs/plite';
 import {
-  type SlateEditor,
   type TSuggestionElement,
   type TSuggestionText,
-  type TText,
-  ElementApi,
   KEYS,
-  PathApi,
-  TextApi,
-} from 'platejs';
+} from '@platejs/utils';
 
 import type { TResolvedSuggestion } from '../types';
 
@@ -19,52 +16,49 @@ import {
 } from '../utils';
 
 export const rejectSuggestion = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   description: TResolvedSuggestion
 ) => {
-  editor.tf.withoutNormalizing(() => {
-    const inlineInsertElementEntries = [
-      ...editor.api.nodes({
-        at: [],
-        match: (n) => {
-          if (!ElementApi.isElement(n) || !editor.api.isInline(n)) return false;
+  editor.update((tx) => {
+    const suggestionApi = editor.plugin(BaseSuggestionPlugin).api;
+    const inlineInsertElementEntries = editor.read.nodes.toArray({
+      at: [],
+      match: (n) => {
+        if (!ElementApi.isElement(n) || !editor.read.schema.isInline(n)) {
+          return false;
+        }
 
-          const suggestionData = getInlineSuggestionData(n);
+        const suggestionData = getInlineSuggestionData(n);
 
-          return (
-            suggestionData?.type === 'insert' &&
+        return Boolean(
+          suggestionData?.type === 'insert' &&
             suggestionData.id === description.suggestionId
-          );
-        },
-      }),
-    ];
-    const mergeNodes = [
-      ...editor.api.nodes({
-        at: [],
-        match: (n) => {
-          if (!ElementApi.isElement(n)) return false;
+        );
+      },
+    });
+    const mergeNodes = editor.read.nodes.toArray({
+      at: [],
+      match: (n) => {
+        if (!ElementApi.isElement(n)) return false;
 
-          if (
-            editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
-          ) {
-            const suggestionElement = n as TSuggestionElement;
-            return (
-              suggestionElement.suggestion.type === 'insert' &&
+        if (suggestionApi.isBlockSuggestion(n)) {
+          const suggestionElement = n as TSuggestionElement;
+          return Boolean(
+            suggestionElement.suggestion.type === 'insert' &&
               suggestionElement.suggestion.isLineBreak &&
               suggestionElement.suggestion.id === description.suggestionId
-            );
-          }
+          );
+        }
 
-          return false;
-        },
-      }),
-    ];
-
-    mergeNodes.reverse().forEach(([, path]) => {
-      editor.tf.mergeNodes({ at: PathApi.next(path) });
+        return false;
+      },
     });
 
-    editor.tf.unsetNodes(
+    mergeNodes.reverse().forEach(([, path]) => {
+      tx.nodes.merge({ at: PathApi.next(path) });
+    });
+
+    tx.nodes.unset(
       [description.keyId, KEYS.suggestion, getTransientSuggestionKey()],
       {
         at: [],
@@ -72,7 +66,7 @@ export const rejectSuggestion = (
         match: (n) => {
           if (
             TextApi.isText(n) ||
-            (ElementApi.isElement(n) && editor.api.isInline(n))
+            (ElementApi.isElement(n) && editor.read.schema.isInline(n))
           ) {
             const node = n as TSuggestionText;
             const suggestionData = getInlineSuggestionData(node);
@@ -85,10 +79,7 @@ export const rejectSuggestion = (
 
             return false;
           }
-          if (
-            ElementApi.isElement(n) &&
-            editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
-          ) {
+          if (ElementApi.isElement(n) && suggestionApi.isBlockSuggestion(n)) {
             const suggestionElement = n as TSuggestionElement;
             const isLineBreak = suggestionElement.suggestion.isLineBreak;
 
@@ -108,7 +99,7 @@ export const rejectSuggestion = (
       }
     );
 
-    editor.tf.removeNodes({
+    tx.nodes.remove({
       at: [],
       mode: 'all',
       match: (n) => {
@@ -126,10 +117,7 @@ export const rejectSuggestion = (
           return false;
         }
 
-        if (
-          ElementApi.isElement(n) &&
-          editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
-        ) {
+        if (ElementApi.isElement(n) && suggestionApi.isBlockSuggestion(n)) {
           const suggestionElement = n as TSuggestionElement;
           return (
             suggestionElement.suggestion.type === 'insert' &&
@@ -143,35 +131,31 @@ export const rejectSuggestion = (
     });
 
     inlineInsertElementEntries.reverse().forEach(([, path]) => {
-      editor.tf.removeNodes({ at: path });
+      tx.nodes.remove({ at: path });
     });
 
-    const updateNodes = [
-      ...editor.api.nodes<TText>({
-        at: [],
-        match: (n) => {
-          if (ElementApi.isElement(n)) return false;
-          if (TextApi.isText(n)) {
-            const datalist = editor
-              .getApi(BaseSuggestionPlugin)
-              .suggestion.dataList(n as TSuggestionText);
+    const updateNodes = editor.read.nodes.toArray<Text>({
+      at: [],
+      match: (n) => {
+        if (ElementApi.isElement(n)) return false;
+        if (TextApi.isText(n)) {
+          const datalist = suggestionApi.dataList(n as TSuggestionText);
 
-            if (datalist.length > 0)
-              return datalist.some(
-                (data) =>
-                  data.type === 'update' && data.id === description.suggestionId
-              );
+          if (datalist.length > 0)
+            return datalist.some(
+              (data) =>
+                data.type === 'update' && data.id === description.suggestionId
+            );
 
-            return false;
-          }
-        },
-      }),
-    ];
+          return false;
+        }
+
+        return false;
+      },
+    });
 
     updateNodes.forEach(([node, path]) => {
-      const datalist = editor
-        .getApi(BaseSuggestionPlugin)
-        .suggestion.dataList(node as TSuggestionText);
+      const datalist = suggestionApi.dataList(node as TSuggestionText);
       const targetData = datalist.find(
         (data) => data.type === 'update' && data.id === description.suggestionId
       );
@@ -182,7 +166,7 @@ export const rejectSuggestion = (
           (key) => targetData.newProperties[key]
         );
 
-        editor.tf.unsetNodes([...unsetProps], {
+        tx.nodes.unset([...unsetProps], {
           at: path,
         });
       }
@@ -191,18 +175,17 @@ export const rejectSuggestion = (
           (key) => !targetData.properties[key]
         );
 
-        editor.tf.setNodes(
-          Object.fromEntries(addProps.map((key) => [key, true])),
-          {
-            at: path,
-          }
-        );
+        tx.nodes.set(Object.fromEntries(addProps.map((key) => [key, true])), {
+          at: path,
+        });
       }
 
       // remove targetData
-      editor.tf.unsetNodes([getSuggestionKey(targetData.id)], {
+      tx.nodes.unset([getSuggestionKey(targetData.id)], {
         at: path,
       });
     });
+
+    tx.normalize({ force: true });
   });
 };

@@ -23,7 +23,7 @@ type RemoveTextOperation = Extract<Operation<Value>, { type: 'remove_text' }>;
 type SetNodeOperation = Extract<Operation<Value>, { type: 'set_node' }>;
 type SplitNodeOperation = Extract<Operation<Value>, { type: 'split_node' }>;
 
-export type ChangeTrackingEditor = {
+type ChangeTrackingState = {
   insertedTexts: {
     node: Text;
     rangeRef: RangeRef;
@@ -41,6 +41,10 @@ export type ChangeTrackingEditor = {
     node: Text;
     pointRef: PointRef;
   }[];
+};
+
+export type ChangeTrackingSession<E extends Editor<Value>> = {
+  editor: E;
   applyOperation: (
     tx: EditorUpdateTransaction<Value>,
     operation: Operation<Value>
@@ -51,55 +55,57 @@ export type ChangeTrackingEditor = {
 export const withChangeTracking = <E extends Editor<Value>>(
   editor: E,
   options: ComputeDiffOptions
-): ChangeTrackingEditor & E => {
-  const e = editor as ChangeTrackingEditor & E;
+): ChangeTrackingSession<E> => {
+  const state: ChangeTrackingState = {
+    insertedTexts: [],
+    propsChanges: [],
+    recordingOperations: true,
+    removedTexts: [],
+  };
 
-  e.propsChanges = [];
-  e.insertedTexts = [];
-  e.removedTexts = [];
-  e.recordingOperations = true;
-
-  e.applyOperation = (tx, op) => applyWithChangeTracking(e, tx, op);
-
-  e.commitChangesToDiffs = (tx) => commitChangesToDiffs(e, tx, options);
-
-  return e;
+  return {
+    editor,
+    applyOperation: (tx, op) => applyWithChangeTracking(editor, state, tx, op),
+    commitChangesToDiffs: (tx) =>
+      commitChangesToDiffs(editor, state, tx, options),
+  };
 };
 
 const applyWithChangeTracking = <E extends Editor<Value>>(
-  editor: ChangeTrackingEditor & E,
+  editor: E,
+  state: ChangeTrackingState,
   tx: EditorUpdateTransaction<Value>,
   op: Operation<Value>
 ) => {
-  if (!editor.recordingOperations) {
+  if (!state.recordingOperations) {
     tx.operations.replay([op], { normalize: false });
     return;
   }
 
-  withoutRecordingOperations(editor, () => {
+  withoutRecordingOperations(state, () => {
     switch (op.type) {
       case 'insert_text': {
-        applyInsertText(editor, tx, op);
+        applyInsertText(editor, state, tx, op);
 
         break;
       }
       case 'merge_node': {
-        applyMergeNode(editor, tx, op);
+        applyMergeNode(editor, state, tx, op);
 
         break;
       }
       case 'remove_text': {
-        applyRemoveText(editor, tx, op);
+        applyRemoveText(editor, state, tx, op);
 
         break;
       }
       case 'set_node': {
-        applySetNode(editor, tx, op);
+        applySetNode(editor, state, tx, op);
 
         break;
       }
       case 'split_node': {
-        applySplitNode(editor, tx, op);
+        applySplitNode(editor, state, tx, op);
 
         break;
       }
@@ -112,7 +118,8 @@ const applyWithChangeTracking = <E extends Editor<Value>>(
 };
 
 const applyInsertText = <E extends Editor<Value>>(
-  editor: ChangeTrackingEditor & E,
+  editor: E,
+  state: ChangeTrackingState,
   tx: EditorUpdateTransaction<Value>,
   op: InsertTextOperation
 ) => {
@@ -123,9 +130,9 @@ const applyInsertText = <E extends Editor<Value>>(
   const startPoint = { offset: op.offset, path: op.path };
   const endPoint = { offset: op.offset + op.text.length, path: op.path };
   const range = { anchor: startPoint, focus: endPoint };
-  const rangeRef = tx.refs.range(range);
+  const rangeRef = tx.refs.range(range, { affinity: 'forward' });
 
-  editor.insertedTexts.push({
+  state.insertedTexts.push({
     node: {
       ...node,
       text: op.text,
@@ -135,7 +142,8 @@ const applyInsertText = <E extends Editor<Value>>(
 };
 
 const applyRemoveText = <E extends Editor<Value>>(
-  editor: ChangeTrackingEditor & E,
+  editor: E,
+  state: ChangeTrackingState,
   tx: EditorUpdateTransaction<Value>,
   op: RemoveTextOperation
 ) => {
@@ -148,7 +156,7 @@ const applyRemoveText = <E extends Editor<Value>>(
     affinity: 'backward',
   });
 
-  editor.removedTexts.push({
+  state.removedTexts.push({
     node: {
       ...node,
       text: op.text,
@@ -158,7 +166,8 @@ const applyRemoveText = <E extends Editor<Value>>(
 };
 
 const applyMergeNode = <E extends Editor<Value>>(
-  editor: ChangeTrackingEditor & E,
+  editor: E,
+  state: ChangeTrackingState,
   tx: EditorUpdateTransaction<Value>,
   op: MergeNodeOperation
 ) => {
@@ -176,7 +185,7 @@ const applyMergeNode = <E extends Editor<Value>>(
   const range = { anchor: startPoint, focus: endPoint };
   const rangeRef = tx.refs.range(range);
 
-  editor.propsChanges.push({
+  state.propsChanges.push({
     newProperties,
     properties,
     rangeRef,
@@ -184,7 +193,8 @@ const applyMergeNode = <E extends Editor<Value>>(
 };
 
 const applySplitNode = <E extends Editor<Value>>(
-  editor: ChangeTrackingEditor & E,
+  editor: E,
+  state: ChangeTrackingState,
   tx: EditorUpdateTransaction<Value>,
   op: SplitNodeOperation
 ) => {
@@ -198,7 +208,7 @@ const applySplitNode = <E extends Editor<Value>>(
   const newNodeRange = editor.read.ranges.get(newNodePath, { required: true });
   const rangeRef = tx.refs.range(newNodeRange);
 
-  editor.propsChanges.push({
+  state.propsChanges.push({
     newProperties,
     properties,
     rangeRef,
@@ -206,7 +216,8 @@ const applySplitNode = <E extends Editor<Value>>(
 };
 
 const applySetNode = <E extends Editor<Value>>(
-  editor: ChangeTrackingEditor & E,
+  editor: E,
+  state: ChangeTrackingState,
   tx: EditorUpdateTransaction<Value>,
   op: SetNodeOperation
 ) => {
@@ -223,7 +234,7 @@ const applySetNode = <E extends Editor<Value>>(
   const range = editor.read.ranges.get(op.path, { required: true });
   const rangeRef = tx.refs.range(range);
 
-  editor.propsChanges.push({
+  state.propsChanges.push({
     newProperties: op.newProperties,
     properties: op.properties,
     rangeRef,
@@ -231,14 +242,15 @@ const applySetNode = <E extends Editor<Value>>(
 };
 
 const commitChangesToDiffs = <E extends Editor<Value>>(
-  editor: ChangeTrackingEditor & E,
+  editor: E,
+  state: ChangeTrackingState,
   tx: EditorUpdateTransaction<Value>,
   { getDeleteProps, getInsertProps, getUpdateProps }: ComputeDiffOptions
 ) => {
-  withoutRecordingOperations(editor, () => {
-    // Reverse the array to prevent path changes
-    const flatUpdates = flattenPropsChanges(editor).reverse();
+  withoutRecordingOperations(state, () => {
+    const flatUpdates = flattenPropsChanges(state).reverse();
 
+    // Reverse the array to prevent path changes
     flatUpdates.forEach(({ newProperties, properties, range }) => {
       const node = NodeApi.get(editor, range.anchor.path) as Text;
 
@@ -249,48 +261,40 @@ const commitChangesToDiffs = <E extends Editor<Value>>(
       });
     });
 
-    editor.removedTexts.forEach(
-      ({ node, pointRef }: ChangeTrackingEditor['removedTexts'][number]) => {
-        const point = pointRef.current;
+    state.insertedTexts.forEach(({ node, rangeRef }) => {
+      const range = rangeRef.unref();
 
-        if (point) {
-          tx.nodes.insert(
-            {
-              ...node,
-              ...getDeleteProps(node),
-            },
-            { at: point }
-          );
-        }
-
-        pointRef.unref();
+      if (range) {
+        tx.nodes.set(getInsertProps(node), {
+          at: range,
+          match: TextApi.isText,
+          split: true,
+        });
       }
-    );
+    });
 
-    editor.insertedTexts.forEach(
-      ({ node, rangeRef }: ChangeTrackingEditor['insertedTexts'][number]) => {
-        const range = rangeRef.current;
+    state.removedTexts.forEach(({ node, pointRef }) => {
+      const point = pointRef.unref();
 
-        if (range) {
-          tx.nodes.set(getInsertProps(node), {
-            at: range,
-            match: TextApi.isText,
-            split: true,
-          });
-        }
-
-        rangeRef.unref();
+      if (point) {
+        tx.nodes.insert(
+          {
+            ...node,
+            ...getDeleteProps(node),
+          },
+          { at: point }
+        );
       }
-    );
+    });
   });
 };
 
-const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
-  const propChangeRangeRefs = editor.propsChanges.map(
+const flattenPropsChanges = (state: ChangeTrackingState) => {
+  const propChangeRangeRefs = state.propsChanges.map(
     ({ rangeRef }) => rangeRef
   );
 
-  const insertedTextRangeRefs = editor.insertedTexts.map(
+  const insertedTextRangeRefs = state.insertedTexts.map(
     ({ rangeRef }) => rangeRef
   );
 
@@ -345,9 +349,9 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
       });
 
     // If the range is part of an insertion, return null
-    if (getIntersectingChanges(editor.insertedTexts).length > 0) return null;
+    if (getIntersectingChanges(state.insertedTexts).length > 0) return null;
 
-    const intersectingUpdates = getIntersectingChanges(editor.propsChanges);
+    const intersectingUpdates = getIntersectingChanges(state.propsChanges);
 
     if (intersectingUpdates.length === 0) return null;
 
@@ -409,10 +413,16 @@ const objectWithoutUndefined = (obj: Record<string, unknown>) => {
 };
 
 const withoutRecordingOperations = (
-  editor: ChangeTrackingEditor,
+  state: ChangeTrackingState,
   fn: () => void
 ) => {
-  editor.recordingOperations = false;
-  fn();
-  editor.recordingOperations = true;
+  const previous = state.recordingOperations;
+
+  state.recordingOperations = false;
+
+  try {
+    fn();
+  } finally {
+    state.recordingOperations = previous;
+  }
 };

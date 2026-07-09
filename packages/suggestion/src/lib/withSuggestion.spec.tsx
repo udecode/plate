@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
-
+import { createBasePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor, createSlatePlugin, KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 import { getInlineSuggestionData } from './utils';
@@ -16,17 +16,17 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
   },
 });
 
-const MentionPlugin = createSlatePlugin({
+const MentionPlugin = createBasePlugin({
   key: KEYS.mention,
   node: { isElement: true, isInline: true, isMarkableVoid: true, isVoid: true },
 });
 
-const DatePlugin = createSlatePlugin({
+const DatePlugin = createBasePlugin({
   key: KEYS.date,
   node: { isElement: true, isInline: true, isSelectable: false, isVoid: true },
 });
 
-const TocPlugin = createSlatePlugin({
+const TocPlugin = createBasePlugin({
   key: KEYS.toc,
   node: { isElement: true, isVoid: true },
 });
@@ -49,7 +49,7 @@ describe('withSuggestion', () => {
               <cursor />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any;
 
         const output = (
           <editor>
@@ -58,18 +58,18 @@ describe('withSuggestion', () => {
               <cursor />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any;
 
-        const editor = createSlateEditor({
+        const editor = createBaseEditor({
           plugins: [suggestionPlugin],
           selection: input.selection,
           value: input.children,
         });
         editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', false);
 
-        editor.tf.insertText('test');
+        editor.update.text.insert('test');
 
-        expect(editor.children).toEqual(output.children);
+        expect(editor.read.children()).toEqual(output.children);
       });
     });
 
@@ -83,23 +83,23 @@ describe('withSuggestion', () => {
                 <cursor />
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any;
 
-          const editor = createSlateEditor({
+          const editor = createBaseEditor({
             plugins: [suggestionPlugin],
             selection: input.selection,
             value: input.children,
           });
           editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-          editor.tf.insertText('test');
+          editor.update.text.insert('test');
 
           expect(
-            editor.children[0].children[1][BaseSuggestionPlugin.key]
+            editor.read.children()[0].children[1][BaseSuggestionPlugin.key]
           ).toBeTruthy();
 
           const data = getInlineSuggestionData(
-            editor.children[0].children[1] as any
+            editor.read.children()[0].children[1] as any
           );
           expect(
             data?.createdAt && data?.id && data?.type && data?.userId
@@ -126,7 +126,7 @@ describe('withSuggestion', () => {
                 <cursor />
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any;
 
           const output = (
             <editor>
@@ -135,17 +135,17 @@ describe('withSuggestion', () => {
                 <cursor />
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any;
 
-          const editor = createSlateEditor({
+          const editor = createBaseEditor({
             plugins: [suggestionPlugin],
             selection: input.selection,
             value: input.children,
           });
 
-          editor.tf.insertText('test2');
+          editor.update.text.insert('test2');
 
-          expect(editor.children).toEqual(output.children);
+          expect(editor.read.children()).toEqual(output.children);
         });
       });
     });
@@ -161,7 +161,7 @@ describe('withSuggestion', () => {
               </htext>
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any;
 
         const output = (
           <editor>
@@ -172,9 +172,9 @@ describe('withSuggestion', () => {
               </htext>
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any;
 
-        const editor = createSlateEditor({
+        const editor = createBaseEditor({
           plugins: [
             BaseSuggestionPlugin.configure({
               options: {
@@ -187,9 +187,9 @@ describe('withSuggestion', () => {
         });
         editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-        editor.tf.insertText('test');
+        editor.update.text.insert('test');
 
-        expect(editor.children).toEqual(output.children);
+        expect(editor.read.children()).toEqual(output.children);
       });
     });
   });
@@ -208,7 +208,7 @@ describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true
               </htext>
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any;
 
         const output = (
           <editor>
@@ -219,18 +219,18 @@ describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true
               </htext>
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any;
 
-        const editor = createSlateEditor({
+        const editor = createBaseEditor({
           plugins: [suggestionPlugin],
           selection: input.selection,
           value: input.children,
         });
         editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-        editor.tf.deleteBackward();
+        editor.update.text.deleteBackward();
 
-        expect(editor.children).toEqual(output.children);
+        expect(editor.read.children()).toEqual(output.children);
       });
     });
 
@@ -250,7 +250,7 @@ describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true
               <cursor />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any;
 
         const output = (
           <editor>
@@ -259,19 +259,19 @@ describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true
               <cursor />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any;
 
-        const editor = createSlateEditor({
+        const editor = createBaseEditor({
           plugins: [suggestionPlugin],
           selection: input.selection,
           value: input.children,
         });
         editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-        editor.tf.deleteBackward();
+        editor.update.text.deleteBackward();
 
-        expect(editor.children).toEqual(output.children);
-        expect(editor.selection).toEqual(output.selection);
+        expect(editor.read.children()).toEqual(output.children);
+        expect(editor.read.selection()).toEqual(output.selection);
       });
     });
 
@@ -288,7 +288,7 @@ describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true
             </htext>
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any;
 
       const output = (
         <editor>
@@ -303,20 +303,20 @@ describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true
             <htext />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any;
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [suggestionPlugin, MentionPlugin],
         selection: input.selection,
         value: input.children,
       });
       editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-      editor.tf.deleteBackward();
+      editor.update.text.deleteBackward();
 
-      const mentionNode = editor.children[0].children[1] as any;
-      const leftText = editor.children[0].children[0] as any;
-      const rightText = editor.children[0].children[2] as any;
+      const mentionNode = editor.read.children()[0].children[1] as any;
+      const leftText = editor.read.children()[0].children[0] as any;
+      const rightText = editor.read.children()[0].children[2] as any;
       const suggestionData = getInlineSuggestionData(mentionNode);
 
       expect(leftText).toEqual(output.children[0].children[0]);
@@ -324,7 +324,7 @@ describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true
       expect(suggestionData?.type).toBe('remove');
       expect(suggestionData?.userId).toBe('testId');
       expect(rightText).toEqual(output.children[0].children[2]);
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.selection()).toEqual(output.selection);
     });
 
     it('marks the previous date-shaped inline void with remove suggestion metadata', () => {
@@ -340,18 +340,18 @@ describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true
             </htext>
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any;
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [suggestionPlugin, DatePlugin],
         selection: input.selection,
         value: input.children,
       });
       editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-      editor.tf.deleteBackward();
+      editor.update.text.deleteBackward();
 
-      const dateNode = editor.children[0].children[1] as any;
+      const dateNode = editor.read.children()[0].children[1] as any;
       const dateChild = dateNode.children?.[0] as any;
       const elementSuggestionData = getInlineSuggestionData(dateNode);
       const childSuggestionData = getInlineSuggestionData(dateChild);
@@ -376,18 +376,18 @@ describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true
             <htext />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any;
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [suggestionPlugin, DatePlugin],
         selection: input.selection,
         value: input.children,
       });
       editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-      editor.tf.deleteBackward();
+      editor.update.text.deleteBackward();
 
-      const dateNode = editor.children[0].children[1] as any;
+      const dateNode = editor.read.children()[0].children[1] as any;
       const dateChild = dateNode.children?.[0] as any;
       const suggestionData =
         getInlineSuggestionData(dateNode) ?? getInlineSuggestionData(dateChild);
@@ -412,18 +412,18 @@ describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true
             </htext>
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any;
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [suggestionPlugin, DatePlugin],
         selection: input.selection,
         value: input.children,
       });
       editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-      editor.tf.deleteBackward('character');
+      editor.update.text.deleteBackward({ unit: 'character' });
 
-      const paragraphChildren = editor.children[0].children as any[];
+      const paragraphChildren = editor.read.children()[0].children as any[];
       const leftText = paragraphChildren[0];
       const dateNode = paragraphChildren[1];
       const trailingNodes = paragraphChildren.slice(2);
@@ -448,20 +448,20 @@ describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true
             test2
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any;
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [suggestionPlugin],
         selection: input.selection,
         value: input.children,
       });
       editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-      editor.tf.deleteBackward('character');
+      editor.update.text.deleteBackward({ unit: 'character' });
 
-      const lineBreakSuggestion = (editor.children[0] as any).suggestion;
+      const lineBreakSuggestion = (editor.read.children()[0] as any).suggestion;
 
-      expect(editor.children).toEqual(
+      expect(editor.read.children()).toEqual(
         (
           <editor>
             <hp
@@ -480,7 +480,7 @@ describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true
           </editor>
         ).children
       );
-      expect(editor.selection).toEqual(
+      expect(editor.read.selection()).toEqual(
         (
           <editor>
             <hp
@@ -512,20 +512,20 @@ describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true
             test2
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any;
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [suggestionPlugin, TocPlugin],
         selection: input.selection,
         value: input.children,
       });
       editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-      editor.tf.deleteBackward('character');
+      editor.update.text.deleteBackward({ unit: 'character' });
 
-      const voidSuggestion = (editor.children[0] as any).suggestion;
+      const voidSuggestion = (editor.read.children()[0] as any).suggestion;
 
-      expect(editor.children).toEqual(
+      expect(editor.read.children()).toEqual(
         (
           <editor>
             <htoc
@@ -545,7 +545,7 @@ describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is true
         ).children
       );
       expect(voidSuggestion.isLineBreak).toBeUndefined();
-      expect(editor.selection).toEqual(
+      expect(editor.read.selection()).toEqual(
         (
           <editor>
             <htoc
@@ -577,25 +577,27 @@ describe('when point before is not marked', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
     });
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.deleteBackward();
+    editor.update.text.deleteBackward();
 
-    const data = getInlineSuggestionData(editor.children[0].children[1] as any);
+    const data = getInlineSuggestionData(
+      editor.read.children()[0].children[1] as any
+    );
 
     expect(
       data?.createdAt && data?.id && data?.type && data?.userId
     ).toBeTruthy();
     expect(data?.type === 'remove').toBeTruthy();
     expect(data?.userId === 'testId').toBeTruthy();
-    expect(editor.children[0].children[0].text).toBe('tes');
+    expect(editor.read.children()[0].children[0].text).toBe('tes');
     expect(typeof data?.createdAt === 'number').toBeTruthy();
   });
 });
@@ -612,22 +614,22 @@ describe('when point before is marked', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
     });
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.deleteBackward();
+    editor.update.text.deleteBackward();
 
     const data1 = getInlineSuggestionData(
-      editor.children[0].children[0] as any
+      editor.read.children()[0].children[0] as any
     );
     const data2 = getInlineSuggestionData(
-      editor.children[0].children[1] as any
+      editor.read.children()[0].children[1] as any
     );
 
     expect(!!data1?.id && !!data2?.id).toEqual(true);
@@ -644,18 +646,20 @@ describe('when delete line', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
     });
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.deleteBackward('line');
+    editor.update.text.deleteBackward({ unit: 'line' });
 
-    const data = getInlineSuggestionData(editor.children[0].children[0] as any);
+    const data = getInlineSuggestionData(
+      editor.read.children()[0].children[0] as any
+    );
 
     expect(
       data?.createdAt && data?.id && data?.type && data?.userId
@@ -675,21 +679,23 @@ describe('delete forward when editor.plugin(SuggestionPlugin).getOptions().isSug
           ne
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
     });
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.deleteForward();
+    editor.update.text.deleteForward();
 
-    const data = getInlineSuggestionData(editor.children[0].children[1] as any);
+    const data = getInlineSuggestionData(
+      editor.read.children()[0].children[1] as any
+    );
 
-    expect(editor.children[0].children[0].text).toBe('o');
-    expect(editor.children[0].children[2].text).toBe('e');
+    expect(editor.read.children()[0].children[0].text).toBe('o');
+    expect(editor.read.children()[0].children[2].text).toBe('e');
     expect(data).toMatchObject({
       type: 'remove',
       userId: 'testId',
@@ -707,25 +713,27 @@ describe('delete fragment when editor.plugin(SuggestionPlugin).getOptions().isSu
           <focus />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
     });
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.deleteFragment();
+    editor.update.fragment.delete();
 
-    const data = getInlineSuggestionData(editor.children[0].children[0] as any);
+    const data = getInlineSuggestionData(
+      editor.read.children()[0].children[0] as any
+    );
 
-    expect(editor.children[0].children[0].text).toBe('one');
+    expect(editor.read.children()[0].children[0].text).toBe('one');
     expect(data).toMatchObject({
       type: 'remove',
       userId: 'testId',
     });
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -749,16 +757,16 @@ describe('delete fragment when editor.plugin(SuggestionPlugin).getOptions().isSu
           </htext>
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin, MentionPlugin],
       selection: input.selection,
       value: input.children,
     });
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.deleteFragment();
+    editor.update.fragment.delete();
 
     const output = (
       <editor>
@@ -775,17 +783,17 @@ describe('delete fragment when editor.plugin(SuggestionPlugin).getOptions().isSu
           <htext>{' text'}</htext>
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    expect(editor.children[0].children).toHaveLength(
+    expect(editor.read.children()[0].children).toHaveLength(
       output.children[0].children.length
     );
 
-    const leftText = editor.children[0].children[0] as any;
-    const removeTextNode = editor.children[0].children[1] as any;
-    const mentionNode = editor.children[0].children[2] as any;
-    const removeTrailingTextNode = editor.children[0].children[3] as any;
-    const trailingText = editor.children[0].children[4] as any;
+    const leftText = editor.read.children()[0].children[0] as any;
+    const removeTextNode = editor.read.children()[0].children[1] as any;
+    const mentionNode = editor.read.children()[0].children[2] as any;
+    const removeTrailingTextNode = editor.read.children()[0].children[3] as any;
+    const trailingText = editor.read.children()[0].children[4] as any;
     const removeData = getInlineSuggestionData(removeTextNode);
     const mentionData = getInlineSuggestionData(mentionNode);
     const trailingRemoveData = getInlineSuggestionData(removeTrailingTextNode);
@@ -809,7 +817,7 @@ describe('delete fragment when editor.plugin(SuggestionPlugin).getOptions().isSu
     expect(trailingRemoveData?.type).toBe('remove');
     expect(trailingRemoveData?.userId).toBe('testId');
     expect(trailingText).toEqual(output.children[0].children[4]);
-    expect(editor.selection).toEqual(output.selection);
+    expect(editor.read.selection()).toEqual(output.selection);
   });
 });
 
@@ -825,7 +833,7 @@ describe('normalizeNode', () => {
             </htext>
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any;
 
       const output = (
         <editor>
@@ -834,19 +842,19 @@ describe('normalizeNode', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any;
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [BaseSuggestionPlugin],
         selection: input.selection,
         value: input.children,
       });
 
-      editor.tf.normalize({
+      editor.update.normalize({
         force: true,
       });
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read.children()).toEqual(output.children);
     });
   });
 
@@ -868,21 +876,21 @@ describe('normalizeNode', () => {
             </htext>
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any;
       const output = (
         <editor>
           <hp>x</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any;
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [suggestionPlugin],
         value: input.children,
       });
 
-      editor.tf.normalize({ force: true });
+      editor.update.normalize({ force: true });
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read.children()).toEqual(output.children);
     });
   });
 
@@ -905,7 +913,7 @@ describe('normalizeNode', () => {
             </htext>
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any;
       const output = (
         <editor>
           <hp>x</hp>
@@ -913,16 +921,16 @@ describe('normalizeNode', () => {
             <htext />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any;
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [suggestionPlugin],
         value: input.children,
       });
 
-      editor.tf.normalize({ force: true });
+      editor.update.normalize({ force: true });
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read.children()).toEqual(output.children);
     });
   });
 });
@@ -937,9 +945,9 @@ describe('insert text when cursor is expanded', () => {
           <focus />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -947,13 +955,13 @@ describe('insert text when cursor is expanded', () => {
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.insertText('1');
+    editor.update.text.insert('1');
 
-    expect(editor.children[0].children).toHaveLength(2);
+    expect(editor.read.children()[0].children).toHaveLength(2);
 
-    const removedNode = editor.children[0].children[0];
+    const removedNode = editor.read.children()[0].children[0];
     const removeNodeData = getInlineSuggestionData(removedNode as any);
-    const insertedNode = editor.children[0].children[1];
+    const insertedNode = editor.read.children()[0].children[1];
     const insertedNodeData = getInlineSuggestionData(insertedNode as any);
 
     expect(removedNode.text).toEqual('test');
@@ -981,9 +989,9 @@ describe('insert text when cursor is expanded', () => {
           </htext>
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin, MentionPlugin],
       selection: input.selection,
       value: input.children,
@@ -991,7 +999,7 @@ describe('insert text when cursor is expanded', () => {
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.insertText('X');
+    editor.update.text.insert('X');
 
     const output = (
       <editor>
@@ -1008,18 +1016,18 @@ describe('insert text when cursor is expanded', () => {
           <htext>{' text'}</htext>
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    expect(editor.children[0].children).toHaveLength(
+    expect(editor.read.children()[0].children).toHaveLength(
       output.children[0].children.length
     );
 
-    const leftText = editor.children[0].children[0] as any;
-    const removeTextNode = editor.children[0].children[1] as any;
-    const mentionNode = editor.children[0].children[2] as any;
-    const removeTrailingTextNode = editor.children[0].children[3] as any;
-    const insertedNode = editor.children[0].children[4] as any;
-    const trailingText = editor.children[0].children[5] as any;
+    const leftText = editor.read.children()[0].children[0] as any;
+    const removeTextNode = editor.read.children()[0].children[1] as any;
+    const mentionNode = editor.read.children()[0].children[2] as any;
+    const removeTrailingTextNode = editor.read.children()[0].children[3] as any;
+    const insertedNode = editor.read.children()[0].children[4] as any;
+    const trailingText = editor.read.children()[0].children[5] as any;
     const removeData = getInlineSuggestionData(removeTextNode);
     const mentionData = getInlineSuggestionData(mentionNode);
     const trailingRemoveData = getInlineSuggestionData(removeTrailingTextNode);
@@ -1050,7 +1058,7 @@ describe('insert text when cursor is expanded', () => {
     expect(insertData?.type).toBe('insert');
     expect(insertData?.userId).toBe('testId');
     expect(trailingText).toEqual(output.children[0].children[5]);
-    expect(editor.selection).toEqual(output.selection);
+    expect(editor.read.selection()).toEqual(output.selection);
   });
 });
 
@@ -1064,18 +1072,18 @@ describe('insertBreak when editor.plugin(SuggestionPlugin).getOptions().isSugges
           </hp>
         </hblockquote>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
     });
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.insertBreak();
+    editor.update.break.insert();
 
-    const inserted = ((editor.children[0] as any).children[0] as any)
+    const inserted = ((editor.read.children()[0] as any).children[0] as any)
       .children[0] as any;
 
     expect(inserted.text).toBe('\n');
@@ -1095,21 +1103,21 @@ describe('insertNodes when editor.plugin(SuggestionPlugin).getOptions().isSugges
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
     });
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.insertNodes({
+    editor.update.nodes.insert({
       children: [{ text: 'two' }],
       type: 'p',
     } as any);
 
-    expect((editor.children[1] as any).suggestion).toMatchObject({
+    expect((editor.read.children()[1] as any).suggestion).toMatchObject({
       type: 'insert',
       userId: 'testId',
     });
@@ -1123,25 +1131,25 @@ describe('insertNodes when editor.plugin(SuggestionPlugin).getOptions().isSugges
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
     });
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.insertNodes({
+    editor.update.nodes.insert({
       children: [{ text: '' }],
       type: 'slash_input',
     } as any);
 
-    expect(editor.children[1]).toMatchObject({
+    expect(editor.read.children()[1]).toMatchObject({
       children: [{ text: '' }],
       type: 'slash_input',
     });
-    expect((editor.children[1] as any).suggestion).toBeUndefined();
+    expect((editor.read.children()[1] as any).suggestion).toBeUndefined();
   });
 });
 
@@ -1158,22 +1166,22 @@ describe('removeNodes when editor.plugin(SuggestionPlugin).getOptions().isSugges
           <focus />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
     });
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.removeNodes({
+    editor.update.nodes.remove({
       at: [],
       match: (n: any) => n.type === 'p',
     });
 
-    const firstSuggestion = (editor.children[0] as any).suggestion;
-    const secondSuggestion = (editor.children[1] as any).suggestion;
+    const firstSuggestion = (editor.read.children()[0] as any).suggestion;
+    const secondSuggestion = (editor.read.children()[1] as any).suggestion;
 
     expect(firstSuggestion).toMatchObject({ type: 'remove' });
     expect(secondSuggestion).toMatchObject({ type: 'remove' });
@@ -1182,7 +1190,7 @@ describe('removeNodes when editor.plugin(SuggestionPlugin).getOptions().isSugges
   });
 
   it('bypasses suggestions when removing slash_input nodes', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: [
         {
@@ -1197,13 +1205,13 @@ describe('removeNodes when editor.plugin(SuggestionPlugin).getOptions().isSugges
     });
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.removeNodes({
+    editor.update.nodes.remove({
       at: [],
       match: (n: any) => n.type === 'slash_input',
     });
 
-    expect(editor.children).toHaveLength(1);
-    expect(editor.children[0]).toMatchObject({
+    expect(editor.read.children()).toHaveLength(1);
+    expect(editor.read.children()[0]).toMatchObject({
       children: [{ text: 'one' }],
       type: 'p',
     });

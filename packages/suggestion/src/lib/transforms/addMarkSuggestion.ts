@@ -1,4 +1,10 @@
-import { type SlateEditor, type TNode, KEYS, nanoid, TextApi } from 'platejs';
+import { type BaseEditor, nanoid } from '@platejs/core';
+import {
+  type EditorUpdateTransaction,
+  type Node,
+  TextApi,
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { getInlineSuggestionData, getSuggestionKey } from '../..';
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
@@ -13,14 +19,15 @@ const getAddMarkProps = () => {
 };
 
 export const addMarkSuggestion = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   key: string,
   value: any
 ) => {
-  editor.getApi(BaseSuggestionPlugin).suggestion.withoutSuggestions(() => {
+  editor.plugin(BaseSuggestionPlugin).api.withoutSuggestions(() => {
     const { id, createdAt } = getAddMarkProps();
 
-    const match = (n: TNode) => {
+    const match = (n: Node) => {
       if (!TextApi.isText(n)) return false;
       // if the node is already marked as a suggestion, we don't want to remove it unless it's a removeMark suggestion
       if (n[KEYS.suggestion]) {
@@ -36,7 +43,7 @@ export const addMarkSuggestion = (
       return true;
     };
 
-    editor.tf.setNodes(
+    tx.nodes.set(
       {
         [key]: value,
         [getSuggestionKey(id)]: {
@@ -46,7 +53,8 @@ export const addMarkSuggestion = (
             [key]: value,
           },
           type: 'update',
-          userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId,
+          userId: editor.plugin(BaseSuggestionPlugin).getOptions()
+            .currentUserId,
         },
         [KEYS.suggestion]: true,
       },

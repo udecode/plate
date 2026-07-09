@@ -6,6 +6,7 @@ export const omitPluginContext = <T extends PlatePluginContext<AnyPlatePlugin>>(
   const {
     api,
     editor,
+    editorApi,
     getOption,
     getOptions,
     plugin,
@@ -14,6 +15,8 @@ export const omitPluginContext = <T extends PlatePluginContext<AnyPlatePlugin>>(
     type,
     ...rest
   } = ctx;
+
+  void editorApi;
 
   return rest;
 };

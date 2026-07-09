@@ -238,7 +238,7 @@ describe('extendEditorApi method', () => {
         method: () => 'plugin1' as string,
         scoped: () => 'scoped1' as string,
       }))
-      .extendEditorApi(({ api, plugin }) => {
+      .extendEditorApi(({ editorApi, plugin }) => {
         // This should access the current plugin's scoped api method
         const currentScoped = plugin.api.scoped;
 
@@ -247,7 +247,7 @@ describe('extendEditorApi method', () => {
           scoped: () => 'scoped2',
           testMethod: () => {
             // This should access the overridden editor.api.method
-            const editorMethod = api.method();
+            const editorMethod = editorApi.method();
 
             return `${editorMethod}-${currentScoped()}`;
           },
@@ -362,7 +362,7 @@ describe('extendApi method', () => {
         method2: () => 2,
       }))
       .extendApi(({ api }) => ({
-        method3: () => api.testPlugin.method1() + api.testPlugin.method2(),
+        method3: () => api.method1() + api.method2(),
       }));
 
     const editor = createBaseEditor({ plugins: [testPlugin] });
@@ -394,8 +394,8 @@ describe('extendApi method', () => {
       .extendEditorApi(() => ({
         globalMethod: () => 5,
       }))
-      .extendApi(({ api }) => ({
-        pluginMethod: () => api.globalMethod() * 2,
+      .extendApi(({ editorApi }) => ({
+        pluginMethod: () => editorApi.globalMethod() * 2,
       }));
 
     const editor = createBaseEditor({ plugins: [testPlugin] });
@@ -435,7 +435,7 @@ describe('extendApi method', () => {
       const baseApi = getEditorPlugin(editor, basePlugin).api;
 
       return {
-        method: () => `override ${baseApi.basePlugin.method()}`,
+        method: () => `override ${baseApi.method()}`,
       };
     });
 
@@ -459,8 +459,7 @@ describe('extendApi method', () => {
         pluginMethod: () => getOptions().baseValue,
       }))
       .extendEditorApi(({ api }) => ({
-        combinedMethod: () =>
-          `${api.globalMethod()}-${api.testPlugin.pluginMethod()}`,
+        combinedMethod: () => `${api.globalMethod()}-${api.pluginMethod()}`,
       }));
 
     const editor = createBaseEditor({ plugins: [testPlugin] });

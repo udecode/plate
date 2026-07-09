@@ -8,11 +8,11 @@ export const selectBlockSelectionNodes = (
   tx: EditorUpdateTransaction
 ) => {
   const { api } = editor.plugin(BlockSelectionPlugin);
-  const range = editor.read.ranges.fromEntries(api.blockSelection.getNodes());
+  const range = editor.read.ranges.fromEntries(api.getNodes());
 
   if (range) {
     tx.selection.set(range);
   }
 
-  api.blockSelection.clear();
+  api.clear();
 };

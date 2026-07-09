@@ -1,9 +1,7 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
-
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { rejectSuggestion } from './rejectSuggestion';
@@ -35,15 +33,15 @@ describe('rejectSuggestion', () => {
           text
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
         <hp>testtext</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -53,7 +51,7 @@ describe('rejectSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('reject remove suggestion', () => {
@@ -74,15 +72,15 @@ describe('rejectSuggestion', () => {
           text
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
         <hp>testremovedtext</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -92,7 +90,7 @@ describe('rejectSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('reject update suggestion', () => {
@@ -116,15 +114,15 @@ describe('rejectSuggestion', () => {
           text
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
         <hp>testupdatedtext</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -134,7 +132,7 @@ describe('rejectSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('restores falsy removed properties from update suggestions', () => {
@@ -158,9 +156,9 @@ describe('rejectSuggestion', () => {
           text
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -170,7 +168,7 @@ describe('rejectSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         children: [
           { text: 'test' },
@@ -196,15 +194,15 @@ describe('rejectSuggestion', () => {
         <hp suggestion={lineBreakData}>test1</hp>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
         <hp>test1test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -214,7 +212,7 @@ describe('rejectSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('merge nodes when rejecting line break insert suggestion', () => {
@@ -231,15 +229,15 @@ describe('rejectSuggestion', () => {
         <hp suggestion={lineBreakData}>test1</hp>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
         <hp>test1test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -249,7 +247,7 @@ describe('rejectSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('reject node with both remove and insert suggestions', () => {
@@ -282,15 +280,15 @@ describe('rejectSuggestion', () => {
           text
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
         <hp>testremovedtext</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -301,7 +299,7 @@ describe('rejectSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('reject remove nodes', () => {
@@ -317,16 +315,16 @@ describe('rejectSuggestion', () => {
         <hp suggestion={removeData}>test1</hp>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
         <hp>test1</hp>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -336,7 +334,7 @@ describe('rejectSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('reject insert nodes', () => {
@@ -352,15 +350,15 @@ describe('rejectSuggestion', () => {
         <hp>test1</hp>
         <hp suggestion={insertData}>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     const output = (
       <editor>
         <hp>test1</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -370,6 +368,6 @@ describe('rejectSuggestion', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 });

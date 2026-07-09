@@ -1,58 +1,75 @@
-import { type Descendant, type SlateEditor, KEYS, TextApi } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import {
+  type Descendant,
+  type EditorUpdateTransaction,
+  TextApi,
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from '../queries';
 import { getSuggestionKey, getSuggestionKeys } from '../utils/index';
-import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
+import { deleteFragmentSuggestionWithTx } from './deleteFragmentSuggestion';
 
 export const insertFragmentSuggestion = (
-  editor: SlateEditor,
-  fragment: Descendant[],
-  {
-    insertFragment = editor.tf.insertFragment,
-  }: {
-    insertFragment?: (fragment: Descendant[]) => void;
-  } = {}
+  editor: BaseEditor,
+  fragment: Descendant[]
 ) => {
-  editor.tf.withoutNormalizing(() => {
-    deleteFragmentSuggestion(editor);
-
-    const { id, createdAt } = findSuggestionProps(editor, {
-      at: editor.selection!,
-      type: 'insert',
-    });
-
-    fragment.forEach((n) => {
-      if (TextApi.isText(n)) {
-        if (!n[KEYS.suggestion]) {
-          // Add suggestion mark
-          n[KEYS.suggestion] = true;
-        }
-
-        // remove the other suggestion data
-        const otherUserKeys = getSuggestionKeys(n);
-        otherUserKeys.forEach((key) => {
-          delete n[key];
-        });
-
-        n[getSuggestionKey(id)] = {
-          id,
-          createdAt,
-          type: 'insert',
-          userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
-        };
-      } else {
-        n[KEYS.suggestion] = {
-          id,
-          createdAt,
-          type: 'insert',
-          userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
-        };
-      }
-    });
-
-    editor.getApi(BaseSuggestionPlugin).suggestion.withoutSuggestions(() => {
-      insertFragment(fragment);
+  editor.update((tx) => {
+    insertFragmentSuggestionWithTx(editor, tx, fragment, () => {
+      tx.fragment.insert(fragment);
     });
   });
+};
+
+export const insertFragmentSuggestionWithTx = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  fragment: Descendant[],
+  insertFragment: () => void
+) => {
+  deleteFragmentSuggestionWithTx(editor, tx);
+
+  const selection = editor.read.selection();
+
+  if (!selection) return;
+
+  const { id, createdAt } = findSuggestionProps(editor, {
+    at: selection,
+    type: 'insert',
+  });
+
+  fragment.forEach((node) => {
+    if (TextApi.isText(node)) {
+      if (!node[KEYS.suggestion]) {
+        node[KEYS.suggestion] = true;
+      }
+
+      getSuggestionKeys(node).forEach((key) => {
+        delete node[key];
+      });
+
+      node[getSuggestionKey(id)] = {
+        id,
+        createdAt,
+        type: 'insert',
+        userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
+      };
+
+      return;
+    }
+
+    node[KEYS.suggestion] = {
+      id,
+      createdAt,
+      type: 'insert',
+      userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
+    };
+  });
+
+  editor.plugin(BaseSuggestionPlugin).api.withoutSuggestions(() => {
+    insertFragment();
+  });
+
+  tx.normalize({ force: true });
 };

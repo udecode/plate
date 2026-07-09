@@ -1,66 +1,114 @@
+import { type BaseEditor, nanoid } from '@platejs/core';
 import {
-  type SetNodesOptions,
-  type SlateEditor,
+  ElementApi,
+  type EditorUpdateTransaction,
+  type Location,
+  type Node,
+  type NodeSetNodesOptions,
+  RangeApi,
+  TextApi,
+} from '@platejs/plite';
+import {
   type TInlineSuggestionData,
   type TSuggestionText,
-  ElementApi,
-  getAt,
   KEYS,
-  nanoid,
-} from 'platejs';
+} from '@platejs/utils';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from '../utils';
 
 export const setSuggestionNodes = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   options?: {
     createdAt?: number;
     includeInlineElements?: boolean;
     suggestionDeletion?: boolean;
     suggestionId?: string;
-  } & SetNodesOptions
+  } & NodeSetNodesOptions<Node>
 ) => {
-  const at = getAt(editor, options?.at) ?? editor.selection;
+  let resId: string | undefined;
+
+  editor.update((tx) => {
+    resId = setSuggestionNodesWithTx(editor, tx, options);
+  });
+
+  return resId;
+};
+
+export const setSuggestionNodesWithTx = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  options?: {
+    createdAt?: number;
+    includeInlineElements?: boolean;
+    suggestionDeletion?: boolean;
+    suggestionId?: string;
+  } & NodeSetNodesOptions<Node>
+) => {
+  const {
+    createdAt = Date.now(),
+    includeInlineElements = true,
+    suggestionId = nanoid(),
+    ...nodeOptions
+  } = options ?? {};
+  const at = (nodeOptions.at ?? editor.read.selection()) as Location | null;
 
   if (!at) return;
 
-  const { suggestionId = nanoid() } = options ?? {};
-  const includeInlineElements = options?.includeInlineElements ?? true;
-
-  // TODO: get all inline nodes to be set
-  const _nodeEntries = includeInlineElements
-    ? editor.api.nodes({
-        match: (n) => ElementApi.isElement(n) && editor.api.isInline(n),
-        ...options,
+  const queryAt = RangeApi.isRange(at)
+    ? { anchor: RangeApi.start(at), focus: RangeApi.end(at) }
+    : at;
+  const nodeEntries = includeInlineElements
+    ? editor.read.nodes.toArray({
+        ...nodeOptions,
+        at: queryAt,
+        match: (node) =>
+          ElementApi.isElement(node) && editor.read.schema.isInline(node),
       })
     : [];
-  const nodeEntries = [..._nodeEntries];
 
-  editor.tf.withoutNormalizing(() => {
-    const data: TInlineSuggestionData = {
-      id: suggestionId,
-      createdAt: options?.createdAt ?? Date.now(),
-      type: 'remove',
-      userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
-    };
+  const data: TInlineSuggestionData = {
+    id: suggestionId,
+    createdAt,
+    type: 'remove',
+    userId: editor.plugin(BaseSuggestionPlugin).getOptions().currentUserId!,
+  };
 
-    const props = {
-      [getSuggestionKey(suggestionId)]: data,
-      [KEYS.suggestion]: true,
-    };
+  const props = {
+    [getSuggestionKey(suggestionId)]: data,
+    [KEYS.suggestion]: true,
+  };
+  const matchTextOutsideInline: NodeSetNodesOptions<Node>['match'] = (
+    node,
+    path
+  ) => {
+    if (nodeOptions.match && !nodeOptions.match(node, path)) {
+      return false;
+    }
+    if (!includeInlineElements || !TextApi.isText(node)) {
+      return true;
+    }
 
-    editor.tf.setNodes(props, {
-      at,
-      marks: true,
-    });
+    const parent = editor.read.nodes.parent(path);
 
-    nodeEntries.forEach(([, path]) => {
-      editor.tf.setNodes<TSuggestionText>(props, {
-        at: path,
-        match: (n) => ElementApi.isElement(n) && editor.api.isInline(n),
-        ...options,
-      });
+    return !parent || !editor.read.schema.isInline(parent[0]);
+  };
+
+  nodeEntries.forEach(([, path]) => {
+    tx.nodes.set<TSuggestionText>(props, {
+      ...nodeOptions,
+      at: path,
+      match: (node) =>
+        ElementApi.isElement(node) && editor.read.schema.isInline(node),
     });
   });
+
+  tx.nodes.set(props, {
+    ...nodeOptions,
+    at: queryAt,
+    marks: true,
+    match: matchTextOutsideInline,
+  });
+
+  return suggestionId;
 };

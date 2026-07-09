@@ -1,4 +1,4 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from './getSuggestionKeys';
@@ -37,24 +37,21 @@ export type TSuggestionReplacementDescription = {
  * suggestion.
  */
 export const getActiveSuggestionDescriptions = (
-  editor: SlateEditor
+  editor: BaseEditor
 ): TSuggestionDescription[] => {
-  const aboveEntry = editor.getApi(BaseSuggestionPlugin).suggestion.node({
+  const api = editor.plugin(BaseSuggestionPlugin).api;
+  const aboveEntry = api.node({
     isText: true,
   });
 
   if (!aboveEntry) return [];
 
   const aboveNode = aboveEntry[0];
-  const suggestionId = editor
-    .getApi(BaseSuggestionPlugin)
-    .suggestion.nodeId(aboveNode);
+  const suggestionId = api.nodeId(aboveNode);
 
   if (!suggestionId) return [];
 
-  const suggestionDataList = editor
-    .getApi(BaseSuggestionPlugin)
-    .suggestion.dataList(aboveNode as any);
+  const suggestionDataList = api.dataList(aboveNode as any);
 
   return suggestionDataList.map(({ id: activeSuggestionId, userId }) => {
     const suggestionKey = getSuggestionKey(activeSuggestionId);

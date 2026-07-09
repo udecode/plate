@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { SlateEditor, TUpdateSuggestionData } from 'platejs';
+import { type TUpdateSuggestionData } from '@platejs/utils';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData } from '../utils';
@@ -28,23 +28,25 @@ describe('removeMarkSuggestion', () => {
           </htext>
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
     });
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
-    editor.tf.removeMark('bold');
+    editor.update.marks.remove('bold');
 
     const data = getInlineSuggestionData(
-      editor.children[0].children[0] as any
+      editor.read.children()[0].children[0] as any
     ) as TUpdateSuggestionData;
 
-    expect(editor.children[0].children[0].bold).toBeUndefined();
-    expect(editor.children[0].children[0][BaseSuggestionPlugin.key]).toBe(true);
+    expect(editor.read.children()[0].children[0].bold).toBeUndefined();
+    expect(
+      editor.read.children()[0].children[0][BaseSuggestionPlugin.key]
+    ).toBe(true);
     expect(data).toBeDefined();
     expect(data?.type).toBe('update');
     expect(data?.userId).toBe('testId');
@@ -73,21 +75,21 @@ describe('removeMarkSuggestion', () => {
           </htext>
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
     });
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
-    editor.tf.removeMark('bold');
+    editor.update.marks.remove('bold');
 
     const dataList = editor
-      .getApi(BaseSuggestionPlugin)
-      .suggestion.dataList(
-        editor.children[0].children[0] as any
+      .plugin(BaseSuggestionPlugin)
+      .api.dataList(
+        editor.read.children()[0].children[0] as any
       ) as TUpdateSuggestionData[];
 
     expect(dataList).toHaveLength(2);
@@ -116,22 +118,22 @@ describe('removeMarkSuggestion', () => {
           </htext>
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
     });
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
-    editor.tf.removeMark('bold');
+    editor.update.marks.remove('bold');
 
-    const node = editor.children[0].children[0] as any;
+    const node = editor.read.children()[0].children[0] as any;
 
     expect(node.bold).toBe(true);
-    expect(
-      editor.getApi(BaseSuggestionPlugin).suggestion.dataList(node)
-    ).toEqual([existingData] as any);
+    expect(editor.plugin(BaseSuggestionPlugin).api.dataList(node)).toEqual([
+      existingData,
+    ] as any);
   });
 });

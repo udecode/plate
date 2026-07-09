@@ -1,39 +1,24 @@
-import { KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
-import * as deleteFragmentModule from './deleteFragmentSuggestion';
-import * as queryModule from '../queries';
-import { getSuggestionKey } from '../utils';
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { getInlineSuggestionData, getSuggestionKey } from '../utils';
 import { insertFragmentSuggestion } from './insertFragmentSuggestion';
+
+const suggestionPlugin = BaseSuggestionPlugin.configure({
+  options: { currentUserId: 'user-1' },
+});
 
 describe('insertFragmentSuggestion', () => {
   it('rewrites fragment nodes with the active insert suggestion metadata', () => {
-    const deleteFragmentSuggestion = (): undefined => {};
-    const deleteFragmentSpy = spyOn(
-      deleteFragmentModule,
-      'deleteFragmentSuggestion'
-    ).mockImplementation(deleteFragmentSuggestion);
-    const findSuggestionPropsSpy = spyOn(
-      queryModule,
-      'findSuggestionProps'
-    ).mockReturnValue({
-      createdAt: 42,
-      id: 'suggestion-1',
-    } as any);
-    const insertFragment = mock();
-    const withoutSuggestions = mock((fn: () => void) => fn());
-    const editor = {
-      getApi: () => ({
-        suggestion: {
-          withoutSuggestions,
-        },
-      }),
-      getOptions: () => ({ currentUserId: 'user-1' }),
-      selection: { anchor: { offset: 0, path: [0, 0] } },
-      tf: {
-        insertFragment,
-        withoutNormalizing: (fn: () => void) => fn(),
+    const editor = createBaseEditor({
+      plugins: [suggestionPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
       },
-    } as any;
+      value: [{ children: [{ text: '' }], type: 'p' }],
+    });
     const fragment = [
       {
         [KEYS.suggestion]: true,
@@ -44,29 +29,24 @@ describe('insertFragmentSuggestion', () => {
         children: [{ text: '' }],
         type: 'p',
       },
-    ] as any;
+    ];
 
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
     insertFragmentSuggestion(editor, fragment);
 
-    expect(deleteFragmentSpy).toHaveBeenCalledWith(editor);
-    expect(fragment[0][KEYS.suggestion]).toBe(true);
-    expect(fragment[0][getSuggestionKey('other-user')]).toBeUndefined();
-    expect(fragment[0][getSuggestionKey('suggestion-1')]).toEqual({
-      createdAt: 42,
-      id: 'suggestion-1',
-      type: 'insert',
-      userId: 'user-1',
-    });
-    expect(fragment[1][KEYS.suggestion]).toEqual({
-      createdAt: 42,
-      id: 'suggestion-1',
-      type: 'insert',
-      userId: 'user-1',
-    });
-    expect(withoutSuggestions).toHaveBeenCalledTimes(1);
-    expect(insertFragment).toHaveBeenCalledWith(fragment);
+    const inlineData = getInlineSuggestionData(fragment[0]);
+    const blockSuggestion = fragment[1][KEYS.suggestion];
 
-    deleteFragmentSpy.mockRestore();
-    findSuggestionPropsSpy.mockRestore();
+    expect(fragment[0]).not.toHaveProperty(getSuggestionKey('other-user'));
+    expect(inlineData).toMatchObject({
+      type: 'insert',
+      userId: 'user-1',
+    });
+    expect(blockSuggestion).toMatchObject({
+      id: inlineData?.id,
+      type: 'insert',
+      userId: 'user-1',
+    });
+    expect(editor.plugin(BaseSuggestionPlugin).api.nodes()).toHaveLength(2);
   });
 });

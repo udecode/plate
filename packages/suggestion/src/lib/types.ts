@@ -1,4 +1,4 @@
-import type { UnknownObject } from 'platejs';
+import type { UnknownObject } from '@udecode/utils';
 
 // TODO
 export type SuggestionEditorProps = {

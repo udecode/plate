@@ -45,9 +45,7 @@ const createCopyEditor = (entries: NodeEntry<TIdElement>[]) => {
     getPlugin: () => ({ node: { type: 'p' } }),
     plugin: () => ({
       api: {
-        blockSelection: {
-          getNodes: () => entries,
-        },
+        getNodes: () => entries,
       },
       getOptions: () => ({ selectedIds }),
       setOption: mock(),

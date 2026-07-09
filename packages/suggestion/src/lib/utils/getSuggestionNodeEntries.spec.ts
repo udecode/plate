@@ -1,11 +1,11 @@
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionNodeEntries } from './getSuggestionNodeEntries';
 
 describe('getSuggestionNodeEntries', () => {
   it('finds all text nodes for the given suggestion id and respects extra match filters', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseSuggestionPlugin],
       value: [
         {

@@ -1,6 +1,8 @@
 import type { BaseEditor } from '../editor';
 import type {
   AnyPluginConfig,
+  InferApi,
+  InferOwnApi,
   InferOptions,
   WithRequiredKey,
 } from './SlatePlugin';
@@ -25,9 +27,25 @@ export function getEditorPlugin(
 ): BasePluginContext<any> {
   const plugin = editor.getPlugin(p) as any;
   const getStore = () => editor.getOptionsStore(plugin);
+  const getApi = () => {
+    const pluginApi = plugin.api ?? {};
+    const keyedApi = pluginApi[plugin.key];
+
+    if (keyedApi && typeof keyedApi === 'object') {
+      const { [plugin.key]: _pluginSpecificApi, ...editorLevelApi } = pluginApi;
+
+      return {
+        ...editorLevelApi,
+        ...keyedApi,
+      } satisfies InferOwnApi<AnyPluginConfig>;
+    }
+
+    return pluginApi as InferApi<AnyPluginConfig>;
+  };
 
   return {
-    api: editor.api,
+    api: getApi(),
+    editorApi: editor.api,
     editor,
     plugin: plugin as any,
     setOption: ((key: keyof InferOptions<AnyPluginConfig>, value: unknown) => {

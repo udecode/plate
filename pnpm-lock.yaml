@@ -2151,12 +2151,21 @@ importers:
 
   packages/suggestion:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/diff':
         specifier: workspace:^
         version: link:../diff
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
+      '@udecode/utils':
+        specifier: workspace:^
+        version: link:../udecode/utils
       lodash:
         specifier: ^4.17.21
         version: 4.17.23

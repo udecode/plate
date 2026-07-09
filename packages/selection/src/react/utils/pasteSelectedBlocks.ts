@@ -7,7 +7,7 @@ import { selectInsertedBlocks } from './selectInsertedBlocks';
 export const pasteSelectedBlocks = (editor: BaseEditor, e: ClipboardEvent) => {
   const { api } = editor.plugin(BlockSelectionPlugin);
 
-  const entries = api.blockSelection.getNodes();
+  const entries = api.getNodes();
 
   if (entries.length > 0) {
     const entry = entries.at(-1)!;

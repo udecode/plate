@@ -231,7 +231,10 @@ export type PluginBase<C extends AnyPluginConfig = PluginConfig> = {
 };
 
 export type PluginBaseContext<C extends AnyPluginConfig = PluginConfig> = {
-  api: C['api'];
+  /** API owned by the current plugin, without the plugin-key namespace wrapper. */
+  api: InferOwnApi<C>;
+  /** Composed root editor API, including APIs from every resolved plugin. */
+  editorApi: C['api'];
   setOptions: (
     options:
       | ((state: Draft<Partial<InferOptions<C>>>) => void)
@@ -550,6 +553,12 @@ export type InferApi<P> = P extends { api: infer A } ? A : never;
 
 export type InferPluginApi<P extends AnyPluginConfig> =
   InferApi<P> extends Record<P['key'], infer TApi> ? TApi : {};
+
+export type InferOwnApi<P extends AnyPluginConfig> = Omit<
+  InferApi<P>,
+  P['key']
+> &
+  InferPluginApi<P>;
 
 export type InferOptions<P> = P extends { options: infer O } ? O : never;
 

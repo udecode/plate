@@ -85,6 +85,12 @@ const createdFloating: boolean = createdPlateEditor.api.toggleFloating();
 const createdMentionTrigger: '@' = createdPlateEditor.api.getTrigger();
 const explicitFactoryEnabled: boolean =
   createdPlateEditor.api.explicitFactory.isEnabled();
+const explicitFactoryPortalEnabled: boolean = createdPlateEditor
+  .plugin(ExplicitFactoryPlugin)
+  .api.isEnabled();
+const explicitFactoryPortalRootEnabled: boolean = createdPlateEditor
+  .plugin(ExplicitFactoryPlugin)
+  .editorApi.explicitFactory.isEnabled();
 const toolbarFloating: boolean = createdPlateEditor
   .plugin(ToolbarPlugin)
   .getOptions().floating;
@@ -96,6 +102,8 @@ void createdFloating;
 void createdMentionOption;
 void createdMentionTrigger;
 void explicitFactoryEnabled;
+void explicitFactoryPortalEnabled;
+void explicitFactoryPortalRootEnabled;
 void floating;
 void mentionTrigger;
 void nestedFloating;
@@ -106,6 +114,12 @@ plateEditor.api.notReal();
 
 // @ts-expect-error wrong nested plugin api call
 createdPlateEditor.api.plugin.isFloating(true);
+
+const explicitFactoryPortalApi = createdPlateEditor.plugin(
+  ExplicitFactoryPlugin
+).api;
+// @ts-expect-error plugin portal API is scoped, not wrapped by plugin key
+explicitFactoryPortalApi.explicitFactory.isEnabled();
 
 // @ts-expect-error literal option type must stay stable
 createdPlateEditor.plugin(MentionPlugin).getOptions().trigger = '#';

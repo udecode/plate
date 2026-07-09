@@ -10,7 +10,7 @@ export const duplicateBlockSelectionNodes = (
   tx: EditorUpdateTransaction
 ) => {
   const { api, setOption } = editor.plugin(BlockSelectionPlugin);
-  const blocks = api.blockSelection.getNodes();
+  const blocks = api.getNodes();
   const lastBlock = blocks.at(-1);
 
   if (!lastBlock) return;

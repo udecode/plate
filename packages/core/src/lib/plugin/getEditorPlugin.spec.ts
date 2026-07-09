@@ -38,7 +38,8 @@ describe('getEditorPlugin', () => {
     );
 
     expect(context).toMatchObject({
-      api: editor.api,
+      api: {},
+      editorApi: editor.api,
       editor,
       plugin: expect.objectContaining({
         key: 'test',
@@ -100,7 +101,8 @@ describe('getEditorPlugin', () => {
     const context = getEditorPlugin(editor, { key: 'test' });
 
     expect(context).toMatchObject({
-      api: editor.api,
+      api: {},
+      editorApi: editor.api,
       editor,
       plugin: expect.objectContaining({
         key: 'test',
@@ -122,7 +124,8 @@ describe('getEditorPlugin', () => {
     const context = getEditorPlugin(editor, unresolvedPlugin);
 
     expect(context).toMatchObject({
-      api: editor.api,
+      api: {},
+      editorApi: editor.api,
       editor,
       plugin: expect.objectContaining({
         key: 'unresolved',
@@ -130,5 +133,28 @@ describe('getEditorPlugin', () => {
       }),
       type: 'unresolved-type',
     });
+  });
+
+  it('splits plugin-owned API from the root editor API', () => {
+    const plugin = createBasePlugin({
+      key: 'methodPlugin',
+    })
+      .extendEditorApi(() => ({
+        editorMethod: () => 'editor',
+      }))
+      .extendApi(() => ({
+        pluginMethod: () => 'plugin',
+      }));
+
+    const typedEditor = createBaseEditor({
+      plugins: [plugin],
+    });
+    const context = typedEditor.plugin(plugin);
+
+    expect(context.api.editorMethod()).toBe('editor');
+    expect(context.api.pluginMethod()).toBe('plugin');
+    expect(context.editorApi.editorMethod()).toBe('editor');
+    expect(context.editorApi.methodPlugin.pluginMethod()).toBe('plugin');
+    expect((context.api as any).methodPlugin).toBeUndefined();
   });
 });

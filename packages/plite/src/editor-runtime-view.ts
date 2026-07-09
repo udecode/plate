@@ -158,7 +158,9 @@ const toViewRangeRef = (ref: RangeRef, rootMeta: RangeRootMeta): RangeRef => {
   const stripRange = (range: Range | null) =>
     range ? stripImplicitRangeRoots(range, rootMeta) : null;
   const withRootRange = (range: Range | null) =>
-    range && rootMeta.root ? withImplicitRangeRoot(range, rootMeta.root) : range;
+    range && rootMeta.root
+      ? withImplicitRangeRoot(range, rootMeta.root)
+      : range;
 
   return {
     affinity: ref.affinity,

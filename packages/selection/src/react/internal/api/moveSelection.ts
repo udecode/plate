@@ -7,7 +7,7 @@ import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
 
 export const moveSelection = (editor: BaseEditor, direction: 'down' | 'up') => {
   const { api, setOption } = editor.plugin(BlockSelectionPlugin);
-  const blocks = api.blockSelection.getNodes();
+  const blocks = api.getNodes();
 
   if (blocks.length === 0) return;
   if (direction === 'up') {
@@ -17,16 +17,15 @@ export const moveSelection = (editor: BaseEditor, direction: 'down' | 'up') => {
       at: topPath,
       from: 'parent',
       match: (node, path) =>
-        ElementApi.isElement(node) &&
-        api.blockSelection.isSelectable(node, path),
+        ElementApi.isElement(node) && api.isSelectable(node, path),
     });
 
     if (prevEntry) {
       const [prevNode] = prevEntry;
       setOption('anchorId', prevNode.id);
-      api.blockSelection.set(prevNode.id);
+      api.set(prevNode.id);
     } else {
-      api.blockSelection.set(blocks[0][0].id);
+      api.set(blocks[0][0].id);
     }
   } else {
     const [, bottomPath] = blocks.at(-1)!;
@@ -35,16 +34,15 @@ export const moveSelection = (editor: BaseEditor, direction: 'down' | 'up') => {
       at: bottomPath,
       from: 'child',
       match: (node, path) =>
-        ElementApi.isElement(node) &&
-        api.blockSelection.isSelectable(node, path),
+        ElementApi.isElement(node) && api.isSelectable(node, path),
     });
 
     if (nextEntry) {
       const [nextNode] = nextEntry;
       setOption('anchorId', nextNode.id);
-      api.blockSelection.set(nextNode.id);
+      api.set(nextNode.id);
     } else {
-      api.blockSelection.set(blocks.at(-1)![0].id);
+      api.set(blocks.at(-1)![0].id);
     }
   }
 };

@@ -1,11 +1,11 @@
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 import { diffToSuggestions } from './diffToSuggestions';
 import { getInlineSuggestionData } from './utils/getSuggestionId';
 
 const createSuggestionEditor = () =>
-  createSlateEditor({
+  createBaseEditor({
     plugins: [
       BaseSuggestionPlugin.configure({
         options: {

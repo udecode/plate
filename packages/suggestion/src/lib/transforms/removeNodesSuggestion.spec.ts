@@ -1,11 +1,11 @@
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { removeNodesSuggestion } from './removeNodesSuggestion';
 
 describe('removeNodesSuggestion', () => {
   it('does nothing for an empty node list', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseSuggestionPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 0] },
@@ -16,11 +16,11 @@ describe('removeNodesSuggestion', () => {
 
     removeNodesSuggestion(editor, []);
 
-    expect(editor.children).toEqual([{ ...editor.children[0] }]);
+    expect(editor.read.children()).toEqual([{ ...editor.read.children()[0] }]);
   });
 
   it('reuses one removal id and timestamp across every marked node', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseSuggestionPlugin.configure({
           options: {
@@ -39,14 +39,14 @@ describe('removeNodesSuggestion', () => {
     });
 
     const nodes = [
-      [editor.children[0], [0]],
-      [editor.children[1], [1]],
+      [editor.read.children()[0], [0]],
+      [editor.read.children()[1], [1]],
     ] as any;
 
     removeNodesSuggestion(editor, nodes);
 
-    const firstSuggestion = (editor.children[0] as any).suggestion;
-    const secondSuggestion = (editor.children[1] as any).suggestion;
+    const firstSuggestion = (editor.read.children()[0] as any).suggestion;
+    const secondSuggestion = (editor.read.children()[1] as any).suggestion;
 
     expect(firstSuggestion).toMatchObject({ type: 'remove' });
     expect(secondSuggestion).toMatchObject({ type: 'remove' });

@@ -35,7 +35,7 @@ const createContextMenuEditor = ({
     getPlugin: () => ({ node: { type: 'p' } }),
     plugin: () => ({
       api: {
-        blockSelection: { add },
+        add,
       },
       getOption: () => false,
       getOptions: () => ({
@@ -156,9 +156,7 @@ describe('useBlockSelectable', () => {
       usePathMock.mockReturnValue([0]);
       useEditorPluginMock.mockReturnValue({
         api: {
-          blockSelection: {
-            isSelectable: () => true,
-          },
+          isSelectable: () => true,
         },
         editor,
       });
@@ -175,9 +173,7 @@ describe('useBlockSelectable', () => {
       usePathMock.mockReturnValue([0]);
       useEditorPluginMock.mockReturnValue({
         api: {
-          blockSelection: {
-            isSelectable: () => false,
-          },
+          isSelectable: () => false,
         },
         editor: {},
       });

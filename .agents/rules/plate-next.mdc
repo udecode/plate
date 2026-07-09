@@ -84,6 +84,28 @@ Rules:
 - No hacks. Do not route displaced product/plugin behavior into bridge files,
   helper dumps, `any` casts, duplicate Plate wrappers around Plite APIs, or
   fake aliases.
+- Root editor object pollution is a Plite anti-pattern. Do not add arbitrary
+  fields to the editor root such as `editor.propsChanges`, `editor.fooState`,
+  `editor.somePluginCache`, or direct assignment bags that are not part of the
+  explicit Plite/Plate editor contract. A clean migration puts:
+  - reads/services on `editor.api.<owner>` or scoped
+    `editor.plugin(FooPlugin).api`;
+  - mutations/commands on `editor.update.<owner>` or scoped plugin tx groups;
+  - persistent editor state in Plite state fields or typed extension `state`;
+  - product/plugin options in scoped plugin options/state;
+  - React/UI render state in the owning store/hook/provider;
+  - internal operation/session state in a returned session/controller object
+    when the lifecycle is local to one algorithm;
+  - private ephemeral implementation detail in a module-local `WeakMap`
+    keyed by editor when it must be associated with the editor across calls,
+    not on the public editor object.
+  Extending the root editor object is allowed only for core-owned contract
+  fields that are already part of the typed `BaseEditor` / `PlateEditor`
+  surface. Anything else caps the file below `100` until moved to the right
+  owner or explicitly routed as a Plite/Plate API plan.
+  If a concrete root-pollution field is in the active package/file scope, do
+  not merely score or mention it. Fix it in the owner before closeout, or stop
+  with a named Plite/Plate gap and deletion path.
 - Do not add local structural type guards around Plite-owned editor APIs. A
   helper like `type DOMResolver` / `hasDOMResolver` for
   `editor.api.dom.resolveDOMNode` is a failed migration: either call the typed
@@ -434,6 +456,9 @@ Default suspicion list:
 - local JSX/editor fixture aliases in tests, especially `{ children; selection
   }` shapes that should come from `@platejs/test-utils`.
 - duplicate Plate helpers around Plite APIs.
+- arbitrary root editor object fields such as `editor.propsChanges`,
+  `editor.someCache`, direct property assignment bags, or interface extensions
+  that smuggle plugin/product state onto `BaseEditor` / `PlateEditor`.
 - docs/examples that teach legacy compatibility instead of latest state.
 
 ## Bridge Scoring Law

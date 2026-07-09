@@ -6,8 +6,10 @@ import {
   runEditorTransaction,
   setChildren,
 } from '../core/public-state';
+import { getEditorSchema } from '../core/editor-runtime';
 import { getEditorTransformRegistry } from '../core/transform-registry';
 import { updateDirtyPaths } from '../core/update-dirty-paths';
+import { node as editorNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import { end as editorEnd } from '../editor/end';
 import { LocationApi } from '../interfaces';
@@ -17,6 +19,8 @@ import {
   isEnd as editorIsEnd,
   isStart as editorIsStart,
   leaf as editorLeaf,
+  parent as editorParent,
+  range as editorRange,
   unhangRange as editorUnhangRange,
   type NodeMatch,
 } from '../interfaces/editor';
@@ -195,18 +199,74 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
       compare: optionCompare,
       hanging = false,
       match: optionMatch,
+      marks = false,
       merge: optionMerge,
-      mode = 'lowest',
-      split = false,
-      voids = false,
+      mode: optionMode = 'lowest',
+      split: optionSplit = false,
+      voids: optionVoids = false,
     } = options;
     let match = optionMatch;
     let at = optionAt === undefined ? tx.resolveTarget() : optionAt;
     let compare = optionCompare;
     const merge = optionMerge;
+    let mode = optionMode;
+    let split = optionSplit;
+    let voids = optionVoids;
 
     if (!at) {
       return;
+    }
+
+    if (marks) {
+      if (LocationApi.isPath(at)) {
+        at = editorRange(editor, at);
+      }
+      if (!LocationApi.isRange(at)) {
+        return;
+      }
+
+      const originalMatch = match as NodeMatch<Node> | undefined;
+      const marksMatch: NodeMatch<Node> = (node, path) => {
+        if (!NodeApi.isText(node)) {
+          return false;
+        }
+        if (originalMatch && !originalMatch(node, path)) {
+          return false;
+        }
+
+        const [parentNode] = editorParent(editor, path);
+
+        if (!NodeApi.isElement(parentNode)) {
+          return false;
+        }
+
+        return (
+          !getEditorSchema(editor).isVoid(parentNode) ||
+          getEditorSchema(editor).markableVoid(parentNode)
+        );
+      };
+      const isExpandedRange = RangeApi.isExpanded(at);
+      let markAcceptingVoidSelected = false;
+
+      if (!isExpandedRange) {
+        const [selectedNode, selectedPath] = editorNode(editor, at);
+
+        if (marksMatch(selectedNode, selectedPath)) {
+          const [parentNode] = editorParent(editor, selectedPath);
+          markAcceptingVoidSelected =
+            NodeApi.isElement(parentNode) &&
+            getEditorSchema(editor).markableVoid(parentNode);
+        }
+      }
+
+      if (!isExpandedRange && !markAcceptingVoidSelected) {
+        return;
+      }
+
+      match = marksMatch;
+      mode = 'lowest';
+      split = true;
+      voids = true;
     }
 
     if (match == null) {

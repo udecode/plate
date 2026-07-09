@@ -59,14 +59,14 @@ export const addSelectedRow = (
     setOption('selectedIds', new Set());
   }
 
-  api.blockSelection.setSelectedIds({
+  api.setSelectedIds({
     added: [element],
     removed: [],
   });
 
   if (delay) {
     setTimeout(() => {
-      api.blockSelection.setSelectedIds({
+      api.setSelectedIds({
         added: [],
         removed: [element],
       });

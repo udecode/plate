@@ -1,9 +1,11 @@
 /** @jsx jsxt */
 
-import type { SlateEditor, TSuggestionText } from 'platejs';
+import { type BaseEditor } from '@platejs/core';
+import { type TSuggestionText } from '@platejs/utils';
 
+import { KEYS } from '@platejs/utils';
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { SkipSuggestionDeletes } from './SkipSuggestionDeletes';
@@ -17,10 +19,10 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
 });
 
 describe('SkipSuggestionDeletes', () => {
-  let editor: SlateEditor;
+  let editor: BaseEditor;
 
   beforeEach(() => {
-    editor = createSlateEditor({
+    editor = createBaseEditor({
       plugins: [suggestionPlugin],
     });
   });

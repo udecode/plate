@@ -1,19 +1,31 @@
-import { KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from '../utils';
 import { getTransientSuggestionKey } from '../utils/getTransientSuggestionKey';
 import { getSuggestionProps } from './getSuggestionProps';
 
 describe('getSuggestionProps', () => {
-  const editor = {
-    getOptions: () => ({ currentUserId: 'user-1' }),
-  } as any;
+  const createEditor = () =>
+    createBaseEditor({
+      plugins: [
+        BaseSuggestionPlugin.configure({
+          options: { currentUserId: 'user-1' },
+        }),
+      ],
+      value: [{ children: [{ text: '' }], type: 'p' }],
+    });
 
   it('returns inline suggestion props for text nodes', () => {
-    const result = getSuggestionProps(editor, { text: 'hello' } as any, {
-      createdAt: 123,
-      id: 'abc',
-    });
+    const result = getSuggestionProps(
+      createEditor(),
+      { text: 'hello' },
+      {
+        createdAt: 123,
+        id: 'abc',
+      }
+    );
 
     expect(result).toEqual({
       [KEYS.suggestion]: true,
@@ -28,8 +40,8 @@ describe('getSuggestionProps', () => {
 
   it('returns element suggestion props for element nodes', () => {
     const result = getSuggestionProps(
-      editor,
-      { children: [], type: 'p' } as any,
+      createEditor(),
+      { children: [], type: 'p' },
       { createdAt: 456, id: 'def', suggestionDeletion: true }
     );
 
@@ -44,12 +56,16 @@ describe('getSuggestionProps', () => {
   });
 
   it('marks inline suggestions as transient when requested', () => {
-    const result = getSuggestionProps(editor, { text: 'hello' } as any, {
-      createdAt: 789,
-      id: 'ghi',
-      transient: true,
-    });
+    const result = getSuggestionProps(
+      createEditor(),
+      { text: 'hello' },
+      {
+        createdAt: 789,
+        id: 'ghi',
+        transient: true,
+      }
+    );
 
-    expect((result as any)[getTransientSuggestionKey()]).toBe(true);
+    expect(result).toHaveProperty(getTransientSuggestionKey(), true);
   });
 });

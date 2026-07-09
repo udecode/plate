@@ -43,7 +43,10 @@ export const getRenderNodeProps = ({
   const resolvedPluginContext = pluginContext
     ? pluginContext
     : plugin
-      ? getEditorPlugin(editor as any, plugin as any)
+      ? {
+          ...getEditorPlugin(editor as any, plugin as any),
+          api: editor.api,
+        }
       : {
           api: editor.api,
           editor,

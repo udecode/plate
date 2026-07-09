@@ -68,7 +68,7 @@ export const BlockMenuPlugin = createPlatePlugin<BlockMenuConfig>({
         editor
           .plugin({ key: KEYS.blockSelection })
           .setOption('selectedIds', new Set([blockId]));
-        api.blockMenu.show(BLOCK_CONTEXT_MENU_ID, position);
+        api.show(BLOCK_CONTEXT_MENU_ID, position);
       },
     })
   )
@@ -77,7 +77,7 @@ export const BlockMenuPlugin = createPlatePlugin<BlockMenuConfig>({
       onMouseDown: ({ event, getOptions }) => {
         if (event.button === 0 && getOptions().openId) {
           event.preventDefault();
-          api.blockMenu.hide();
+          api.hide();
         }
         if (event.button === 2) event.preventDefault();
       },

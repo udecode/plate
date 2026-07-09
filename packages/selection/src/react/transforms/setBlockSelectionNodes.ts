@@ -18,7 +18,7 @@ export const setBlockSelectionNodes = (
   options?: NodeSetNodesOptions
 ) => {
   const { api } = editor.plugin(BlockSelectionPlugin);
-  const blocks = api.blockSelection.getNodes();
+  const blocks = api.getNodes();
 
   blocks.forEach(([, path]) => {
     tx.nodes.set(props, {
@@ -35,7 +35,7 @@ export const setBlockSelectionIndent = (
   options?: NodeSetNodesOptions
 ) => {
   const { api } = editor.plugin(BlockSelectionPlugin);
-  const blocks = api.blockSelection.getNodes();
+  const blocks = api.getNodes();
 
   blocks.forEach(([node, path]) => {
     const prevIndent = (node as { indent?: number }).indent ?? 0;
@@ -58,7 +58,7 @@ export const setBlockSelectionTexts = (
   options?: Omit<NodeSetNodesOptions, 'at'>
 ) => {
   const { api } = editor.plugin(BlockSelectionPlugin);
-  const blocks = api.blockSelection.getNodes();
+  const blocks = api.getNodes();
 
   blocks.forEach(([, path]) => {
     tx.nodes.set(props, {

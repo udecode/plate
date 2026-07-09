@@ -295,22 +295,28 @@ const resolvePluginMethods = (editor: BaseEditor, plugin: any) => {
   // Apply API and transform extensions
   if (plugin.__apiExtensions && plugin.__apiExtensions.length > 0) {
     plugin.__apiExtensions.forEach(({ extension, isPluginSpecific }: any) => {
-      const context = {
-        ...(getEditorPlugin(editor, plugin) as any),
-        api: editor.api,
-      };
-
-      const newExtensions = extension(context);
-
       if (isPluginSpecific) {
         // Handle APIs - Plugin-specific API
         if (!(plugin.api as any)[plugin.key]) {
           (plugin.api as any)[plugin.key] = {};
         }
 
+        const context = {
+          ...(getEditorPlugin(editor, plugin) as any),
+          api: (plugin.api as any)[plugin.key],
+          editorApi: editor.api,
+        };
+        const newExtensions = extension(context);
+
         merge((plugin.api as any)[plugin.key], newExtensions);
       } else {
         // Handle APIs - Editor-wide API
+        const context = {
+          ...(getEditorPlugin(editor, plugin) as any),
+          editorApi: editor.api,
+        };
+        const newExtensions = extension(context);
+
         merge(plugin.api, newExtensions);
       }
     });

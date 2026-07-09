@@ -8,7 +8,7 @@ import { BlockSelectionPlugin } from '../../react/BlockSelectionPlugin';
 
 export const selectBlocks = (editor: BaseEditor, at: Path | Node) => {
   const { api } = editor.plugin(BlockSelectionPlugin);
-  const blockSelection = api.blockSelection.getNodes();
+  const blockSelection = api.getNodes();
   const entry = PathApi.isPath(at)
     ? editor.read.nodes.get<TIdElement>(at)
     : (() => {
@@ -29,5 +29,5 @@ export const selectBlocks = (editor: BaseEditor, at: Path | Node) => {
         });
   const ids = selectedBlocks.map(([block]) => block.id as string);
 
-  api.blockSelection.set(ids.includes(element.id) ? ids : [element.id]);
+  api.set(ids.includes(element.id) ? ids : [element.id]);
 };

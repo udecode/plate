@@ -1,95 +1,88 @@
-import { KEYS } from 'platejs';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { ElementApi, TextApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
-import { getSuggestionKey } from '../utils';
+import { getInlineSuggestionData } from '../utils';
 import { setSuggestionNodes } from './setSuggestionNodes';
+
+const suggestionPlugin = BaseSuggestionPlugin.configure({
+  options: { currentUserId: 'user-1' },
+});
+
+const MentionPlugin = createBasePlugin({
+  key: KEYS.mention,
+  node: { isElement: true, isInline: true, isMarkableVoid: true, isVoid: true },
+});
 
 describe('setSuggestionNodes', () => {
   it('marks the selection and each inline node with shared suggestion metadata', () => {
-    const setNodes = mock();
-    const selection = {
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 1, path: [0, 1] },
-    };
-    const editor = {
-      api: {
-        isInline: () => true,
-        nodes: () => [
-          [{ type: 'a' }, [0, 1]],
-          [{ type: 'a' }, [0, 2]],
-        ],
+    const editor = createBaseEditor({
+      plugins: [suggestionPlugin, MentionPlugin],
+      selection: {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 2] },
       },
-      getOptions: (plugin: unknown) => {
-        expect(plugin).toBe(BaseSuggestionPlugin);
-
-        return { currentUserId: 'user-1' };
-      },
-      selection,
-      tf: {
-        setNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
-    } as any;
+      value: [
+        {
+          children: [
+            { text: 'ab ' },
+            { children: [{ text: '' }], type: KEYS.mention, value: 'Ada' },
+            { text: ' cd' },
+          ],
+          type: 'p',
+        },
+      ],
+    });
 
     setSuggestionNodes(editor, {
       createdAt: 123,
       suggestionId: 's-1',
     });
 
-    const props = {
-      [KEYS.suggestion]: true,
-      [getSuggestionKey('s-1')]: {
-        createdAt: 123,
-        id: 's-1',
-        type: 'remove',
-        userId: 'user-1',
-      },
-    };
+    const children = editor.read.children()[0].children;
+    const markedTextNodes = children.filter(
+      (node) =>
+        TextApi.isText(node) && getInlineSuggestionData(node)?.id === 's-1'
+    );
+    const mentionNode = children.find(
+      (node) => 'type' in node && node.type === KEYS.mention
+    );
+    const mentionData = mentionNode && getInlineSuggestionData(mentionNode);
+    const mentionChild =
+      mentionNode && ElementApi.isElement(mentionNode)
+        ? mentionNode.children[0]
+        : undefined;
 
-    expect(setNodes).toHaveBeenNthCalledWith(1, props, {
-      at: selection,
-      marks: true,
+    expect(markedTextNodes.map((node) => node.text)).toEqual(['b ', ' ']);
+    expect(mentionData).toMatchObject({
+      createdAt: 123,
+      id: 's-1',
+      type: 'remove',
+      userId: 'user-1',
     });
-    expect(setNodes).toHaveBeenNthCalledWith(
-      2,
-      props,
-      expect.objectContaining({
-        at: [0, 1],
-        match: expect.any(Function),
-      })
-    );
-    expect(setNodes).toHaveBeenNthCalledWith(
-      3,
-      props,
-      expect.objectContaining({
-        at: [0, 2],
-        match: expect.any(Function),
-      })
-    );
+    expect(
+      mentionChild && getInlineSuggestionData(mentionChild)
+    ).toBeUndefined();
   });
 
   it('can skip marking outer inline elements', () => {
-    const setNodes = mock();
-    const selection = {
-      anchor: { offset: 3, path: [0, 1, 0] },
-      focus: { offset: 4, path: [0, 1, 0] },
-    };
-    const editor = {
-      api: {
-        isInline: () => true,
-        nodes: () => [[{ type: 'a' }, [0, 1]]],
+    const editor = createBaseEditor({
+      plugins: [suggestionPlugin, MentionPlugin],
+      selection: {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 2, path: [0, 0] },
       },
-      getOptions: (plugin: unknown) => {
-        expect(plugin).toBe(BaseSuggestionPlugin);
-
-        return { currentUserId: 'user-1' };
-      },
-      selection,
-      tf: {
-        setNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
-    } as any;
+      value: [
+        {
+          children: [
+            { text: 'abc' },
+            { children: [{ text: '' }], type: KEYS.mention, value: 'Ada' },
+          ],
+          type: 'p',
+        },
+      ],
+    });
 
     setSuggestionNodes(editor, {
       createdAt: 123,
@@ -97,20 +90,15 @@ describe('setSuggestionNodes', () => {
       suggestionId: 's-1',
     });
 
-    const props = {
-      [KEYS.suggestion]: true,
-      [getSuggestionKey('s-1')]: {
-        createdAt: 123,
-        id: 's-1',
-        type: 'remove',
-        userId: 'user-1',
-      },
-    };
+    const children = editor.read.children()[0].children;
+    const markedTextNode = children.find(
+      (node) => getInlineSuggestionData(node)?.id === 's-1'
+    );
+    const mentionNode = children.find(
+      (node) => 'type' in node && node.type === KEYS.mention
+    );
 
-    expect(setNodes).toHaveBeenCalledTimes(1);
-    expect(setNodes).toHaveBeenCalledWith(props, {
-      at: selection,
-      marks: true,
-    });
+    expect(markedTextNode?.text).toBe('b');
+    expect(mentionNode && getInlineSuggestionData(mentionNode)).toBeUndefined();
   });
 });
