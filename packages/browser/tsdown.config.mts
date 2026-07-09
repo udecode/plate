@@ -14,10 +14,7 @@ export default defineConfig({
   platform: 'node',
   tsconfig: 'tsconfig.build.json',
   sourcemap: enableSourcemaps,
-  dts: {
-    bundle: true,
-    sourcemap: enableSourcemaps,
-  },
+  dts: false,
   outExtensions: () => ({
     js: '.js',
   }),

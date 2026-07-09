@@ -96,7 +96,7 @@ export const deleteSuggestion = (
 
     resId = id;
 
-    const toRef = editor.api.pointRef(to);
+    const toRef = editor.update.refs.point(to);
 
     let pointCurrent: Point | undefined;
 

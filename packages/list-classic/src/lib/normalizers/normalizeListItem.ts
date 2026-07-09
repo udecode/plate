@@ -76,7 +76,7 @@ export const normalizeListItem = (
   // Get invalid (type) li children path refs to be moved
   const invalidLiChildrenPathRefs = liChildren
     .filter(([child]) => !allValidLiChildrenTypes.has(child.type))
-    .map(([, childPath]) => editor.api.pathRef(childPath));
+    .map(([, childPath]) => editor.update.refs.path(childPath));
 
   const firstLiChild: ElementEntry | undefined = liChildren[0];
   const [firstLiChildNode, firstLiChildPath] = firstLiChild ?? [];
@@ -152,7 +152,7 @@ export const normalizeListItem = (
         break;
       }
 
-      blockPathRefs.push(editor.api.pathRef(licChild[1]));
+      blockPathRefs.push(editor.update.refs.path(licChild[1]));
 
       inlineChildren.push(
         ...getDeepInlineChildren(editor, {

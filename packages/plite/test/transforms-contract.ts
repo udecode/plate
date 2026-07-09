@@ -14,6 +14,7 @@ import {
   defineEditorExtension,
   type Element,
   NodeApi,
+  TextApi,
 } from '@platejs/plite';
 
 const collapsedSelection = (path: number[], offset: number) => ({
@@ -524,6 +525,50 @@ describe('plite transforms contract', () => {
         type: 'heading-three',
         id: 'stable-heading',
         children: [{ bold: true, text: 'Title' }],
+      },
+    ]);
+  });
+
+  it('setNodes with split does not include the next text when a range ends at offset zero', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'PingCode ' },
+            { text: 'Wiki' },
+            { text: ' & Worktile' },
+          ],
+        } as Descendant,
+      ],
+      selection: null,
+      marks: null,
+    });
+
+    editor.update((tx) => {
+      tx.nodes.set(
+        { diff: true },
+        {
+          at: {
+            anchor: { path: [0, 1], offset: 0 },
+            focus: { path: [0, 2], offset: 0 },
+          },
+          match: TextApi.isText,
+          split: true,
+        }
+      );
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'PingCode ' },
+          { diff: true, text: 'Wiki' },
+          { text: ' & Worktile' },
+        ],
       },
     ]);
   });

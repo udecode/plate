@@ -1,4 +1,4 @@
-import { createEditor } from 'platejs';
+import { createEditor, type Value } from '@platejs/plite';
 
 import { withChangeTracking } from './with-change-tracking';
 
@@ -23,29 +23,37 @@ const options = {
 } as any;
 
 describe('withChangeTracking', () => {
-  it('initializes tracking state and syncs editor.tf.apply', () => {
+  it('initializes tracking state', () => {
     const editor = withChangeTracking(createEditor(), options);
 
     expect(editor.insertedTexts).toEqual([]);
     expect(editor.removedTexts).toEqual([]);
     expect(editor.propsChanges).toEqual([]);
     expect(editor.recordingOperations).toBe(true);
-    expect(editor.tf.apply as any).toBe(editor.apply as any);
+    expect(typeof editor.applyOperation).toBe('function');
   });
 
   it('commits removed text back into the document as a delete diff', () => {
-    const editor = withChangeTracking(createEditor(), options);
+    const editor = withChangeTracking(
+      createEditor<Value>({
+        initialValue: [{ type: 'p', children: [{ text: 'old' }] }],
+      }),
+      options
+    );
 
-    editor.children = [{ type: 'p', children: [{ text: 'old' }] }] as any;
-    editor.tf.apply({
-      type: 'remove_text',
-      path: [0, 0],
-      offset: 1,
-      text: 'l',
+    editor.update((tx) => {
+      editor.applyOperation(tx, {
+        type: 'remove_text',
+        path: [0, 0],
+        offset: 1,
+        text: 'l',
+      });
     });
-    editor.commitChangesToDiffs();
+    editor.update((tx) => {
+      editor.commitChangesToDiffs(tx);
+    });
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         type: 'p',
         children: [
@@ -62,24 +70,34 @@ describe('withChangeTracking', () => {
   });
 
   it('skips update diffs for inserted ranges while preserving the inserted node props', () => {
-    const editor = withChangeTracking(createEditor(), options);
+    const editor = withChangeTracking(
+      createEditor<Value>({
+        initialValue: [{ type: 'p', children: [{ text: 'old' }] }],
+      }),
+      options
+    );
 
-    editor.children = [{ type: 'p', children: [{ text: 'old' }] }] as any;
-    editor.tf.apply({
-      type: 'insert_text',
-      path: [0, 0],
-      offset: 3,
-      text: '!',
+    editor.update((tx) => {
+      editor.applyOperation(tx, {
+        type: 'insert_text',
+        path: [0, 0],
+        offset: 3,
+        text: '!',
+      });
     });
-    editor.tf.apply({
-      type: 'set_node',
-      path: [0, 0],
-      properties: {},
-      newProperties: { bold: true },
+    editor.update((tx) => {
+      editor.applyOperation(tx, {
+        type: 'set_node',
+        path: [0, 0],
+        properties: {},
+        newProperties: { bold: true },
+      });
     });
-    editor.commitChangesToDiffs();
+    editor.update((tx) => {
+      editor.commitChangesToDiffs(tx);
+    });
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         type: 'p',
         children: [

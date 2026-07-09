@@ -72,7 +72,7 @@ export const removeListItem = (
 
       if (!tempLi) return;
 
-      const tempLiPathRef = editor.api.pathRef(tempLi[1]);
+      const tempLiPathRef = editor.update.refs.path(tempLi[1]);
 
       // 2
       moveListItemSublistItemsToListItemSublist(editor, {

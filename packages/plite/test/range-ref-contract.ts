@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   getChildren as editorGetChildren,
-  rangeRef as editorRangeRef,
   rangeRefs as editorRangeRefs,
   replace as editorReplace,
 } from '@platejs/plite/internal';
@@ -12,6 +11,7 @@ import {
   createEditorRuntime,
   createEditorView,
   type Element,
+  type RangeRef,
 } from '@platejs/plite';
 
 const createChildren = (): Element[] => [
@@ -51,7 +51,7 @@ describe('plite range ref contract', () => {
       marks: null,
     });
 
-    const ref = editorRangeRef(editor, {
+    const ref = editor.update.refs.range({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -82,7 +82,7 @@ describe('plite range ref contract', () => {
       marks: null,
     });
 
-    const ref = editorRangeRef(editor, {
+    const ref = editor.update.refs.range({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -108,7 +108,7 @@ describe('plite range ref contract', () => {
       marks: null,
     });
 
-    const ref = editorRangeRef(editor, {
+    const ref = editor.update.refs.range({
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 3 },
     });
@@ -135,7 +135,7 @@ describe('plite range ref contract', () => {
       marks: null,
     });
 
-    const ref = editorRangeRef(editor, {
+    const ref = editor.update.refs.range({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -162,7 +162,7 @@ describe('plite range ref contract', () => {
       marks: null,
     });
 
-    const ref = editorRangeRef(editor, {
+    const ref = editor.update.refs.range({
       anchor: { path: [0, 1, 0], offset: 1 },
       focus: { path: [0, 1, 0], offset: 3 },
     });
@@ -194,7 +194,7 @@ describe('plite range ref contract', () => {
       marks: null,
     });
 
-    const ref = editorRangeRef(editor, {
+    const ref = editor.update.refs.range({
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 7 },
     });
@@ -234,7 +234,7 @@ describe('plite range ref contract', () => {
       marks: null,
     });
 
-    const ref = editorRangeRef(editor, {
+    const ref = editor.update.refs.range({
       anchor: { path: [0, 1], offset: 0 },
       focus: { path: [0, 2], offset: 1 },
     });
@@ -266,7 +266,7 @@ describe('plite range ref contract', () => {
       marks: null,
     });
 
-    const ref = editorRangeRef(editor, {
+    const ref = editor.update.refs.range({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -294,10 +294,10 @@ describe('plite range ref contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    let ref: ReturnType<typeof editorRangeRef>;
+    let ref: RangeRef | undefined;
 
     headerEditor.update((tx) => {
-      ref = editorRangeRef(runtime.editor, {
+      ref = tx.refs.range({
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 4 },
       });
@@ -323,7 +323,7 @@ describe('plite range ref contract', () => {
         roots: { header: createChildren() },
       },
     });
-    const ref = editorRangeRef(editor, {
+    const ref = editor.update.refs.range({
       anchor: { path: [0, 0], offset: 1, root: 'header' },
       focus: { path: [0, 0], offset: 4, root: 'header' },
     });
@@ -355,10 +355,10 @@ describe('plite range ref contract', () => {
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const mainEditor = createEditorView(runtime);
-    let ref: ReturnType<typeof editorRangeRef>;
+    let ref: RangeRef | undefined;
 
-    headerEditor.update(() => {
-      ref = editorRangeRef(runtime.editor, {
+    headerEditor.update((tx) => {
+      ref = tx.refs.range({
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 4 },
       });

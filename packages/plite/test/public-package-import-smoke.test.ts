@@ -81,8 +81,6 @@ const exactPublicPackageRuntimeExportExpectations = {
     'last',
     'next',
     'parent',
-    'pathRef',
-    'pointRef',
     'previous',
     'queryNode',
     'range',

@@ -5,13 +5,14 @@
 
 import {
   type Descendant,
+  ElementApi,
   type Operation,
-  type TText,
   createEditor,
-  KEYS,
   PathApi,
+  type Text,
   TextApi,
-} from 'platejs';
+  type Value,
+} from '@platejs/plite';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
@@ -38,14 +39,13 @@ export function transformDiffTexts(
   if (
     nodes.length === 1 &&
     nextNodes.length === 1 &&
-    !TextApi.isText(nodes[0]) &&
-    !TextApi.isText(nextNodes[0]) &&
+    ElementApi.isElement(nodes[0]) &&
+    ElementApi.isElement(nextNodes[0]) &&
     options.isInline(nodes[0]) &&
     options.isInline(nextNodes[0])
   ) {
-    // Check if these inline elements are related
-    const element = nodes[0] as any;
-    const nextElement = nextNodes[0] as any;
+    const element = nodes[0];
+    const nextElement = nextNodes[0];
 
     // If they have the same type and properties (except children), diff their children
     if (
@@ -108,42 +108,52 @@ export function transformDiffTexts(
   });
 
   // Map inlines nodes to unique text nodes
-  const texts = nodes.map((n) => inlineNodeCharMap.nodeToText(n));
-  const nextTexts = nextNodes.map((n) => inlineNodeCharMap.nodeToText(n));
+  const texts = nodes
+    .map((n) => inlineNodeCharMap.nodeToText(n))
+    .map((text) => encodeLineBreaks(text, deletedLineBreakProxyChar));
+  const nextTexts = nextNodes
+    .map((n) => inlineNodeCharMap.nodeToText(n))
+    .map((text) => encodeLineBreaks(text, insertedLineBreakProxyChar));
 
-  const nodesEditor = withChangeTracking(createEditor(), options);
-  nodesEditor.children = [{ children: texts, type: KEYS.p }];
+  const nodesEditor = withChangeTracking(
+    createEditor<Value>({ initialValue: [{ children: texts, type: 'p' }] }),
+    options
+  );
 
-  nodesEditor.tf.withoutNormalizing(() => {
-    // Start with the first node in the array, assuming all nodes are to be merged into one
-    let node = texts[0];
+  // Start with the first node in the array, assuming all nodes are to be merged into one
+  let node = texts[0];
 
+  nodesEditor.update.withoutNormalizing(({ tx }) => {
     if (texts.length > 1) {
       // If there are multiple nodes, merge them into one, adding merge operations
       for (let i = 1; i < texts.length; i++) {
-        nodesEditor.tf.apply({
+        nodesEditor.applyOperation(tx, {
           path: [0, 1],
-          position: 0, // Required by type; not actually used here
-          properties: {}, // Required by type; not actually used here
+          position: 0,
+          properties: {},
           type: 'merge_node',
         });
         // Update the node's text with the merged text (for splitTextNodes)
         node = { ...node, text: node.text + texts[i].text };
       }
     }
+  });
 
+  nodesEditor.update.withoutNormalizing(({ tx }) => {
     // After merging, apply split operations based on the target state (`nextTexts`)
     for (const op of splitTextNodes(node, nextTexts, {
       deletedLineBreakChar: deletedLineBreakProxyChar,
       insertedLineBreakChar: insertedLineBreakProxyChar,
     })) {
-      nodesEditor.tf.apply(op);
+      nodesEditor.applyOperation(tx, op);
     }
-
-    nodesEditor.commitChangesToDiffs();
   });
 
-  let diffTexts: TText[] = (nodesEditor.children[0] as any).children;
+  nodesEditor.update.withoutNormalizing(({ tx }) => {
+    nodesEditor.commitChangesToDiffs(tx);
+  });
+
+  let diffTexts = nodesEditor.read.children()[0].children as Text[];
 
   // Replace line break proxy chars with the actual line break char
   if (hasLineBreakChar) {
@@ -163,6 +173,14 @@ type LineBreakCharsOptions = {
   deletedLineBreakChar?: string;
   insertedLineBreakChar?: string;
 };
+
+const encodeLineBreaks = (text: Text, lineBreakChar?: string): Text =>
+  lineBreakChar === undefined
+    ? text
+    : {
+        ...text,
+        text: text.text.replaceAll('\n', lineBreakChar),
+      };
 
 // Function to compute the text operations needed to transform string `a` into string `b`
 function slateTextDiff(
@@ -186,7 +204,7 @@ function slateTextDiff(
     const op = chunk[0]; // Operation code: -1 = delete, 0 = leave unchanged, 1 = insert
     const text = chunk[1]; // The text associated with this diff chunk
 
-    switch (op as any) {
+    switch (op) {
       case -1: {
         // For deletions, add a remove_text operation
         operations.push({
@@ -241,8 +259,8 @@ operations.
 */
 // Function to split a single text node into multiple nodes based on the desired target state
 function splitTextNodes(
-  node: TText,
-  split: TText[],
+  node: Text,
+  split: Text[],
   options: LineBreakCharsOptions
 ): Operation[] {
   if (split.length === 0) {

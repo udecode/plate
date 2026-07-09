@@ -1,24 +1,27 @@
 {
   "extends": "../../tooling/config/tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": "../..",
     "ignoreDeprecations": "6.0",
     "paths": {
-      "@platejs/plite": ["packages/plite/src/index.ts"],
-      "@platejs/plite/internal": ["packages/plite/src/internal/index.ts"],
-      "@platejs/plite-dom": ["packages/plite-dom/src/index.ts"],
+      "@platejs/plite": ["../../packages/plite/src/index.ts"],
+      "@platejs/plite/internal": ["../../packages/plite/src/internal/index.ts"],
+      "@platejs/plite-dom": ["../../packages/plite-dom/src/index.ts"],
       "@platejs/plite-dom/internal": [
-        "packages/plite-dom/src/internal/index.ts"
+        "../../packages/plite-dom/src/internal/index.ts"
       ],
-      "@platejs/plite-history": ["packages/plite-history/src/index.ts"],
-      "@platejs/plite-hyperscript": ["packages/plite-hyperscript/src/index.ts"],
-      "@platejs/plite-react": ["packages/plite-react/src/index.ts"],
-      "@platejs/test-utils": ["packages/test-utils/src/index.ts"],
+      "@platejs/plite-history": ["../../packages/plite-history/src/index.ts"],
+      "@platejs/plite-hyperscript": [
+        "../../packages/plite-hyperscript/src/index.ts"
+      ],
+      "@platejs/plite-react": ["../../packages/plite-react/src/index.ts"],
+      "@platejs/test-utils": ["../../packages/test-utils/src/index.ts"],
       "@udecode/react-hotkeys": [
-        "packages/udecode/react-hotkeys/src/index.tsx"
+        "../../packages/udecode/react-hotkeys/src/index.tsx"
       ],
-      "@udecode/react-utils": ["packages/udecode/react-utils/src/index.ts"],
-      "@udecode/utils": ["packages/udecode/utils/src/index.ts"]
+      "@udecode/react-utils": [
+        "../../packages/udecode/react-utils/src/index.ts"
+      ],
+      "@udecode/utils": ["../../packages/udecode/utils/src/index.ts"]
     }
   },
   "include": ["src", "../../tooling/config/global.d.ts"],

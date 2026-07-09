@@ -14,7 +14,7 @@ export type DiffProps = {
 };
 
 export type DiffUpdate = {
-  newProperties: Record<string, any>;
-  properties: Record<string, any>;
+  newProperties: Record<string, unknown>;
+  properties: Record<string, unknown>;
   type: 'update';
 };

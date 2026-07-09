@@ -2,7 +2,6 @@ import { getEditorSchema } from '../core/editor-runtime';
 import { runEditorTransaction } from '../core/public-state';
 import { getEditorTransformRegistry } from '../core/transform-registry';
 import { nodes as getNodes } from '../editor/nodes';
-import { createInternalRangeRef } from '../editor/range-ref';
 import { LocationApi, NodeApi, type Point, RangeApi } from '../interfaces';
 import {
   above as editorAbove,
@@ -69,7 +68,7 @@ export const wrapNodes: NodeMutationMethods['wrapNodes'] = (
 
       if (split && LocationApi.isRange(target)) {
         const [start, end] = RangeApi.edges(target);
-        const rangeRef = createInternalRangeRef(editor, target, {
+        const rangeRef = tx.refs.range(target, {
           affinity: 'inward',
         });
         const isAtBlockEdge = (point: Point) => {

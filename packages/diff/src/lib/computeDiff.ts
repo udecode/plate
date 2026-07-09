@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type { Descendant, EditorApi, TElement } from 'platejs';
+import type { Descendant, Element } from '@platejs/plite';
 
 import type { DiffProps } from './types';
 
@@ -11,20 +11,22 @@ import { transformDiffDescendants } from '../internal/transforms/transformDiffDe
 import { dmp } from '../internal/utils/dmp';
 import { StringCharMapping } from '../internal/utils/string-char-mapping';
 
+export type DiffProperties = Record<string, unknown>;
+
 export type ComputeDiffOptions = {
-  isInline: EditorApi['isInline'];
-  getDeleteProps: (node: Descendant) => any;
-  getInsertProps: (node: Descendant) => any;
+  isInline: (element: Descendant) => boolean;
+  getDeleteProps: (node: Descendant) => DiffProperties;
+  getInsertProps: (node: Descendant) => DiffProperties;
   getUpdateProps: (
     node: Descendant,
-    properties: any,
-    newProperties: any
-  ) => any;
+    properties: DiffProperties,
+    newProperties: DiffProperties
+  ) => DiffProperties;
   ignoreProps?: string[];
   lineBreakChar?: string;
   elementsAreRelated?: (
-    element: TElement,
-    nextElement: TElement
+    element: Element,
+    nextElement: Element
   ) => boolean | null;
 };
 
@@ -85,8 +87,8 @@ export const defaultGetDeleteProps = (): DiffProps => ({
 
 export const defaultGetUpdateProps = (
   _node: Descendant,
-  properties: any,
-  newProperties: any
+  properties: DiffProperties,
+  newProperties: DiffProperties
 ): DiffProps => ({
   diff: true,
   diffOperation: {

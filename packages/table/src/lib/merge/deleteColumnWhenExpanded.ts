@@ -47,7 +47,7 @@ const deleteSelection = (editor: SlateEditor) => {
   const pathRefs: PathRef[] = [];
 
   cells.forEach(([_cell, cellPath]) => {
-    pathRefs.push(editor.api.pathRef(cellPath));
+    pathRefs.push(editor.update.refs.path(cellPath));
   });
 
   pathRefs.forEach((pathRef) => {

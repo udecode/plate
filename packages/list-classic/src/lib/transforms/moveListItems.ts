@@ -54,7 +54,7 @@ export const moveListItems = (
 
     if (!isAncestor) {
       highestLicPaths.push(licPath);
-      highestLicPathRefs.push(editor.api.pathRef(licPath));
+      highestLicPathRefs.push(editor.update.refs.path(licPath));
     }
   });
 

@@ -123,6 +123,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.0",
+    "@babel/parser": "7.29.0",
     "@changesets/cli": "2.30.0",
     "@changesets/get-github-info": "0.8.0",
     "@happy-dom/global-registrator": "20.0.10",
@@ -202,7 +203,7 @@
     "tsdown": "0.16.6",
     "turbo": "2.6.1",
     "turbowatch": "2.29.4",
-    "typescript": "6.0.2",
+    "typescript": "7.0.2",
     "typescript-eslint": "^8.47.0",
     "ultracite": "7.8.3",
     "y-webrtc": "10.3.0",

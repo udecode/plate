@@ -105,12 +105,6 @@ const createRangeRef = (
   return ref;
 };
 
-export const createInternalRangeRef = (
-  editor: Parameters<EditorStaticApi['rangeRef']>[0],
-  range: Range,
-  options: { affinity?: RangeRef['affinity'] } = {}
-) => createRangeRef(editor, range, { ...options, visibility: 'internal' });
-
 export const rangeRef: EditorStaticApi['rangeRef'] = (
   editor,
   range,

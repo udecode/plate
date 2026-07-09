@@ -5,7 +5,6 @@ import {
 import { getEditorTransformRegistry } from '../core/transform-registry';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
-import { createInternalRangeRef } from '../editor/range-ref';
 import {
   type Ancestor,
   type Descendant,
@@ -145,7 +144,7 @@ export const unwrapNodes: NodeMutationMethods['unwrapNodes'] = (
       }
 
       const rangeRef = LocationApi.isRange(target)
-        ? createInternalRangeRef(editor, target)
+        ? tx.refs.range(target)
         : null;
       const pathRefs = Array.from(
         getNodes(editor, { at: target, match, mode, voids }),

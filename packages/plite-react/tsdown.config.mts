@@ -1,10 +1,6 @@
 import { defineConfig } from 'tsdown';
 
 const enableSourcemaps = !process.env.CI;
-const dts = {
-  bundle: true,
-  sourcemap: enableSourcemaps,
-};
 
 export default defineConfig({
   entry: {
@@ -15,7 +11,7 @@ export default defineConfig({
   platform: 'neutral',
   tsconfig: 'tsconfig.build.json',
   sourcemap: enableSourcemaps,
-  dts,
+  dts: false,
   outExtensions: () => ({
     js: '.js',
   }),

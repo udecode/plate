@@ -1,24 +1,19 @@
-import type { Descendant, OverrideEditor } from 'platejs';
-
 import cloneDeep from 'lodash/cloneDeep.js';
 
-export const withGetFragmentExcludeDiff: OverrideEditor = ({
-  api: { getFragment },
-}) => ({
-  api: {
-    getFragment() {
-      const fragment = cloneDeep(getFragment());
+import { type Descendant, ElementApi } from '@platejs/plite';
 
-      const removeDiff = (node: Descendant) => {
-        if ('diff' in node) node.diff = undefined;
-        if ('diffOperation' in node) node.diffOperation = undefined;
-        if ('children' in node)
-          (node.children as Descendant[]).forEach(removeDiff);
-      };
+export const withGetFragmentExcludeDiff = (
+  fragment: readonly Descendant[]
+): Descendant[] => {
+  const nextFragment = cloneDeep(fragment) as Descendant[];
 
-      fragment.forEach(removeDiff);
+  const removeDiff = (node: Descendant) => {
+    if ('diff' in node) node.diff = undefined;
+    if ('diffOperation' in node) node.diffOperation = undefined;
+    if (ElementApi.isElement(node)) node.children.forEach(removeDiff);
+  };
 
-      return fragment;
-    },
-  },
-});
+  nextFragment.forEach(removeDiff);
+
+  return nextFragment;
+};

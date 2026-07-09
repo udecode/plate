@@ -47,8 +47,10 @@ import type {
 import type { Location } from './interfaces/location';
 import type { Point } from './interfaces/point';
 import { RangeApi, type Range } from './interfaces/range';
+import type { RangeRef } from './interfaces/range-ref';
 import {
   getRangeRoot,
+  type RangeRootMeta,
   stripImplicitRangeRoots,
   withImplicitRangeRoot,
 } from './internal/root-location';
@@ -151,6 +153,26 @@ const rootBookmarkMethod = <
       unref: () => stripRange(bookmark.unref()),
     } satisfies Bookmark;
   }) as TMethod;
+
+const toViewRangeRef = (ref: RangeRef, rootMeta: RangeRootMeta): RangeRef => {
+  const stripRange = (range: Range | null) =>
+    range ? stripImplicitRangeRoots(range, rootMeta) : null;
+  const withRootRange = (range: Range | null) =>
+    range && rootMeta.root ? withImplicitRangeRoot(range, rootMeta.root) : range;
+
+  return {
+    affinity: ref.affinity,
+    get current() {
+      return stripRange(ref.current);
+    },
+    set current(range) {
+      ref.current = withRootRange(range);
+    },
+    unref() {
+      return stripRange(ref.unref());
+    },
+  };
+};
 
 const runRootTransform = <T>(
   editor: Editor,
@@ -465,7 +487,6 @@ const withRootRuntime = <T extends ViewStateTransformInput>(
   Object.freeze({
     ...state.runtime,
     idAt: rootMethod(editor, viewState, state.runtime.idAt),
-    pathRef: rootMethod(editor, viewState, state.runtime.pathRef),
     pathOf: rootMethod(editor, viewState, state.runtime.pathOf),
     snapshot: () =>
       withViewSnapshot(
@@ -668,6 +689,20 @@ const withViewTransaction = <V extends Value>(
           transaction.nodes.wrap(element, options)
         ),
     }),
+    refs: Object.freeze<EditorUpdateTransaction<V>['refs']>({
+      path: (path, options = {}) =>
+        transaction.refs.path(path, { ...options, root: viewState.root }),
+      point: (point, options = {}) =>
+        transaction.refs.point(withPointRoot(point, viewState), options),
+      range: (range, options = {}) => {
+        const rootMeta = getRangeRoot(range, viewState.root);
+
+        return toViewRangeRef(
+          transaction.refs.range(withRangeRoot(range, viewState), options),
+          rootMeta
+        );
+      },
+    }),
     selection: Object.freeze(
       Object.assign(() => state.selection(), {
         isAcrossBlocks: () => state.selection.isAcrossBlocks(),
@@ -830,8 +865,14 @@ const createViewRuntime = <V extends Value>(
       withRootRead(editor, viewState, () => baseRuntime.projectRange(...args)),
     range: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.range(...args)),
-    rangeRef: (range, options = {}) =>
-      baseRuntime.rangeRef(withRangeRoot(range, viewState), options),
+    rangeRef: (range, options = {}) => {
+      const rootMeta = getRangeRoot(range, viewState.root);
+
+      return toViewRangeRef(
+        baseRuntime.rangeRef(withRangeRoot(range, viewState), options),
+        rootMeta
+      );
+    },
     read: (fn) =>
       baseRuntime.read((state) =>
         fn(withViewState(editor, state, viewState) as EditorStateView<V>)

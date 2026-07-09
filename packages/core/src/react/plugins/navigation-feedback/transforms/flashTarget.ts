@@ -93,7 +93,7 @@ export const flashTarget = (
   const activeTarget = {
     cycle: (pulse % 2) as 0 | 1,
     duration: timeoutMs,
-    pathRef: editor.read.runtime.pathRef(target.path),
+    pathRef: editor.update.refs.path(target.path),
     pulse,
     type: target.type,
     variant,

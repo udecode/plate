@@ -65,7 +65,7 @@ const rebuildRegistry = (editor: SlateEditor, registry: FootnoteRegistry) => {
 
     if (!identifier) continue;
 
-    const ref = editor.api.pathRef(path);
+    const ref = editor.update.refs.path(path);
 
     if ((node as TElement).type === definitionType) {
       const refs = registry.definitionsByIdentifier.get(identifier) ?? [];

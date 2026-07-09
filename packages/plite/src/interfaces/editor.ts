@@ -586,6 +586,12 @@ export type EditorTransactionTextApi = EditorStateTextApi & {
   insert: (text: string, options?: TextInsertTextOptions) => void;
 };
 
+export type EditorTransactionRefsApi = {
+  path: (path: Path, options?: EditorPathRefOptions) => PathRef;
+  point: (point: Point, options?: EditorPointRefOptions) => PointRef;
+  range: (range: Range, options?: EditorRangeRefOptions) => RangeRef;
+};
+
 export type EditorStateSchemaApi = {
   getElementBehavior: (element: Element) => EditorElementBehavior;
   getElementProperty: <T = unknown>(
@@ -617,7 +623,6 @@ export type EditorStateSchemaApi = {
 
 export type EditorStateRuntimeApi<V extends Value = Value> = {
   idAt: (path: Path) => RuntimeId | null;
-  pathRef: (path: Path, options?: EditorPathRefOptions) => PathRef;
   pathOf: (runtimeId: RuntimeId) => Path | null;
   snapshot: () => EditorSnapshot<V>;
 };
@@ -743,6 +748,7 @@ export type EditorCoreUpdateTransaction<V extends Value = Value> = Omit<
   nodes: EditorTransactionNodesApi<V>;
   normalize: (options?: EditorNormalizeOptions) => void;
   operations: EditorTransactionOperationsApi<V>;
+  refs: EditorTransactionRefsApi;
   roots: EditorTransactionRootsApi<V>;
   selection: EditorTransactionSelectionApi;
   setField: <TValue>(
@@ -811,6 +817,7 @@ export type EditorCoreUpdateMethods<V extends Value = Value> = {
   >;
   normalize: BivariantFunction<EditorCoreUpdateTransaction<V>['normalize']>;
   operations: EditorBivariantMethods<EditorTransactionOperationsApi<V>>;
+  refs: EditorBivariantMethods<EditorTransactionRefsApi>;
   roots: EditorBivariantMethods<EditorTransactionRootsApi<V>>;
   selection: EditorBivariantMethods<
     Pick<
@@ -1514,6 +1521,7 @@ export type EditorTransaction<V extends Value = Value> = {
   getModelSelection: () => Selection;
   readonly marks: EditorMarks<V> | null;
   readonly operations: readonly Operation<V>[];
+  refs: EditorTransactionRefsApi;
   resolveTarget: (options?: { at?: Location }) => Location | null;
   readonly selection: Selection;
   setMarks: (marks: EditorMarks<V> | null) => void;
@@ -2123,10 +2131,10 @@ export type EditorExtensionRegistry = {
   txGroups: Map<string, unknown>;
 };
 
-export type EditorCommitListener<V extends Value = Value> = (
-  commit: EditorCommit<V>,
-  snapshot: EditorSnapshot<V>
-) => void;
+export type EditorCommitListener<V extends Value = Value> = BivariantMethod<
+  [commit: EditorCommit<V>, snapshot: EditorSnapshot<V>],
+  void
+>;
 
 export type DirtyRegion = {
   paths: readonly Path[];

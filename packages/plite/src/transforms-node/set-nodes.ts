@@ -9,7 +9,7 @@ import {
 import { getEditorTransformRegistry } from '../core/transform-registry';
 import { updateDirtyPaths } from '../core/update-dirty-paths';
 import { nodes as getNodes } from '../editor/nodes';
-import { createInternalRangeRef } from '../editor/range-ref';
+import { end as editorEnd } from '../editor/end';
 import { LocationApi } from '../interfaces';
 import {
   getChildren as editorGetChildren,
@@ -18,11 +18,12 @@ import {
   isStart as editorIsStart,
   leaf as editorLeaf,
   unhangRange as editorUnhangRange,
+  type NodeMatch,
 } from '../interfaces/editor';
 import { type Descendant, type Node, NodeApi } from '../interfaces/node';
 import type { Operation } from '../interfaces/operation';
 import { PathApi } from '../interfaces/path';
-import { RangeApi } from '../interfaces/range';
+import { type Range, RangeApi } from '../interfaces/range';
 import { NON_SETTABLE_NODE_PROPERTIES } from '../interfaces/transforms/general';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
 import { matchPath } from '../utils/match-path';
@@ -149,6 +150,39 @@ const applySetNodeBatch = (
   }
 };
 
+const trimSplitRangeEndAtTextStart = (
+  editor: Parameters<NodeMutationMethods['setNodes']>[0],
+  range: Range,
+  match: NodeMatch<Node>
+): Range => {
+  const [start, end] = RangeApi.edges(range);
+
+  if (
+    end.offset !== 0 ||
+    PathApi.equals(start.path, end.path) ||
+    !PathApi.hasPrevious(end.path)
+  ) {
+    return range;
+  }
+
+  const endNode = NodeApi.get(editor, end.path);
+
+  if (!NodeApi.isText(endNode) || !match(endNode, end.path)) {
+    return range;
+  }
+
+  const previousEnd = editorEnd(editor, PathApi.previous(end.path));
+  const trimmedRange = { anchor: start, focus: previousEnd };
+
+  if (RangeApi.isCollapsed(trimmedRange)) {
+    return range;
+  }
+
+  return RangeApi.isBackward(range)
+    ? { anchor: trimmedRange.focus, focus: trimmedRange.anchor }
+    : trimmedRange;
+};
+
 export const setNodes: NodeMutationMethods['setNodes'] = (
   editor,
   props: Partial<Node>,
@@ -194,7 +228,7 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
         // set that won't get normalized away
         return;
       }
-      const rangeRef = createInternalRangeRef(editor, at, {
+      const rangeRef = tx.refs.range(at, {
         affinity: 'inward',
       });
       const [start, end] = RangeApi.edges(at);
@@ -216,6 +250,10 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
         always: !startAtStartOfNode,
       });
       at = rangeRef.unref()!;
+
+      if (optionAt !== undefined && LocationApi.isRange(at)) {
+        at = trimSplitRangeEndAtTextStart(editor, at, match);
+      }
 
       if (options.at == null) {
         transforms.select(at);

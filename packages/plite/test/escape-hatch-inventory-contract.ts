@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, it } from 'node:test';
-import * as ts from 'typescript';
+import { parse, type ParserPlugin } from '@babel/parser';
 
 const repoRoot = resolve(import.meta.dir, '../../..');
 
@@ -208,126 +208,206 @@ const listSourceFiles = () => {
 const findRule = (relativePath: string) =>
   inventoryRules.find((rule) => rule.path.test(relativePath));
 
-const getScriptKind = (relativePath: string) => {
-  if (relativePath.endsWith('.tsx')) {
-    return ts.ScriptKind.TSX;
-  }
-  if (relativePath.endsWith('.jsx')) {
-    return ts.ScriptKind.JSX;
-  }
-  if (relativePath.endsWith('.ts')) {
-    return ts.ScriptKind.TS;
-  }
-
-  return ts.ScriptKind.JS;
+type BabelNode = {
+  end?: number | null;
+  name?: unknown;
+  start?: number | null;
+  type: string;
+  value?: unknown;
+  [key: string]: unknown;
 };
 
-const isEditorUpdateCall = (node: ts.Node) => {
-  if (!ts.isCallExpression(node)) {
+const isBabelNode = (value: unknown): value is BabelNode =>
+  typeof value === 'object' &&
+  value !== null &&
+  typeof (value as { type?: unknown }).type === 'string';
+
+const getNodeName = (node: unknown) => {
+  if (!isBabelNode(node)) {
+    return;
+  }
+
+  if (node.type === 'Identifier' && typeof node.name === 'string') {
+    return node.name;
+  }
+  if (node.type === 'StringLiteral' && typeof node.value === 'string') {
+    return node.value;
+  }
+};
+
+const getMemberPropertyName = (node: BabelNode) => {
+  if (
+    node.type !== 'MemberExpression' &&
+    node.type !== 'OptionalMemberExpression'
+  ) {
+    return;
+  }
+
+  return getNodeName(node.property);
+};
+
+const getMemberObjectName = (node: BabelNode) => {
+  if (
+    node.type !== 'MemberExpression' &&
+    node.type !== 'OptionalMemberExpression'
+  ) {
+    return;
+  }
+
+  return getNodeName(node.object);
+};
+
+const isCallExpression = (node: BabelNode) =>
+  node.type === 'CallExpression' || node.type === 'OptionalCallExpression';
+
+const isEditorUpdateCall = (node: BabelNode) => {
+  if (!isCallExpression(node)) {
     return false;
   }
 
-  const callee = node.expression;
+  const { callee } = node;
 
   return (
-    ts.isPropertyAccessExpression(callee) &&
-    callee.name.text === 'update' &&
-    ts.isIdentifier(callee.expression) &&
-    callee.expression.text === 'editor'
+    isBabelNode(callee) &&
+    getMemberPropertyName(callee) === 'update' &&
+    getMemberObjectName(callee) === 'editor'
   );
 };
 
-const getPropertyName = (node: ts.Node) => {
-  if (ts.isPropertyAssignment(node) || ts.isMethodDeclaration(node)) {
-    const { name } = node;
-
-    if (ts.isIdentifier(name) || ts.isStringLiteral(name)) {
-      return name.text;
-    }
+const getPropertyName = (node: BabelNode) => {
+  if (
+    node.type === 'ObjectProperty' ||
+    node.type === 'ObjectMethod' ||
+    node.type === 'ClassMethod' ||
+    node.type === 'ClassPrivateMethod'
+  ) {
+    return getNodeName(node.key);
   }
 
-  if (ts.isBinaryExpression(node) && ts.isPropertyAccessExpression(node.left)) {
-    return node.left.name.text;
+  if (node.type !== 'AssignmentExpression' || !isBabelNode(node.left)) {
+    return;
   }
 
-  return;
+  return getMemberPropertyName(node.left);
 };
 
-const isInsideNormalizer = (node: ts.Node) => {
-  let current = node.parent;
+const isInsideNormalizer = (ancestors: readonly BabelNode[]) =>
+  ancestors.some((ancestor) => getPropertyName(ancestor) === 'normalizeNode');
 
-  while (current) {
-    if (getPropertyName(current) === 'normalizeNode') {
-      return true;
-    }
-
-    current = current.parent;
-  }
-
-  return false;
-};
-
-const isPrimitiveCall = (node: ts.Node) => {
-  if (!ts.isCallExpression(node)) {
+const isPrimitiveCall = (node: BabelNode) => {
+  if (!isCallExpression(node)) {
     return false;
   }
 
-  const callee = node.expression;
+  const { callee } = node;
 
-  if (!ts.isPropertyAccessExpression(callee)) {
+  if (!isBabelNode(callee)) {
     return false;
   }
 
-  if (!primitiveMethodNames.has(callee.name.text)) {
+  if (!primitiveMethodNames.has(getMemberPropertyName(callee) ?? '')) {
     return false;
   }
 
-  return (
-    ts.isIdentifier(callee.expression) &&
-    (callee.expression.text === 'editor' || callee.expression.text === 'Editor')
-  );
+  const objectName = getMemberObjectName(callee);
+
+  return objectName === 'editor' || objectName === 'Editor';
 };
 
-const isInsideEditorUpdate = (node: ts.Node) => {
-  let current = node.parent;
+const isInsideEditorUpdate = (ancestors: readonly BabelNode[]) =>
+  ancestors.some(isEditorUpdateCall);
 
-  while (current) {
-    if (isEditorUpdateCall(current)) {
-      return true;
-    }
+const primitiveCallPattern = new RegExp(
+  String.raw`\b(?:editor|Editor)\.(${Array.from(primitiveMethodNames).join('|')})\s*\(`,
+  'g'
+);
 
-    current = current.parent;
+const getPrimitiveMatchesByRegex = (source: string) =>
+  Array.from(source.matchAll(primitiveCallPattern), (match) => match[0]);
+
+const getParserPlugins = (
+  relativePath: string,
+  source: string
+): ParserPlugin[] => {
+  const plugins: ParserPlugin[] = ['decorators-legacy'];
+
+  if (/\.[cm]?[tj]sx$/.test(relativePath) || /@jsx\b/.test(source)) {
+    plugins.push('jsx');
   }
 
-  return false;
+  if (/\.[cm]?tsx?$/.test(relativePath)) {
+    plugins.push('typescript');
+  }
+
+  return plugins;
 };
 
 const getUnsafePrimitiveMatchesFromSource = (
   source: string,
-  relativePath: string
+  relativePath: string,
+  { allowRegexFallback = false } = {}
 ) => {
-  const sourceFile = ts.createSourceFile(
-    relativePath,
-    source,
-    ts.ScriptTarget.Latest,
-    true,
-    getScriptKind(relativePath)
-  );
-  const matches: string[] = [];
+  let sourceFile: BabelNode;
 
-  const visit = (node: ts.Node) => {
-    if (
-      isPrimitiveCall(node) &&
-      !isInsideEditorUpdate(node) &&
-      !isInsideNormalizer(node)
-    ) {
-      matches.push(node.getText(sourceFile));
+  try {
+    sourceFile = parse(source, {
+      attachComment: false,
+      errorRecovery: true,
+      plugins: getParserPlugins(relativePath, source),
+      sourceType: 'unambiguous',
+    }) as unknown as BabelNode;
+  } catch (error) {
+    if (allowRegexFallback) {
+      return getPrimitiveMatchesByRegex(source);
     }
 
-    ts.forEachChild(node, visit);
+    throw new Error(`Failed to parse ${relativePath}`, { cause: error });
+  }
+
+  const matches: string[] = [];
+
+  const visit = (node: BabelNode, ancestors: readonly BabelNode[]) => {
+    if (
+      isPrimitiveCall(node) &&
+      !isInsideEditorUpdate(ancestors) &&
+      !isInsideNormalizer(ancestors) &&
+      typeof node.start === 'number' &&
+      typeof node.end === 'number'
+    ) {
+      matches.push(source.slice(node.start, node.end));
+    }
+
+    const nextAncestors = [...ancestors, node];
+
+    for (const [key, value] of Object.entries(node)) {
+      if (
+        key === 'comments' ||
+        key === 'end' ||
+        key === 'errors' ||
+        key === 'extra' ||
+        key === 'loc' ||
+        key === 'start' ||
+        key === 'tokens'
+      ) {
+        continue;
+      }
+
+      if (Array.isArray(value)) {
+        for (const child of value) {
+          if (isBabelNode(child)) {
+            visit(child, nextAncestors);
+          }
+        }
+        continue;
+      }
+
+      if (isBabelNode(value)) {
+        visit(value, nextAncestors);
+      }
+    }
   };
 
-  visit(sourceFile);
+  visit(sourceFile, []);
 
   return matches;
 };
@@ -355,7 +435,8 @@ const getPrimitiveMatches = (source: string, relativePath: string) => {
   return getMarkdownCodeBlocks(source).flatMap((block, index) =>
     getUnsafePrimitiveMatchesFromSource(
       block,
-      `${relativePath}#code-block-${index}.ts`
+      `${relativePath}#code-block-${index}.ts`,
+      { allowRegexFallback: true }
     )
   );
 };

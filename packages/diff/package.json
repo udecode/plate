@@ -5,7 +5,7 @@
   "keywords": [
     "plate",
     "plugin",
-    "slate"
+    "plite"
   ],
   "homepage": "https://platejs.org",
   "bugs": {
@@ -40,17 +40,10 @@
   "dependencies": {
     "@platejs/plite": "workspace:^",
     "diff-match-patch-ts": "^0.6.0",
-    "lodash": "^4.17.21",
-    "react-compiler-runtime": "^1.0.0"
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:*",
-    "platejs": "workspace:^"
-  },
-  "peerDependencies": {
-    "platejs": ">=54.0.0-beta.0",
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "@plate/scripts": "workspace:*"
   },
   "publishConfig": {
     "access": "public"

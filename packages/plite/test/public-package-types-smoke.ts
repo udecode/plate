@@ -40,8 +40,6 @@ type PublicPackageNamedExports = [
   typeof import('@platejs/plite').last,
   typeof import('@platejs/plite').next,
   typeof import('@platejs/plite').parent,
-  typeof import('@platejs/plite').pathRef,
-  typeof import('@platejs/plite').pointRef,
   typeof import('@platejs/plite').previous,
   typeof import('@platejs/plite').range,
   typeof import('@platejs/plite').start,
@@ -92,6 +90,7 @@ type PublicPackageNamedTypeExports = [
   import('@platejs/plite').EditorCommit,
   import('@platejs/plite').EditorRead,
   import('@platejs/plite').EditorReadMethods,
+  import('@platejs/plite').EditorUpdateTransaction,
   import('@platejs/plite').EditorUpdate,
   import('@platejs/plite').EditorUpdateMethods,
   import('@platejs/plite').Element,
@@ -100,6 +99,7 @@ type PublicPackageNamedTypeExports = [
   import('@platejs/plite').Path,
   import('@platejs/plite').Point,
   import('@platejs/plite').Range,
+  import('@platejs/plite').RangeRef,
   import('@platejs/plite').Text,
   import('@platejs/plite').Value,
   import('@platejs/yjs').YjsExtensionOptions,
@@ -138,6 +138,7 @@ type PublicPackageNamedTypeExports = [
 ];
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
+type ExpectFalse<T extends false> = T;
 type FirstArgument<T> = T extends (
   value: infer TInput,
   ...args: infer _Rest
@@ -156,6 +157,7 @@ type IsUnknownPredicateInput<T> =
 type ExpectTrue<T extends true> = T;
 type ExpectAssignable<TExpected, _TActual extends TExpected> = true;
 declare const editor: import('@platejs/plite').Editor;
+declare const tx: import('@platejs/plite').EditorUpdateTransaction;
 type _PublicEditorLifecycleMethods = [
   ExpectAssignable<string, ReturnType<typeof editor.read.text.string>>,
   ExpectAssignable<
@@ -173,6 +175,16 @@ type _PublicEditorLifecycleMethods = [
     ReturnType<typeof editor.update.nodes.replaceChildren>
   >,
   ExpectAssignable<void, ReturnType<typeof editor.update.marks.toggle>>,
+  ExpectFalse<IsAny<ReturnType<typeof editor.update.refs.range>>>,
+  ExpectAssignable<
+    import('@platejs/plite').RangeRef,
+    ReturnType<typeof editor.update.refs.range>
+  >,
+  ExpectFalse<IsAny<ReturnType<typeof tx.refs.range>>>,
+  ExpectAssignable<
+    import('@platejs/plite').RangeRef,
+    ReturnType<typeof tx.refs.range>
+  >,
 ];
 type PublicUnknownPredicateInputs = [
   ExpectTrue<

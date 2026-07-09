@@ -51,6 +51,12 @@ const runTsdown = (watch = false) => {
   if (watch) args.push('--watch');
   const result = run(tsdownBin, args);
 
+  if (!watch && result.status === 0) {
+    const buildTsconfig = path.join(INIT_CWD, 'tsconfig.build.json');
+
+    return runPnpm('tsc', ['-p', buildTsconfig]);
+  }
+
   return result;
 };
 

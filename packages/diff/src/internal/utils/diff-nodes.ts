@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { type Descendant, ElementApi, TextApi } from 'platejs';
+import { type Descendant, ElementApi, TextApi } from '@platejs/plite';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 

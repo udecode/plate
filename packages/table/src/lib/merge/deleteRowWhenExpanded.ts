@@ -62,7 +62,7 @@ export const deleteRowWhenExpanded = (
 
     for (let i = firsRowIndex; i < firsRowIndex + acrossRow; i++) {
       const removedPath = tablePath.concat(i);
-      pathRefs.push(editor.api.pathRef(removedPath));
+      pathRefs.push(editor.update.refs.path(removedPath));
     }
 
     pathRefs.forEach((item) => {

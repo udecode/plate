@@ -45,7 +45,7 @@ export const withDeleteFragmentList: OverrideEditor<ListConfig> = ({
           });
           const liEndCanBeDeleted = liEnd && !hasListChild(editor, liEnd[0]);
           const liEndPathRef = liEndCanBeDeleted
-            ? editor.api.pathRef(liEnd![1])
+            ? editor.update.refs.path(liEnd![1])
             : undefined;
 
           // use deleteFragment when selection wrapped around list

@@ -1,5 +1,10 @@
 import type { CSSProperties } from 'react';
 
+type PliteSpacerShellAttributes = {
+  'data-plite-spacer': true;
+  style: CSSProperties;
+};
+
 const defaultSpacerStyle = {
   height: '0',
   color: 'transparent',
@@ -35,7 +40,9 @@ export const getPliteLeafShellAttributes = () => ({
   'data-plite-leaf': true as const,
 });
 
-export const getPliteSpacerShellStyle = (style?: CSSProperties) => ({
+export const getPliteSpacerShellStyle = (
+  style?: CSSProperties
+): CSSProperties => ({
   ...defaultSpacerStyle,
   ...style,
 });
@@ -44,7 +51,7 @@ export const getPliteSpacerShellAttributes = ({
   style,
 }: {
   style?: CSSProperties;
-} = {}) => ({
+} = {}): PliteSpacerShellAttributes => ({
   'data-plite-spacer': true as const,
   style: getPliteSpacerShellStyle(style),
 });

@@ -278,12 +278,17 @@ export const createEditorUpdateApi = <
         get(_target, key) {
           if (typeof key !== 'string') return;
 
-          return (...args: unknown[]) =>
-            update((tx) =>
-              (tx[groupName] as Record<string, (...args: unknown[]) => void>)[
-                key
-              ]!(...args)
-            );
+          return (...args: unknown[]) => {
+            let result: unknown;
+
+            update((tx) => {
+              result = (
+                tx[groupName] as Record<string, (...args: unknown[]) => unknown>
+              )[key]!(...args);
+            });
+
+            return result;
+          };
         },
       }
     ) as EditorUpdateMethods<V>[TGroup];
@@ -299,6 +304,7 @@ export const createEditorUpdateApi = <
         tx.normalize(...args)
       )) as EditorUpdateMethods<V>['normalize'],
     operations: createGroup('operations'),
+    refs: createGroup('refs'),
     roots: createGroup('roots'),
     selection: createGroup('selection'),
     setField: ((...args) =>

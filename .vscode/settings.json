@@ -1,4 +1,6 @@
 {
+  "js/ts.experimental.useTsgo": true,
+  "npm.packageManager": "pnpm",
   "files.exclude": {
     ".pnpm-store": true,
     "content/**/*cn.mdx": true

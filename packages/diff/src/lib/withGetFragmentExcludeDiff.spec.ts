@@ -17,13 +17,7 @@ describe('withGetFragmentExcludeDiff', () => {
       },
     ] as any;
 
-    const override = withGetFragmentExcludeDiff({
-      api: {
-        getFragment: () => original,
-      },
-    } as any);
-
-    const fragment = override.api!.getFragment!();
+    const fragment = withGetFragmentExcludeDiff(original);
 
     expect(fragment).toEqual([
       {

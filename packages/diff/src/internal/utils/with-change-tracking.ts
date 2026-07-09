@@ -1,124 +1,129 @@
 import isEqual from 'lodash/isEqual.js';
 import uniqWith from 'lodash/uniqWith.js';
 import {
+  type EditorUpdateTransaction,
   type Editor,
-  type EditorTransforms,
-  type InsertTextOperation,
-  type LegacyEditorMethods,
-  type MergeNodeOperation,
   type Operation,
   type PointRef,
   type RangeRef,
-  type RemoveTextOperation,
-  type SetNodeOperation,
-  type SplitNodeOperation,
-  type TText,
+  type Value,
   NodeApi,
   PathApi,
   PointApi,
   RangeApi,
-} from 'platejs';
+  TextApi,
+  type Text,
+} from '@platejs/plite';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
+type InsertTextOperation = Extract<Operation<Value>, { type: 'insert_text' }>;
+type MergeNodeOperation = Extract<Operation<Value>, { type: 'merge_node' }>;
+type RemoveTextOperation = Extract<Operation<Value>, { type: 'remove_text' }>;
+type SetNodeOperation = Extract<Operation<Value>, { type: 'set_node' }>;
+type SplitNodeOperation = Extract<Operation<Value>, { type: 'split_node' }>;
+
 export type ChangeTrackingEditor = {
   insertedTexts: {
-    node: TText;
+    node: Text;
     rangeRef: RangeRef;
   }[];
 
   propsChanges: {
-    newProperties: Record<string, any>;
-    properties: Record<string, any>;
+    newProperties: Record<string, unknown>;
+    properties: Record<string, unknown>;
     rangeRef: RangeRef;
   }[];
 
   recordingOperations: boolean;
 
   removedTexts: {
-    node: TText;
+    node: Text;
     pointRef: PointRef;
   }[];
-  commitChangesToDiffs: () => void;
+  applyOperation: (
+    tx: EditorUpdateTransaction<Value>,
+    operation: Operation<Value>
+  ) => void;
+  commitChangesToDiffs: (tx: EditorUpdateTransaction<Value>) => void;
 };
 
-export const withChangeTracking = <E extends Editor>(
+export const withChangeTracking = <E extends Editor<Value>>(
   editor: E,
   options: ComputeDiffOptions
 ): ChangeTrackingEditor & E => {
-  const e = editor as ChangeTrackingEditor & E & LegacyEditorMethods;
+  const e = editor as ChangeTrackingEditor & E;
 
   e.propsChanges = [];
   e.insertedTexts = [];
   e.removedTexts = [];
   e.recordingOperations = true;
 
-  const { apply } = e;
-  e.apply = (op: Operation) => applyWithChangeTracking(e, apply, op);
-  e.tf.apply = e.apply;
+  e.applyOperation = (tx, op) => applyWithChangeTracking(e, tx, op);
 
-  e.commitChangesToDiffs = () => commitChangesToDiffs(e, options);
+  e.commitChangesToDiffs = (tx) => commitChangesToDiffs(e, tx, options);
 
   return e;
 };
 
-const applyWithChangeTracking = <E extends Editor>(
+const applyWithChangeTracking = <E extends Editor<Value>>(
   editor: ChangeTrackingEditor & E,
-  apply: EditorTransforms['apply'],
-  op: Operation
+  tx: EditorUpdateTransaction<Value>,
+  op: Operation<Value>
 ) => {
   if (!editor.recordingOperations) {
-    return apply(op);
+    tx.operations.replay([op], { normalize: false });
+    return;
   }
 
   withoutRecordingOperations(editor, () => {
     switch (op.type) {
       case 'insert_text': {
-        applyInsertText(editor, apply, op);
+        applyInsertText(editor, tx, op);
 
         break;
       }
       case 'merge_node': {
-        applyMergeNode(editor, apply, op);
+        applyMergeNode(editor, tx, op);
 
         break;
       }
       case 'remove_text': {
-        applyRemoveText(editor, apply, op);
+        applyRemoveText(editor, tx, op);
 
         break;
       }
       case 'set_node': {
-        applySetNode(editor, apply, op);
+        applySetNode(editor, tx, op);
 
         break;
       }
       case 'split_node': {
-        applySplitNode(editor, apply, op);
+        applySplitNode(editor, tx, op);
 
         break;
       }
 
       default: {
-        apply(op);
+        tx.operations.replay([op], { normalize: false });
       }
     }
   });
 };
 
-const applyInsertText = <E extends Editor>(
+const applyInsertText = <E extends Editor<Value>>(
   editor: ChangeTrackingEditor & E,
-  apply: EditorTransforms['apply'],
+  tx: EditorUpdateTransaction<Value>,
   op: InsertTextOperation
 ) => {
-  const node = NodeApi.get(editor, op.path) as TText;
+  const node = NodeApi.get(editor, op.path) as Text;
 
-  apply(op);
+  tx.operations.replay([op], { normalize: false });
 
   const startPoint = { offset: op.offset, path: op.path };
   const endPoint = { offset: op.offset + op.text.length, path: op.path };
   const range = { anchor: startPoint, focus: endPoint };
-  const rangeRef = editor.api.rangeRef(range);
+  const rangeRef = tx.refs.range(range);
 
   editor.insertedTexts.push({
     node: {
@@ -129,17 +134,17 @@ const applyInsertText = <E extends Editor>(
   });
 };
 
-const applyRemoveText = <E extends Editor>(
+const applyRemoveText = <E extends Editor<Value>>(
   editor: ChangeTrackingEditor & E,
-  apply: EditorTransforms['apply'],
+  tx: EditorUpdateTransaction<Value>,
   op: RemoveTextOperation
 ) => {
-  const node = NodeApi.get(editor, op.path) as TText;
+  const node = NodeApi.get(editor, op.path) as Text;
 
-  apply(op);
+  tx.operations.replay([op], { normalize: false });
 
   const point = { offset: op.offset, path: op.path };
-  const pointRef = editor.api.pointRef(point, {
+  const pointRef = tx.refs.point(point, {
     affinity: 'backward',
   });
 
@@ -152,24 +157,24 @@ const applyRemoveText = <E extends Editor>(
   });
 };
 
-const applyMergeNode = <E extends Editor>(
+const applyMergeNode = <E extends Editor<Value>>(
   editor: ChangeTrackingEditor & E,
-  apply: EditorTransforms['apply'],
+  tx: EditorUpdateTransaction<Value>,
   op: MergeNodeOperation
 ) => {
-  const oldNode = NodeApi.get(editor, op.path) as TText;
+  const oldNode = NodeApi.get(editor, op.path) as Text;
   const properties = NodeApi.extractProps(oldNode);
 
   const prevNodePath = PathApi.previous(op.path)!;
-  const prevNode = NodeApi.get(editor, prevNodePath) as TText;
+  const prevNode = NodeApi.get(editor, prevNodePath) as Text;
   const newProperties = NodeApi.extractProps(prevNode);
 
-  apply(op);
+  tx.operations.replay([op], { normalize: false });
 
   const startPoint = { offset: prevNode.text.length, path: prevNodePath };
-  const endPoint = editor.api.end(prevNodePath)!;
+  const endPoint = editor.read.points.end(prevNodePath, { required: true });
   const range = { anchor: startPoint, focus: endPoint };
-  const rangeRef = editor.api.rangeRef(range);
+  const rangeRef = tx.refs.range(range);
 
   editor.propsChanges.push({
     newProperties,
@@ -178,20 +183,20 @@ const applyMergeNode = <E extends Editor>(
   });
 };
 
-const applySplitNode = <E extends Editor>(
+const applySplitNode = <E extends Editor<Value>>(
   editor: ChangeTrackingEditor & E,
-  apply: EditorTransforms['apply'],
+  tx: EditorUpdateTransaction<Value>,
   op: SplitNodeOperation
 ) => {
-  const oldNode = NodeApi.get(editor, op.path) as TText;
+  const oldNode = NodeApi.get(editor, op.path) as Text;
   const properties = NodeApi.extractProps(oldNode);
   const newProperties = op.properties;
 
-  apply(op);
+  tx.operations.replay([op], { normalize: false });
 
   const newNodePath = PathApi.next(op.path);
-  const newNodeRange = editor.api.range(newNodePath)!;
-  const rangeRef = editor.api.rangeRef(newNodeRange);
+  const newNodeRange = editor.read.ranges.get(newNodePath, { required: true });
+  const rangeRef = tx.refs.range(newNodeRange);
 
   editor.propsChanges.push({
     newProperties,
@@ -200,15 +205,23 @@ const applySplitNode = <E extends Editor>(
   });
 };
 
-const applySetNode = <E extends Editor>(
+const applySetNode = <E extends Editor<Value>>(
   editor: ChangeTrackingEditor & E,
-  apply: EditorTransforms['apply'],
+  tx: EditorUpdateTransaction<Value>,
   op: SetNodeOperation
 ) => {
-  apply(op);
+  tx.operations.replay(
+    [
+      {
+        ...op,
+        newProperties: objectWithoutUndefined(op.newProperties),
+      },
+    ],
+    { normalize: false }
+  );
 
-  const range = editor.api.range(op.path)!;
-  const rangeRef = editor.api.rangeRef(range);
+  const range = editor.read.ranges.get(op.path, { required: true });
+  const rangeRef = tx.refs.range(range);
 
   editor.propsChanges.push({
     newProperties: op.newProperties,
@@ -217,8 +230,9 @@ const applySetNode = <E extends Editor>(
   });
 };
 
-const commitChangesToDiffs = <E extends Editor>(
+const commitChangesToDiffs = <E extends Editor<Value>>(
   editor: ChangeTrackingEditor & E,
+  tx: EditorUpdateTransaction<Value>,
   { getDeleteProps, getInsertProps, getUpdateProps }: ComputeDiffOptions
 ) => {
   withoutRecordingOperations(editor, () => {
@@ -226,11 +240,12 @@ const commitChangesToDiffs = <E extends Editor>(
     const flatUpdates = flattenPropsChanges(editor).reverse();
 
     flatUpdates.forEach(({ newProperties, properties, range }) => {
-      const node = NodeApi.get(editor, range.anchor.path) as TText;
+      const node = NodeApi.get(editor, range.anchor.path) as Text;
 
-      editor.tf.setNodes(getUpdateProps(node, properties, newProperties), {
+      tx.nodes.set(getUpdateProps(node, properties, newProperties), {
         at: range,
-        marks: true,
+        match: TextApi.isText,
+        split: true,
       });
     });
 
@@ -239,7 +254,7 @@ const commitChangesToDiffs = <E extends Editor>(
         const point = pointRef.current;
 
         if (point) {
-          editor.tf.insertNode(
+          tx.nodes.insert(
             {
               ...node,
               ...getDeleteProps(node),
@@ -257,9 +272,10 @@ const commitChangesToDiffs = <E extends Editor>(
         const range = rangeRef.current;
 
         if (range) {
-          editor.tf.setNodes(getInsertProps(node), {
+          tx.nodes.set(getInsertProps(node), {
             at: range,
-            marks: true,
+            match: TextApi.isText,
+            split: true,
           });
         }
 
@@ -346,8 +362,8 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
 
     if (isEqual(initialProps, finalProps)) return null;
 
-    const properties = {} as Record<string, any>;
-    const newProperties = {} as Record<string, any>;
+    const properties: Record<string, unknown> = {};
+    const newProperties: Record<string, unknown> = {};
 
     for (const key of Object.keys(finalProps)) {
       if (!isEqual(initialProps[key], finalProps[key])) {
@@ -380,8 +396,8 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
   >[];
 };
 
-const objectWithoutUndefined = (obj: Record<string, any>) => {
-  const newObj: Record<string, any> = {};
+const objectWithoutUndefined = (obj: Record<string, unknown>) => {
+  const newObj: Record<string, unknown> = {};
 
   Object.keys(obj).forEach((key) => {
     if (obj[key] !== undefined) {

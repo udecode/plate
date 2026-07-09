@@ -2251,8 +2251,6 @@ const getStateView = <
     },
     runtime: Object.freeze({
       idAt: (path: Path) => getRuntimeId(editor, path),
-      pathRef: (path, options) =>
-        getEditorRuntime(editor).pathRef(path, options),
       pathOf: (runtimeId) => getPathByRuntimeId(editor, runtimeId),
       snapshot: () => getSnapshot(editor) as EditorSnapshot<V>,
     }),
@@ -2652,6 +2650,13 @@ const getUpdateView = <
           }
         });
       },
+    }),
+    refs: Object.freeze<EditorCoreUpdateTransaction['refs']>({
+      path: (path, options) => getEditorRuntime(editor).pathRef(path, options),
+      point: (point, options) =>
+        getEditorRuntime(editor).pointRef(point, options),
+      range: (range, options) =>
+        getEditorRuntime(editor).rangeRef(range, options),
     }),
     roots: Object.freeze({
       create: (root, children) => {
@@ -3389,6 +3394,13 @@ const getTransactionView = (editor: Editor): EditorTransaction => {
     get operations() {
       return Object.freeze(cloneValue(getLiveOperations(editor)));
     },
+    refs: Object.freeze<EditorTransaction['refs']>({
+      path: (path, options) => getEditorRuntime(editor).pathRef(path, options),
+      point: (point, options) =>
+        getEditorRuntime(editor).pointRef(point, options),
+      range: (range, options) =>
+        getEditorRuntime(editor).rangeRef(range, options),
+    }),
     resolveTarget(options: { at?: Location } = {}) {
       if (options.at !== undefined) {
         return options.at;

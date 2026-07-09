@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type { Descendant } from 'platejs';
+import type { Descendant } from '@platejs/plite';
 
 import { type ComputeDiffOptions, computeDiff } from '../../lib/computeDiff';
 import { isEqual } from '../utils/is-equal';
@@ -52,8 +52,8 @@ const childrenOnlyStrategy: Handler = (node, nextNode, options) => {
 
 // Only the props have changed. Return the node with the props updated.
 const propsOnlyStrategy: Handler = (node, nextNode, { getUpdateProps }) => {
-  const properties: any = {};
-  const newProperties: any = {};
+  const properties: Record<string, unknown> = {};
+  const newProperties: Record<string, unknown> = {};
 
   // Find properties in the original node that have changed in the new node
   for (const key in node) {
