@@ -143,6 +143,9 @@ export const models: Model[] = [
   { label: 'LongCat Flash Chat', value: 'meituan/longcat-flash-chat' },
   { label: 'LongCat Flash Thinking', value: 'meituan/longcat-flash-thinking' },
 
+  // MiniMax Models
+  { label: 'MiniMax M3', value: 'minimax/minimax-m3' },
+
   // Meta Models
   { label: 'Llama 3 70B', value: 'meta/llama-3-70b' },
   { label: 'Llama 3 8B', value: 'meta/llama-3-8b' },
