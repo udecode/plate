@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-09-table-toolbar-single-cell-selection",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-09-table-toolbar-single-cell-selection.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-09",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep table floating toolbar row/column controls while a single cell's content is selected",
+  "targets": [
+    {
+      "name": "table-node",
+      "files": ["apps/www/src/registry/ui/table-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-09-table-keep-floating-toolbar-row-b77da8d6",
+      "kind": "fix",
+      "summary": "The floating toolbar now keeps its insert/delete row and column controls visible while the selection stays inside a single cell, including when the cell's content is fully selected. Previously any expanded selection switched the toolbar to its multi-cell mode, hiding those controls the moment a cell's text was highlighted.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["table-node"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-09",
+          "entry": "2026-07-09-table-toolbar-single-cell-selection",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,6 +1,13 @@
 {
   "schemaVersion": 1,
   "components": {
+    "table-node": [
+      "2026-07-09-table-toolbar-single-cell-selection",
+      "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
     "ai-api": [
       "2026-06-28-ai-sdk-v7",
       "2026-01-09-support-using-ai-features-tables-improve-prompts",
@@ -183,12 +190,6 @@
     "ai-demo": [
       "2026-03-27-snapshot-ai-streaming-preview-task-pr-flow",
       "2025-11-20-biome-ultracite"
-    ],
-    "table-node": [
-      "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
     ],
     "font-color-toolbar-button": [
       "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
