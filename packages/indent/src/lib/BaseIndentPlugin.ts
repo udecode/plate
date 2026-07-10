@@ -7,13 +7,16 @@ import {
 import {
   type EditorNodesOptions,
   type Element,
+  type NodeMatchPredicate,
   type Path,
   ElementApi,
 } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 export type IndentChangeOptions = {
-  nodes?: EditorNodesOptions<Element>;
+  nodes?: Omit<EditorNodesOptions<Element>, 'match'> & {
+    match?: NodeMatchPredicate<Element>;
+  };
   offset?: number;
   setNodeProps?: ({ indent }: { indent: number }) => Record<string, unknown>;
   unsetNodeProps?: string[];

@@ -12,7 +12,8 @@ import type {
   Value,
 } from '../../index';
 import type { MaximizeMode, RangeMode } from '../../types/types';
-import type { NodeMatch, PropsCompare, PropsMerge } from '../editor';
+import type { PropsCompare, PropsMerge } from '../editor';
+import type { NodeMatch } from '../node';
 
 export interface NodeInsertNodesOptions<T extends Node> {
   at?: Location;

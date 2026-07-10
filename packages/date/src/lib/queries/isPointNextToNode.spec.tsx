@@ -1,19 +1,31 @@
 /** @jsx jsxt */
 
-import type { JSX } from 'react';
-
+import { createBaseEditor } from '@platejs/core';
+import { ElementApi, RangeApi } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
-import { createEditor, createSlateEditor } from 'platejs';
 
 import { isPointNextToNode } from './isPointNextToNode';
 
 jsxt;
 
 describe('isPointNextToNode', () => {
-  const createTestEditor = (input: JSX.Element) =>
-    createSlateEditor({
-      editor: createEditor(input as any),
-    } as any);
+  const createTestEditor = (input: unknown) => {
+    if (
+      typeof input !== 'object' ||
+      input === null ||
+      !('children' in input) ||
+      !ElementApi.isElementList(input.children) ||
+      !('selection' in input) ||
+      !(input.selection === null || RangeApi.isRange(input.selection))
+    ) {
+      throw new TypeError('Expected an editor fixture');
+    }
+
+    return createBaseEditor({
+      selection: input.selection,
+      value: input.children,
+    });
+  };
 
   describe('when point is next to a node of specified type', () => {
     it('returns true', () => {
@@ -133,14 +145,14 @@ describe('isPointNextToNode', () => {
 
   describe('when neither selection nor at is available', () => {
     it('throws a clear error', () => {
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         value: [
           {
             children: [{ text: 'test' }],
             type: 'p',
           },
         ],
-      } as any);
+      });
 
       expect(() => isPointNextToNode(editor, { nodeType: 'date' })).toThrow(
         'No valid selection point found'

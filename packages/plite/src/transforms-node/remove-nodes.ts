@@ -20,6 +20,7 @@ import {
 } from '../interfaces/editor';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
 import { matchPath } from '../utils/match-path';
+import { normalizeNodeMatch } from '../utils/node-match';
 
 export const removeNodes: NodeMutationMethods['removeNodes'] = (
   editor,
@@ -32,7 +33,8 @@ export const removeNodes: NodeMutationMethods['removeNodes'] = (
     options.at.length > 0
   ) {
     const [node] = getNode(editor, options.at);
-    const pathMatch = options.match ?? matchPath(editor, options.at);
+    const pathMatch =
+      normalizeNodeMatch(options.match) ?? matchPath(editor, options.at);
 
     if (pathMatch(node, options.at)) {
       applyOperation(editor, {
@@ -47,7 +49,7 @@ export const removeNodes: NodeMutationMethods['removeNodes'] = (
 
   runEditorTransaction(editor, (tx) => {
     const { hanging = false, voids = false, mode = 'lowest' } = options;
-    let { match } = options;
+    let match = normalizeNodeMatch(options.match);
     let at: Location | Span | null | undefined = tx.resolveTarget({
       at: options.at,
     });

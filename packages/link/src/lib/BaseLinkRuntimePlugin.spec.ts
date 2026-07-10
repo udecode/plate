@@ -25,9 +25,7 @@ describe('BaseLinkPlugin Plite runtime', () => {
       plugins: [BaseLinkPlugin],
     });
 
-    editor.update((tx) => {
-      tx.normalize({ force: true });
-    });
+    editor.update.normalize({ force: true });
 
     expect(editor.read((state) => state.value.root())).toEqual([
       {
@@ -88,9 +86,7 @@ describe('BaseLinkPlugin Plite runtime', () => {
       plugins: [BaseLinkPlugin],
     });
 
-    editor.update((tx) => {
-      tx.normalize({ force: true });
-    });
+    editor.update.normalize({ force: true });
 
     expect(editor.read((state) => state.value.root())).toEqual([
       {

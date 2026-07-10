@@ -29,6 +29,7 @@ view.
 ```ts
 const value = editor.read.value()
 const selection = editor.read.selection()
+const atBlockStart = editor.read.selection.isAtBlockStart()
 
 const info = editor.read((state) => ({
   text: state.text.string([]),

@@ -65,7 +65,11 @@ describe('TrailingBlockPlugin Plite runtime', () => {
     const editor = createPlateEditor({
       plugins: [
         TrailingBlockPlugin.configure({
-          options: { exclude: ['h1'], level: 0, type: 'p' },
+          options: {
+            level: 0,
+            match: (node) => !('type' in node) || node.type !== 'h1',
+            type: 'p',
+          },
         }),
       ],
       value: [{ children: [{ text: 'one' }], type: 'h1' }],

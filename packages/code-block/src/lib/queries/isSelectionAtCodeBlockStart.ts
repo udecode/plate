@@ -1,16 +1,11 @@
-import type { SlateEditor } from 'platejs';
-
-import { getCodeLineEntry } from './getCodeLineEntry';
+import type { BaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 /** Is the selection at the start of the first code line in a code block */
-export const isSelectionAtCodeBlockStart = (editor: SlateEditor) => {
-  const { selection } = editor;
+export const isSelectionAtCodeBlockStart = (editor: BaseEditor) => {
+  if (editor.read.selection.isExpanded()) return false;
 
-  if (!selection || editor.api.isExpanded()) return false;
-
-  const { codeBlock } = getCodeLineEntry(editor) ?? {};
-
-  if (!codeBlock) return false;
-
-  return editor.api.isStart(selection.anchor, codeBlock[1]);
+  return editor.read.selection.isAtBlockStart({
+    match: { type: editor.getType(KEYS.codeBlock) },
+  });
 };

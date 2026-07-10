@@ -1,13 +1,11 @@
-import {
-  type EditorNodesOptions,
-  type NodeEntry,
-  type PluginConfig,
-  type SetNodesOptions,
-  type TCommentText,
-  createTSlatePlugin,
-  KEYS,
-  TextApi,
-} from 'platejs';
+import { type PluginConfig, createBasePlugin } from '@platejs/core';
+import type {
+  EditorNodesOptions,
+  NodeEntry,
+  NodeSetNodesOptions,
+} from '@platejs/plite';
+import { TextApi } from '@platejs/plite';
+import { KEYS, type TCommentText } from '@platejs/utils';
 
 import {
   getCommentCount,
@@ -18,6 +16,7 @@ import {
   getTransientCommentKey,
   isCommentKey,
   isCommentNodeById,
+  isCommentText,
 } from './utils';
 import { withComment } from './withComments';
 
@@ -28,11 +27,14 @@ export type BaseCommentConfig = PluginConfig<
     comment: {
       has: (options: { id: string }) => boolean;
       node: (
-        options?: EditorNodesOptions & { id?: string; isDraft?: boolean }
+        options?: EditorNodesOptions<TCommentText> & {
+          id?: string;
+          isDraft?: boolean;
+        }
       ) => NodeEntry<TCommentText> | undefined;
       nodeId: (leaf: TCommentText) => string | undefined;
       nodes: (
-        options?: EditorNodesOptions & {
+        options?: EditorNodesOptions<TCommentText> & {
           id?: string;
           isDraft?: boolean;
           transient?: boolean;
@@ -43,133 +45,101 @@ export type BaseCommentConfig = PluginConfig<
   {
     comment: {
       removeMark: () => void;
-      setDraft: (options?: SetNodesOptions) => void;
+      setDraft: (options?: NodeSetNodesOptions<TCommentText>) => void;
       unsetMark: (options: { id?: string; transient?: boolean }) => void;
     };
   }
 >;
 
-export const BaseCommentPlugin = createTSlatePlugin<BaseCommentConfig>({
+export const BaseCommentPlugin = createBasePlugin<BaseCommentConfig>({
   key: KEYS.comment,
   node: {
     isLeaf: true,
   },
   rules: { selection: { affinity: 'outward' } },
 })
-  .overrideEditor(withComment)
+  .extendExtension(withComment)
   .extendApi<BaseCommentConfig['api']['comment']>(({ editor, type }) => ({
-    has: (options: { id: string }): boolean => {
-      const { id } = options;
-
-      const regex = new RegExp(`"${getCommentKey(id)}":true`);
-
-      // TODO perf
-      return regex.test(JSON.stringify(editor.children));
-    },
+    has: ({ id }) =>
+      editor.read.nodes.some<TCommentText>({
+        at: [],
+        match: (node) => isCommentText(node) && isCommentNodeById(node, id),
+      }),
     node: (options = {}) => {
       const { id, isDraft, ...rest } = options;
 
-      return editor.api.node<TCommentText>({
+      return editor.read.nodes.find<TCommentText>({
         ...rest,
-        match: (n) => {
-          if (isDraft) return n[type] && n[getDraftCommentKey()];
+        match: (node) => {
+          if (!isCommentText(node)) return false;
+          if (isDraft) return !!node[type] && !!node[getDraftCommentKey()];
 
-          return id ? isCommentNodeById(n, id) : n[type];
+          return id ? isCommentNodeById(node, id) : !!node[type];
         },
       });
     },
     nodeId: (leaf) => {
-      const ids: string[] = [];
       const keys = Object.keys(leaf);
 
       if (keys.includes(getDraftCommentKey())) return;
 
-      keys.forEach((key) => {
-        if (!isCommentKey(key) || key === getDraftCommentKey()) return;
-
-        // block the resolved id
-
-        const id = getCommentKeyId(key);
-        ids.push(id);
-      });
-
-      return ids.at(-1);
+      return keys
+        .filter((key) => isCommentKey(key) && key !== getDraftCommentKey())
+        .map(getCommentKeyId)
+        .at(-1);
     },
     nodes: (options = {}) => {
       const { id, isDraft, transient, ...rest } = options;
 
-      return [
-        ...editor.api.nodes<TCommentText>({
-          ...rest,
-          match: (n) => {
-            if (isDraft) return n[type] && n[getDraftCommentKey()];
-            if (transient) return n[type] && n[getTransientCommentKey()];
-            return id ? isCommentNodeById(n, id) : n[type];
-          },
-        }),
-      ];
-    },
-  }))
-  .extendTransforms<BaseCommentConfig['transforms']['comment']>(
-    ({ api, editor, tf, type }) => ({
-      removeMark: () => {
-        const nodeEntry = api.comment.node();
-
-        if (!nodeEntry) return;
-
-        const keys = getCommentKeys(nodeEntry[0]);
-
-        editor.tf.withoutNormalizing(() => {
-          keys.forEach((key) => {
-            editor.tf.removeMark(key);
-          });
-
-          editor.tf.removeMark(KEYS.comment);
-        });
-      },
-      setDraft: (options = {}) => {
-        tf.setNodes(
-          {
-            [getDraftCommentKey()]: true,
-            [type]: true,
-          },
-          { match: TextApi.isText, split: true, ...options }
-        );
-      },
-      unsetMark: (options) => {
-        const { id, transient } = options;
-
-        const nodes = api.comment.nodes({ id, at: [], transient });
-
-        if (!nodes) return;
-
-        nodes.forEach(([node]) => {
-          const isOverlapping = getCommentCount(node) > 1;
-
-          let unsetKeys: string[] = [];
-
-          const removedId = id ?? api.comment.nodeId(node)!;
-
-          if (isOverlapping) {
-            unsetKeys = [
-              getDraftCommentKey(),
-              getCommentKey(removedId),
-              getTransientCommentKey(),
-            ];
-          } else {
-            unsetKeys = [
-              KEYS.comment,
-              getDraftCommentKey(),
-              getCommentKey(removedId),
-              getTransientCommentKey(),
-            ];
+      return editor.read.nodes.toArray<TCommentText>({
+        ...rest,
+        match: (node) => {
+          if (!isCommentText(node)) return false;
+          if (isDraft) return !!node[type] && !!node[getDraftCommentKey()];
+          if (transient) {
+            return !!node[type] && !!node[getTransientCommentKey()];
           }
 
-          editor.tf.unsetNodes<TCommentText>(unsetKeys, {
-            at: [],
-            match: (n) => n === node,
-          });
-        });
-      },
-    })
-  );
+          return id ? isCommentNodeById(node, id) : !!node[type];
+        },
+      });
+    },
+  }))
+  .extendTx(({ api, type }) => (tx) => ({
+    removeMark: () => {
+      const nodeEntry = api.node();
+
+      if (!nodeEntry) return;
+
+      for (const key of getCommentKeys(nodeEntry[0])) {
+        tx.marks.remove(key);
+      }
+
+      tx.marks.remove(KEYS.comment);
+    },
+    setDraft: (options = {}) => {
+      tx.nodes.set(
+        {
+          [getDraftCommentKey()]: true,
+          [type]: true,
+        },
+        { match: TextApi.isText, split: true, ...options }
+      );
+    },
+    unsetMark: ({ id, transient }) => {
+      for (const [node] of api.nodes({ id, at: [], transient })) {
+        const removedId = id ?? api.nodeId(node);
+        const unsetKeys = [
+          getDraftCommentKey(),
+          getTransientCommentKey(),
+          ...(removedId ? [getCommentKey(removedId)] : []),
+        ];
+
+        if (getCommentCount(node) <= 1) {
+          unsetKeys.push(KEYS.comment);
+        }
+
+        tx.nodes.unset(unsetKeys, { at: node });
+      }
+    },
+  }));

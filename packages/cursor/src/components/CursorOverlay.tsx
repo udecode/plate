@@ -1,22 +1,17 @@
 import React from 'react';
 
-import type { UnknownObject } from 'platejs';
+import type { UnknownObject } from '@udecode/utils';
 
-import { useEditorMounted } from 'platejs/react';
+import { useEditorMounted } from '@platejs/core/react';
 
-import type {
-  CursorData,
-  CursorOverlayState,
-  CursorState,
-  SelectionRect,
-} from '../types';
+import type { CursorOverlayState, CursorState, SelectionRect } from '../types';
 
 import { useCursorOverlayPositions } from '../hooks/useCursorOverlayPositions';
 
 export interface CursorOverlayProps<
   TCursorData extends UnknownObject = UnknownObject,
 > extends Pick<
-    CursorProps<CursorData>,
+    CursorProps<TCursorData>,
     | 'classNames'
     | 'disableCaret'
     | 'disableSelection'
@@ -32,8 +27,8 @@ export interface CursorOverlayProps<
   /** Cursor states to use for calculating the overlay positions, by key. */
   cursors?: Record<string, CursorState<TCursorData>>;
 
-  /** Overrides `Cursor` component. */
-  onRenderCursor?: React.FC<CursorProps>;
+  /** Component used to render each cursor state. */
+  onRenderCursor: React.FC<CursorProps<TCursorData>>;
 
   /**
    * Whether to refresh the cursor overlay positions on container resize.
@@ -45,7 +40,6 @@ export interface CursorOverlayProps<
 
 export type CursorProps<TCursorData extends UnknownObject = UnknownObject> =
   CursorOverlayState<TCursorData> & {
-    id: string;
     classNames?: Partial<{
       caret: string;
       selectionRect: string;
@@ -54,16 +48,11 @@ export type CursorProps<TCursorData extends UnknownObject = UnknownObject> =
     disableCaret?: boolean;
     /** Whether to disable the selection rects. */
     disableSelection?: boolean;
-    /**
-     * Custom caret component. For example, you could display a label next to
-     * the caret.
-     *
-     * @default styled div
-     */
+    /** Caret renderer forwarded to the cursor component. */
     onRenderCaret?: React.FC<
       Pick<CursorProps<TCursorData>, 'caretPosition' | 'data'>
     >;
-    /** Overrides `Caret` component */
+    /** Selection-rectangle renderer forwarded to the cursor component. */
     onRenderSelectionRect?: React.FC<
       {
         selectionRect: SelectionRect;
@@ -92,17 +81,10 @@ export function CursorOverlayContent<
     onRenderSelectionRect,
   };
 
-  if (!CursorComponent) return null;
-
   return (
     <>
       {cursors.map((cursor) => (
-        <CursorComponent
-          id={cursor.key}
-          key={cursor.key}
-          {...cursorProps}
-          {...cursor}
-        />
+        <CursorComponent key={cursor.id} {...cursorProps} {...cursor} />
       ))}
     </>
   );

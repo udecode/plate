@@ -1,11 +1,12 @@
-import {
-  type Path,
-  type PluginConfig,
-  createTSlatePlugin,
-  KEYS,
-} from 'platejs';
+import { type PluginConfig, createBasePlugin } from '@platejs/core';
+import type { Path } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
-import { withCaption } from './withCaption';
+import {
+  focusCaptionAfterArrowUpSelectionMove,
+  focusCaptionFromCurrentBlock,
+  markCaptionArrowUpSelectionMove,
+} from './withCaption';
 
 export type CaptionConfig = PluginConfig<
   'caption',
@@ -29,7 +30,7 @@ export type CaptionConfig = PluginConfig<
 >;
 
 /** Enables support for caption. */
-export const BaseCaptionPlugin = createTSlatePlugin<CaptionConfig>({
+export const BaseCaptionPlugin = createBasePlugin<CaptionConfig>({
   key: KEYS.caption,
   options: {
     focusEndPath: null,
@@ -37,8 +38,41 @@ export const BaseCaptionPlugin = createTSlatePlugin<CaptionConfig>({
     query: { allow: [] },
     visibleId: null,
   },
+  shortcuts: {
+    focusCaptionBackward: {
+      keys: 'up',
+      handler: ({ editor }) => markCaptionArrowUpSelectionMove(editor),
+    },
+    focusCaptionForward: {
+      keys: 'down',
+      handler: ({ editor }) => {
+        const caption = editor.plugin<CaptionConfig>(KEYS.caption);
+
+        return focusCaptionFromCurrentBlock(
+          editor,
+          caption.getOptions(),
+          (path) => caption.setOption('focusEndPath', path)
+        );
+      },
+    },
+  },
 })
   .extendSelectors<CaptionConfig['selectors']>(({ getOptions }) => ({
     isVisible: (elementId) => getOptions().visibleId === elementId,
   }))
-  .overrideEditor(withCaption);
+  .extendExtension(({ editor, getOptions, setOption }) => ({
+    operations: {
+      apply({ operation, next }) {
+        if (operation.type === 'set_selection') {
+          focusCaptionAfterArrowUpSelectionMove(
+            editor,
+            getOptions(),
+            operation,
+            (path) => setOption('focusEndPath', path)
+          );
+        }
+
+        next(operation);
+      },
+    },
+  }));

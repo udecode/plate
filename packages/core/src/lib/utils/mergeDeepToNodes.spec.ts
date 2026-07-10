@@ -54,9 +54,7 @@ describe('mergeDeepToNodes', () => {
 
       mergeDeepToNodes({
         node: node as any,
-        query: {
-          filter: ([node]) => NodeApi.isDescendant(node),
-        },
+        match: NodeApi.isDescendant,
         source: { a: 1 },
       });
 
@@ -103,9 +101,7 @@ describe('mergeDeepToNodes', () => {
     ])('applies props to all descendants for $label', ({ expected, node }) => {
       mergeDeepToNodes({
         node: node as any,
-        query: {
-          filter: ([node]) => NodeApi.isDescendant(node),
-        },
+        match: NodeApi.isDescendant,
         source: { a: 1 },
       });
 
@@ -123,9 +119,7 @@ describe('mergeDeepToNodes', () => {
 
       mergeDeepToNodes({
         node: node as any,
-        query: {
-          filter: ([node]) => NodeApi.isDescendant(node),
-        },
+        match: NodeApi.isDescendant,
         source: () => ({ order: ++calls }),
       });
 
@@ -152,9 +146,7 @@ describe('mergeDeepToNodes', () => {
 
       mergeDeepToNodes({
         node: node as any,
-        query: {
-          filter: ([node]) => NodeApi.isElement(node),
-        },
+        match: NodeApi.isElement,
         source: { a: 1 },
       });
 
@@ -204,9 +196,7 @@ describe('mergeDeepToNodes', () => {
     }) => {
       mergeDeepToNodes({
         node: node as any,
-        query: {
-          filter: ([node]) => NodeApi.isElement(node),
-        },
+        match: NodeApi.isElement,
         source: { a: 1 },
       });
 

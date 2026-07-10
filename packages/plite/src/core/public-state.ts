@@ -22,6 +22,7 @@ import type {
   EditorLeafReadOptions,
   EditorMarks,
   EditorNodeReadOptions,
+  EditorNodesReadOptions,
   EditorNodesOptions,
   EditorParentReadOptions,
   EditorPathReadOptions,
@@ -29,6 +30,8 @@ import type {
   EditorReadOptions,
   EditorNormalizerTransaction,
   EditorSnapshot,
+  EditorSelectionBlockOptions,
+  EditorSelectionTargetOptions,
   EditorStateFragmentApi,
   EditorStateField,
   EditorStateMarksApi,
@@ -49,6 +52,7 @@ import type {
   EditorUpdateOptions,
   EditorUpdateTag,
   EditorUpdateTransaction,
+  NodeTarget,
   RootKey,
   RuntimeId,
   Selection,
@@ -65,6 +69,7 @@ import {
   type Descendant,
   type DescendantIn,
   NodeApi,
+  type NodeMatch,
   type NodeEntry,
   type Node as PliteNode,
 } from '../interfaces/node';
@@ -79,15 +84,21 @@ import type { Text } from '../interfaces/text';
 import { transform as transformOperation } from '../interfaces/transforms/general';
 import { createSetSelectionOperation } from '../selection-operation';
 import {
+  getRuntimeIdForNode,
   getOrCreateRuntimeId,
   seedRuntimeIds,
   seedRuntimeIdsFromIndex,
   setRuntimeId,
 } from '../utils/runtime-ids';
 import { cloneFrozen, cloneValue } from './clone';
+import { normalizeNodeMatch } from '../utils/node-match';
 import { notifyEditorChangeListeners } from './change-events';
 import { buildDirtyRegion, completeCommit } from './commit-shape';
-import { getEditorRuntime, getEditorSchema } from './editor-runtime';
+import {
+  getEditorRuntime,
+  getEditorRuntimeOwner,
+  getEditorSchema,
+} from './editor-runtime';
 import {
   getExtensionRegistry,
   hasChangeListeners as hasExtensionChangeListeners,
@@ -614,6 +625,114 @@ const readNodePath = (
   if (required) {
     NodeApi.get(editor, path);
   }
+};
+
+const resolveNodeTargetLocation = (
+  editor: Editor,
+  target: NodeTarget
+): Location | undefined => {
+  if (!NodeApi.isDescendant(target)) {
+    return target as Location;
+  }
+
+  const runtimeId = getRuntimeIdForNode(target, getEditorRuntimeOwner(editor));
+
+  return runtimeId
+    ? (getPathByRuntimeId(editor, runtimeId) ?? undefined)
+    : undefined;
+};
+
+const resolveReadableNodeTarget = (
+  editor: Editor,
+  target: NodeTarget,
+  required = false
+): Location | undefined => {
+  const at = resolveNodeTargetLocation(editor, target);
+
+  if (at === undefined && required) {
+    throw new Error('Cannot resolve a detached node target.');
+  }
+
+  return at;
+};
+
+type NodeTargetOptions = { at?: NodeTarget };
+
+type NodeMatchOptions = {
+  match?: NodeMatch<PliteNode>;
+};
+
+type ResolvedNodeTargetOptions<TOptions extends NodeTargetOptions> = Omit<
+  TOptions,
+  'at'
+> & {
+  at?: Location;
+};
+
+const normalizeNodeMatchOption = <TOptions extends object>(
+  options: TOptions
+): TOptions => {
+  if (!('match' in options)) return options;
+
+  const match = normalizeNodeMatch((options as NodeMatchOptions).match);
+
+  return { ...options, match };
+};
+
+const resolveNodeTargetOptions = <TOptions extends NodeTargetOptions>(
+  editor: Editor,
+  options: TOptions | undefined
+): null | ResolvedNodeTargetOptions<TOptions> | undefined => {
+  if (!options || options.at === undefined) {
+    return options
+      ? normalizeNodeMatchOption(options as ResolvedNodeTargetOptions<TOptions>)
+      : undefined;
+  }
+
+  const at = resolveNodeTargetLocation(editor, options.at);
+
+  if (at === undefined) return null;
+
+  return normalizeNodeMatchOption({
+    ...options,
+    at,
+  } as ResolvedNodeTargetOptions<TOptions>);
+};
+
+type NodeTargetOrSpanOptions = { at?: NodeTarget | Span };
+
+type ResolvedNodeTargetOrSpanOptions<TOptions extends NodeTargetOrSpanOptions> =
+  Omit<TOptions, 'at'> & {
+    at?: Location | Span;
+  };
+
+const resolveNodeTargetOrSpanOptions = <
+  TOptions extends NodeTargetOrSpanOptions,
+>(
+  editor: Editor,
+  options: TOptions | undefined
+): null | ResolvedNodeTargetOrSpanOptions<TOptions> | undefined => {
+  if (!options || options.at === undefined) {
+    return options
+      ? normalizeNodeMatchOption(
+          options as ResolvedNodeTargetOrSpanOptions<TOptions>
+        )
+      : undefined;
+  }
+  if (LocationApi.isSpan(options.at as Location | Span)) {
+    return normalizeNodeMatchOption(
+      options as ResolvedNodeTargetOrSpanOptions<TOptions>
+    );
+  }
+
+  const at = resolveNodeTargetLocation(editor, options.at as NodeTarget);
+
+  if (at === undefined) return null;
+
+  return normalizeNodeMatchOption({
+    ...options,
+    at,
+  } as ResolvedNodeTargetOrSpanOptions<TOptions>);
 };
 
 const readNodeChildren = (
@@ -1626,23 +1745,27 @@ const getSelectionMarks = <V extends Value>(
 
 const createNodesToArray = (editor: Editor): EditorStateNodesApi['toArray'] => {
   function toArray<T extends PliteNode>(
-    options?: EditorNodesOptions<T>
+    options?: EditorNodesReadOptions<T>
   ): NodeEntry<T>[];
   function toArray<T extends PliteNode, R>(
-    options: EditorNodesOptions<T> | undefined,
+    options: EditorNodesReadOptions<T> | undefined,
     map: (entry: NodeEntry<T>) => R
   ): R[];
   function toArray<T extends PliteNode, R>(
-    options: EditorNodesOptions<T> = {},
+    options: EditorNodesReadOptions<T> = {},
     map?: (entry: NodeEntry<T>) => R
   ): NodeEntry<T>[] | R[] {
+    const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, options);
+
+    if (resolvedOptions === null) return [];
+
     return executeQueryMiddleware(
       editor,
       'nodes',
       'toArray',
       {
         map: map as ((entry: NodeEntry<PliteNode>) => unknown) | undefined,
-        options: options as EditorNodesOptions<PliteNode>,
+        options: resolvedOptions as EditorNodesOptions<PliteNode>,
       },
       ({ map, options = {} }) =>
         withOptionsRootRead(
@@ -1681,9 +1804,25 @@ const createNodesToArray = (editor: Editor): EditorStateNodesApi['toArray'] => {
 
 type SelectionBlockState = Pick<EditorStateView, 'nodes'>;
 
+type SelectionQueryState = Pick<EditorStateView, 'nodes' | 'ranges'>;
+
+const WHITESPACE_OR_END_REGEX = /^(?:\s|$)/;
+
+const resolveSelectionQueryRange = (
+  state: Pick<EditorStateView, 'ranges'>,
+  selection: Selection,
+  at: NodeTarget | null | undefined
+): Selection => {
+  if (at === null) return null;
+  if (at === undefined) return selection;
+
+  return state.ranges.get(at) ?? null;
+};
+
 const getSelectionBlockEntries = (
   state: SelectionBlockState,
-  selection: Selection
+  selection: Selection,
+  options: EditorSelectionBlockOptions = {}
 ) => {
   if (!selection) {
     return {
@@ -1695,16 +1834,22 @@ const getSelectionBlockEntries = (
   const [startPoint, endPoint] = RangeApi.edges(selection);
 
   return {
-    endBlock: state.nodes.block({ at: endPoint }),
-    startBlock: state.nodes.block({ at: startPoint }),
+    endBlock: state.nodes.block({ at: endPoint, match: options.match }),
+    startBlock: state.nodes.block({ at: startPoint, match: options.match }),
   };
 };
 
 export const isSelectionWithinBlock = (
-  state: SelectionBlockState,
-  selection: Selection
+  state: SelectionQueryState,
+  selection: Selection,
+  options: EditorSelectionBlockOptions = {}
 ) => {
-  const { endBlock, startBlock } = getSelectionBlockEntries(state, selection);
+  const range = resolveSelectionQueryRange(state, selection, options.at);
+  const { endBlock, startBlock } = getSelectionBlockEntries(
+    state,
+    range,
+    options
+  );
 
   return !!(
     startBlock &&
@@ -1714,15 +1859,91 @@ export const isSelectionWithinBlock = (
 };
 
 export const isSelectionAcrossBlocks = (
-  state: SelectionBlockState,
-  selection: Selection
+  state: SelectionQueryState,
+  selection: Selection,
+  options: EditorSelectionBlockOptions = {}
 ) => {
-  const { endBlock, startBlock } = getSelectionBlockEntries(state, selection);
+  const range = resolveSelectionQueryRange(state, selection, options.at);
+  const { endBlock, startBlock } = getSelectionBlockEntries(
+    state,
+    range,
+    options
+  );
 
   if (!startBlock && !endBlock) return false;
   if (!startBlock || !endBlock) return true;
 
   return !PathApi.equals(startBlock[1], endBlock[1]);
+};
+
+export const isSelectionWithinText = (
+  state: Pick<EditorStateView, 'ranges'>,
+  selection: Selection,
+  options: EditorSelectionTargetOptions = {}
+) => {
+  const range = resolveSelectionQueryRange(state, selection, options.at);
+
+  if (!range) return false;
+
+  const [startPoint, endPoint] = RangeApi.edges(range);
+
+  return PathApi.equals(startPoint.path, endPoint.path);
+};
+
+export const isSelectionAtBlockStart = (
+  state: SelectionQueryState & Pick<EditorStateView, 'points'>,
+  selection: Selection,
+  options: EditorSelectionBlockOptions = {}
+) => {
+  const range = resolveSelectionQueryRange(state, selection, options.at);
+  const { startBlock } = getSelectionBlockEntries(state, range, options);
+
+  if (!range || !startBlock) return false;
+
+  const [startPoint, endPoint] = RangeApi.edges(range);
+
+  return (
+    state.points.isStart(startPoint, startBlock[1]) ||
+    (RangeApi.isExpanded(range) &&
+      state.points.isStart(endPoint, startBlock[1]))
+  );
+};
+
+export const isSelectionAtBlockEnd = (
+  state: SelectionQueryState & Pick<EditorStateView, 'points'>,
+  selection: Selection,
+  options: EditorSelectionBlockOptions = {}
+) => {
+  const range = resolveSelectionQueryRange(state, selection, options.at);
+  const { endBlock } = getSelectionBlockEntries(state, range, options);
+
+  if (!range || !endBlock) return false;
+
+  return state.points.isEnd(RangeApi.end(range), endBlock[1]);
+};
+
+export const doesSelectionIntersect = (
+  state: Pick<EditorStateView, 'ranges'>,
+  selection: Selection,
+  target: NodeTarget
+) => {
+  if (!selection) return false;
+
+  const range = state.ranges.get(target);
+
+  return !!range && !!RangeApi.intersection(selection, range);
+};
+
+export const doesSelectionContain = (
+  state: Pick<EditorStateView, 'ranges'>,
+  selection: Selection,
+  target: NodeTarget
+) => {
+  if (!selection) return false;
+
+  const range = state.ranges.get(target);
+
+  return !!range && RangeApi.surrounds(selection, range);
 };
 
 const getStateView = <
@@ -1761,8 +1982,16 @@ const getStateView = <
   let state!: EditorCoreStateView<V>;
   const selectionApi = Object.freeze(
     Object.assign(() => getCurrentSelection(editor), {
-      isAcrossBlocks: () =>
-        isSelectionAcrossBlocks(state, getCurrentSelection(editor)),
+      contains: (target: NodeTarget) =>
+        doesSelectionContain(state, getCurrentSelection(editor), target),
+      intersects: (target: NodeTarget) =>
+        doesSelectionIntersect(state, getCurrentSelection(editor), target),
+      isAcrossBlocks: (options?: EditorSelectionBlockOptions) =>
+        isSelectionAcrossBlocks(state, getCurrentSelection(editor), options),
+      isAtBlockEnd: (options?: EditorSelectionBlockOptions) =>
+        isSelectionAtBlockEnd(state, getCurrentSelection(editor), options),
+      isAtBlockStart: (options?: EditorSelectionBlockOptions) =>
+        isSelectionAtBlockStart(state, getCurrentSelection(editor), options),
       isCollapsed: () => {
         const selection = getCurrentSelection(editor);
 
@@ -1773,8 +2002,10 @@ const getStateView = <
 
         return !!selection && RangeApi.isExpanded(selection);
       },
-      isWithinBlock: () =>
-        isSelectionWithinBlock(state, getCurrentSelection(editor)),
+      isWithinBlock: (options?: EditorSelectionBlockOptions) =>
+        isSelectionWithinBlock(state, getCurrentSelection(editor), options),
+      isWithinText: (options?: EditorSelectionTargetOptions) =>
+        isSelectionWithinText(state, getCurrentSelection(editor), options),
     }) satisfies EditorStateSelectionApi
   );
   state = {
@@ -1788,38 +2019,53 @@ const getStateView = <
     marks: marksApi,
     meta: () => getEditorDocumentValue(editor).meta,
     nodes: Object.freeze<EditorStateNodesApi>({
-      above: <T extends Ancestor>(options = {}) =>
-        executeQueryMiddleware(
+      above: <T extends Ancestor>(options = {}) => {
+        const resolvedOptions = resolveNodeTargetOptions(editor, options);
+
+        if (resolvedOptions === null) return;
+
+        return executeQueryMiddleware(
           editor,
           'nodes',
           'above',
-          { options },
+          { options: resolvedOptions },
           ({ options }) =>
             getEditorRuntime(editor).above(options) as
               | NodeEntry<Ancestor>
               | undefined
-        ) as [T, Path] | undefined,
-      block: <T extends Element = Element>(options = {}) =>
-        executeQueryMiddleware(
+        ) as [T, Path] | undefined;
+      },
+      block: <T extends Element = Element>(options = {}) => {
+        const resolvedOptions = resolveNodeTargetOptions(editor, options);
+
+        if (resolvedOptions === null) return;
+
+        return executeQueryMiddleware(
           editor,
           'nodes',
           'block',
-          { options },
+          { options: resolvedOptions },
           ({ options = {} }) => {
+            const match = normalizeNodeMatch(options.match);
             const entry = getEditorRuntime(editor).above({
               ...options,
               match: (node, path) =>
                 NodeApi.isElement(node) &&
                 getEditorSchema(editor).isBlock(node) &&
-                (options.match?.(node, path) ?? true),
+                (match?.(node, path) ?? true),
             });
 
             return entry && NodeApi.isElement(entry[0])
               ? (entry as NodeEntry<Element>)
               : undefined;
           }
-        ) as NodeEntry<T> | undefined,
-      children(at: Location = []) {
+        ) as NodeEntry<T> | undefined;
+      },
+      children(target: NodeTarget = []) {
+        const at = resolveReadableNodeTarget(editor, target);
+
+        if (!at) return [];
+
         return executeQueryMiddleware(
           editor,
           'nodes',
@@ -1829,16 +2075,25 @@ const getStateView = <
             withLocationRootRead(editor, at, () => readNodeChildren(editor, at))
         );
       },
-      elementReadOnly: (options = {}) =>
-        executeQueryMiddleware(
+      elementReadOnly: (options = {}) => {
+        const resolvedOptions = resolveNodeTargetOptions(editor, options);
+
+        if (resolvedOptions === null) return;
+
+        return executeQueryMiddleware(
           editor,
           'nodes',
           'elementReadOnly',
-          { options },
+          { options: resolvedOptions },
           ({ options }) => getEditorRuntime(editor).elementReadOnly(options)
-        ),
-      first: ((at: Location, options: EditorFirstReadOptions = {}) =>
-        executeQueryMiddleware(
+        );
+      },
+      first: ((target: NodeTarget, options: EditorFirstReadOptions = {}) => {
+        const at = resolveReadableNodeTarget(editor, target, options.required);
+
+        if (!at) return;
+
+        return executeQueryMiddleware(
           editor,
           'nodes',
           'first',
@@ -1847,12 +2102,17 @@ const getStateView = <
             withLocationRootRead(editor, at, () =>
               readNodeFirst(editor, at, options)
             )
-        )) as EditorStateNodesApi['first'],
+        );
+      }) as EditorStateNodesApi['first'],
       get: (<T extends PliteNode>(
-        at: Location,
+        target: NodeTarget,
         options: EditorNodeReadOptions = {}
-      ) =>
-        executeQueryMiddleware(
+      ) => {
+        const at = resolveReadableNodeTarget(editor, target, options.required);
+
+        if (!at) return;
+
+        return executeQueryMiddleware(
           editor,
           'nodes',
           'get',
@@ -1861,7 +2121,8 @@ const getStateView = <
             withLocationRootRead(editor, at, () =>
               readNodeEntry<T>(editor, at, options)
             )
-        )) as EditorStateNodesApi['get'],
+        );
+      }) as EditorStateNodesApi['get'],
       hasBlocks: (element: import('../interfaces/element').Element) =>
         executeQueryMiddleware(
           editor,
@@ -1910,16 +2171,25 @@ const getStateView = <
           { element },
           ({ element }) => getEditorRuntime(editor).isEmpty(element)
         ),
-      last: (at: Location, options = {}) =>
-        executeQueryMiddleware(
+      last: (target: NodeTarget, options = {}) => {
+        const at = resolveReadableNodeTarget(editor, target);
+
+        if (!at) return;
+
+        return executeQueryMiddleware(
           editor,
           'nodes',
           'last',
           { at, options },
           ({ at, options }) => getEditorRuntime(editor).last(at, options)
-        ),
-      leaf: ((at: Location, options: EditorLeafReadOptions = {}) =>
-        executeQueryMiddleware(
+        );
+      },
+      leaf: ((target: NodeTarget, options: EditorLeafReadOptions = {}) => {
+        const at = resolveReadableNodeTarget(editor, target, options.required);
+
+        if (!at) return;
+
+        return executeQueryMiddleware(
           editor,
           'nodes',
           'leaf',
@@ -1928,13 +2198,24 @@ const getStateView = <
             withLocationRootRead(editor, at, () =>
               readNodeLeaf(editor, at, options)
             )
-        )) as EditorStateNodesApi['leaf'],
-      levels: <T extends PliteNode>(options = {}) =>
-        executeQueryMiddleware(
+        );
+      }) as EditorStateNodesApi['leaf'],
+      levels: <T extends PliteNode>(options = {}) => {
+        const resolvedOptions = resolveNodeTargetOptions(editor, options);
+
+        if (resolvedOptions === null) {
+          return (function* emptyLevels() {})() as Generator<
+            [T, Path],
+            void,
+            undefined
+          >;
+        }
+
+        return executeQueryMiddleware(
           editor,
           'nodes',
           'levels',
-          { options },
+          { options: resolvedOptions },
           ({ options }) =>
             hasReadableNodeCollection(editor, options)
               ? (getEditorRuntime(editor).levels(options) as Generator<
@@ -1943,9 +2224,14 @@ const getStateView = <
                   undefined
                 >)
               : (function* emptyLevels() {})()
-        ) as Generator<[T, Path], void, undefined>,
-      path: ((at: Location, options: EditorPathReadOptions = {}) =>
-        executeQueryMiddleware(
+        ) as Generator<[T, Path], void, undefined>;
+      },
+      path: ((target: NodeTarget, options: EditorPathReadOptions = {}) => {
+        const at = resolveReadableNodeTarget(editor, target, options.required);
+
+        if (!at) return;
+
+        return executeQueryMiddleware(
           editor,
           'nodes',
           'path',
@@ -1954,13 +2240,24 @@ const getStateView = <
             withLocationRootRead(editor, at, () =>
               readNodePath(editor, at, options)
             )
-        )) as EditorStateNodesApi['path'],
-      entries: <T extends PliteNode>(options = {}) =>
-        executeQueryMiddleware(
+        );
+      }) as EditorStateNodesApi['path'],
+      entries: <T extends PliteNode>(options = {}) => {
+        const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, options);
+
+        if (resolvedOptions === null) {
+          return (function* emptyEntries() {})() as Generator<
+            [T, Path],
+            void,
+            undefined
+          >;
+        }
+
+        return executeQueryMiddleware(
           editor,
           'nodes',
           'entries',
-          { options },
+          { options: resolvedOptions },
           ({ options }) =>
             withOptionsRootGenerator(
               editor,
@@ -1978,13 +2275,18 @@ const getStateView = <
               },
               { selectionFallback: usesImplicitSelectionLocation(options) }
             )
-        ) as Generator<[T, Path], void, undefined>,
-      find: <T extends PliteNode>(options = {}) =>
-        executeQueryMiddleware(
+        ) as Generator<[T, Path], void, undefined>;
+      },
+      find: <T extends PliteNode>(options = {}) => {
+        const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, options);
+
+        if (resolvedOptions === null) return;
+
+        return executeQueryMiddleware(
           editor,
           'nodes',
           'find',
-          { options },
+          { options: resolvedOptions },
           ({ options }) =>
             withOptionsRootRead(
               editor,
@@ -2000,30 +2302,18 @@ const getStateView = <
               },
               { selectionFallback: usesImplicitSelectionLocation(options) }
             )
-        ) as [T, Path] | undefined,
-      pathOf: (node: PliteNode) =>
-        executeQueryMiddleware(
-          editor,
-          'nodes',
-          'pathOf',
-          { node },
-          ({ node }) => {
-            for (const [, path] of getNodes(editor, {
-              at: [],
-              match: (candidate: PliteNode) => candidate === node,
-              mode: 'all',
-              voids: true,
-            })) {
-              return path;
-            }
-          }
-        ),
-      some: (options = {}) =>
-        executeQueryMiddleware(
+        ) as [T, Path] | undefined;
+      },
+      some: (options = {}) => {
+        const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, options);
+
+        if (resolvedOptions === null) return false;
+
+        return executeQueryMiddleware(
           editor,
           'nodes',
           'some',
-          { options },
+          { options: resolvedOptions },
           ({ options }) =>
             withOptionsRootRead(
               editor,
@@ -2041,34 +2331,45 @@ const getStateView = <
               },
               { selectionFallback: usesImplicitSelectionLocation(options) }
             )
-        ),
+        );
+      },
       toArray: createNodesToArray(editor),
-      next: <T extends PliteNode>(options = {}) =>
-        executeQueryMiddleware(
+      next: <T extends PliteNode>(options = {}) => {
+        const resolvedOptions = resolveNodeTargetOptions(editor, options);
+
+        if (resolvedOptions === null) return;
+
+        return executeQueryMiddleware(
           editor,
           'nodes',
           'next',
-          { options },
+          { options: resolvedOptions },
           ({ options }) =>
             hasReadableNodeCollection(editor, options)
               ? (getEditorRuntime(editor).next(options) as
                   | NodeEntry<Descendant>
                   | undefined)
               : undefined
-        ) as [T, Path] | undefined,
-      previous: <T extends PliteNode>(options = {}) =>
-        executeQueryMiddleware(
+        ) as [T, Path] | undefined;
+      },
+      previous: <T extends PliteNode>(options = {}) => {
+        const resolvedOptions = resolveNodeTargetOptions(editor, options);
+
+        if (resolvedOptions === null) return;
+
+        return executeQueryMiddleware(
           editor,
           'nodes',
           'previous',
-          { options },
+          { options: resolvedOptions },
           ({ options }) =>
             hasReadableNodeCollection(editor, options)
               ? (getEditorRuntime(editor).previous(options) as
                   | NodeEntry<PliteNode>
                   | undefined)
               : undefined
-        ) as [T, Path] | undefined,
+        ) as [T, Path] | undefined;
+      },
       shouldMergeNodesRemovePrevNode: (
         previous: NodeEntry,
         current: NodeEntry
@@ -2084,8 +2385,12 @@ const getStateView = <
               current
             )
         ),
-      parent: ((at: Location, options: EditorParentReadOptions = {}) =>
-        executeQueryMiddleware(
+      parent: ((target: NodeTarget, options: EditorParentReadOptions = {}) => {
+        const at = resolveReadableNodeTarget(editor, target, options.required);
+
+        if (!at) return;
+
+        return executeQueryMiddleware(
           editor,
           'nodes',
           'parent',
@@ -2094,53 +2399,83 @@ const getStateView = <
             withLocationRootRead(editor, at, () =>
               readNodeParent(editor, at, options)
             )
-        )) as EditorStateNodesApi['parent'],
-      void: (options = {}) =>
-        executeQueryMiddleware(
+        );
+      }) as EditorStateNodesApi['parent'],
+      void: (options = {}) => {
+        const resolvedOptions = resolveNodeTargetOptions(editor, options);
+
+        if (resolvedOptions === null) return;
+
+        return executeQueryMiddleware(
           editor,
           'nodes',
           'void',
-          { options },
+          { options: resolvedOptions },
           ({ options }) => getEditorRuntime(editor).void(options)
-        ),
+        );
+      },
     }),
     operations: (startIndex?: number) =>
       getOperations(editor, startIndex) as readonly Operation<V>[],
     points: Object.freeze({
-      after: (at: Location, options = {}) =>
-        executeQueryMiddleware(
+      after: (target: NodeTarget, options = {}) => {
+        const at = resolveReadableNodeTarget(editor, target);
+
+        if (!at) return;
+
+        return executeQueryMiddleware(
           editor,
           'points',
           'after',
           { at, options },
           ({ at, options }) => readAdjacentPoint(editor, at, 'after', options)
-        ),
-      before: (at: Location, options = {}) =>
-        executeQueryMiddleware(
+        );
+      },
+      before: (target: NodeTarget, options = {}) => {
+        const at = resolveReadableNodeTarget(editor, target);
+
+        if (!at) return;
+
+        return executeQueryMiddleware(
           editor,
           'points',
           'before',
           { at, options },
           ({ at, options }) => readAdjacentPoint(editor, at, 'before', options)
-        ),
-      end: ((at: Location, options: EditorReadOptions = {}) =>
-        executeQueryMiddleware(
+        );
+      },
+      end: ((target: NodeTarget, options: EditorReadOptions = {}) => {
+        const at = resolveReadableNodeTarget(editor, target, options.required);
+
+        if (!at) return;
+
+        return executeQueryMiddleware(
           editor,
           'points',
           'end',
           { at, options },
           ({ at, options }) => readPointEdge(editor, at, 'end', options)
-        )) as EditorStatePointsApi['end'],
-      get: ((at: Location, options: EditorPointReadOptions = {}) =>
-        executeQueryMiddleware(
+        );
+      }) as EditorStatePointsApi['end'],
+      get: ((target: NodeTarget, options: EditorPointReadOptions = {}) => {
+        const at = resolveReadableNodeTarget(editor, target, options.required);
+
+        if (!at) return;
+
+        return executeQueryMiddleware(
           editor,
           'points',
           'get',
           { at, options },
           ({ at, options }) => readPoint(editor, at, options)
-        )) as EditorStatePointsApi['get'],
-      isEdge: (point, at) =>
-        executeQueryMiddleware(
+        );
+      }) as EditorStatePointsApi['get'],
+      isEdge: (point, target) => {
+        const at = resolveReadableNodeTarget(editor, target);
+
+        if (!at) return false;
+
+        return executeQueryMiddleware(
           editor,
           'points',
           'isEdge',
@@ -2148,9 +2483,14 @@ const getStateView = <
           ({ at, point }) =>
             hasLocationPath(editor, at) &&
             getEditorRuntime(editor).isEdge(point, at)
-        ),
-      isEnd: (point, at) =>
-        executeQueryMiddleware(
+        );
+      },
+      isEnd: (point, target) => {
+        const at = resolveReadableNodeTarget(editor, target);
+
+        if (!at) return false;
+
+        return executeQueryMiddleware(
           editor,
           'points',
           'isEnd',
@@ -2158,9 +2498,14 @@ const getStateView = <
           ({ at, point }) =>
             hasLocationPath(editor, at) &&
             getEditorRuntime(editor).isEnd(point, at)
-        ),
-      isStart: (point, at) =>
-        executeQueryMiddleware(
+        );
+      },
+      isStart: (point, target) => {
+        const at = resolveReadableNodeTarget(editor, target);
+
+        if (!at) return false;
+
+        return executeQueryMiddleware(
           editor,
           'points',
           'isStart',
@@ -2168,38 +2513,67 @@ const getStateView = <
           ({ at, point }) =>
             hasLocationPath(editor, at) &&
             getEditorRuntime(editor).isStart(point, at)
-        ),
-      positions: (options = {}) =>
-        executeQueryMiddleware(
+        );
+      },
+      isWordEnd: (point) => {
+        const after = state.points.after(point);
+
+        if (!after) return true;
+
+        const range = state.ranges.get(point, after);
+
+        return (
+          !!range && WHITESPACE_OR_END_REGEX.test(state.text.string(range))
+        );
+      },
+      positions: (options = {}) => {
+        const resolvedOptions = resolveNodeTargetOptions(editor, options);
+
+        if (resolvedOptions === null) {
+          return (function* emptyPositions() {})();
+        }
+
+        return executeQueryMiddleware(
           editor,
           'points',
           'positions',
-          { options },
+          { options: resolvedOptions },
           ({ options }) =>
             hasReadableNodeCollection(editor, options)
               ? getEditorRuntime(editor).positions(options)
               : (function* emptyPositions() {})()
-        ),
-      start: ((at: Location, options: EditorReadOptions = {}) =>
-        executeQueryMiddleware(
+        );
+      },
+      start: ((target: NodeTarget, options: EditorReadOptions = {}) => {
+        const at = resolveReadableNodeTarget(editor, target, options.required);
+
+        if (!at) return;
+
+        return executeQueryMiddleware(
           editor,
           'points',
           'start',
           { at, options },
           ({ at, options }) => readPointEdge(editor, at, 'start', options)
-        )) as EditorStatePointsApi['start'],
+        );
+      }) as EditorStatePointsApi['start'],
     }),
     ranges: Object.freeze({
       bookmark: (range, options = {}) =>
         getEditorTransformRegistry(editor).bookmark(range, options),
-      edges: ((at: Location, options: EditorReadOptions = {}) =>
-        executeQueryMiddleware(
+      edges: ((target: NodeTarget, options: EditorReadOptions = {}) => {
+        const at = resolveReadableNodeTarget(editor, target, options.required);
+
+        if (!at) return;
+
+        return executeQueryMiddleware(
           editor,
           'ranges',
           'edges',
           { at, options },
           ({ at, options }) => readRangeEdges(editor, at, options)
-        )) as EditorStateRangesApi['edges'],
+        );
+      }) as EditorStateRangesApi['edges'],
       fromEntries: (entries) =>
         executeQueryMiddleware(
           editor,
@@ -2209,18 +2583,27 @@ const getStateView = <
           ({ entries }) => readRangeFromEntries(editor, entries)
         ),
       get: ((
-        at: Location,
+        target: NodeTarget,
         toOrOptions?: Location | EditorReadOptions,
         options: EditorReadOptions = {}
-      ) =>
-        executeQueryMiddleware(
+      ) => {
+        const required =
+          'required' in (toOrOptions ?? {})
+            ? (toOrOptions as EditorReadOptions).required
+            : options.required;
+        const at = resolveReadableNodeTarget(editor, target, required);
+
+        if (!at) return;
+
+        return executeQueryMiddleware(
           editor,
           'ranges',
           'get',
           { at, options, toOrOptions },
           ({ at, options, toOrOptions }) =>
             readRange(editor, at, toOrOptions, options)
-        )) as EditorStateRangesApi['get'],
+        );
+      }) as EditorStateRangesApi['get'],
       project: (range) =>
         executeQueryMiddleware(
           editor,
@@ -2300,14 +2683,19 @@ const getStateView = <
     }),
     selection: selectionApi,
     text: Object.freeze({
-      string: (at: Location, options = {}) =>
-        withLocationRootRead(editor, at, () => {
+      string: (target: NodeTarget, options = {}) => {
+        const at = resolveReadableNodeTarget(editor, target);
+
+        if (!at) return '';
+
+        return withLocationRootRead(editor, at, () => {
           if (!hasLocationPath(editor, at)) {
             return '';
           }
 
           return getEditorRuntime(editor).string(at, options);
-        }),
+        });
+      },
     }),
     value: () => getEditorDocumentValue(editor),
     view: Object.freeze({
@@ -2393,6 +2781,16 @@ const getUpdateView = <
     options: { at?: Location } | undefined,
     fn: () => T
   ) => runWithMutationRoot(editor, getMutationRoot(editor, options), fn);
+  const runTargetMutation = <TOptions extends NodeTargetOptions, TResult>(
+    options: TOptions | undefined,
+    fn: (options: ResolvedNodeTargetOptions<TOptions> | undefined) => TResult
+  ): TResult | undefined => {
+    const resolvedOptions = resolveNodeTargetOptions(editor, options);
+
+    if (resolvedOptions === null) return;
+
+    return runMutation(resolvedOptions, () => fn(resolvedOptions));
+  };
   const runSelectionMutation = <T>(fn: () => T) =>
     runWithMutationRoot(editor, getMutationRoot(editor), fn);
   const runLocationMutation = <T>(location: Location, fn: () => T) =>
@@ -2408,26 +2806,34 @@ const getUpdateView = <
     } = {}
   ) => {
     if (!at) return;
+    const targetAt = resolveNodeTargetLocation(editor, at);
+
+    if (!targetAt) return;
+    const someMatch = normalizeNodeMatch(someOptions?.match);
 
     const typeMatch = (node: PliteNode, path: Path) =>
       NodeApi.isElement(node) &&
       node.type === type &&
-      (someOptions?.match?.(node, path) ?? true);
+      (someMatch?.(node, path) ?? true);
     const isActive = state.nodes.some({
-      at,
       ...someOptions,
+      at: targetAt,
       match: typeMatch,
     });
 
     if (wrap) {
       if (isActive) {
-        runMutation({ at }, () =>
-          transforms.unwrapNodes({ at, match: typeMatch, ...options })
+        runMutation({ at: targetAt }, () =>
+          transforms.unwrapNodes({
+            at: targetAt,
+            match: typeMatch,
+            ...options,
+          })
         );
       } else {
-        runMutation({ at }, () =>
+        runMutation({ at: targetAt }, () =>
           transforms.wrapNodes({ children: [], type } as ElementIn<V>, {
-            at,
+            at: targetAt,
             ...options,
           })
         );
@@ -2438,10 +2844,10 @@ const getUpdateView = <
 
     if (isActive && type === defaultType) return;
 
-    runMutation({ at }, () =>
+    runMutation({ at: targetAt }, () =>
       transforms.setNodes(
         { type: isActive ? defaultType : type },
-        { at, ...options }
+        { at: targetAt, ...options }
       )
     );
   };
@@ -2449,17 +2855,23 @@ const getUpdateView = <
     props,
     { preserve = [], ...options } = {}
   ) => {
+    const resolvedOptions = resolveNodeTargetOptions(editor, options);
+
+    if (resolvedOptions === null) return;
+
+    const nextOptions = resolvedOptions ?? {};
+    const match = normalizeNodeMatch(nextOptions.match);
     const exactEntry =
-      options.at && LocationApi.isPath(options.at)
-        ? state.nodes.get(options.at)
+      nextOptions.at && LocationApi.isPath(nextOptions.at)
+        ? state.nodes.get(nextOptions.at)
         : undefined;
     const entry =
       exactEntry &&
       NodeApi.isElement(exactEntry[0]) &&
       state.schema.isBlock(exactEntry[0]) &&
-      (options.match?.(exactEntry[0], exactEntry[1]) ?? true)
+      (match?.(exactEntry[0], exactEntry[1]) ?? true)
         ? exactEntry
-        : state.nodes.block(options);
+        : state.nodes.block(nextOptions);
 
     if (!entry) return;
 
@@ -2506,20 +2918,25 @@ const getUpdateView = <
     voids,
   } = {}) => {
     if (!at) return;
+    const targetAt = resolveNodeTargetLocation(editor, at);
+
+    if (!targetAt) return;
+
+    const blockMatch = normalizeNodeMatch(match);
 
     const matchesBlock = (node: PliteNode, path: Path) =>
       NodeApi.isElement(node) &&
       state.schema.isBlock(node) &&
-      (!match || match(node, path));
-    const entries = LocationApi.isRange(at)
+      (!blockMatch || blockMatch(node, path));
+    const entries = LocationApi.isRange(targetAt)
       ? state.nodes.toArray<ElementIn<V>>({
-          at,
+          at: targetAt,
           match: matchesBlock,
           mode,
           voids,
         })
       : (() => {
-          const entry = state.nodes.block<ElementIn<V>>({ at });
+          const entry = state.nodes.block<ElementIn<V>>({ at: targetAt });
 
           return entry && matchesBlock(entry[0], entry[1]) ? [entry] : [];
         })();
@@ -2531,13 +2948,34 @@ const getUpdateView = <
       voids,
     });
   };
+  const setNodes = ((
+    ...args: Parameters<EditorTransactionNodesApi<V>['set']>
+  ) => {
+    const [props, options] = args;
+
+    return runTargetMutation(options, (resolvedOptions) =>
+      transforms.setNodes(props, resolvedOptions)
+    );
+  }) as EditorTransactionNodesApi<V>['set'];
+  const replaceChildrenNodes: EditorTransactionNodesApi<V>['replaceChildren'] =
+    (children, options) => {
+      const at = resolveNodeTargetLocation(editor, options.at);
+
+      if (!at || !LocationApi.isPath(at)) return;
+
+      return runMutation({ at }, () =>
+        transforms.replaceChildren(children, { ...options, at })
+      );
+    };
 
   const tx = {
     ...state,
     blocks: Object.freeze({
       duplicate: duplicateBlocks,
       lift: (options) =>
-        runMutation(options, () => transforms.liftNodes(options)),
+        runTargetMutation(options, (resolvedOptions) =>
+          transforms.liftNodes(resolvedOptions)
+        ),
       reset: resetBlock,
       toggle: toggleBlock,
     }),
@@ -2550,14 +2988,18 @@ const getUpdateView = <
       Object.assign(
         (...args: Parameters<typeof state.fragment>) => state.fragment(...args),
         {
-          delete: (...args: Parameters<typeof transforms.deleteFragment>) =>
-            runSelectionMutation(() => transforms.deleteFragment(...args)),
+          delete: (
+            options: Parameters<EditorTransactionFragmentApi<V>['delete']>[0]
+          ) =>
+            runTargetMutation(options, (resolvedOptions) =>
+              transforms.deleteFragment(resolvedOptions)
+            ),
           insert: (
             fragment: Parameters<EditorTransactionFragmentApi<V>['insert']>[0],
             options: Parameters<EditorTransactionFragmentApi<V>['insert']>[1]
           ) =>
-            runMutation(options, () =>
-              transforms.insertFragment(fragment, options)
+            runTargetMutation(options, (resolvedOptions) =>
+              transforms.insertFragment(fragment, resolvedOptions)
             ),
         }
       )
@@ -2591,30 +3033,44 @@ const getUpdateView = <
       ...state.nodes,
       duplicate: duplicateNodes,
       insert: (nodes, options) =>
-        runMutation(options, () => transforms.insertNodes(nodes, options)),
-      lift: (options) =>
-        runMutation(options, () => transforms.liftNodes(options)),
-      merge: (options) =>
-        runMutation(options, () => transforms.mergeNodes(options)),
-      move: (options) =>
-        runMutation(options, () => transforms.moveNodes(options)),
-      remove: (options) =>
-        runMutation(options, () => transforms.removeNodes(options)),
-      replaceChildren: (children, options) =>
-        runMutation({ at: options.at }, () =>
-          transforms.replaceChildren(children, options)
+        runTargetMutation(options, (resolvedOptions) =>
+          transforms.insertNodes(nodes, resolvedOptions)
         ),
-      set: (props, options) =>
-        runMutation(options, () => transforms.setNodes(props, options)),
+      lift: (options) =>
+        runTargetMutation(options, (resolvedOptions) =>
+          transforms.liftNodes(resolvedOptions)
+        ),
+      merge: (options) =>
+        runTargetMutation(options, (resolvedOptions) =>
+          transforms.mergeNodes(resolvedOptions)
+        ),
+      move: (options) =>
+        runTargetMutation(options, (resolvedOptions) =>
+          transforms.moveNodes(resolvedOptions!)
+        ),
+      remove: (options) =>
+        runTargetMutation(options, (resolvedOptions) =>
+          transforms.removeNodes(resolvedOptions)
+        ),
+      replaceChildren: replaceChildrenNodes,
+      set: setNodes,
       split: (options) =>
-        runMutation(options, () => transforms.splitNodes(options)),
+        runTargetMutation(options, (resolvedOptions) =>
+          transforms.splitNodes(resolvedOptions)
+        ),
       toggle: toggleBlock,
       unset: (props, options) =>
-        runMutation(options, () => transforms.unsetNodes(props, options)),
+        runTargetMutation(options, (resolvedOptions) =>
+          transforms.unsetNodes(props, resolvedOptions)
+        ),
       unwrap: (options) =>
-        runMutation(options, () => transforms.unwrapNodes(options)),
+        runTargetMutation(options, (resolvedOptions) =>
+          transforms.unwrapNodes(resolvedOptions)
+        ),
       wrap: (element, options) =>
-        runMutation(options, () => transforms.wrapNodes(element, options)),
+        runTargetMutation(options, (resolvedOptions) =>
+          transforms.wrapNodes(element, resolvedOptions)
+        ),
     }),
     normalize: (options = {}) => transforms.normalize(options),
     operations: Object.freeze({
@@ -2715,10 +3171,20 @@ const getUpdateView = <
     }),
     selection: Object.freeze(
       Object.assign(() => state.selection(), {
-        isAcrossBlocks: () => state.selection.isAcrossBlocks(),
+        contains: (target: NodeTarget) => state.selection.contains(target),
+        intersects: (target: NodeTarget) => state.selection.intersects(target),
+        isAcrossBlocks: (options?: EditorSelectionBlockOptions) =>
+          state.selection.isAcrossBlocks(options),
+        isAtBlockEnd: (options?: EditorSelectionBlockOptions) =>
+          state.selection.isAtBlockEnd(options),
+        isAtBlockStart: (options?: EditorSelectionBlockOptions) =>
+          state.selection.isAtBlockStart(options),
         isCollapsed: () => state.selection.isCollapsed(),
         isExpanded: () => state.selection.isExpanded(),
-        isWithinBlock: () => state.selection.isWithinBlock(),
+        isWithinBlock: (options?: EditorSelectionBlockOptions) =>
+          state.selection.isWithinBlock(options),
+        isWithinText: (options?: EditorSelectionTargetOptions) =>
+          state.selection.isWithinText(options),
         clear: () => runSelectionMutation(() => transforms.deselect()),
         collapse: (options = {}) =>
           runSelectionMutation(() => transforms.collapse(options)),
@@ -2750,7 +3216,9 @@ const getUpdateView = <
     text: Object.freeze({
       ...state.text,
       delete: (options = {}) =>
-        runMutation(options, () => transforms.delete(options)),
+        runTargetMutation(options, (resolvedOptions) =>
+          transforms.delete(resolvedOptions)
+        ),
       deleteBackward: (options = {}) =>
         runSelectionMutation(() =>
           transforms.deleteBackward(options.unit ?? 'character')
@@ -2760,7 +3228,9 @@ const getUpdateView = <
           transforms.deleteForward(options.unit ?? 'character')
         ),
       insert: (text: string, options = {}) =>
-        runMutation(options, () => transforms.insertText(text, options)),
+        runTargetMutation(options, (resolvedOptions) =>
+          transforms.insertText(text, resolvedOptions)
+        ),
     }),
     value: Object.freeze(
       Object.assign(() => state.value(), {
@@ -4999,6 +5469,9 @@ export const initializePublicState = <
   setEditorMaxLength(editor, options.maxLength);
   EDITOR_READ_ONLY.set(editor, options.readOnly ?? false);
   seedRuntimeIds(initialChildren, editor);
+  for (const children of Object.values(initialValue.roots)) {
+    seedRuntimeIds(children, editor);
+  }
   const initialSelectionRoot =
     getPublicExplicitRangeRoot(options.initialSelection) ?? MAIN_ROOT_KEY;
   initializeSelectionState(

@@ -1,5 +1,7 @@
-import { KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
+import { BaseCalloutPlugin } from '../BaseCalloutPlugin';
 import { CALLOUT_STORAGE_KEY, insertCallout } from './insertCallout';
 
 describe('insertCallout', () => {
@@ -8,41 +10,48 @@ describe('insertCallout', () => {
   });
 
   it('uses the explicit icon, variant, and passed insert options', () => {
-    const editor = {
-      getType: mock(() => KEYS.callout),
-      tf: { insertNodes: mock() },
-    } as any;
+    const editor = createBaseEditor({
+      plugins: [BaseCalloutPlugin],
+      value: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
 
-    insertCallout(editor, { at: [1], icon: '🔥', variant: 'warning' } as any);
-
-    expect(editor.tf.insertNodes).toHaveBeenCalledWith(
-      {
-        children: [{ text: '' }],
+    editor.update((tx) => {
+      insertCallout(tx, editor.getType(KEYS.callout), {
+        at: [1],
         icon: '🔥',
-        type: KEYS.callout,
         variant: 'warning',
-      },
-      { at: [1] }
-    );
+      });
+    });
+
+    expect(editor.read.children().at(-1)).toMatchObject({
+      children: [{ text: '' }],
+      icon: '🔥',
+      type: KEYS.callout,
+      variant: 'warning',
+    });
   });
 
   it('falls back to local storage and then the default bulb icon', () => {
-    const editor = {
-      getType: mock(() => 'custom-callout'),
-      tf: { insertNodes: mock() },
-    } as any;
+    const editor = createBaseEditor({
+      plugins: [
+        BaseCalloutPlugin.configure({
+          node: { type: 'custom-callout' },
+        }),
+      ],
+      value: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
 
     localStorage.setItem(CALLOUT_STORAGE_KEY, '📌');
-    insertCallout(editor);
-    insertCallout(editor, { icon: undefined } as any);
+    editor.update.callout.insert();
+    editor.update.callout.insert({ icon: undefined });
     localStorage.removeItem(CALLOUT_STORAGE_KEY);
-    insertCallout(editor);
+    editor.update.callout.insert();
 
-    expect(editor.tf.insertNodes.mock.calls[0]?.[0]).toMatchObject({
+    expect(editor.read.children().at(1)).toMatchObject({
       icon: '📌',
       type: 'custom-callout',
     });
-    expect(editor.tf.insertNodes.mock.calls[2]?.[0]).toMatchObject({
+    expect(editor.read.children().at(3)).toMatchObject({
       icon: '💡',
       type: 'custom-callout',
     });

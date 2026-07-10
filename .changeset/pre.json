@@ -4,7 +4,6 @@
   "initialVersions": {
     "www": "0.0.1",
     "@platejs/ai": "53.1.6",
-    "@platejs/autoformat": "53.0.0",
     "@platejs/basic-nodes": "53.0.0",
     "@platejs/basic-styles": "53.0.0",
     "@platejs/callout": "53.0.0",

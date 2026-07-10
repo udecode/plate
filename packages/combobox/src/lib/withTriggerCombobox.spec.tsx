@@ -1,29 +1,33 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import { createSlatePlugin } from 'platejs';
-import { createSlateEditor } from 'platejs';
-import { ParagraphPlugin } from 'platejs/react';
+import {
+  BaseParagraphPlugin,
+  type BasePluginInput,
+  createBaseEditor,
+  createBasePlugin,
+  type PluginConfig,
+} from '@platejs/core';
+import type { Element } from '@platejs/plite';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import type { TriggerComboboxPluginOptions } from './types';
 
 import { withTriggerCombobox } from './withTriggerCombobox';
 
-const ExampleComboboxPlugin = createSlatePlugin<
-  string,
-  TriggerComboboxPluginOptions
->({
+type ExampleComboboxConfig = PluginConfig<string, TriggerComboboxPluginOptions>;
+
+const ExampleComboboxPlugin = createBasePlugin<ExampleComboboxConfig>({
   key: 'exampleCombobox',
   plugins: [
-    createSlatePlugin({
+    createBasePlugin({
       key: 'mention_input',
       node: { isElement: true, isInline: true, isVoid: true },
     }),
   ],
-}).overrideEditor(withTriggerCombobox);
+}).extendExtension(withTriggerCombobox);
 
 const plugins = [
-  ParagraphPlugin,
+  BaseParagraphPlugin,
 
   ExampleComboboxPlugin.extend<TriggerComboboxPluginOptions>({
     key: 'exampleCombobox1',
@@ -76,14 +80,17 @@ const QueryComboboxPlugin =
     },
   });
 
-const createEditorWithCombobox = (chidren: any, editorPlugins = plugins) => {
-  const editor = (<editor>{chidren}</editor>) as any;
+const createEditorWithCombobox = (
+  children: Element,
+  editorPlugins: readonly BasePluginInput[] = plugins
+) => {
+  const input = (<editor>{children}</editor>) as TestEditor;
 
-  return createSlateEditor({
+  return createBaseEditor({
     plugins: editorPlugins,
-    selection: editor.selection,
-    value: editor.children,
-  } as any);
+    selection: input.selection,
+    value: input.children,
+  });
 };
 
 jsxt;
@@ -98,9 +105,9 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.tf.insertText(trigger);
+        editor.update.text.insert(trigger);
 
-        expect(editor.children).toEqual([
+        expect(editor.read.children()).toEqual([
           <hp>
             <htext>hello </htext>
             <hmentioninput trigger={trigger}>
@@ -119,9 +126,9 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.tf.insertText(trigger);
+        editor.update.text.insert(trigger);
 
-        expect(editor.children).toEqual([
+        expect(editor.read.children()).toEqual([
           <hp>
             <htext />
             <hmentioninput trigger={trigger}>
@@ -140,9 +147,9 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.tf.insertText(trigger);
+        editor.update.text.insert(trigger);
 
-        expect(editor.children).toEqual([
+        expect(editor.read.children()).toEqual([
           <hp>
             <htext>hello world </htext>
             <hmentioninput trigger={trigger}>
@@ -162,9 +169,9 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.tf.insertText(trigger);
+        editor.update.text.insert(trigger);
 
-        expect(editor.children).toEqual([
+        expect(editor.read.children()).toEqual([
           <hp>
             hello{trigger}
             <cursor />
@@ -180,9 +187,9 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.tf.insertText(trigger);
+        editor.update.text.insert(trigger);
 
-        expect(editor.children).toEqual([
+        expect(editor.read.children()).toEqual([
           <hp>
             <htext />
             <hmentioninput trigger={trigger}>
@@ -203,9 +210,9 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.tf.insertText(trigger);
+        editor.update.text.insert(trigger);
 
-        expect(editor.children).toEqual([
+        expect(editor.read.children()).toEqual([
           <hp>
             hel{trigger}
             <cursor />
@@ -223,9 +230,9 @@ describe('withTriggerCombobox', () => {
       </hp>
     );
 
-    editor.tf.insertText('a');
+    editor.update.text.insert('a');
 
-    expect(editor.children).toEqual([<hp>a</hp>]);
+    expect(editor.read.children()).toEqual([<hp>a</hp>]);
   });
 
   it('insert a combobox input when the trigger is inserted after the specified pattern', () => {
@@ -235,9 +242,9 @@ describe('withTriggerCombobox', () => {
       </hp>
     );
 
-    editor.tf.insertText('@');
+    editor.update.text.insert('@');
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       <hp>
         <htext>hello "</htext>
         <hmentioninput trigger="@">
@@ -254,13 +261,13 @@ describe('withTriggerCombobox', () => {
       <hp>
         <cursor />
       </hp>,
-      [ParagraphPlugin, RegexComboboxPlugin]
+      [BaseParagraphPlugin, RegexComboboxPlugin]
     );
 
-    editor.meta.userId = 'user-1';
-    editor.tf.insertText('@');
+    editor.runtime.userId = 'user-1';
+    editor.update.text.insert('@');
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       <hp>
         <htext />
       </hp>,
@@ -277,21 +284,21 @@ describe('withTriggerCombobox', () => {
       <hp>
         <cursor />
       </hp>,
-      [ParagraphPlugin, QueryComboboxPlugin]
+      [BaseParagraphPlugin, QueryComboboxPlugin]
     );
 
-    editor.tf.insertText('@');
+    editor.update.text.insert('@');
 
-    expect(editor.children).toEqual([<hp>@</hp>]);
+    expect(editor.read.children()).toEqual([<hp>@</hp>]);
   });
 
   it('insert plain text when insertion uses an explicit at location', () => {
     const editor = createEditorWithCombobox(<hp>hello</hp>);
 
-    editor.tf.insertText('@', {
+    editor.update.text.insert('@', {
       at: { offset: 0, path: [0, 0] },
     });
 
-    expect(editor.children).toEqual([<hp>@hello</hp>]);
+    expect(editor.read.children()).toEqual([<hp>@hello</hp>]);
   });
 });

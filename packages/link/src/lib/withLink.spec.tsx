@@ -425,7 +425,7 @@ describe('withLink', () => {
         focus: { offset: 9, path: [0, 1, 0] },
       });
       editor.tf.insertText('\u200B');
-      editor.tf.normalize();
+      editor.update.normalize({ force: true });
 
       expect(editor.children).toEqual(
         (

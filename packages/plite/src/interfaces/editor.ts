@@ -83,6 +83,7 @@ import type {
   TextInsertTextOptions,
   TextMutationMethods,
 } from './transforms/text';
+import type { NodeMatch } from './node';
 
 /**
  * The `Editor` interface exposes the runtime API of a Plite editor. Document
@@ -105,6 +106,37 @@ export type InitialValue<V extends Value = Value> =
       meta?: Record<string, unknown>;
       roots?: Record<RootKey, V>;
     };
+
+/** A document location or a live node whose current location should be used. */
+export type NodeTarget<N extends Descendant = Descendant> = Location | N;
+
+export type EditorReplaceChildrenOptions = Omit<
+  NodeReplaceChildrenOptions,
+  'at'
+> & {
+  at: Element | Path;
+};
+
+type TargetDescendant<T extends Node> = Extract<T, Descendant>;
+
+type WithNodeTarget<
+  TOptions extends { at?: Location },
+  TNode extends Descendant = Descendant,
+> = Omit<TOptions, 'at'> & {
+  at?: NodeTarget<TNode>;
+};
+
+type WithNodeTargetOrSpan<
+  TOptions extends { at?: Location | Span },
+  TNode extends Descendant = Descendant,
+> = Omit<TOptions, 'at'> & {
+  at?: NodeTarget<TNode> | Span;
+};
+
+export type EditorNodesReadOptions<T extends Node> = WithNodeTargetOrSpan<
+  EditorNodesOptions<T>,
+  TargetDescendant<T>
+>;
 
 export type StateFieldCollabPolicy = 'local' | 'shared';
 
@@ -181,11 +213,24 @@ export type EditorUpdateValueApi<V extends Value = Value> =
     ) => void;
   };
 
+export type EditorSelectionTargetOptions = {
+  at?: NodeTarget | null;
+};
+
+export type EditorSelectionBlockOptions = EditorSelectionTargetOptions & {
+  match?: NodeMatch<Element>;
+};
+
 export type EditorStateSelectionApi = (() => Selection) & {
-  isAcrossBlocks: () => boolean;
+  contains: (target: NodeTarget) => boolean;
+  intersects: (target: NodeTarget) => boolean;
+  isAcrossBlocks: (options?: EditorSelectionBlockOptions) => boolean;
+  isAtBlockEnd: (options?: EditorSelectionBlockOptions) => boolean;
+  isAtBlockStart: (options?: EditorSelectionBlockOptions) => boolean;
   isCollapsed: () => boolean;
   isExpanded: () => boolean;
-  isWithinBlock: () => boolean;
+  isWithinBlock: (options?: EditorSelectionBlockOptions) => boolean;
+  isWithinText: (options?: EditorSelectionTargetOptions) => boolean;
 };
 
 export type EditorStateViewApi = {
@@ -300,26 +345,26 @@ export type EditorTransactionMetadataApi = {
 
 export type EditorStateNodesApi = {
   above: <T extends Ancestor>(
-    options?: EditorAboveOptions<T>
+    options?: WithNodeTarget<EditorAboveOptions<T>, TargetDescendant<T>>
   ) => NodeEntry<T> | undefined;
   block: <T extends Element = Element>(
-    options?: EditorBlockOptions<T>
+    options?: WithNodeTarget<EditorBlockOptions<T>, T>
   ) => NodeEntry<T> | undefined;
-  children: (at?: Location) => readonly Node[];
+  children: (at?: NodeTarget) => readonly Node[];
   elementReadOnly: (
-    options?: EditorElementReadOnlyOptions
+    options?: WithNodeTarget<EditorElementReadOnlyOptions>
   ) => NodeEntry<Element> | undefined;
   first: {
-    (at: Location, options: EditorRequiredTrueQueryOptions): NodeEntry;
-    (at: Location, options?: EditorFirstReadOptions): NodeEntry | undefined;
+    (at: NodeTarget, options: EditorRequiredTrueQueryOptions): NodeEntry;
+    (at: NodeTarget, options?: EditorFirstReadOptions): NodeEntry | undefined;
   };
   get: {
     <T extends Node>(
-      at: Location,
+      at: NodeTarget<TargetDescendant<T>>,
       options: EditorRequiredTrueQueryOptions
     ): NodeEntry<T>;
     <T extends Node>(
-      at: Location,
+      at: NodeTarget<TargetDescendant<T>>,
       options?: EditorNodeReadOptions
     ): NodeEntry<T> | undefined;
   };
@@ -329,63 +374,72 @@ export type EditorStateNodesApi = {
   hasTexts: (element: Element) => boolean;
   isBlock: (element: Node) => boolean;
   isEmpty: (element: Element) => boolean;
-  last: (at: Location, options?: EditorLastOptions) => NodeEntry | undefined;
+  last: (at: NodeTarget, options?: EditorLastOptions) => NodeEntry | undefined;
   leaf: {
     (
-      at: Location,
+      at: NodeTarget<Text>,
       options: EditorLeafOptions & EditorRequiredTrueQueryOptions
     ): NodeEntry<Text>;
     (
-      at: Location,
+      at: NodeTarget<Text>,
       options?: EditorLeafReadOptions
     ): NodeEntry<Text> | undefined;
   };
   levels: <T extends Node>(
-    options?: EditorLevelsOptions<T>
+    options?: WithNodeTarget<EditorLevelsOptions<T>, TargetDescendant<T>>
   ) => Generator<NodeEntry<T>, void, undefined>;
   path: {
     (
-      at: Location,
+      at: NodeTarget,
       options: EditorPathOptions & EditorRequiredTrueQueryOptions
     ): Path;
-    (at: Location, options?: EditorPathReadOptions): Path | undefined;
+    (at: NodeTarget, options?: EditorPathReadOptions): Path | undefined;
   };
   entries: <T extends Node>(
-    options?: EditorNodesOptions<T>
+    options?: EditorNodesReadOptions<T>
   ) => Generator<NodeEntry<T>, void, undefined>;
   find: <T extends Node>(
-    options?: EditorNodesOptions<T>
+    options?: EditorNodesReadOptions<T>
   ) => NodeEntry<T> | undefined;
-  pathOf: (node: Node) => Path | undefined;
-  some: <T extends Node>(options?: EditorNodesOptions<T>) => boolean;
+  some: <T extends Node>(options?: EditorNodesReadOptions<T>) => boolean;
   toArray: {
-    <T extends Node>(options?: EditorNodesOptions<T>): NodeEntry<T>[];
+    <T extends Node>(options?: EditorNodesReadOptions<T>): NodeEntry<T>[];
     <T extends Node, R>(
-      options: EditorNodesOptions<T> | undefined,
+      options: EditorNodesReadOptions<T> | undefined,
       map: (entry: NodeEntry<T>) => R
     ): R[];
   };
   next: <T extends Descendant>(
-    options?: EditorNextOptions<T>
+    options?: WithNodeTarget<EditorNextOptions<T>, T>
   ) => NodeEntry<T> | undefined;
   parent: {
     (
-      at: Location,
+      at: NodeTarget,
       options: EditorRequiredTrueQueryOptions
     ): NodeEntry<Ancestor>;
+    <T extends Ancestor>(
+      at: NodeTarget,
+      options: EditorRequiredTrueQueryOptions
+    ): NodeEntry<T>;
     (
-      at: Location,
+      at: NodeTarget,
       options?: EditorParentReadOptions
     ): NodeEntry<Ancestor> | undefined;
+    <T extends Ancestor>(
+      at: NodeTarget,
+      options?: EditorParentReadOptions
+    ): NodeEntry<T> | undefined;
   };
   previous: <T extends Node>(
-    options?: EditorPreviousOptions<T>
+    options?: WithNodeTarget<EditorPreviousOptions<T>, TargetDescendant<T>>
   ) => NodeEntry<T> | undefined;
   shouldMergeNodesRemovePrevNode: (
     previous: NodeEntry,
     current: NodeEntry
   ) => boolean;
-  void: (options?: EditorVoidOptions) => NodeEntry<Element> | undefined;
+  void: (
+    options?: WithNodeTarget<EditorVoidOptions>
+  ) => NodeEntry<Element> | undefined;
 };
 
 export type EditorTransactionNodesApi<V extends Value = Value> =
@@ -396,30 +450,30 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
     ) => void;
     insert: <T extends ElementOrTextIn<V>>(
       nodes: T | T[],
-      options?: NodeInsertNodesOptions<T>
+      options?: WithNodeTarget<NodeInsertNodesOptions<T>, T>
     ) => void;
     lift: <T extends NodeIn<V>>(options?: {
-      at?: Location;
+      at?: NodeTarget<TargetDescendant<T>>;
       match?: NodeMatch<T>;
       mode?: MaximizeMode;
       voids?: boolean;
     }) => void;
     merge: <T extends NodeIn<V>>(options?: {
-      at?: Location;
+      at?: NodeTarget<TargetDescendant<T>>;
       match?: NodeMatch<T>;
       mode?: RangeMode;
       hanging?: boolean;
       voids?: boolean;
     }) => void;
     move: <T extends NodeIn<V>>(options: {
-      at?: Location;
+      at?: NodeTarget<TargetDescendant<T>>;
       match?: NodeMatch<T>;
       mode?: MaximizeMode;
       to: Path;
       voids?: boolean;
     }) => void;
     remove: <T extends NodeIn<V>>(options?: {
-      at?: Location;
+      at?: NodeTarget<TargetDescendant<T>>;
       match?: NodeMatch<T>;
       mode?: MaximizeMode;
       hanging?: boolean;
@@ -427,14 +481,20 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
     }) => void;
     replaceChildren: <T extends ElementOrTextIn<V>>(
       children: T[],
-      options: NodeReplaceChildrenOptions
+      options: EditorReplaceChildrenOptions
     ) => void;
-    set: <T extends NodeIn<V>>(
-      props: Partial<NodeProps<T>>,
-      options?: NodeSetNodesOptions<T>
-    ) => void;
+    set: {
+      <T extends Descendant>(
+        props: Partial<NodeProps<NoInfer<T>>>,
+        options: Omit<NodeSetNodesOptions<T>, 'at'> & { at: T }
+      ): void;
+      <T extends NodeIn<V>>(
+        props: Partial<NodeProps<T>>,
+        options?: NodeSetNodesOptions<T>
+      ): void;
+    };
     split: <T extends NodeIn<V>>(options?: {
-      at?: Location;
+      at?: NodeTarget<TargetDescendant<T>>;
       match?: NodeMatch<T>;
       mode?: RangeMode;
       always?: boolean;
@@ -445,13 +505,13 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
     toggle: (
       type: string,
       options?: {
-        at?: Location;
+        at?: NodeTarget<DescendantIn<V>>;
         compare?: PropsCompare;
         defaultType?: string;
         hanging?: boolean;
         merge?: PropsMerge;
         mode?: MaximizeMode;
-        someOptions?: EditorNodesOptions<NodeIn<V>>;
+        someOptions?: Omit<EditorNodesReadOptions<Node>, 'at'>;
         split?: boolean;
         voids?: boolean;
         wrap?: boolean;
@@ -460,7 +520,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
     unset: <T extends NodeIn<V>>(
       props: string | string[],
       options?: {
-        at?: Location;
+        at?: NodeTarget<TargetDescendant<T>>;
         match?: NodeMatch<T>;
         mode?: MaximizeMode;
         hanging?: boolean;
@@ -469,7 +529,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       }
     ) => void;
     unwrap: <T extends NodeIn<V>>(options?: {
-      at?: Location;
+      at?: NodeTarget<TargetDescendant<T>>;
       match?: NodeMatch<T>;
       mode?: MaximizeMode;
       split?: boolean;
@@ -478,7 +538,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
     wrap: <T extends NodeIn<V>, E extends ElementIn<V>>(
       element: E,
       options?: {
-        at?: Location;
+        at?: NodeTarget<TargetDescendant<T>>;
         match?: NodeMatch<T>;
         mode?: MaximizeMode;
         split?: boolean;
@@ -493,57 +553,60 @@ export type EditorBlockResetOptions<T extends Element = Element> =
   };
 
 export type EditorTransactionBlocksApi<V extends Value = Value> = {
-  duplicate: (options?: BlockDuplicateOptions<ElementIn<V>>) => void;
+  duplicate: (
+    options?: WithNodeTarget<BlockDuplicateOptions<ElementIn<V>>, ElementIn<V>>
+  ) => void;
   lift: EditorTransactionNodesApi<V>['lift'];
   reset: <T extends ElementIn<V>>(
     props: Partial<NodeProps<T>>,
-    options?: EditorBlockResetOptions<T>
+    options?: WithNodeTarget<EditorBlockResetOptions<T>, T>
   ) => void;
   toggle: EditorTransactionNodesApi<V>['toggle'];
 };
 
 export type EditorStatePointsApi = {
-  after: (at: Location, options?: EditorAfterOptions) => Point | undefined;
-  before: (at: Location, options?: EditorBeforeOptions) => Point | undefined;
+  after: (at: NodeTarget, options?: EditorAfterOptions) => Point | undefined;
+  before: (at: NodeTarget, options?: EditorBeforeOptions) => Point | undefined;
   end: {
-    (at: Location, options: EditorRequiredTrueQueryOptions): Point;
-    (at: Location, options?: EditorReadOptions): Point | undefined;
+    (at: NodeTarget, options: EditorRequiredTrueQueryOptions): Point;
+    (at: NodeTarget, options?: EditorReadOptions): Point | undefined;
   };
   get: {
     (
-      at: Location,
+      at: NodeTarget,
       options: EditorPointOptions & EditorRequiredTrueQueryOptions
     ): Point;
-    (at: Location, options?: EditorPointReadOptions): Point | undefined;
+    (at: NodeTarget, options?: EditorPointReadOptions): Point | undefined;
   };
-  isEdge: (point: Point, at: Location) => boolean;
-  isEnd: (point: Point, at: Location) => boolean;
-  isStart: (point: Point, at: Location) => boolean;
+  isEdge: (point: Point, at: NodeTarget) => boolean;
+  isEnd: (point: Point, at: NodeTarget) => boolean;
+  isStart: (point: Point, at: NodeTarget) => boolean;
+  isWordEnd: (point: Point) => boolean;
   positions: (
-    options?: EditorPositionsOptions
+    options?: WithNodeTarget<EditorPositionsOptions>
   ) => Generator<Point, void, undefined>;
   start: {
-    (at: Location, options: EditorRequiredTrueQueryOptions): Point;
-    (at: Location, options?: EditorReadOptions): Point | undefined;
+    (at: NodeTarget, options: EditorRequiredTrueQueryOptions): Point;
+    (at: NodeTarget, options?: EditorReadOptions): Point | undefined;
   };
 };
 
 export type EditorStateRangesApi = {
   bookmark: (range: Range, options?: BookmarkOptions) => Bookmark;
   edges: {
-    (at: Location, options: EditorRequiredTrueQueryOptions): [Point, Point];
-    (at: Location, options?: EditorReadOptions): [Point, Point] | undefined;
+    (at: NodeTarget, options: EditorRequiredTrueQueryOptions): [Point, Point];
+    (at: NodeTarget, options?: EditorReadOptions): [Point, Point] | undefined;
   };
   fromEntries: (entries: readonly NodeEntry[]) => Range | undefined;
   get: {
     (
-      at: Location,
+      at: NodeTarget,
       to: Location,
       options: EditorRequiredTrueQueryOptions
     ): Range;
-    (at: Location, options: EditorRequiredTrueQueryOptions): Range;
+    (at: NodeTarget, options: EditorRequiredTrueQueryOptions): Range;
     (
-      at: Location,
+      at: NodeTarget,
       toOrOptions?: Location | EditorReadOptions,
       options?: EditorReadOptions
     ): Range | undefined;
@@ -553,15 +616,17 @@ export type EditorStateRangesApi = {
 };
 
 export type EditorStateTextApi = {
-  string: (at: Location, options?: EditorStringOptions) => string;
+  string: (at: NodeTarget, options?: EditorStringOptions) => string;
 };
 
 export type EditorTransactionFragmentApi<V extends Value = Value> =
   EditorStateFragmentApi<V> & {
-    delete: (options?: EditorFragmentDeletionOptions) => void;
+    delete: (
+      options?: WithNodeTarget<EditorFragmentDeletionOptions, DescendantIn<V>>
+    ) => void;
     insert: (
       fragment: DescendantIn<V>[],
-      options?: TextInsertFragmentOptions
+      options?: WithNodeTarget<TextInsertFragmentOptions, DescendantIn<V>>
     ) => void;
   };
 
@@ -571,10 +636,13 @@ export type EditorTransactionBreakApi = {
 };
 
 export type EditorTransactionTextApi = EditorStateTextApi & {
-  delete: (options?: TextDeleteOptions) => void;
+  delete: (options?: WithNodeTarget<TextDeleteOptions>) => void;
   deleteBackward: (options?: EditorDirectedDeletionOptions) => void;
   deleteForward: (options?: EditorDirectedDeletionOptions) => void;
-  insert: (text: string, options?: TextInsertTextOptions) => void;
+  insert: (
+    text: string,
+    options?: WithNodeTarget<TextInsertTextOptions>
+  ) => void;
 };
 
 export type EditorTransactionRefsApi = {
@@ -798,14 +866,14 @@ export type EditorCoreUpdateMethods<V extends Value = Value> = {
       | 'move'
       | 'remove'
       | 'replaceChildren'
-      | 'set'
       | 'split'
       | 'toggle'
       | 'unset'
       | 'unwrap'
       | 'wrap'
     >
-  >;
+  > &
+    Pick<EditorTransactionNodesApi<V>, 'set'>;
   normalize: BivariantFunction<EditorCoreUpdateTransaction<V>['normalize']>;
   operations: EditorBivariantMethods<EditorTransactionOperationsApi<V>>;
   refs: EditorBivariantMethods<EditorTransactionRefsApi>;
@@ -1223,7 +1291,6 @@ export type EditorQueryMiddlewareArgs<_V extends Value = Value> = {
     next: { options?: EditorNextOptions<Descendant> };
     parent: { at: Location; options?: EditorParentReadOptions };
     path: { at: Location; options?: EditorPathReadOptions };
-    pathOf: { node: Node };
     previous: { options?: EditorPreviousOptions<Node> };
     shouldMergeNodesRemovePrevNode: {
       current: NodeEntry;
@@ -1292,7 +1359,6 @@ export type EditorQueryMiddlewareResult<V extends Value = Value> = {
     next: NodeEntry<Descendant> | undefined;
     parent: NodeEntry<Ancestor> | undefined;
     path: Path | undefined;
-    pathOf: Path | undefined;
     previous: NodeEntry<Node> | undefined;
     shouldMergeNodesRemovePrevNode: boolean;
     some: boolean;
@@ -1822,6 +1888,7 @@ export type EditorExtension<
   operations?: EditorExtensionOperations<TEditor>;
   options?: TOptions;
   peerDependencies?: readonly string[];
+  priority?: number;
   queries?: EditorQueryMiddlewareMap<TEditor>;
   setup?: (
     context: EditorExtensionSetupContext<TEditor, TOptions>
@@ -3869,14 +3936,6 @@ export {
   withoutNormalizing,
   wrapNodes,
 };
-
-/**
- * A helper type for narrowing matched nodes with a predicate.
- */
-
-export type NodeMatch<T extends Node> =
-  | ((node: Node, path: Path) => node is T)
-  | ((node: Node, path: Path) => boolean);
 
 export type PropsCompare = (prop: unknown, node: unknown) => boolean;
 export type PropsMerge = (prop: unknown, node: unknown) => object;

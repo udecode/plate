@@ -1,4 +1,5 @@
-import type { SlateEditor, TElement } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { Element } from '@platejs/plite';
 
 export type CancelComboboxInputCause =
   | 'arrowLeft'
@@ -17,6 +18,6 @@ export type ComboboxInputCursorState = {
 export type TriggerComboboxPluginOptions = {
   trigger?: RegExp | string[] | string;
   triggerPreviousCharPattern?: RegExp;
-  createComboboxInput?: (trigger: string) => TElement;
-  triggerQuery?: (editor: SlateEditor) => boolean;
+  createComboboxInput?: (trigger: string) => Element;
+  triggerQuery?: (editor: BaseEditor) => boolean;
 };

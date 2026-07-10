@@ -82,7 +82,6 @@ const exactPublicPackageRuntimeExportExpectations = {
     'next',
     'parent',
     'previous',
-    'queryNode',
     'range',
     'setEditorReadOnly',
     'setDebugValueScrubber',

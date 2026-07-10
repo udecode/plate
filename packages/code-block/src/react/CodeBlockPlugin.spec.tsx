@@ -1,13 +1,11 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
-
-import { jsxt } from '@platejs/test-utils';
 import {
   BaseParagraphPlugin,
-  createSlateEditor,
-  createSlatePlugin,
-} from 'platejs';
+  createBaseEditor,
+  createBasePlugin,
+} from '@platejs/core';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { CodeBlockPlugin } from './CodeBlockPlugin';
 
@@ -25,7 +23,7 @@ describe('code block deserialization', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as TestEditor;
 
       const output = (
         <editor>
@@ -33,13 +31,13 @@ describe('code block deserialization', () => {
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [
           BaseParagraphPlugin,
           CodeBlockPlugin,
-          createSlatePlugin({
+          createBasePlugin({
             key: 'a',
             parser: {
               format: 'text/plain',
@@ -53,11 +51,11 @@ describe('code block deserialization', () => {
         value: input.children,
       });
 
-      editor.tf.insertData({
+      editor.api.clipboard.insertData({
         getData: () => `<pre><code>test</code></pre>`,
       } as any);
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read.children()).toEqual(output.children);
     });
   });
 
@@ -69,7 +67,7 @@ describe('code block deserialization', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as TestEditor;
 
       const output = (
         <editor>
@@ -77,20 +75,20 @@ describe('code block deserialization', () => {
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
       });
 
-      editor.tf.insertData({
+      editor.api.clipboard.insertData({
         getData: (format: string) =>
           format === 'text/html' && `<pre><code>test</code></pre>`,
       } as any);
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read.children()).toEqual(output.children);
     });
   });
 
@@ -106,7 +104,7 @@ describe('code block deserialization', () => {
           </hcodeblock>
           <hp>Line 3</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as TestEditor;
 
       const output = (
         <editor>
@@ -118,16 +116,16 @@ describe('code block deserialization', () => {
           </hcodeblock>
           <hp>Line 3</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
       });
 
-      editor.tf.deleteBackward();
-      expect(editor.children).toEqual(output.children);
+      editor.update.text.deleteBackward();
+      expect(editor.read.children()).toEqual(output.children);
     });
   });
 });

@@ -456,9 +456,7 @@ describe('LinkRules', () => {
         });
       });
       getCurrentRuntimeTransforms(editor).insertText('\u200B');
-      editor.update((tx) => {
-        tx.normalize({ force: true });
-      });
+      editor.update.normalize({ force: true });
 
       expect(root(editor)).toEqual(
         (

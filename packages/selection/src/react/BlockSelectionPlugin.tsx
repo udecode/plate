@@ -4,7 +4,6 @@ import type React from 'react';
 import type {
   Element,
   EditorUpdateTransaction,
-  Node,
   NodeEntry,
   NodeProps,
   NodeSetNodesOptions,
@@ -137,7 +136,7 @@ export type BlockSelectionConfig = PluginConfig<
       /** Set editor selection from block selection. */
       select: () => void;
       /** Select blocks by path or node. */
-      selectBlocks: (at: Node | Path) => void;
+      selectBlocks: (at: Path | TIdElement) => void;
       /** Set block indent on selected blocks. */
       setIndent: (indent: number, options?: NodeSetNodesOptions) => void;
       /** Set props on selected blocks. */
@@ -221,7 +220,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
 
         if (editor.read.selection()?.focus && disabledWhenFocused) {
           const nodeEntry = editor.read.nodes.above<Element>();
-          const elementPath = editor.read.nodes.pathOf(element);
+          const elementPath = editor.read.nodes.path(element);
 
           if (
             nodeEntry &&

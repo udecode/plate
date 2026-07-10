@@ -1,15 +1,11 @@
-import type {
-  OverrideEditor,
-  PluginConfig,
-  SlateEditor,
-  TElement,
-} from 'platejs';
+import type { ExtendPlateEditorExtension, PluginConfig } from '@platejs/core';
+import type { Element } from '@platejs/plite';
 
 import type { TriggerComboboxPluginOptions } from './types';
 
-export const withTriggerCombobox: OverrideEditor<
-  PluginConfig<any, TriggerComboboxPluginOptions>
-> = ({ editor, getOptions, tf: { insertText }, type }) => {
+export const withTriggerCombobox: ExtendPlateEditorExtension<
+  PluginConfig<string, TriggerComboboxPluginOptions>
+> = ({ editor, getOptions, type }) => {
   const matchesTrigger = (text: string) => {
     const { trigger } = getOptions();
 
@@ -25,7 +21,7 @@ export const withTriggerCombobox: OverrideEditor<
 
   return {
     transforms: {
-      insertText(text, options) {
+      insertText({ next, options, text, tx }) {
         const {
           createComboboxInput,
           triggerPreviousCharPattern,
@@ -34,35 +30,43 @@ export const withTriggerCombobox: OverrideEditor<
 
         if (
           options?.at ||
-          !editor.selection ||
+          !editor.read.selection() ||
           !matchesTrigger(text) ||
-          (triggerQuery && !triggerQuery(editor as SlateEditor))
+          (triggerQuery && !triggerQuery(editor))
         ) {
-          return insertText(text, options);
+          return next({ options, text });
         }
 
         // Make sure an input is created at the beginning of line or after a whitespace
-        const previousChar = editor.api.string(
-          editor.api.range('before', editor.selection)
-        );
+        const selection = editor.read.selection();
+        const before = selection && editor.read.points.before(selection);
+        const previousChar =
+          selection && before
+            ? editor.read.text.string({
+                anchor: before,
+                focus: selection.anchor,
+              })
+            : '';
 
         const matchesPreviousCharPattern =
           triggerPreviousCharPattern?.test(previousChar);
 
         if (matchesPreviousCharPattern) {
-          const inputNode: TElement = createComboboxInput
+          const inputNode: Element = createComboboxInput
             ? createComboboxInput(text)
             : { children: [{ text: '' }], type };
 
-          // Add userId for Yjs collaboration - only the creator sees the combobox
-          if (editor.meta.userId) {
-            (inputNode as any).userId = editor.meta.userId;
-          }
+          // Only the creator sees the transient input in collaborative editors.
+          const node = editor.runtime.userId
+            ? { ...inputNode, userId: editor.runtime.userId }
+            : inputNode;
 
-          return editor.tf.insertNodes(inputNode, options);
+          tx.nodes.insert(node, options);
+
+          return true;
         }
 
-        return insertText(text, options);
+        return next({ options, text });
       },
     },
   };

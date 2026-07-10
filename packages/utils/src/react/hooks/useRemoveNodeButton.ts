@@ -7,11 +7,7 @@ export const useRemoveNodeButton = ({ element }: { element: Element }) => {
   return {
     props: {
       onClick: () => {
-        const path = editor.read.nodes.pathOf(element);
-
-        if (!path) return;
-
-        editor.update.nodes.remove({ at: path });
+        editor.update.nodes.remove({ at: element });
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();

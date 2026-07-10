@@ -32,7 +32,7 @@ import {
   replaceChildRange,
   replaceChildren,
 } from '../../utils/modify';
-import { inheritRuntimeId } from '../../utils/runtime-ids';
+import { inheritRuntimeId, seedRuntimeIds } from '../../utils/runtime-ids';
 import { getChildren as editorGetChildren } from '../editor';
 import type { Editor } from '../editor';
 
@@ -175,6 +175,8 @@ export const transform: OperationTransformMethods['transform'] = (
       if (NodeApi.isEditor(node)) {
         throw new Error('Cannot insert an editor as a descendant node.');
       }
+
+      seedRuntimeIds([node], editor);
 
       if (PathApi.parent(path).length === 0) {
         mutateTopLevelChildren(editor, (children) => {

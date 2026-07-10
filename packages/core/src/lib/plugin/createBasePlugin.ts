@@ -48,6 +48,7 @@ type CreateBasePluginInput<C extends AnyPluginConfig = PluginConfig> = Record<
   unknown
 > & {
   api?: InferApi<C>;
+  decorate?: BasePlugin<C>['decorate'];
   extensions?: never;
   inject?: PluginInputInject<C> | null;
   key?: C['key'];

@@ -1,4 +1,4 @@
-import { toPlatePlugin } from 'platejs/react';
+import { toPlatePlugin } from '@platejs/core/react';
 
 import {
   BaseCodeBlockPlugin,

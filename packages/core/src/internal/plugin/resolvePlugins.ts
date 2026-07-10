@@ -257,7 +257,6 @@ export const resolvePlugins = (
 
   resolvePluginShortcuts(editor);
   resolvePluginInputRules(editor);
-  validateRemovedRuntimePlugins(editor);
 
   return editor;
 };
@@ -490,24 +489,6 @@ const resolvePluginInputRules = (editor: BaseEditor) => {
   });
 
   editor.runtime.inputRules = resolvedMeta;
-};
-
-const validateRemovedRuntimePlugins = (editor: BaseEditor) => {
-  const hasAutoformatPlugin = !!editor.plugins.autoformat;
-  const hasResolvedInputRules =
-    editor.runtime.inputRules.insertBreak.length > 0 ||
-    editor.runtime.inputRules.insertData.length > 0 ||
-    editor.runtime.inputRules.insertText.all.length > 0;
-
-  if (hasAutoformatPlugin && hasResolvedInputRules) {
-    throw new Error(
-      [
-        'AutoformatPlugin cannot be used with plugin-owned input rules.',
-        'Remove AutoformatPlugin from your editor plugins.',
-        'Enable inputRules on the feature plugins you use instead.',
-      ].join(' ')
-    );
-  }
 };
 
 const flattenAndResolvePlugins = (

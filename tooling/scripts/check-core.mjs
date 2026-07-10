@@ -12,6 +12,7 @@ const basicStylesDir = join(root, 'packages/basic-styles');
 const indentDir = join(root, 'packages/indent');
 const selectionDir = join(root, 'packages/selection');
 const diffDir = join(root, 'packages/diff');
+const codeBlockDir = join(root, 'packages/code-block');
 
 const testBatchSizeOverride = process.env.CORE_TEST_BATCH_SIZE;
 
@@ -78,6 +79,12 @@ const packageTestTargets = [
   {
     name: 'Diff',
     dir: diffDir,
+    roots: ['src'],
+    bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
+  },
+  {
+    name: 'Code Block',
+    dir: codeBlockDir,
     roots: ['src'],
     bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
   },
@@ -171,7 +178,7 @@ const runPackageTests = (target) => {
 const testInventory = collectTestInventory();
 
 run(
-  'typecheck Core + Plite + Utils + Basic Nodes + Basic Styles + Indent + Selection + Diff source and tests',
+  'typecheck Core + Plite + Utils + Basic Nodes + Basic Styles + Indent + Selection + Diff + Code Block source and tests',
   'pnpm',
   [
     'turbo',
@@ -184,6 +191,7 @@ run(
     '--filter=./packages/indent',
     '--filter=./packages/selection',
     '--filter=./packages/diff',
+    '--filter=./packages/code-block',
   ]
 );
 run('type contracts', 'pnpm', [
@@ -201,6 +209,7 @@ run('lint Basic Styles', 'pnpm', ['--filter', '@platejs/basic-styles', 'lint']);
 run('lint Indent', 'pnpm', ['--filter', '@platejs/indent', 'lint']);
 run('lint Selection', 'pnpm', ['--filter', '@platejs/selection', 'lint']);
 run('lint Diff', 'pnpm', ['--filter', '@platejs/diff', 'lint']);
+run('lint Code Block', 'pnpm', ['--filter', '@platejs/code-block', 'lint']);
 run('build Plite artifact for Core/Utils runtime tests', 'pnpm', [
   '--filter',
   '@platejs/plite',

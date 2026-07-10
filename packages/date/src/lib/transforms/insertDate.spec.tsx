@@ -1,11 +1,12 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseDatePlugin } from '../BaseDatePlugin';
 import { insertDate } from './insertDate';
 
 describe('insertDate', () => {
   it('inserts the provided date node and trailing spacer at the cursor', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseDatePlugin],
       selection: {
         anchor: { offset: 2, path: [0, 0] },
@@ -19,9 +20,13 @@ describe('insertDate', () => {
       ],
     });
 
-    insertDate(editor, { date: 'Mon Mar 23 2026' });
+    editor.update((tx) => {
+      insertDate(tx, editor.getType(KEYS.date), {
+        date: 'Mon Mar 23 2026',
+      });
+    });
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         children: [
           { text: 'hi' },
@@ -35,14 +40,14 @@ describe('insertDate', () => {
         type: KEYS.p,
       },
     ]);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 1, path: [0, 2] },
       focus: { offset: 1, path: [0, 2] },
     });
   });
 
-  it('bound insert.date uses the configured node type', () => {
-    const editor = createSlateEditor({
+  it('bound date.insert uses the configured node type', () => {
+    const editor = createBaseEditor({
       plugins: [BaseDatePlugin.configure({ node: { type: 'custom-date' } })],
       selection: {
         anchor: { offset: 1, path: [0, 0] },
@@ -56,9 +61,9 @@ describe('insertDate', () => {
       ],
     });
 
-    editor.tf.insert.date({ date: 'Mon Mar 23 2026' });
+    editor.update.date.insert({ date: 'Mon Mar 23 2026' });
 
-    expect(editor.children[0]).toMatchObject({
+    expect(editor.read.children()[0]).toMatchObject({
       children: [
         { text: 'x' },
         {
@@ -72,7 +77,7 @@ describe('insertDate', () => {
   });
 
   it('forwards explicit insertion options to insertNodes', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseDatePlugin],
       selection: {
         anchor: { offset: 1, path: [0, 0] },
@@ -86,12 +91,12 @@ describe('insertDate', () => {
       ],
     });
 
-    insertDate(editor, {
+    editor.update.date.insert({
       at: [0, 1],
       date: 'Mon Mar 23 2026',
     });
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         children: [
           { text: 'a' },
@@ -100,7 +105,8 @@ describe('insertDate', () => {
             date: '2026-03-23',
             type: KEYS.date,
           },
-          { text: ' b' },
+          { text: ' ' },
+          { text: 'b' },
         ],
         type: KEYS.p,
       },
@@ -108,7 +114,7 @@ describe('insertDate', () => {
   });
 
   it('preserves non-normalizable input on the raw fallback field', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseDatePlugin],
       selection: {
         anchor: { offset: 1, path: [0, 0] },
@@ -122,9 +128,9 @@ describe('insertDate', () => {
       ],
     });
 
-    insertDate(editor, { date: 'sometime next week' });
+    editor.update.date.insert({ date: 'sometime next week' });
 
-    expect(editor.children[0]).toMatchObject({
+    expect(editor.read.children()[0]).toMatchObject({
       children: [
         { text: 'x' },
         {

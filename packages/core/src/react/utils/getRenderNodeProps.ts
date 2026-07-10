@@ -106,7 +106,7 @@ export const getRenderNodeProps = ({
     newProps = pipeInjectNodeProps(
       editor,
       newProps,
-      (node) => editor.read.nodes.pathOf(node)!,
+      (node) => editor.read.nodes.path(node)!,
       readOnly
     ) as PlateHTMLProps;
   }

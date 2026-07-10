@@ -32,6 +32,49 @@ const children: Element[] = [
 ];
 
 describe('extension query middleware', () => {
+  it('receives normalized locations for node-target reads', () => {
+    const editor = createEditor({ initialValue: children });
+    const first = editor.read.nodes.get<Element>([0], { required: true })[0];
+    const seen: unknown[] = [];
+
+    editor.extend(
+      defineEditorExtension({
+        name: 'node-target-query-spy',
+        queries: {
+          nodes: {
+            find({ next, options }) {
+              seen.push([options?.at, typeof options?.match]);
+              return next({ options });
+            },
+            path({ at, next, options }) {
+              seen.push(at);
+              return next({ at, options });
+            },
+          },
+          points: {
+            start({ at, next, options }) {
+              seen.push(at);
+              return next({ at, options });
+            },
+          },
+          text: {
+            string({ at, next, options }) {
+              seen.push(at);
+              return next({ at, options });
+            },
+          },
+        },
+      })
+    );
+
+    editor.read.nodes.find({ at: first, match: { type: 'paragraph' } });
+    editor.read.nodes.path(first);
+    editor.read.points.start(first);
+    editor.read.text.string(first);
+
+    assert.deepEqual(seen, [[[0], 'function'], [0], [0], [0]]);
+  });
+
   it('intercepts grouped state read methods through extension.queries', () => {
     const editor = createEditor();
     const seen: string[] = [];

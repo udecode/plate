@@ -1,6 +1,10 @@
-import type { TCalloutElement } from 'platejs';
+import type { TCalloutElement } from '@platejs/utils';
 
-import { useEditorReadOnly, useEditorRef, useElement } from 'platejs/react';
+import {
+  useEditorReadOnly,
+  useEditorRef,
+  useElement,
+} from '@platejs/core/react';
 
 import { CALLOUT_STORAGE_KEY } from '../../lib';
 
@@ -32,12 +36,7 @@ export const useCalloutEmojiPicker = ({
       onSelectEmoji: (emojiValue: any) => {
         const icon = emojiValue.skins?.[0]?.native ?? emojiValue.icon;
 
-        editor.tf.setNodes<TCalloutElement>(
-          {
-            icon,
-          },
-          { at: element }
-        );
+        editor.update.nodes.set({ icon }, { at: element });
 
         localStorage.setItem(CALLOUT_STORAGE_KEY, icon);
         setIsOpen(false);

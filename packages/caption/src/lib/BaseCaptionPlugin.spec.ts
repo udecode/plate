@@ -1,10 +1,10 @@
-import { createBasePlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BaseCaptionPlugin } from './BaseCaptionPlugin';
 
 describe('BaseCaptionPlugin', () => {
-  it('ships caption defaults, visibility selector, and runtime ownership', () => {
-    const editor = createBasePlateEditor({
+  it('ships caption defaults and visibility selector', () => {
+    const editor = createBaseEditor({
       plugins: [BaseCaptionPlugin],
     });
     const plugin = editor.getPlugin(BaseCaptionPlugin);
@@ -18,7 +18,8 @@ describe('BaseCaptionPlugin', () => {
 
     editor.plugin(BaseCaptionPlugin).setOption('visibleId', 'caption-1');
 
-    expect(editor.plugin(BaseCaptionPlugin).getOption('visibleId')).toBe('caption-1');
-    expect(BaseCaptionPlugin.runtimeCaption).toBe(true);
+    expect(editor.plugin(BaseCaptionPlugin).getOption('visibleId')).toBe(
+      'caption-1'
+    );
   });
 });

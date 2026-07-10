@@ -1,27 +1,35 @@
-import type { InsertNodesOptions, SlateEditor, TDateElement } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type {
+  EditorUpdateTransaction,
+  NodeInsertNodesOptions,
+  Text,
+} from '@platejs/plite';
+import type { TDateElement } from '@platejs/utils';
 
 import { normalizeDateValue } from '../utils/dateValue';
 
+export type InsertDateOptions = NodeInsertNodesOptions<TDateElement | Text> & {
+  date?: string;
+};
+
 export const insertDate = (
-  editor: SlateEditor,
-  { date, ...options }: { date?: string } & InsertNodesOptions = {}
+  tx: EditorUpdateTransaction,
+  type: string,
+  { date, ...options }: InsertDateOptions = {}
 ) => {
   const normalized = normalizeDateValue(date ?? new Date());
 
-  editor.tf.insertNodes<TDateElement | { text: string }>(
+  tx.nodes.insert(
     [
       {
         children: [{ text: '' }],
         ...normalized,
-        type: editor.getType(KEYS.date),
+        type,
       },
-      // FIXME: for not losing the editor focus
+      // Keep the caret after the inline void.
       {
         text: ' ',
       },
     ],
-    options as any
+    options
   );
 };

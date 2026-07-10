@@ -95,8 +95,11 @@ export type {
   EditorQueryMiddlewareResult,
   EditorRead,
   EditorReadMethods,
+  EditorReplaceChildrenOptions,
   EditorRuntime,
   EditorRuntimeOptions,
+  EditorSelectionBlockOptions,
+  EditorSelectionTargetOptions,
   EditorSchemaApi,
   EditorSelectionUpdateMetadata,
   EditorSnapshot,
@@ -146,7 +149,7 @@ export type {
   EditorView,
   EditorViewOptions,
   InitialValue,
-  NodeMatch,
+  NodeTarget,
   ProjectedRangeSegment,
   RootKey,
   RuntimeId,
@@ -176,7 +179,6 @@ export * from './interfaces/point-ref';
 export * from './interfaces/range';
 export * from './interfaces/range-ref';
 export * from './interfaces/text';
-export * from './query-node';
 export type * from './interfaces/transforms/general';
 export type * from './interfaces/transforms/node';
 export type * from './interfaces/transforms/selection';

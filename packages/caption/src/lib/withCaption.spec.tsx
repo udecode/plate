@@ -1,14 +1,15 @@
-import { createSlateEditor, createSlatePlugin } from 'platejs';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import type { Selection, Value } from '@platejs/plite';
 
 import { BaseCaptionPlugin } from './BaseCaptionPlugin';
 
-const MediaPlugin = createSlatePlugin({
+const MediaPlugin = createBasePlugin({
   key: 'media',
   node: { isElement: true },
 });
 
-const createCaptionEditor = (value: any, selection: any = null) =>
-  createSlateEditor({
+const createCaptionEditor = (value: Value, selection: Selection = null) =>
+  createBaseEditor({
     plugins: [
       MediaPlugin,
       BaseCaptionPlugin.configure({
@@ -21,22 +22,20 @@ const createCaptionEditor = (value: any, selection: any = null) =>
     value,
   });
 
+const runShortcut = (
+  editor: ReturnType<typeof createCaptionEditor>,
+  name: string
+) =>
+  editor.runtime.shortcuts[`caption.${name}`]?.handler?.({
+    editor,
+    event: {
+      key: name === 'focusCaptionForward' ? 'ArrowDown' : 'ArrowUp',
+    } as KeyboardEvent,
+    eventDetails: {},
+  });
+
 describe('withCaption', () => {
-  const originalSetTimeout = globalThis.setTimeout;
-
-  beforeEach(() => {
-    globalThis.setTimeout = ((fn: () => void) => {
-      fn();
-
-      return 0 as any;
-    }) as typeof setTimeout;
-  });
-
-  afterEach(() => {
-    globalThis.setTimeout = originalSetTimeout;
-  });
-
-  it('stores focusEndPath when arrow-up moves into an allowed node with caption text', () => {
+  it('stores focusEndPath when arrow-up moves into an allowed node with caption text', async () => {
     const editor = createCaptionEditor([
       {
         caption: [{ text: 'caption' }],
@@ -45,20 +44,21 @@ describe('withCaption', () => {
       },
     ]);
 
-    editor.dom.currentKeyboardEvent = { key: 'ArrowUp', which: 38 } as any;
-    (editor as any).apply({
-      newProperties: {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      },
-      properties: null,
-      type: 'set_selection',
-    } as any);
+    expect(runShortcut(editor, 'focusCaptionBackward')).toBe(false);
 
-    expect(editor.plugin(BaseCaptionPlugin).getOption('focusEndPath')).toEqual([0]);
+    editor.update.selection.set({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(editor.plugin(BaseCaptionPlugin).getOption('focusEndPath')).toEqual([
+      0,
+    ]);
   });
 
-  it('skips the delayed focus when the caption is empty', () => {
+  it('skips the delayed focus when the caption is empty', async () => {
     const editor = createCaptionEditor([
       {
         caption: [{ text: '' }],
@@ -67,17 +67,18 @@ describe('withCaption', () => {
       },
     ]);
 
-    editor.dom.currentKeyboardEvent = { key: 'ArrowUp', which: 38 } as any;
-    (editor as any).apply({
-      newProperties: {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      },
-      properties: null,
-      type: 'set_selection',
-    } as any);
+    expect(runShortcut(editor, 'focusCaptionBackward')).toBe(false);
 
-    expect(editor.plugin(BaseCaptionPlugin).getOption('focusEndPath')).toBeNull();
+    editor.update.selection.set({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(
+      editor.plugin(BaseCaptionPlugin).getOption('focusEndPath')
+    ).toBeNull();
   });
 
   it('moves focus into the caption when moving down from an allowed block', () => {
@@ -95,8 +96,10 @@ describe('withCaption', () => {
       }
     );
 
-    expect(editor.tf.moveLine({ reverse: false })).toBe(true);
-    expect(editor.plugin(BaseCaptionPlugin).getOption('focusEndPath')).toEqual([0]);
+    expect(runShortcut(editor, 'focusCaptionForward')).toBe(true);
+    expect(editor.plugin(BaseCaptionPlugin).getOption('focusEndPath')).toEqual([
+      0,
+    ]);
   });
 
   it('still moves focus into an empty caption when moving down from an allowed block', () => {
@@ -114,12 +117,14 @@ describe('withCaption', () => {
       }
     );
 
-    expect(editor.tf.moveLine({ reverse: false })).toBe(true);
-    expect(editor.plugin(BaseCaptionPlugin).getOption('focusEndPath')).toEqual([0]);
+    expect(runShortcut(editor, 'focusCaptionForward')).toBe(true);
+    expect(editor.plugin(BaseCaptionPlugin).getOption('focusEndPath')).toEqual([
+      0,
+    ]);
   });
 
   it('falls through when moving down from a block that does not allow captions', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         MediaPlugin,
         BaseCaptionPlugin.configure({
@@ -138,9 +143,11 @@ describe('withCaption', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
-    expect(editor.tf.moveLine({ reverse: false })).toBe(false);
-    expect(editor.plugin(BaseCaptionPlugin).getOption('focusEndPath')).toBeNull();
+    expect(runShortcut(editor, 'focusCaptionForward')).toBe(false);
+    expect(
+      editor.plugin(BaseCaptionPlugin).getOption('focusEndPath')
+    ).toBeNull();
   });
 });

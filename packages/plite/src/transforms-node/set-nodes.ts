@@ -22,14 +22,15 @@ import {
   parent as editorParent,
   range as editorRange,
   unhangRange as editorUnhangRange,
-  type NodeMatch,
 } from '../interfaces/editor';
+import type { NodeMatchPredicate } from '../interfaces/node';
 import { type Descendant, type Node, NodeApi } from '../interfaces/node';
 import type { Operation } from '../interfaces/operation';
 import { PathApi } from '../interfaces/path';
 import { type Range, RangeApi } from '../interfaces/range';
 import { NON_SETTABLE_NODE_PROPERTIES } from '../interfaces/transforms/general';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
+import { normalizeNodeMatch } from '../utils/node-match';
 import { matchPath } from '../utils/match-path';
 import { inheritRuntimeId } from '../utils/runtime-ids';
 
@@ -157,7 +158,7 @@ const applySetNodeBatch = (
 const trimSplitRangeEndAtTextStart = (
   editor: Parameters<NodeMutationMethods['setNodes']>[0],
   range: Range,
-  match: NodeMatch<Node>
+  match: NodeMatchPredicate<Node>
 ): Range => {
   const [start, end] = RangeApi.edges(range);
 
@@ -205,7 +206,7 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
       split: optionSplit = false,
       voids: optionVoids = false,
     } = options;
-    let match = optionMatch;
+    let match = normalizeNodeMatch(optionMatch);
     let at = optionAt === undefined ? tx.resolveTarget() : optionAt;
     let compare = optionCompare;
     const merge = optionMerge;
@@ -225,8 +226,8 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
         return;
       }
 
-      const originalMatch = match as NodeMatch<Node> | undefined;
-      const marksMatch: NodeMatch<Node> = (node, path) => {
+      const originalMatch = match;
+      const marksMatch: NodeMatchPredicate<Node> = (node, path) => {
         if (!NodeApi.isText(node)) {
           return false;
         }

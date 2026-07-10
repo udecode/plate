@@ -1,4 +1,4 @@
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import {
   BaseCodeDrawingPlugin,
@@ -7,13 +7,14 @@ import {
 
 describe('BaseCodeDrawingPlugin', () => {
   it('configures code drawing as a void element node', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseCodeDrawingPlugin],
-    } as any);
+    });
 
-    const plugin = editor.getPlugin({ key: CODE_DRAWING_KEY });
+    const plugin = editor.getPlugin(BaseCodeDrawingPlugin);
 
     expect(plugin.node.isElement).toBe(true);
     expect(plugin.node.isVoid).toBe(true);
+    expect(editor.getType(CODE_DRAWING_KEY)).toBe(CODE_DRAWING_KEY);
   });
 });

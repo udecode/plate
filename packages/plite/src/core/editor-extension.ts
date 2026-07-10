@@ -497,7 +497,8 @@ const registerExtensionSlots = <TEditor extends Editor>(
             }
 
             return result;
-          }
+          },
+          { priority: extension.priority }
         )
       );
     }

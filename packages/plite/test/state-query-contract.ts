@@ -6,6 +6,7 @@ import {
   createEditorRuntime,
   createEditorView,
   type Element,
+  type Text,
 } from '@platejs/plite';
 
 const paragraph = (text: string): Element => ({
@@ -73,31 +74,145 @@ describe('state query contract', () => {
     assert.equal(editor.read.selection.isAcrossBlocks(), false);
   });
 
+  it('exposes explicit selection and point predicates', () => {
+    const editor = createEditor({
+      initialSelection: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+      initialValue: [paragraph('one two'), paragraph('three')],
+    });
+
+    assert.equal(editor.read.selection.isWithinText(), true);
+    assert.equal(editor.read.selection.isAtBlockStart(), true);
+    assert.equal(editor.read.selection.isAtBlockEnd(), false);
+    assert.equal(
+      editor.read.selection.isAtBlockStart({
+        at: { path: [1, 0], offset: 0 },
+      }),
+      true
+    );
+    assert.equal(
+      editor.read.selection.intersects({
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 5 },
+      }),
+      true
+    );
+    assert.equal(
+      editor.read.selection.contains({
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 2 },
+      }),
+      true
+    );
+    assert.equal(
+      editor.read.selection.contains({
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 5 },
+      }),
+      false
+    );
+    assert.equal(
+      editor.read.points.isWordEnd({ path: [0, 0], offset: 3 }),
+      true
+    );
+    assert.equal(
+      editor.read.points.isWordEnd({ path: [0, 0], offset: 2 }),
+      false
+    );
+
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 7 },
+        focus: { path: [0, 0], offset: 7 },
+      });
+
+      assert.equal(tx.selection.isAtBlockEnd(), true);
+      assert.equal(tx.selection.isWithinText(), true);
+      assert.equal(tx.points.isWordEnd({ path: [0, 0], offset: 7 }), true);
+    });
+
+    editor.update.selection.set({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 5 },
+    });
+
+    assert.equal(editor.read.selection.isWithinText(), false);
+    assert.equal(editor.read.selection.isAcrossBlocks(), true);
+    assert.equal(editor.read.selection.isAtBlockEnd(), true);
+  });
+
   it('finds a node path by object identity', () => {
     const editor = createEditor({
       initialValue: [paragraph('one'), paragraph('two')],
     });
     const first = editor.read(
-      (state) => state.nodes.get([0], { required: true })[0]
+      (state) => state.nodes.get<Element>([0], { required: true })[0]
     );
     const firstText = editor.read(
-      (state) => state.nodes.get([0, 0], { required: true })[0]
+      (state) => state.nodes.get<Text>([0, 0], { required: true })[0]
     );
 
     assert.deepEqual(
-      editor.read((state) => state.nodes.pathOf(first)),
+      editor.read((state) => state.nodes.path(first)),
       [0]
     );
     assert.deepEqual(
-      editor.read((state) => state.nodes.pathOf(firstText)),
+      editor.read((state) => state.nodes.path(firstText)),
       [0, 0]
     );
     assert.equal(
       editor.read((state) =>
-        state.nodes.pathOf({ type: 'paragraph', children: [{ text: 'one' }] })
+        state.nodes.path({ type: 'paragraph', children: [{ text: 'one' }] })
       ),
       undefined
     );
+  });
+
+  it('uses element and text targets across lifecycle reads', () => {
+    const editor = createEditor({ initialValue: [paragraph('one')] });
+    const element = editor.read.nodes.get<Element>([0], { required: true })[0];
+    const text = editor.read.nodes.get<Text>([0, 0], { required: true })[0];
+
+    assert.deepEqual(editor.read.nodes.get(element), [element, [0]]);
+    assert.deepEqual(editor.read.nodes.get(text), [text, [0, 0]]);
+    assert.deepEqual(editor.read.nodes.children(element), [text]);
+    assert.deepEqual(editor.read.points.start(element), {
+      path: [0, 0],
+      offset: 0,
+    });
+    assert.deepEqual(editor.read.points.end(text), {
+      path: [0, 0],
+      offset: 3,
+    });
+    assert.deepEqual(editor.read.ranges.edges(element), [
+      { path: [0, 0], offset: 0 },
+      { path: [0, 0], offset: 3 },
+    ]);
+    assert.equal(editor.read.text.string(element), 'one');
+    assert.deepEqual(
+      editor.read.nodes.toArray<Element>({
+        at: element,
+        match: { type: 'paragraph' },
+      }),
+      [[element, [0]]]
+    );
+  });
+
+  it('invalidates removed node targets without scanning the tree', () => {
+    const editor = createEditor({ initialValue: [paragraph('one')] });
+    const element = editor.read.nodes.get<Element>([0], { required: true })[0];
+
+    editor.update.nodes.remove({ at: element });
+
+    assert.equal(editor.read.nodes.path(element), undefined);
+    assert.throws(
+      () => editor.read.nodes.path(element, { required: true }),
+      /detached node target/
+    );
+    assert.equal(editor.read.nodes.get(element), undefined);
+    assert.equal(editor.read.text.string(element), '');
   });
 
   it('scopes node path lookup to root-bound views', () => {
@@ -111,16 +226,82 @@ describe('state query contract', () => {
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const headerNode = headerEditor.read(
-      (state) => state.nodes.get([0], { required: true })[0]
+      (state) => state.nodes.get<Element>([0], { required: true })[0]
     );
 
     assert.deepEqual(
-      headerEditor.read((state) => state.nodes.pathOf(headerNode)),
+      headerEditor.read((state) => state.nodes.path(headerNode)),
       [0]
     );
     assert.equal(
-      runtime.read((state) => state.nodes.pathOf(headerNode)),
+      runtime.read((state) => state.nodes.path(headerNode)),
       undefined
+    );
+  });
+
+  it('scopes selection predicates to root-bound views', () => {
+    const runtime = createEditorRuntime({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: {
+          header: [paragraph('header text')],
+        },
+      },
+    });
+    const headerEditor = createEditorView(runtime, { root: 'header' });
+
+    headerEditor.update.selection.set({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 6 },
+    });
+
+    assert.equal(headerEditor.read.selection.isWithinText(), true);
+    assert.equal(headerEditor.read.selection.isAtBlockStart(), true);
+    assert.equal(
+      headerEditor.read.selection.intersects({
+        anchor: { path: [0, 0], offset: 5 },
+        focus: { path: [0, 0], offset: 8 },
+      }),
+      true
+    );
+    assert.equal(
+      headerEditor.read.points.isWordEnd({ path: [0, 0], offset: 6 }),
+      true
+    );
+  });
+
+  it('matches nodes by scalar, one-of, empty, and predicate policies', () => {
+    const editor = createEditor({
+      initialValue: [
+        paragraph('one'),
+        { type: 'quote', children: [{ text: 'two' }] },
+        { type: 'image', url: '/image.png', children: [{ text: '' }] },
+      ],
+    });
+
+    assert.deepEqual(
+      editor.read.nodes
+        .toArray<Element>({ at: [], match: { type: 'quote' } })
+        .map(([node]) => node.type),
+      ['quote']
+    );
+    assert.deepEqual(
+      editor.read.nodes
+        .toArray<Element>({ at: [], match: { type: ['paragraph', 'image'] } })
+        .map(([node]) => node.type),
+      ['paragraph', 'image']
+    );
+    assert.equal(
+      editor.read.nodes.find<Element>({ at: [], match: { type: [] } }),
+      undefined
+    );
+    assert.deepEqual(
+      editor.read.nodes.find<Element>({
+        at: [],
+        match: (node): node is Element & { url: string } =>
+          'url' in node && typeof node.url === 'string',
+      }),
+      [{ type: 'image', url: '/image.png', children: [{ text: '' }] }, [2]]
     );
   });
 

@@ -14,7 +14,7 @@ const testNormalize = (input: SlateEditor, output: SlateEditor): void => {
     value: input.children,
   });
 
-  editor.tf.normalize({ force: true });
+  editor.update.normalize({ force: true });
 
   expect(editor.children).toEqual(output.children);
 };

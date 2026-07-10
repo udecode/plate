@@ -900,15 +900,6 @@ importers:
         specifier: workspace:^
         version: link:../plate
 
-  packages/autoformat:
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
-
   packages/basic-nodes:
     dependencies:
       '@platejs/core':
@@ -991,9 +982,15 @@ importers:
 
   packages/callout:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       react:
         specifier: '>=18.0.0'
         version: 19.2.4
@@ -1007,15 +1004,24 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/caption:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/plite-react':
+        specifier: workspace:^
+        version: link:../plite-react
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
+      '@udecode/react-utils':
+        specifier: workspace:^
+        version: link:../udecode/react-utils
       react:
         specifier: '>=18.0.0'
         version: 19.2.4
@@ -1032,15 +1038,18 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/code-block:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       react:
         specifier: '>=18.0.0'
         version: 19.2.4
@@ -1054,12 +1063,12 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      '@platejs/test-utils':
+        specifier: workspace:^
+        version: link:../test-utils
       lowlight:
         specifier: ^3.3.0
         version: 3.3.0
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/code-drawing:
     dependencies:
@@ -1069,6 +1078,9 @@ importers:
       '@codemirror/theme-one-dark':
         specifier: 6.1.3
         version: 6.1.3
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
@@ -1112,12 +1124,12 @@ importers:
       '@types/viz.js':
         specifier: ^2.1.5
         version: 2.1.5
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/combobox:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
@@ -1134,18 +1146,21 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
+      '@platejs/test-utils':
         specifier: workspace:^
-        version: link:../plate
+        version: link:../test-utils
 
   packages/comment:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.23
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       react:
         specifier: '>=18.0.0'
         version: 19.2.4
@@ -1159,9 +1174,6 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/core:
     dependencies:

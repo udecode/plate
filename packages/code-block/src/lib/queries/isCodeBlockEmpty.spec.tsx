@@ -1,15 +1,17 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import { createEditor, createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { isCodeBlockEmpty } from './isCodeBlockEmpty';
 
 jsxt;
 
 describe('isCodeBlockEmpty', () => {
-  const run = (input: any) =>
-    isCodeBlockEmpty(createSlateEditor({ editor: createEditor(input) }));
+  const run = (input: TestEditor) =>
+    isCodeBlockEmpty(
+      createBaseEditor({ selection: input.selection, value: input.children })
+    );
 
   it.each([
     {

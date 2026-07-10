@@ -20,10 +20,8 @@ export const htmlElementToLeaf = (editor: BaseEditor, element: HTMLElement) => {
       if (ElementApi.isElement(child)) {
         if (Object.keys(node).length > 0) {
           mergeDeepToNodes({
+            match: TextApi.isText,
             node: child,
-            query: {
-              filter: ([n]) => TextApi.isText(n),
-            },
             source: node,
           });
         }

@@ -154,12 +154,15 @@ export type InternalEditorRuntime<V extends Value = Value> =
     InternalEditorTransformRuntime<V>;
 
 const EDITOR_RUNTIME = new WeakMap<Editor, InternalEditorRuntime>();
+const EDITOR_RUNTIME_OWNER = new WeakMap<Editor, Editor>();
 
 export const setEditorRuntime = <V extends Value>(
   editor: Editor<V>,
-  runtime: InternalEditorRuntime<V>
+  runtime: InternalEditorRuntime<V>,
+  owner: Editor = editor
 ) => {
   EDITOR_RUNTIME.set(editor, runtime as unknown as InternalEditorRuntime);
+  EDITOR_RUNTIME_OWNER.set(editor, owner);
 };
 
 export const hasEditorRuntime = (value: unknown): value is Editor =>
@@ -178,6 +181,9 @@ export const getEditorRuntime = <V extends Value = Value>(
 
   return runtime as unknown as InternalEditorRuntime<V>;
 };
+
+export const getEditorRuntimeOwner = (editor: Editor): Editor =>
+  EDITOR_RUNTIME_OWNER.get(editor) ?? editor;
 
 export const getEditorSchema = (editor: Editor): EditorSchemaApi =>
   getEditorRuntime(editor).schema;

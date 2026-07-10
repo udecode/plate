@@ -171,6 +171,16 @@ export interface DOMApi {
   ) => Range;
 }
 
+/** Editor whose public API includes the Plite DOM capability. */
+export type DOMCapableEditor<
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+> = Omit<EditorType<V, TExtensions>, 'api'> & {
+  readonly api: EditorType<V, TExtensions>['api'] & {
+    readonly dom: DOMApi;
+  };
+};
+
 export interface DOMEditorCapability extends DOMApi {
   clipboard: DOMEditorClipboardCapability;
 }

@@ -1,13 +1,19 @@
 import { renderHook } from '@testing-library/react';
-import * as platejsReact from 'platejs/react';
+import type { TCalloutElement } from '@platejs/utils';
+import * as platejsReact from '@platejs/core/react';
 
 import { useCalloutEmojiPicker } from './useCalloutEmojiPicker';
+
+const element = {
+  id: 'callout-1',
+  type: 'callout',
+  children: [{ text: '' }],
+} satisfies TCalloutElement;
 
 describe('useCalloutEmojiPicker', () => {
   let useEditorReadOnlySpy: ReturnType<typeof spyOn>;
   let useEditorRefSpy: ReturnType<typeof spyOn>;
   let useElementSpy: ReturnType<typeof spyOn>;
-  let useNodePathSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
     localStorage.clear();
@@ -17,29 +23,36 @@ describe('useCalloutEmojiPicker', () => {
       'useEditorReadOnly'
     ).mockReturnValue(false);
     useEditorRefSpy = spyOn(platejsReact, 'useEditorRef').mockReturnValue({
-      update: mock(),
-    } as any);
-    useElementSpy = spyOn(platejsReact, 'useElement').mockReturnValue({
-      id: 'callout-1',
-    } as any);
-    useNodePathSpy = spyOn(platejsReact, 'useNodePath').mockReturnValue([0]);
+      update: { nodes: { set: mock() } },
+    } as unknown as ReturnType<typeof platejsReact.useEditorRef>);
+    useElementSpy = spyOn(platejsReact, 'useElement').mockReturnValue(element);
   });
 
   afterEach(() => {
     useEditorReadOnlySpy?.mockRestore();
     useEditorRefSpy?.mockRestore();
     useElementSpy?.mockRestore();
-    useNodePathSpy?.mockRestore();
   });
 
   it('updates the element icon, stores it, and closes the picker when editable', () => {
-    const set = mock();
     const setIsOpenMock = mock();
-    const setIsOpen = (isOpen: boolean) => (setIsOpenMock as any)(isOpen);
+    const setIsOpen = (isOpen: boolean) => {
+      setIsOpenMock(isOpen);
+    };
+    const value: TCalloutElement[] = [
+      { ...element, icon: '💬' },
+      {
+        id: 'callout-2',
+        type: 'callout',
+        children: [{ text: '' }],
+        icon: '✅',
+      },
+    ];
+    const editor = platejsReact.createPlateEditor({ value });
+    const target = editor.read.children()[0];
 
-    useEditorRefSpy.mockReturnValue({
-      update: (callback: any) => callback({ nodes: { set } }),
-    } as any);
+    useEditorRefSpy.mockReturnValue(editor);
+    useElementSpy.mockReturnValue(target);
 
     const { result } = renderHook(() =>
       useCalloutEmojiPicker({ isOpen: true, setIsOpen })
@@ -49,7 +62,10 @@ describe('useCalloutEmojiPicker', () => {
       skins: [{ native: '🔥' }],
     });
 
-    expect(set).toHaveBeenCalledWith({ icon: '🔥' }, { at: [0] });
+    expect(editor.read.children()).toMatchObject([
+      { id: 'callout-1', icon: '🔥' },
+      { id: 'callout-2', icon: '✅' },
+    ]);
     expect(localStorage.getItem('plate-storage-callout')).toBe('🔥');
     expect(setIsOpenMock).toHaveBeenCalledWith(false);
   });

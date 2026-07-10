@@ -1,36 +1,43 @@
-import type { InsertNodesOptions, NodeProps, SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import {
+  PathApi,
+  type EditorUpdateTransaction,
+  type NodeInsertNodesOptions,
+  type NodeProps,
+} from '@platejs/plite';
 
 import type { TCodeDrawingElement } from '../BaseCodeDrawingPlugin';
-import { CODE_DRAWING_KEY } from '../BaseCodeDrawingPlugin';
 
 export const insertCodeDrawing = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  type: string,
   props: NodeProps<TCodeDrawingElement> = {},
-  options: InsertNodesOptions = {}
+  options: NodeInsertNodesOptions<TCodeDrawingElement> = {}
 ): void => {
-  const safeProps: NodeProps<TCodeDrawingElement> =
-    props && typeof props === 'object'
-      ? props
-      : ({} as NodeProps<TCodeDrawingElement>);
-  const { data: propsData, ...restProps } = safeProps;
+  const { data, ...restProps } = props;
+  const currentBlock =
+    options.at === undefined
+      ? editor.read.nodes.block({ at: tx.selection() ?? undefined })
+      : undefined;
 
-  editor.tf.insertNodes<TCodeDrawingElement>(
+  tx.nodes.insert<TCodeDrawingElement>(
     {
       children: [{ text: '' }],
-      type: editor.getType(CODE_DRAWING_KEY),
+      type,
       data: {
         drawingType: 'Mermaid',
         drawingMode: 'Both',
         code: '',
-        ...(typeof propsData === 'object' && propsData !== null
-          ? propsData
-          : {}),
+        ...(data ?? {}),
       },
       ...restProps,
     },
     {
-      nextBlock: true,
-      ...(options && typeof options === 'object' ? options : {}),
+      ...options,
+      at:
+        options.at ??
+        (currentBlock ? PathApi.next(currentBlock[1]) : undefined),
     }
   );
 };

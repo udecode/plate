@@ -1,16 +1,16 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import { createEditor, createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { isSelectionAtCodeBlockStart } from './isSelectionAtCodeBlockStart';
 
 jsxt;
 
 describe('isSelectionAtCodeBlockStart', () => {
-  const run = (input: any) =>
+  const run = (input: TestEditor) =>
     isSelectionAtCodeBlockStart(
-      createSlateEditor({ editor: createEditor(input) })
+      createBaseEditor({ selection: input.selection, value: input.children })
     );
 
   it.each([

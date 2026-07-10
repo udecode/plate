@@ -4,6 +4,7 @@ import {
 } from './core/editor-lifecycle-api';
 import {
   getEditorRuntime,
+  getEditorRuntimeOwner,
   type InternalEditorRuntime,
   setEditorRuntime,
 } from './core/editor-runtime';
@@ -12,7 +13,12 @@ import {
   getCurrentSelection,
   getCurrentSelectionRoot,
   getTargetRuntime,
+  doesSelectionContain,
+  doesSelectionIntersect,
+  isSelectionAtBlockEnd,
+  isSelectionAtBlockStart,
   isSelectionAcrossBlocks,
+  isSelectionWithinText,
   isSelectionWithinBlock,
   withEditorOperationRoot,
   withEditorOperationRootChildren,
@@ -31,6 +37,8 @@ import type {
   EditorCommitContext,
   EditorRuntime,
   EditorRuntimeOptions,
+  EditorSelectionBlockOptions,
+  EditorSelectionTargetOptions,
   EditorSnapshot,
   EditorStateView,
   EditorStateViewApi,
@@ -40,6 +48,7 @@ import type {
   EditorUpdateTransaction,
   EditorView,
   EditorViewOptions,
+  NodeTarget,
   RootKey,
   Selection,
   Value,
@@ -411,7 +420,6 @@ const withRootChildren = <T extends ViewStateTransformInput>(
     next: rootMethod(editor, viewState, state.nodes.next),
     parent: rootMethod(editor, viewState, state.nodes.parent),
     path: rootMethod(editor, viewState, state.nodes.path),
-    pathOf: rootMethod(editor, viewState, state.nodes.pathOf),
     previous: rootMethod(editor, viewState, state.nodes.previous),
     some: rootMethod(editor, viewState, state.nodes.some),
     toArray: rootMethod(editor, viewState, state.nodes.toArray),
@@ -432,6 +440,7 @@ const withRootPoints = <T extends ViewStateTransformInput>(
     isEdge: rootMethod(editor, viewState, state.points.isEdge),
     isEnd: rootMethod(editor, viewState, state.points.isEnd),
     isStart: rootMethod(editor, viewState, state.points.isStart),
+    isWordEnd: rootMethod(editor, viewState, state.points.isWordEnd),
     positions: rootGeneratorMethod(editor, viewState, state.points.positions),
     start: rootMethod(editor, viewState, state.points.start),
   }) as T['points'];
@@ -530,7 +539,16 @@ const withViewState = <T extends ViewStateTransformInput>(
     runtime: withRootRuntime(editor, state, viewState),
     selection: Object.freeze(
       Object.assign(selection, {
-        isAcrossBlocks: () => isSelectionAcrossBlocks(scopedState, selection()),
+        contains: (target: NodeTarget) =>
+          doesSelectionContain(scopedState, selection(), target),
+        intersects: (target: NodeTarget) =>
+          doesSelectionIntersect(scopedState, selection(), target),
+        isAcrossBlocks: (options?: EditorSelectionBlockOptions) =>
+          isSelectionAcrossBlocks(scopedState, selection(), options),
+        isAtBlockEnd: (options?: EditorSelectionBlockOptions) =>
+          isSelectionAtBlockEnd(scopedState, selection(), options),
+        isAtBlockStart: (options?: EditorSelectionBlockOptions) =>
+          isSelectionAtBlockStart(scopedState, selection(), options),
         isCollapsed: () => {
           const currentSelection = selection();
 
@@ -541,7 +559,10 @@ const withViewState = <T extends ViewStateTransformInput>(
 
           return !!currentSelection && RangeApi.isExpanded(currentSelection);
         },
-        isWithinBlock: () => isSelectionWithinBlock(scopedState, selection()),
+        isWithinBlock: (options?: EditorSelectionBlockOptions) =>
+          isSelectionWithinBlock(scopedState, selection(), options),
+        isWithinText: (options?: EditorSelectionTargetOptions) =>
+          isSelectionWithinText(scopedState, selection(), options),
       })
     ),
     text: Object.freeze({
@@ -560,7 +581,7 @@ const withViewTransaction = <V extends Value>(
   viewState: ViewState
 ): EditorUpdateTransaction<V> => {
   const state = withViewState(editor, transaction, viewState);
-  const hasExplicitTarget = (options: { at?: Location } | undefined) =>
+  const hasExplicitTarget = (options: { at?: NodeTarget } | undefined) =>
     options?.at !== undefined;
   const runSelectionMutation = (fn: () => void) => {
     runWithViewSelection(editor, viewState, () =>
@@ -568,7 +589,7 @@ const withViewTransaction = <V extends Value>(
     );
   };
   const runImplicitSelectionMutation = (
-    options: { at?: Location } | undefined,
+    options: { at?: NodeTarget } | undefined,
     fn: () => void
   ) => {
     if (hasExplicitTarget(options)) {
@@ -670,10 +691,13 @@ const withViewTransaction = <V extends Value>(
         runImplicitSelectionMutation({ at: options.at }, () =>
           transaction.nodes.replaceChildren(children, options)
         ),
-      set: (props, options) =>
-        runImplicitSelectionMutation(options, () =>
+      set: ((...args: Parameters<typeof transaction.nodes.set>) => {
+        const [props, options] = args;
+
+        return runImplicitSelectionMutation(options, () =>
           transaction.nodes.set(props, options)
-        ),
+        );
+      }) as typeof transaction.nodes.set,
       split: (options) =>
         runImplicitSelectionMutation(options, () =>
           transaction.nodes.split(options)
@@ -707,10 +731,20 @@ const withViewTransaction = <V extends Value>(
     }),
     selection: Object.freeze(
       Object.assign(() => state.selection(), {
-        isAcrossBlocks: () => state.selection.isAcrossBlocks(),
+        contains: (target: NodeTarget) => state.selection.contains(target),
+        intersects: (target: NodeTarget) => state.selection.intersects(target),
+        isAcrossBlocks: (options?: EditorSelectionBlockOptions) =>
+          state.selection.isAcrossBlocks(options),
+        isAtBlockEnd: (options?: EditorSelectionBlockOptions) =>
+          state.selection.isAtBlockEnd(options),
+        isAtBlockStart: (options?: EditorSelectionBlockOptions) =>
+          state.selection.isAtBlockStart(options),
         isCollapsed: () => state.selection.isCollapsed(),
         isExpanded: () => state.selection.isExpanded(),
-        isWithinBlock: () => state.selection.isWithinBlock(),
+        isWithinBlock: (options?: EditorSelectionBlockOptions) =>
+          state.selection.isWithinBlock(options),
+        isWithinText: (options?: EditorSelectionTargetOptions) =>
+          state.selection.isWithinText(options),
         clear: () => runSelectionMutation(transaction.selection.clear),
         collapse: (options = {}) =>
           runSelectionMutation(() => transaction.selection.collapse(options)),
@@ -1037,7 +1071,11 @@ export const createEditorView = <
 
   viewEditor = view as unknown as typeof runtime.editor;
 
-  setEditorRuntime(viewEditor, viewRuntime);
+  setEditorRuntime(
+    viewEditor,
+    viewRuntime,
+    getEditorRuntimeOwner(runtime.editor)
+  );
   inheritExtensionRegistry(viewEditor, runtime.editor);
   setEditorTransformRegistry(
     viewEditor,

@@ -55,29 +55,16 @@ export async function renderPlantUml(content: string): Promise<string> {
  */
 export async function renderGraphviz(content: string): Promise<string> {
   try {
-    // Dynamic import of viz.js
-    // Try different import patterns for compatibility
-    let Viz: any;
-    let Module: any;
-    let render: any;
+    const Viz = (await import('viz.js')).default;
+    let fullRender: typeof import('viz.js/full.render.js');
 
     try {
-      const vizModule = await import('viz.js');
-      Viz = vizModule.default || vizModule;
-
-      const fullRender = await import('viz.js/full.render.js');
-      Module = fullRender.Module;
-      render = fullRender.render;
+      fullRender = await import('viz.js/full.render.js');
     } catch (_importError) {
-      // Fallback: try alternative import
-      const vizModule = await import('viz.js');
-      Viz = vizModule.default || vizModule;
-      const fullRender = await import('viz.js/full.render');
-      Module = fullRender.Module;
-      render = fullRender.render;
+      fullRender = await import('viz.js/full.render');
     }
 
-    const viz = new Viz({ Module, render });
+    const viz = new Viz(fullRender);
     const svg = await viz.renderString(content, {
       format: 'svg',
       engine: 'dot',

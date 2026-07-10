@@ -5,7 +5,7 @@
   "keywords": [
     "plate",
     "plugin",
-    "slate"
+    "rich-text"
   ],
   "homepage": "https://platejs.org",
   "bugs": {
@@ -41,10 +41,9 @@
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
-    "platejs": "workspace:^"
+    "@platejs/test-utils": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=54.0.0-beta.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
@@ -54,7 +53,9 @@
   "type": "module",
   "module": "./dist/index.js",
   "dependencies": {
+    "@platejs/core": "workspace:^",
     "@platejs/plite": "workspace:^",
+    "@platejs/utils": "workspace:^",
     "react-compiler-runtime": "^1.0.0"
   }
 }

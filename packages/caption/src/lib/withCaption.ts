@@ -1,13 +1,22 @@
+import { type BaseEditor, getPluginTypes } from '@platejs/core';
 import {
-  type OverrideEditor,
-  type TRange,
-  getPluginTypes,
-  isHotkey,
+  ElementApi,
   NodeApi,
   RangeApi,
-} from 'platejs';
+  type Descendant,
+  type Path,
+  type Range,
+  type Selection,
+  type SetSelectionOperation,
+} from '@platejs/plite';
+import type { TCaptionElement } from '@platejs/utils';
 
-import { type CaptionConfig, BaseCaptionPlugin } from './BaseCaptionPlugin';
+import type { CaptionConfig } from './BaseCaptionPlugin';
+
+const arrowUpSelectionMoves = new WeakSet<BaseEditor>();
+
+type CaptionOptions = CaptionConfig['options'];
+type SetCaptionFocusPath = (path: Path) => void;
 
 /** TODO: tests https://github.com/udecode/editor-protocol/issues/79 */
 
@@ -20,74 +29,89 @@ import { type CaptionConfig, BaseCaptionPlugin } from './BaseCaptionPlugin';
  * - If focus is in table, anchor in a block after: set focus to the point before
  *   start of table
  */
-export const withCaption: OverrideEditor<CaptionConfig> = ({
-  editor,
-  getOptions,
-  tf: { apply, moveLine },
-}) => {
+export const markCaptionArrowUpSelectionMove = (editor: BaseEditor) => {
+  arrowUpSelectionMoves.add(editor);
+
+  return false;
+};
+
+export const focusCaptionAfterArrowUpSelectionMove = (
+  editor: BaseEditor,
+  options: CaptionOptions,
+  operation: SetSelectionOperation,
+  setFocusPath: SetCaptionFocusPath
+) => {
+  if (!arrowUpSelectionMoves.delete(editor)) return false;
+
+  const selection = getSetSelectionTarget(editor.read.selection(), operation);
+
+  if (!selection || !RangeApi.isCollapsed(selection)) return false;
+
+  const entry = findCaptionEntry(editor, options, selection);
+
+  if (!entry || !hasCaptionText(entry[0])) return false;
+
+  setTimeout(() => {
+    setFocusPath(entry[1]);
+  }, 0);
+
+  return true;
+};
+
+export const focusCaptionFromCurrentBlock = (
+  editor: BaseEditor,
+  options: CaptionOptions,
+  setFocusPath: SetCaptionFocusPath
+) => {
+  const entry = findCaptionBlock(editor, options);
+
+  if (!entry) return false;
+
+  setFocusPath(entry[1]);
+
+  return true;
+};
+
+const findCaptionEntry = (
+  editor: BaseEditor,
+  options: CaptionOptions,
+  at: Range
+) =>
+  editor.read.nodes.above<TCaptionElement>({
+    at,
+    match: (node) =>
+      ElementApi.isElement(node) &&
+      getPluginTypes(editor, options.query.allow).includes(node.type as string),
+  });
+
+const findCaptionBlock = (editor: BaseEditor, options: CaptionOptions) =>
+  editor.read.nodes.block<TCaptionElement>({
+    match: (node) =>
+      ElementApi.isElement(node) &&
+      getPluginTypes(editor, options.query.allow).includes(node.type as string),
+  });
+
+const getSetSelectionTarget = (
+  selection: Selection,
+  operation: SetSelectionOperation
+): Range | null => {
+  if (operation.newProperties == null) return null;
+  if (RangeApi.isRange(operation.newProperties)) return operation.newProperties;
+  if (!selection) return null;
+
   return {
-    transforms: {
-      apply(operation) {
-        const { query } = getOptions();
-
-        if (operation.type === 'set_selection') {
-          const newSelection = {
-            ...editor.selection,
-            ...operation.newProperties,
-          } as TRange | null;
-
-          if (
-            editor.dom.currentKeyboardEvent &&
-            isHotkey('up', editor.dom.currentKeyboardEvent) &&
-            newSelection &&
-            RangeApi.isCollapsed(newSelection)
-          ) {
-            const types = getPluginTypes(editor, query.allow);
-
-            const entry = editor.api.above({
-              at: newSelection,
-              match: { type: types },
-            });
-
-            if (entry) {
-              const [node] = entry;
-
-              if (
-                node.caption &&
-                NodeApi.string({ children: node.caption } as any).length > 0
-              ) {
-                setTimeout(() => {
-                  editor.plugin(BaseCaptionPlugin).setOption('focusEndPath', entry[1]);
-                }, 0);
-              }
-            }
-          }
-        }
-
-        apply(operation);
-      },
-      moveLine: (options) => {
-        const apply = () => {
-          // focus caption from image on down arrow
-          if (!options.reverse) {
-            const types = getPluginTypes(editor, getOptions().query.allow);
-
-            const entry = editor.api.block({
-              match: { type: types },
-            });
-
-            if (!entry) return;
-
-            editor.plugin(BaseCaptionPlugin).setOption('focusEndPath', entry[1]);
-
-            return true;
-          }
-        };
-
-        if (apply()) return true;
-
-        return moveLine(options);
-      },
-    },
+    ...selection,
+    ...operation.newProperties,
   };
+};
+
+const hasCaptionText = (node: unknown) => {
+  if (!ElementApi.isElement(node)) return false;
+
+  const caption = (node as Partial<TCaptionElement>).caption;
+
+  return (
+    Array.isArray(caption) &&
+    caption.some((child: Descendant) => NodeApi.string(child).length > 0)
+  );
 };

@@ -12,5 +12,5 @@ import { useEditorRef } from '../stores';
 export const useNodePath = (node: Descendant) => {
   const editor = useEditorRef();
 
-  return React.useMemo(() => editor.read.nodes.pathOf(node), [editor, node]);
+  return React.useMemo(() => editor.read.nodes.path(node), [editor, node]);
 };

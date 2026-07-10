@@ -171,6 +171,13 @@ Rules:
   Use callback form only when grouping multiple reads/writes under one
   snapshot/transaction, sharing intermediate state, branching/looping, or
   calling behavior that has no direct one-shot API yet.
+- Plate feature-package source must treat unresolved public Plite reads as an
+  optional outcome. Do not add `{ required: true }` or a non-null assertion
+  merely to avoid handling `undefined`; target the live node when available,
+  then return or no-op when resolution fails. Reserve `{ required: true }` for
+  Plite internals where absence proves a runtime invariant is broken. Tests may
+  use it to assert fixture setup, but production package code needs a concrete
+  invariant-owner reason before asserting.
 - Transform-backed callbacks must receive and use the active transaction. If a
   Plate/Core callback runs inside Plite transform middleware or another active
   transaction lane, its context should expose `tx` and mutations should go

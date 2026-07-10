@@ -1,21 +1,13 @@
 import type { BaseEditor } from '@platejs/core';
-import type { Node, Path } from '@platejs/plite';
+import type { Path } from '@platejs/plite';
 import type { TIdElement } from '@platejs/utils';
-
-import { PathApi } from '@platejs/plite';
 
 import { BlockSelectionPlugin } from '../../react/BlockSelectionPlugin';
 
-export const selectBlocks = (editor: BaseEditor, at: Path | Node) => {
+export const selectBlocks = (editor: BaseEditor, at: Path | TIdElement) => {
   const { api } = editor.plugin(BlockSelectionPlugin);
   const blockSelection = api.getNodes();
-  const entry = PathApi.isPath(at)
-    ? editor.read.nodes.get<TIdElement>(at)
-    : (() => {
-        const path = editor.read.nodes.pathOf(at);
-
-        return path ? editor.read.nodes.get<TIdElement>(path) : undefined;
-      })();
+  const entry = editor.read.nodes.get<TIdElement>(at);
 
   if (!entry) return;
 

@@ -1,14 +1,10 @@
 import type React from 'react';
 
-import {
-  createPrimitiveComponent,
-  useElement,
-  usePluginOption,
-  useReadOnly,
-  useSelected,
-} from 'platejs/react';
+import { useElement, usePluginOption } from '@platejs/core/react';
+import { useEditorReadOnly, useElementSelected } from '@platejs/plite-react';
+import { createPrimitiveComponent } from '@udecode/react-utils';
 
-import { CaptionPlugin } from '../CaptionPlugin';
+import { BaseCaptionPlugin } from '../../lib';
 import { useCaptionString } from '../hooks/useCaptionString';
 
 export type CaptionOptions = {
@@ -25,13 +21,13 @@ export const useCaptionState = (options: CaptionOptions = {}) => {
   const captionString = useCaptionString();
 
   const showCaption = usePluginOption(
-    CaptionPlugin,
+    BaseCaptionPlugin,
     'isVisible',
     element.id as string
   );
 
-  const selected = useSelected();
-  const _readOnly = useReadOnly();
+  const selected = useElementSelected();
+  const _readOnly = useEditorReadOnly();
   const readOnly = options.readOnly || _readOnly;
 
   const hidden = !showCaption && captionString.length === 0;

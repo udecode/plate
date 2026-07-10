@@ -73,6 +73,20 @@ export type NodeProps<N = Node> = N extends { children: unknown }
     ? Omit<N, 'text'>
     : Omit<N, 'getChildren'>;
 
+export type NodeMatchPredicate<T extends Node> =
+  | ((node: Node, path: Path) => node is T)
+  | ((node: Node, path: Path) => boolean);
+
+type NodeMatchProps<T extends Node> = T extends unknown
+  ? Partial<{
+      [K in keyof NodeProps<T>]: NodeProps<T>[K] | readonly NodeProps<T>[K][];
+    }>
+  : never;
+
+export type NodeMatch<T extends Node> =
+  | NodeMatchPredicate<T>
+  | NodeMatchProps<T>;
+
 export interface NodeHasPropsOptions {
   ignore?: (key: string, value: unknown, node: Node) => boolean;
 }
@@ -326,10 +340,15 @@ export interface NodeInterface {
     options?: NodeLevelsOptions
   ) => Generator<NodeEntry, void, undefined>;
 
-  /**
-   * Check if a node matches a set of props.
-   */
-  matches: (node: Node, props: Partial<Node>) => boolean;
+  /** Check a node against a predicate or shallow property matcher. */
+  matches: {
+    <T extends Node>(
+      node: Node,
+      match: (node: Node, path: Path) => node is T,
+      path?: Path
+    ): node is T;
+    <T extends Node>(node: T, match: NodeMatch<T>, path?: Path): boolean;
+  };
 
   /**
    * Return a generator of all the node entries of a root node. Each entry is
@@ -539,6 +558,36 @@ const getTextEntryRanges = (
 };
 
 // eslint-disable-next-line no-redeclare
+function matchesNode<T extends Node>(
+  node: Node,
+  match: (node: Node, path: Path) => node is T,
+  path?: Path
+): node is T;
+function matchesNode<T extends Node>(
+  node: T,
+  match: NodeMatch<T>,
+  path?: Path
+): boolean;
+function matchesNode(
+  node: Node,
+  match: NodeMatch<Node>,
+  path: Path = []
+): boolean {
+  if (typeof match === 'function') {
+    return match(node, path);
+  }
+
+  return Object.entries(match).every(([key, expected]) => {
+    if (key === 'children' || key === 'text') return true;
+
+    const actual = (node as unknown as Record<string, unknown>)[key];
+
+    return Array.isArray(expected)
+      ? expected.includes(actual)
+      : actual === expected;
+  });
+}
+
 export const NodeApi: NodeInterface = {
   ancestor(root: Node, path: Path): Ancestor {
     const node = NodeApi.get(root, path);
@@ -928,15 +977,7 @@ export const NodeApi: NodeInterface = {
     }
   },
 
-  matches(node: Node, props: Partial<Node>): boolean {
-    return (
-      (NodeApi.isElement(node) &&
-        ElementApi.matches(node, props as Partial<Element>)) ||
-      (NodeApi.isText(node) &&
-        TextApi.isTextProps(props) &&
-        TextApi.matches(node, props))
-    );
-  },
+  matches: matchesNode,
 
   *nodes(
     root: Node,

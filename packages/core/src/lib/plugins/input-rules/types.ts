@@ -123,10 +123,10 @@ export type MatchBlockFenceOptions<TMatch = BlockFenceInputRuleMatch> = {
 };
 
 export type BlockFenceInputRuleConfig<TMatch = BlockFenceInputRuleMatch> =
-  BaseInputRule<SelectionInputRuleContext> &
+  BaseInputRule<SelectionInputRuleContext & TransformInputRuleContext> &
     MatchBlockFenceOptions<TMatch> & {
       apply: (
-        context: SelectionInputRuleContext,
+        context: SelectionInputRuleContext & TransformInputRuleContext,
         match: TMatch
       ) => boolean | void;
       on: 'break' | 'match';

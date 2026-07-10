@@ -47,7 +47,7 @@ const createContextMenuEditor = ({
     read: {
       nodes: {
         above: () => [{ id: 'a', type: 'p' }, [0]],
-        pathOf: () => [0],
+        path: () => [0],
       },
       schema: {
         isVoid: () => false,

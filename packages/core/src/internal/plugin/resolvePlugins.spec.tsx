@@ -335,29 +335,6 @@ describe('resolvePlugins', () => {
     expect(editor.plugins.pluginApi).toBeUndefined();
   });
 
-  it('throws when AutoformatPlugin is combined with active input rules', () => {
-    expect(() =>
-      createBaseEditor({
-        plugins: [
-          createBasePlugin({
-            key: 'autoformat',
-          }),
-          createBasePlugin({
-            key: 'marks',
-          }).configure({
-            inputRules: [
-              {
-                apply: () => true,
-                target: 'insertText',
-                trigger: '*',
-              },
-            ],
-          }),
-        ],
-      })
-    ).toThrow('AutoformatPlugin cannot be used with plugin-owned input rules.');
-  });
-
   it('throws when inputRules is configured as a boolean map', () => {
     expect(() =>
       createBaseEditor({

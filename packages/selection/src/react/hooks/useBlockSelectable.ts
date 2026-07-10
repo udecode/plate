@@ -37,7 +37,7 @@ export const addOnContextMenu = (
 
   if (editor.read.selection()?.focus && disabledWhenFocused) {
     const nodeEntry = editor.read.nodes.above<Element>();
-    const elementPath = editor.read.nodes.pathOf(element);
+    const elementPath = editor.read.nodes.path(element);
 
     if (
       nodeEntry &&

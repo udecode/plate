@@ -1,4 +1,6 @@
-import type { SlateEditor, TCodeBlockElement } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import { NodeApi } from '@platejs/plite';
+import type { TCodeBlockElement } from '@platejs/utils';
 
 import { formatJson, isValidJson } from './jsonFormatter';
 import { setCodeBlockContent } from '../transforms/setCodeBlockContent';
@@ -24,7 +26,7 @@ export const isValidSyntax = (code: string, lang?: string): boolean => {
 };
 
 export const formatCodeBlock = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   {
     element,
   }: {
@@ -37,14 +39,16 @@ export const formatCodeBlock = (
     return;
   }
 
-  const code = editor.api.string(element);
+  const code = NodeApi.string(element);
 
   if (isValidSyntax(code, lang)) {
     const formattedCode = formatCode(code, lang);
 
-    setCodeBlockContent(editor, {
-      code: formattedCode,
-      element,
+    editor.update((tx) => {
+      setCodeBlockContent(editor, tx, {
+        code: formattedCode,
+        element,
+      });
     });
   }
 };

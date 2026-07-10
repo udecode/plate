@@ -70,7 +70,7 @@ export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
   newProps = pipeInjectNodeProps(
     editor,
     newProps,
-    path ? () => path : (node) => editor.read.nodes.pathOf(node)!
+    path ? () => path : (node) => editor.read.nodes.path(node)!
   ) as TProps & PliteRenderNodeProps;
 
   if (newProps.style && Object.keys(newProps.style).length === 0) {

@@ -1,4 +1,4 @@
-import { CODE_DRAWING_TYPE } from '../constants';
+import { type CodeDrawingType, CODE_DRAWING_TYPE } from '../constants';
 
 const mermaidInitialize = mock();
 const mermaidRender = mock(async (id: string, content: string) => ({
@@ -17,7 +17,7 @@ const graphvizRenderString = mock(
 const originalConsoleError = console.error;
 const consoleErrorMock = mock(() => {});
 
-console.error = consoleErrorMock as any;
+console.error = consoleErrorMock as typeof console.error;
 
 class VizMock {
   options: unknown;
@@ -59,15 +59,11 @@ mock.module('viz.js/full.render', () => ({
 
 const originalFetch = globalThis.fetch;
 const fetchMock = mock(
-  async (input: string | URL | Request) =>
-    ({
-      ok: true,
-      text: async () => '<svg>plantuml</svg>',
-      url: String(input),
-    }) as any
+  async (_input: RequestInfo | URL, _init?: RequestInit) =>
+    new Response('<svg>plantuml</svg>')
 );
 
-globalThis.fetch = fetchMock as any;
+globalThis.fetch = fetchMock as unknown as typeof fetch;
 
 const {
   renderCodeDrawing,
@@ -107,15 +103,9 @@ describe('renderPlantUml', () => {
   });
 
   it('throws when the plantuml svg fetch fails', async () => {
-    const failingFetch = mock(
-      async () =>
-        ({
-          ok: false,
-          text: async () => '',
-        }) as any
-    );
+    const failingFetch = mock(async () => new Response('', { status: 500 }));
 
-    globalThis.fetch = failingFetch as any;
+    globalThis.fetch = failingFetch as unknown as typeof fetch;
 
     try {
       await expect(renderPlantUml('@startuml\nA\n@enduml')).rejects.toThrow(
@@ -123,7 +113,7 @@ describe('renderPlantUml', () => {
       );
       expect(consoleErrorMock).toHaveBeenCalled();
     } finally {
-      globalThis.fetch = fetchMock as any;
+      globalThis.fetch = fetchMock as unknown as typeof fetch;
     }
   });
 });
@@ -156,9 +146,9 @@ describe('renderCodeDrawing', () => {
   });
 
   it('throws for unsupported drawing types', async () => {
-    await expect(renderCodeDrawing('Nope' as any, 'content')).rejects.toThrow(
-      'Unsupported drawing type: Nope'
-    );
+    await expect(
+      renderCodeDrawing('Nope' as CodeDrawingType, 'content')
+    ).rejects.toThrow('Unsupported drawing type: Nope');
   });
 
   it('renders graphviz through the extensionless full.render fallback', async () => {

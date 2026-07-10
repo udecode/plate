@@ -5,10 +5,11 @@ import {
 } from '@platejs/core';
 import {
   ElementApi,
+  type Node,
+  NodeApi,
+  type NodeMatch,
   PathApi,
-  queryNode,
   type Path,
-  type QueryNodeOptions,
 } from '@platejs/plite';
 
 import { KEYS } from '../../plate-keys';
@@ -31,9 +32,11 @@ export type TrailingBlockConfig = PluginConfig<
     insert?: (editor: BaseEditor, options: TrailingBlockInsertOptions) => void;
     /** Level where the trailing node should be, the first level being 0. */
     level?: number;
+    /** Match the last node before inserting the trailing block. */
+    match?: NodeMatch<Node>;
     /** Type of the trailing block */
     type?: string;
-  } & QueryNodeOptions
+  }
 >;
 
 export const TrailingBlockPlugin = createBasePlugin<TrailingBlockConfig>({
@@ -50,7 +53,7 @@ export const TrailingBlockPlugin = createBasePlugin<TrailingBlockConfig>({
   .extendExtension(({ editor, getOptions }) => ({
     normalizers: {
       editor({ next, tx }) {
-        const { insert, level, type, ...query } = getOptions();
+        const { insert, level, match, type } = getOptions();
         const trailingType = type ?? editor.getType(KEYS.p);
         const lastChild =
           editor.read.children().length > 0
@@ -63,7 +66,8 @@ export const TrailingBlockPlugin = createBasePlugin<TrailingBlockConfig>({
 
         if (
           !lastChildNode ||
-          (lastChildType !== trailingType && queryNode(lastChild, query))
+          (lastChildType !== trailingType &&
+            (!match || NodeApi.matches(lastChildNode, match, lastChild[1])))
         ) {
           const at = lastChild ? PathApi.next(lastChild[1]) : [0];
           const insertTrailingBlock = () => {

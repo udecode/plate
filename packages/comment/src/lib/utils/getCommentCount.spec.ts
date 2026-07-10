@@ -1,4 +1,5 @@
 import { getCommentCount } from './getCommentCount';
+import type { TCommentText } from '@platejs/utils';
 
 describe('getCommentCount', () => {
   it('counts real comment ids but ignores the draft and transient markers', () => {
@@ -10,7 +11,7 @@ describe('getCommentCount', () => {
         comment_beta: true,
         comment_draft: true,
         text: 'hello',
-      } as any)
+      } satisfies TCommentText)
     ).toBe(2);
   });
 });

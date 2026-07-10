@@ -6,8 +6,12 @@ import {
   useRef,
 } from 'react';
 
-import { Hotkeys, isHotkey } from 'platejs';
-import { useEditorRef, useElement, useSelected } from 'platejs/react';
+import { Hotkeys, isHotkey } from '@platejs/core';
+import {
+  useEditorRef,
+  useElement,
+  useElementSelected,
+} from '@platejs/core/react';
 
 import type {
   CancelComboboxInputCause,
@@ -50,21 +54,21 @@ export const useComboboxInput = ({
 }: UseComboboxInputOptions): UseComboboxInputResult => {
   const editor = useEditorRef();
   const element = useElement();
-  const selected = useSelected();
+  const selected = useElementSelected();
 
   const cursorAtStart = cursorState?.atStart ?? false;
   const cursorAtEnd = cursorState?.atEnd ?? false;
 
   const removeInput = useCallback(
     (shouldFocusEditor = false) => {
-      const path = editor.api.findPath(element);
+      const path = editor.read.nodes.path(element);
 
       if (!path) return;
 
-      editor.tf.removeNodes({ at: path });
+      editor.update.nodes.remove({ at: element });
 
       if (shouldFocusEditor) {
-        editor.tf.focus();
+        editor.api.dom.focus();
       }
     },
     [editor, element]
@@ -113,38 +117,40 @@ export const useComboboxInput = ({
         }
       },
       onKeyDown: (event) => {
-        if (cancelInputOnEscape && isHotkey('escape', event)) {
+        if (cancelInputOnEscape && isHotkey('escape')(event)) {
           cancelInput('escape', true);
         }
         if (
           cancelInputOnBackspace &&
           cursorAtStart &&
-          isHotkey('backspace', event)
+          isHotkey('backspace')(event)
         ) {
           cancelInput('backspace', true);
         }
         if (
           cancelInputOnArrowLeftRight &&
           cursorAtStart &&
-          isHotkey('arrowleft', event)
+          isHotkey('arrowleft')(event)
         ) {
           cancelInput('arrowLeft', true);
         }
         if (
           cancelInputOnArrowLeftRight &&
           cursorAtEnd &&
-          isHotkey('arrowright', event)
+          isHotkey('arrowright')(event)
         ) {
           cancelInput('arrowRight', true);
         }
 
-        const isUndo = Hotkeys.isUndo(event) && editor.history.undos.length > 0;
-        const isRedo = Hotkeys.isRedo(event) && editor.history.redos.length > 0;
+        const isUndo =
+          Hotkeys.isUndo(event) && editor.read.history.undos().length > 0;
+        const isRedo =
+          Hotkeys.isRedo(event) && editor.read.history.redos().length > 0;
 
         if (forwardUndoRedoToEditor && (isUndo || isRedo)) {
           event.preventDefault();
-          editor[isUndo ? 'undo' : 'redo']();
-          editor.tf.focus();
+          editor.update.history[isUndo ? 'undo' : 'redo']();
+          editor.api.dom.focus();
         }
       },
     },

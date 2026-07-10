@@ -13,6 +13,7 @@ import type {
   MarkInputRuleConfig,
   SelectionInputRuleContext,
   TextSubstitutionInputRuleConfig,
+  TransformInputRuleContext,
 } from './types';
 
 import {
@@ -156,7 +157,11 @@ type BlockFenceRuleFactoryConfig<
   type: 'blockFence';
   apply: BivariantCallback<
     (
-      input: FactoryInput<SelectionInputRuleContext, TDefaults, TRequired>,
+      input: FactoryInput<
+        SelectionInputRuleContext & TransformInputRuleContext,
+        TDefaults,
+        TRequired
+      >,
       match: TMatch
     ) => boolean | void
   >;
@@ -182,7 +187,11 @@ type BlockFenceRuleFactoryConfig<
     input: FactoryInput<SelectionInputRuleContext, TDefaults, TRequired>
   ) => TMatch | undefined;
   enabled?: (
-    input: FactoryInput<SelectionInputRuleContext, TDefaults, TRequired>
+    input: FactoryInput<
+      SelectionInputRuleContext & TransformInputRuleContext,
+      TDefaults,
+      TRequired
+    >
   ) => boolean;
   priority?: number;
 };
@@ -309,7 +318,7 @@ type ContextFromFactoryConfig<TConfig> = TConfig extends
   | TextSubstitutionRuleFactoryConfig<any, any>
   ? InsertTextInputRuleContext
   : TConfig extends BlockFenceRuleFactoryConfig<any, any, any>
-    ? SelectionInputRuleContext
+    ? SelectionInputRuleContext & TransformInputRuleContext
     : TConfig extends InsertBreakRuleFactoryConfig<any, any, any>
       ? InsertBreakInputRuleContext
       : InsertDataInputRuleContext;

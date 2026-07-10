@@ -1,30 +1,26 @@
-import type { OverrideEditor, TCommentText } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { ExtendPlateEditorExtension } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import type { BaseCommentConfig } from './BaseCommentPlugin';
 
-import { getCommentCount, getDraftCommentKey } from './utils';
+import { getCommentCount, getDraftCommentKey, isCommentText } from './utils';
 
-export const withComment: OverrideEditor<BaseCommentConfig> = ({
-  editor,
-  tf: { normalizeNode },
-}) => ({
-  transforms: {
-    normalizeNode(entry) {
-      const [node, path] = entry;
-
+export const withComment: ExtendPlateEditorExtension<
+  BaseCommentConfig
+> = () => ({
+  normalizers: {
+    node({ entry: [node, path], next, tx }) {
       if (
-        node[KEYS.comment] &&
+        isCommentText(node) &&
         !node[getDraftCommentKey()] &&
-        getCommentCount(node as TCommentText) < 1
+        getCommentCount(node) < 1
       ) {
-        editor.tf.unsetNodes(KEYS.comment, { at: path });
+        tx.nodes.unset(KEYS.comment, { at: path });
 
         return;
       }
 
-      return normalizeNode(entry);
+      next();
     },
   },
 });

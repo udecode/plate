@@ -25,6 +25,11 @@ const getRuntimeIds = (node: object) => {
   return runtimeIds;
 };
 
+export const getRuntimeIdForNode = (
+  node: object,
+  editor: Editor
+): RuntimeId | null => NODE_RUNTIME_IDS.get(node)?.get(editor) ?? null;
+
 const advanceNextRuntimeId = (editor: Editor, runtimeId: RuntimeId) => {
   const numericPart = Number.parseInt(runtimeId.slice(1), 10);
   const next = NEXT_RUNTIME_ID.get(editor) ?? 0;

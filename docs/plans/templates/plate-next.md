@@ -149,6 +149,10 @@ Constraints:
   Callback form is only for grouped transaction/snapshot logic, shared
   intermediate state, branching/looping, or missing direct API that is recorded
   as a Plite gap.
+- Optional public-read law: Plate feature-package source handles unresolved
+  Plite reads with an early return/no-op. `{ required: true }` is reserved for
+  Plite internals with a proven runtime invariant; fixture assertions are the
+  test-only exception.
 - Active transaction law: no `editor.update.*` call may appear inside an
   `editor.update(...)`, `editor.update.withoutNormalizing(...)`, transform
   middleware, or other active transaction callback. The callback must receive
@@ -274,6 +278,10 @@ Work Checklist:
       `editor.read((state) => state.*)` wrappers are replaced with direct
       methods when available, or each remaining callback is justified as grouped
       transaction/snapshot logic.
+- [ ] Optional public-read audit closed: feature-package production code does
+      not use `{ required: true }` or non-null assertions to hide unresolved
+      Plite reads; each match handles `undefined` or records a Plite-internal
+      invariant reason.
 - [ ] Plugin export inference audit closed: plugin export annotations/casts
       such as `: BasePlugin<Config>`, `: PlatePlugin<Config>`, and
       `as BasePlugin<Config>` are removed when inference should own the result,

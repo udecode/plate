@@ -1,13 +1,13 @@
 import {
   type Descendant,
   type NodeEntry,
+  type NodeMatch,
   type NodeProps,
   type Operation,
-  type QueryNodeOptions,
   type Value,
   ElementApi,
+  NodeApi,
   TextApi,
-  queryNode,
 } from '@platejs/plite';
 import cloneDeep from 'lodash/cloneDeep.js';
 import { nanoid } from 'nanoid';
@@ -75,41 +75,29 @@ export type NodeIdOptions = {
    * @default () => nanoid(10)
    */
   idCreator?: () => any;
-} & QueryNodeOptions;
+  /** Match nodes that receive IDs. */
+  match?: NodeMatch<Descendant>;
+};
 
 export type NormalizeNodeIdOptions = Pick<
   NodeIdOptions,
-  | 'allow'
-  | 'exclude'
-  | 'filter'
-  | 'filterInline'
-  | 'filterText'
-  | 'idCreator'
-  | 'idKey'
+  'filterInline' | 'filterText' | 'idCreator' | 'idKey' | 'match'
 >;
 
 type NormalizeNodeIdRuntimeOptions = NormalizeNodeIdOptions & {
   isBlock?: (node: Descendant) => boolean;
 };
 
-const defaultNodeIdFilter = () => true;
-
 const hasElementType = (node: unknown) =>
   typeof (node as { type?: unknown }).type === 'string' &&
   !TextApi.isText(node);
 
 const isDefaultNodeIdFastPath = ({
-  allow,
-  exclude,
-  filter,
   filterInline = true,
   filterText = true,
+  match,
 }: NormalizeNodeIdRuntimeOptions) =>
-  allow === undefined &&
-  exclude === undefined &&
-  (filter === undefined || filter === defaultNodeIdFilter) &&
-  filterInline &&
-  filterText;
+  match === undefined && filterInline && filterText;
 
 const isBlockCandidate = (
   node: Descendant,
@@ -123,40 +111,23 @@ const shouldAssignNodeId = (
   options: NormalizeNodeIdRuntimeOptions = {}
 ) => {
   const {
-    allow,
-    exclude,
-    filter = () => true,
     filterInline = true,
     filterText = true,
     isBlock,
     idKey = 'id',
+    match,
   } = options;
   const [node, path] = entry;
 
   return (
     !node[idKey] &&
-    queryNode([node, path], {
-      allow,
-      exclude,
-      filter: (nextEntry) => {
-        const [entryNode] = nextEntry;
-
-        if (filterText && !ElementApi.isElement(entryNode)) {
-          return false;
-        }
-        if (
-          filterInline &&
-          ElementApi.isElement(entryNode) &&
-          !(isBlock
-            ? isBlock(entryNode)
-            : (entryNode as { inline?: boolean }).inline !== true)
-        ) {
-          return false;
-        }
-
-        return filter(nextEntry);
-      },
-    })
+    (!match || NodeApi.matches(node, match, path)) &&
+    (!filterText || ElementApi.isElement(node)) &&
+    (!filterInline ||
+      !ElementApi.isElement(node) ||
+      (isBlock
+        ? isBlock(node)
+        : (node as { inline?: boolean }).inline !== true))
   );
 };
 
@@ -170,23 +141,12 @@ const normalizeInsertedNodeIdOperation = (
   options: NodeIdOptions
 ) => {
   const {
-    allow,
     disableInsertOverrides,
-    exclude,
-    filter = defaultNodeIdFilter,
     filterText = true,
     idCreator = () => nanoid(10),
     idKey = 'id',
+    match,
   } = options;
-  const query = {
-    allow,
-    exclude,
-    filter: (entry: NodeEntry) => {
-      const [node] = entry;
-
-      return filter(entry) && (!filterText || hasElementType(node));
-    },
-  };
   const node = cloneDeep(operation.node) as Descendant & {
     _id?: unknown;
   };
@@ -195,8 +155,11 @@ const normalizeInsertedNodeIdOperation = (
   const collectCandidateIds = (entry: NodeEntry) => {
     const [entryNode, path] = entry;
     const entryRecord = entryNode as Record<string, unknown>;
+    const matches =
+      (!match || NodeApi.matches(entryNode as Descendant, match, path)) &&
+      (!filterText || hasElementType(entryNode));
 
-    if (queryNode([entryNode as Descendant, path], query)) {
+    if (matches) {
       if (entryRecord[idKey] !== undefined) {
         duplicateCandidateIds.add(entryRecord[idKey]);
       }
@@ -245,8 +208,11 @@ const normalizeInsertedNodeIdOperation = (
   const normalizeInsertedNode = (entry: NodeEntry) => {
     const [entryNode, path] = entry;
     const entryRecord = entryNode as Record<string, unknown>;
+    const matches =
+      (!match || NodeApi.matches(entryNode as Descendant, match, path)) &&
+      (!filterText || hasElementType(entryNode));
 
-    if (queryNode([entryNode as Descendant, path], query)) {
+    if (matches) {
       if (
         entryRecord[idKey] !== undefined &&
         existingIds.has(entryRecord[idKey])
@@ -290,28 +256,20 @@ const normalizeSplitNodeIdOperation = (
   options: NodeIdOptions
 ) => {
   const {
-    allow,
-    exclude,
-    filter = defaultNodeIdFilter,
     filterText = true,
     idCreator = () => nanoid(10),
     idKey = 'id',
+    match,
     reuseId,
   } = options;
   const properties = {
     ...operation.properties,
   } as NodeProps<Descendant> & Record<string, unknown>;
-  const query = {
-    allow,
-    exclude,
-    filter: (entry: NodeEntry) => {
-      const [node] = entry;
-
-      return filter(entry) && (!filterText || hasElementType(node));
-    },
-  };
-
-  if (queryNode([properties as Descendant, operation.path], query)) {
+  if (
+    (!match ||
+      NodeApi.matches(properties as Descendant, match, operation.path)) &&
+    (!filterText || hasElementType(properties))
+  ) {
     const id = properties[idKey];
     const duplicate =
       id !== undefined &&
@@ -490,7 +448,6 @@ export const NodeIdPlugin = createBasePlugin<NodeIdConfig>({
     filterInline: true,
     filterText: true,
     idKey: 'id',
-    filter: defaultNodeIdFilter,
     idCreator: () => nanoid(10),
   },
 })

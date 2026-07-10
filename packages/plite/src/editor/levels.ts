@@ -5,6 +5,7 @@ import {
 } from '../interfaces/editor';
 import type { Editor, EditorLevelsOptions } from '../interfaces/editor';
 import { type Node, NodeApi, type NodeEntry } from '../interfaces/node';
+import { normalizeNodeMatch } from '../utils/node-match';
 
 export function* levels<T extends Node>(
   editor: Editor,
@@ -15,11 +16,7 @@ export function* levels<T extends Node>(
     reverse = false,
     voids = false,
   } = options;
-  let { match } = options;
-
-  if (match == null) {
-    match = () => true;
-  }
+  const match = normalizeNodeMatch(options.match) ?? (() => true);
 
   if (!at) {
     return;

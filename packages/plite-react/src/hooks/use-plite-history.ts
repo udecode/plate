@@ -1,5 +1,9 @@
 import { type KeyboardEvent, useCallback, useMemo } from 'react';
-import type { EditorUpdateOptions, Operation, RootKey } from '@platejs/plite';
+import type {
+  EditorStateView,
+  EditorUpdateOptions,
+  RootKey,
+} from '@platejs/plite';
 import { resolveHistoryFocusEditor } from '../editable/history-focus';
 import {
   getHistoryDirectionFromNativeEvent,
@@ -55,17 +59,8 @@ const historyAvailabilityEquality = (
 const nullableRootKeyEquality = (a: RootKey | null, b: RootKey | null) =>
   a === b;
 
-const selectSelectionRoot = (state: unknown): RootKey | null => {
-  const selection = (
-    state as {
-      selection?: {
-        get?: () => {
-          anchor: { root?: RootKey };
-          focus: { root?: RootKey };
-        } | null;
-      };
-    }
-  ).selection?.get?.();
+const selectSelectionRoot = (state: EditorStateView): RootKey | null => {
+  const selection = state.selection();
 
   if (!selection) {
     return null;
@@ -77,15 +72,9 @@ const selectSelectionRoot = (state: unknown): RootKey | null => {
 };
 
 const selectLastCommitSingleOperationRoot = (
-  state: unknown
+  state: EditorStateView
 ): RootKey | null => {
-  const commit = (
-    state as {
-      value?: {
-        lastCommit?: () => { operations?: readonly Operation[] } | null;
-      };
-    }
-  ).value?.lastCommit?.();
+  const commit = state.lastCommit();
   const roots = new Set(
     (commit?.operations ?? [])
       .filter((operation) => operation.type !== 'set_selection')
@@ -98,7 +87,7 @@ const selectLastCommitSingleOperationRoot = (
 const createHistoryRootSelector = () => {
   let lastRoot: RootKey = MAIN_ROOT_KEY;
 
-  return (state: unknown): RootKey => {
+  return (state: EditorStateView): RootKey => {
     const selectionRoot = selectSelectionRoot(state);
 
     if (selectionRoot) {

@@ -10,6 +10,8 @@ import {
 
 import {
   createEditor,
+  createEditorRuntime,
+  createEditorView,
   type Descendant,
   defineEditorExtension,
   type Element,
@@ -20,6 +22,11 @@ import {
 const collapsedSelection = (path: number[], offset: number) => ({
   anchor: { path, offset },
   focus: { path, offset },
+});
+
+const paragraph = (text: string): Element => ({
+  type: 'paragraph',
+  children: [{ text }],
 });
 
 describe('plite transforms contract', () => {
@@ -498,6 +505,173 @@ describe('plite transforms contract', () => {
         type: 'heading-one',
         children: [{ text: 'one' }],
       },
+    ]);
+  });
+
+  it('targets live element and text nodes without a path lookup', () => {
+    type CalloutElement = {
+      type: 'callout';
+      icon: string;
+      children: { text: string; bold?: true }[];
+    };
+    const editor = createEditor<CalloutElement[]>({
+      initialValue: [
+        {
+          type: 'callout',
+          icon: 'info',
+          children: [{ text: 'one' }],
+        },
+      ],
+    });
+    const element = editor.read.nodes.get<CalloutElement>([0], {
+      required: true,
+    })[0];
+    const text = editor.read.nodes.get<CalloutElement['children'][number]>(
+      [0, 0],
+      { required: true }
+    )[0];
+
+    editor.update.nodes.set({ icon: 'warning' }, { at: element });
+    editor.update.nodes.set({ bold: true }, { at: text });
+
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'callout',
+        icon: 'warning',
+        children: [{ bold: true, text: 'one' }],
+      },
+    ]);
+  });
+
+  it('replaces children through live elements and ignores unresolved elements', () => {
+    const editor = createEditor({ initialValue: [paragraph('one')] });
+    const foreignEditor = createEditor({
+      initialValue: [paragraph('foreign')],
+    });
+    const element = editor.read.nodes.get<Element>([0], { required: true })[0];
+    const foreign = foreignEditor.read.nodes.get<Element>([0], {
+      required: true,
+    })[0];
+    const detached = paragraph('detached');
+
+    editor.update.nodes.replaceChildren([{ text: 'two' }], { at: element });
+    editor.update.nodes.replaceChildren([{ text: 'wrong' }], { at: foreign });
+    editor.update.nodes.replaceChildren([{ text: 'wrong' }], { at: detached });
+
+    assert.deepEqual(editor.read.children(), [paragraph('two')]);
+
+    const runtime = createEditorRuntime({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const header = createEditorView(runtime, { root: 'header' });
+    const bodyNode = runtime.editor.read.nodes.get<Element>([0], {
+      required: true,
+    })[0];
+    const headerNode = header.read.nodes.get<Element>([0], {
+      required: true,
+    })[0];
+
+    header.update.nodes.replaceChildren([{ text: 'next' }], {
+      at: headerNode,
+    });
+    runtime.editor.update.nodes.replaceChildren([{ text: 'wrong' }], {
+      at: headerNode,
+    });
+    header.update.nodes.replaceChildren([{ text: 'wrong' }], { at: bodyNode });
+
+    assert.deepEqual(runtime.editor.read.children(), [paragraph('body')]);
+    assert.deepEqual(header.read.children(), [paragraph('next')]);
+  });
+
+  it('keeps node targets live across immutable writes and moves', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('one'), paragraph('two')],
+    });
+    const first = editor.read.nodes.get<Element>([0], { required: true })[0];
+
+    editor.update.nodes.set({ tone: 'quiet' }, { at: first });
+    editor.update.nodes.move({ at: first, to: [2] });
+    editor.update.nodes.set({ tone: 'loud' }, { at: first });
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('two'),
+      { ...paragraph('one'), tone: 'loud' },
+    ]);
+    assert.deepEqual(editor.read.nodes.path(first), [1]);
+  });
+
+  it('can target an inserted node later in the same transaction', () => {
+    const editor = createEditor({ initialValue: [paragraph('one')] });
+    const inserted = paragraph('two');
+
+    editor.update((tx) => {
+      tx.nodes.insert(inserted, { at: [1] });
+      tx.nodes.set({ tone: 'fresh' }, { at: inserted });
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('one'),
+      { ...paragraph('two'), tone: 'fresh' },
+    ]);
+  });
+
+  it('no-ops mutations for detached, foreign, and wrong-root node targets', () => {
+    const editor = createEditor({ initialValue: [paragraph('body')] });
+    const foreignEditor = createEditor({
+      initialValue: [paragraph('foreign')],
+    });
+    const foreign = foreignEditor.read.nodes.get<Element>([0], {
+      required: true,
+    })[0];
+    const detached = paragraph('detached');
+
+    editor.update.nodes.set({ tone: 'wrong' }, { at: foreign });
+    editor.update.nodes.set({ tone: 'wrong' }, { at: detached });
+
+    assert.deepEqual(editor.read.children(), [paragraph('body')]);
+
+    const runtime = createEditorRuntime({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const header = createEditorView(runtime, { root: 'header' });
+    const bodyNode = runtime.editor.read.nodes.get<Element>([0], {
+      required: true,
+    })[0];
+    const headerNode = header.read.nodes.get<Element>([0], {
+      required: true,
+    })[0];
+
+    runtime.editor.update.nodes.set({ tone: 'wrong' }, { at: headerNode });
+    header.update.nodes.set({ tone: 'wrong' }, { at: bodyNode });
+
+    assert.deepEqual(runtime.editor.read.children(), [paragraph('body')]);
+    assert.deepEqual(header.read.children(), [paragraph('header')]);
+  });
+
+  it('uses property matchers in node mutations', () => {
+    const editor = createEditor({
+      initialValue: [
+        paragraph('one'),
+        { type: 'quote', children: [{ text: 'two' }] },
+        { type: 'image', children: [{ text: '' }] },
+      ],
+    });
+
+    editor.update.nodes.set(
+      { selected: true },
+      { at: [], match: { type: ['paragraph', 'quote'] } }
+    );
+
+    assert.deepEqual(editor.read.children(), [
+      { ...paragraph('one'), selected: true },
+      { type: 'quote', selected: true, children: [{ text: 'two' }] },
+      { type: 'image', children: [{ text: '' }] },
     ]);
   });
 

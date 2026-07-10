@@ -78,7 +78,6 @@ export const STYLE_KEYS = {
 export const KEYS = {
   ...NODES,
   ...STYLE_KEYS,
-  autoformat: 'autoformat',
   blockMenu: 'blockMenu',
   blockPlaceholder: 'blockPlaceholder',
   blockSelection: 'blockSelection',

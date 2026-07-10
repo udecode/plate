@@ -38,6 +38,7 @@ import {
 import {
   createEditor,
   defineEditorExtension,
+  type Element,
   type EditorExtensionInput,
   type EditorExtensionRuntimeState,
 } from '@platejs/plite';
@@ -355,6 +356,37 @@ describe('extension method hard cut', () => {
     assert.equal(editorString(editor, [0]), 'one!!');
   });
 
+  it('receives normalized locations for node-target transforms', () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+    });
+    const first = editor.read.nodes.get<Element>([0], { required: true })[0];
+    const seen: unknown[] = [];
+
+    editor.extend(
+      defineEditorExtension({
+        name: 'node-target-transform-spy',
+        transforms: {
+          setNodes({ next, options }) {
+            seen.push([options?.at, typeof options?.match]);
+            return next({ options });
+          },
+        },
+      })
+    );
+
+    editor.update.nodes.set(
+      { tone: 'quiet' },
+      { at: first, match: { type: 'paragraph' } }
+    );
+
+    assert.deepEqual(seen, [[[0], 'function']]);
+    assert.equal(
+      editor.read.nodes.get<Element>([0], { required: true })[0].tone,
+      'quiet'
+    );
+  });
+
   it('extension transform middleware receives transaction-local tx', () => {
     const editor = createEditor();
     const seenOffsets: number[] = [];
@@ -493,6 +525,37 @@ describe('extension method hard cut', () => {
 
     assert.deepEqual(seenUnits, ['character']);
     assert.equal(editorString(editor, [0]), 'one');
+  });
+
+  it('extension transform middleware priority beats install order', () => {
+    const editor = createEditor();
+    const calls: string[] = [];
+
+    editor.extend([
+      defineEditorExtension({
+        name: 'low-delete-backward-transform',
+        transforms: {
+          deleteBackward({ next }) {
+            calls.push('low');
+            return next();
+          },
+        },
+      }),
+      defineEditorExtension({
+        name: 'high-delete-backward-transform',
+        priority: 10,
+        transforms: {
+          deleteBackward() {
+            calls.push('high');
+            return true;
+          },
+        },
+      }),
+    ]);
+
+    editorDeleteBackward(editor);
+
+    assert.deepEqual(calls, ['high']);
   });
 
   it('extension transform middleware covers every public mutating transform key', () => {

@@ -12,17 +12,12 @@ type FixtureModule = {
 
 const readFixtureField = (value: Record<string, unknown>, key: string) => {
   if (key === 'children' && typeof value.read === 'function') {
-    return value.read(
-      (state: {
-        runtime?: { snapshot: () => { children: unknown } };
-        value: { get: () => { roots?: { main?: unknown } } | unknown };
-      }) => state.runtime?.snapshot().children ?? state.value.get()
-    );
+    return value.read((state: { children: () => unknown }) => state.children());
   }
 
   if (key === 'selection' && typeof value.read === 'function') {
-    return value.read((state: { selection: { get: () => unknown } }) =>
-      state.selection.get()
+    return value.read((state: { selection: () => unknown }) =>
+      state.selection()
     );
   }
 

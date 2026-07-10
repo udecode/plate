@@ -95,8 +95,8 @@ describe('TrailingBlockPlugin', () => {
       plugins: [
         TrailingBlockPlugin.configure({
           options: {
-            exclude: ['h1'],
             level: 0,
+            match: (node) => !('type' in node) || node.type !== 'h1',
             type: ParagraphPlugin.key,
           },
         }),

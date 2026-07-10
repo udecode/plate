@@ -1,94 +1,58 @@
 import { act, renderHook } from '@testing-library/react';
-import * as actualPlatejs from 'platejs';
-import * as actualPlatejsReact from 'platejs/react';
+import type React from 'react';
+
+import * as actualCoreReact from '@platejs/core/react';
+import { type Element, ElementApi } from '@platejs/plite';
 
 const useEditorRefMock = mock();
 const useElementMock = mock();
-const useSelectedMock = mock();
-const getEditorPluginMock = mock();
-const useEditorPluginMock = mock();
-const useEditorSelectorMock = mock();
-const usePluginOptionMock = mock();
-const useReadOnlyMock = mock();
+const useElementSelectedMock = mock();
 
-mock.module('platejs', () => ({
-  ...actualPlatejs,
-  Hotkeys: {
-    isRedo: (event: any) => event.key === 'y' && event.metaKey,
-    isUndo: (event: any) => event.key === 'z' && event.metaKey,
-  },
-  KEYS: {
-    ...actualPlatejs.KEYS,
-    link: 'link',
-    toggle: 'toggle',
-    ulClassic: 'ulClassic',
-  },
-  getEditorPlugin: getEditorPluginMock,
-  isHotkey: (hotkey: string, event?: any) => (eventArg?: any) => {
-    const e = eventArg ?? event;
-    const key = String(e.key || '').toLowerCase();
-    const map: Record<string, string> = {
-      arrowleft: 'arrowleft',
-      arrowright: 'arrowright',
-      backspace: 'backspace',
-      escape: 'escape',
-    };
-
-    return key === map[hotkey];
-  },
-}));
-
-mock.module('platejs/react', () => ({
-  ...actualPlatejsReact,
-  useEditorPlugin: useEditorPluginMock,
+mock.module('@platejs/core/react', () => ({
+  ...actualCoreReact,
   useEditorRef: useEditorRefMock,
-  useEditorSelector: useEditorSelectorMock,
   useElement: useElementMock,
-  usePluginOption: usePluginOptionMock,
-  useReadOnly: useReadOnlyMock,
-  useSelected: useSelectedMock,
+  useElementSelected: useElementSelectedMock,
 }));
 
 describe('combobox input hooks', () => {
   beforeEach(() => {
     useEditorRefMock.mockReset();
     useElementMock.mockReset();
-    useSelectedMock.mockReset();
+    useElementSelectedMock.mockReset();
   });
 
   afterAll(() => {
     mock.restore();
   });
 
-  it('cancels input from keyboard edges, blur, and forwards undo/redo to the editor', async () => {
+  it('cancels input on blur', async () => {
     const { useComboboxInput } = await import(
       `./useComboboxInput?test=${Math.random().toString(36).slice(2)}`
     );
-    const focus = mock();
-    const redo = mock();
-    const removeNodes = mock();
-    const undo = mock();
     const onCancelInput = mock();
-
-    useElementMock.mockReturnValue({ id: 'el' });
-    useSelectedMock.mockReturnValue(true);
-    useEditorRefMock.mockReturnValue({
-      api: {
-        findPath: () => [0],
+    const inputElement = {
+      children: [{ text: '' }],
+      type: 'mention_input',
+    } satisfies Element;
+    const editor = actualCoreReact.createPlateEditor({
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
       },
-      history: {
-        redos: [{}],
-        undos: [{}],
-      },
-      redo,
-      tf: {
-        focus,
-        removeNodes,
-      },
-      undo,
+      value: [inputElement, { children: [{ text: 'after' }], type: 'p' }],
     });
+    const element = editor.read.children()[0];
 
-    const ref = { current: { focus: mock() } } as any;
+    if (!ElementApi.isElement(element)) {
+      throw new TypeError('Expected a live combobox input element');
+    }
+
+    useElementMock.mockReturnValue(element);
+    useElementSelectedMock.mockReturnValue(true);
+    useEditorRefMock.mockReturnValue(editor);
+
+    const ref = { current: document.createElement('input') };
     const { result } = renderHook(() =>
       useComboboxInput({
         cursorState: { atEnd: true, atStart: true },
@@ -98,34 +62,122 @@ describe('combobox input hooks', () => {
     );
 
     result.current.props.onBlur();
-    result.current.props.onKeyDown({
-      key: 'Escape',
-      preventDefault: mock(),
-    } as any);
-    result.current.props.onKeyDown({
-      key: 'z',
-      metaKey: true,
-      preventDefault: mock(),
-    } as any);
 
-    expect(removeNodes).toHaveBeenCalled();
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'after' }], type: 'p' },
+    ]);
     expect(onCancelInput).toHaveBeenCalledWith('blur');
-    expect(onCancelInput).toHaveBeenCalledWith('escape');
-    expect(undo).toHaveBeenCalled();
-    expect(focus).toHaveBeenCalled();
+  });
+
+  it.each([
+    ['ArrowLeft', 37, 'arrowLeft'],
+    ['ArrowRight', 39, 'arrowRight'],
+    ['Backspace', 8, 'backspace'],
+    ['Escape', 27, 'escape'],
+  ] as const)('cancels input on %s', async (key, which, cause) => {
+    const { useComboboxInput } = await import(
+      `./useComboboxInput?test=${Math.random().toString(36).slice(2)}`
+    );
+    const onCancelInput = mock();
+    const editor = actualCoreReact.createPlateEditor({
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [
+        { children: [{ text: '' }], type: 'mention_input' },
+        { children: [{ text: 'after' }], type: 'p' },
+      ],
+    });
+    const element = editor.read.children()[0];
+
+    if (!ElementApi.isElement(element)) {
+      throw new TypeError('Expected a live combobox input element');
+    }
+
+    useElementMock.mockReturnValue(element);
+    useElementSelectedMock.mockReturnValue(true);
+    useEditorRefMock.mockReturnValue(editor);
+
+    const { result } = renderHook(() =>
+      useComboboxInput({
+        cursorState: { atEnd: true, atStart: true },
+        onCancelInput,
+        ref: { current: document.createElement('input') },
+      })
+    );
+
+    result.current.props.onKeyDown({
+      key,
+      preventDefault: mock(),
+      which,
+    } as unknown as React.KeyboardEvent<HTMLElement>);
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'after' }], type: 'p' },
+    ]);
+    expect(onCancelInput).toHaveBeenCalledWith(cause);
+  });
+
+  it('forwards undo and redo to the editor history', async () => {
+    const { useComboboxInput } = await import(
+      `./useComboboxInput?test=${Math.random().toString(36).slice(2)}`
+    );
+    const editor = actualCoreReact.createPlateEditor({
+      selection: {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'a' }], type: 'p' }],
+    });
+    const element = editor.read.children()[0];
+
+    if (!ElementApi.isElement(element)) {
+      throw new TypeError('Expected a live paragraph element');
+    }
+
+    editor.update.text.insert('b');
+    useElementMock.mockReturnValue(element);
+    useElementSelectedMock.mockReturnValue(true);
+    useEditorRefMock.mockReturnValue(editor);
+
+    const { result } = renderHook(() =>
+      useComboboxInput({
+        ref: { current: document.createElement('input') },
+      })
+    );
+    const preventDefault = mock();
+
+    result.current.props.onKeyDown({
+      ctrlKey: true,
+      key: 'z',
+      preventDefault,
+    } as unknown as React.KeyboardEvent<HTMLElement>);
+
+    expect(editor.read.text.string([])).toBe('a');
+    expect(preventDefault).toHaveBeenCalled();
+
+    result.current.props.onKeyDown({
+      ctrlKey: true,
+      key: 'z',
+      preventDefault,
+      shiftKey: true,
+    } as unknown as React.KeyboardEvent<HTMLElement>);
+
+    expect(editor.read.text.string([])).toBe('ab');
   });
 
   it('tracks html input cursor edges from DOM selection changes', async () => {
     const { useHTMLInputCursorState } = await import(
       `./useHTMLInputCursorState?test=${Math.random().toString(36).slice(2)}`
     );
-    const timers: Function[] = [];
+    const timers: Array<() => void> = [];
     const setTimeoutSpy = spyOn(globalThis, 'setTimeout').mockImplementation(((
-      fn: Function
+      fn: () => void
     ) => {
       timers.push(fn);
       return 1;
-    }) as any);
+    }) as typeof setTimeout);
 
     const input = document.createElement('input');
     input.value = 'abc';

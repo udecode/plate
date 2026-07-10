@@ -101,6 +101,21 @@ describe('normalizeNodeId', () => {
     expect(output[0].id).toBeUndefined();
   });
 
+  it('matches nodes with the shared Plite matcher', () => {
+    const input = [
+      { children: [{ text: 'paragraph' }], type: 'p' },
+      { children: [{ text: 'heading' }], type: 'h1' },
+    ] as any;
+
+    const output = normalizeNodeId(input, {
+      idCreator: createIdFactory(),
+      match: { type: ['p'] },
+    }) as any;
+
+    expect(output[0].id).toBe(1);
+    expect(output[1].id).toBeUndefined();
+  });
+
   it('skips inline nodes by default and can include them when configured', () => {
     const input = [
       {
@@ -399,6 +414,36 @@ describe('NodeIdPlugin', () => {
       id: 'unique-id',
       type: 'p',
     });
+  });
+
+  it('applies match policy to inserted nodes', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        NodeIdPlugin.configure({
+          options: {
+            idCreator: createStringIdFactory(),
+            match: { type: 'p' },
+          },
+        }),
+      ],
+      value: [{ children: [{ text: 'existing' }], id: 'existing', type: 'p' }],
+    });
+
+    editor.update.operations.replay([
+      {
+        node: { children: [{ text: 'heading' }], type: 'h1' } as any,
+        path: [1],
+        type: 'insert_node',
+      },
+      {
+        node: { children: [{ text: 'paragraph' }], type: 'p' } as any,
+        path: [2],
+        type: 'insert_node',
+      },
+    ]);
+
+    expect(editor.read.children()[1].id).toBeUndefined();
+    expect(editor.read.children()[2].id).toBe('generated-1');
   });
 
   it('does not assign ids to inserted text leaves by default', () => {

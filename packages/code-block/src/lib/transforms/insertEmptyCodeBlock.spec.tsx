@@ -1,9 +1,7 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
-
-import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { insertEmptyCodeBlock } from './insertEmptyCodeBlock';
@@ -18,7 +16,7 @@ describe('insert empty code block', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as TestEditor;
 
     const output = (
       <editor>
@@ -28,19 +26,19 @@ describe('insert empty code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    insertEmptyCodeBlock(editor, {
-      insertNodesOptions: { select: true },
+    editor.update((tx) => {
+      insertEmptyCodeBlock(editor, tx);
     });
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('insert empty code block below selected non-empty line', () => {
@@ -51,7 +49,7 @@ describe('insert empty code block', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as TestEditor;
 
     const output = (
       <editor>
@@ -62,19 +60,19 @@ describe('insert empty code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    insertEmptyCodeBlock(editor, {
-      insertNodesOptions: { select: true },
+    editor.update((tx) => {
+      insertEmptyCodeBlock(editor, tx);
     });
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('insert empty code block below expanded selection', () => {
@@ -90,7 +88,7 @@ describe('insert empty code block', () => {
         </hp>
         <hp>line 5</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as TestEditor;
 
     const output = (
       <editor>
@@ -105,18 +103,18 @@ describe('insert empty code block', () => {
         </hcodeblock>
         <hp>line 5</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    insertEmptyCodeBlock(editor, {
-      insertNodesOptions: { select: true },
+    editor.update((tx) => {
+      insertEmptyCodeBlock(editor, tx);
     });
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 });

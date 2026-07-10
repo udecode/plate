@@ -9,12 +9,14 @@ import type { EditorStaticApi } from '../interfaces/editor';
 import { LocationApi, type Span } from '../interfaces/location';
 import { NodeApi } from '../interfaces/node';
 import { PathApi } from '../interfaces/path';
+import { normalizeNodeMatch } from '../utils/node-match';
 import { node as editorNode } from './node';
 import { nodes } from './nodes';
 
 export const previous: EditorStaticApi['previous'] = (editor, options = {}) => {
   const { from = 'before', mode = 'lowest', voids = false } = options;
-  let { match, at = editorGetSnapshot(editor).selection } = options;
+  const { at = editorGetSnapshot(editor).selection } = options;
+  let match = normalizeNodeMatch(options.match);
 
   if (!at) {
     return;

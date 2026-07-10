@@ -1,4 +1,4 @@
-import type { TCommentText } from 'platejs';
+import type { TCommentText } from '@platejs/utils';
 
 import { getDraftCommentKey } from './getDraftCommentKey';
 import { isCommentKey } from './isCommentKey';

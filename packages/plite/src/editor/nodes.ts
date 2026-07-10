@@ -8,6 +8,7 @@ import type { Editor, EditorNodesOptions } from '../interfaces/editor';
 import { LocationApi } from '../interfaces/location';
 import { type Node, NodeApi, type NodeEntry } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
+import { normalizeNodeMatch } from '../utils/node-match';
 
 export function* nodes<T extends Node>(
   editor: Editor,
@@ -21,11 +22,7 @@ export function* nodes<T extends Node>(
     voids = false,
     pass,
   } = options;
-  let { match } = options;
-
-  if (!match) {
-    match = () => true;
-  }
+  const match = normalizeNodeMatch(options.match) ?? (() => true);
 
   if (!at) {
     return;

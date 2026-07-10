@@ -84,7 +84,7 @@ function useFastInjectedAttributes({
         element,
         path,
       },
-      (node) => (node === element ? path : editor.read.nodes.pathOf(node)!),
+      (node) => (node === element ? path : editor.read.nodes.path(node)!),
       readOnly
     ) as any
   ).attributes;

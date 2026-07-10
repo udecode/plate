@@ -34,8 +34,7 @@ export const EDITOR_TO_DOM_EDITABLE: WeakMap<
   Editor,
   Map<RootKey, HTMLElement>
 > = new WeakMap();
-export const EDITOR_TO_DOM_SCROLL: WeakMap<Editor, HTMLElement> =
-  new WeakMap();
+export const EDITOR_TO_DOM_SCROLL: WeakMap<Editor, HTMLElement> = new WeakMap();
 export const EDITOR_TO_DOM_SCOPE_LISTENERS: WeakMap<
   Editor,
   Set<() => void>

@@ -143,7 +143,7 @@ const createBlockquoteItem = (
 
 const expectAlreadyNormalized = (editor: BasePlateEditor) => {
   const before = editor.children;
-  getCurrentRuntimeTransforms(editor).normalize({ force: true });
+  editor.update.normalize({ force: true });
   expect(editor.children).toBe(before);
 };
 

@@ -2,6 +2,7 @@ import {
   createEditor,
   type EditorCommit,
   type EditorMarksOf,
+  type EditorReplaceChildrenOptions,
   type ElementOf,
   type Operation,
   type TextOf,
@@ -23,7 +24,13 @@ type QuoteElement = {
   children: CustomText[];
 };
 
-type CustomValue = (ParagraphElement | QuoteElement)[];
+type CalloutElement = {
+  type: 'callout';
+  children: CustomText[];
+  icon: string;
+};
+
+type CustomValue = (CalloutElement | ParagraphElement | QuoteElement)[];
 
 const initialValue: CustomValue = [
   { type: 'paragraph', children: [{ text: '' }] },
@@ -35,6 +42,22 @@ editor.update((tx) => {
   tx.nodes.set<ElementOf<typeof editor>>({ type: 'quote' });
   tx.marks.add('bold' satisfies keyof EditorMarksOf<typeof editor>, true);
   tx.text.insert('typed');
+});
+
+const callout: CalloutElement = {
+  type: 'callout',
+  children: [{ text: '' }],
+  icon: 'info',
+};
+
+editor.update.nodes.set({ icon: 'warning' }, { at: callout });
+// @ts-expect-error targeted CalloutElement has no href property
+editor.update.nodes.set({ href: '/wrong' }, { at: callout });
+
+const replaceChildrenOptions: EditorReplaceChildrenOptions = { at: callout };
+
+editor.update.nodes.replaceChildren([{ text: 'replacement' }], {
+  ...replaceChildrenOptions,
 });
 
 const leaf: TextOf<typeof editor> = { text: 'typed', bold: true };

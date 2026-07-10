@@ -167,7 +167,7 @@ export const unwrapNodes: NodeMutationMethods['unwrapNodes'] = (
           getChildren(editor, node).some(NodeApi.isText)
         ) {
           unwrapNodeAtPath(path);
-          getEditorTransformRegistry(editor).normalize();
+          getEditorTransformRegistry(editor).normalize({ force: false });
           continue;
         }
 
