@@ -1,7 +1,8 @@
-import type { PlateEditor } from 'platejs/react';
+import type { PlateEditor } from '@platejs/core/react';
+import type { Element, NodeEntry, Path } from '@platejs/plite';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { type NodeEntry, type Path, type TElement, PathApi } from 'platejs';
+import { PathApi } from '@platejs/plite';
 
 import type { UseDropNodeOptions } from '../hooks';
 import type { DragItemNode, ElementDragItemNode } from '../types';
@@ -28,6 +29,7 @@ export const getDropPath = (
 ) => {
   const direction = getHoverDirection({
     dragItem,
+    editorId: editor.id,
     element,
     monitor,
     nodeRef,
@@ -36,19 +38,29 @@ export const getDropPath = (
 
   if (!direction) return;
 
-  let dragEntry: NodeEntry<TElement> | undefined;
-  let dropEntry: NodeEntry<TElement> | undefined;
+  let dragEntry: NodeEntry<Element> | undefined;
+  let dropEntry: NodeEntry<Element> | undefined;
 
   if ('element' in dragItem) {
-    const dragPath = editor.api.findPath(dragItem.element);
-    const hoveredPath = editor.api.findPath(element);
+    const hoveredPath = editor.read.nodes.path(element);
 
-    if (!dragPath || !hoveredPath) return;
+    if (!hoveredPath) return;
 
-    dragEntry = [dragItem.element, dragPath];
+    const sourceEditor =
+      dragItem.editorId === editor.id ? editor : dragItem.editor;
+    const dragPath = sourceEditor?.read.nodes.path(dragItem.element);
+
+    if (sourceEditor && !dragPath) return;
+
+    if (dragPath) {
+      dragEntry = [dragItem.element, dragPath];
+    }
     dropEntry = [element, hoveredPath];
   } else {
-    dropEntry = editor.api.node<TElement>({ id: element.id as string, at: [] });
+    dropEntry = editor.read.nodes.find<Element>({
+      at: [],
+      match: { id: element.id },
+    });
   }
   if (!dropEntry) return;
   if (
@@ -62,8 +74,10 @@ export const getDropPath = (
 
   let dropPath: Path | undefined;
 
-  // if drag from file system use [] as default path
-  const dragPath = dragEntry?.[1];
+  const dragPath =
+    'editorId' in dragItem && dragItem.editorId === editor.id
+      ? dragEntry?.[1]
+      : undefined;
   const hoveredPath = dropEntry[1];
 
   // Treat 'right' like 'bottom' (after hovered)
@@ -77,18 +91,23 @@ export const getDropPath = (
   }
   if (direction === 'top' || direction === 'left') {
     // Insert before hovered node
-    dropPath = [...hoveredPath.slice(0, -1), hoveredPath.at(-1)! - 1];
+    const hoveredIndex = hoveredPath.at(-1);
+
+    if (hoveredIndex === undefined) return;
+
+    dropPath = [...hoveredPath.slice(0, -1), hoveredIndex - 1];
 
     // If the dragged node is already right before hovered node, no change
     if (dragPath && PathApi.equals(dragPath, dropPath)) return;
   }
 
-  const _dropPath = dropPath as Path;
+  if (!dropPath) return;
+
   const before =
     dragPath &&
-    PathApi.isBefore(dragPath, _dropPath) &&
-    PathApi.isSibling(dragPath, _dropPath);
-  const to = before ? _dropPath : PathApi.next(_dropPath);
+    PathApi.isBefore(dragPath, dropPath) &&
+    PathApi.isSibling(dragPath, dropPath);
+  const to = before ? dropPath : PathApi.next(dropPath);
 
   return { direction, dragPath, to };
 };
@@ -129,30 +148,21 @@ export const onDropNode = (
 
     if (draggedIds.length > 1) {
       // Handle multi-node drop - get elements by their IDs and sort them
-      const elements: TElement[] = [];
-
-      draggedIds.forEach((id) => {
-        const entry = editor.api.node<TElement>({ id, at: [] });
-        if (entry) {
-          elements.push(entry[0]);
-        }
-      });
-
-      editor.tf.moveNodes({
+      editor.update.nodes.move({
         at: [],
         to,
-        match: (n) => elements.some((element) => element.id === n.id),
+        match: { id: draggedIds },
       });
     } else {
+      if (!dragPath) return;
+
       // Single node drop
-      editor.tf.moveNodes({
+      editor.update.nodes.move({
         at: dragPath,
         to,
       });
     }
   } else {
-    editor.tf.insertNodes(dragItem.element, { at: to });
-
     const sourceEditor = dragItem.editor;
 
     if (sourceEditor) {
@@ -162,15 +172,33 @@ export const onDropNode = (
           ? [dragItem.id]
           : [];
 
-      const paths = draggedIds
-        .map((id) => sourceEditor.api.node<TElement>({ id, at: [] }))
-        .filter((entry): entry is NodeEntry<TElement> => !!entry)
+      const entries = draggedIds
+        .map((id) =>
+          sourceEditor.read.nodes.find<Element>({ at: [], match: { id } })
+        )
+        .filter((entry): entry is NodeEntry<Element> => !!entry);
+      const elements = entries
+        .toSorted(([, a], [, b]) => PathApi.compare(a, b))
+        .map(([node]) => node);
+      const paths = entries
         .map(([, path]) => path)
-        .sort((a, b) => PathApi.compare(b, a));
+        .toSorted((a, b) => PathApi.compare(b, a));
 
-      paths.forEach((path) => {
-        sourceEditor.tf.removeNodes({ at: path });
-      });
+      // Core's NodeIdPlugin rewrites cross-document ID collisions on insert.
+      editor.update.nodes.insert(
+        elements.length > 0 ? elements : dragItem.element,
+        { at: to }
+      );
+
+      if (paths.length > 0) {
+        sourceEditor.update((tx) => {
+          paths.forEach((path) => {
+            tx.nodes.remove({ at: path });
+          });
+        });
+      }
+    } else {
+      editor.update.nodes.insert(dragItem.element, { at: to });
     }
   }
 };

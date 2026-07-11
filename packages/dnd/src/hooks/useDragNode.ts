@@ -6,8 +6,8 @@ import {
   useDrag,
 } from 'react-dnd';
 
-import type { TElement } from 'platejs';
-import type { PlateEditor } from 'platejs/react';
+import type { PlateEditor } from '@platejs/core/react';
+import type { Element } from '@platejs/plite';
 
 import type { DragItemNode } from '../types';
 
@@ -16,7 +16,7 @@ import { canUseDomDnd, noopConnector } from '../utils/dndEnvironment';
 
 export interface UseDragNodeOptions
   extends DragSourceHookSpec<DragItemNode, unknown, { isDragging: boolean }> {
-  element: TElement;
+  element: Element;
 }
 
 /**
@@ -36,7 +36,7 @@ export interface UseDragNodeOptions
  *
  * - IsDragging: true if mouse is dragging the block
  */
-export const useDragNode = (
+const useDomDragNode = (
   editor: PlateEditor,
   { element: staleElement, item, ...options }: UseDragNodeOptions
 ): [
@@ -44,77 +44,73 @@ export const useDragNode = (
   ConnectDragSource,
   ConnectDragPreview,
 ] => {
-  const elementId = staleElement.id as string;
+  const elementId = staleElement.id;
   const [isAboutToDrag, setIsAboutToDrag] = React.useState(false);
 
-  if (!canUseDomDnd()) {
-    return [
-      { isAboutToDrag: false, isDragging: false },
-      noopConnector,
-      noopConnector,
-    ];
-  }
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [collected, dragRef, preview] = useDrag<
     DragItemNode,
     unknown,
     { isDragging: boolean }
-  >(
-    () => ({
-      canDrag: () => {
-        setIsAboutToDrag(true);
-        return true;
-      },
-      collect: (monitor) => ({
-        isDragging: monitor.isDragging(),
-      }),
-      end: () => {
-        editor.plugin(DndPlugin).setOption('isDragging', false);
-        document.body.classList.remove('dragging');
-        setIsAboutToDrag(false);
-      },
-      item(monitor) {
-        editor.plugin(DndPlugin).setOption('isDragging', true);
-        editor.plugin(DndPlugin).setOption('_isOver', true);
-        document.body.classList.add('dragging');
-
-        const _item = typeof item === 'function' ? item(monitor) : item;
-        const [element] = editor.api.node<TElement>({ id: elementId, at: [] })!;
-
-        // Check if multiple nodes are selected
-        const currentDraggingId = editor.plugin(DndPlugin).getOption('draggingId');
-
-        let id: string[] | string;
-
-        if (
-          Array.isArray(currentDraggingId) &&
-          currentDraggingId.length > 1 &&
-          currentDraggingId.includes(elementId)
-        ) {
-          // Multiple selection including current element
-          id = Array.from(currentDraggingId);
-        } else {
-          // Single element drag
-          id = elementId;
-          editor.plugin(DndPlugin).setOption('draggingId', elementId);
-        }
-
-        return {
-          id,
-          editor,
-          editorId: editor.id,
-          element,
-          ..._item,
-        };
-      },
-      ...options,
+  >({
+    canDrag: () => {
+      setIsAboutToDrag(true);
+      return true;
+    },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
     }),
-    [editor, elementId]
-  );
+    end: () => {
+      editor.plugin(DndPlugin).setOption('isDragging', false);
+      document.body.classList.remove('dragging');
+      setIsAboutToDrag(false);
+    },
+    item(monitor) {
+      if (typeof elementId !== 'string') return null;
+
+      editor.plugin(DndPlugin).setOption('isDragging', true);
+      editor.plugin(DndPlugin).setOption('_isOver', true);
+      document.body.classList.add('dragging');
+
+      const _item = typeof item === 'function' ? item(monitor) : item;
+      const element = editor.read.nodes.find<Element>({
+        at: [],
+        match: { id: elementId },
+      })?.[0];
+
+      if (!element) return null;
+
+      // Check if multiple nodes are selected
+      const currentDraggingId = editor
+        .plugin(DndPlugin)
+        .getOption('draggingId');
+
+      let id: string[] | string;
+
+      if (
+        Array.isArray(currentDraggingId) &&
+        currentDraggingId.length > 1 &&
+        currentDraggingId.includes(elementId)
+      ) {
+        // Multiple selection including current element
+        id = Array.from(currentDraggingId);
+      } else {
+        // Single element drag
+        id = elementId;
+        editor.plugin(DndPlugin).setOption('draggingId', elementId);
+      }
+
+      return {
+        id,
+        editor,
+        editorId: editor.id,
+        element,
+        ..._item,
+      };
+    },
+    ...options,
+  });
 
   // Reset isAboutToDrag when drag is cancelled (e.g., ESC key)
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   React.useEffect(() => {
     if (!collected.isDragging && isAboutToDrag) {
       setIsAboutToDrag(false);
@@ -123,3 +119,11 @@ export const useDragNode = (
 
   return [{ ...collected, isAboutToDrag }, dragRef, preview];
 };
+
+const useInertDragNode = (): ReturnType<typeof useDomDragNode> => [
+  { isAboutToDrag: false, isDragging: false },
+  noopConnector,
+  noopConnector,
+];
+
+export const useDragNode = canUseDomDnd() ? useDomDragNode : useInertDragNode;

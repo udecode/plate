@@ -262,10 +262,7 @@ export const withSuggestion: ExtendPlateEditorExtension<
         const node = editor.read.nodes.above<TSuggestionElement>();
 
         if (node?.[0][KEYS.suggestion] && !node[0].suggestion.isLineBreak) {
-          const inserted = next({ options, text });
-          tx.normalize({ force: true });
-
-          return inserted;
+          return next({ options, text });
         }
 
         insertTextSuggestion(editor, tx, text);

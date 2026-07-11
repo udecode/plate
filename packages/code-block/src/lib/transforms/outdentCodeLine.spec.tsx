@@ -1,9 +1,8 @@
 /** @jsx jsxt */
 
-import type { ElementEntry, SlateEditor } from 'platejs';
-
-import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import type { Element } from '@platejs/plite';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { outdentCodeLine } from './outdentCodeLine';
@@ -19,7 +18,7 @@ describe('outdent code line', () => {
             <hcodeline>{'    '}test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -27,20 +26,26 @@ describe('outdent code line', () => {
             <hcodeline>{'  '}test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
       });
 
-      const codeBlock = editor.api.node([0]) as ElementEntry;
-      const codeLine = editor.api.node([0, 0]) as ElementEntry;
+      const codeBlock = editor.read.nodes.get<Element>([0], {
+        required: true,
+      });
+      const codeLine = editor.read.nodes.get<Element>([0, 0], {
+        required: true,
+      });
 
-      outdentCodeLine(editor, { codeBlock, codeLine });
+      editor.update((tx) => {
+        outdentCodeLine(editor, tx, { codeBlock, codeLine });
+      });
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read.children()).toEqual(output.children);
     });
   });
 
@@ -52,7 +57,7 @@ describe('outdent code line', () => {
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -60,20 +65,26 @@ describe('outdent code line', () => {
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
       });
 
-      const codeBlock = editor.api.node([0]) as ElementEntry;
-      const codeLine = editor.api.node([0, 0]) as ElementEntry;
+      const codeBlock = editor.read.nodes.get<Element>([0], {
+        required: true,
+      });
+      const codeLine = editor.read.nodes.get<Element>([0, 0], {
+        required: true,
+      });
 
-      outdentCodeLine(editor, { codeBlock, codeLine });
+      editor.update((tx) => {
+        outdentCodeLine(editor, tx, { codeBlock, codeLine });
+      });
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read.children()).toEqual(output.children);
     });
   });
 });

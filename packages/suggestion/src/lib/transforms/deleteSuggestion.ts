@@ -408,7 +408,7 @@ export const deleteSuggestionWithTx = (
     if (unit !== 'character') break;
   }
 
-  tx.normalize({ force: true });
+  tx.normalize({ force: false });
 
   return id;
 };

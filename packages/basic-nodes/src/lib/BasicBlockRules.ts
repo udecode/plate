@@ -1,5 +1,4 @@
 import { createRuleFactory } from '@platejs/core';
-import { ElementApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 const HEADING_KEY_RE = /^h([1-6])$/;
@@ -28,9 +27,7 @@ export const BlockquoteRules = {
     trigger: ' ',
     enabled: ({ editor }) =>
       !editor.read.nodes.some({
-        match: (node) =>
-          ElementApi.isElement(node) &&
-          node.type === editor.getType(KEYS.codeBlock),
+        match: { type: editor.getType(KEYS.codeBlock) },
       }),
     match: ({ marker }) => marker,
     apply: ({ editor, getBlockEntry, tx }, match) => {

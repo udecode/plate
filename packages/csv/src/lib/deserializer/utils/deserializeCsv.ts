@@ -1,7 +1,8 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { Descendant } from '@platejs/plite';
 
+import { KEYS } from '@platejs/utils';
 import Papa from 'papaparse';
-import { KEYS } from 'platejs';
 
 import { type CsvParseOptions, CsvPlugin } from '../../CsvPlugin';
 
@@ -29,7 +30,7 @@ type CsvRow = CsvArrayRow | CsvObjectRow;
 
 const isValidCsv = (
   data: CsvRow[],
-  errors: Record<string, string>[][],
+  errors: readonly unknown[],
   errorTolerance: number,
   fields?: string[]
 ) => {
@@ -57,33 +58,29 @@ const isValidCsv = (
 };
 
 export const deserializeCsv = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   {
     data,
     ...parseOptions
   }: {
     data: string;
   } & CsvParseOptions
-): SlateEditor['children'] | undefined => {
-  const { errorTolerance, parseOptions: pluginParseOptions } =
-    editor.plugin(CsvPlugin).getOptions();
+): Descendant[] | undefined => {
+  const { errorTolerance, parseOptions: pluginParseOptions } = editor
+    .plugin(CsvPlugin)
+    .getOptions();
 
   // Verify it's a csv string
   const testCsv = parseCsv<unknown[]>(data, { preview: 2 });
 
   if (testCsv.errors.length === 0) {
-    const csv = parseCsv<any>(data, {
+    const csv = parseCsv<CsvRow>(data, {
       ...pluginParseOptions,
       ...parseOptions,
     });
 
     if (
-      !isValidCsv(
-        csv.data as CsvRow[],
-        csv.errors as unknown as Record<string, string>[][],
-        errorTolerance!,
-        csv.meta.fields
-      )
+      !isValidCsv(csv.data, csv.errors, errorTolerance ?? 0.25, csv.meta.fields)
     )
       return;
 
@@ -108,7 +105,9 @@ export const deserializeCsv = (
         type: tr,
       });
 
-      for (const row of csv.data as Record<string, string>[]) {
+      for (const row of csv.data) {
+        if (Array.isArray(row)) continue;
+
         ast.children.push({
           children: csv.meta.fields.map((field: string) => ({
             children: [
@@ -121,14 +120,18 @@ export const deserializeCsv = (
       }
     } else {
       // csv is an array of arrays
-      for (const row of csv.data as [string[]]) {
-        ast.children.push({
+      for (const row of csv.data) {
+        if (!Array.isArray(row)) continue;
+
+        const rowElement: CsvElementNode = {
           children: [],
           type: tr,
-        });
+        };
+
+        ast.children.push(rowElement);
 
         for (const cell of row) {
-          (ast.children.at(-1) as CsvElementNode | undefined)?.children.push({
+          rowElement.children.push({
             children: [{ children: [{ text: cell }], type: paragraph }],
             type: td,
           });

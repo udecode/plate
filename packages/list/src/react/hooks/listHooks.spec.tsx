@@ -71,9 +71,7 @@ describe('list hooks', () => {
     const element = { checked: false, id: 'todo-1' };
 
     useEditorRefMock.mockReturnValue({
-      api: {
-        findPath: () => [0],
-      },
+      read: { nodes: { path: () => [0] } },
       tf: { setNodes },
     });
     useReadOnlyMock.mockReturnValue(false);

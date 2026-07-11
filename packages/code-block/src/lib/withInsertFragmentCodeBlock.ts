@@ -1,42 +1,79 @@
-import { type OverrideEditor, type TElement, KEYS, NodeApi } from 'platejs';
+import type { ExtendPlateEditorExtension } from '@platejs/core';
+import { ElementApi, type Element, NodeApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
-function extractCodeLinesFromCodeBlock(node: TElement) {
-  return node.children as TElement[];
-}
+import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
 
-export const withInsertFragmentCodeBlock: OverrideEditor = ({
-  editor,
-  tf: { insertFragment },
-  type: codeBlockType,
-}) => ({
+const extractCodeLinesFromCodeBlock = (node: Element) =>
+  node.children.filter((child): child is Element =>
+    ElementApi.isElement(child)
+  );
+
+export const withInsertFragmentCodeBlock: ExtendPlateEditorExtension<
+  CodeBlockConfig
+> = ({ editor, type: codeBlockType }) => ({
   transforms: {
-    insertFragment(fragment) {
-      const [blockAbove] = editor.api.block<TElement>() ?? [];
+    insertFragment({ fragment, next, options, tx }) {
+      const at = options?.at ?? tx.selection() ?? undefined;
       const codeLineType = editor.getType(KEYS.codeLine);
+      const isInCodeBlock = Boolean(
+        editor.read.nodes.block({
+          at,
+          match: { type: [codeBlockType, codeLineType] },
+        })
+      );
 
-      function convertNodeToCodeLine(node: TElement): TElement {
-        return {
-          children: [{ text: NodeApi.string(node) }],
-          type: codeLineType,
-        };
+      if (!isInCodeBlock) {
+        return next();
       }
 
-      if (
-        blockAbove &&
-        [codeBlockType, codeLineType].includes(blockAbove?.type)
-      ) {
-        return insertFragment(
-          fragment.flatMap((node) => {
-            const element = node as TElement;
+      const codeLines = fragment.flatMap((node) => {
+        if (ElementApi.isElement(node) && node.type === codeBlockType) {
+          return extractCodeLinesFromCodeBlock(node);
+        }
 
-            return element.type === codeBlockType
-              ? extractCodeLinesFromCodeBlock(element)
-              : convertNodeToCodeLine(element);
-          })
-        );
+        return [
+          {
+            children: [{ text: NodeApi.string(node) }],
+            type: codeLineType,
+          },
+        ];
+      });
+
+      const [firstLine, ...restLines] = codeLines;
+      const firstLineText = firstLine ? NodeApi.string(firstLine) : '';
+
+      if (options?.at === undefined) {
+        if (firstLineText) {
+          tx.text.insert(firstLineText);
+        }
+
+        if (restLines.length > 0) {
+          tx.nodes.insert(restLines);
+        }
+
+        return true;
       }
 
-      return insertFragment(fragment);
+      const insertionPoint = editor.read.points.start(options.at);
+
+      if (!insertionPoint) return true;
+
+      const insertionRef = tx.refs.point(insertionPoint, {
+        affinity: 'forward',
+      });
+
+      if (firstLineText) {
+        tx.text.insert(firstLineText, options);
+      }
+
+      const restAt = insertionRef.unref();
+
+      if (restAt && restLines.length > 0) {
+        tx.nodes.insert(restLines, { ...options, at: restAt });
+      }
+
+      return true;
     },
   },
 });

@@ -1,34 +1,44 @@
-import { type Editor, type TRange, PathApi, RangeApi, TextApi } from 'platejs';
+import type { DOMCapableEditor } from '@platejs/plite-dom';
+import {
+  type Range,
+  type Value,
+  PathApi,
+  RangeApi,
+  TextApi,
+} from '@platejs/plite';
 
 import type { SelectionRect } from '../types';
 
-export const getSelectionRects = (
-  editor: Editor,
+export const getSelectionRects = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: DOMCapableEditor<V, TExtensions>,
   {
     range,
     xOffset,
     yOffset,
   }: {
-    range: TRange;
+    range: Range;
     xOffset: number;
     yOffset: number;
   }
 ): SelectionRect[] => {
   const [start, end] = RangeApi.edges(range);
-  const domRange = editor.api.toDOMRange(range);
+  const domRange = editor.api.dom.resolveDOMRange(range);
 
   if (!domRange) {
     return [];
   }
 
   const selectionRects: SelectionRect[] = [];
-  const textEntries = editor.api.nodes({
+  const textEntries = editor.read.nodes.toArray({
     at: range,
     match: TextApi.isText,
   });
 
   for (const [textNode, textPath] of textEntries) {
-    const domNode = editor.api.toDOMNode(textNode);
+    const domNode = editor.api.dom.resolveDOMNode(textNode);
 
     // Fix: failed to execute 'selectNode' on 'Range': the given Node has no parent
     if (!domNode?.parentElement) {
@@ -38,7 +48,7 @@ export const getSelectionRects = (
     const isStartNode = PathApi.equals(textPath, start.path);
     const isEndNode = PathApi.equals(textPath, end.path);
 
-    let clientRects: DOMRectList | null = null;
+    let clientRects: DOMRectList;
 
     if (isStartNode || isEndNode) {
       const nodeRange = document.createRange();

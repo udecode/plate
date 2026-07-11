@@ -63,7 +63,7 @@ export const withList: OverrideEditor<ListConfig> = (ctx) => {
             }
 
             // check if we're in a list context.
-            const listSelected = editor.api.some({
+            const listSelected = editor.read.nodes.some({
               match: { type: editor.getType(KEYS.li) },
             });
 

@@ -3,7 +3,7 @@ import { getCursorOverlayState } from './getCursorOverlayState';
 describe('getCursorOverlayState', () => {
   it('returns an empty list when there are no cursors', () => {
     expect(
-      getCursorOverlayState({ cursors: null as any, selectionRects: {} })
+      getCursorOverlayState({ cursors: undefined, selectionRects: {} })
     ).toEqual([]);
   });
 
@@ -27,12 +27,14 @@ describe('getCursorOverlayState', () => {
       {
         caretPosition: { height: 10, left: 4, top: 2 },
         data: { name: 'A' },
+        id: 'a',
         selection,
         selectionRects: [{ height: 10, left: 1, top: 2, width: 3 }],
       },
       {
         caretPosition: null,
         data: { name: 'B' },
+        id: 'b',
         selection: null,
         selectionRects: [],
       },

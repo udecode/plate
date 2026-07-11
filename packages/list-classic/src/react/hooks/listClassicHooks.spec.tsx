@@ -41,8 +41,10 @@ describe('list-classic hooks', () => {
 
     useEditorSelectorMock.mockImplementation((selector: any) =>
       selector({
-        api: {
-          some: () => true,
+        read: {
+          nodes: {
+            some: () => true,
+          },
         },
         getType: (type: string) => type,
         selection: {},

@@ -1,6 +1,6 @@
 import { deserializeMd } from '@platejs/markdown';
 import { diffToSuggestions } from '@platejs/suggestion';
-import { type SlateEditor, type TElement, ElementApi } from 'platejs';
+import type { SlateEditor, TElement } from 'platejs';
 
 import {
   withoutSuggestionAndComments,
@@ -26,7 +26,7 @@ export const applyTableCellSuggestion = (
   // Find the cell by id
   const cellEntry = editor.api.node({
     at: [],
-    match: (n) => ElementApi.isElement(n) && n.id === id,
+    match: { id },
   });
 
   if (!cellEntry) {

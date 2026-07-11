@@ -5,14 +5,12 @@ import {
   useDrop,
 } from 'react-dnd';
 
-import type { NodeEntry, TElement } from 'platejs';
-import type { PlateEditor } from 'platejs/react';
+import type React from 'react';
 
-import type {
-  DragItemNode,
-  ElementDragItemNode,
-  FileDragItemNode,
-} from '../types';
+import type { PlateEditor } from '@platejs/core/react';
+import type { Element, NodeEntry } from '@platejs/plite';
+
+import type { DragItemNode } from '../types';
 
 import { DndPlugin } from '../DndPlugin';
 import { getDropPath, onDropNode } from '../transforms/onDropNode';
@@ -20,22 +18,19 @@ import { onHoverNode } from '../transforms/onHoverNode';
 import { canUseDomDnd, noopConnector } from '../utils/dndEnvironment';
 
 export type CanDropCallback = (args: {
-  dragEntry: NodeEntry<TElement>;
+  dragEntry: NodeEntry<Element>;
   dragItem: DragItemNode;
-  dropEntry: NodeEntry<TElement>;
+  dropEntry: NodeEntry<Element>;
   editor: PlateEditor;
 }) => boolean;
 
 export interface UseDropNodeOptions
   extends DropTargetHookSpec<DragItemNode, unknown, { isOver: boolean }> {
   /** The node to which the drop line is attached. */
-  element: TElement;
+  element: Element;
 
   /** The reference to the node being dragged. */
-  nodeRef: any;
-
-  /** The reference to the multiple preview element */
-  multiplePreviewRef: any;
+  nodeRef: React.RefObject<HTMLElement | null>;
 
   /**
    * Intercepts the drop handling. If `false` is returned, the default drop
@@ -52,7 +47,7 @@ export interface UseDropNodeOptions
       id: string;
       dragItem: DragItemNode;
       monitor: DropTargetMonitor<DragItemNode, unknown>;
-      nodeRef: any;
+      nodeRef: React.RefObject<HTMLElement | null>;
     }
   ) => boolean | void;
 }
@@ -78,7 +73,7 @@ export interface UseDropNodeOptions
  *
  * - IsOver: true if mouse is over the block
  */
-export const useDropNode = (
+const useDomDropNode = (
   editor: PlateEditor,
   {
     canDropNode,
@@ -89,13 +84,6 @@ export const useDropNode = (
     ...options
   }: UseDropNodeOptions
 ): [{ isOver: boolean }, ConnectDropTarget] => {
-  const id = element.id as string;
-
-  if (!canUseDomDnd()) {
-    return [{ isOver: false }, noopConnector];
-  }
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   return useDrop<DragItemNode, unknown, { isOver: boolean }>({
     collect: (monitor) => ({
       isOver: monitor.isOver({
@@ -103,9 +91,13 @@ export const useDropNode = (
       }),
     }),
     drop: (dragItem, monitor) => {
+      const id = element.id;
+
+      if (typeof id !== 'string') return;
+
       // Don't call onDropNode if this is a file drop
 
-      if (!(dragItem as ElementDragItemNode).id) {
+      if (!('id' in dragItem)) {
         const result = getDropPath(editor, {
           canDropNode,
           dragItem,
@@ -121,7 +113,7 @@ export const useDropNode = (
 
         return onDropFiles({
           id,
-          dragItem: dragItem as FileDragItemNode,
+          dragItem,
           editor,
           monitor,
           nodeRef,
@@ -142,7 +134,7 @@ export const useDropNode = (
 
       onDropNode(editor, {
         canDropNode,
-        dragItem: dragItem as ElementDragItemNode,
+        dragItem,
         element,
         monitor,
         nodeRef,
@@ -162,3 +154,10 @@ export const useDropNode = (
     ...options,
   });
 };
+
+const useInertDropNode = (): ReturnType<typeof useDomDropNode> => [
+  { isOver: false },
+  noopConnector,
+];
+
+export const useDropNode = canUseDomDnd() ? useDomDropNode : useInertDropNode;

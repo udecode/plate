@@ -39,10 +39,10 @@ describe('floating link triggers', () => {
     const editor = {
       api: {
         isAt: () => false,
-        some: () => false,
         string: () => 'selected text',
       },
       id: 'editor-id',
+      read: { nodes: { some: () => false } },
       selection: { anchor: { path: [0, 0], offset: 0 } },
     } as any;
 

@@ -1,13 +1,18 @@
 import { renderHook } from '@testing-library/react';
+import { createBaseEditor } from '@platejs/core';
+import type { Range } from '@platejs/plite';
 
 const useEditorRefMock = mock();
-const useIsomorphicLayoutEffectMock = mock((effect: Function) => effect());
+const useIsomorphicLayoutEffectMock = mock((effect: () => void) => effect());
 const getCursorOverlayStateMock = mock();
 const getSelectionRectsMock = mock();
 const useRefreshOnResizeMock = mock();
 
-mock.module('platejs/react', () => ({
+mock.module('@platejs/core/react', () => ({
   useEditorRef: useEditorRefMock,
+}));
+
+mock.module('@udecode/react-utils', () => ({
   useIsomorphicLayoutEffect: useIsomorphicLayoutEffectMock,
 }));
 
@@ -29,6 +34,7 @@ describe('useCursorOverlayPositions', () => {
     getCursorOverlayStateMock.mockReset();
     getSelectionRectsMock.mockReset();
     useRefreshOnResizeMock.mockReset();
+    useRefreshOnResizeMock.mockReturnValue({ refresh: mock() });
   });
 
   afterAll(() => {
@@ -39,31 +45,78 @@ describe('useCursorOverlayPositions', () => {
     const { useCursorOverlayPositions } = await import(
       `./useCursorOverlayPositions?test=${Math.random().toString(36).slice(2)}`
     );
-    const range = { anchor: { path: [0, 0], offset: 0 } };
+    const range = {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    } satisfies Range;
+    const editor = createBaseEditor();
 
-    useEditorRefMock.mockReturnValue({ id: 'editor' });
-    getSelectionRectsMock.mockReturnValue([{ width: 10, x: 1, y: 2 }]);
-    getCursorOverlayStateMock.mockReturnValue([{ caretPosition: { top: 2 } }]);
-    useRefreshOnResizeMock.mockReturnValue({ refresh: mock() });
+    useEditorRefMock.mockReturnValue(editor);
+    getSelectionRectsMock.mockReturnValue([
+      { height: 10, left: 1, top: 2, width: 10 },
+    ]);
+    getCursorOverlayStateMock.mockReturnValue([
+      {
+        caretPosition: { height: 10, left: 1, top: 2 },
+        id: 'a',
+        selection: range,
+        selectionRects: [],
+      },
+    ]);
 
     const container = document.createElement('div');
     Object.defineProperty(container, 'scrollTop', { value: 5 });
-    container.getBoundingClientRect = () => ({ x: 10, y: 20 }) as DOMRect;
+    container.getBoundingClientRect = () => new DOMRect(10, 20);
 
     const { result } = renderHook(() =>
       useCursorOverlayPositions({
         containerRef: { current: container },
         cursors: {
           a: { selection: range },
-        } as any,
+        },
       })
     );
 
-    expect(getSelectionRectsMock).toHaveBeenCalledWith(
-      { id: 'editor' },
-      { range, xOffset: 10, yOffset: 15 }
-    );
+    expect(getSelectionRectsMock).toHaveBeenCalledWith(editor, {
+      range,
+      xOffset: 10,
+      yOffset: 15,
+    });
     expect(getCursorOverlayStateMock).toHaveBeenCalled();
-    expect(result.current.cursors).toEqual([{ caretPosition: { top: 2 } }]);
+    expect(result.current.cursors).toEqual([
+      {
+        caretPosition: { height: 10, left: 1, top: 2 },
+        id: 'a',
+        selection: range,
+        selectionRects: [],
+      },
+    ]);
+  });
+
+  it('uses viewport coordinates when no relative container is provided', async () => {
+    const { useCursorOverlayPositions } = await import(
+      `./useCursorOverlayPositions?test=${Math.random().toString(36).slice(2)}`
+    );
+    const range = {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    } satisfies Range;
+    const editor = createBaseEditor();
+
+    useEditorRefMock.mockReturnValue(editor);
+    getSelectionRectsMock.mockReturnValue([]);
+    getCursorOverlayStateMock.mockReturnValue([]);
+
+    renderHook(() =>
+      useCursorOverlayPositions({
+        cursors: { a: { selection: range } },
+      })
+    );
+
+    expect(getSelectionRectsMock).toHaveBeenCalledWith(editor, {
+      range,
+      xOffset: 0,
+      yOffset: 0,
+    });
   });
 });

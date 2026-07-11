@@ -7,7 +7,7 @@ import { type PreviewItem, ImagePreviewStore } from './ImagePreviewStore';
 const getUrlList = (editor: SlateEditor) => {
   const enties = editor.api.nodes({
     at: [],
-    match: (n) => n.type === KEYS.img,
+    match: { type: KEYS.img },
   });
 
   return Array.from(enties, (item) => ({

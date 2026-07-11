@@ -3,17 +3,28 @@ import type { Element, Path, Text } from '@platejs/plite';
 import clsx from 'clsx';
 
 import type { BaseEditor } from '../../lib/editor';
+import type {
+  GetInjectNodePropsOptions,
+  GetInjectNodePropsReturnType,
+} from '../../lib/plugin';
 
 import { isEditOnly } from './isEditOnlyDisabled';
 import { pluginInjectNodeProps } from './pluginInjectNodeProps';
 
 /** Inject plugin props, editor. */
-export const pipeInjectNodeProps = (
+export const pipeInjectNodeProps = <
+  TNodeProps extends GetInjectNodePropsOptions & {
+    attributes: GetInjectNodePropsReturnType;
+  },
+>(
   editor: BaseEditor,
-  nodeProps: any,
-  getElementPath: (node: Element | Text) => Path,
+  nodeProps: TNodeProps,
+  getElementPath: (node: Element | Text) => Path | undefined,
   readOnly = false
 ) => {
+  let attributes: TNodeProps['attributes'] & GetInjectNodePropsReturnType =
+    nodeProps.attributes;
+
   editor.runtime.pluginCache.inject.nodeProps.forEach((key) => {
     const plugin = editor.getPlugin({ key });
 
@@ -31,9 +42,7 @@ export const pipeInjectNodeProps = (
 
     if (!newAttributes) return;
 
-    const attributes = nodeProps.attributes;
-
-    nodeProps.attributes = {
+    attributes = {
       ...attributes,
       ...newAttributes,
       className:
@@ -45,5 +54,5 @@ export const pipeInjectNodeProps = (
     };
   });
 
-  return nodeProps;
+  return { ...nodeProps, attributes };
 };

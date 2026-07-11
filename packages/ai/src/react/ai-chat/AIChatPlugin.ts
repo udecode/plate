@@ -12,7 +12,6 @@ import {
   type TIdElement,
   type TRange,
   bindFirst,
-  ElementApi,
   getPluginType,
   KEYS,
 } from 'platejs';
@@ -121,7 +120,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
       if (anchor) {
         return editor.api.node({
           at: [],
-          match: (n) => ElementApi.isElement(n) && n.type === type,
+          match: { type },
           ...rest,
         });
       }

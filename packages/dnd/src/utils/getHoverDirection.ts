@@ -1,22 +1,22 @@
-import type { TElement } from 'platejs';
-import type { DropTargetMonitor, XYCoord } from 'react-dnd';
+import type React from 'react';
 
-import type {
-  DragItemNode,
-  DropDirection,
-  ElementDragItemNode,
-} from '../types';
+import type { Element } from '@platejs/plite';
+import type { DropTargetMonitor } from 'react-dnd';
+
+import type { DragItemNode, DropDirection } from '../types';
 
 export type GetHoverDirectionOptions = {
   dragItem: DragItemNode;
+  /** The editor containing the hovered node. */
+  editorId?: string;
 
   /** Hovering node. */
-  element: TElement;
+  element: Element;
 
   monitor: DropTargetMonitor;
 
   /** The node ref of the node being dragged. */
-  nodeRef: any;
+  nodeRef: React.RefObject<HTMLElement | null>;
 
   /** The orientation of the drag operation. */
   orientation?: 'horizontal' | 'vertical';
@@ -28,24 +28,30 @@ export type GetHoverDirectionOptions = {
  */
 export const getHoverDirection = ({
   dragItem,
+  editorId,
   element,
   monitor,
   nodeRef,
   orientation = 'vertical',
 }: GetHoverDirectionOptions): DropDirection => {
   if (!nodeRef.current) return;
-  // Don't replace items with themselves
-  if (element === (dragItem as ElementDragItemNode).element) return;
 
-  // For multiple node drag, don't show drop line if hovering over any selected element
-  const elementDragItem = dragItem as ElementDragItemNode;
-  const draggedIds = Array.isArray(elementDragItem.id)
-    ? elementDragItem.id
-    : [elementDragItem.id];
-  if (draggedIds.includes(element.id as string)) return;
+  if ('element' in dragItem) {
+    if (element === dragItem.element) return;
+
+    const draggedIds = Array.isArray(dragItem.id) ? dragItem.id : [dragItem.id];
+
+    if (
+      (editorId === undefined || dragItem.editorId === editorId) &&
+      typeof element.id === 'string' &&
+      draggedIds.includes(element.id)
+    ) {
+      return;
+    }
+  }
 
   // Determine rectangle on screen
-  const hoverBoundingRect = nodeRef.current?.getBoundingClientRect();
+  const hoverBoundingRect = nodeRef.current.getBoundingClientRect();
 
   if (!hoverBoundingRect) {
     return;
@@ -62,7 +68,7 @@ export const getHoverDirection = ({
     const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
 
     // Get pixels to the top
-    const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
+    const hoverClientY = clientOffset.y - hoverBoundingRect.top;
 
     // Only perform the move when the mouse has crossed half of the items height
     // When dragging downwards, only move when the cursor is below 50%
@@ -79,7 +85,7 @@ export const getHoverDirection = ({
   } else {
     // Horizontal orientation for columns
     const hoverMiddleX = (hoverBoundingRect.right - hoverBoundingRect.left) / 2;
-    const hoverClientX = (clientOffset as XYCoord).x - hoverBoundingRect.left;
+    const hoverClientX = clientOffset.x - hoverBoundingRect.left;
 
     return hoverClientX < hoverMiddleX ? 'left' : 'right';
   }

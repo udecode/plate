@@ -126,9 +126,11 @@ describe('setSelectedCellsBorder integration', () => {
     const cells = getSelectedCells(editor) as TTableCellElement[];
 
     expect(cells.map((cell) => cell.id)).toEqual(['c12', 'c22']);
-    expect(editor.api.findPath(cells[1])).toEqual([0, 1, 1]);
+    expect(editor.read.nodes.path(cells[1])).toEqual([0, 1, 1]);
     expect(
-      getLeftTableCell(editor, { at: editor.api.findPath(cells[1])! })?.[0].id
+      getLeftTableCell(editor, {
+        at: editor.read.nodes.path(cells[1], { required: true }),
+      })?.[0].id
     ).toBe('c21');
 
     const setBorderSizeSpy = spyOn(setBorderSizeModule, 'setBorderSize');

@@ -77,7 +77,7 @@ export const useSelectionArea = () => {
           added.forEach((id) => {
             const block = editor.read.nodes.block({
               at: [],
-              match: (n) => ElementApi.isElement(n) && n.id === id,
+              match: { id },
             });
 
             if (!block) return;
@@ -124,7 +124,7 @@ export const useSelectionArea = () => {
           const getBlockById = (id: string) =>
             editor.read.nodes.block({
               at: [],
-              match: (n) => ElementApi.isElement(n) && n.id === id,
+              match: { id },
             });
 
           const isTableOnlySelection = ids.every((id) => {

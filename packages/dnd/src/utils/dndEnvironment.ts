@@ -7,6 +7,6 @@ import type {
 export const canUseDomDnd = () =>
   typeof document !== 'undefined' && typeof window !== 'undefined';
 
-export const noopConnector = ((value: any) => value) as ConnectDragPreview &
+export const noopConnector: ConnectDragPreview &
   ConnectDragSource &
-  ConnectDropTarget;
+  ConnectDropTarget = () => null;

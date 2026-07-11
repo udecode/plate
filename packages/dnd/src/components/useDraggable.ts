@@ -1,6 +1,5 @@
 import React from 'react';
-
-import { useEditorRef } from 'platejs/react';
+import type { ConnectDragSource } from 'react-dnd';
 
 import { type UseDndNodeOptions, DRAG_ITEM_BLOCK, useDndNode } from '..';
 
@@ -16,13 +15,7 @@ export type DraggableState = {
   /** The ref of the multiple preview element */
   previewRef: React.RefObject<HTMLDivElement | null>;
   /** The ref of the draggable handle */
-  handleRef: (
-    elementOrNode:
-      | Element
-      | React.ReactElement<any>
-      | React.RefObject<any>
-      | null
-  ) => void;
+  handleRef: ConnectDragSource;
 };
 
 export const useDraggable = (props: UseDndNodeOptions): DraggableState => {
@@ -32,15 +25,10 @@ export const useDraggable = (props: UseDndNodeOptions): DraggableState => {
     onDropHandler,
   } = props;
 
-  const editor = useEditorRef();
-
   const nodeRef = React.useRef<HTMLDivElement>(null);
 
   const multiplePreviewRef = React.useRef<HTMLDivElement>(null);
 
-  if (!editor.plugins.dnd) return {} as any;
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { dragRef, isAboutToDrag, isDragging } = useDndNode({
     multiplePreviewRef,
     nodeRef,

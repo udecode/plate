@@ -2,7 +2,7 @@ import { type SlateEditor, KEYS } from 'platejs';
 
 export const deleteTable = (editor: SlateEditor) => {
   if (
-    editor.api.some({
+    editor.read.nodes.some({
       match: { type: editor.getType(KEYS.table) },
     })
   ) {

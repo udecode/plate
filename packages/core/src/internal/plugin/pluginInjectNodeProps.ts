@@ -13,7 +13,7 @@ import {
 import { getInjectMatch } from '../../lib/utils/getInjectMatch';
 
 const getNodeProp = (node: Element | Text, key?: string) =>
-  key ? (node as Record<string, unknown>)[key] : undefined;
+  key ? node[key] : undefined;
 
 const getNodePropClassValue = (value: unknown) =>
   typeof value === 'string' || typeof value === 'number'
@@ -31,7 +31,7 @@ export const pluginInjectNodeProps = (
   editor: BaseEditor,
   plugin: BasePlugin,
   nodeProps: GetInjectNodePropsOptions,
-  getElementPath: (node: Element | Text) => Path
+  getElementPath: (node: Element | Text) => Path | undefined
 ): GetInjectNodePropsReturnType | undefined => {
   const {
     key,
@@ -74,12 +74,15 @@ export const pluginInjectNodeProps = (
     transformProps?.({ ...getTransformOptions(), props: {} });
   };
 
-  if (
-    !injectMatch(
-      node,
-      shouldResolvePathForMatch ? getElementPath(node) : undefined
-    )
-  ) {
+  const path = shouldResolvePathForMatch ? getElementPath(node) : undefined;
+
+  if (shouldResolvePathForMatch && !path) {
+    callTransformPropsWithoutInjecting();
+
+    return;
+  }
+
+  if (!injectMatch(node, path)) {
     callTransformPropsWithoutInjecting();
 
     return;
@@ -124,7 +127,7 @@ export const pluginInjectNodeProps = (
   }
   if (styleKey) {
     newProps.style = transformStyle?.(transformOptions) ?? {
-      [styleKey as string]: value,
+      [styleKey]: value,
     };
   }
   if (transformProps) {

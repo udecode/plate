@@ -1,116 +1,134 @@
+import React from 'react';
+
+import type { Range } from '@platejs/plite';
+
+import { PlateTest, createPlateEditor } from '@platejs/core/react';
+import { act, render } from '@testing-library/react';
+
 import { getSelectionRects } from './getSelectionRects';
 
-const createRectList = (rects: any[]) => ({
-  item: (index: number) => rects[index] ?? null,
-  length: rects.length,
-});
+const collapsedRange = {
+  anchor: { offset: 0, path: [0, 0] },
+  focus: { offset: 0, path: [0, 0] },
+} satisfies Range;
+
+const createRectList = (rects: DOMRect[]) =>
+  Object.assign(rects, {
+    item: (index: number) => rects[index] ?? null,
+  });
 
 describe('getSelectionRects', () => {
-  const originalCreateRange = document.createRange;
+  const originalRangeGetClientRects = globalThis.Range.prototype.getClientRects;
 
   afterEach(() => {
-    document.createRange = originalCreateRange;
+    globalThis.Range.prototype.getClientRects = originalRangeGetClientRects;
   });
 
   it('returns an empty array when the editor cannot create a DOM range', () => {
-    const editor = {
-      api: {
-        toDOMRange: mock(() => null),
-      },
-    } as any;
+    const editor = createPlateEditor();
 
     expect(
       getSelectionRects(editor, {
-        range: {
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 0, path: [0, 0] },
-        } as any,
+        range: collapsedRange,
         xOffset: 0,
         yOffset: 0,
       })
     ).toEqual([]);
   });
 
-  it('returns an empty array when a DOM text node has no parent element', () => {
-    const textNode = { text: 'a' };
-    const editor = {
-      api: {
-        nodes: mock(() => [[textNode, [0, 0]]]),
-        toDOMNode: mock(() => ({ parentElement: null })),
-        toDOMRange: mock(() => ({
-          endContainer: {},
-          endOffset: 0,
-          startContainer: {},
-          startOffset: 0,
-        })),
-      },
-    } as any;
+  it('returns an empty array when a mapped DOM text node is detached', async () => {
+    const editor = createPlateEditor({
+      value: [{ children: [{ text: 'a' }], type: 'p' }],
+    });
+
+    await act(async () => {
+      render(
+        React.createElement(PlateTest, {
+          editableProps: { autoFocus: false },
+          editor,
+        })
+      );
+    });
+
+    const textNode = editor.read.nodes.get([0, 0])?.[0];
+
+    if (!textNode) throw new TypeError('Expected a text node');
+
+    const domNode = editor.api.dom.resolveDOMNode(textNode);
+
+    if (!domNode) throw new TypeError('Expected a mapped DOM node');
+
+    domNode.remove();
 
     expect(
       getSelectionRects(editor, {
-        range: {
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 0, path: [0, 0] },
-        } as any,
+        range: collapsedRange,
         xOffset: 0,
         yOffset: 0,
       })
     ).toEqual([]);
   });
 
-  it('collects start, middle, and end rects with offsets applied', () => {
-    const startText = { text: 'a' };
-    const middleText = { text: 'b' };
-    const endText = { text: 'c' };
-    const startDomNode = { parentElement: {}, getClientRects: mock() };
-    const middleDomNode = {
-      getClientRects: mock(() =>
-        createRectList([{ height: 8, left: 30, top: 40, width: 12 }])
-      ),
-      parentElement: {},
+  it('collects start, middle, and end rects with offsets applied', async () => {
+    const editor = createPlateEditor({
+      value: [
+        { children: [{ text: 'a' }], type: 'p' },
+        { children: [{ text: 'b' }], type: 'p' },
+        { children: [{ text: 'c' }], type: 'p' },
+      ],
+    });
+
+    await act(async () => {
+      render(
+        React.createElement(PlateTest, {
+          editableProps: { autoFocus: false },
+          editor,
+        })
+      );
+    });
+
+    const startText = editor.read.nodes.get([0, 0])?.[0];
+    const middleText = editor.read.nodes.get([1, 0])?.[0];
+    const endText = editor.read.nodes.get([2, 0])?.[0];
+
+    if (!startText || !middleText || !endText) {
+      throw new TypeError('Expected three text nodes');
+    }
+
+    const startDomNode = editor.api.dom.resolveDOMNode(startText);
+    const middleDomNode = editor.api.dom.resolveDOMNode(middleText);
+    const endDomNode = editor.api.dom.resolveDOMNode(endText);
+
+    if (!startDomNode || !middleDomNode || !endDomNode) {
+      throw new TypeError('Expected three mapped DOM nodes');
+    }
+
+    const startDomText = startDomNode.firstChild;
+    const endDomText = endDomNode.firstChild;
+
+    if (!startDomText || !endDomText) {
+      throw new TypeError('Expected mapped DOM text');
+    }
+
+    middleDomNode.getClientRects = () =>
+      createRectList([new DOMRect(30, 40, 12, 8)]);
+    globalThis.Range.prototype.getClientRects = function () {
+      if (startDomNode.contains(this.startContainer)) {
+        return createRectList([new DOMRect(10, 20, 5, 9)]);
+      }
+      if (endDomNode.contains(this.endContainer)) {
+        return createRectList([new DOMRect(50, 60, 7, 11)]);
+      }
+
+      return createRectList([]);
     };
-    const endDomNode = { parentElement: {}, getClientRects: mock() };
-    const rangeRects = [
-      createRectList([{ height: 9, left: 10, top: 20, width: 5 }]),
-      createRectList([{ height: 11, left: 50, top: 60, width: 7 }]),
-    ];
-    let rangeIndex = 0;
-
-    document.createRange = (() => ({
-      getClientRects: () => rangeRects[rangeIndex++]!,
-      selectNode: mock(() => {}),
-      setEnd: mock(() => {}),
-      setStart: mock(() => {}),
-    })) as unknown as typeof document.createRange;
-
-    const editor = {
-      api: {
-        nodes: mock(() => [
-          [startText, [0, 0]],
-          [middleText, [0, 1]],
-          [endText, [0, 2]],
-        ]),
-        toDOMNode: mock((node: any) => {
-          if (node === startText) return startDomNode;
-          if (node === middleText) return middleDomNode;
-
-          return endDomNode;
-        }),
-        toDOMRange: mock(() => ({
-          endContainer: {},
-          endOffset: 1,
-          startContainer: {},
-          startOffset: 0,
-        })),
-      },
-    } as any;
 
     expect(
       getSelectionRects(editor, {
         range: {
           anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 1, path: [0, 2] },
-        } as any,
+          focus: { offset: 1, path: [2, 0] },
+        },
         xOffset: 2,
         yOffset: 3,
       })

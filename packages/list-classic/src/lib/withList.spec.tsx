@@ -88,9 +88,9 @@ describe('withList', () => {
     const editor = {
       api: {
         isCollapsed: mock(() => true),
-        some: mock(() => false),
       },
       getType: (key: string) => key,
+      read: { nodes: { some: mock(() => false) } },
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
@@ -123,10 +123,10 @@ describe('withList', () => {
     const editor = {
       api: {
         isCollapsed: mock(() => false),
-        some: mock(() => true),
         unhangRange: mock(() => unhangRange),
       },
       getType: (key: string) => key,
+      read: { nodes: { some: mock(() => true) } },
       selection: {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },

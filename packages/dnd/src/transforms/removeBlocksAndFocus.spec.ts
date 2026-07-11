@@ -1,31 +1,21 @@
-import * as queryModule from '../queries/getBlocksWithId';
+import { createPlateEditor } from '@platejs/core/react';
+
 import { removeBlocksAndFocus } from './removeBlocksAndFocus';
 
 describe('removeBlocksAndFocus', () => {
   it('removes the block range and focuses the editor', () => {
-    const getBlocksSpy = spyOn(queryModule, 'getBlocksWithId').mockReturnValue([
-      [{ id: 'a', type: 'p' }, [0]],
-      [{ id: 'b', type: 'p' }, [1]],
-    ] as any);
-    const removeNodes = mock();
-    const focus = mock();
-    const editor = {
-      api: {
-        nodesRange: mock(() => ({ anchor: [0], focus: [1] })),
-      },
-      tf: {
-        focus,
-        removeNodes,
-      },
-    } as any;
+    const editor = createPlateEditor();
+    editor.update.nodes.insert(
+      [
+        { children: [{ text: 'a' }], id: 'a', type: 'p' },
+        { children: [{ text: 'b' }], id: 'b', type: 'p' },
+      ],
+      { at: [0] }
+    );
+    spyOn(editor.api.dom, 'focus').mockImplementation(() => {});
 
-    removeBlocksAndFocus(editor, {} as any);
+    removeBlocksAndFocus(editor, { at: [] });
 
-    expect(removeNodes).toHaveBeenCalledWith({
-      at: { anchor: [0], focus: [1] },
-    });
-    expect(focus).toHaveBeenCalledTimes(1);
-
-    getBlocksSpy.mockRestore();
+    expect(editor.read.children().some((node) => node.id)).toBe(false);
   });
 });

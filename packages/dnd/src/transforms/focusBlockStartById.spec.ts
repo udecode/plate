@@ -1,43 +1,29 @@
+import { createBaseEditor } from '@platejs/core';
+
 import { focusBlockStartById } from './focusBlockStartById';
 
 describe('focusBlockStartById', () => {
   it('does nothing when the block cannot be found', () => {
-    const select = mock();
-    const focus = mock();
-    const editor = {
-      api: {
-        node: mock(() => {}),
-        start: mock(),
-      },
-      tf: {
-        focus,
-        select,
-      },
-    } as any;
+    const editor = createBaseEditor();
+    const focus = spyOn(editor.api.dom, 'focus').mockImplementation(() => {});
 
     focusBlockStartById(editor, 'missing');
 
-    expect(select).not.toHaveBeenCalled();
+    expect(editor.read.selection()).toBeNull();
     expect(focus).not.toHaveBeenCalled();
   });
 
   it('selects the block start and focuses the editor', () => {
-    const select = mock();
-    const focus = mock();
-    const editor = {
-      api: {
-        node: mock(() => [{ id: 'a' }, [1]]),
-        start: mock(() => ({ offset: 0, path: [1, 0] })),
-      },
-      tf: {
-        focus,
-        select,
-      },
-    } as any;
+    const editor = createBaseEditor({
+      value: [{ children: [{ text: 'block' }], id: 'a', type: 'p' }],
+    });
+    spyOn(editor.api.dom, 'focus').mockImplementation(() => {});
 
     focusBlockStartById(editor, 'a');
 
-    expect(select).toHaveBeenCalledWith({ offset: 0, path: [1, 0] });
-    expect(focus).toHaveBeenCalledTimes(1);
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
   });
 });

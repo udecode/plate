@@ -1,5 +1,7 @@
 import { renderHook } from '@testing-library/react';
-import * as actualPlatejsReact from 'platejs/react';
+import type { Element } from '@platejs/plite';
+
+import * as actualPlatejsReact from '@platejs/core/react';
 
 const useDragMock = mock(() => {
   throw new Error('useDrag should not run when DOM DnD is unavailable');
@@ -10,7 +12,7 @@ const useDropMock = mock(() => {
 const useEditorRefMock = mock();
 const canUseDomDndMock = mock(() => false);
 
-mock.module('platejs/react', () => ({
+mock.module('@platejs/core/react', () => ({
   ...actualPlatejsReact,
   useEditorRef: useEditorRefMock,
 }));
@@ -22,14 +24,14 @@ mock.module('react-dnd', () => ({
 
 mock.module('../utils/dndEnvironment', () => ({
   canUseDomDnd: canUseDomDndMock,
-  noopConnector: (value: any) => value,
+  noopConnector: () => null,
 }));
 
-const element = {
+const element: Element = {
   children: [{ text: 'Hello' }],
   id: 'block-1',
   type: 'p',
-} as any;
+};
 
 describe('useDraggable', () => {
   beforeEach(() => {

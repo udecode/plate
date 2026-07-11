@@ -1,24 +1,30 @@
-import type { SlateEditor, TElement } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { EditorUpdateTransaction } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
-export const toggleCodeBlock = (editor: SlateEditor) => {
-  if (!editor.selection) return;
+export const toggleCodeBlock = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction
+) => {
+  const selection = editor.read.selection();
+
+  if (!selection) return;
 
   const codeBlockType = editor.getType(KEYS.codeBlock);
   const codeLineType = editor.getType(KEYS.codeLine);
 
-  const isActive = editor.api.some({
+  const isActive = editor.read.nodes.some({
+    at: selection,
     match: { type: codeBlockType },
   });
 
-  editor.tf.withoutNormalizing(() => {
-    unwrapCodeBlock(editor);
+  tx.withoutNormalizing(() => {
+    unwrapCodeBlock(editor, tx);
 
     if (!isActive) {
-      editor.tf.setNodes({
+      tx.nodes.set({
         type: codeLineType,
       });
 
@@ -27,7 +33,7 @@ export const toggleCodeBlock = (editor: SlateEditor) => {
         type: codeBlockType,
       };
 
-      editor.tf.wrapNodes<TElement>(codeBlock);
+      tx.nodes.wrap(codeBlock);
     }
   });
 };

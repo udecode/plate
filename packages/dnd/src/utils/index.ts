@@ -4,4 +4,3 @@
 
 export * from './dndEnvironment';
 export * from './getHoverDirection';
-export * from './getNewDirection';

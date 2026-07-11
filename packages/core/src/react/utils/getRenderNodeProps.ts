@@ -1,13 +1,18 @@
 import type { AnyObject } from '@udecode/utils';
+import type React from 'react';
 
 import { clsx } from 'clsx';
 
-import type { PlateHTMLProps } from '../components';
 import type { PlateEditor } from '../editor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
-import { type AnyBasePlugin, getPluginNodeClass } from '../../lib';
+import {
+  type AnyBasePlugin,
+  type GetInjectNodePropsOptions,
+  getEditorPlugin as getBaseEditorPlugin,
+  getPluginNodeClass,
+} from '../../lib';
 import { getPluginNodeProps } from '../../lib/utils/getPluginNodeProps';
 import { getEditorPlugin } from '../plugin';
 
@@ -16,7 +21,14 @@ import { getEditorPlugin } from '../plugin';
  * `props.element.attributes` are passed into `props.attributes`. Extend the
  * class name with the node type.
  */
-export const getRenderNodeProps = ({
+type RenderNodePropsInput = GetInjectNodePropsOptions & {
+  attributes: AnyObject;
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+};
+
+export const getRenderNodeProps = <TProps extends RenderNodePropsInput>({
   attributes: nodeAttributes,
   disableInjectNodeProps,
   editor,
@@ -26,13 +38,13 @@ export const getRenderNodeProps = ({
   readOnly,
 }: {
   editor: PlateEditor;
-  props: PlateHTMLProps;
+  props: TProps;
   attributes?: AnyObject;
   disableInjectNodeProps?: boolean;
   plugin?: AnyBasePlugin | AnyEditorPlatePlugin;
   pluginContext?: AnyObject;
   readOnly?: boolean;
-}): PlateHTMLProps => {
+}) => {
   const hasInjectNodeProps =
     !disableInjectNodeProps &&
     editor.runtime.pluginCache.inject.nodeProps.length > 0;
@@ -44,26 +56,29 @@ export const getRenderNodeProps = ({
     ? pluginContext
     : plugin
       ? {
-          ...getEditorPlugin(editor as any, plugin as any),
+          // Installed React plugins own React context; base plugins keep the
+          // non-React context used by text/static-compatible render paths.
+          ...('useOptionsStore' in plugin
+            ? getEditorPlugin(editor, plugin)
+            : getBaseEditorPlugin(editor, plugin)),
           api: editor.api,
         }
       : {
           api: editor.api,
           editor,
         };
-  const renderPluginContext = resolvedPluginContext as AnyObject;
   const { className } = props;
 
   let newProps = {
     ...props,
-    ...renderPluginContext,
+    ...resolvedPluginContext,
   };
 
   if (canSkipPluginNodeProps) {
     newProps = {
       ...newProps,
       attributes: {
-        ...(props.attributes as any),
+        ...props.attributes,
         className:
           clsx(
             getPluginNodeClass(plugin?.node.type),
@@ -85,8 +100,8 @@ export const getRenderNodeProps = ({
 
   const pluginProps = getPluginNodeProps({
     attributes: nodeAttributes,
-    plugin: plugin as any,
-    props: newProps as any,
+    plugin,
+    props: newProps,
   });
 
   newProps = {
@@ -106,9 +121,9 @@ export const getRenderNodeProps = ({
     newProps = pipeInjectNodeProps(
       editor,
       newProps,
-      (node) => editor.read.nodes.path(node)!,
+      (node) => editor.read.nodes.path(node),
       readOnly
-    ) as PlateHTMLProps;
+    );
   }
 
   if (

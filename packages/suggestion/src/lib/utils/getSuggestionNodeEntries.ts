@@ -1,5 +1,5 @@
 import type { BaseEditor } from '@platejs/core';
-import type { EditorNodesOptions, Node } from '@platejs/plite';
+import { type EditorNodesOptions, type Node, NodeApi } from '@platejs/plite';
 import type { TSuggestionText } from '@platejs/utils';
 
 import { getSuggestionKey } from './getSuggestionKeys';
@@ -14,5 +14,5 @@ export const getSuggestionNodeEntries = <E extends BaseEditor>(
     ...options,
     match: (node, path) =>
       !!(node as Record<string, unknown>)[getSuggestionKey(suggestionId)] &&
-      (!options.match || options.match(node, path)),
+      (!options.match || NodeApi.matches(node, options.match, path)),
   });

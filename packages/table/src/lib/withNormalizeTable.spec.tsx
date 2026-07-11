@@ -27,7 +27,7 @@ describe('withNormalizeTable', () => {
         ) as any as Value,
       });
 
-      editor.tf.normalize({ force: true });
+      editor.update.normalize({ force: true });
 
       expect(editor.children).toEqual([]);
     });
@@ -77,7 +77,7 @@ describe('withNormalizeTable', () => {
         value: input,
       });
 
-      editor.tf.normalize({
+      editor.update.normalize({
         force: true,
       });
       expect(editor.children).toMatchObject(output);
@@ -164,7 +164,7 @@ describe('withNormalizeTable', () => {
         value: input,
       });
 
-      editor.tf.normalize({
+      editor.update.normalize({
         force: true,
       });
       expect(editor.children).toMatchObject(output);
@@ -251,7 +251,7 @@ describe('withNormalizeTable', () => {
         value: input,
       });
 
-      editor.tf.normalize({
+      editor.update.normalize({
         force: true,
       });
       expect(editor.children).toMatchObject(output);
@@ -340,7 +340,7 @@ describe('withNormalizeTable', () => {
         value: input,
       });
 
-      editor.tf.normalize({
+      editor.update.normalize({
         force: true,
       });
       expect(editor.children).toMatchObject(output);
@@ -373,7 +373,7 @@ describe('withNormalizeTable', () => {
         ) as any as Value,
       });
 
-      editor.tf.normalize({ force: true });
+      editor.update.normalize({ force: true });
 
       expect(editor.children).toMatchObject(
         (
@@ -441,7 +441,7 @@ describe('withNormalizeTable', () => {
         value: input,
       });
 
-      editor.tf.normalize({
+      editor.update.normalize({
         force: true,
       });
       expect(editor.children).toMatchObject(output);

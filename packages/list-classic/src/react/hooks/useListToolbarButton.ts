@@ -9,7 +9,7 @@ export const useListToolbarButtonState = ({
   const pressed = useEditorSelector(
     (editor) =>
       !!editor.selection &&
-      editor.api.some({ match: { type: editor.getType(nodeType) } }),
+      editor.read.nodes.some({ match: { type: editor.getType(nodeType) } }),
     [nodeType]
   );
 

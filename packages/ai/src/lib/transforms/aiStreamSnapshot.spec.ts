@@ -92,8 +92,16 @@ const createEditor = () => {
       }),
       removeNodes: mock((options: any = {}) => {
         if (options.match) {
+          const matches =
+            typeof options.match === 'function'
+              ? options.match
+              : (node: Record<string, unknown>) =>
+                  Object.entries(options.match).every(
+                    ([key, value]) => node[key] === value
+                  );
+
           editor.children = editor.children.filter(
-            (node: any) => !options.match(node)
+            (node: any) => !matches(node)
           );
 
           return;

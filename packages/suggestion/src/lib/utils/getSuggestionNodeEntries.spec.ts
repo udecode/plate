@@ -1,4 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
+import { TextApi } from '@platejs/plite';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionNodeEntries } from './getSuggestionNodeEntries';
@@ -61,7 +62,7 @@ describe('getSuggestionNodeEntries', () => {
     expect(
       Array.from(
         getSuggestionNodeEntries(editor, '1', {
-          match: (n: any) => n.text === 'new',
+          match: (node) => TextApi.isText(node) && node.text === 'new',
         })
       ).map(([, path]) => path)
     ).toEqual([[1, 0]]);

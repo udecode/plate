@@ -17,7 +17,7 @@ describe('getCaretPosition', () => {
 
   it('uses the trailing edge for forward expanded selections', () => {
     expect(
-      getCaretPosition(rects as any, {
+      getCaretPosition(rects, {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 2, path: [0, 1] },
       })
@@ -30,7 +30,7 @@ describe('getCaretPosition', () => {
 
   it('uses the leading edge for backward or collapsed selections', () => {
     expect(
-      getCaretPosition(rects as any, {
+      getCaretPosition(rects, {
         anchor: { offset: 2, path: [0, 1] },
         focus: { offset: 0, path: [0, 0] },
       })
@@ -41,7 +41,7 @@ describe('getCaretPosition', () => {
     });
 
     expect(
-      getCaretPosition(rects as any, {
+      getCaretPosition(rects, {
         anchor: { offset: 0, path: [0, 1] },
         focus: { offset: 0, path: [0, 1] },
       })

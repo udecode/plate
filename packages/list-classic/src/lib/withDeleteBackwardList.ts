@@ -30,7 +30,7 @@ export const withDeleteBackwardList: OverrideEditor<ListConfig> = ({
           if (
             editor.api.isAt({
               start: true,
-              match: (node) => node.type === editor.getType(KEYS.li),
+              match: { type: editor.getType(KEYS.li) },
             })
           ) {
             editor.tf.withoutNormalizing(() => {
@@ -70,7 +70,7 @@ export const withDeleteBackwardList: OverrideEditor<ListConfig> = ({
                 const _licNodes = editor.api.nodes<TElement>({
                   at: listItem[1],
                   mode: 'lowest',
-                  match: (node) => node.type === licType,
+                  match: { type: licType },
                 });
                 currentLic = [..._licNodes][0];
                 hasMultipleChildren = currentLic[0].children.length > 1;

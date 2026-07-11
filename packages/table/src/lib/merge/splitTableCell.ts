@@ -71,8 +71,12 @@ export const splitTableCell = (editor: SlateEditor) => {
         const diff = Math.abs(cellCol - targetCol);
 
         if (diff < smallestDiff) {
+          const cellPath = editor.read.nodes.path(cellElement);
+
+          if (!cellPath) return;
+
           smallestDiff = diff;
-          closestColPath = editor.api.findPath(cellElement)!;
+          closestColPath = cellPath;
           isDirectionLeft = cellCol < targetCol;
         }
       });

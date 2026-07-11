@@ -22,7 +22,7 @@ describe('insert code block', () => {
           </hp>
           <hp>line 3</hp>
         </editor>
-      ) as any as TestEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -35,7 +35,7 @@ describe('insert code block', () => {
           </hcodeblock>
           <hp>line 3</hp>
         </editor>
-      ) as any;
+      ) as TestEditor;
 
       const editor = createBaseEditor({
         plugins: [CodeBlockPlugin],
@@ -62,7 +62,7 @@ describe('insert code block', () => {
           </hp>
           <hp>line 3</hp>
         </editor>
-      ) as any as TestEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -76,7 +76,7 @@ describe('insert code block', () => {
           </hcodeblock>
           <hp>line 3</hp>
         </editor>
-      ) as any;
+      ) as TestEditor;
 
       const editor = createBaseEditor({
         plugins: [CodeBlockPlugin],
@@ -105,7 +105,7 @@ describe('insert code block', () => {
           </hp>
           <hp>line 3</hp>
         </editor>
-      ) as any as TestEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -118,7 +118,7 @@ describe('insert code block', () => {
           </hp>
           <hp>line 3</hp>
         </editor>
-      ) as any;
+      ) as TestEditor;
 
       const editor = createBaseEditor({
         plugins: [CodeBlockPlugin],
@@ -159,7 +159,7 @@ describe('insert code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as TestEditor;
+    ) as TestEditor;
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
       selection: input.selection,

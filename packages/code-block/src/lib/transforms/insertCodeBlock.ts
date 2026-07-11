@@ -1,43 +1,49 @@
-import type { InsertNodesOptions, SlateEditor, TElement } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type {
+  EditorUpdateTransaction,
+  Element,
+  NodeInsertNodesOptions,
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 /**
  * Insert a code block: set the node to code line and wrap it with a code block.
  * If the cursor is not at the block start, insert break before.
  */
 export const insertCodeBlock = (
-  editor: SlateEditor,
-  insertNodesOptions: Omit<InsertNodesOptions, 'match'> = {}
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  insertNodesOptions: Omit<NodeInsertNodesOptions<Element>, 'match'> = {}
 ) => {
-  if (!editor.selection || editor.api.isExpanded()) return;
+  const selection = editor.read.selection();
 
-  const matchCodeElements = (node: TElement) =>
-    node.type === KEYS.codeBlock || node.type === KEYS.codeLine;
+  if (!selection || editor.read.selection.isExpanded()) return;
 
+  const codeBlockType = editor.getType(KEYS.codeBlock);
+  const codeLineType = editor.getType(KEYS.codeLine);
   if (
-    editor.api.some({
-      match: matchCodeElements,
+    editor.read.nodes.some({
+      match: { type: [codeBlockType, codeLineType] },
     })
   ) {
     return;
   }
-  if (!editor.api.isAt({ start: true })) {
-    editor.tf.insertBreak();
+  if (!editor.read.selection.isAtBlockStart()) {
+    tx.break.insert();
   }
 
-  editor.tf.setNodes(
+  tx.nodes.set(
     {
       children: [{ text: '' }],
-      type: KEYS.codeLine,
+      type: codeLineType,
     },
     insertNodesOptions
   );
 
-  editor.tf.wrapNodes<TElement>(
+  tx.nodes.wrap(
     {
       children: [],
-      type: KEYS.codeBlock,
+      type: codeBlockType,
     },
     insertNodesOptions
   );

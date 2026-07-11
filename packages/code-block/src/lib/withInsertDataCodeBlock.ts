@@ -1,90 +1,91 @@
-import type { OverrideEditor, TElement } from 'platejs';
+import type { ExtendPlateEditorExtension } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
-import { KEYS } from 'platejs';
+import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
 
-export const withInsertDataCodeBlock: OverrideEditor = ({
-  editor,
-  tf: { insertData },
-  type: codeBlockType,
-}) => ({
-  transforms: {
-    insertData(data) {
+const createCodeLine = (type: string, text: string) => ({
+  children: [{ text }],
+  type,
+});
+
+export const withInsertDataCodeBlock: ExtendPlateEditorExtension<
+  CodeBlockConfig
+> = ({ editor, type: codeBlockType }) => ({
+  clipboard: {
+    insertData(data, { next }) {
       const text = data.getData('text/plain');
       const vscodeDataString = data.getData('vscode-editor-data');
       const codeLineType = editor.getType(KEYS.codeLine);
+      const isInCodeBlock = Boolean(
+        editor.read.nodes.block({
+          match: { type: [codeBlockType, codeLineType] },
+        })
+      );
 
-      // Handle VSCode paste with language
       if (vscodeDataString) {
         try {
-          const vscodeData = JSON.parse(vscodeDataString);
+          const vscodeData: unknown = JSON.parse(vscodeDataString);
+          const language =
+            typeof vscodeData === 'object' &&
+            vscodeData !== null &&
+            'mode' in vscodeData &&
+            typeof vscodeData.mode === 'string'
+              ? vscodeData.mode
+              : undefined;
           const lines = text.split('\n');
 
-          // Check if we're in a code block
-          const [blockAbove] = editor.api.block<TElement>() ?? [];
-          const isInCodeBlock =
-            blockAbove &&
-            [codeBlockType, codeLineType].includes(blockAbove?.type);
+          editor.update((tx) => {
+            if (isInCodeBlock) {
+              if (lines[0]) {
+                tx.text.insert(lines[0]);
+              }
 
-          if (isInCodeBlock) {
-            // If in code block, insert first line as text at cursor
-            if (lines[0]) {
-              editor.tf.insertText(lines[0]);
+              if (lines.length > 1) {
+                tx.nodes.insert(
+                  lines
+                    .slice(1)
+                    .map((line) => createCodeLine(codeLineType, line))
+                );
+              }
+
+              return;
             }
 
-            // Insert remaining lines as new code lines
-            if (lines.length > 1) {
-              const nodes = lines.slice(1).map((line) => ({
-                children: [{ text: line }],
-                type: codeLineType,
-              }));
-              editor.tf.insertNodes(nodes);
-            }
-          } else {
-            // Create new code block
-            const node = {
-              children: lines.map((line) => ({
-                children: [{ text: line }],
-                type: codeLineType,
-              })),
-              lang: vscodeData?.mode,
-              type: codeBlockType,
-            };
+            tx.nodes.insert(
+              {
+                children: lines.map((line) =>
+                  createCodeLine(codeLineType, line)
+                ),
+                lang: language,
+                type: codeBlockType,
+              },
+              { select: true }
+            );
+          });
 
-            editor.tf.insertNodes(node, {
-              select: true,
-            });
-          }
-
-          return;
+          return true;
         } catch (_error) {}
       }
 
-      // Handle plain text paste into code block only if there are line breaks
-      const [blockAbove] = editor.api.block<TElement>() ?? [];
-      if (
-        blockAbove &&
-        [codeBlockType, codeLineType].includes(blockAbove?.type) &&
-        text?.includes('\n')
-      ) {
+      if (isInCodeBlock && text?.includes('\n')) {
         const lines = text.split('\n');
 
-        // Insert first line as text at cursor
-        if (lines[0]) {
-          editor.tf.insertText(lines[0]);
-        }
+        editor.update((tx) => {
+          if (lines[0]) {
+            tx.text.insert(lines[0]);
+          }
 
-        // Insert remaining lines as new code lines
-        if (lines.length > 1) {
-          const nodes = lines.slice(1).map((line) => ({
-            children: [{ text: line }],
-            type: codeLineType,
-          }));
-          editor.tf.insertNodes(nodes);
-        }
-        return;
+          if (lines.length > 1) {
+            tx.nodes.insert(
+              lines.slice(1).map((line) => createCodeLine(codeLineType, line))
+            );
+          }
+        });
+
+        return true;
       }
 
-      insertData(data);
+      return next(data);
     },
   },
 });

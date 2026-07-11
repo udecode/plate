@@ -30,7 +30,7 @@ export const useTodoListElement = (
       onCheckedChange: (value: boolean) => {
         if (readOnly) return;
 
-        const path = editor.api.findPath(element);
+        const path = editor.read.nodes.path(element);
 
         if (!path) return;
 

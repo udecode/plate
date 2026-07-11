@@ -21,9 +21,7 @@ describe('MultiSelectPlugin', () => {
       ],
     });
 
-    editor.update((tx) => {
-      tx.normalize({ force: true });
-    });
+    editor.update.normalize({ force: true });
 
     const children = editor.read((state) => state.value.root())[0]
       .children as Record<string, unknown>[];

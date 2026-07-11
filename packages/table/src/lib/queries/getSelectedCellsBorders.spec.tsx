@@ -168,7 +168,7 @@ describe('getSelectedCellsBorders', () => {
       } as unknown as TElement;
 
       editor.api.block = mock().mockReturnValue([cell]) as any;
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
 
       // Mock adjacent cells with borders
       getTopTableCellMock.mockReturnValue([cellAbove]);
@@ -204,7 +204,7 @@ describe('getSelectedCellsBorders', () => {
           top: { size: 0 },
         },
       } as unknown as TElement;
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
 
       // Mock adjacent cells to return null (no adjacent cells)
       getTopTableCellMock.mockReturnValue(null);
@@ -222,7 +222,7 @@ describe('getSelectedCellsBorders', () => {
         id: 'c22',
         borders: { bottom: { size: 0 }, top: { size: 1 } },
       } as unknown as TElement;
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
 
       // Add mocks
       getTopTableCellMock.mockReturnValue(null);
@@ -245,7 +245,7 @@ describe('getSelectedCellsBorders', () => {
         borders: { bottom: { size: 1 } },
       } as unknown as TElement;
 
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
       getTopTableCellMock.mockReturnValue([cellAbove]);
 
       const result = getSelectedCellsBorders(editor, [cell]);
@@ -268,7 +268,7 @@ describe('getSelectedCellsBorders', () => {
         borders: { right: { size: 1 } },
       } as unknown as TElement;
 
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
       getTopTableCellMock.mockReturnValue(null);
       getLeftTableCellMock.mockReturnValue([cellLeft]);
 
@@ -281,7 +281,7 @@ describe('getSelectedCellsBorders', () => {
         id: 'c22',
         borders: { bottom: { size: 1 }, top: { size: 1 } },
       } as unknown as TElement;
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
 
       const result = getSelectedCellsBorders(editor, [cell], {
         select: { none: false, outer: true, side: true },
@@ -302,7 +302,7 @@ describe('getSelectedCellsBorders', () => {
           top: { size: 1 },
         },
       } as unknown as TElement;
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
 
       // First row/col cell doesn't need adjacent cells
       getTopTableCellMock.mockReturnValue(null);
@@ -325,7 +325,7 @@ describe('getSelectedCellsBorders', () => {
           top: { size: 1 },
         },
       } as unknown as TElement;
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
 
       // First row/col cell doesn't need adjacent cells
       getTopTableCellMock.mockReturnValue(null);
@@ -355,7 +355,7 @@ describe('getSelectedCellsBorders', () => {
         borders: { right: { size: 1 } },
       } as unknown as TElement;
 
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
       getTopTableCellMock.mockReturnValue([cellAbove]);
       getLeftTableCellMock.mockReturnValue([cellLeft]);
 
@@ -376,7 +376,7 @@ describe('getSelectedCellsBorders', () => {
           top: { size: 0 },
         },
       } as unknown as TElement;
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
 
       const result = getSelectedCellsBorders(editor, [cell], {
         select: { none: true, outer: false, side: true },
@@ -397,7 +397,7 @@ describe('getSelectedCellsBorders', () => {
           top: { size: 0 },
         },
       } as unknown as TElement;
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
 
       const cellAbove = {
         borders: { bottom: { size: 0 } },
@@ -439,7 +439,7 @@ describe('getSelectedCellsBorders', () => {
           top: { size: 1 },
         },
       } as unknown as TElement;
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
 
       const result = getSelectedCellsBorders(editor, [cell]);
       const topResult = isSelectedCellBorder(editor, [cell], 'top');
@@ -472,7 +472,7 @@ describe('getSelectedCellsBorders', () => {
         borders: { right: { size: 0 } },
       } as unknown as TElement;
 
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
       getTopTableCellMock.mockReturnValue([cellAbove]);
       getLeftTableCellMock.mockReturnValue([cellLeft]);
 
@@ -500,7 +500,7 @@ describe('getSelectedCellsBorders', () => {
           top: { size: 0 },
         },
       } as unknown as TElement;
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
 
       const result = getSelectedCellsBorders(editor, [cell], {
         select: { none: true, outer: true, side: false },
@@ -524,7 +524,7 @@ describe('getSelectedCellsBorders', () => {
           right: { size: 1 },
         },
       } as unknown as TElement;
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
       getTopTableCellMock.mockReturnValue(null);
       getLeftTableCellMock.mockReturnValue(null);
 
@@ -542,7 +542,7 @@ describe('getSelectedCellsBorders', () => {
         borders: { right: { size: 1 } },
       } as unknown as TElement;
 
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
 
       expect(isSelectedCellBorder(editor, [cell1, cell2], 'right')).toBe(true);
     });
@@ -558,7 +558,7 @@ describe('getSelectedCellsBorders', () => {
         id: 'c12',
         borders: { right: { size: 0 }, top: { size: 1 } },
       } as unknown as TElement;
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
 
       const result = getSelectedCellsBorders(editor, [cell1, cell2]);
       const outerResult = isSelectedCellBordersOuter(editor, [cell1, cell2]);
@@ -577,7 +577,7 @@ describe('getSelectedCellsBorders', () => {
         id: 'c21',
         borders: { bottom: { size: 0 }, right: { size: 1 } },
       } as unknown as TElement;
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
 
       const result = getSelectedCellsBorders(editor, [cell1, cell2]);
       const rightResult = isSelectedCellBorder(editor, [cell1, cell2], 'right');
@@ -606,7 +606,7 @@ describe('getSelectedCellsBorders', () => {
         id: 'c11',
         // No borders property at all
       } as unknown as TElement;
-      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      editor.read.nodes.path = mock().mockReturnValue([0]) as any;
 
       const result = getSelectedCellsBorders(editor, [cell]);
       const noneResult = isSelectedCellBordersNone(editor, [cell]);

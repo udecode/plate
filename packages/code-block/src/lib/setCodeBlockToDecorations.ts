@@ -1,39 +1,58 @@
+import type { createLowlight } from 'lowlight';
+
+import type { BaseEditor } from '@platejs/core';
 import {
   type DecoratedRange,
+  type Element,
+  ElementApi,
   type NodeEntry,
-  type SlateEditor,
-  type TCodeBlockElement,
-  type TElement,
-  KEYS,
   NodeApi,
-} from 'platejs';
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 import { ensureStablePythonGrammar } from './ensureStablePythonGrammar';
 
-// Cache for storing decorations per code line element
-export const CODE_LINE_TO_DECORATIONS: WeakMap<TElement, DecoratedRange[]> =
-  new WeakMap();
+type CodeBlockDecoration = DecoratedRange & {
+  className: string;
+  [KEYS.codeSyntax]: true;
+};
 
-// Helper function to get highlight nodes from Lowlight result
-function getHighlightNodes(result: any) {
-  return result.value || result.children || [];
-}
+type HighlightResult = ReturnType<
+  ReturnType<typeof createLowlight>['highlight']
+>;
+
+type HighlightNode = HighlightResult['children'][number];
+
+// Cache for storing decorations per code line element
+export const CODE_LINE_TO_DECORATIONS: WeakMap<Element, DecoratedRange[]> =
+  new WeakMap();
 
 // Helper function to parse nodes from Lowlight's hast tree
 function parseNodes(
-  nodes: any[],
+  nodes: HighlightNode[],
   className: string[] = []
 ): { classes: string[]; text: string }[] {
   return nodes.flatMap((node) => {
-    const classes = [
-      ...className,
-      ...(node.properties ? node.properties.className : []),
-    ];
-    if (node.children) {
+    if (node.type === 'element') {
+      const nodeClassName = node.properties.className;
+      const classes = [
+        ...className,
+        ...(Array.isArray(nodeClassName)
+          ? nodeClassName.map(String)
+          : typeof nodeClassName === 'string'
+            ? [nodeClassName]
+            : []),
+      ];
+
       return parseNodes(node.children, classes);
     }
-    return { classes, text: node.value };
+
+    if (node.type === 'text') {
+      return [{ classes: className, text: node.value }];
+    }
+
+    return [];
   });
 }
 
@@ -55,7 +74,7 @@ function normalizeTokens(tokens: { classes: string[]; text: string }[]) {
       // Create a new line unless we're on the last line
       if (i < tokenLines.length - 1) {
         lines.push([]);
-        currentLine = lines.at(-1) as any;
+        currentLine = lines.at(-1)!;
       }
     }
   }
@@ -65,25 +84,26 @@ function normalizeTokens(tokens: { classes: string[]; text: string }[]) {
 
 // Helper function to compute decorations for a code block
 export function codeBlockToDecorations(
-  editor: SlateEditor,
-  [block, blockPath]: NodeEntry<TCodeBlockElement>
-): Map<TElement, DecoratedRange[]> {
-  const { defaultLanguage, ...options } =
-    editor.plugin(BaseCodeBlockPlugin).getOptions();
+  editor: BaseEditor,
+  [block, blockPath]: NodeEntry<Element>
+): Map<Element, DecoratedRange[]> {
+  const { defaultLanguage, ...options } = editor
+    .plugin(BaseCodeBlockPlugin)
+    .getOptions();
   const lowlight = options.lowlight!;
 
   // Get all code lines and combine their text
   const text = block.children.map((line) => NodeApi.string(line)).join('\n');
-  const language = block.lang;
+  const language = typeof block.lang === 'string' ? block.lang : undefined;
   const effectiveLanguage = language || defaultLanguage;
 
   ensureStablePythonGrammar(lowlight, effectiveLanguage);
 
-  let highlighted: any;
+  let highlighted: HighlightResult;
   try {
     // Skip highlighting for plaintext or when no language is specified
     if (!effectiveLanguage || effectiveLanguage === 'plaintext') {
-      highlighted = { value: [] }; // Empty result for plaintext
+      highlighted = { children: [], type: 'root' };
     } else if (effectiveLanguage === 'auto') {
       highlighted = lowlight.highlightAuto(text);
     } else {
@@ -100,34 +120,34 @@ export function codeBlockToDecorations(
         'CODE_HIGHLIGHT',
         error
       );
-      highlighted = { value: [] }; // Empty result on error
+      highlighted = { children: [], type: 'root' };
     } else {
       editor.api.debug.warn(
         `Language "${effectiveLanguage}" is not registered. Falling back to plaintext`
       );
-      highlighted = { value: [] };
+      highlighted = { children: [], type: 'root' };
     }
   }
 
   // Parse and normalize tokens
-  const tokens = parseNodes(getHighlightNodes(highlighted));
+  const tokens = parseNodes(highlighted.children);
   const normalizedTokens = normalizeTokens(tokens);
-  const blockChildren = block.children as TElement[];
-
   // Create decorations map
-  const nodeToDecorations = new Map<TElement, DecoratedRange[]>();
+  const nodeToDecorations = new Map<Element, DecoratedRange[]>();
 
   // Safety check: don't process more lines than we have children
-  const numLines = Math.min(normalizedTokens.length, blockChildren.length);
+  const numLines = Math.min(normalizedTokens.length, block.children.length);
 
   // Process each line's tokens
   for (let index = 0; index < numLines; index++) {
     const lineTokens = normalizedTokens[index];
-    const element = blockChildren[index];
+    const element = block.children[index];
 
-    if (!nodeToDecorations.has(element)) {
-      nodeToDecorations.set(element, []);
-    }
+    if (!ElementApi.isElement(element)) continue;
+
+    const lineDecorations = nodeToDecorations.get(element) ?? [];
+
+    nodeToDecorations.set(element, lineDecorations);
 
     let start = 0;
     for (const token of lineTokens) {
@@ -136,7 +156,7 @@ export function codeBlockToDecorations(
 
       const end = start + length;
 
-      const decoration: DecoratedRange = {
+      const decoration: CodeBlockDecoration = {
         anchor: {
           offset: start,
           path: [...blockPath, index, 0],
@@ -147,9 +167,9 @@ export function codeBlockToDecorations(
           path: [...blockPath, index, 0],
         },
         [KEYS.codeSyntax]: true,
-      } as any;
+      };
 
-      nodeToDecorations.get(element)!.push(decoration);
+      lineDecorations.push(decoration);
       start = end;
     }
   }
@@ -158,8 +178,8 @@ export function codeBlockToDecorations(
 }
 
 export function setCodeBlockToDecorations(
-  editor: SlateEditor,
-  [block, blockPath]: NodeEntry<TCodeBlockElement>
+  editor: BaseEditor,
+  [block, blockPath]: NodeEntry<Element>
 ) {
   const decorations = codeBlockToDecorations(editor, [block, blockPath]);
 
@@ -169,8 +189,10 @@ export function setCodeBlockToDecorations(
   }
 }
 
-export function resetCodeBlockDecorations(codeBlock: TCodeBlockElement) {
+export function resetCodeBlockDecorations(codeBlock: Element) {
   codeBlock.children.forEach((line) => {
-    CODE_LINE_TO_DECORATIONS.delete(line as TElement);
+    if (ElementApi.isElement(line)) {
+      CODE_LINE_TO_DECORATIONS.delete(line);
+    }
   });
 }

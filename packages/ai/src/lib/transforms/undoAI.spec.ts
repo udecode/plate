@@ -6,8 +6,8 @@ import { undoAI } from './undoAI';
 describe('undoAI', () => {
   it('does nothing when the latest undo batch is not tagged as ai', () => {
     const editor = {
-      api: { some: mock(() => true) },
       history: { redos: { pop: mock(() => {}) }, undos: [{}] },
+      read: { nodes: { some: mock(() => true) } },
       undo: mock(() => {}),
     } as any;
 
@@ -19,14 +19,14 @@ describe('undoAI', () => {
 
   it('does nothing when there is no ai content left in the editor', () => {
     const editor = {
-      api: { some: mock(() => false) },
       history: { redos: { pop: mock(() => {}) }, undos: [{ ai: true }] },
+      read: { nodes: { some: mock(() => false) } },
       undo: mock(() => {}),
     } as any;
 
     undoAI(editor);
 
-    expect(editor.api.some).toHaveBeenCalledTimes(2);
+    expect(editor.read.nodes.some).toHaveBeenCalledTimes(2);
     expect(editor.undo).not.toHaveBeenCalled();
     expect(editor.history.redos.pop).not.toHaveBeenCalled();
   });
@@ -37,8 +37,8 @@ describe('undoAI', () => {
         match({ [getTransientSuggestionKey()]: true })
     );
     const editor = {
-      api: { some },
       history: { redos: { pop: mock(() => {}) }, undos: [{ ai: true }] },
+      read: { nodes: { some } },
       undo: mock(() => {}),
     } as any;
 
@@ -51,7 +51,6 @@ describe('undoAI', () => {
 
   it('cancels active preview before touching ai history', () => {
     const editor = {
-      api: { some: mock(() => true) },
       children: [
         { children: [{ text: 'start' }], type: 'p' },
         { children: [{ text: 'untouched' }], type: 'p' },
@@ -61,6 +60,7 @@ describe('undoAI', () => {
         node: { type: key },
       }),
       history: { redos: { pop: mock(() => {}) }, undos: [{ ai: true }] },
+      read: { nodes: { some: mock(() => true) } },
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
@@ -78,8 +78,16 @@ describe('undoAI', () => {
         }),
         removeNodes: mock((options: any = {}) => {
           if (options.match) {
+            const matches =
+              typeof options.match === 'function'
+                ? options.match
+                : (node: Record<string, unknown>) =>
+                    Object.entries(options.match).every(
+                      ([key, value]) => node[key] === value
+                    );
+
             editor.children = editor.children.filter(
-              (node: any) => !options.match(node)
+              (node: any) => !matches(node)
             );
 
             return;

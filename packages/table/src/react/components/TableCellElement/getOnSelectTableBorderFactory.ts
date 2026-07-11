@@ -47,7 +47,7 @@ const getSelectedCellBorderTargets = (
   cells: TTableCellElement[]
 ): SelectedCellBorderTarget[] =>
   cells.map((cell) => {
-    const path = editor.api.findPath(cell) ?? null;
+    const path = editor.read.nodes.path(cell) ?? null;
     const { col, row } = getCellIndices(editor, cell);
 
     return {

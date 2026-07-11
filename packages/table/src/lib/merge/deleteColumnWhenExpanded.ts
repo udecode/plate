@@ -23,12 +23,12 @@ export const deleteColumnWhenExpanded = (
 
   const firstSelectionRow = editor.api.above({
     at: start,
-    match: (n) => n.type === KEYS.tr,
+    match: { type: KEYS.tr },
   });
 
   const lastSelectionRow = editor.api.above({
     at: end,
-    match: (n) => n.type === KEYS.tr,
+    match: { type: KEYS.tr },
   });
 
   if (!firstSelectionRow || !lastSelectionRow) return;

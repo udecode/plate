@@ -33,7 +33,7 @@ describe('pluginInjectNodeProps', () => {
             align: 'center',
             children: [{ text: 'hello' }],
             type: 'p',
-          } as any,
+          },
         },
         () => [0]
       )
@@ -67,7 +67,7 @@ describe('pluginInjectNodeProps', () => {
       pluginInjectNodeProps(
         editor,
         editor.getPlugin(BoldPlugin),
-        { text: { bold: true, text: 'hello' } as any },
+        { text: { bold: true, text: 'hello' } },
         () => [0]
       )
     ).toBeUndefined();
@@ -105,7 +105,7 @@ describe('pluginInjectNodeProps', () => {
             children: [{ text: 'hello' }],
             tone: 'red',
             type: 'p',
-          } as any,
+          },
         },
         () => [0]
       )
@@ -136,7 +136,7 @@ describe('pluginInjectNodeProps', () => {
       pluginInjectNodeProps(
         editor,
         editor.getPlugin(QueryPlugin),
-        { text: { text: 'hello', tone: 'red' } as any },
+        { text: { text: 'hello', tone: 'red' } },
         () => [0]
       )
     ).toBeUndefined();
@@ -178,7 +178,7 @@ describe('pluginInjectNodeProps', () => {
       pluginInjectNodeProps(
         editor,
         editor.getPlugin(SilentPlugin),
-        { text: { bold: false, text: 'hello' } as any },
+        { text: { bold: false, text: 'hello' } },
         () => [0]
       )
     ).toBeUndefined();
@@ -186,7 +186,7 @@ describe('pluginInjectNodeProps', () => {
       pluginInjectNodeProps(
         editor,
         editor.getPlugin(ForcedPlugin),
-        { text: { bold: false, text: 'hello' } as any },
+        { text: { bold: false, text: 'hello' } },
         () => [0]
       )
     ).toEqual({
@@ -223,7 +223,7 @@ describe('pluginInjectNodeProps', () => {
       pluginInjectNodeProps(
         editor,
         editor.getPlugin(TonePlugin),
-        { text: { text: 'hello', tone: 'red' } as any },
+        { text: { text: 'hello', tone: 'red' } },
         () => [0]
       )
     ).toEqual({
@@ -277,9 +277,9 @@ describe('pluginInjectNodeProps', () => {
             children: [{ text: 'hello' }],
             listStyleType: 'disc',
             type: 'p',
-          } as any,
+          },
         },
-        getPath as any
+        getPath
       )
     ).toEqual({
       className: 'plite-listStyleType-disc',
@@ -310,10 +310,37 @@ describe('pluginInjectNodeProps', () => {
     pluginInjectNodeProps(
       editor,
       editor.getPlugin(PathlessPlugin),
-      { text: { text: 'hello' } as any },
+      { text: { text: 'hello' } },
       getPath
     );
 
     expect(getPath).not.toHaveBeenCalled();
+  });
+
+  it('skips path-based injection when the live node no longer resolves', () => {
+    const transformProps = mock(({ props }) => props);
+    const PathPlugin = createBasePlugin({
+      inject: {
+        excludeBelowPlugins: ['quote'],
+        nodeProps: {
+          nodeKey: 'tone',
+          transformProps,
+        },
+      },
+      key: 'path',
+    });
+    const editor = createBaseEditor({ plugins: [PathPlugin] });
+
+    expect(
+      pluginInjectNodeProps(
+        editor,
+        editor.getPlugin(PathPlugin),
+        { text: { text: 'hello', tone: 'red' } },
+        () => undefined
+      )
+    ).toBeUndefined();
+
+    expect(transformProps).toHaveBeenCalledTimes(1);
+    expect(transformProps.mock.calls[0]?.[0].props).toEqual({});
   });
 });

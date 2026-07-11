@@ -1,24 +1,15 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
-
-import { jsxt } from '@platejs/test-utils';
-import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
-import { CODE_LINE_TO_DECORATIONS } from './setCodeBlockToDecorations';
 
 jsxt;
 
-const createEditor = ({
-  input,
-  plugins = [BaseParagraphPlugin, BaseCodeBlockPlugin],
-}: {
-  input: SlateEditor;
-  plugins?: any[];
-}) =>
-  createSlateEditor({
-    plugins,
+const createEditor = ({ input }: { input: TestEditor }) =>
+  createBaseEditor({
+    plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
     selection: input.selection,
     value: input.children,
   });
@@ -36,7 +27,7 @@ describe('insert break', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -49,13 +40,13 @@ describe('insert break', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createEditor({ input });
 
-      editor.tf.insertBreak();
+      editor.update.break.insert();
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read.children()).toEqual(output.children);
     });
 
     it('replaces an expanded selection with a code-local line split', () => {
@@ -71,7 +62,7 @@ describe('insert break', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -83,14 +74,47 @@ describe('insert break', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createEditor({ input });
 
-      editor.tf.insertBreak();
+      editor.update.break.insert();
 
-      expect(editor.children).toEqual(output.children);
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.children()).toEqual(output.children);
+      expect(editor.read.selection()).toEqual(output.selection);
+    });
+
+    it('keeps leading whitespace when splitting inside indentation', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            <hcodeline>
+              {'  '}
+              <cursor />
+              {'  '}before
+            </hcodeline>
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const output = (
+        <editor>
+          <hcodeblock>
+            <hcodeline>{'      '}</hcodeline>
+            <hcodeline>
+              <cursor />
+              {'  '}before
+            </hcodeline>
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createEditor({ input });
+
+      editor.update.break.insert();
+
+      expect(editor.read.children()).toEqual(output.children);
+      expect(editor.read.selection()).toEqual(output.selection);
     });
   });
 });
@@ -107,7 +131,7 @@ describe('resetBlock', () => {
           <hcodeline>bb</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -117,13 +141,13 @@ describe('resetBlock', () => {
         </hp>
         <hp>bb</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createEditor({ input });
 
-    editor.tf.resetBlock();
+    editor.update.code_block.resetBlock();
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 });
 
@@ -138,14 +162,14 @@ describe('deleteBackward', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createEditor({ input });
 
-    editor.tf.deleteBackward();
+    editor.update.text.deleteBackward();
 
-    expect(editor.children).toEqual(input.children);
-    expect(editor.selection).toEqual(input.selection);
+    expect(editor.read.children()).toEqual(input.children);
+    expect(editor.read.selection()).toEqual(input.selection);
   });
 
   it('merges an empty non-first code line into the previous line', () => {
@@ -158,7 +182,7 @@ describe('deleteBackward', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -169,14 +193,14 @@ describe('deleteBackward', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createEditor({ input });
 
-    editor.tf.deleteBackward();
+    editor.update.text.deleteBackward();
 
-    expect(editor.children).toEqual(output.children);
-    expect(editor.selection).toEqual(output.selection);
+    expect(editor.read.children()).toEqual(output.children);
+    expect(editor.read.selection()).toEqual(output.selection);
   });
 
   it('unwraps an empty code block to a plain paragraph', () => {
@@ -188,7 +212,7 @@ describe('deleteBackward', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -196,14 +220,14 @@ describe('deleteBackward', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createEditor({ input });
 
-    editor.tf.deleteBackward();
+    editor.update.text.deleteBackward();
 
-    expect(editor.children).toEqual(output.children);
-    expect(editor.selection).toEqual(output.selection);
+    expect(editor.read.children()).toEqual(output.children);
+    expect(editor.read.selection()).toEqual(output.selection);
   });
 });
 
@@ -222,16 +246,42 @@ describe('selectAll', () => {
           <hcodeline>after</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createEditor({ input });
 
-    editor.tf.selectAll();
+    editor.update.code_block.selectAll();
 
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 0] },
       focus: { offset: 5, path: [0, 1, 0] },
     });
+  });
+
+  it('falls through after the whole code block is selected', () => {
+    const input = (
+      <editor>
+        <hcodeblock>
+          <hcodeline>
+            <anchor />
+            before
+          </hcodeline>
+          <hcodeline>
+            after
+            <focus />
+          </hcodeline>
+        </hcodeblock>
+        <hp>outside</hp>
+      </editor>
+    ) as TestEditor;
+
+    const editor = createEditor({ input });
+
+    expect(editor.runtime.shortcuts['code_block.selectAll']?.keys).toBe(
+      'mod+a'
+    );
+    expect(editor.update.code_block.selectAll()).toBe(false);
+    expect(editor.read.selection()).toEqual(input.selection);
   });
 });
 
@@ -250,7 +300,7 @@ describe('tab', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -265,12 +315,12 @@ describe('tab', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createEditor({ input });
 
-    expect(editor.tf.tab({ reverse: false })).toBe(true);
-    expect(editor.children).toEqual(output.children);
+    expect(editor.update.code_block.tab({ reverse: false })).toBe(true);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('outdents every selected code line when reversed', () => {
@@ -287,7 +337,7 @@ describe('tab', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -296,142 +346,43 @@ describe('tab', () => {
           <hcodeline>bb</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createEditor({ input });
 
-    expect(editor.tf.tab({ reverse: true })).toBe(true);
-    expect(editor.children).toEqual(output.children);
+    expect(editor.update.code_block.tab({ reverse: true })).toBe(true);
+    expect(editor.read.children()).toEqual(output.children);
   });
-});
 
-describe('apply', () => {
-  it('clears cached decorations and redecorates when the code block language changes', () => {
+  it('inserts spaces at a collapsed cursor after code text', () => {
     const input = (
       <editor>
         <hcodeblock>
-          <hcodeline>aa</hcodeline>
+          <hcodeline>
+            aa
+            <cursor />
+            bb
+          </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
-    const lowlight = {
-      highlight: mock(() => ({ value: [] })),
-      highlightAuto: mock(() => ({ value: [] })),
-      listLanguages: mock(() => ['json']),
-    };
+    ) as TestEditor;
 
-    const editor = createEditor({
-      input,
-      plugins: [
-        BaseParagraphPlugin,
-        BaseCodeBlockPlugin.configure({
-          options: {
-            lowlight: lowlight as any,
-          },
-        }),
-      ],
-    });
-    const codeLine = editor.children[0].children[0] as any;
-    const redecorate = mock();
-
-    editor.api.redecorate = redecorate;
-
-    CODE_LINE_TO_DECORATIONS.set(codeLine, [
-      {
-        anchor: { offset: 0, path: [0, 0, 0] },
-        focus: { offset: 2, path: [0, 0, 0] },
-      },
-    ] as any);
-
-    editor.tf.setNodes({ lang: 'json' }, { at: [0] });
-
-    expect(CODE_LINE_TO_DECORATIONS.get(codeLine)).toEqual([]);
-    expect(redecorate).toHaveBeenCalledTimes(1);
-  });
-
-  it('redecorates when language changes to plaintext', () => {
-    const input = (
+    const output = (
       <editor>
-        <hcodeblock lang="javascript">
-          <hcodeline>aa</hcodeline>
+        <hcodeblock>
+          <hcodeline>
+            aa{'  '}
+            <cursor />
+            bb
+          </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
-    const lowlight = {
-      highlight: mock(() => ({ value: [] })),
-      highlightAuto: mock(() => ({ value: [] })),
-      listLanguages: mock(() => ['javascript']),
-    };
+    ) as TestEditor;
 
-    const editor = createEditor({
-      input,
-      plugins: [
-        BaseParagraphPlugin,
-        BaseCodeBlockPlugin.configure({
-          options: {
-            lowlight: lowlight as any,
-          },
-        }),
-      ],
-    });
-    const codeLine = editor.children[0].children[0] as any;
-    const redecorate = mock();
+    const editor = createEditor({ input });
 
-    editor.api.redecorate = redecorate;
-    CODE_LINE_TO_DECORATIONS.set(codeLine, [
-      {
-        anchor: { offset: 0, path: [0, 0, 0] },
-        className: 'token keyword',
-        focus: { offset: 2, path: [0, 0, 0] },
-      },
-    ] as any);
-
-    editor.tf.setNodes({ lang: 'plaintext' }, { at: [0] });
-
-    expect(CODE_LINE_TO_DECORATIONS.get(codeLine)).toEqual([]);
-    expect(redecorate).toHaveBeenCalledTimes(1);
-  });
-
-  it('does not redecorate for unrelated code block set_node changes', () => {
-    const input = (
-      <editor>
-        <hcodeblock lang="javascript">
-          <hcodeline>aa</hcodeline>
-        </hcodeblock>
-      </editor>
-    ) as any as SlateEditor;
-    const lowlight = {
-      highlight: mock(() => ({ value: [] })),
-      highlightAuto: mock(() => ({ value: [] })),
-      listLanguages: mock(() => ['javascript']),
-    };
-
-    const editor = createEditor({
-      input,
-      plugins: [
-        BaseParagraphPlugin,
-        BaseCodeBlockPlugin.configure({
-          options: {
-            lowlight: lowlight as any,
-          },
-        }),
-      ],
-    });
-    const codeLine = editor.children[0].children[0] as any;
-    const existingDecorations = [
-      {
-        anchor: { offset: 0, path: [0, 0, 0] },
-        className: 'token keyword',
-        focus: { offset: 2, path: [0, 0, 0] },
-      },
-    ] as any;
-    const redecorate = mock();
-
-    editor.api.redecorate = redecorate;
-    CODE_LINE_TO_DECORATIONS.set(codeLine, existingDecorations);
-
-    editor.tf.setNodes({ foo: 'bar' } as any, { at: [0] });
-
-    expect(redecorate).not.toHaveBeenCalled();
+    expect(editor.update.code_block.tab()).toBe(true);
+    expect(editor.read.children()).toEqual(output.children);
+    expect(editor.read.selection()).toEqual(output.selection);
   });
 });

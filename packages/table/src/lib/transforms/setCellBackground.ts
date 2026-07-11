@@ -15,7 +15,7 @@ export const setCellBackground = (
 
   if (hasSelectedCells) {
     selectedCells.forEach((cell) => {
-      const cellPath = editor.api.findPath(cell);
+      const cellPath = editor.read.nodes.path(cell);
 
       if (cellPath) {
         editor.tf.setNodes<TTableCellElement>(
@@ -35,7 +35,7 @@ export const setCellBackground = (
   })?.[0];
 
   if (currentCell) {
-    const cellPath = editor.api.findPath(currentCell);
+    const cellPath = editor.read.nodes.path(currentCell);
 
     if (cellPath) {
       editor.tf.setNodes<TTableCellElement>(

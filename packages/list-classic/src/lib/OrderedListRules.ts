@@ -5,7 +5,7 @@ import { createRuleFactory, KEYS } from 'platejs';
 import { toggleList } from './transforms';
 
 const isListInputBlocked = (editor: SlateEditor) =>
-  editor.api.some({
+  editor.read.nodes.some({
     match: {
       type: [editor.getType(KEYS.codeBlock)],
     },

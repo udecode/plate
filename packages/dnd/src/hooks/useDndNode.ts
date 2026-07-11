@@ -2,19 +2,17 @@ import { getEmptyImage, NativeTypes } from 'react-dnd-html5-backend';
 
 import type { ConnectDragSource, DropTargetMonitor } from 'react-dnd';
 
-import { type PlateEditor, useEditorRef } from 'platejs/react';
+import React from 'react';
+import { type PlateEditor, useEditorRef } from '@platejs/core/react';
 
 import type { DragItemNode } from '../types';
 
 import { DRAG_ITEM_BLOCK } from '../DndPlugin';
-import { canUseDomDnd, noopConnector } from '../utils/dndEnvironment';
 import { type UseDragNodeOptions, useDragNode } from './useDragNode';
 import { type UseDropNodeOptions, useDropNode } from './useDropNode';
 
 export type UseDndNodeOptions = Pick<UseDropNodeOptions, 'element'> &
-  Partial<
-    Pick<UseDropNodeOptions, 'canDropNode' | 'multiplePreviewRef' | 'nodeRef'>
-  > &
+  Partial<Pick<UseDropNodeOptions, 'canDropNode' | 'nodeRef'>> &
   Partial<Pick<UseDragNodeOptions, 'type'>> & {
     /** Options passed to the drag hook. */
     drag?: Partial<Omit<UseDragNodeOptions, 'type'>>;
@@ -28,15 +26,17 @@ export type UseDndNodeOptions = Pick<UseDropNodeOptions, 'element'> &
       /** Whether to disable the preview. */
       disable?: boolean;
       /** The reference to the preview element. */
-      ref?: any;
+      ref?: React.RefObject<HTMLElement | null>;
     };
+    /** The reference to the multiple preview element. */
+    multiplePreviewRef?: React.RefObject<HTMLElement | null>;
     onDropHandler?: (
       editor: PlateEditor,
       props: {
         id: string;
         dragItem: DragItemNode;
         monitor: DropTargetMonitor<DragItemNode, unknown>;
-        nodeRef: any;
+        nodeRef: React.RefObject<HTMLElement | null>;
       }
     ) => boolean | void;
   };
@@ -64,17 +64,9 @@ export const useDndNode = ({
   isOver: boolean;
 } => {
   const editor = useEditorRef();
+  const fallbackNodeRef = React.useRef<HTMLElement>(null);
+  const resolvedNodeRef = nodeRef ?? fallbackNodeRef;
 
-  if (!canUseDomDnd()) {
-    return {
-      dragRef: noopConnector,
-      isAboutToDrag: false,
-      isDragging: false,
-      isOver: false,
-    };
-  }
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [{ isAboutToDrag, isDragging }, dragRef, preview] = useDragNode(
     editor,
     {
@@ -84,20 +76,18 @@ export const useDndNode = ({
     }
   );
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [{ isOver }, drop] = useDropNode(editor, {
     accept: [type, NativeTypes.FILE],
     canDropNode,
     element,
-    multiplePreviewRef,
-    nodeRef,
+    nodeRef: resolvedNodeRef,
     orientation,
     onDropHandler,
     ...dropOptions,
   });
 
   // Always use nodeRef for the drop target (actual DOM element)
-  drop(nodeRef);
+  drop(resolvedNodeRef);
 
   // Handle preview based on options and whether we're dragging multiple nodes
   if (previewOptions.disable) {
@@ -105,7 +95,7 @@ export const useDndNode = ({
   } else if (previewOptions.ref) {
     preview(previewOptions.ref);
   } else {
-    preview(multiplePreviewRef);
+    preview(multiplePreviewRef ?? null);
   }
 
   return {

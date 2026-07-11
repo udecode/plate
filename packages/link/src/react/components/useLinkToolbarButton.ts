@@ -7,7 +7,7 @@ export const useLinkToolbarButtonState = () => {
   const pressed = useEditorSelector(
     (editor) =>
       !!editor?.selection &&
-      editor.api.some({
+      editor.read.nodes.some({
         match: { type: editor.getType(KEYS.link) },
       }),
     []

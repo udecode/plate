@@ -8,11 +8,11 @@ export const undoAI = (editor: SlateEditor) => {
   if (hasAIPreview(editor) && cancelAIPreview(editor)) return;
 
   const hasAINodeOrAISuggestion =
-    editor.api.some({
+    editor.read.nodes.some({
       at: [],
       match: (n) => !!(n as any).ai,
     }) ||
-    editor.api.some({
+    editor.read.nodes.some({
       at: [],
       match: (n) => !!n[getTransientSuggestionKey()],
     });

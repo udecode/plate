@@ -1,6 +1,9 @@
-import type { SlateEditor, TCodeBlockElement } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { TCodeBlockElement } from '@platejs/utils';
 
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { ElementApi } from '@platejs/plite';
+import { createLowlight } from 'lowlight';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 import {
@@ -10,21 +13,40 @@ import {
   setCodeBlockToDecorations,
 } from './setCodeBlockToDecorations';
 
-// Mock lowlight
-const mockHighlight = mock();
-const mockHighlightAuto = mock();
-const mockListLanguages = mock();
-const mockRegister = mock();
-const mockRegisterAlias = mock();
-const mockLowlight = {
-  highlight: mockHighlight,
-  highlightAuto: mockHighlightAuto,
-  listLanguages: mockListLanguages,
-  register: mockRegister,
-  registerAlias: mockRegisterAlias,
+const mockLowlight = createLowlight();
+const mockHighlight = spyOn(mockLowlight, 'highlight');
+const mockHighlightAuto = spyOn(mockLowlight, 'highlightAuto');
+const mockListLanguages = spyOn(mockLowlight, 'listLanguages');
+const mockRegister = spyOn(mockLowlight, 'register');
+const mockRegisterAlias = spyOn(mockLowlight, 'registerAlias');
+
+type HighlightResult = ReturnType<typeof mockLowlight.highlight>;
+
+const highlightText = (value: string, className?: string[]) =>
+  className
+    ? {
+        children: [{ type: 'text' as const, value }],
+        properties: { className },
+        tagName: 'span',
+        type: 'element' as const,
+      }
+    : { type: 'text' as const, value };
+
+const highlightResult = (
+  ...children: HighlightResult['children']
+): HighlightResult => ({ children, type: 'root' });
+
+const getCodeLine = (codeBlock: TCodeBlockElement, index = 0) => {
+  const codeLine = codeBlock.children[index];
+
+  if (!ElementApi.isElement(codeLine)) {
+    throw new Error(`Expected code line at index ${index}`);
+  }
+
+  return codeLine;
 };
 
-let editor: SlateEditor;
+let editor: BaseEditor;
 
 beforeEach(() => {
   // Reset mocks
@@ -35,29 +57,18 @@ beforeEach(() => {
   mockRegisterAlias.mockReset();
   mockListLanguages.mockReturnValue(['javascript', 'typescript']);
 
-  // Create a basic editor
-  editor = createSlateEditor({
-    plugins: [BaseCodeBlockPlugin],
+  editor = createBaseEditor({
+    plugins: [
+      BaseCodeBlockPlugin.configure({
+        options: {
+          defaultLanguage: 'javascript',
+          lowlight: mockLowlight,
+        },
+      }),
+    ],
   });
-
-  // Add necessary API methods
-  editor.api = {
-    debug: {
-      error: mock(),
-      warn: mock(),
-    },
-  } as any;
-
-  // Add getOptions method
-  editor.getOptions = mock().mockImplementation((plugin: any) => {
-    if (plugin === BaseCodeBlockPlugin) {
-      return {
-        defaultLanguage: 'javascript',
-        lowlight: mockLowlight,
-      };
-    }
-    return {};
-  }) as any;
+  spyOn(editor.api.debug, 'error');
+  spyOn(editor.api.debug, 'warn');
 });
 
 describe('codeBlockToDecorations', () => {
@@ -76,7 +87,7 @@ describe('codeBlockToDecorations', () => {
     expect(result.size).toBe(1);
 
     // The decorations for the line should be empty
-    const lineDecorations = result.get(codeBlock.children[0] as any);
+    const lineDecorations = result.get(getCodeLine(codeBlock));
     expect(lineDecorations).toEqual([]);
 
     // Lowlight highlight should not be called
@@ -86,24 +97,14 @@ describe('codeBlockToDecorations', () => {
 
   it('returns decorations for specified language', () => {
     // Mock highlight result
-    mockHighlight.mockReturnValue({
-      value: [
-        {
-          properties: { className: ['token', 'keyword'] },
-          value: 'const',
-        },
-        {
-          value: ' x = ',
-        },
-        {
-          properties: { className: ['token', 'number'] },
-          value: '1',
-        },
-        {
-          value: ';',
-        },
-      ],
-    });
+    mockHighlight.mockReturnValue(
+      highlightResult(
+        highlightText('const', ['token', 'keyword']),
+        highlightText(' x = '),
+        highlightText('1', ['token', 'number']),
+        highlightText(';')
+      )
+    );
 
     // Create a code block with JavaScript
     const codeBlock: TCodeBlockElement = {
@@ -119,7 +120,7 @@ describe('codeBlockToDecorations', () => {
     expect(result.size).toBe(1);
 
     // Get decorations for the line
-    const lineDecorations = result.get(codeBlock.children[0] as any);
+    const lineDecorations = result.get(getCodeLine(codeBlock));
     expect(lineDecorations).toHaveLength(4);
 
     // Check first decoration (const)
@@ -156,14 +157,11 @@ describe('codeBlockToDecorations', () => {
   });
 
   it('patches python grammar before highlighting', () => {
-    mockHighlight.mockReturnValue({
-      value: [
-        {
-          properties: { className: ['hljs-comment'] },
-          value: '# Python class with type hints',
-        },
-      ],
-    });
+    mockHighlight.mockReturnValue(
+      highlightResult(
+        highlightText('# Python class with type hints', ['hljs-comment'])
+      )
+    );
 
     const codeBlock: TCodeBlockElement = {
       children: [
@@ -178,7 +176,7 @@ describe('codeBlockToDecorations', () => {
 
     const result = codeBlockToDecorations(editor, [codeBlock, [0]]);
 
-    expect(result.get(codeBlock.children[0] as any)?.[0]).toMatchObject({
+    expect(result.get(getCodeLine(codeBlock))?.[0]).toMatchObject({
       className: 'hljs-comment',
     });
     expect(mockRegister).toHaveBeenCalledWith('python', expect.any(Function));
@@ -195,9 +193,9 @@ describe('codeBlockToDecorations', () => {
 
   it('use auto detection when language is "auto"', () => {
     // Mock highlight auto result
-    mockHighlightAuto.mockReturnValue({
-      value: [{ value: 'const x = 1;' }],
-    });
+    mockHighlightAuto.mockReturnValue(
+      highlightResult(highlightText('const x = 1;'))
+    );
 
     // Create a code block with auto language
     const codeBlock: TCodeBlockElement = {
@@ -216,9 +214,9 @@ describe('codeBlockToDecorations', () => {
 
   it('use default language when no language is specified', () => {
     // Mock highlight result
-    mockHighlight.mockReturnValue({
-      value: [{ value: 'const x = 1;' }],
-    });
+    mockHighlight.mockReturnValue(
+      highlightResult(highlightText('const x = 1;'))
+    );
 
     // Create a code block with no language
     const codeBlock: TCodeBlockElement = {
@@ -236,24 +234,14 @@ describe('codeBlockToDecorations', () => {
 
   it('handle multiline code blocks', () => {
     // Mock highlight result for multiline code
-    mockHighlight.mockReturnValue({
-      value: [
-        {
-          properties: { className: ['token', 'keyword'] },
-          value: 'function',
-        },
-        {
-          value: ' test() {\n  ',
-        },
-        {
-          properties: { className: ['token', 'keyword'] },
-          value: 'return',
-        },
-        {
-          value: ' true;\n}',
-        },
-      ],
-    });
+    mockHighlight.mockReturnValue(
+      highlightResult(
+        highlightText('function', ['token', 'keyword']),
+        highlightText(' test() {\n  '),
+        highlightText('return', ['token', 'keyword']),
+        highlightText(' true;\n}')
+      )
+    );
 
     // Create a multiline code block
     const codeBlock: TCodeBlockElement = {
@@ -273,11 +261,11 @@ describe('codeBlockToDecorations', () => {
     expect(result.size).toBe(3);
 
     // First line should have 2 decorations
-    const line1Decorations = result.get(codeBlock.children[0] as any);
+    const line1Decorations = result.get(getCodeLine(codeBlock));
     expect(line1Decorations).toHaveLength(2);
 
     // Second line should have 3 decorations (spaces, return keyword, and rest of line)
-    const line2Decorations = result.get(codeBlock.children[1] as any);
+    const line2Decorations = result.get(getCodeLine(codeBlock, 1));
     expect(line2Decorations).toHaveLength(3);
     expect(line2Decorations?.[0]).toMatchObject({
       anchor: { offset: 0, path: [0, 1, 0] },
@@ -296,7 +284,7 @@ describe('codeBlockToDecorations', () => {
     });
 
     // Third line should have 1 decoration
-    const line3Decorations = result.get(codeBlock.children[2] as any);
+    const line3Decorations = result.get(getCodeLine(codeBlock, 2));
     expect(line3Decorations).toHaveLength(1);
   });
 
@@ -314,7 +302,7 @@ describe('codeBlockToDecorations', () => {
 
     const result = codeBlockToDecorations(editor, [codeBlock, [0]]);
 
-    expect(result.get(codeBlock.children[0] as any)).toEqual([]);
+    expect(result.get(getCodeLine(codeBlock))).toEqual([]);
     expect(editor.api.debug.error).not.toHaveBeenCalled();
     expect(editor.api.debug.warn).toHaveBeenCalledWith(
       'Could not highlight with Highlight.js for language "javascript". Falling back to plaintext',
@@ -338,7 +326,7 @@ describe('codeBlockToDecorations', () => {
 
     const result = codeBlockToDecorations(editor, [codeBlock, [0]]);
 
-    expect(result.get(codeBlock.children[0] as any)).toEqual([]);
+    expect(result.get(getCodeLine(codeBlock))).toEqual([]);
     expect(editor.api.debug.error).not.toHaveBeenCalled();
     expect(editor.api.debug.warn).toHaveBeenCalledWith(
       'Language "sql" is not registered. Falling back to plaintext'
@@ -348,21 +336,16 @@ describe('codeBlockToDecorations', () => {
 
 describe('decoration cache helpers', () => {
   it('stores decorations for each code line in the cache', () => {
-    mockHighlight.mockReturnValue({
-      value: [
-        {
-          properties: { className: ['token', 'keyword'] },
-          value: 'const',
-        },
-      ],
-    });
+    mockHighlight.mockReturnValue(
+      highlightResult(highlightText('const', ['token', 'keyword']))
+    );
 
     const codeBlock: TCodeBlockElement = {
       children: [{ children: [{ text: 'const' }], type: 'code_line' }],
       lang: 'javascript',
       type: 'code_block',
     };
-    const codeLine = codeBlock.children[0] as any;
+    const codeLine = getCodeLine(codeBlock);
 
     setCodeBlockToDecorations(editor, [codeBlock, [0]]);
 
@@ -382,11 +365,11 @@ describe('decoration cache helpers', () => {
       lang: 'javascript',
       type: 'code_block',
     };
-    const firstLine = codeBlock.children[0] as any;
-    const secondLine = codeBlock.children[1] as any;
+    const firstLine = getCodeLine(codeBlock);
+    const secondLine = getCodeLine(codeBlock, 1);
 
-    CODE_LINE_TO_DECORATIONS.set(firstLine, [] as any);
-    CODE_LINE_TO_DECORATIONS.set(secondLine, [] as any);
+    CODE_LINE_TO_DECORATIONS.set(firstLine, []);
+    CODE_LINE_TO_DECORATIONS.set(secondLine, []);
 
     resetCodeBlockDecorations(codeBlock);
 

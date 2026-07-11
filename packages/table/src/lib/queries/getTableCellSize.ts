@@ -32,7 +32,9 @@ export const getTableCellSize = (
   const { api } = getEditorPlugin<TableConfig>(editor, {
     key: KEYS.table,
   });
-  const path = editor.api.findPath(element)!;
+  const path = editor.read.nodes.path(element);
+
+  if (!path) return { minHeight: rowSize ?? 0, width: 0 };
 
   if (!rowSize) {
     const [rowElement] = editor.api.parent<TTableRowElement>(path) ?? [];

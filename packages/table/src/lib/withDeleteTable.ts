@@ -62,7 +62,7 @@ export const withDeleteTable: OverrideEditor<TableConfig> = ({
 }) => ({
   transforms: {
     deleteFragment(direction) {
-      if (editor.api.isAt({ block: true, match: (n) => n.type === type })) {
+      if (editor.api.isAt({ block: true, match: { type } })) {
         const cellEntries = getTableGridAbove(editor, { format: 'cell' });
 
         if (cellEntries.length > 1) {

@@ -4,7 +4,7 @@ import { KEYS } from 'platejs';
 
 export const someList = (editor: SlateEditor, type: string[] | string) =>
   !!editor.selection &&
-  editor.api.some({
+  editor.read.nodes.some({
     match: (n: any) => {
       const isHasProperty = Object.hasOwn(n, KEYS.listChecked);
 

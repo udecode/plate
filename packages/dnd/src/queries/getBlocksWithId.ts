@@ -1,14 +1,16 @@
-import type { Editor, EditorNodesOptions, ValueOf } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { EditorNodesOptions, ElementIn, ValueOf } from '@platejs/plite';
 
 /** Get blocks with an id */
-export const getBlocksWithId = <E extends Editor>(
+export const getBlocksWithId = <E extends BaseEditor>(
   editor: E,
-  options: EditorNodesOptions<ValueOf<E>>
+  options: EditorNodesOptions<ElementIn<ValueOf<E>>>
 ) => {
-  const _nodes = editor.api.nodes({
-    match: (n) => editor.api.isBlock(n) && !!n.id,
+  const nodes = editor.read.nodes.entries<ElementIn<ValueOf<E>>>({
+    match: (node, path) =>
+      path.length > 0 && editor.read.schema.isBlock(node) && !!node.id,
     ...options,
   });
 
-  return Array.from(_nodes);
+  return Array.from(nodes);
 };

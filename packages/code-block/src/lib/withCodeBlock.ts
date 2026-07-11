@@ -1,197 +1,203 @@
+import type { BaseEditor, ExtendPlateEditorExtension } from '@platejs/core';
 import {
-  KEYS,
-  type OverrideEditor,
-  type TCodeBlockElement,
-  type TElement,
-} from 'platejs';
+  type EditorUpdateTransaction,
+  ElementApi,
+  type Element,
+  type Location,
+  NodeApi,
+  type Operation,
+  RangeApi,
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
 
 import { getCodeLineEntry, getIndentDepth } from './queries';
 import { resetCodeBlockDecorations } from './setCodeBlockToDecorations';
 import { indentCodeLine, outdentCodeLine, unwrapCodeBlock } from './transforms';
-import { withInsertDataCodeBlock } from './withInsertDataCodeBlock';
-import { withInsertFragmentCodeBlock } from './withInsertFragmentCodeBlock';
-import { withNormalizeCodeBlock } from './withNormalizeCodeBlock';
 
-export const withCodeBlock: OverrideEditor<CodeBlockConfig> = (ctx) => {
-  const {
-    editor,
-    getOptions,
-    tf: { apply, deleteBackward, insertBreak, resetBlock, selectAll, tab },
-    type,
-  } = ctx;
+export const getCodeBlockLanguageChange = (
+  editor: BaseEditor,
+  operation: Operation,
+  type: string
+) => {
+  if (operation.type !== 'set_node') return;
 
-  return {
-    transforms: {
-      apply(operation) {
-        let shouldRedecorate = false;
+  const entry = editor.read.nodes.get(operation.path);
+  const touchesLang =
+    'lang' in (operation.properties ?? {}) ||
+    'lang' in (operation.newProperties ?? {});
+  const langChanged =
+    operation.properties?.lang !== operation.newProperties?.lang;
 
-        if (getOptions().lowlight && operation.type === 'set_node') {
-          const entry = editor.api.node(operation.path);
-          const touchesLang =
-            'lang' in (operation.properties ?? {}) ||
-            'lang' in (operation.newProperties ?? {});
-          const langChanged =
-            operation.properties?.lang !== operation.newProperties?.lang;
-
-          if (entry?.[0].type === type && touchesLang && langChanged) {
-            resetCodeBlockDecorations(entry[0] as TCodeBlockElement);
-            shouldRedecorate = true;
-          }
-        }
-
-        apply(operation);
-
-        if (shouldRedecorate) {
-          editor.api.redecorate();
-        }
-      },
-      insertBreak() {
-        const apply = () => {
-          if (!editor.selection) return;
-
-          const res = getCodeLineEntry(editor, {});
-
-          if (!res) return;
-
-          const { codeBlock, codeLine } = res;
-          const indentDepth = getIndentDepth(editor, {
-            codeBlock,
-            codeLine,
-          });
-
-          insertBreak();
-
-          indentCodeLine(editor, {
-            codeBlock,
-            codeLine,
-            indentDepth,
-          });
-
-          return true;
-        };
-
-        if (apply()) return;
-
-        insertBreak();
-      },
-      deleteBackward(unit) {
-        const apply = () => {
-          if (!editor.selection || editor.api.isExpanded()) return;
-
-          const res = getCodeLineEntry(editor, {});
-
-          if (!res) return;
-
-          const { codeLine } = res;
-          const [, codeLinePath] = codeLine;
-
-          if (!editor.api.isStart(editor.selection.anchor, codeLinePath))
-            return;
-
-          const previousCodeLine = editor.api.previous<TElement>({
-            at: codeLinePath,
-            match: { type: editor.getType(KEYS.codeLine) },
-          });
-
-          const codeLineText = editor.api.string(codeLinePath);
-
-          if (!previousCodeLine) {
-            if (codeLineText.length > 0) return true;
-
-            return;
-          }
-
-          if (codeLineText.length > 0) return;
-
-          const previousLineEnd = editor.api.end(previousCodeLine[1]);
-
-          editor.tf.removeNodes({ at: codeLinePath });
-
-          if (previousLineEnd) {
-            editor.tf.select(previousLineEnd);
-          }
-
-          return true;
-        };
-
-        if (apply()) return;
-
-        deleteBackward(unit);
-      },
-      resetBlock(options) {
-        if (
-          editor.api.block({
-            at: options?.at,
-            match: { type },
-          })
-        ) {
-          unwrapCodeBlock(editor);
-          return;
-        }
-
-        return resetBlock(options);
-      },
-      selectAll: () => {
-        const apply = () => {
-          const codeBlock = editor.api.above({
-            match: { type },
-          });
-
-          if (!codeBlock) return;
-
-          if (
-            editor.api.isAt({ end: true }) &&
-            editor.api.isAt({ start: true })
-          ) {
-            return;
-          }
-
-          // Select the whole code block
-          editor.tf.select(codeBlock[1]);
-          return true;
-        };
-
-        if (apply()) return true;
-
-        return selectAll();
-      },
-      tab: (options) => {
-        const apply = () => {
-          const codeLineType = editor.getType('code_line');
-          const _codeLines = editor.api.nodes<TElement>({
-            match: { type: codeLineType },
-          });
-          const codeLines = Array.from(_codeLines);
-
-          if (codeLines.length > 0) {
-            const [, firstLinePath] = codeLines[0];
-            const codeBlock = editor.api.parent<TElement>(firstLinePath);
-
-            if (!codeBlock) return;
-
-            editor.tf.withoutNormalizing(() => {
-              for (const codeLine of codeLines) {
-                if (options.reverse) {
-                  outdentCodeLine(editor, { codeBlock, codeLine });
-                } else {
-                  indentCodeLine(editor, { codeBlock, codeLine });
-                }
-              }
-            });
-
-            return true; // Prevent default
-          }
-        };
-
-        if (apply()) return true;
-
-        return tab(options);
-      },
-      ...withInsertDataCodeBlock(ctx).transforms,
-      ...withInsertFragmentCodeBlock(ctx).transforms,
-      ...withNormalizeCodeBlock(ctx).transforms,
-    },
-  };
+  if (
+    entry &&
+    ElementApi.isElement(entry[0]) &&
+    entry[0].type === type &&
+    touchesLang &&
+    langChanged
+  ) {
+    return entry[0];
+  }
 };
+
+export const resetCodeBlock = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  options: { at?: Location } = {}
+) => {
+  const codeBlockType = editor.getType(KEYS.codeBlock);
+
+  if (
+    !editor.read.nodes.block({
+      at: options.at,
+      match: { type: codeBlockType },
+    })
+  ) {
+    return false;
+  }
+
+  unwrapCodeBlock(editor, tx, options);
+  return true;
+};
+
+export const selectCodeBlock = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction
+) => {
+  const codeBlockType = editor.getType(KEYS.codeBlock);
+  const codeBlock = editor.read.nodes.above<Element>({
+    match: { type: codeBlockType },
+  });
+
+  if (!codeBlock) return false;
+
+  const selection = tx.selection();
+  const blockRange = editor.read.ranges.get(codeBlock[1]);
+
+  if (selection && blockRange && RangeApi.equals(selection, blockRange)) {
+    return false;
+  }
+
+  tx.selection.set(codeBlock[1]);
+  return true;
+};
+
+export const tabCodeBlock = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  options: { reverse?: boolean } = {}
+) => {
+  const codeLineType = editor.getType(KEYS.codeLine);
+  const codeLines = editor.read.nodes.toArray<Element>({
+    at: tx.selection() ?? undefined,
+    match: { type: codeLineType },
+  });
+
+  if (codeLines.length === 0) return false;
+
+  const codeBlock = editor.read.nodes.parent<Element>(codeLines[0][1]);
+
+  if (!codeBlock) return false;
+
+  tx.withoutNormalizing(() => {
+    for (const codeLine of codeLines) {
+      if (options.reverse) {
+        outdentCodeLine(editor, tx, { codeBlock, codeLine });
+      } else {
+        indentCodeLine(editor, tx, { codeBlock, codeLine });
+      }
+    }
+  });
+
+  return true;
+};
+
+export const withCodeBlock: ExtendPlateEditorExtension<CodeBlockConfig> = ({
+  editor,
+  getOptions,
+  type,
+}) => ({
+  priority: 10,
+  operations: {
+    apply({ operation, next }) {
+      const codeBlock =
+        getOptions().lowlight &&
+        getCodeBlockLanguageChange(editor, operation, type);
+
+      if (codeBlock) {
+        resetCodeBlockDecorations(codeBlock);
+      }
+
+      next(operation);
+    },
+  },
+  transforms: {
+    deleteBackward({ next, tx }) {
+      const selection = editor.read.selection();
+
+      if (!selection || editor.read.selection.isExpanded()) return next();
+
+      const res = getCodeLineEntry(editor);
+
+      if (!res) return next();
+
+      const { codeLine } = res;
+      const [, codeLinePath] = codeLine;
+
+      if (
+        !editor.read.selection.isAtBlockStart({
+          match: { type: editor.getType(KEYS.codeLine) },
+        })
+      ) {
+        return next();
+      }
+
+      const previousCodeLine = editor.read.nodes.previous<Element>({
+        at: codeLinePath,
+        match: { type: editor.getType(KEYS.codeLine) },
+      });
+      const codeLineText = NodeApi.string(codeLine[0]);
+
+      if (!previousCodeLine) {
+        if (codeLineText.length > 0) return true;
+
+        resetCodeBlock(editor, tx);
+        return true;
+      }
+
+      if (codeLineText.length > 0) return next();
+
+      const previousLineEnd = editor.read.points.end(previousCodeLine[1]);
+
+      tx.nodes.remove({ at: codeLinePath });
+
+      if (previousLineEnd) {
+        tx.selection.set(previousLineEnd);
+      }
+
+      return true;
+    },
+    insertBreak({ next, tx }) {
+      const selection = editor.read.selection();
+
+      if (!selection) return next();
+
+      const res = getCodeLineEntry(editor);
+
+      if (!res) return next();
+
+      const { codeBlock, codeLine } = res;
+      const indentDepth = getIndentDepth(editor, {
+        codeBlock,
+        codeLine,
+      });
+
+      next();
+
+      indentCodeLine(editor, tx, { codeBlock, codeLine, indentDepth });
+
+      return true;
+    },
+  },
+});

@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 import { CodeBlockRules } from './CodeBlockRules';
@@ -11,39 +11,40 @@ jsxt;
 describe('BaseCodeBlockPlugin input rules', () => {
   it('promotes triple backticks when the markdown group is enabled', () => {
     const input = (
-      <fragment>
+      <editor>
         <hp>
           ``
           <cursor />
         </hp>
-      </fragment>
-    ) as any;
+      </editor>
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseCodeBlockPlugin.configure({
           inputRules: [CodeBlockRules.markdown({ on: 'match' })],
         }),
       ],
-      value: input,
-    } as any);
+      selection: input.selection,
+      value: input.children,
+    });
 
-    editor.tf.insertText('`');
-    editor.tf.insertText('code');
+    editor.update.text.insert('`');
+    editor.update.text.insert('code');
 
-    expect(input.children).toEqual(
+    expect(editor.read.children()).toEqual(
       (
-        <fragment>
+        <editor>
           <hcodeblock>
             <hcodeline>code</hcodeline>
           </hcodeblock>
-        </fragment>
+        </editor>
       ).children
     );
   });
 
   it('replaces the fence paragraph instead of leaving the first two backticks behind', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseCodeBlockPlugin.configure({
           inputRules: [CodeBlockRules.markdown({ on: 'match' })],
@@ -54,11 +55,11 @@ describe('BaseCodeBlockPlugin input rules', () => {
         focus: { offset: 2, path: [0, 0] },
       },
       value: [{ children: [{ text: '``' }], type: 'p' }],
-    } as any);
+    });
 
-    editor.tf.insertText('`');
+    editor.update.text.insert('`');
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         children: [
           {
@@ -73,30 +74,31 @@ describe('BaseCodeBlockPlugin input rules', () => {
 
   it('promotes a ``` paragraph on Enter when configured with on: break', () => {
     const input = (
-      <fragment>
+      <editor>
         <hp>
           ```
           <cursor />
         </hp>
-      </fragment>
-    ) as any;
+      </editor>
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseCodeBlockPlugin.configure({
           inputRules: [CodeBlockRules.markdown({ on: 'break' })],
         }),
       ],
-      value: input,
-    } as any);
+      selection: input.selection,
+      value: input.children,
+    });
 
-    editor.tf.select({
+    editor.update.selection.set({
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
-    editor.tf.insertBreak();
+    editor.update.break.insert();
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         children: [
           {

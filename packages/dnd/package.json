@@ -4,8 +4,7 @@
   "description": "React drag and drop feature for Plate",
   "keywords": [
     "plate",
-    "plugin",
-    "slate"
+    "plugin"
   ],
   "homepage": "https://platejs.org",
   "bugs": {
@@ -39,17 +38,17 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
+    "@platejs/core": "workspace:^",
     "@platejs/plite": "workspace:^",
+    "@platejs/utils": "workspace:^",
     "lodash": "^4.17.21",
     "raf": "^3.4.1",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:*",
-    "platejs": "workspace:^"
+    "@plate/scripts": "workspace:*"
   },
   "peerDependencies": {
-    "platejs": ">=54.0.0-beta.0",
     "react": ">=18.0.0",
     "react-dnd": ">=14.0.0",
     "react-dnd-html5-backend": ">=14.0.0",

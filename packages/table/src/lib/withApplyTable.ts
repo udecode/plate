@@ -44,12 +44,12 @@ export const withApplyTable: OverrideEditor<TableConfig> = ({
           editor.api.isAt({
             at: newSelection,
             blocks: true,
-            match: (n) => n.type === tableType,
+            match: { type: tableType },
           })
         ) {
           const anchorEntry = editor.api.block({
             at: newSelection.anchor,
-            match: (n) => n.type === tableType,
+            match: { type: tableType },
           });
 
           if (anchorEntry) {
@@ -69,7 +69,7 @@ export const withApplyTable: OverrideEditor<TableConfig> = ({
           } else {
             const focusEntry = editor.api.block({
               at: newSelection.focus,
-              match: (n) => n.type === tableType,
+              match: { type: tableType },
             });
 
             if (focusEntry) {

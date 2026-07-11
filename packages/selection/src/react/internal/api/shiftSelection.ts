@@ -84,7 +84,7 @@ export const shiftSelection = (
       newSelected.forEach((id) => {
         const entry = editor.read.nodes.find({
           at: abovePath,
-          match: (node) => node.id === id,
+          match: { id },
         });
 
         if (!entry) return;

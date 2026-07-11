@@ -1,25 +1,38 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
-
-import { BaseLinkPlugin } from '@platejs/link';
-import { createDataTransfer, jsxt } from '@platejs/test-utils';
-import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  createBasePlugin,
+} from '@platejs/core';
+import { createDataTransfer, jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 
 jsxt;
 
-const createEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const BaseCommentParserPlugin = createBasePlugin({
+  key: 'comment_parser',
+  parser: {
+    deserialize: () => [{ text: 'comment parser' }],
+    format: 'text/plain',
+  },
+});
+
+const createEditor = (input: TestEditor) =>
+  createBaseEditor({
     plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-const createEditorWithLink = (input: SlateEditor) =>
-  createSlateEditor({
-    plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin, BaseLinkPlugin],
+const createEditorWithParser = (input: TestEditor) =>
+  createBaseEditor({
+    plugins: [
+      BaseParagraphPlugin,
+      BaseCodeBlockPlugin,
+      BaseCommentParserPlugin,
+    ],
     selection: input.selection,
     value: input.children,
   });
@@ -35,7 +48,7 @@ describe('when pasting text into a code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const fragment = createDataTransfer(
       new Map([
@@ -54,13 +67,13 @@ describe('when pasting text into a code block', () => {
           <hcodeline>const c = "d";</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createEditor(input);
 
-    editor.tf.insertData(fragment);
+    editor.api.clipboard.insertData(fragment);
 
-    expect(editor.children).toEqual(expected.children);
+    expect(editor.read.children()).toEqual(expected.children);
   });
 
   it('creates a new code block from vscode metadata outside an existing code block', () => {
@@ -70,7 +83,7 @@ describe('when pasting text into a code block', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const data = createDataTransfer(
       new Map([
@@ -92,13 +105,13 @@ describe('when pasting text into a code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createEditor(input);
 
-    editor.tf.insertData(data);
+    editor.api.clipboard.insertData(data);
 
-    expect(editor.children).toEqual(expected.children);
+    expect(editor.read.children()).toEqual(expected.children);
   });
 
   it('inserts vscode lines into the current code block instead of nesting one', () => {
@@ -110,7 +123,7 @@ describe('when pasting text into a code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const data = createDataTransfer(
       new Map([
@@ -129,16 +142,16 @@ describe('when pasting text into a code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createEditor(input);
 
-    editor.tf.insertData(data);
+    editor.api.clipboard.insertData(data);
 
-    expect(editor.children).toEqual(expected.children);
+    expect(editor.read.children()).toEqual(expected.children);
   });
 
-  it('keeps pasted // comments as plain code when link plugin is present', () => {
+  it('keeps multiline comments as code when another text parser is present', () => {
     const input = (
       <editor>
         <hcodeblock>
@@ -147,7 +160,7 @@ describe('when pasting text into a code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const data = createDataTransfer(
       new Map([
@@ -165,12 +178,53 @@ describe('when pasting text into a code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createEditorWithLink(input);
+    const editor = createEditorWithParser(input);
 
-    editor.tf.insertData(data);
+    editor.api.clipboard.insertData(data);
 
-    expect(editor.children).toEqual(expected.children);
+    expect(editor.read.children()).toEqual(expected.children);
+  });
+
+  it('delegates mixed expanded selections instead of treating any code match as the active block', () => {
+    const input = (
+      <editor>
+        <hcodeblock>
+          <hcodeline>
+            code
+            <anchor />
+          </hcodeline>
+        </hcodeblock>
+        <hp>
+          <focus />
+          outside
+        </hp>
+      </editor>
+    ) as TestEditor;
+    const deserialize = mock(() => [{ text: 'mixed parser' }]);
+    const MixedSelectionParserPlugin = createBasePlugin({
+      key: 'mixed_selection_parser',
+      parser: {
+        deserialize,
+        format: 'text/plain',
+      },
+    });
+    const editor = createBaseEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        BaseCodeBlockPlugin,
+        MixedSelectionParserPlugin,
+      ],
+      selection: input.selection,
+      value: input.children,
+    });
+    const data = createDataTransfer(
+      new Map([['text/plain', 'const a = 1;\nconst b = 2;']])
+    );
+
+    editor.api.clipboard.insertData(data);
+
+    expect(deserialize).toHaveBeenCalledTimes(1);
   });
 });

@@ -74,7 +74,9 @@ export const withSetFragmentDataTable: OverrideEditor<TableConfig> = ({
             // need to clean data before every iteration
             data.clearData();
 
-            const cellPath = editor.api.findPath(cell)!;
+            const cellPath = editor.read.nodes.path(cell);
+
+            if (!cellPath) return;
 
             // select cell by cell
             editor.tf.select({

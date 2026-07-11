@@ -79,16 +79,12 @@ const findCaptionEntry = (
 ) =>
   editor.read.nodes.above<TCaptionElement>({
     at,
-    match: (node) =>
-      ElementApi.isElement(node) &&
-      getPluginTypes(editor, options.query.allow).includes(node.type as string),
+    match: { type: getPluginTypes(editor, options.query.allow) },
   });
 
 const findCaptionBlock = (editor: BaseEditor, options: CaptionOptions) =>
   editor.read.nodes.block<TCaptionElement>({
-    match: (node) =>
-      ElementApi.isElement(node) &&
-      getPluginTypes(editor, options.query.allow).includes(node.type as string),
+    match: { type: getPluginTypes(editor, options.query.allow) },
   });
 
 const getSetSelectionTarget = (

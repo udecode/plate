@@ -1,52 +1,44 @@
-import {
-  type NodeEntry,
-  type OverrideEditor,
-  type TCodeBlockElement,
-  ElementApi,
-  KEYS,
-  NodeApi,
-} from 'platejs';
+import type { ExtendPlateEditorExtension } from '@platejs/core';
+import { ElementApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
 
 import { setCodeBlockToDecorations } from './setCodeBlockToDecorations';
 
 /** Normalize code block node to force the pre>code>div.codeline structure. */
-export const withNormalizeCodeBlock: OverrideEditor<CodeBlockConfig> = ({
-  editor,
-  getOptions,
-  tf: { normalizeNode },
-  type,
-}) => ({
-  transforms: {
-    normalizeNode([node, path]) {
-      // Decorate is called on selection change as well, so we prefer to only run this on code block changes.
-      if (node.type === type && getOptions().lowlight) {
-        setCodeBlockToDecorations(editor, [
-          node,
-          path,
-        ] as NodeEntry<TCodeBlockElement>);
-      }
-
-      normalizeNode([node, path]);
+export const withNormalizeCodeBlock: ExtendPlateEditorExtension<
+  CodeBlockConfig
+> = ({ editor, getOptions, type }) => ({
+  normalizers: {
+    node({ entry, next, tx }) {
+      const [node, path] = entry;
 
       if (!ElementApi.isElement(node)) {
+        next();
         return;
       }
 
+      if (node.type === type && getOptions().lowlight) {
+        setCodeBlockToDecorations(editor, [node, path]);
+      }
+
+      next();
+
       const codeBlockType = editor.getType(KEYS.codeBlock);
       const codeLineType = editor.getType(KEYS.codeLine);
-      const isCodeBlockRoot = node.type === codeBlockType;
 
-      if (isCodeBlockRoot) {
-        // Children should all be code lines
-        const nonCodeLine = Array.from(NodeApi.children(editor, path)).find(
-          ([child]) => child.type !== codeLineType
+      if (node.type !== codeBlockType) return;
+
+      const nonCodeLineIndex = node.children.findIndex(
+        (child) => ElementApi.isElement(child) && child.type !== codeLineType
+      );
+
+      if (nonCodeLineIndex !== -1) {
+        tx.nodes.set(
+          { type: codeLineType },
+          { at: path.concat(nonCodeLineIndex) }
         );
-
-        if (nonCodeLine) {
-          editor.tf.setNodes({ type: codeLineType }, { at: nonCodeLine[1] });
-        }
       }
     },
   },

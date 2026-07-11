@@ -48,5 +48,5 @@ export const insertTextSuggestion = (
     );
   });
 
-  tx.normalize({ force: true });
+  tx.normalize({ force: false });
 };

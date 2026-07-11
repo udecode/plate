@@ -3,7 +3,7 @@ import type { SlateEditor } from 'platejs';
 import { KEYS } from 'platejs';
 
 export const someTodoList = (editor: SlateEditor) =>
-  editor.api.some({
+  editor.read.nodes.some({
     at: editor.selection!,
     match: (n) => {
       const list = n[KEYS.listType];

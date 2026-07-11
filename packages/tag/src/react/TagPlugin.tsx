@@ -26,7 +26,7 @@ export const MultiSelectPlugin = toPlatePlugin(
         onChange(op: any) {
           onChange(op);
 
-          const someTag = editor.api.some({
+          const someTag = editor.read.nodes.some({
             match: { type },
           });
 
@@ -61,8 +61,8 @@ export const MultiSelectPlugin = toPlatePlugin(
           deleteBackward(unit);
 
           if (
-            editor.api.some({
-              match: (n: any) => n.type === type,
+            editor.read.nodes.some({
+              match: { type },
             })
           ) {
             editor.tf.move();
@@ -73,7 +73,7 @@ export const MultiSelectPlugin = toPlatePlugin(
           // Duplicate tag removal
           if (
             node.type === type &&
-            editor.api.some({
+            editor.read.nodes.some({
               at: [],
               match: (n: any, p: number[]) =>
                 n.type === type &&

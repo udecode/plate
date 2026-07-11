@@ -83,7 +83,7 @@ export const getSelectedCellsBorders = (
   // Single pass through cells to check all border conditions
   for (const cell of cellElements) {
     const { col, row } = getCellIndices(editor, cell);
-    const cellPath = editor.api.findPath(cell);
+    const cellPath = editor.read.nodes.path(cell);
     const cSpan = getColSpan(cell);
     const rSpan = getRowSpan(cell);
     const isFirstRow = row === 0;
@@ -224,7 +224,7 @@ export function isSelectedCellBordersNone(
   return cells.every((cell) => {
     const { borders } = cell;
     const { col, row } = getCellIndices(editor, cell);
-    const cellPath = editor.api.findPath(cell);
+    const cellPath = editor.read.nodes.path(cell);
 
     if (!cellPath) return true;
 
@@ -315,7 +315,7 @@ export function isSelectedCellBorder(
     const { col, row } = getCellIndices(editor, cell);
     const cSpan = getColSpan(cell);
     const rSpan = getRowSpan(cell);
-    const cellPath = editor.api.findPath(cell);
+    const cellPath = editor.read.nodes.path(cell);
 
     if (!cellPath) return true;
 

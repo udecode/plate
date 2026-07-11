@@ -1177,7 +1177,7 @@ describe('removeNodes when editor.plugin(SuggestionPlugin).getOptions().isSugges
 
     editor.update.nodes.remove({
       at: [],
-      match: (n: any) => n.type === 'p',
+      match: { type: 'p' },
     });
 
     const firstSuggestion = (editor.read.children()[0] as any).suggestion;
@@ -1207,7 +1207,7 @@ describe('removeNodes when editor.plugin(SuggestionPlugin).getOptions().isSugges
 
     editor.update.nodes.remove({
       at: [],
-      match: (n: any) => n.type === 'slash_input',
+      match: { type: 'slash_input' },
     });
 
     expect(editor.read.children()).toHaveLength(1);

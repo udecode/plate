@@ -11,6 +11,7 @@ describe('getRenderNodeStaticProps', () => {
         dangerouslyAllowAttributes: ['target'],
         isElement: true,
         props: ({ editor }) => ({
+          className: 'plugin-class',
           'data-has-editor': editor ? 'yes' : 'no',
           title: undefined,
         }),
@@ -69,6 +70,7 @@ describe('getRenderNodeStaticProps', () => {
     expect(result.attributes?.ignored).toBeUndefined();
     expect(result.attributes?.title).toBeUndefined();
     expect(result.attributes?.className).toContain('plite-p');
+    expect(result.attributes?.className).toContain('plugin-class');
     expect(result.attributes?.className).toContain('user-class');
     expect(result.attributes?.className).toContain('plite-align-center');
   });

@@ -1,3 +1,5 @@
+import type { AnyBasePlugin } from '../../lib/plugin';
+
 const DEFAULT = {
   handlers: true,
   inject: true,
@@ -17,7 +19,7 @@ const DEFAULT = {
  */
 export const isEditOnly = (
   readOnly: boolean,
-  plugin: any,
+  plugin: Pick<AnyBasePlugin, 'editOnly'>,
   feature: keyof typeof DEFAULT
 ): boolean => {
   if (!readOnly) return false;

@@ -1,10 +1,11 @@
-import { useEditorRef, useElement } from 'platejs/react';
+import { useEditorRef, useElement } from '@platejs/core/react';
+import type { TCaptionElement } from '@platejs/utils';
 
 import { BaseCaptionPlugin } from '../../lib';
 
-export const useCaptionButtonState = (): any => {
+export const useCaptionButtonState = () => {
   const editor = useEditorRef();
-  const element = useElement();
+  const element = useElement<TCaptionElement>();
 
   return { editor, element };
 };
@@ -15,11 +16,14 @@ export const useCaptionButton = ({
 }: ReturnType<typeof useCaptionButtonState>) => ({
   props: {
     onClick: () => {
-      const path = editor.api.findPath(element);
-      editor.plugin(BaseCaptionPlugin).setOption('visibleId', element.id as string);
+      const path = editor.read.nodes.path(element);
+
+      const caption = editor.plugin(BaseCaptionPlugin);
+
+      caption.setOption('visibleId', element.id as string);
       setTimeout(() => {
         if (path) {
-          editor.plugin(BaseCaptionPlugin).setOption('focusEndPath', path);
+          caption.setOption('focusEndPath', path);
         }
       }, 0);
     },

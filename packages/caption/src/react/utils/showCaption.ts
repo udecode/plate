@@ -1,14 +1,18 @@
-import type { SlateEditor, TElement } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { Element } from '@platejs/plite';
 
-import { CaptionPlugin } from '../CaptionPlugin';
+import { BaseCaptionPlugin } from '../../lib';
 
-export const showCaption = (editor: SlateEditor, element: TElement) => {
-  const path = editor.api.findPath(element);
-  editor.plugin(CaptionPlugin).setOption('visibleId', element.id as string);
+export const showCaption = (editor: BaseEditor, element: Element) => {
+  const path = editor.read.nodes.path(element);
+
+  const caption = editor.plugin(BaseCaptionPlugin);
+
+  caption.setOption('visibleId', element.id as string);
 
   setTimeout(() => {
     if (path) {
-      editor.plugin(CaptionPlugin).setOption('focusEndPath', path);
+      caption.setOption('focusEndPath', path);
     }
   }, 0);
 };

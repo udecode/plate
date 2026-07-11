@@ -1,16 +1,16 @@
-import type { TRange } from 'platejs';
+import type { Range } from '@platejs/plite';
 
-import { RangeApi } from 'platejs';
+import { RangeApi } from '@platejs/plite';
 
 import type { CaretPosition, SelectionRect } from '../types';
 
 /** Get the caret position of a range from selectionRects. */
 export const getCaretPosition = (
-  selectionRects: SelectionRect[],
-  range: TRange
+  selectionRects: readonly SelectionRect[],
+  range: Range
 ): CaretPosition | null => {
-  const isCollapsed = range && RangeApi.isCollapsed(range);
-  const isBackward = range && RangeApi.isBackward(range);
+  const isCollapsed = RangeApi.isCollapsed(range);
+  const isBackward = RangeApi.isBackward(range);
   const anchorRect = selectionRects[isBackward ? 0 : selectionRects.length - 1];
 
   if (!anchorRect) {

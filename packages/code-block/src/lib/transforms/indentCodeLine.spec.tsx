@@ -18,7 +18,7 @@ describe('indent code line', () => {
           <hcodeline>two</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as TestEditor;
+    ) as TestEditor;
 
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
@@ -55,7 +55,7 @@ describe('indent code line', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as TestEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -67,7 +67,7 @@ describe('indent code line', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as TestEditor;
+      ) as TestEditor;
 
       const editor = createBaseEditor({
         plugins: [CodeBlockPlugin],
@@ -103,7 +103,7 @@ describe('indent code line', () => {
               </hcodeline>
             </hcodeblock>
           </editor>
-        ) as any as TestEditor;
+        ) as TestEditor;
 
         const output = (
           <editor>
@@ -115,7 +115,7 @@ describe('indent code line', () => {
               </hcodeline>
             </hcodeblock>
           </editor>
-        ) as any as TestEditor;
+        ) as TestEditor;
 
         const editor = createBaseEditor({
           plugins: [CodeBlockPlugin],
@@ -150,7 +150,7 @@ describe('indent code line', () => {
               </hcodeline>
             </hcodeblock>
           </editor>
-        ) as any as TestEditor;
+        ) as TestEditor;
 
         const output = (
           <editor>
@@ -162,7 +162,7 @@ describe('indent code line', () => {
               </hcodeline>
             </hcodeblock>
           </editor>
-        ) as any as TestEditor;
+        ) as TestEditor;
 
         const editor = createBaseEditor({
           plugins: [CodeBlockPlugin],

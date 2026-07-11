@@ -31,7 +31,7 @@ export const triggerFloatingLinkInsert = (
   if (!focused) return;
   if (editor.api.isAt({ blocks: true })) return;
 
-  const hasLink = editor.api.some({
+  const hasLink = editor.read.nodes.some({
     match: { type },
   });
 

@@ -1,7 +1,10 @@
 import type { ParseConfig } from 'papaparse';
-import type { OmitFirst, PluginConfig } from 'platejs';
+import type { PluginConfig } from '@platejs/core';
+import type { OmitFirst } from '@udecode/utils';
 
-import { bindFirst, createTSlatePlugin, KEYS } from 'platejs';
+import { createBasePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
+import { bindFirst } from '@udecode/utils';
 
 import { deserializeCsv } from './deserializer/utils';
 
@@ -33,8 +36,8 @@ export type CsvConfig = PluginConfig<
 
 export type CsvParseOptions = ParseConfig;
 
-/** Enables support for deserializing content from CSV format to Slate format. */
-export const CsvPlugin = createTSlatePlugin<CsvConfig>({
+/** Enables support for deserializing CSV content into Plate nodes. */
+export const CsvPlugin = createBasePlugin<CsvConfig>({
   key: KEYS.csv,
   options: {
     errorTolerance: 0.25,
@@ -46,9 +49,9 @@ export const CsvPlugin = createTSlatePlugin<CsvConfig>({
   .extendApi(({ editor }) => ({
     deserialize: bindFirst(deserializeCsv, editor),
   }))
-  .extend(({ api }) => ({
+  .extend({
     parser: {
       format: 'text/plain',
-      deserialize: ({ data }) => api.csv.deserialize({ data }),
+      deserialize: ({ api, data }) => api.deserialize({ data }),
     },
-  }));
+  });

@@ -1,5 +1,10 @@
 import type { BaseEditor } from '@platejs/core';
-import { type EditorNodesOptions, type Node, TextApi } from '@platejs/plite';
+import {
+  type EditorNodesOptions,
+  type Node,
+  NodeApi,
+  TextApi,
+} from '@platejs/plite';
 import { type TSuggestionText, KEYS } from '@platejs/utils';
 
 export const findInlineSuggestionNode = <E extends BaseEditor>(
@@ -11,5 +16,5 @@ export const findInlineSuggestionNode = <E extends BaseEditor>(
     match: (node, path) =>
       TextApi.isText(node) &&
       !!node[KEYS.suggestion] &&
-      (!options.match || options.match(node, path)),
+      (!options.match || NodeApi.matches(node, options.match, path)),
   });

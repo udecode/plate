@@ -77,7 +77,7 @@ const removeAIPreviewAnchor = (editor: SlateEditor) => {
 
   editor.tf.removeNodes({
     at: [],
-    match: (node) => ElementApi.isElement(node) && node.type === aiChatType,
+    match: { type: aiChatType },
   });
 };
 

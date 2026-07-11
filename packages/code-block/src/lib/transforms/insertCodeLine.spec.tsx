@@ -19,7 +19,7 @@ describe('insert code line', () => {
           <hcodeline>line 2</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as TestEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -32,7 +32,7 @@ describe('insert code line', () => {
           <hcodeline>line 2</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as TestEditor;
+    ) as TestEditor;
 
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],

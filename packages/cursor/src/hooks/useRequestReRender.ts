@@ -5,7 +5,7 @@ export const useRequestReRender = () => {
   const animationFrameRef = React.useRef<number | null>(null);
 
   const requestReRender = React.useCallback((immediate = false) => {
-    if (animationFrameRef.current && !immediate) {
+    if (animationFrameRef.current !== null && !immediate) {
       return;
     }
     if (!immediate) {
@@ -16,7 +16,7 @@ export const useRequestReRender = () => {
 
       return;
     }
-    if (animationFrameRef.current) {
+    if (animationFrameRef.current !== null) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
     }
@@ -25,7 +25,7 @@ export const useRequestReRender = () => {
   }, []);
 
   React.useEffect(() => {
-    if (animationFrameRef.current) {
+    if (animationFrameRef.current !== null) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
     }
@@ -33,7 +33,7 @@ export const useRequestReRender = () => {
 
   React.useEffect(
     () => () => {
-      if (animationFrameRef.current) {
+      if (animationFrameRef.current !== null) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     },

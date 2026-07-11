@@ -31,7 +31,7 @@ const shouldAutoLinkPasteByDefault = (
   { textBefore }: { textBefore: string }
 ) => {
   if (
-    editor.api.some({
+    editor.read.nodes.some({
       match: {
         type: [editor.getType(KEYS.codeBlock)],
       },
@@ -52,7 +52,7 @@ const getLinkAutomdMatch = (
 
   if (!selection || !editor.api.isCollapsed()) return;
   if (
-    editor.api.some({
+    editor.read.nodes.some({
       match: {
         type: [editor.getType(KEYS.codeBlock), editor.getType(KEYS.link)],
       },
@@ -96,8 +96,9 @@ const getLinkAutomdMatch = (
 const getAutolinkMatch = (
   editor: SlateEditor
 ): LinkTextAutolinkMatch | undefined => {
-  const { getUrlHref, isUrl, rangeBeforeOptions } =
-    editor.plugin(BaseLinkPlugin).getOptions();
+  const { getUrlHref, isUrl, rangeBeforeOptions } = editor
+    .plugin(BaseLinkPlugin)
+    .getOptions();
   const { selection } = editor;
 
   if (!selection || !editor.api.isCollapsed()) return;
@@ -111,7 +112,7 @@ const getAutolinkMatch = (
   }
   if (!beforeWordRange) return;
 
-  const hasLink = editor.api.some({
+  const hasLink = editor.read.nodes.some({
     at: beforeWordRange,
     match: { type: editor.getType(KEYS.link) },
   });
@@ -230,8 +231,9 @@ export const LinkRules = {
               resolve: (context) => {
                 if (!context.text) return;
 
-                const { getUrlHref } =
-                  context.editor.plugin(BaseLinkPlugin).getOptions();
+                const { getUrlHref } = context.editor
+                  .plugin(BaseLinkPlugin)
+                  .getOptions();
                 const url = getUrlHref?.(context.text) ?? context.text;
 
                 if (!validateUrl(context.editor, url)) return;
@@ -248,8 +250,9 @@ export const LinkRules = {
                 const autolinkMatch = match as LinkPasteAutolinkMatch;
 
                 if (autolinkMatch.shouldLink) {
-                  const { keepSelectedTextOnPaste } =
-                    context.editor.plugin(BaseLinkPlugin).getOptions();
+                  const { keepSelectedTextOnPaste } = context.editor
+                    .plugin(BaseLinkPlugin)
+                    .getOptions();
                   const inserted = upsertLink(context.editor, {
                     insertTextInLink: true,
                     text: keepSelectedTextOnPaste

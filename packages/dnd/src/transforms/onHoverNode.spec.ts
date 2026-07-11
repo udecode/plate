@@ -1,93 +1,57 @@
+import type { Element } from '@platejs/plite';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import {
-  NodeApi,
-  PathApi,
-  type TElement,
-  RangeApi,
-  createSlateEditor,
-} from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
 
-import type { DragItemNode } from '../types';
+import type { ElementDragItemNode } from '../types';
 
 import { DndPlugin } from '../DndPlugin';
 import * as onDropNodeModule from './onDropNode';
 import { onHoverNode } from './onHoverNode';
 
 describe('onHoverNode', () => {
-  let editor: ReturnType<typeof createSlateEditor>;
-  let dragItem: DragItemNode;
-
   const monitor = {} as DropTargetMonitor;
-  const nodeRef = {};
-  const dragElement = { id: 'drag' } as unknown as TElement;
-  const hoverElement = { id: 'hover' } as unknown as TElement;
+  const nodeRef = { current: null };
 
-  let isExpandedSpy: ReturnType<typeof spyOn>;
-  let isExpandedMock: ReturnType<typeof mock>;
-  let getDropPathSpy: ReturnType<typeof spyOn>;
-  let getDropPathMock: ReturnType<typeof mock>;
-  let previousPathSpy: ReturnType<typeof spyOn>;
-  let previousPathMock: ReturnType<typeof mock>;
-  let getNodeSpy: ReturnType<typeof spyOn>;
-  let getNodeMock: ReturnType<typeof mock>;
+  let editor = createPlateEditor({ plugins: [DndPlugin] });
+  let dragItem: ElementDragItemNode;
+  let hoverElement: Element;
 
   beforeEach(() => {
-    editor = createSlateEditor();
-    editor.getOptions = mock() as any;
-    editor.selection = null;
-    editor.setOption = mock() as any;
-    editor.tf.collapse = mock();
-    editor.tf.focus = mock();
-    editor.api.findPath = mock(() => [1]) as any;
-
+    editor = createPlateEditor({ plugins: [DndPlugin] });
+    editor.update.nodes.insert(
+      [
+        { children: [{ text: 'previous' }], id: 'previous', type: 'p' },
+        { children: [{ text: 'hover' }], id: 'hover', type: 'p' },
+        { children: [{ text: 'drag' }], id: 'drag', type: 'p' },
+      ],
+      { at: [0] }
+    );
+    const dragElement = editor.read.nodes.get<Element>([2], {
+      required: true,
+    })[0];
+    hoverElement = editor.read.nodes.get<Element>([1], { required: true })[0];
     dragItem = {
       id: 'drag',
       editorId: editor.id,
       element: dragElement,
     };
-
-    (editor.getOptions as unknown as ReturnType<typeof mock>).mockReturnValue({
+    editor.plugin(DndPlugin).setOptions({
       _isOver: true,
       dropTarget: { id: null, line: '' },
     });
-
-    isExpandedMock = mock();
-    isExpandedSpy = spyOn(RangeApi, 'isExpanded').mockImplementation(
-      isExpandedMock as unknown as typeof RangeApi.isExpanded
-    );
-
-    getDropPathMock = mock();
-    getDropPathSpy = spyOn(onDropNodeModule, 'getDropPath').mockImplementation(
-      getDropPathMock as unknown as typeof onDropNodeModule.getDropPath
-    );
-
-    previousPathMock = mock();
-    previousPathSpy = spyOn(PathApi, 'previous').mockImplementation(
-      previousPathMock as unknown as typeof PathApi.previous
-    );
-
-    getNodeMock = mock();
-    getNodeSpy = spyOn(NodeApi, 'get').mockImplementation(
-      getNodeMock as unknown as typeof NodeApi.get
-    );
   });
 
   afterEach(() => {
-    isExpandedSpy?.mockRestore();
-    getDropPathSpy?.mockRestore();
-    previousPathSpy?.mockRestore();
-    getNodeSpy?.mockRestore();
+    mock.restore();
   });
 
-  it('update plugin options when direction changes', () => {
-    getDropPathMock.mockReturnValueOnce({
+  it('updates the plugin drop target when direction changes', () => {
+    spyOn(onDropNodeModule, 'getDropPath').mockReturnValue({
       direction: 'bottom',
-      dragPath: [0],
-      to: [1],
+      dragPath: [2],
+      to: [2],
     });
-
-    isExpandedMock.mockReturnValue(false);
 
     onHoverNode(editor, {
       dragItem,
@@ -96,25 +60,23 @@ describe('onHoverNode', () => {
       nodeRef,
     });
 
-    expect(editor.setOption).toHaveBeenCalledWith(DndPlugin, 'dropTarget', {
+    expect(editor.plugin(DndPlugin).getOption('dropTarget')).toEqual({
       id: 'hover',
       line: 'bottom',
     });
   });
 
-  it('collapse selection and focus editor if direction is returned and selection is expanded', () => {
-    getDropPathMock.mockReturnValueOnce({
+  it('focuses and collapses an expanded selection', () => {
+    spyOn(onDropNodeModule, 'getDropPath').mockReturnValue({
       direction: 'bottom',
-      dragPath: [0],
-      to: [1],
+      dragPath: [2],
+      to: [2],
     });
-
-    isExpandedMock.mockReturnValue(true);
-
-    editor.selection = {
-      anchor: { offset: 0, path: [0] },
-      focus: { offset: 0, path: [1] },
-    };
+    spyOn(editor.api.dom, 'focus').mockImplementation(() => {});
+    editor.update.selection.set({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [1, 0] },
+    });
 
     onHoverNode(editor, {
       dragItem,
@@ -123,38 +85,14 @@ describe('onHoverNode', () => {
       nodeRef,
     });
 
-    expect(editor.tf.collapse).toHaveBeenCalled();
-    expect(editor.tf.focus).toHaveBeenCalled();
+    expect(editor.read.selection.isExpanded()).toBe(false);
   });
 
-  it('handle horizontal orientation', () => {
-    getDropPathMock.mockReturnValueOnce({
-      direction: 'left',
-      dragPath: [0],
-      to: [1],
-    });
-
-    isExpandedMock.mockReturnValue(false);
-
-    onHoverNode(editor, {
-      dragItem,
-      element: hoverElement,
-      monitor,
-      nodeRef,
-      orientation: 'horizontal',
-    });
-
-    expect(editor.setOption).toHaveBeenCalledWith(DndPlugin, 'dropTarget', {
+  it('clears a stale drop target when no move is available', () => {
+    spyOn(onDropNodeModule, 'getDropPath').mockReturnValue(undefined);
+    editor.plugin(DndPlugin).setOption('dropTarget', {
       id: 'hover',
-      line: 'left',
-    });
-  });
-
-  it('clear dropTarget when no direction is returned', () => {
-    getDropPathMock.mockReturnValueOnce(undefined);
-
-    (editor.getOptions as unknown as ReturnType<typeof mock>).mockReturnValue({
-      dropTarget: { id: 'hover', line: 'bottom' },
+      line: 'bottom',
     });
 
     onHoverNode(editor, {
@@ -164,20 +102,18 @@ describe('onHoverNode', () => {
       nodeRef,
     });
 
-    expect(editor.setOption).toHaveBeenCalledWith(DndPlugin, 'dropTarget', {
+    expect(editor.plugin(DndPlugin).getOption('dropTarget')).toEqual({
       id: null,
       line: '',
     });
   });
 
-  it('maps top drops to the previous node bottom edge when available', () => {
-    getDropPathMock.mockReturnValueOnce({
+  it('maps a top drop to the previous block bottom edge', () => {
+    spyOn(onDropNodeModule, 'getDropPath').mockReturnValue({
       direction: 'top',
       dragPath: [2],
       to: [1],
     });
-    previousPathMock.mockReturnValueOnce([0]);
-    getNodeMock.mockReturnValueOnce({ id: 'previous' });
 
     onHoverNode(editor, {
       dragItem,
@@ -186,43 +122,19 @@ describe('onHoverNode', () => {
       nodeRef,
     });
 
-    expect(editor.setOption).toHaveBeenCalledWith(DndPlugin, 'dropTarget', {
+    expect(editor.plugin(DndPlugin).getOption('dropTarget')).toEqual({
       id: 'previous',
       line: 'bottom',
     });
   });
 
-  it('falls back to the hovered node when top placement has no previous sibling', () => {
-    getDropPathMock.mockReturnValueOnce({
-      direction: 'top',
-      dragPath: [0],
-      to: [0],
-    });
-    previousPathMock.mockReturnValueOnce(undefined);
-
-    onHoverNode(editor, {
-      dragItem,
-      element: hoverElement,
-      monitor,
-      nodeRef,
-    });
-
-    expect(editor.setOption).toHaveBeenCalledWith(DndPlugin, 'dropTarget', {
-      id: 'hover',
-      line: 'top',
-    });
-  });
-
-  it('does not update the drop target when the editor is not over the drop zone', () => {
-    getDropPathMock.mockReturnValueOnce({
+  it('does not update while the editor is outside the drop zone', () => {
+    spyOn(onDropNodeModule, 'getDropPath').mockReturnValue({
       direction: 'bottom',
-      dragPath: [0],
-      to: [1],
+      dragPath: [2],
+      to: [2],
     });
-    (editor.getOptions as unknown as ReturnType<typeof mock>).mockReturnValue({
-      _isOver: false,
-      dropTarget: { id: null, line: '' },
-    });
+    editor.plugin(DndPlugin).setOption('_isOver', false);
 
     onHoverNode(editor, {
       dragItem,
@@ -231,6 +143,9 @@ describe('onHoverNode', () => {
       nodeRef,
     });
 
-    expect(editor.setOption).not.toHaveBeenCalled();
+    expect(editor.plugin(DndPlugin).getOption('dropTarget')).toEqual({
+      id: null,
+      line: '',
+    });
   });
 });

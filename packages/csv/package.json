@@ -41,19 +41,15 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/table": "workspace:*",
-    "papaparse": "^5.5.3",
-    "react-compiler-runtime": "^1.0.0"
+    "@platejs/core": "workspace:^",
+    "@platejs/plite": "workspace:^",
+    "@platejs/utils": "workspace:^",
+    "@udecode/utils": "workspace:^",
+    "papaparse": "^5.5.3"
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
-    "platejs": "workspace:^",
     "@types/papaparse": "^5.3.16"
-  },
-  "peerDependencies": {
-    "platejs": ">=54.0.0-beta.0",
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

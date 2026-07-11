@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { usePluginOption } from 'platejs/react';
+import { usePluginOption } from '@platejs/core/react';
 
 import { DndPlugin } from '../../DndPlugin';
 import { type ScrollerProps, Scroller } from './Scroller';
@@ -20,7 +20,7 @@ export function DndScroller(props: Partial<ScrollerProps>) {
     }
 
     setShow(false);
-  }, [isDragging, show]);
+  }, [isDragging]);
 
   return <Scroller enabled={isDragging && show} {...props} />;
 }

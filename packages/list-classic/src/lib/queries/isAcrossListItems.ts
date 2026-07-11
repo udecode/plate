@@ -13,7 +13,7 @@ export const isAcrossListItems = (
 
   if (!isAcrossBlocks) return false;
 
-  return editor.api.some({
+  return editor.read.nodes.some({
     at,
     match: { type: editor.getType(KEYS.li) },
   });

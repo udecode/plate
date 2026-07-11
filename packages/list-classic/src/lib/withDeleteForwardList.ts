@@ -151,7 +151,7 @@ const selectionIsInAListHandler = (
     const _licNodes = editor.api.nodes<TElement>({
       at: pointAfterListItem.path,
       mode: 'lowest',
-      match: (node) => node.type === licType,
+      match: { type: licType },
     });
     const nextSelectableLic = [..._licNodes][0];
 

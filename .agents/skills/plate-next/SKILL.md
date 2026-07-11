@@ -171,6 +171,58 @@ Rules:
   Use callback form only when grouping multiple reads/writes under one
   snapshot/transaction, sharing intermediate state, branching/looping, or
   calling behavior that has no direct one-shot API yet.
+- Prefer Plite's live node targets and shallow property matchers over migrated
+  query boilerplate. If code already has a live descendant, pass it directly
+  to an `at` option or another `NodeTarget` parameter. Resolve
+  `editor.read.nodes.path(node)` only when a `Path` is the actual result. Never
+  rediscover that node with `read.nodes.find` by matching its `type` and `id`.
+  Plate package source must handle an unresolved path instead of asserting it.
+- Use `match: { type }`, `match: { id }`, or an array-valued one-of matcher for
+  shallow exact node metadata checks. Property matchers intentionally ignore
+  `text` and `children`; content and structure checks stay predicates. Keep a
+  predicate for computed schema policy, path-dependent logic, truthiness
+  semantics, or static narrowing that the caller consumes. Do not write
+  `ElementApi.isElement(node) && node.type === type` when the owning API accepts
+  a property matcher.
+- Flat compatibility lookups are forbidden: migrate `editor.api.findPath(node)`
+  to `editor.read.nodes.path(node)` and `editor.api.some(options)` to
+  `editor.read.nodes.some(options)`. Do not re-add aliases, Plate wrappers, or
+  implicit type/ID tree scans around those Plite reads.
+- Boolean node-query law: do not call an entry-producing collection query such
+  as `read.nodes.find`, `toArray`, or `entries` when the caller only
+  needs to know whether the same query has a match. Use
+  `editor.read.nodes.some(options)` and preserve `at`, `match`, root, mode, and
+  void semantics. Do not apply this mechanically to `above`, `block`,
+  `parent`, `previous`, or `next`: those express ancestor, current-block, or
+  relative traversal that `nodes.some` does not necessarily preserve. Keep an
+  entry-producing query whenever the caller consumes the node/path or its
+  distinct traversal semantics.
+- Treat explicit normalization as a semantic operation, not transaction
+  punctuation. In Plite, bare `tx.normalize()` and
+  `editor.update.normalize()` default to an explicit full-root pass
+  (`force: true`). Plate feature code must not add either form merely to
+  coalesce adjacent text leaves, preserve an old Slate fixture shape, or "make
+  sure" a transform settled.
+- Before keeping any explicit normalization call, name its owner and invariant:
+  an intentional document/import repair, an initialization option that promises
+  full normalization, or a package normalizer whose behavior must run over the
+  complete root. Prefer normal transaction dirty-path normalization for local
+  edits. Use `{ force: false }` only when the feature deliberately requests an
+  explicit dirty-path pass and a focused test proves why the normal transaction
+  lifecycle is insufficient.
+- If an operation should always preserve a structural invariant, repair the
+  smallest Plite transform/normalizer owner instead of adding feature-local
+  `normalize` calls. If only the physical grouping of equivalent text leaves
+  differs, remove the call and assert user-visible text, selection, node
+  semantics, and the owning feature behavior rather than exact leaf
+  coalescing.
+- A test may call `editor.update.normalize({ force: true })` to explicitly
+  exercise an installed normalizer against an intentionally invalid fixture.
+  That is a test trigger, not production precedent. Every broad normalization
+  correction must inventory all `tx.normalize(...)` and
+  `editor.update.normalize(...)` matches in the active scope and classify each
+  as `cut`, `semantic-dirty-path`, `semantic-full-root`,
+  `explicit-normalizer-test`, `lifecycle-option`, or `Plite-owner-gap`.
 - Plate feature-package source must treat unresolved public Plite reads as an
   optional outcome. Do not add `{ required: true }` or a non-null assertion
   merely to avoid handling `undefined`; target the live node when available,
@@ -454,6 +506,10 @@ Default suspicion list:
   tx.*(); })` wrappers when the direct one-shot method exists. These cap the
   file below `100` until replaced or justified as grouped transaction/snapshot
   logic.
+- bare or `{ force: true }` explicit normalization in feature-package
+  production code without a named full-root semantic invariant. Such a file is
+  capped below `50`; a comment, green snapshot, or old leaf-coalescing fixture
+  is not sufficient evidence.
 - transform/input-rule/command callbacks that mutate through `editor.update.*`
   while an active `tx` should be available. Fix the context owner and pass `tx`;
   do not scatter local `editor.update` calls inside the callback.

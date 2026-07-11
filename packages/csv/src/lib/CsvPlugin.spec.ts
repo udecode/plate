@@ -1,18 +1,18 @@
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { deserializeCsv } from './deserializer/utils/deserializeCsv';
 import { CsvPlugin } from './CsvPlugin';
 
 describe('CsvPlugin', () => {
   it('exposes the default options, bound csv api, and plain-text parser contract', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [CsvPlugin],
     });
     const plugin = editor.getPlugin(CsvPlugin);
     const data = 'name,age\nAda,36';
     const parserOptions = {
       data,
-      dataTransfer: {} as DataTransfer,
+      dataTransfer: new DataTransfer(),
       mimeType: 'text/plain',
     };
 
@@ -23,10 +23,13 @@ describe('CsvPlugin', () => {
       },
     });
     expect(typeof editor.api.csv.deserialize).toBe('function');
-    expect(typeof editor.getApi(CsvPlugin).csv.deserialize).toBe('function');
+    expect(typeof editor.plugin(CsvPlugin).api.deserialize).toBe('function');
     expect(plugin.parser?.format).toBe('text/plain');
-    expect(plugin.parser?.deserialize?.(parserOptions as any)).toEqual(
-      deserializeCsv(editor, { data })
-    );
+    expect(
+      plugin.parser?.deserialize?.({
+        ...editor.plugin(CsvPlugin),
+        ...parserOptions,
+      })
+    ).toEqual(deserializeCsv(editor, { data }));
   });
 });

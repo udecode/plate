@@ -85,7 +85,7 @@ export const useFloatingLinkEdit = ({
     if (
       editor.selection &&
       editor.api.isCollapsed() &&
-      editor.api.some({
+      editor.read.nodes.some({
         match: { type: editor.getType(KEYS.link) },
       })
     ) {

@@ -17,7 +17,7 @@ export const deleteRow = (editor: SlateEditor) => {
     return deleteTableMergeRow(editor);
   }
   if (
-    editor.api.some({
+    editor.read.nodes.some({
       match: { type },
     })
   ) {

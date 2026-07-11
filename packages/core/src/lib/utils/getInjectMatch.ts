@@ -27,15 +27,14 @@ export const getInjectMatch = <E extends BaseEditor>(
     }
     if (isLeaf && element) return false;
     if (element?.type) {
+      const pluginKey = getPluginKey(editor, element.type);
+
       // Exclude plugins
-      if (excludePlugins?.includes(getPluginKey(editor, element.type)!)) {
+      if (pluginKey && excludePlugins?.includes(pluginKey)) {
         return false;
       }
       // Target plugins
-      if (
-        targetPlugins &&
-        !targetPlugins.includes(getPluginKey(editor, element.type)!)
-      ) {
+      if (targetPlugins && (!pluginKey || !targetPlugins.includes(pluginKey))) {
         return false;
       }
     }
@@ -50,8 +49,7 @@ export const getInjectMatch = <E extends BaseEditor>(
         const excludeTypes = getPluginKeys(editor, excludeBelowPlugins);
         const isBelow = editor.read.nodes.above({
           at: path,
-          match: (n) =>
-            ElementApi.isElement(n) && excludeTypes.includes(n.type),
+          match: { type: excludeTypes },
         });
 
         if (isBelow) return false;

@@ -8,7 +8,7 @@ const INLINE_BOUNDARY_RE = /[\s([{'"`]/;
 const INLINE_FOLLOW_RE = /[\s)\]}:;,.!?'"`]/;
 
 const isEquationInputBlocked = (editor: SlateEditor) =>
-  editor.api.some({
+  editor.read.nodes.some({
     match: {
       type: [
         editor.getType(KEYS.codeBlock),

@@ -1,10 +1,12 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useEffect } from 'react';
 
-import type { Path, PluginConfig } from 'platejs';
+import type { PluginConfig } from '@platejs/core';
+import type { PlateEditor } from '@platejs/core/react';
+import type { Path } from '@platejs/plite';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { KEYS } from 'platejs';
-import { type PlateEditor, createTPlatePlugin } from 'platejs/react';
+import { createPlatePlugin } from '@platejs/core/react';
+import { KEYS } from '@platejs/utils';
 
 import type {
   DragItemNode,
@@ -34,13 +36,13 @@ export type DndConfig = PluginConfig<
       dragItem: FileDragItemNode;
       editor: PlateEditor;
       monitor: DropTargetMonitor<DragItemNode, unknown>;
-      nodeRef: any;
+      nodeRef: React.RefObject<HTMLElement | null>;
       target?: Path;
     }) => void;
   }
 >;
 
-export const DndPlugin = createTPlatePlugin<DndConfig>({
+export const DndPlugin = createPlatePlugin<DndConfig>({
   key: KEYS.dnd,
   editOnly: true,
   handlers: {
@@ -52,9 +54,14 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
       editor.plugin(plugin).setOption('_isOver', true);
     },
     onDragStart: ({ editor, event, plugin }) => {
-      const target = event.target as HTMLElement;
+      if (!(event.target instanceof HTMLElement)) return;
 
-      const dataTransfer = (event as React.DragEvent).dataTransfer!;
+      const target = event.target;
+
+      const { dataTransfer } = event;
+
+      if (!dataTransfer) return;
+
       dataTransfer.effectAllowed = 'move';
       dataTransfer.dropEffect = 'move';
 
@@ -72,7 +79,8 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
       editor.plugin(plugin).setOption('dropTarget', { id: null, line: '' });
       editor.plugin(plugin).setOption('_isOver', false);
       editor
-        .getOption(plugin, 'multiplePreviewRef')
+        .plugin(plugin)
+        .getOption('multiplePreviewRef')
         ?.current?.replaceChildren();
     },
   },
@@ -84,15 +92,15 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
     multiplePreviewRef: null,
   },
   useHooks: ({ editor, setOption }) => {
-    const handleDragLeave = useCallback(
-      (e: DragEvent) => {
+    useEffect(() => {
+      const handleDragLeave = (e: DragEvent) => {
         // This event fires for every element that receives a drag leave event. As soon as it is fired on the
         // editable dom node, or above, we will unset the drop target, and therefore hide the drop line.
         // In other words, whenever the drag is not happening inside the editor anymore, we will hide the
         // drop line which makes sense, since a potential drop would not insert anything into the editor.
         // This will also apply, if the user move the drag operation outside the document.
         if (e.target instanceof Node) {
-          const editorDOMNode = editor.api.toDOMNode(editor);
+          const editorDOMNode = editor.api.dom.resolveDOMNode(editor);
 
           if (!editorDOMNode) return;
 
@@ -121,20 +129,17 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
             setOption('dropTarget', undefined);
           }
         }
-      },
-      [editor, setOption]
-    );
+      };
 
-    // We listen for the drop event on the document and not only inside the editor, because we want to
-    // remove the dropTarget, and therefore hide the drop line, also when the drop happened outside of
-    // the editor. Needed, if the drag did not start inside the editor, but for example by dragging a
-    // file from the filesystem
-    const handleDrop = useCallback(() => {
-      setOption('_isOver', false);
-      setOption('dropTarget', undefined);
-    }, [setOption]);
+      // We listen for the drop event on the document and not only inside the editor, because we want to
+      // remove the dropTarget, and therefore hide the drop line, also when the drop happened outside of
+      // the editor. Needed, if the drag did not start inside the editor, but for example by dragging a
+      // file from the filesystem
+      const handleDrop = () => {
+        setOption('_isOver', false);
+        setOption('dropTarget', undefined);
+      };
 
-    useEffect(() => {
       document.addEventListener('dragleave', handleDragLeave, true);
       document.addEventListener('drop', handleDrop, true);
 
@@ -142,7 +147,7 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
         document.removeEventListener('dragleave', handleDragLeave, true);
         document.removeEventListener('drop', handleDrop, true);
       };
-    }, [handleDragLeave, handleDrop]);
+    }, [editor, setOption]);
   },
 }).extend(({ getOptions }) => ({
   render: {

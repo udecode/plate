@@ -36,8 +36,10 @@ describe('useExcalidrawElement', () => {
     const setNodes = mock();
 
     useEditorRefMock.mockReturnValue({
-      api: {
-        findPath: () => [0],
+      read: {
+        nodes: {
+          path: () => [0],
+        },
       },
       tf: { setNodes },
     });

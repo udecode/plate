@@ -4,6 +4,7 @@ import {
   type EditorUpdateTransaction,
   type Location,
   type Node,
+  NodeApi,
   type NodeSetNodesOptions,
   RangeApi,
   TextApi,
@@ -82,7 +83,7 @@ export const setSuggestionNodesWithTx = (
     node,
     path
   ) => {
-    if (nodeOptions.match && !nodeOptions.match(node, path)) {
+    if (nodeOptions.match && !NodeApi.matches(node, nodeOptions.match, path)) {
       return false;
     }
     if (!includeInlineElements || !TextApi.isText(node)) {

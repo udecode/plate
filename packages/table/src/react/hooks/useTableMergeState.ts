@@ -18,7 +18,7 @@ export const useTableMergeState = () => {
 
   const readOnly = useReadOnly();
   const someTable = useEditorSelector(
-    (editor) => editor.api.some({ match: { type: KEYS.table } }),
+    (editor) => editor.read.nodes.some({ match: { type: KEYS.table } }),
     []
   );
   const selectionExpanded = useEditorSelector(

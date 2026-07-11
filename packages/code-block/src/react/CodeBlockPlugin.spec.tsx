@@ -1,18 +1,37 @@
 /** @jsx jsxt */
 
 import {
+  type BaseEditor,
   BaseParagraphPlugin,
   createBaseEditor,
   createBasePlugin,
 } from '@platejs/core';
-import { jsxt, type TestEditor } from '@platejs/test-utils';
+import { defineEditorExtension } from '@platejs/plite';
+import { createDataTransfer, jsxt, type TestEditor } from '@platejs/test-utils';
+import { createLowlight } from 'lowlight';
 
 import { CodeBlockPlugin } from './CodeBlockPlugin';
 
 jsxt;
 
-describe('code block deserialization', () => {
-  describe('when selection in code line', () => {
+const installRefreshDecorationsProbe = (
+  editor: BaseEditor,
+  refreshDecorations: () => void
+) => {
+  editor.extend(
+    defineEditorExtension({
+      api: {
+        react: {
+          refreshDecorations,
+        },
+      },
+      name: 'test:react-refresh-decorations',
+    })
+  );
+};
+
+describe('CodeBlockPlugin', () => {
+  describe('deserialization inside a code line', () => {
     it('disable all deserializers except the ast serializer', () => {
       const input = (
         <editor>
@@ -23,7 +42,7 @@ describe('code block deserialization', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as TestEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -31,7 +50,7 @@ describe('code block deserialization', () => {
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as TestEditor;
+      ) as TestEditor;
 
       const editor = createBaseEditor({
         plugins: [
@@ -51,15 +70,20 @@ describe('code block deserialization', () => {
         value: input.children,
       });
 
-      editor.api.clipboard.insertData({
-        getData: () => `<pre><code>test</code></pre>`,
-      } as any);
+      editor.api.clipboard.insertData(
+        createDataTransfer(
+          new Map([
+            ['text/html', '<pre><code>test</code></pre>'],
+            ['text/plain', '<pre><code>test</code></pre>'],
+          ])
+        )
+      );
 
       expect(editor.read.children()).toEqual(output.children);
     });
   });
 
-  describe('when selection outside of code line', () => {
+  describe('deserialization outside a code line', () => {
     it('does not affect deserialization', () => {
       const input = (
         <editor>
@@ -67,7 +91,7 @@ describe('code block deserialization', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as TestEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -75,7 +99,7 @@ describe('code block deserialization', () => {
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as TestEditor;
+      ) as TestEditor;
 
       const editor = createBaseEditor({
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
@@ -83,16 +107,17 @@ describe('code block deserialization', () => {
         value: input.children,
       });
 
-      editor.api.clipboard.insertData({
-        getData: (format: string) =>
-          format === 'text/html' && `<pre><code>test</code></pre>`,
-      } as any);
+      editor.api.clipboard.insertData(
+        createDataTransfer(
+          new Map([['text/html', '<pre><code>test</code></pre>']])
+        )
+      );
 
       expect(editor.read.children()).toEqual(output.children);
     });
   });
 
-  describe('deleting lines after the codeblock', () => {
+  describe('normalization after deleting code lines', () => {
     it('normalizes inserted nodes into code lines', () => {
       const input = (
         <editor>
@@ -104,7 +129,7 @@ describe('code block deserialization', () => {
           </hcodeblock>
           <hp>Line 3</hp>
         </editor>
-      ) as any as TestEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -116,7 +141,7 @@ describe('code block deserialization', () => {
           </hcodeblock>
           <hp>Line 3</hp>
         </editor>
-      ) as any as TestEditor;
+      ) as TestEditor;
 
       const editor = createBaseEditor({
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
@@ -127,5 +152,85 @@ describe('code block deserialization', () => {
       editor.update.text.deleteBackward();
       expect(editor.read.children()).toEqual(output.children);
     });
+  });
+});
+
+describe('CodeBlockPlugin operations', () => {
+  it('refreshes decorations when the language changes', () => {
+    const input = (
+      <editor>
+        <hcodeblock>
+          <hcodeline>aa</hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as TestEditor;
+    const editor = createBaseEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        CodeBlockPlugin.configure({
+          options: { lowlight: createLowlight() },
+        }),
+      ],
+      value: input.children,
+    });
+    const refreshDecorations = mock();
+
+    installRefreshDecorationsProbe(editor, refreshDecorations);
+
+    editor.update.nodes.set({ lang: 'json' }, { at: [0] });
+
+    expect(refreshDecorations).toHaveBeenCalledTimes(1);
+  });
+
+  it('refreshes when the language changes to plaintext', () => {
+    const input = (
+      <editor>
+        <hcodeblock lang="javascript">
+          <hcodeline>aa</hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as TestEditor;
+    const editor = createBaseEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        CodeBlockPlugin.configure({
+          options: { lowlight: createLowlight() },
+        }),
+      ],
+      value: input.children,
+    });
+    const refreshDecorations = mock();
+
+    installRefreshDecorationsProbe(editor, refreshDecorations);
+
+    editor.update.nodes.set({ lang: 'plaintext' }, { at: [0] });
+
+    expect(refreshDecorations).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not refresh for unrelated code block properties', () => {
+    const input = (
+      <editor>
+        <hcodeblock lang="javascript">
+          <hcodeline>aa</hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as TestEditor;
+    const editor = createBaseEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        CodeBlockPlugin.configure({
+          options: { lowlight: createLowlight() },
+        }),
+      ],
+      value: input.children,
+    });
+    const refreshDecorations = mock();
+
+    installRefreshDecorationsProbe(editor, refreshDecorations);
+
+    editor.update.nodes.set({ foo: 'bar' }, { at: [0] });
+
+    expect(refreshDecorations).not.toHaveBeenCalled();
   });
 });

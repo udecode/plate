@@ -40,12 +40,10 @@ const _toggleList = (
         } else {
           editor.tf.setNodes(
             { type },
-            {
-              at: editor.selection,
-              mode: 'lowest',
-              match: (n) =>
-                ElementApi.isElement(n) &&
-                getListTypes(editor).includes(n.type),
+              {
+                at: editor.selection,
+                mode: 'lowest',
+                match: { type: getListTypes(editor) },
             }
           );
         }
@@ -140,9 +138,7 @@ const _toggleList = (
               {
                 at: n[1],
                 mode: 'all',
-                match: (_n) =>
-                  ElementApi.isElement(_n) &&
-                  getListTypes(editor).includes(_n.type),
+                match: { type: getListTypes(editor) },
               }
             );
           } else {

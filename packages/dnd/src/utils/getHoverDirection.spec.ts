@@ -1,114 +1,115 @@
-import type { TElement } from 'platejs';
+import type { Element } from '@platejs/plite';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import type { DragItemNode } from '../types';
+import type { ElementDragItemNode } from '../types';
 
 import { getHoverDirection } from './getHoverDirection';
 
 describe('getHoverDirection', () => {
-  const nodeRef = {
-    current: {
-      getBoundingClientRect: mock(),
-    },
-  } as any;
-
-  const mockMonitor = {
-    getClientOffset: mock(),
-  } as unknown as DropTargetMonitor;
-
-  const dragElement = { id: 'drag' } as unknown as TElement;
-  const dragItem: DragItemNode = {
+  const getClientOffset = mock();
+  const monitor = { getClientOffset } as unknown as DropTargetMonitor;
+  const node = document.createElement('div');
+  const nodeRef = { current: node };
+  const dragElement: Element = {
+    children: [{ text: 'drag' }],
+    id: 'drag',
+    type: 'p',
+  };
+  const dragItem: ElementDragItemNode = {
     id: 'drag',
     editorId: 'editor',
     element: dragElement,
   };
-
-  const hoverElement = { id: 'hover' } as unknown as TElement;
+  const hoverElement: Element = {
+    children: [{ text: 'hover' }],
+    id: 'hover',
+    type: 'p',
+  };
 
   beforeEach(() => {
-    // Mocks cleared in afterEach
+    spyOn(node, 'getBoundingClientRect').mockReturnValue(
+      new DOMRect(100, 100, 100, 100)
+    );
   });
 
-  it('returns "top" when vertical and mouse is above middle', () => {
-    nodeRef.current.getBoundingClientRect.mockReturnValue({
-      bottom: 200,
-      top: 100,
-    });
-    (mockMonitor.getClientOffset as any).mockReturnValue({ x: 150, y: 120 });
-
-    const direction = getHoverDirection({
-      dragItem,
-      element: hoverElement,
-      monitor: mockMonitor,
-      nodeRef,
-      orientation: 'vertical',
-    });
-
-    expect(direction).toBe('top');
+  afterEach(() => {
+    mock.restore();
   });
 
-  it('returns "bottom" when vertical and mouse is below middle', () => {
-    nodeRef.current.getBoundingClientRect.mockReturnValue({
-      bottom: 200,
-      top: 100,
-    });
-    (mockMonitor.getClientOffset as any).mockReturnValue({ x: 150, y: 180 });
+  it('returns top when a vertical pointer is above the midpoint', () => {
+    getClientOffset.mockReturnValue({ x: 150, y: 120 });
 
-    const direction = getHoverDirection({
-      dragItem,
-      element: hoverElement,
-      monitor: mockMonitor,
-      nodeRef,
-      orientation: 'vertical',
-    });
-
-    expect(direction).toBe('bottom');
+    expect(
+      getHoverDirection({
+        dragItem,
+        element: hoverElement,
+        monitor,
+        nodeRef,
+        orientation: 'vertical',
+      })
+    ).toBe('top');
   });
 
-  it('returns "left" when horizontal and mouse is left of middle', () => {
-    nodeRef.current.getBoundingClientRect.mockReturnValue({
-      left: 100,
-      right: 200,
-    });
-    (mockMonitor.getClientOffset as any).mockReturnValue({ x: 120, y: 150 });
+  it('returns bottom when a vertical pointer is below the midpoint', () => {
+    getClientOffset.mockReturnValue({ x: 150, y: 180 });
 
-    const direction = getHoverDirection({
-      dragItem,
-      element: hoverElement,
-      monitor: mockMonitor,
-      nodeRef,
-      orientation: 'horizontal',
-    });
-
-    expect(direction).toBe('left');
+    expect(
+      getHoverDirection({
+        dragItem,
+        element: hoverElement,
+        monitor,
+        nodeRef,
+        orientation: 'vertical',
+      })
+    ).toBe('bottom');
   });
 
-  it('returns "right" when horizontal and mouse is right of middle', () => {
-    nodeRef.current.getBoundingClientRect.mockReturnValue({
-      left: 100,
-      right: 200,
-    });
-    (mockMonitor.getClientOffset as any).mockReturnValue({ x: 180, y: 150 });
+  it('returns left or right around the horizontal midpoint', () => {
+    getClientOffset.mockReturnValue({ x: 120, y: 150 });
+    expect(
+      getHoverDirection({
+        dragItem,
+        element: hoverElement,
+        monitor,
+        nodeRef,
+        orientation: 'horizontal',
+      })
+    ).toBe('left');
 
-    const direction = getHoverDirection({
-      dragItem,
-      element: hoverElement,
-      monitor: mockMonitor,
-      nodeRef,
-      orientation: 'horizontal',
-    });
-
-    expect(direction).toBe('right');
+    getClientOffset.mockReturnValue({ x: 180, y: 150 });
+    expect(
+      getHoverDirection({
+        dragItem,
+        element: hoverElement,
+        monitor,
+        nodeRef,
+        orientation: 'horizontal',
+      })
+    ).toBe('right');
   });
 
-  it('returns undefined if dragId === id', () => {
-    const direction = getHoverDirection({
-      dragItem,
-      element: dragElement,
-      monitor: mockMonitor,
-      nodeRef,
-    });
+  it('returns undefined when hovering a selected block', () => {
+    expect(
+      getHoverDirection({
+        dragItem,
+        element: dragElement,
+        monitor,
+        nodeRef,
+      })
+    ).toBeUndefined();
+  });
 
-    expect(direction).toBeUndefined();
+  it('allows matching block ids across different editors', () => {
+    getClientOffset.mockReturnValue({ x: 150, y: 180 });
+
+    expect(
+      getHoverDirection({
+        dragItem,
+        editorId: 'target-editor',
+        element: { ...hoverElement, id: 'drag' },
+        monitor,
+        nodeRef,
+      })
+    ).toBe('bottom');
   });
 });

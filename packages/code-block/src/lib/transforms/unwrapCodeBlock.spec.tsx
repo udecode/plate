@@ -1,9 +1,7 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
-
-import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
@@ -23,7 +21,7 @@ describe('unwrap code block', () => {
           <hcodeline>line 2</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -33,17 +31,19 @@ describe('unwrap code block', () => {
         </hp>
         <hp>line 2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    unwrapCodeBlock(editor);
+    editor.update((tx) => {
+      unwrapCodeBlock(editor, tx);
+    });
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('turn multiple code blocks to multiple p', () => {
@@ -65,7 +65,7 @@ describe('unwrap code block', () => {
           <hcodeline>line 5</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -81,17 +81,19 @@ describe('unwrap code block', () => {
         </hp>
         <hp>line 5</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    unwrapCodeBlock(editor);
+    editor.update((tx) => {
+      unwrapCodeBlock(editor, tx);
+    });
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   describe('when not inside code block', () => {
@@ -108,7 +110,7 @@ describe('unwrap code block', () => {
             <hcodeline>line 3</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -124,17 +126,19 @@ describe('unwrap code block', () => {
             <hcodeline>line 3</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
       });
 
-      unwrapCodeBlock(editor);
+      editor.update((tx) => {
+        unwrapCodeBlock(editor, tx);
+      });
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read.children()).toEqual(output.children);
     });
   });
 });

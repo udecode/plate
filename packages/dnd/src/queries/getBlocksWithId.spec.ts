@@ -1,23 +1,24 @@
+import { createPlateEditor } from '@platejs/core/react';
+
 import { getBlocksWithId } from './getBlocksWithId';
 
 describe('getBlocksWithId', () => {
-  it('collects only block nodes with ids from editor.api.nodes', () => {
-    const nodes = [
-      [{ children: [{ text: '' }], id: 'a', type: 'p' }, [0]],
-      [{ children: [{ text: '' }], type: 'p' }, [1]],
-      [{ children: [{ text: '' }], id: 'b', type: 'blockquote' }, [2]],
-    ];
-    const editor = {
-      api: {
-        isBlock: (node: any) => node.type !== 'text',
-        nodes: ({ match }: any) =>
-          nodes.filter(([node]) => match(node))[Symbol.iterator](),
-      },
-    } as any;
+  it('collects only block nodes with ids', () => {
+    const editor = createPlateEditor();
+    editor.update.nodes.insert(
+      [
+        { children: [{ text: '' }], id: 'a', type: 'p' },
+        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: '' }], id: 'b', type: 'blockquote' },
+      ],
+      { at: [0] }
+    );
 
-    expect(getBlocksWithId(editor, {} as any)).toEqual([
-      [{ children: [{ text: '' }], id: 'a', type: 'p' }, [0]],
-      [{ children: [{ text: '' }], id: 'b', type: 'blockquote' }, [2]],
+    expect(
+      getBlocksWithId(editor, { at: [] }).map(([node, path]) => [node.id, path])
+    ).toEqual([
+      ['a', [0]],
+      ['b', [2]],
     ]);
   });
 });

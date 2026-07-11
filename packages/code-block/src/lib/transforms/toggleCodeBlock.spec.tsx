@@ -1,16 +1,14 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
-
-import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { toggleCodeBlock } from './toggleCodeBlock';
 
 jsxt;
 
-describe('toggle on', () => {
+describe('toggle code block', () => {
   it('turn a p to a code block', () => {
     const input = (
       <editor>
@@ -20,7 +18,7 @@ describe('toggle on', () => {
         </hp>
         <hp>line 2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -32,17 +30,19 @@ describe('toggle on', () => {
         </hcodeblock>
         <hp>line 2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    toggleCodeBlock(editor);
+    editor.update((tx) => {
+      toggleCodeBlock(editor, tx);
+    });
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('turn a p with a selection to code block', () => {
@@ -54,7 +54,7 @@ describe('toggle on', () => {
           <focus /> gandavum!
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -66,17 +66,19 @@ describe('toggle on', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    toggleCodeBlock(editor);
+    editor.update((tx) => {
+      toggleCodeBlock(editor, tx);
+    });
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('turn multiple p to a code block', () => {
@@ -91,7 +93,7 @@ describe('toggle on', () => {
           line 3
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -106,16 +108,52 @@ describe('toggle on', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    toggleCodeBlock(editor);
+    editor.update((tx) => {
+      toggleCodeBlock(editor, tx);
+    });
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
+  });
+
+  it('turn a code block into paragraphs', () => {
+    const input = (
+      <editor>
+        <hcodeblock>
+          <hcodeline>
+            one
+            <cursor />
+          </hcodeline>
+          <hcodeline>two</hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as TestEditor;
+    const output = (
+      <editor>
+        <hp>
+          one
+          <cursor />
+        </hp>
+        <hp>two</hp>
+      </editor>
+    ) as TestEditor;
+    const editor = createBaseEditor({
+      plugins: [CodeBlockPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+
+    editor.update((tx) => {
+      toggleCodeBlock(editor, tx);
+    });
+
+    expect(editor.read.children()).toEqual(output.children);
   });
 });

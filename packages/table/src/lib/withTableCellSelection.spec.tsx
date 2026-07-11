@@ -330,10 +330,7 @@ describe('withTableCellSelection', () => {
       ) as any as SlateEditor;
 
       const editor = createTableEditor(input);
-      editor.tf.setNodes(
-        { align: 'center' },
-        { match: (node) => node.type === 'p' }
-      );
+      editor.tf.setNodes({ align: 'center' }, { match: { type: 'p' } });
 
       expect(editor.children).toEqual(
         (
@@ -445,7 +442,7 @@ describe('withTableCellSelection', () => {
 
       const editor = createTableEditor(input);
       editor.tf.unsetNodes(['align', 'indent'], {
-        match: (node) => node.type === 'p',
+        match: { type: 'p' },
       });
 
       expect(editor.children).toEqual(
@@ -513,13 +510,15 @@ describe('withTableCellSelection', () => {
           .getOption(BaseTablePlugin, 'selectedTables')
           ?.map((table: TElement) => table.type)
       ).toStrictEqual(['table']);
-      expect(editor.plugin(BaseTablePlugin).getOption('isSelectingCell')).toBe(true);
-      expect(editor.plugin(BaseTablePlugin).getOption('isCellSelected', 'c12')).toBe(
+      expect(editor.plugin(BaseTablePlugin).getOption('isSelectingCell')).toBe(
         true
       );
-      expect(editor.plugin(BaseTablePlugin).getOption('selectedCell', 'c21')?.id).toBe(
-        'c21'
-      );
+      expect(
+        editor.plugin(BaseTablePlugin).getOption('isCellSelected', 'c12')
+      ).toBe(true);
+      expect(
+        editor.plugin(BaseTablePlugin).getOption('selectedCell', 'c21')?.id
+      ).toBe('c21');
     });
 
     it('returns empty multi-cell queries when the selection stays inside one cell', () => {
@@ -550,13 +549,21 @@ describe('withTableCellSelection', () => {
 
       const editor = createTableEditor(input);
 
-      expect(editor.plugin(BaseTablePlugin).getOption('selectedCellIds')).toBeNull();
-      expect(editor.plugin(BaseTablePlugin).getOption('selectedCells')).toBeNull();
-      expect(editor.plugin(BaseTablePlugin).getOption('selectedTables')).toBeNull();
-      expect(editor.plugin(BaseTablePlugin).getOption('isSelectingCell')).toBe(false);
-      expect(editor.plugin(BaseTablePlugin).getOption('isCellSelected', 'c11')).toBe(
+      expect(
+        editor.plugin(BaseTablePlugin).getOption('selectedCellIds')
+      ).toBeNull();
+      expect(
+        editor.plugin(BaseTablePlugin).getOption('selectedCells')
+      ).toBeNull();
+      expect(
+        editor.plugin(BaseTablePlugin).getOption('selectedTables')
+      ).toBeNull();
+      expect(editor.plugin(BaseTablePlugin).getOption('isSelectingCell')).toBe(
         false
       );
+      expect(
+        editor.plugin(BaseTablePlugin).getOption('isCellSelected', 'c11')
+      ).toBe(false);
       expect(
         editor.plugin(BaseTablePlugin).getOption('selectedCell', 'c11')
       ).toBeNull();
@@ -633,7 +640,9 @@ describe('withTableCellSelection', () => {
 
       editor.tf.select(editor.api.start([0, 0, 0])!);
 
-      expect(editor.plugin(BaseTablePlugin).getOption('selectedCellIds')).toBeNull();
+      expect(
+        editor.plugin(BaseTablePlugin).getOption('selectedCellIds')
+      ).toBeNull();
     });
 
     it('updates selected cell ids for unmerged tables when merge is enabled', () => {

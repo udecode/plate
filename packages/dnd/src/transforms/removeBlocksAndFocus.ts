@@ -1,14 +1,18 @@
-import type { Editor, EditorNodesOptions, ValueOf } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { EditorNodesOptions, ElementIn, ValueOf } from '@platejs/plite';
 
 import { getBlocksWithId } from '../queries/getBlocksWithId';
 
 /** Remove blocks with an id and focus the editor. */
-export const removeBlocksAndFocus = <E extends Editor = Editor>(
+export const removeBlocksAndFocus = <E extends BaseEditor>(
   editor: E,
-  options: EditorNodesOptions<ValueOf<E>>
+  options: EditorNodesOptions<ElementIn<ValueOf<E>>>
 ) => {
   const nodeEntries = getBlocksWithId(editor, options);
+  const range = editor.read.ranges.fromEntries(nodeEntries);
 
-  editor.tf.removeNodes({ at: editor.api.nodesRange(nodeEntries) });
-  editor.tf.focus();
+  if (!range) return;
+
+  editor.update.nodes.remove({ at: range });
+  editor.api.dom.focus();
 };

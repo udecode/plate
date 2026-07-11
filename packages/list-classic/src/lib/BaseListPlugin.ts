@@ -89,7 +89,8 @@ export const BaseListItemPlugin = createSlatePlugin({
     plugins: {
       [KEYS.html]: {
         parser: {
-          preInsert: ({ editor, type }) => editor.api.some({ match: { type } }),
+          preInsert: ({ editor, type }) =>
+            editor.read.nodes.some({ match: { type } }),
         },
       },
     },

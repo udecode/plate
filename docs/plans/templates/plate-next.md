@@ -149,10 +149,37 @@ Constraints:
   Callback form is only for grouped transaction/snapshot logic, shared
   intermediate state, branching/looping, or missing direct API that is recorded
   as a Plite gap.
+- Live node target law: if a caller already has a live descendant, pass it as
+  the `NodeTarget` / `at` value or use `editor.read.nodes.path(node)` only when
+  a `Path` is required. Do not rediscover it with a type/ID query. Handle an
+  unresolved public path instead of asserting it.
+- Property matcher law: exact shallow equality uses property objects such as
+  `match: { type }`, `match: { id }`, and array-valued one-of matchers.
+  Property matchers intentionally ignore `text` and `children`; content and
+  structure checks remain predicates. Predicates also remain for computed
+  schema policy, path-dependent logic, truthiness semantics, or consumed type
+  narrowing.
+- Flat node-query aliases are forbidden: no `editor.api.findPath`,
+  `editor.api.some`, `read.nodes.pathOf`, Plate wrappers, or implicit type/ID
+  scans. Use `editor.read.nodes.path`, `editor.read.nodes.some`, and direct
+  node targets.
+- Boolean node-query law: when an entry-producing collection query is used only
+  for truthiness and `nodes.some` has the same target/match/traversal semantics,
+  use `editor.read.nodes.some`. Keep `above`, `block`, `parent`, `previous`, and
+  `next` when their ancestor/current-block/relative traversal is the actual
+  question, and keep any entry-producing query when the node/path is consumed.
 - Optional public-read law: Plate feature-package source handles unresolved
   Plite reads with an early return/no-op. `{ required: true }` is reserved for
   Plite internals with a proven runtime invariant; fixture assertions are the
   test-only exception.
+- Explicit normalization law: bare `tx.normalize()` /
+  `editor.update.normalize()` is an explicit full-root pass in Plite. Feature
+  code may keep it only for a named full-root semantic invariant. Do not use it
+  to coalesce equivalent text leaves or preserve old fixture shape. Prefer
+  transaction dirty-path normalization, repair a universal invariant in Plite,
+  and classify every match in the active scope as `cut`,
+  `semantic-dirty-path`, `semantic-full-root`, `explicit-normalizer-test`,
+  `lifecycle-option`, or `Plite-owner-gap`.
 - Active transaction law: no `editor.update.*` call may appear inside an
   `editor.update(...)`, `editor.update.withoutNormalizing(...)`, transform
   middleware, or other active transaction callback. The callback must receive
@@ -278,10 +305,19 @@ Work Checklist:
       `editor.read((state) => state.*)` wrappers are replaced with direct
       methods when available, or each remaining callback is justified as grouped
       transaction/snapshot logic.
+- [ ] Live node target and matcher audit closed: no supplied live node is
+      rediscovered by type/ID, no flat `api.findPath` / `api.some` alias remains
+      in scope, equality-only callbacks use property matchers, and every
+      remaining predicate has computed/path/truthiness/narrowing semantics.
 - [ ] Optional public-read audit closed: feature-package production code does
       not use `{ required: true }` or non-null assertions to hide unresolved
       Plite reads; each match handles `undefined` or records a Plite-internal
       invariant reason.
+- [ ] Explicit normalization audit closed: every `tx.normalize(...)` and
+      `editor.update.normalize(...)` match in scope has a ledger verdict;
+      feature production calls have a named full-root semantic invariant or are
+      cut/moved to the Plite owner; explicit normalizer tests remain test-only
+      evidence rather than production precedent.
 - [ ] Plugin export inference audit closed: plugin export annotations/casts
       such as `: BasePlugin<Config>`, `: PlatePlugin<Config>`, and
       `as BasePlugin<Config>` are removed when inference should own the result,

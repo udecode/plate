@@ -1,7 +1,7 @@
-import type { PlateEditor } from 'platejs/react';
+import type { PlateEditor } from '@platejs/core/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { NodeApi, PathApi } from 'platejs';
+import { PathApi } from '@platejs/plite';
 
 import type { UseDropNodeOptions } from '../hooks/useDropNode';
 import type { DragItemNode } from '../types';
@@ -52,7 +52,11 @@ export const onHoverNode = (
   }
 
   const { direction } = result;
-  const newDropTarget = { id: element.id as string, line: direction };
+  const elementId = element.id;
+
+  if (typeof elementId !== 'string') return;
+
+  const newDropTarget = { id: elementId, line: direction };
 
   if (newDropTarget.id !== currentId || newDropTarget.line !== currentLine) {
     // Only set if there's a real change
@@ -62,16 +66,24 @@ export const onHoverNode = (
     }
 
     if (newDropTarget.line === 'top') {
-      const previousPath = PathApi.previous(editor.api.findPath(element)!);
+      const elementPath = editor.read.nodes.path(element);
+
+      if (!elementPath) return;
+
+      const previousPath = PathApi.previous(elementPath);
 
       if (!previousPath) {
         return editor.plugin(DndPlugin).setOption('dropTarget', newDropTarget);
       }
 
-      const nextNode = NodeApi.get(editor, previousPath!);
+      const nextNode = editor.read.nodes.get(previousPath)?.[0];
+
+      if (typeof nextNode?.id !== 'string') {
+        return editor.plugin(DndPlugin).setOption('dropTarget', newDropTarget);
+      }
 
       editor.plugin(DndPlugin).setOption('dropTarget', {
-        id: nextNode?.id as string,
+        id: nextNode.id,
         line: 'bottom',
       });
 
@@ -80,8 +92,8 @@ export const onHoverNode = (
 
     editor.plugin(DndPlugin).setOption('dropTarget', newDropTarget);
   }
-  if (direction && editor.api.isExpanded()) {
-    editor.tf.focus();
-    editor.tf.collapse();
+  if (direction && editor.read.selection.isExpanded()) {
+    editor.api.dom.focus();
+    editor.update.selection.collapse({ edge: 'anchor' });
   }
 };

@@ -1,30 +1,40 @@
 import type { Element, Text } from '@platejs/plite';
 import type { AnyObject } from '@udecode/utils';
+import type React from 'react';
 
 import pick from 'lodash/pick.js';
 
-import type { PliteRenderNodeProps } from '../../static/types';
-import type { AnyBasePlugin } from '../plugin';
+import type { AnyBasePlugin, GetInjectNodePropsOptions } from '../plugin';
+import type { AnyEditorPlatePlugin } from '../../react/plugin';
 
 import { getNodeDataAttributeKeys } from '@platejs/plite-dom/internal';
 
-export const getPluginNodeProps = ({
+export const getPluginNodeProps = <
+  TProps extends GetInjectNodePropsOptions & {
+    attributes?: AnyObject;
+    children: React.ReactNode;
+  },
+>({
   attributes: nodeAttributes,
   node,
   plugin,
   props,
 }: {
-  props: PliteRenderNodeProps;
+  props: TProps;
   attributes?: AnyObject;
   node?: Element | Text;
-  plugin?: AnyBasePlugin;
-}): any => {
-  const newProps: any = { ...props, attributes: { ...props.attributes } };
+  plugin?: AnyBasePlugin | AnyEditorPlatePlugin;
+}): TProps & { attributes: AnyObject } => {
+  const newProps = { ...props, attributes: { ...props.attributes } };
 
   if (plugin?.node.props) {
+    // Base and React callbacks share this runtime shape but expose
+    // layer-specific plugin context types.
     const pluginNodeProps =
       (typeof plugin.node.props === 'function'
-        ? plugin.node.props(newProps as any)
+        ? (plugin.node.props as (props: TProps) => AnyObject | undefined)(
+            newProps
+          )
         : plugin.node.props) ?? {};
 
     newProps.attributes = {

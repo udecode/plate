@@ -2,7 +2,7 @@ import { type Editor, type TElement, PathApi } from 'platejs';
 
 /** Get table row index of a cell node. */
 export const getTableRowIndex = (editor: Editor, cellNode: TElement) => {
-  const path = editor.api.findPath(cellNode);
+  const path = editor.read.nodes.path(cellNode);
 
   if (!path) return 0;
 

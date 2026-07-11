@@ -1,4 +1,4 @@
-import type { PlateEditor } from 'platejs/react';
+import type { PlateEditor } from '@platejs/core/react';
 
 import { getBlocksWithId } from '../queries/getBlocksWithId';
 import { selectBlockById } from './selectBlockById';
@@ -11,16 +11,22 @@ export const selectBlocksBySelectionOrId = (
   editor: PlateEditor,
   id: string
 ) => {
-  if (!editor.selection) return;
+  const selection = editor.read.selection();
 
-  const blockEntries = getBlocksWithId(editor, { at: editor.selection });
+  if (!selection) return;
+
+  const blockEntries = getBlocksWithId(editor, { at: selection });
   const isBlockSelected = blockEntries.some(
     (blockEntry) => blockEntry[0].id === id
   );
 
   if (isBlockSelected) {
-    editor.tf.select(editor.api.nodesRange(blockEntries)!);
-    editor.tf.focus();
+    const range = editor.read.ranges.fromEntries(blockEntries);
+
+    if (!range) return;
+
+    editor.update.selection.set(range);
+    editor.api.dom.focus();
   } else {
     selectBlockById(editor, id);
   }

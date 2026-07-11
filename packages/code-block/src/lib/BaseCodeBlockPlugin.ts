@@ -1,13 +1,8 @@
 import type { createLowlight } from 'lowlight';
 
-import {
-  type PluginConfig,
-  type TCodeBlockElement,
-  type TElement,
-  createSlatePlugin,
-  createTSlatePlugin,
-  KEYS,
-} from 'platejs';
+import { type PluginConfig, createBasePlugin } from '@platejs/core';
+import { ElementApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { htmlDeserializerCodeBlock } from './deserializer/htmlDeserializerCodeBlock';
 import { isCodeBlockEmpty } from './queries';
@@ -15,7 +10,16 @@ import {
   CODE_LINE_TO_DECORATIONS,
   setCodeBlockToDecorations,
 } from './setCodeBlockToDecorations';
-import { withCodeBlock } from './withCodeBlock';
+import { toggleCodeBlock } from './transforms/toggleCodeBlock';
+import {
+  resetCodeBlock,
+  selectCodeBlock,
+  tabCodeBlock,
+  withCodeBlock,
+} from './withCodeBlock';
+import { withInsertDataCodeBlock } from './withInsertDataCodeBlock';
+import { withInsertFragmentCodeBlock } from './withInsertFragmentCodeBlock';
+import { withNormalizeCodeBlock } from './withNormalizeCodeBlock';
 
 export type CodeBlockConfig = PluginConfig<
   'code_block',
@@ -33,26 +37,33 @@ export type CodeBlockConfig = PluginConfig<
   }
 >;
 
-export const BaseCodeLinePlugin = createTSlatePlugin({
+export const BaseCodeLinePlugin = createBasePlugin({
   key: KEYS.codeLine,
   node: { isElement: true, isStrictSiblings: true },
 });
 
-export const BaseCodeSyntaxPlugin = createSlatePlugin({
+export const BaseCodeSyntaxPlugin = createBasePlugin({
   key: KEYS.codeSyntax,
   node: { isLeaf: true },
 });
 
-export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
+export const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
   key: KEYS.codeBlock,
   inject: {
     plugins: {
       [KEYS.html]: {
         parser: {
-          query: ({ editor }) =>
-            !editor.api.some({
-              match: { type: editor.getType(KEYS.codeLine) },
-            }),
+          query: ({ editor }) => {
+            const selection = editor.read.selection();
+
+            return (
+              !selection ||
+              !editor.read.nodes.some({
+                at: selection,
+                match: { type: editor.getType(KEYS.codeLine) },
+              })
+            );
+          },
         },
       },
     },
@@ -82,22 +93,34 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
 
     // Initialize decorations for the code block, we assume code line decorate will be called next.
     if (
+      ElementApi.isElement(node) &&
       node.type === type &&
-      !CODE_LINE_TO_DECORATIONS.get((node.children as TElement[])[0])
+      ElementApi.isElement(node.children[0]) &&
+      !CODE_LINE_TO_DECORATIONS.get(node.children[0])
     ) {
-      setCodeBlockToDecorations(editor, [node as TCodeBlockElement, path]);
+      setCodeBlockToDecorations(editor, [node, path]);
     }
 
-    if (node.type === codeLineType) {
-      return CODE_LINE_TO_DECORATIONS.get(node as TElement) || [];
+    if (ElementApi.isElement(node) && node.type === codeLineType) {
+      return CODE_LINE_TO_DECORATIONS.get(node) || [];
     }
 
     return [];
   },
+  shortcuts: {
+    selectAll: { keys: 'mod+a' },
+    tab: { keys: 'tab' },
+    untab: { keys: 'shift+tab' },
+  },
 })
-  .overrideEditor(withCodeBlock)
-  .extendTransforms(({ editor }) => ({
-    toggle: () => {
-      editor.tf.toggleBlock(editor.getType(KEYS.codeBlock));
-    },
+  .extendExtension(withCodeBlock)
+  .extendExtension(withInsertDataCodeBlock)
+  .extendExtension(withInsertFragmentCodeBlock)
+  .extendExtension(withNormalizeCodeBlock)
+  .extendTx(({ editor }) => (tx) => ({
+    resetBlock: () => resetCodeBlock(editor, tx),
+    selectAll: () => selectCodeBlock(editor, tx),
+    tab: (options?: { reverse?: boolean }) => tabCodeBlock(editor, tx, options),
+    toggle: () => toggleCodeBlock(editor, tx),
+    untab: () => tabCodeBlock(editor, tx, { reverse: true }),
   }));

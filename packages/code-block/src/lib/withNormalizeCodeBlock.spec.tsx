@@ -1,12 +1,7 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import {
-  type SlateEditor,
-  createEditor,
-  createSlateEditor,
-  NodeApi,
-} from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { CodeBlockPlugin } from '../react/CodeBlockPlugin';
 
@@ -14,16 +9,14 @@ jsxt;
 
 describe('clean up code block', () => {
   it('turn children of code block to code lines', () => {
-    const input = createEditor(
-      (
-        <editor>
-          <hcodeblock>
-            <hp>line 1</hp>
-            <hcodeline>line 2</hcodeline>
-          </hcodeblock>
-        </editor>
-      ) as any
-    );
+    const input = (
+      <editor>
+        <hcodeblock>
+          <hp>line 1</hp>
+          <hcodeline>line 2</hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -32,19 +25,16 @@ describe('clean up code block', () => {
           <hcodeline>line 2</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    const path = [0];
-    const node = NodeApi.get(editor, path);
+    editor.update.normalize({ force: true });
 
-    editor.tf.normalizeNode([node!, path]);
-
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 });

@@ -1,40 +1,11 @@
-import type { BlockFenceInputRuleMatch, SlateEditor } from 'platejs';
+import { createRuleFactory } from '@platejs/core';
+import type { BlockFenceInputRuleMatch, BaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
-import { createRuleFactory, KEYS } from 'platejs';
-
-import type { insertEmptyCodeBlock } from './transforms';
-
-const isCodeBlockInputBlocked = (editor: SlateEditor) =>
-  editor.api.some({
-    match: {
-      type: [editor.getType(KEYS.codeBlock)],
-    },
+const isCodeBlockInputBlocked = (editor: BaseEditor) =>
+  editor.read.nodes.some({
+    match: { type: editor.getType(KEYS.codeBlock) },
   });
-
-const insertCodeBlockAtPath = (
-  editor: Parameters<typeof insertEmptyCodeBlock>[0],
-  path: number[]
-) => {
-  editor.tf.removeNodes({ at: path });
-  editor.tf.insertNodes(
-    {
-      children: [
-        {
-          children: [{ text: '' }],
-          type: editor.getType(KEYS.codeLine),
-        },
-      ],
-      type: editor.getType(KEYS.codeBlock),
-    },
-    { at: path }
-  );
-
-  const start = editor.api.start([...path, 0]);
-
-  if (start) {
-    editor.tf.select(start);
-  }
-};
 
 export const CodeBlockRules = {
   markdown: createRuleFactory<
@@ -47,11 +18,25 @@ export const CodeBlockRules = {
     block: KEYS.p,
     enabled: ({ editor }) => !isCodeBlockInputBlocked(editor),
     priority: 100,
-    apply: ({ editor, on }, match) => {
-      if (on === 'break') {
-        insertCodeBlockAtPath(editor, match.path);
-      } else {
-        insertCodeBlockAtPath(editor, match.path);
+    apply: ({ editor, tx }, match) => {
+      tx.nodes.remove({ at: match.path });
+      tx.nodes.insert(
+        {
+          children: [
+            {
+              children: [{ text: '' }],
+              type: editor.getType(KEYS.codeLine),
+            },
+          ],
+          type: editor.getType(KEYS.codeBlock),
+        },
+        { at: match.path }
+      );
+
+      const start = editor.read.points.start([...match.path, 0]);
+
+      if (start) {
+        tx.selection.set(start);
       }
 
       return true;

@@ -6,8 +6,6 @@ import type {
   TTableCellElement,
 } from 'platejs';
 
-import { ElementApi } from 'platejs';
-
 import type { BorderDirection } from '../types';
 
 import { getLeftTableCell } from '../queries/getLeftTableCell';
@@ -43,8 +41,7 @@ export const setBorderSize = (
   };
 
   const setNodesOptions: SetNodesOptions = {
-    match: (n) =>
-      ElementApi.isElement(n) && getCellTypes(editor).includes(n.type),
+    match: { type: getCellTypes(editor) },
   };
 
   if (border === 'top') {

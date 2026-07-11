@@ -70,6 +70,4 @@ export const insertFragmentSuggestionWithTx = (
   editor.plugin(BaseSuggestionPlugin).api.withoutSuggestions(() => {
     insertFragment();
   });
-
-  tx.normalize({ force: true });
 };

@@ -10,14 +10,17 @@ import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import {
   type AnyBasePlugin,
   type BaseEditor,
+  type GetInjectNodePropsOptions,
   getEditorPlugin,
   getPluginNodeProps,
   getPluginNodeClass,
 } from '../../lib';
 
 type StaticNodePropsInput = Partial<PliteRenderNodeProps> &
+  GetInjectNodePropsOptions &
   Record<string, unknown> & {
     attributes?: AnyObject;
+    children: React.ReactNode;
     className?: string;
     nodeProps?: AnyObject;
     style?: React.CSSProperties;
@@ -38,8 +41,11 @@ export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
   /** Pre-computed path to avoid expensive node path lookup */
   path?: Path;
   plugin?: AnyBasePlugin;
-}): TProps & PliteRenderNodeProps => {
-  let newProps = {
+}): TProps & { attributes: AnyObject } & (
+    | PliteRenderNodeProps
+    | { api: BaseEditor['api']; editor: BaseEditor }
+  ) => {
+  const contextProps = {
     ...props,
     ...(plugin
       ? getEditorPlugin(editor, plugin)
@@ -47,7 +53,7 @@ export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
           api: editor.api,
           editor,
         }),
-  } as TProps & PliteRenderNodeProps;
+  };
 
   const { className } = props;
 
@@ -55,23 +61,27 @@ export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
     attributes: nodeAttributes,
     node,
     plugin,
-    props: newProps,
+    props: contextProps,
   });
 
-  newProps = {
+  const mergedProps = {
     ...pluginProps,
     attributes: {
       ...pluginProps.attributes,
       className:
-        clsx(getPluginNodeClass(plugin?.node.type), className) || undefined,
+        clsx(
+          getPluginNodeClass(plugin?.node.type),
+          pluginProps.attributes.className,
+          className
+        ) || undefined,
     },
-  } as TProps & PliteRenderNodeProps;
+  };
 
-  newProps = pipeInjectNodeProps(
+  const newProps = pipeInjectNodeProps(
     editor,
-    newProps,
-    path ? () => path : (node) => editor.read.nodes.path(node)!
-  ) as TProps & PliteRenderNodeProps;
+    mergedProps,
+    path ? () => path : (node) => editor.read.nodes.path(node)
+  );
 
   if (newProps.style && Object.keys(newProps.style).length === 0) {
     newProps.style = undefined;

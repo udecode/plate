@@ -16,7 +16,7 @@ describe('insert empty code block', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as TestEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -26,7 +26,7 @@ describe('insert empty code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as TestEditor;
+    ) as TestEditor;
 
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
@@ -49,7 +49,7 @@ describe('insert empty code block', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as TestEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -60,7 +60,7 @@ describe('insert empty code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as TestEditor;
+    ) as TestEditor;
 
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
@@ -88,7 +88,7 @@ describe('insert empty code block', () => {
         </hp>
         <hp>line 5</hp>
       </editor>
-    ) as any as TestEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -103,7 +103,7 @@ describe('insert empty code block', () => {
         </hcodeblock>
         <hp>line 5</hp>
       </editor>
-    ) as any as TestEditor;
+    ) as TestEditor;
 
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],

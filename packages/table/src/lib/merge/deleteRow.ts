@@ -24,7 +24,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
   });
 
   if (
-    editor.api.some({
+    editor.read.nodes.some({
       match: { type },
     })
   ) {
@@ -115,7 +115,10 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
 
         if (startingCellIndex === -1) {
           const startingCell = nextRow.children.at(-1) as TTableCellElement;
-          const startingCellPath = editor.api.findPath(startingCell)!;
+          const startingCellPath = editor.read.nodes.path(startingCell);
+
+          if (!startingCellPath) continue;
+
           const tablePath = startingCellPath.slice(0, -2);
           const colPath = startingCellPath.at(-1)! + index + 1;
           const nextRowStartCellPath = [...tablePath, nextRowIndex, colPath];
@@ -148,7 +151,10 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
           incrementBy += 1;
         }
 
-        const startingCellPath = editor.api.findPath(startingCell)!;
+        const startingCellPath = editor.read.nodes.path(startingCell);
+
+        if (!startingCellPath) continue;
+
         const tablePath = startingCellPath.slice(0, -2);
         const colPath = startingCellPath.at(-1)!;
 
@@ -177,7 +183,9 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
       const { row: curRowCellRowIndex } = getCellIndices(editor, curRowCell);
       const curRowCellRowSpan = api.table.getRowSpan(curRowCell);
 
-      const curCellPath = editor.api.findPath(curRowCell)!;
+      const curCellPath = editor.read.nodes.path(curRowCell);
+
+      if (!curCellPath) return;
 
       const curCellEndingRowIndex = Math.min(
         curRowCellRowIndex + curRowCellRowSpan - 1,
@@ -195,7 +203,10 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
     });
 
     const rowToDelete = table.children[deletingRowIndex] as TTableRowElement;
-    const rowPath = editor.api.findPath(rowToDelete);
+    const rowPath = editor.read.nodes.path(rowToDelete);
+
+    if (!rowPath) return;
+
     Array.from({ length: rowsDeleteNumber }).forEach(() => {
       editor.tf.removeNodes({
         at: rowPath,

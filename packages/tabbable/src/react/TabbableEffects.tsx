@@ -77,9 +77,13 @@ export function TabbableEffects() {
 
           if (!slateNode) return null;
 
+          const path = editor.read.nodes.path(slateNode);
+
+          if (!path) return null;
+
           return {
             domNode,
-            path: editor.api.findPath(slateNode),
+            path,
             slateNode,
           } as TabbableEntry;
         })
