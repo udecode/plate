@@ -1,3 +1,5 @@
+import type { Descendant } from 'platejs';
+
 /** Comment extracted from DOCX file */
 export type DocxComment = {
   /** Comment ID from the DOCX file */
@@ -9,7 +11,7 @@ export type DocxComment = {
 /** Result of importing a DOCX file */
 export type ImportDocxResult = {
   /** Deserialized editor nodes */
-  nodes: any[];
+  nodes: Descendant[];
   /** Comments extracted from the DOCX file (not yet applied to editor) */
   comments: DocxComment[];
   /** Warnings from mammoth conversion */

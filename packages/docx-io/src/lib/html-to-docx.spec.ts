@@ -1,52 +1,65 @@
-import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test';
+import JSZip from 'jszip';
 
-const addFilesToContainerMock = mock();
-const generateAsyncMock = mock();
-
-class JSZipMock {}
-
-mock.module('jszip', () => ({
-  default: JSZipMock,
-}));
-
-mock.module('./internal/html-to-docx', () => ({
-  default: addFilesToContainerMock,
-}));
-
-const loadModule = async () =>
-  import(`./html-to-docx?test=${Math.random().toString(36).slice(2)}`);
+import { htmlToDocxBlob } from './html-to-docx';
 
 describe('htmlToDocxBlob', () => {
   afterEach(() => {
-    addFilesToContainerMock.mockReset();
-    generateAsyncMock.mockReset();
-  });
-
-  afterAll(() => {
     mock.restore();
   });
 
-  it('normalizes empty html before delegating to the container builder', async () => {
-    const { htmlToDocxBlob } = await loadModule();
-
-    generateAsyncMock.mockImplementation(async () => new Uint8Array([1, 2, 3]));
-    addFilesToContainerMock.mockImplementation(async () => ({
-      generateAsync: generateAsyncMock,
-    }));
-
+  it('normalizes empty html into a valid DOCX blob', async () => {
     const blob = await htmlToDocxBlob('   ', {
       orientation: 'landscape',
-    } as any);
+    });
 
-    expect(addFilesToContainerMock).toHaveBeenCalledWith(
-      expect.any(JSZipMock),
-      '<p></p>',
-      { orientation: 'landscape' },
-      null
-    );
-    expect(generateAsyncMock).toHaveBeenCalledWith({ type: 'uint8array' });
+    expect(blob.size).toBeGreaterThan(0);
     expect(blob.type).toBe(
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     );
+  });
+
+  it('fetches remote images only when explicitly enabled', async () => {
+    const png = Uint8Array.from(
+      atob(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
+      ),
+      (character) => character.codePointAt(0) ?? 0
+    );
+    const fetchSpy = spyOn(globalThis, 'fetch').mockImplementation(
+      async () => new Response(png)
+    );
+    const html = '<img src="https://example.com/image.png" />';
+
+    await expect(htmlToDocxBlob(html)).resolves.toBeInstanceOf(Blob);
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    await expect(
+      htmlToDocxBlob(html, { allowRemoteImages: true })
+    ).resolves.toBeInstanceOf(Blob);
+    expect(fetchSpy).toHaveBeenCalledWith('https://example.com/image.png');
+  });
+
+  it('preserves paragraph content after a disabled remote image', async () => {
+    const blob = await htmlToDocxBlob(
+      '<p>before <img src="https://example.com/image.png" /> after</p>'
+    );
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    const documentXml = await zip.file('word/document.xml')!.async('string');
+
+    expect(documentXml).toContain('before ');
+    expect(documentXml).toContain(' after');
+  });
+
+  it('embeds trusted data URI images without remote fetches', async () => {
+    const fetchSpy = spyOn(globalThis, 'fetch').mockImplementation(async () => {
+      throw new Error('unexpected fetch');
+    });
+
+    await expect(
+      htmlToDocxBlob(
+        '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=" />'
+      )
+    ).resolves.toBeInstanceOf(Blob);
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

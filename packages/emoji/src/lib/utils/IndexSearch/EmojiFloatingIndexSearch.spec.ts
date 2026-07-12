@@ -2,13 +2,19 @@ import { EmojiFloatingIndexSearch } from './EmojiFloatingIndexSearch';
 
 const createLibrary = (prefix: string) =>
   ({
-    getEmoji: (id: string) => ({ id }),
+    getEmoji: (id: string) => ({
+      id,
+      keywords: [],
+      name: id,
+      skins: [{ native: id, unified: id }],
+      version: 1,
+    }),
     getEmojiId: (key: string) => key.replace(`${prefix}-`, ''),
     keys: [`${prefix}-smile`, `${prefix}-smirk`],
-  }) as any;
+  }) satisfies Parameters<typeof EmojiFloatingIndexSearch.getInstance>[0];
 
 describe('EmojiFloatingIndexSearch', () => {
-  it('reuses a singleton instance and keeps the first library binding', () => {
+  it('keeps each search bound to its own library', () => {
     const firstLibrary = createLibrary('first');
     const secondLibrary = createLibrary('second');
 
@@ -17,7 +23,8 @@ describe('EmojiFloatingIndexSearch', () => {
     const second =
       EmojiFloatingIndexSearch.getInstance(secondLibrary).search('s');
 
-    expect(first).toBe(second);
+    expect(first).not.toBe(second);
+    expect(first.get().map((emoji) => emoji.id)).toEqual(['smile', 'smirk']);
     expect(second.get().map((emoji) => emoji.id)).toEqual(['smile', 'smirk']);
   });
 });

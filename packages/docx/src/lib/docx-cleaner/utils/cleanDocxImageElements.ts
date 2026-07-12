@@ -23,6 +23,8 @@ export const cleanDocxImageElements = (
     return;
   }
 
+  const rtfImagesMap = getRtfImagesMap(rtf);
+
   traverseHtmlElements(rootNode, (element) => {
     if (!['IMG', 'V:IMAGEDATA'].includes(element.tagName)) {
       return true;
@@ -52,11 +54,10 @@ export const cleanDocxImageElements = (
       return true;
     }
 
-    const rtfImagesMap = getRtfImagesMap(rtf);
     const rtfImage = rtfImagesMap[vShapeSpid];
 
     if (!rtfImage) {
-      // We fould some kind of vshape (perhaps a drawing) that we don't know
+      // We found some kind of vshape (perhaps a drawing) that we don't know
       // how to recover from RTF. So we just skip it.
       element.remove();
 

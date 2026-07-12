@@ -1,104 +1,83 @@
-import React from 'react';
+import type { EmojiMartData } from '@emoji-mart/data';
 
-mock.module('../../../lib', () => {
-  class GridSection {
-    id: string;
-    perLine: number;
-    root: React.RefObject<HTMLDivElement | null>;
+import { type EmojiSettingsType, EmojiCategory } from '../../../lib';
+import type { IFrequentEmojiStorage } from './EmojiFloatingLibrary.types';
 
-    constructor(id: string, perLine: number) {
-      this.id = id;
-      this.perLine = perLine;
-      this.root = React.createRef();
-    }
-  }
+import { EmojiFloatingGrid } from './EmojiFloatingGrid';
+import { EmojiFloatingGridBuilder } from './EmojiFloatingGridBuilder';
+import { EmojiFloatingLibrary } from './EmojiFloatingLibrary';
 
-  class Grid {
-    map = new Map<string, any>();
-
-    addSection(id: string, section: any, elements: any) {
-      this.map.set(id, { elements: elements[id] ?? [], section });
-    }
-
-    indexOf(id: string) {
-      return Array.from(this.map.keys()).indexOf(id);
-    }
-
-    section(id: string) {
-      return this.map.get(id)?.section;
-    }
-
-    sections() {
-      return Array.from(this.map.values()).map((value) => value.section);
-    }
-
-    updateSection(id: string, elements: any[]) {
-      const value = this.map.get(id);
-      if (value) value.elements = elements;
-    }
-  }
-
-  class EmojiInlineLibrary {}
-
-  return {
-    AGridSection: GridSection,
-    DEFAULT_EMOJI_LIBRARY: {
-      categories: [{ emojis: ['wave'], id: 'people' }],
+const data = {
+  aliases: {},
+  categories: [{ emojis: ['wave'], id: 'people' }],
+  emojis: {
+    wave: {
+      id: 'wave',
+      keywords: ['hello'],
+      name: 'Waving Hand',
+      skins: [{ native: '👋', unified: '1f44b' }],
+      version: 1,
     },
-    EmojiCategory: { Frequent: 'frequent' },
-    EmojiInlineLibrary,
-    Grid,
-    defaultCategories: ['people'],
+  },
+  sheet: { cols: 1, rows: 1 },
+} satisfies EmojiMartData;
+
+const settings = {
+  buttonSize: { value: 36 },
+  categories: { value: [EmojiCategory.People] },
+  perLine: { value: 8 },
+  showFrequent: { value: true },
+} satisfies EmojiSettingsType;
+
+const createStorage = () => {
+  const update = mock(() => ({ wave: 2 }));
+  const storage: IFrequentEmojiStorage = {
+    get: () => ({ wave: 1 }),
+    getList: () => ['wave'],
+    set: () => {},
+    update,
   };
-});
+
+  return { storage, update };
+};
 
 describe('emoji floating library', () => {
-  afterAll(() => {
-    mock.restore();
-  });
-
-  it('builds floating grids, clamps missing indexes, and updates frequent emojis', async () => {
-    const { EmojiFloatingLibrary } = await import(
-      `./EmojiFloatingLibrary?test=${Math.random().toString(36).slice(2)}`
-    );
-    const { EmojiFloatingGridBuilder } = await import(
-      `./EmojiFloatingGridBuilder?test=${Math.random().toString(36).slice(2)}`
-    );
-    const { EmojiFloatingGrid } = await import(
-      `./EmojiFloatingGrid?test=${Math.random().toString(36).slice(2)}`
-    );
-    (EmojiFloatingLibrary as any).instance = undefined;
-
-    const localStorage = {
-      getList: () => ['wave'],
-      update: mock(),
-    };
-    const settings = {
-      categories: { value: ['people'] },
-      perLine: { value: 8 },
-      showFrequent: { value: true },
-    };
-
+  it('builds grids, clamps missing indexes, and updates frequent emojis', () => {
+    const { storage, update } = createStorage();
     const grid = new EmojiFloatingGridBuilder(
-      localStorage as any,
-      ['people'] as any,
-      { frequent: ['wave'], people: ['wave'] } as any,
-      settings as any
+      storage,
+      [EmojiCategory.People],
+      { frequent: ['wave'], people: ['wave'] },
+      settings
     ).build();
 
     expect(grid.sections()).toHaveLength(2);
 
-    const library = EmojiFloatingLibrary.getInstance(
-      settings as any,
-      localStorage as any
-    );
+    const library = EmojiFloatingLibrary.getInstance(settings, storage, data);
 
     expect(library.getGrid()).toBeTruthy();
-    expect(library.indexOf('missing' as any)).toBe(0);
+    expect(library.indexOf(EmojiCategory.Symbols)).toBe(0);
 
     library.updateFrequentCategory('wave');
 
-    expect(localStorage.update).toHaveBeenCalledWith('wave');
+    expect(update).toHaveBeenCalledWith('wave');
     expect(new EmojiFloatingGrid().createRootRef().current).toBeNull();
+  });
+
+  it('does not leak the first library across instances', () => {
+    const first = EmojiFloatingLibrary.getInstance(
+      settings,
+      createStorage().storage,
+      data
+    );
+    const second = EmojiFloatingLibrary.getInstance(
+      { ...settings, categories: { value: [] } },
+      createStorage().storage,
+      { ...data, categories: [] }
+    );
+
+    expect(second).not.toBe(first);
+    expect(first.getGrid().sections()).toHaveLength(1);
+    expect(second.getGrid().sections()).toHaveLength(0);
   });
 });

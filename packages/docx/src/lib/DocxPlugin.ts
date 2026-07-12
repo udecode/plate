@@ -1,7 +1,7 @@
 import {
+  type BasePlugin,
   type HtmlDeserializer,
-  type SlatePlugin,
-  createSlatePlugin,
+  createBasePlugin,
   KEYS,
 } from 'platejs';
 
@@ -16,53 +16,36 @@ import { getTextListStyleType } from './docx-cleaner/utils/getTextListStyleType'
 import { isDocxContent } from './docx-cleaner/utils/isDocxContent';
 import { isDocxList } from './docx-cleaner/utils/isDocxList';
 
-const parse: HtmlDeserializer['parse'] = (options: any) => {
-  const { element, type } = options;
-  const node: any = { type };
-
-  if (!element) {
-    return node;
-  }
-
+const parse: HtmlDeserializer['parse'] = ({ element, type }) => {
   if (isDocxList(element)) {
-    node.indent = getDocxListIndent(element);
-
     const text = element.textContent ?? '';
-
-    node.listStyleType = getTextListStyleType(text) ?? 'disc';
-
     element.innerHTML = getDocxListContentHtml(element);
-  } else {
-    const indent = getDocxIndent(element);
 
-    if (indent) {
-      node.indent = indent;
-    }
-
-    const textIndent = getDocxTextIndent(element);
-
-    if (textIndent) {
-      node.textIndent = textIndent;
-    }
+    return {
+      indent: getDocxListIndent(element),
+      listStyleType: getTextListStyleType(text) ?? 'disc',
+      type,
+    };
   }
 
-  return node;
+  const indent = getDocxIndent(element);
+  const textIndent = getDocxTextIndent(element);
+
+  return {
+    ...(indent ? { indent } : {}),
+    ...(textIndent ? { textIndent } : {}),
+    type,
+  };
 };
 
-export const DocxPlugin = createSlatePlugin({
+export const DocxPlugin = createBasePlugin({
   key: KEYS.docx,
   editOnly: true,
   inject: {
     plugins: {
       [KEYS.html]: {
         parser: {
-          transformData: ({
-            data,
-            dataTransfer,
-          }: {
-            data: string;
-            dataTransfer: Pick<DataTransfer, 'getData'>;
-          }) => {
+          transformData: ({ data, dataTransfer }) => {
             const rtf = dataTransfer.getData('text/rtf');
 
             return cleanDocx(data, rtf);
@@ -84,23 +67,19 @@ export const DocxPlugin = createSlatePlugin({
                 },
               },
             },
-          } satisfies Partial<SlatePlugin>,
+          } satisfies Partial<BasePlugin>,
         ])
       ),
       img: {
         parser: {
-          query: ({
-            dataTransfer,
-          }: {
-            dataTransfer: Pick<DataTransfer, 'getData'>;
-          }) => {
+          query: ({ dataTransfer }) => {
             const data = dataTransfer.getData('text/html');
             const { body } = new DOMParser().parseFromString(data, 'text/html');
 
             return !isDocxContent(body);
           },
         },
-      },
+      } satisfies Partial<BasePlugin>,
     },
   },
 });

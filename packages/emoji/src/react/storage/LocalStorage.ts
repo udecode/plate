@@ -30,7 +30,7 @@ export class LocalStorage<T> implements ILocalStorage<T> {
     return value;
   }
 
-  set(value: any) {
+  set(value: T) {
     window.localStorage.setItem(this.key, JSON.stringify(value));
   }
 }

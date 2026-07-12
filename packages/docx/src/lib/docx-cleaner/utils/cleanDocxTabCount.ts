@@ -10,7 +10,9 @@ export const cleanDocxTabCount = (element: Element): void => {
 
   const [, countString] = styleAttribute.split(':');
   const count = Number.parseInt(countString, 10);
-  const replacementNode = document.createTextNode(generateTabs(count));
+  const replacementNode = element.ownerDocument.createTextNode(
+    generateTabs(count)
+  );
 
   if (element.parentNode) {
     element.parentNode.replaceChild(replacementNode, element);

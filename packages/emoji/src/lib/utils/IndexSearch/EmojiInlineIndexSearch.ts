@@ -7,7 +7,6 @@ import { EmojiInlineLibrary } from '../EmojiLibrary/EmojiInlineLibrary';
 import { AIndexSearch } from './IndexSearch';
 
 export class EmojiInlineIndexSearch extends AIndexSearch {
-  protected static instance?: EmojiInlineIndexSearch;
   protected library: IEmojiLibrary;
 
   private constructor(library: IEmojiLibrary) {
@@ -16,12 +15,6 @@ export class EmojiInlineIndexSearch extends AIndexSearch {
   }
 
   static getInstance(data: EmojiMartData = DEFAULT_EMOJI_LIBRARY) {
-    if (!EmojiInlineIndexSearch.instance) {
-      EmojiInlineIndexSearch.instance = new EmojiInlineIndexSearch(
-        new EmojiInlineLibrary(data)
-      );
-    }
-
-    return EmojiInlineIndexSearch.instance;
+    return new EmojiInlineIndexSearch(new EmojiInlineLibrary(data));
   }
 }

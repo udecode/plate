@@ -20,6 +20,6 @@ export interface IEmojiFloatingLibrary extends IEmojiLibrary {
 export type IFrequentEmojiStorage = {
   get: () => FrequentEmojis;
   getList: () => string[];
-  set: (value: any) => void;
-  update: (emojiId: string) => any;
+  set: (value: FrequentEmojis) => void;
+  update: (emojiId: string) => FrequentEmojis;
 };

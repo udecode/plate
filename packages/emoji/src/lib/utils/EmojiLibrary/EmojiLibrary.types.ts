@@ -10,8 +10,8 @@ export type Emojis = Record<string, Emoji>;
 
 export type IEmojiLibrary = {
   keys: string[];
-  getEmoji: (key: string) => Emoji;
-  getEmojiId: (key: string) => string;
+  getEmoji: (key: string) => Emoji | undefined;
+  getEmojiId: (key: string) => string | undefined;
 };
 
 export type { Emoji } from '@emoji-mart/data';

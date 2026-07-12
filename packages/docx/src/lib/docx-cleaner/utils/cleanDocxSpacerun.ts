@@ -14,7 +14,9 @@ export const cleanDocxSpacerun = (element: Element): void => {
   }
 
   const spacesCount = (element.textContent || '').length;
-  const replacementNode = document.createTextNode(generateSpaces(spacesCount));
+  const replacementNode = element.ownerDocument.createTextNode(
+    generateSpaces(spacesCount)
+  );
 
   if (element.parentNode) {
     element.parentNode.replaceChild(replacementNode, element);

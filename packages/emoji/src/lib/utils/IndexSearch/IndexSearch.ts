@@ -7,14 +7,14 @@ import { EMOJI_MAX_SEARCH_RESULT } from '../../constants';
 type IIndexSearch = {
   get: () => Emoji[];
   hasFound: () => boolean;
-  search: (input: string) => void;
+  search: (input: string) => IIndexSearch;
 };
 
 export abstract class AIndexSearch implements IIndexSearch {
   protected input: string | undefined;
   protected maxResult = EMOJI_MAX_SEARCH_RESULT;
   protected result: string[] = [];
-  protected scores = {};
+  protected scores: Record<string, number> = {};
   protected library: IEmojiLibrary;
 
   protected constructor(library: IEmojiLibrary) {
@@ -25,25 +25,25 @@ export abstract class AIndexSearch implements IIndexSearch {
     this.scores = {};
     this.result = [];
 
-    for (const key of this.library!.keys) {
+    for (const key of this.library.keys) {
       const score = key.indexOf(`${value}`);
 
       if (score === -1) continue;
 
-      const emojiId = this.library!.getEmojiId(key);
-      this.result.push(emojiId);
+      const emojiId = this.library.getEmojiId(key);
 
-      if (!(this.scores as any)[emojiId]) {
-        (this.scores as any)[emojiId] = 0;
-      }
-      (this.scores as any)[emojiId] += emojiId === value ? 0 : score + 1;
+      if (!emojiId) continue;
+
+      this.result.push(emojiId);
+      this.scores[emojiId] ??= 0;
+      this.scores[emojiId] += emojiId === value ? 0 : score + 1;
     }
   }
 
-  private sortResultByScores(result: string[], scores: {}) {
+  private sortResultByScores(result: string[], scores: Record<string, number>) {
     result.sort((a, b) => {
-      const aScore = (scores as any)[a];
-      const bScore = (scores as any)[b];
+      const aScore = scores[a] ?? 0;
+      const bScore = scores[b] ?? 0;
 
       if (aScore === bScore) {
         return a.localeCompare(b);

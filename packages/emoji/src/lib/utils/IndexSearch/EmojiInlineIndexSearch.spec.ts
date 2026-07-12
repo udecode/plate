@@ -1,3 +1,5 @@
+import type { EmojiMartData } from '@emoji-mart/data';
+
 import { EmojiInlineIndexSearch } from './EmojiInlineIndexSearch';
 
 const grinOnlyData = {
@@ -13,7 +15,7 @@ const grinOnlyData = {
     },
   },
   sheet: { cols: 1, rows: 1 },
-} as any;
+} satisfies EmojiMartData;
 
 const rocketOnlyData = {
   aliases: {},
@@ -28,26 +30,23 @@ const rocketOnlyData = {
     },
   },
   sheet: { cols: 1, rows: 1 },
-} as any;
+} satisfies EmojiMartData;
 
 describe('EmojiInlineIndexSearch', () => {
-  beforeEach(() => {
-    (EmojiInlineIndexSearch as any).instance = undefined;
-  });
-
-  it('creates a singleton search instance backed by the provided emoji data', () => {
+  it('creates a search instance backed by the provided emoji data', () => {
     const search =
       EmojiInlineIndexSearch.getInstance(grinOnlyData).search('grin');
 
     expect(search.getEmoji()?.id).toBe('grin');
   });
 
-  it('reuses the existing singleton when later calls pass different data', () => {
+  it('keeps searches isolated across emoji datasets', () => {
     const first = EmojiInlineIndexSearch.getInstance(grinOnlyData);
     const second = EmojiInlineIndexSearch.getInstance(rocketOnlyData);
 
-    expect(second).toBe(first);
-    expect(second.search('grin').getEmoji()?.id).toBe('grin');
-    expect(second.search('rocket').hasFound()).toBe(false);
+    expect(second).not.toBe(first);
+    expect(first.search('grin').getEmoji()?.id).toBe('grin');
+    expect(second.search('grin').hasFound()).toBe(false);
+    expect(second.search('rocket').getEmoji()?.id).toBe('rocket');
   });
 });

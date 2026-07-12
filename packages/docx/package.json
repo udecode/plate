@@ -41,7 +41,6 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "react-compiler-runtime": "^1.0.0",
     "validator": "^13.15.15"
   },
   "devDependencies": {

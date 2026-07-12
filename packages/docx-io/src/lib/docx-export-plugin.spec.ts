@@ -1,45 +1,35 @@
-import { createBasePlateEditor } from 'platejs';
+import { createBaseEditor } from 'platejs';
 
-import {
-  DocxExportPlugin,
-  type DocxExportApiMethods,
-  type DocxExportOperationOptions,
-  type DocxExportPluginConfig,
-} from './docx-export-plugin';
+import { DocxExportPlugin } from './docx-export-plugin';
 
 describe('DocxExportPlugin', () => {
-  it('delegates exportAndDownload through the typed plugin API', async () => {
-    const editor = createBasePlateEditor({
+  afterEach(() => {
+    mock.restore();
+  });
+
+  it('exports and downloads through the typed transaction API', async () => {
+    const editor = createBaseEditor({
       plugins: [DocxExportPlugin],
       value: [{ children: [{ text: 'Export me' }], type: 'p' }],
     });
-    const blob = new Blob(['docx']);
-    const exportToBlobCalls: (DocxExportOperationOptions | undefined)[] = [];
-    const downloadCalls: [Blob, string][] = [];
-    const exportToBlob: DocxExportApiMethods['exportToBlob'] = async (
-      options
-    ) => {
-      exportToBlobCalls.push(options);
+    const createObjectUrl = spyOn(URL, 'createObjectURL').mockReturnValue(
+      'blob:docx'
+    );
+    const revokeObjectUrl = spyOn(URL, 'revokeObjectURL').mockImplementation(
+      () => {}
+    );
+    const click = spyOn(
+      HTMLAnchorElement.prototype,
+      'click'
+    ).mockImplementation(() => {});
 
-      return blob;
-    };
-    const download: DocxExportApiMethods['download'] = (value, filename) => {
-      downloadCalls.push([value, filename]);
-    };
-    const api = editor.api as typeof editor.api & DocxExportPluginConfig['api'];
-
-    api.docxExport.exportToBlob = exportToBlob;
-    api.docxExport.download = download;
-
-    await api.docxExport.exportAndDownload('document', {
+    await editor.update.docxExport.exportAndDownload('document', {
       orientation: 'landscape',
     });
 
-    expect(exportToBlobCalls).toEqual([
-      {
-        orientation: 'landscape',
-      },
-    ]);
-    expect(downloadCalls).toEqual([[blob, 'document']]);
+    expect(createObjectUrl).toHaveBeenCalledWith(expect.any(Blob));
+    expect(click).toHaveBeenCalledTimes(1);
+    expect(revokeObjectUrl).toHaveBeenCalledWith('blob:docx');
+    expect(document.querySelector('a[download="document.docx"]')).toBeNull();
   });
 });

@@ -14,13 +14,13 @@ export class EmojiFloatingGridBuilder {
   protected grid = new EmojiFloatingGrid();
   protected localStorage: IFrequentEmojiStorage;
   protected sections: EmojiCategoryList[];
-  protected elements: GridElements;
+  protected elements: GridElements<EmojiCategoryList>;
   protected settings: EmojiSettingsType;
 
   constructor(
     localStorage: IFrequentEmojiStorage,
     sections: EmojiCategoryList[],
-    elements: GridElements,
+    elements: GridElements<EmojiCategoryList>,
     settings: EmojiSettingsType
   ) {
     this.localStorage = localStorage;

@@ -1,22 +1,10 @@
 import { act, renderHook } from '@testing-library/react';
 
 const useEditorRefMock = mock();
-const insertEmojiMock = mock();
-const observeCategoriesMock = mock();
 const useEmojiPickerStateMock = mock();
 
 mock.module('platejs/react', () => ({
   useEditorRef: useEditorRefMock,
-}));
-
-mock.module('../../lib', () => ({
-  EmojiCategory: { Frequent: 'frequent' },
-  i18n: { search: 'Search' },
-  insertEmoji: insertEmojiMock,
-}));
-
-mock.module('../utils', () => ({
-  observeCategories: observeCategoriesMock,
 }));
 
 mock.module('./useEmojiPickerState', () => ({
@@ -26,8 +14,6 @@ mock.module('./useEmojiPickerState', () => ({
 describe('useEmojiPicker', () => {
   beforeEach(() => {
     useEditorRefMock.mockReset();
-    insertEmojiMock.mockReset();
-    observeCategoriesMock.mockReset();
     useEmojiPickerStateMock.mockReset();
   });
 
@@ -60,11 +46,20 @@ describe('useEmojiPicker', () => {
       }),
     };
 
-    useEditorRefMock.mockReturnValue({ id: 'editor' });
+    const insert = mock();
+    const editor = {
+      plugin: () => ({
+        getOptions: () => ({ createEmojiNode: (emoji: unknown) => emoji }),
+      }),
+      update: (fn: (tx: { nodes: { insert: typeof insert } }) => void) =>
+        fn({ nodes: { insert } }),
+    };
+
+    useEditorRefMock.mockReturnValue(editor);
     useEmojiPickerStateMock.mockReturnValue([
       {
         hasFound: true,
-        isOpen: true,
+        isOpen: false,
         isSearching: true,
         searchValue: 'pizza',
         visibleCategories: new Map(),
@@ -93,10 +88,7 @@ describe('useEmojiPicker', () => {
       },
       type: 'UPDATE_SEARCH_RESULT',
     });
-    expect(insertEmojiMock).toHaveBeenCalledWith(
-      { id: 'editor' },
-      { id: 'wave' }
-    );
+    expect(insert).toHaveBeenCalledWith({ id: 'wave' });
     expect(emojiLibrary.updateFrequentCategory).toHaveBeenCalledWith('wave');
   });
 
@@ -146,7 +138,7 @@ describe('useEmojiPicker', () => {
     useEditorRefMock.mockReturnValue({ id: 'editor' });
     useEmojiPickerStateMock.mockReturnValue([
       {
-        isOpen: true,
+        isOpen: false,
         isSearching: false,
         searchValue: '',
         visibleCategories: new Map(),
@@ -190,7 +182,7 @@ describe('useEmojiPicker', () => {
     );
     let state = {
       hasFound: true,
-      isOpen: true,
+      isOpen: false,
       isSearching: true,
       searchValue: 'pizza',
       visibleCategories: new Map(),

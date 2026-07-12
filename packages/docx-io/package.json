@@ -53,18 +53,18 @@
     "mammoth": "^1.9.0",
     "mime-types": "^2.1.35",
     "nanoid": "^5.0.9",
-    "react-compiler-runtime": "^1.0.0",
-    "validator": "^13.15.15",
     "virtual-dom": "^2.1.1",
     "xmlbuilder2": "^3.1.1"
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
+    "@platejs/basic-nodes": "workspace:*",
+    "@platejs/docx": "workspace:*",
+    "@platejs/test-utils": "workspace:^",
     "platejs": "workspace:^"
   },
   "peerDependencies": {
     "@platejs/docx": ">=54.0.0-beta.0",
-    "@platejs/markdown": ">=54.0.0-beta.0",
     "platejs": ">=54.0.0-beta.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"

@@ -93,6 +93,7 @@ type MediaFileResponse = {
 };
 
 type DocxDocumentInstance = {
+  allowRemoteImages?: boolean;
   availableDocumentSpace: number;
   createDocumentRelationships: (
     filename: string,
@@ -1463,7 +1464,11 @@ const buildParagraph = async (
             continue;
           }
 
-          if (imageSource && isValidUrl(imageSource)) {
+          if (
+            docxDocumentInstance?.allowRemoteImages &&
+            imageSource &&
+            isValidUrl(imageSource)
+          ) {
             base64String = (await imageToBase64(imageSource).catch(() => {})) as
               | string
               | undefined;
@@ -1522,7 +1527,7 @@ const buildParagraph = async (
                 childVNode.properties.src = `data:${mimeType};base64,${base64String}`;
               }
             } else {
-              break;
+              continue;
             }
           } else if (imageSource?.startsWith('data:')) {
             const match = imageSource.match(
@@ -1531,10 +1536,10 @@ const buildParagraph = async (
             if (match) {
               base64String = match[2];
             } else {
-              break;
+              continue;
             }
           } else {
-            break;
+            continue;
           }
 
           // Convert base64 to Uint8Array for browser compatibility
@@ -1596,8 +1601,12 @@ const buildParagraph = async (
         return paragraphFragment;
       }
 
-      let base64String: string | undefined = imageSource;
-      if (imageSource && isValidUrl(imageSource)) {
+      let base64String: string | undefined;
+      if (
+        docxDocumentInstance?.allowRemoteImages &&
+        imageSource &&
+        isValidUrl(imageSource)
+      ) {
         base64String = (await imageToBase64(imageSource).catch(() => {})) as
           | string
           | undefined;
@@ -1657,8 +1666,8 @@ const buildParagraph = async (
           paragraphFragment.up();
           return paragraphFragment;
         }
-      } else if (base64String) {
-        const match = base64String.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+      } else if (imageSource?.startsWith('data:')) {
+        const match = imageSource.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
         if (match) {
           base64String = match[2];
         }

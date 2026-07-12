@@ -21,7 +21,7 @@ export function useEmojiDropdownMenuState({
   closeOnSelect = true,
   settings = EmojiSettings,
 }: EmojiDropdownMenuOptions = {}) {
-  const data = usePluginOption(EmojiPlugin, 'data')!;
+  const data = usePluginOption(EmojiPlugin, 'data');
 
   const [emojiLibrary, indexSearch] = React.useMemo(() => {
     const frequentEmojiStorage = new FrequentEmojiStorage({

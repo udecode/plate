@@ -1,4 +1,6 @@
-export type GridElements<S extends SectionId = SectionId> = Record<S, string[]>;
+export type GridElements<S extends SectionId = SectionId> = Partial<
+  Record<S, string[]>
+>;
 
 export type GridRow = {
   id: number;
@@ -12,7 +14,7 @@ export interface IGrid<R, T extends SectionId> {
   addSection: (
     sectionId: T,
     section: IGridSection<R, T>,
-    elements: GridElements
+    elements: GridElements<T>
   ) => this;
   indexOf: (sectionId: T) => number;
   section: (sectionId: T) => IGridSection<R, T>;

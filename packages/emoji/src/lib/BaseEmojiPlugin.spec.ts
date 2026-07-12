@@ -1,13 +1,23 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import type { Emoji } from '@emoji-mart/data';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseEmojiInputPlugin, BaseEmojiPlugin } from './BaseEmojiPlugin';
 import { DEFAULT_EMOJI_LIBRARY } from './constants';
 
 describe('BaseEmojiPlugin', () => {
+  const fireEmoji: Emoji = {
+    id: 'fire',
+    keywords: ['flame'],
+    name: 'Fire',
+    skins: [{ native: '🔥', unified: '1f525' }],
+    version: 1,
+  };
+
   it('configures the emoji input plugin as an inline void edit-only node', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseEmojiPlugin],
-    } as any);
+    });
 
     const inputPlugin = editor.getPlugin(BaseEmojiInputPlugin);
 
@@ -18,9 +28,9 @@ describe('BaseEmojiPlugin', () => {
   });
 
   it('ships the default trigger, library, and node builders', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseEmojiPlugin],
-    } as any);
+    });
 
     const plugin = editor.getPlugin(BaseEmojiPlugin);
     const triggerPreviousCharPattern =
@@ -46,20 +56,20 @@ describe('BaseEmojiPlugin', () => {
       children: [{ text: '' }],
       type: KEYS.emojiInput,
     });
-    expect(createEmojiNode({ skins: [{ native: '🔥' }] } as any)).toEqual({
+    expect(createEmojiNode(fireEmoji)).toEqual({
       text: '🔥',
     });
   });
 
   it('includes the nested emoji input plugin', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseEmojiPlugin],
-    } as any);
+    });
 
     const plugin = editor.getPlugin(BaseEmojiPlugin);
 
-    expect(
-      plugin.plugins.some((child: any) => child.key === KEYS.emojiInput)
-    ).toBe(true);
+    expect(plugin.plugins.some((child) => child.key === KEYS.emojiInput)).toBe(
+      true
+    );
   });
 });

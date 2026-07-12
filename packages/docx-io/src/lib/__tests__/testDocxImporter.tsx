@@ -7,21 +7,15 @@ import {
   BaseBasicBlocksPlugin,
   BaseBasicMarksPlugin,
 } from '@platejs/basic-nodes';
-import { BaseHorizontalRulePlugin } from '@platejs/basic-nodes';
-import {
-  BaseLineHeightPlugin,
-  BaseTextAlignPlugin,
-} from '@platejs/basic-styles';
-import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { cleanDocx } from '@platejs/docx';
-import { BaseIndentPlugin } from '@platejs/indent';
-import { BaseLinkPlugin } from '@platejs/link';
-import { BaseListPlugin } from '@platejs/list';
-import { BaseImagePlugin } from '@platejs/media';
-import type { Descendant, SlatePlugin } from 'platejs';
-import { createSlateEditor } from 'platejs';
-import { BaseTablePlugin } from '@platejs/table';
-import { jsx } from '@platejs/test-utils';
+import type { BasePlugin, BasePlugins } from 'platejs';
+import {
+  createBaseEditor,
+  createBasePlugin,
+  deserializeHtml,
+  KEYS,
+} from 'platejs';
+import { jsx, type TestEditor } from '@platejs/test-utils';
 import mammoth from 'mammoth';
 
 import { preprocessMammothHtml } from '../preprocessMammothHtml';
@@ -29,11 +23,47 @@ import { preprocessMammothHtml } from '../preprocessMammothHtml';
 // biome-ignore lint/suspicious/noUnusedExpressions: test
 jsx;
 
-const injectConfig = {
-  inject: {
-    targetPlugins: ['p', 'h1', 'h2', 'h3'],
+const TestLinkPlugin = createBasePlugin({
+  key: KEYS.link,
+  node: { isElement: true, isInline: true },
+  parsers: {
+    html: {
+      deserializer: {
+        parse: ({ element, type }) => {
+          const url = element.getAttribute('href');
+
+          if (!url) return;
+
+          return {
+            target: element.getAttribute('target') || '_blank',
+            type,
+            url,
+          };
+        },
+        rules: [{ validNodeName: 'A' }],
+      },
+    },
   },
-};
+});
+
+const TestTableRowPlugin = createBasePlugin({
+  key: KEYS.tr,
+  node: { isContainer: true, isElement: true, isStrictSiblings: true },
+  parsers: { html: { deserializer: { rules: [{ validNodeName: 'TR' }] } } },
+});
+
+const TestTableCellPlugin = createBasePlugin({
+  key: KEYS.td,
+  node: { isContainer: true, isElement: true, isStrictSiblings: true },
+  parsers: { html: { deserializer: { rules: [{ validNodeName: 'TD' }] } } },
+});
+
+const TestTablePlugin = createBasePlugin({
+  key: KEYS.table,
+  node: { isContainer: true, isElement: true },
+  parsers: { html: { deserializer: { rules: [{ validNodeName: 'TABLE' }] } } },
+  plugins: [TestTableRowPlugin, TestTableCellPlugin],
+});
 
 /** Read .docx file from docx package's __tests__ directory */
 export const readDocxFixture = (filename: string): Buffer => {
@@ -54,31 +84,24 @@ export const testDocxImporter = ({
   overridePlugins,
   plugins = [],
 }: {
-  expected: any;
+  expected: TestEditor;
   filename: string;
-  overridePlugins?: SlatePlugin['override']['plugins'];
-  plugins?: any[];
+  overridePlugins?: BasePlugin['override']['plugins'];
+  plugins?: BasePlugins;
 }) => {
   it('import', async () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       override: {
         plugins: overridePlugins,
       },
       plugins: [
         ...plugins,
-        BaseImagePlugin,
-        BaseHorizontalRulePlugin,
-        BaseCodeBlockPlugin,
-        BaseLinkPlugin,
         BaseBasicBlocksPlugin,
         BaseBasicMarksPlugin,
-        BaseListPlugin,
-        BaseTablePlugin,
-        BaseLineHeightPlugin.extend(() => injectConfig),
-        BaseTextAlignPlugin.extend(() => injectConfig),
-        BaseIndentPlugin.extend(() => injectConfig),
+        TestLinkPlugin,
+        TestTablePlugin,
       ],
-    } as any);
+    });
 
     // Read docx file as Node Buffer
     const buffer = readDocxFixture(filename);
@@ -97,9 +120,7 @@ export const testDocxImporter = ({
 
     // Deserialize HTML to nodes
     const doc = new DOMParser().parseFromString(cleanedHtml, 'text/html');
-    const nodes = editor.api.html.deserialize({
-      element: doc.body,
-    }) as Descendant[];
+    const nodes = deserializeHtml(editor, { element: doc.body });
 
     expect(nodes).toEqual(expected.children);
   });

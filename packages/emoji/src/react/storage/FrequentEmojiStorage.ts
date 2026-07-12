@@ -10,7 +10,7 @@ import { LocalStorage } from './LocalStorage';
 export class FrequentEmojiStorage implements IFrequentEmojiStorage {
   protected key = EmojiCategory.Frequent;
   protected limit = 8;
-  protected localStorage;
+  protected localStorage: LocalStorage<FrequentEmojis>;
   protected prefix = 'emoji';
   protected defaultValue = DEFAULT_FREQUENTLY_USED_EMOJI;
 
@@ -35,16 +35,16 @@ export class FrequentEmojiStorage implements IFrequentEmojiStorage {
   }
 
   getList(): string[] {
-    return Object.keys(this.get()).splice(0, this.limit);
+    return Object.keys(this.get()).slice(0, this.limit);
   }
 
-  set(value: any) {
+  set(value: FrequentEmojis) {
     this.localStorage.set(value);
   }
 
   update(emojiId: string) {
     const prevEmojis = this.localStorage.get();
-    const count = prevEmojis![emojiId] ? prevEmojis[emojiId] + 1 : 1;
+    const count = prevEmojis[emojiId] ? prevEmojis[emojiId] + 1 : 1;
 
     const emojis: FrequentEmojis = {
       ...prevEmojis,

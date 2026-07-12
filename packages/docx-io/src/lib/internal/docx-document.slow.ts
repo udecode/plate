@@ -17,6 +17,13 @@ const createDocxDocument = (overrides = {}) =>
   });
 
 describe('DocxDocument', () => {
+  it('keeps remote images disabled unless explicitly enabled', () => {
+    expect(createDocxDocument().allowRemoteImages).toBe(false);
+    expect(
+      createDocxDocument({ allowRemoteImages: true }).allowRemoteImages
+    ).toBe(true);
+  });
+
   it('creates relationships with the correct OOXML namespace and next id', () => {
     const document = createDocxDocument();
 

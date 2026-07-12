@@ -25,6 +25,26 @@ describe('render-document-file helpers', () => {
     expect(docxDocument.createMediaFile).not.toHaveBeenCalled();
   });
 
+  it('does not fetch remote images by default', async () => {
+    const fetchSpy = spyOn(globalThis, 'fetch').mockImplementation(async () => {
+      throw new Error('unexpected fetch');
+    });
+    const docxDocument = {
+      allowRemoteImages: false,
+      createMediaFile: mock(),
+    } as any;
+
+    await expect(
+      buildImage(docxDocument, {
+        properties: { src: 'https://example.com/image.png' },
+      } as any)
+    ).resolves.toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(docxDocument.createMediaFile).not.toHaveBeenCalled();
+
+    fetchSpy.mockRestore();
+  });
+
   it('tracks numbering ids by list type and indent level and resets them', () => {
     resetListTracking();
     setListTracking('ul', 3, 0);

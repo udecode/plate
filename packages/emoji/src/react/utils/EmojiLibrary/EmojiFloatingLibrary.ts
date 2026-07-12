@@ -19,8 +19,6 @@ export class EmojiFloatingLibrary
   extends EmojiInlineLibrary
   implements IEmojiFloatingLibrary
 {
-  private static instance?: EmojiFloatingLibrary;
-
   private readonly categories: EmojiCategoryList[] = defaultCategories;
   private readonly emojis: Partial<Record<EmojiCategoryList, string[]>> = {};
   private readonly grid: EmojiFloatingGridType;
@@ -56,20 +54,16 @@ export class EmojiFloatingLibrary
     localStorage: IFrequentEmojiStorage,
     library = DEFAULT_EMOJI_LIBRARY
   ) {
-    if (!EmojiFloatingLibrary.instance) {
-      EmojiFloatingLibrary.instance = new EmojiFloatingLibrary(
-        settings,
-        localStorage,
-        library
-      );
-    }
-
-    return EmojiFloatingLibrary.instance;
+    return new EmojiFloatingLibrary(settings, localStorage, library);
   }
 
-  private initEmojis(categoriesLibrary: any) {
+  private initEmojis(categoriesLibrary: EmojiLibrary['categories']) {
     for (const category of categoriesLibrary) {
-      (this.emojis as any)[category.id] = category.emojis;
+      const categoryId = this.categories.find((id) => id === category.id);
+
+      if (categoryId) {
+        this.emojis[categoryId] = category.emojis;
+      }
     }
   }
 

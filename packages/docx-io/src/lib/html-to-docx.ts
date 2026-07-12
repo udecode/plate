@@ -10,7 +10,7 @@
 import JSZip from 'jszip';
 
 import addFilesToContainer from './internal/html-to-docx';
-import type { DocumentOptions, Margins } from './internal/types';
+import type { DocumentOptions } from './internal/types';
 
 // Re-export types from the library
 export type {
@@ -21,10 +21,6 @@ export type {
   PageSize,
   TableOptions,
 } from './internal/types';
-
-// Backwards compatibility aliases
-export type DocumentMargins = Margins;
-export type HtmlToDocxOptions = DocumentOptions;
 
 /**
  * Convert HTML content to a DOCX blob.

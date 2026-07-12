@@ -35,7 +35,7 @@ export type UseEmojiPickerProps = {
 };
 
 export type UseEmojiPickerType<
-  T extends React.ReactElement<any> = React.ReactElement<any>,
+  T extends React.ReactElement = React.ReactElement,
 > = {
   emojiLibrary: IEmojiFloatingLibrary;
   hasFound: boolean;
@@ -56,7 +56,6 @@ export type UseEmojiPickerType<
   emoji?: Emoji;
   focusedCategory?: EmojiCategoryList;
   settings?: EmojiSettingsType;
-  styles?: any;
 };
 
 export const useEmojiPicker = ({
@@ -236,16 +235,21 @@ export const useEmojiPicker = ({
   ]);
 
   React.useEffect(() => {
-    if (state.isOpen && !state.isSearching) {
-      // Timeout to allow the category element refs to populate
-      setTimeout(() => {
-        observeCategories({
-          ancestorRef: refs.current.contentRoot,
-          emojiLibrary,
-          setFocusedAndVisibleSections,
-        });
-      }, 0);
-    }
+    if (!state.isOpen || state.isSearching) return;
+
+    let observer: IntersectionObserver | undefined;
+    const timeoutId = window.setTimeout(() => {
+      observer = observeCategories({
+        ancestorRef: refs.current.contentRoot,
+        emojiLibrary,
+        setFocusedAndVisibleSections,
+      });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      observer?.disconnect();
+    };
   }, [
     emojiLibrary,
     state.isOpen,

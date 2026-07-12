@@ -1309,9 +1309,6 @@ importers:
 
   packages/docx:
     dependencies:
-      react-compiler-runtime:
-        specifier: ^1.0.0
-        version: 1.0.0(react@19.2.4)
       validator:
         specifier: ^13.15.15
         version: 13.15.26
@@ -1352,12 +1349,6 @@ importers:
       nanoid:
         specifier: ^5.0.9
         version: 5.1.6
-      react-compiler-runtime:
-        specifier: ^1.0.0
-        version: 1.0.0(react@19.2.4)
-      validator:
-        specifier: ^13.15.15
-        version: 13.15.26
       virtual-dom:
         specifier: ^2.1.1
         version: 2.1.1
@@ -1368,6 +1359,15 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      '@platejs/basic-nodes':
+        specifier: workspace:*
+        version: link:../basic-nodes
+      '@platejs/docx':
+        specifier: workspace:*
+        version: link:../docx
+      '@platejs/test-utils':
+        specifier: workspace:^
+        version: link:../test-utils
       platejs:
         specifier: workspace:^
         version: link:../plate
@@ -1377,6 +1377,15 @@ importers:
       '@platejs/combobox':
         specifier: workspace:*
         version: link:../combobox
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
+      '@platejs/plite':
+        specifier: workspace:^
+        version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)

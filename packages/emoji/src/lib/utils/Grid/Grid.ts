@@ -14,9 +14,11 @@ export class Grid<R, T extends SectionId = SectionId> implements IGrid<R, T> {
   addSection(
     sectionId: T,
     section: IGridSection<R, T>,
-    elements: GridElements
+    elements: GridElements<T>
   ) {
-    section.setIndexRowStart(this.rowsCount).addElements(elements[sectionId]);
+    section
+      .setIndexRowStart(this.rowsCount)
+      .addElements(elements[sectionId] ?? []);
     this.rowsCount += section.rowsNum;
     this.grid.set(sectionId, section);
     this.sectionsIds.push(sectionId);

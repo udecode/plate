@@ -10,7 +10,7 @@ const extractFootnoteNumber = (footnote: Element): string =>
 export const cleanDocxFootnotes = (rootNode: Node): void => {
   traverseHtmlElements(rootNode, (element) => {
     if (isDocxFootnote(element)) {
-      const footnoteReplacement = document.createElement('sup');
+      const footnoteReplacement = element.ownerDocument.createElement('sup');
       footnoteReplacement.textContent = extractFootnoteNumber(element);
 
       if (element.parentElement) {
