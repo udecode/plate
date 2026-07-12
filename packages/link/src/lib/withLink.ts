@@ -1,53 +1,44 @@
-import { type OverrideEditor, PathApi, PointApi, TextApi } from 'platejs';
-import type { TText } from 'platejs';
+import type { ExtendPlateEditorExtension } from '@platejs/core';
+import type { Element } from '@platejs/plite';
+import { PathApi } from '@platejs/plite';
 
 import type { BaseLinkConfig } from './BaseLinkPlugin';
 
-/**
- * Insert space after a url to wrap a link. Lookup from the block start to the
- * cursor to check if there is an url. If not found, lookup before the cursor
- * for a space character to check the url.
- *
- * On insert data: Paste a string inside a link element will edit its children
- * text but not its url.
- */
-export const withLink: OverrideEditor<BaseLinkConfig> = ({
-  editor,
-  tf: { normalizeNode },
+/** Moves text insertion outside a link when the caret is at its end. */
+export const withLink: ExtendPlateEditorExtension<BaseLinkConfig> = ({
   type,
-}) => {
-  return {
-    transforms: {
-      normalizeNode([node, path]) {
-        if (node.type === type) {
-          const focus = editor.selection?.focus;
-          const focusEntry = focus ? editor.api.node(focus.path) : undefined;
-          const focusIsValid =
-            !!focusEntry &&
-            (!TextApi.isText(focusEntry[0]) ||
-              (focus?.offset ?? 0) <= focusEntry[0].text.length);
-          const endPoint = editor.api.end(path);
+}) => ({
+  transforms: {
+    insertText({ next, options, text, tx }) {
+      if (options?.at) return next({ options, text });
 
-          if (
-            focus &&
-            editor.api.isCollapsed() &&
-            focusIsValid &&
-            endPoint &&
-            PointApi.equals(focus, endPoint)
-          ) {
-            const nextPoint = editor.api.start(path, { next: true });
+      const selection = tx.selection();
 
-            // select next text node if any
-            if (!nextPoint) {
-              const nextPath = PathApi.next(path);
-              editor.tf.insertNodes({ text: '' } as TText, { at: nextPath });
-              editor.tf.select(nextPath);
-            }
-          }
-        }
+      if (!selection || !tx.selection.isCollapsed()) {
+        return next({ options, text });
+      }
 
-        normalizeNode([node, path]);
-      },
+      const link = tx.nodes.above<Element>({
+        at: selection,
+        match: { type },
+      });
+
+      if (!link || !tx.points.isEnd(selection.focus, link[1])) {
+        return next({ options, text });
+      }
+
+      const nextPoint = tx.points.after(link[1]);
+
+      if (nextPoint) {
+        tx.selection.set(nextPoint);
+      } else {
+        const nextPath = PathApi.next(link[1]);
+
+        tx.nodes.insert({ text: '' }, { at: nextPath });
+        tx.selection.set({ offset: 0, path: nextPath });
+      }
+
+      return next({ options, text });
     },
-  };
-};
+  },
+});

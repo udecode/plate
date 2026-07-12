@@ -1,24 +1,33 @@
-import type { SlateEditor, TLinkElement, WrapNodesOptions } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type {
+  EditorUpdateTransaction,
+  Location,
+  MaximizeMode,
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
-import { KEYS } from 'platejs';
-
-export interface WrapLinkOptions extends WrapNodesOptions {
+export interface WrapLinkOptions {
   url: string;
+  at?: Location;
+  mode?: MaximizeMode;
+  split?: boolean;
   target?: string;
+  voids?: boolean;
 }
 
-/** Wrap a link node with split. */
+/** Wrap nodes in a link. */
 export const wrapLink = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   { target, url, ...options }: WrapLinkOptions
 ) => {
-  editor.tf.wrapNodes<TLinkElement>(
+  tx.nodes.wrap(
     {
       children: [],
       target,
       type: editor.getType(KEYS.link),
       url,
     },
-    { split: true, ...options } as any
+    { split: true, ...options }
   );
 };

@@ -18,7 +18,9 @@ export const insertImageFromFiles = (
           return;
         }
 
-        const uploadImage = editor.plugin(BaseImagePlugin).getOptions().uploadImage;
+        const uploadImage = editor
+          .plugin(BaseImagePlugin)
+          .getOptions().uploadImage;
 
         const uploadedUrl = uploadImage
           ? await uploadImage(reader.result)

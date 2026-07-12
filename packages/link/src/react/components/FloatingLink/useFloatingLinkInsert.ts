@@ -5,14 +5,13 @@ import {
   getDOMSelectionBoundingClientRect,
 } from '@platejs/floating';
 import {
-  useComposedRef,
+  useEditorFocused,
   useEditorPlugin,
   useEditorReadOnly,
-  useFocused,
-  useHotkeys,
-  useOnClickOutside,
   usePluginOption,
-} from 'platejs/react';
+} from '@platejs/core/react';
+import { useHotkeys } from '@udecode/react-hotkeys';
+import { useComposedRef, useOnClickOutside } from '@udecode/react-utils';
 
 import { LinkPlugin } from '../../LinkPlugin';
 import { triggerFloatingLinkInsert } from '../../utils/triggerFloatingLinkInsert';
@@ -30,7 +29,7 @@ export const useFloatingLinkInsertState = ({
 
   const { triggerFloatingLinkHotkeys } = getOptions();
   const readOnly = useEditorReadOnly();
-  const focused = useFocused();
+  const focused = useEditorFocused();
   const mode = usePluginOption(LinkPlugin, 'mode');
   const isOpen = usePluginOption(LinkPlugin, 'isOpen', editor.id);
 
@@ -51,13 +50,24 @@ export const useFloatingLinkInsertState = ({
   };
 };
 
+export type FloatingLinkInsertProps = {
+  hidden: boolean;
+  props: { style: React.CSSProperties };
+  ref: React.RefCallback<HTMLDivElement>;
+  textInputProps: {
+    defaultValue: string;
+    onChange: React.ChangeEventHandler<HTMLInputElement>;
+    ref: (element: HTMLInputElement) => void;
+  };
+};
+
 export const useFloatingLinkInsert = ({
   floating,
   focused,
   isOpen,
   readOnly,
   triggerFloatingLinkHotkeys,
-}: ReturnType<typeof useFloatingLinkInsertState>): any => {
+}: ReturnType<typeof useFloatingLinkInsertState>): FloatingLinkInsertProps => {
   const { api, editor, getOptions, setOption } = useEditorPlugin(LinkPlugin);
 
   const onChange: React.ChangeEventHandler<HTMLInputElement> =
@@ -72,7 +82,7 @@ export const useFloatingLinkInsert = ({
     () => {
       if (getOptions().mode === 'insert') {
         api.floatingLink.hide();
-        editor.tf.focus({ at: editor.selection! });
+        editor.api.dom.focus();
       }
     },
     {
@@ -92,7 +102,7 @@ export const useFloatingLinkInsert = ({
   }, [isOpen, floating.update]);
 
   useHotkeys(
-    triggerFloatingLinkHotkeys!,
+    triggerFloatingLinkHotkeys ?? 'meta+k, ctrl+k',
     (e) => {
       if (triggerFloatingLinkInsert(editor, { focused })) {
         e.preventDefault();

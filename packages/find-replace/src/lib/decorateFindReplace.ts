@@ -1,10 +1,17 @@
-import type { Decorate, TRange } from 'platejs';
-
-import { ElementApi, TextApi } from 'platejs';
+import type { Decorate } from '@platejs/core';
+import {
+  ElementApi,
+  NodeApi,
+  type NodeEntry,
+  type Range,
+  type Text,
+  TextApi,
+} from '@platejs/plite';
 
 import type { FindReplaceConfig } from './FindReplacePlugin';
 
 export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
+  editor,
   entry: [node, path],
   getOptions,
   type,
@@ -12,17 +19,29 @@ export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
   const { search } = getOptions();
 
   if (
-    !(
-      search &&
-      ElementApi.isElement(node) &&
-      node.children.every(TextApi.isText)
-    )
+    !(search && ElementApi.isElement(node) && editor.read.nodes.isBlock(node))
   ) {
     return [];
   }
 
-  const texts = node.children.map((it) => it.text);
-  const str = texts.join('').toLowerCase();
+  const textEntries: NodeEntry<Text>[] = [];
+
+  for (const [index, child] of node.children.entries()) {
+    if (TextApi.isText(child)) {
+      textEntries.push([child, [index]]);
+    } else if (
+      ElementApi.isElement(child) &&
+      editor.read.schema.isInline(child)
+    ) {
+      for (const [text, relativePath] of NodeApi.texts(child)) {
+        textEntries.push([text, [index, ...relativePath]]);
+      }
+    }
+  }
+  const str = textEntries
+    .map(([text]) => text.text)
+    .join('')
+    .toLowerCase();
   const searchLower = search.toLowerCase();
 
   let start = 0;
@@ -45,9 +64,9 @@ export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
   let cumulativePosition = 0;
   let matchIndex = 0; // index in the matches array
 
-  for (const [textIndex, text] of texts.entries()) {
+  for (const [text, relativePath] of textEntries) {
     const textStart = cumulativePosition;
-    const textEnd = textStart + text.length;
+    const textEnd = textStart + text.text.length;
 
     // Process matches that overlap with the current text node
     while (matchIndex < matches.length && matches[matchIndex] < textEnd) {
@@ -73,7 +92,7 @@ export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
         const searchOverlapStart = overlapStart - matchStart;
         const searchOverlapEnd = overlapEnd - matchStart;
 
-        const textNodePath = [...path, textIndex];
+        const textNodePath = [...path, ...relativePath];
 
         ranges.push({
           anchor: {
@@ -105,4 +124,5 @@ export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
 
 type SearchRange = {
   search: string;
-} & TRange;
+} & Range &
+  Record<string, unknown>;

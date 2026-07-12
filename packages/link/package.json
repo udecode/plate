@@ -40,16 +40,19 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
+    "@platejs/core": "workspace:^",
     "@platejs/floating": "workspace:^",
     "@platejs/plite": "workspace:^",
+    "@platejs/utils": "workspace:^",
+    "@udecode/react-hotkeys": "workspace:^",
+    "@udecode/react-utils": "workspace:^",
+    "@udecode/utils": "workspace:^",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:*",
-    "platejs": "workspace:^"
+    "@plate/scripts": "workspace:*"
   },
   "peerDependencies": {
-    "platejs": ">=54.0.0-beta.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

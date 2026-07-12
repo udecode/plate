@@ -595,6 +595,21 @@ because no exact upstream repro is closed by this slice.
 | Existing normalization policy/perf rows preserved |     6 | `#3465`, `#2643`, `#2405`, `#2195`, `#2355`, `#3430` | Keep as not claimed or related; forced-layout normalizer DX does not add initial-value normalization, schema veto, command-scoped schema evaluation, text-node dirty tracking, selection normalization, or inline-heavy performance proof. |
 | PR proof sync                                     |     1 | `normalizers.editor` / `normalizers.node` proof      | `docs/plite/references/pr-description.md` records the implemented API and proof references, but no fixed or improved issue claim is added.                                                                                              |
 
+## Normalization Lifecycle Architecture Planning Sync - 2026-07-12
+
+This is planning/accounting sync for
+`docs/plans/2026-07-12-plite-normalization-lifecycle-architecture.md`. It
+preserves two existing claims and adds no fixed or improved issue claim.
+
+| Route | Count | Issues | Claim policy |
+|-------|------:|--------|--------------|
+| Existing exact claims preserved | 2 | `#3950`, `#5811` | Preserve `Fixes #3950` and `Improves #5811`; accepted-plan execution must keep the existing fixpoint proofs green. |
+| Selection pressure remains related | 1 | `#2355` | Direct Footnote target creation and canonical selection mapping do not add the requested generic selection-normalizer hook. |
+| Initial-value policy remains unclaimed | 1 | `#3465` | Outer-only `value.repair()` is explicit maintenance; automatic initial-value normalization and default import/root policy remain separate. |
+| Normalizer-property pressure remains related | 1 | `#4641` | Extension-aware automatic closeout is relevant, but no exact proof closes the reported property-copy/update behavior. |
+| Normalizer API/diagnostic non-claims | 3 | `#4701`, `#3275`, `#2039` | The plan adds no custom empty-text factory, path-only normalizer input, or separately proved named/stack loop diagnostic. |
+| PR prose sync | 0 | none | Existing `Fixes #3950`, `Improves #5811`, and `#3465` non-claim prose stays exact; the planning-only target adds no PR claim. |
+
 ## Processing Notes
 
 When a Plite Ralplan or Ralph execution slice fixes behavior:

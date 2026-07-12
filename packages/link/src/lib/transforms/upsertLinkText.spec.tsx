@@ -1,100 +1,55 @@
-/** @jsx jsxt */
-
-import type { SlateEditor } from 'platejs';
-
-import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
-import { upsertLinkText } from './upsertLinkText';
 
-jsxt;
+const createEditor = () =>
+  createBaseEditor({
+    plugins: [BaseLinkPlugin],
+    selection: {
+      anchor: { offset: 3, path: [0, 0, 0] },
+      focus: { offset: 3, path: [0, 0, 0] },
+    },
+    value: [
+      {
+        children: [
+          {
+            children: [{ bold: true, text: 'old' }, { text: ' tail' }],
+            type: 'a',
+            url: 'https://example.com',
+          },
+        ],
+        type: 'p',
+      },
+    ],
+  });
 
 describe('upsertLinkText', () => {
-  const createEditor = (input: SlateEditor) =>
-    createSlateEditor({
-      plugins: [BaseLinkPlugin],
-      selection: input.selection,
-      value: input.children,
-    });
+  it('replaces children and preserves first-leaf marks', () => {
+    const editor = createEditor();
 
-  it('replaces link children when the text changes and keeps the first leaf marks', () => {
-    const input = (
-      <editor>
-        <hp>
-          <ha url="https://example.com">
-            <htext bold>
-              old
-              <cursor />
-            </htext>
-            tail
-          </ha>
-        </hp>
-      </editor>
-    ) as any as SlateEditor;
-
-    const editor = createEditor(input);
-
-    upsertLinkText(editor, {
+    editor.update.link.upsertText({
       text: 'new value',
       url: 'https://example.com',
     });
 
-    expect(editor.children).toEqual(
-      (
-        <editor>
-          <hp>
-            <htext />
-            <ha url="https://example.com">
-              <htext bold>new value</htext>
-            </ha>
-            <htext />
-          </hp>
-        </editor>
-      ).children
+    expect(editor.read.nodes.find({ match: { type: 'a' } })?.[0]).toMatchObject(
+      {
+        children: [{ bold: true, text: 'new value' }],
+        type: 'a',
+      }
     );
   });
 
-  it('does nothing when the requested text matches the current link text', () => {
-    const input = (
-      <editor>
-        <hp>
-          <ha url="https://example.com">
-            same
-            <cursor />
-          </ha>
-        </hp>
-      </editor>
-    ) as any as SlateEditor;
+  it('does nothing without different replacement text', () => {
+    const editor = createEditor();
+    const before = editor.read.children();
 
-    const editor = createEditor(input);
-
-    upsertLinkText(editor, {
-      text: 'same',
+    editor.update.link.upsertText({
+      text: 'old tail',
       url: 'https://example.com',
     });
+    editor.update.link.upsertText({ url: 'https://example.com' });
 
-    expect(editor.children).toEqual(input.children);
-  });
-
-  it('does nothing when no replacement text is provided', () => {
-    const input = (
-      <editor>
-        <hp>
-          <ha url="https://example.com">
-            keep
-            <cursor />
-          </ha>
-        </hp>
-      </editor>
-    ) as any as SlateEditor;
-
-    const editor = createEditor(input);
-
-    upsertLinkText(editor, {
-      url: 'https://example.com',
-    });
-
-    expect(editor.children).toEqual(input.children);
+    expect(editor.read.children()).toEqual(before);
   });
 });

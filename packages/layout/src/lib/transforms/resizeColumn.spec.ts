@@ -1,5 +1,3 @@
-import type { TColumnGroupElement } from 'platejs';
-
 import { resizeColumn } from './resizeColumn';
 
 describe('resizeColumn', () => {
@@ -10,12 +8,14 @@ describe('resizeColumn', () => {
         { children: [], id: 'b', type: 'column' },
       ],
       type: 'column_group',
-    } as any as TColumnGroupElement;
+    };
 
     resizeColumn(columnGroup, 'a', 70);
 
-    expect(columnGroup.children[0].width).toBe('50%');
-    expect(columnGroup.children[1].width).toBe('50%');
+    expect(columnGroup.children).toMatchObject([
+      { width: '50%' },
+      { width: '50%' },
+    ]);
   });
 
   it('leave the group unchanged when the target column does not exist', () => {
@@ -25,7 +25,7 @@ describe('resizeColumn', () => {
         { children: [], id: 'b', type: 'column', width: '60%' },
       ],
       type: 'column_group',
-    } as any as TColumnGroupElement;
+    };
 
     resizeColumn(columnGroup, 'missing', 70);
 
@@ -41,7 +41,7 @@ describe('resizeColumn', () => {
         { children: [], id: 'c', type: 'column', width: '30%' },
       ],
       type: 'column_group',
-    } as any as TColumnGroupElement;
+    };
 
     resizeColumn(columnGroup, 'a', 50);
 
@@ -60,7 +60,7 @@ describe('resizeColumn', () => {
         { children: [], id: 'c', type: 'column', width: '30%' },
       ],
       type: 'column_group',
-    } as any as TColumnGroupElement;
+    };
 
     resizeColumn(columnGroup, 'a', 200);
 

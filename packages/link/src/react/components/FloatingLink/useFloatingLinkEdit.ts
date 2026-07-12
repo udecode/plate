@@ -4,20 +4,18 @@ import {
   getDOMSelectionBoundingClientRect,
   getRangeBoundingClientRect,
 } from '@platejs/floating';
-import { KEYS } from 'platejs';
 import {
-  useComposedRef,
   useEditorPlugin,
   useEditorReadOnly,
-  useEditorVersion,
-  useHotkeys,
-  useOnClickOutside,
+  useEditorSelection,
   usePluginOption,
-} from 'platejs/react';
+} from '@platejs/core/react';
+import { KEYS } from '@platejs/utils';
+import { useHotkeys } from '@udecode/react-hotkeys';
+import { useComposedRef, useOnClickOutside } from '@udecode/react-utils';
 
 import type { LinkFloatingToolbarState } from './useFloatingLinkInsert';
 
-import { unwrapLink } from '../../../lib';
 import { LinkPlugin } from '../../LinkPlugin';
 import { triggerFloatingLinkEdit } from '../../utils/triggerFloatingLinkEdit';
 import { useFloatingLinkEnter } from './useFloatingLinkEnter';
@@ -32,28 +30,27 @@ export const useFloatingLinkEditState = ({
   const { triggerFloatingLinkHotkeys } = getOptions();
   const readOnly = useEditorReadOnly();
   const isEditing = usePluginOption(LinkPlugin, 'isEditing');
-  const version = useEditorVersion();
+  const selection = useEditorSelection();
   const mode = usePluginOption(LinkPlugin, 'mode');
   const open = usePluginOption(LinkPlugin, 'isOpen', editor.id);
 
   const getBoundingClientRect = React.useCallback(() => {
-    const entry = editor.api.above({
+    const entry = editor.read.nodes.above({
       match: { type },
     });
 
     if (entry) {
       const [, path] = entry;
 
-      return getRangeBoundingClientRect(editor, {
-        anchor: editor.api.start(path)!,
-        focus: editor.api.end(path)!,
-      });
+      const range = editor.read.ranges.get(path);
+
+      if (range) return getRangeBoundingClientRect(editor, range);
     }
 
     return getDOMSelectionBoundingClientRect();
   }, [editor, type]);
 
-  const isOpen = open && mode === 'edit' && editor.api.isCollapsed();
+  const isOpen = open && mode === 'edit' && editor.read.selection.isCollapsed();
 
   const floating = useVirtualFloatingLink({
     editorId: editor.id,
@@ -69,7 +66,17 @@ export const useFloatingLinkEditState = ({
     isOpen,
     readOnly,
     triggerFloatingLinkHotkeys,
-    versionEditor: version,
+    versionEditor: selection,
+  };
+};
+
+export type FloatingLinkEditProps = {
+  editButtonProps: { onClick: () => void };
+  props: { style: React.CSSProperties };
+  ref: React.RefCallback<HTMLElement>;
+  unlinkButtonProps: {
+    onClick: () => void;
+    onMouseDown: (event: React.MouseEvent<HTMLButtonElement>) => void;
   };
 };
 
@@ -78,14 +85,17 @@ export const useFloatingLinkEdit = ({
   floating,
   triggerFloatingLinkHotkeys,
   versionEditor,
-}: ReturnType<typeof useFloatingLinkEditState>): any => {
+}: ReturnType<typeof useFloatingLinkEditState>): FloatingLinkEditProps => {
   const { api, getOptions } = useEditorPlugin(LinkPlugin);
 
   React.useEffect(() => {
+    const selection = editor.read.selection();
+
     if (
-      editor.selection &&
-      editor.api.isCollapsed() &&
+      selection &&
+      editor.read.selection.isCollapsed() &&
       editor.read.nodes.some({
+        at: selection,
         match: { type: editor.getType(KEYS.link) },
       })
     ) {
@@ -101,7 +111,7 @@ export const useFloatingLinkEdit = ({
   }, [editor, versionEditor, floating.update]);
 
   useHotkeys(
-    triggerFloatingLinkHotkeys!,
+    triggerFloatingLinkHotkeys ?? 'meta+k, ctrl+k',
     (e) => {
       if (getOptions().mode === 'edit' && triggerFloatingLinkEdit(editor)) {
         e.preventDefault();
@@ -141,7 +151,7 @@ export const useFloatingLinkEdit = ({
     ),
     unlinkButtonProps: {
       onClick: () => {
-        unwrapLink(editor);
+        editor.update.link.unwrap();
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();

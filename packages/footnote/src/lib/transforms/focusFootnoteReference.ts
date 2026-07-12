@@ -1,12 +1,19 @@
-import { TextApi, type Point, type SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import {
+  type EditorUpdateTransaction,
+  type Element,
+  type Point,
+  TextApi,
+} from '@platejs/plite';
 
+import { navigateToFootnote } from '../../internal/navigateToFootnote';
 import { getFootnoteReferences } from '../queries/getFootnoteReferences';
 
 export const getFootnoteReferenceSelectionPoint = (
-  editor: SlateEditor,
+  tx: EditorUpdateTransaction,
   path: number[]
 ) => {
-  const parentEntry = editor.api.parent(path);
+  const parentEntry = tx.nodes.parent<Element>(path);
 
   let point: Point | undefined;
 
@@ -29,13 +36,14 @@ export const getFootnoteReferenceSelectionPoint = (
     }
   }
 
-  point ??= editor.api.start(path.concat([0]));
+  point ??= tx.points.start(path.concat([0]));
 
   return point;
 };
 
 export const focusFootnoteReference = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   {
     identifier,
     index = 0,
@@ -48,21 +56,12 @@ export const focusFootnoteReference = (
 
   if (!reference) return false;
 
-  const point = getFootnoteReferenceSelectionPoint(editor, reference[1]);
+  const point = getFootnoteReferenceSelectionPoint(tx, reference[1]);
 
   if (!point) return false;
 
-  return editor.tf.navigation.navigate({
-    focus: true,
-    scroll: true,
-    scrollTarget: point,
-    select: {
-      anchor: point,
-      focus: point,
-    },
-    target: {
-      path: reference[1],
-      type: 'node',
-    },
+  return navigateToFootnote(editor, tx, {
+    point,
+    targetPath: reference[1],
   });
 };

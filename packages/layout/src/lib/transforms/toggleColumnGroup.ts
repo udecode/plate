@@ -1,24 +1,28 @@
-import type { ReplaceNodesOptions, SlateEditor, TElement } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type {
+  EditorUpdateTransaction,
+  Element,
+  Location,
+} from '@platejs/plite';
+import { PathApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { columnsToWidths } from '../utils/columnsToWidths';
 import { setColumns } from './setColumns';
 
+export type ToggleColumnGroupOptions = {
+  at?: Location;
+  columns?: number;
+  widths?: string[];
+};
+
 export const toggleColumnGroup = (
-  editor: SlateEditor,
-  {
-    at,
-    columns = 2,
-    widths,
-  }: Partial<ReplaceNodesOptions> & {
-    columns?: number;
-    widths?: string[];
-  } = {}
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  { at, columns = 2, widths }: ToggleColumnGroupOptions = {}
 ) => {
-  const entry = editor.api.block({ at });
-  const columnGroupEntry = editor.api.block({
-    above: true,
+  const entry = tx.nodes.block<Element>({ at });
+  const columnGroupEntry = tx.nodes.above<Element>({
     at,
     match: { type: editor.getType(KEYS.columnGroup) },
   });
@@ -30,24 +34,38 @@ export const toggleColumnGroup = (
   // Check if the node is already a column_group
   if (columnGroupEntry) {
     // Node is already a column_group, just update the columns using setColumns
-    setColumns(editor, { at: columnGroupEntry[1], columns, widths });
+    setColumns(editor, tx, { at: columnGroupEntry[1], columns, widths });
   } else {
     // Node is not a column_group, wrap it in a column_group
     const columnWidths = widths || columnsToWidths({ columns });
 
-    const nodes = {
+    const columnGroup = {
       children: new Array(columns).fill(null).map((_, index) => ({
-        children: [index === 0 ? node : editor.api.create.block()],
-        type: editor.getType(KEYS.column) as any,
+        children: [
+          index === 0
+            ? node
+            : { children: [{ text: '' }], type: editor.getType(KEYS.p) },
+        ],
+        type: editor.getType(KEYS.column),
         width: columnWidths[index],
       })),
-      type: editor.getType(KEYS.columnGroup) as any,
-    } as TElement;
+      type: editor.getType(KEYS.columnGroup),
+    };
+    const parentPath = PathApi.parent(path);
+    const index = path.at(-1);
 
-    editor.tf.replaceNodes(nodes, {
-      at: path,
+    if (index === undefined) return;
+
+    tx.nodes.replaceChildren([columnGroup], {
+      at: parentPath,
+      count: 1,
+      index,
     });
 
-    editor.tf.select(editor.api.start(path.concat([0]))!);
+    const point = tx.points.start(path.concat([0]));
+
+    if (point) {
+      tx.selection.set(point);
+    }
   }
 };

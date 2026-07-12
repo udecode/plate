@@ -3,13 +3,12 @@ import {
   withTriggerCombobox,
 } from '@platejs/combobox';
 import {
-  createTSlatePlugin,
-  type InsertNodesOptions,
-  KEYS,
-  type NodeEntry,
+  type PlatePluginTxGroup,
   type PluginConfig,
-  type TElement,
-} from 'platejs';
+  createBasePlugin,
+} from '@platejs/core';
+import type { NodeEntry, NodeInsertNodesOptions, Path } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { BaseFootnoteInputPlugin } from './BaseFootnoteInputPlugin';
 import { getFootnoteDefinition } from './queries/getFootnoteDefinition';
@@ -34,6 +33,7 @@ import { focusFootnoteDefinition } from './transforms/focusFootnoteDefinition';
 import { focusFootnoteReference } from './transforms/focusFootnoteReference';
 import { insertFootnote } from './transforms/insertFootnote';
 import { normalizeDuplicateFootnoteDefinition } from './transforms/normalizeDuplicateFootnoteDefinition';
+import type { TFootnoteElement } from './types';
 
 export type FootnoteConfig = PluginConfig<
   'footnoteReference',
@@ -42,25 +42,29 @@ export type FootnoteConfig = PluginConfig<
     footnote: {
       definition: (options: {
         identifier: string;
-      }) => NodeEntry<TElement> | undefined;
-      definitions: (options: { identifier: string }) => NodeEntry<TElement>[];
+      }) => NodeEntry<TFootnoteElement> | undefined;
+      definitions: (options: {
+        identifier: string;
+      }) => NodeEntry<TFootnoteElement>[];
       definitionText: (options: { identifier: string }) => string | undefined;
       duplicateDefinitions: (options: {
         identifier: string;
-      }) => NodeEntry<TElement>[];
+      }) => NodeEntry<TFootnoteElement>[];
       duplicateIdentifiers: () => string[];
       hasDuplicateDefinitions: (options: { identifier: string }) => boolean;
       identifiers: () => string[];
-      isDuplicateDefinition: (options: { path: number[] }) => boolean;
+      isDuplicateDefinition: (options: { path: Path }) => boolean;
       isResolved: (options: { identifier: string }) => boolean;
       nextId: () => string;
-      references: (options: { identifier: string }) => NodeEntry<TElement>[];
+      references: (options: {
+        identifier: string;
+      }) => NodeEntry<TFootnoteElement>[];
     };
   },
   {
     insert: {
       footnote: (
-        options?: InsertNodesOptions & {
+        options?: NodeInsertNodesOptions<TFootnoteElement> & {
           focusDefinition?: boolean;
           identifier?: string;
         }
@@ -70,7 +74,7 @@ export type FootnoteConfig = PluginConfig<
       createDefinition: (options: {
         focus?: boolean;
         identifier: string;
-      }) => number[];
+      }) => Path;
       focusDefinition: (options: { identifier: string }) => boolean;
       focusReference: (options: {
         identifier: string;
@@ -78,14 +82,14 @@ export type FootnoteConfig = PluginConfig<
       }) => boolean;
       normalizeDuplicateDefinition: (options: {
         identifier?: string;
-        path: number[];
+        path: Path;
       }) => false | string;
     };
   }
 >;
 
 /** Enables support for inline footnote references. */
-export const BaseFootnoteReferencePlugin = createTSlatePlugin<FootnoteConfig>({
+export const BaseFootnoteReferencePlugin = createBasePlugin<FootnoteConfig>({
   key: KEYS.footnoteReference,
   options: {
     createComboboxInput: () => ({
@@ -103,41 +107,30 @@ export const BaseFootnoteReferencePlugin = createTSlatePlugin<FootnoteConfig>({
   plugins: [BaseFootnoteInputPlugin],
   render: { as: 'sup' },
 })
-  .overrideEditor(({ editor, getOptions, tf: { apply, insertText }, type }) => {
-    const comboboxEditor = withTriggerCombobox({
-      editor,
-      getOptions,
-      tf: { insertText },
-      type,
-    } as any);
+  .extendExtension(withTriggerCombobox)
+  .extendExtension(({ editor }) => ({
+    operations: {
+      apply({ next, operation }) {
+        if (shouldInvalidateFootnoteRegistry(editor, operation)) {
+          invalidateFootnoteRegistry(editor);
+        }
 
-    return {
-      transforms: {
-        apply(operation) {
-          if (shouldInvalidateFootnoteRegistry(editor, operation)) {
-            invalidateFootnoteRegistry(editor);
-          }
-
-          apply(operation);
-        },
-        insertText:
-          comboboxEditor.transforms?.insertText ??
-          ((text: string, options: any) => insertText(text, options)),
+        next(operation);
       },
-    };
-  })
+    },
+  }))
   .extendEditorApi<FootnoteConfig['api']>(({ editor }) => ({
     footnote: {
-      definition(options: { identifier: string }) {
+      definition(options) {
         return getFootnoteDefinition(editor, options);
       },
-      definitions(options: { identifier: string }) {
+      definitions(options) {
         return getFootnoteDefinitionsByIdentifier(editor, options);
       },
-      definitionText(options: { identifier: string }) {
+      definitionText(options) {
         return getFootnoteDefinitionText(editor, options);
       },
-      duplicateDefinitions(options: { identifier: string }) {
+      duplicateDefinitions(options) {
         return getDuplicateFootnoteDefinitions(editor, options);
       },
       duplicateIdentifiers() {
@@ -146,32 +139,38 @@ export const BaseFootnoteReferencePlugin = createTSlatePlugin<FootnoteConfig>({
       identifiers() {
         return getFootnoteIdentifiers(editor);
       },
-      hasDuplicateDefinitions(options: { identifier: string }) {
+      hasDuplicateDefinitions(options) {
         return hasDuplicateFootnoteDefinitions(editor, options);
       },
-      isDuplicateDefinition(options: { path: number[] }) {
+      isDuplicateDefinition(options) {
         return isDuplicateFootnoteDefinition(editor, options);
       },
-      isResolved(options: { identifier: string }) {
+      isResolved(options) {
         return isFootnoteResolved(editor, options);
       },
       nextId() {
         return getNextFootnoteIdentifier(editor);
       },
-      references(options: { identifier: string }) {
+      references(options) {
         return getFootnoteReferences(editor, options);
       },
     },
   }))
-  .extendEditorTransforms<FootnoteConfig['transforms']>(({ editor }) => ({
-    footnote: {
-      createDefinition: (options) => createFootnoteDefinition(editor, options),
-      focusDefinition: (options) => focusFootnoteDefinition(editor, options),
-      focusReference: (options) => focusFootnoteReference(editor, options),
-      normalizeDuplicateDefinition: (options) =>
-        normalizeDuplicateFootnoteDefinition(editor, options),
-    },
-    insert: {
-      footnote: (options) => insertFootnote(editor, options),
-    },
-  }));
+  .extendTxGroup<
+    'footnote',
+    PlatePluginTxGroup<FootnoteConfig['tx']['footnote']>
+  >('footnote', ({ editor }) => (tx) => ({
+    createDefinition: (options) =>
+      createFootnoteDefinition(editor, tx, options),
+    focusDefinition: (options) => focusFootnoteDefinition(editor, tx, options),
+    focusReference: (options) => focusFootnoteReference(editor, tx, options),
+    normalizeDuplicateDefinition: (options) =>
+      normalizeDuplicateFootnoteDefinition(editor, tx, options),
+  }))
+  .extendTxGroup<'insert', PlatePluginTxGroup<FootnoteConfig['tx']['insert']>>(
+    'insert',
+    ({ editor, type }) =>
+      (tx) => ({
+        footnote: (options) => insertFootnote(editor, tx, type, options),
+      })
+  );

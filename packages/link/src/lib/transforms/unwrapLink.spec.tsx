@@ -1,112 +1,102 @@
-/** @jsx jsxt */
-
-import type { SlateEditor } from 'platejs';
-
-import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import type { Point } from '@platejs/plite';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
-import { unwrapLink } from './unwrapLink';
 
-jsxt;
+const value = [
+  {
+    children: [
+      { text: 'x' },
+      {
+        children: [{ text: 'abcdef' }],
+        type: 'a',
+        url: 'https://example.com',
+      },
+      { text: 'y' },
+    ],
+    type: 'p',
+  },
+];
+
+const createEditor = (anchor: Point, focus: Point) =>
+  createBaseEditor({
+    plugins: [BaseLinkPlugin],
+    selection: { anchor, focus },
+    value,
+  });
+
+const splitCases: {
+  anchor: Point;
+  focus: Point;
+  linked: string;
+  plain: string;
+}[] = [
+  {
+    anchor: { offset: 1, path: [0, 0] },
+    focus: { offset: 4, path: [0, 1, 0] },
+    linked: 'abcd',
+    plain: 'efy',
+  },
+  {
+    anchor: { offset: 1, path: [0, 0] },
+    focus: { offset: 2, path: [0, 1, 0] },
+    linked: 'ab',
+    plain: 'cdefy',
+  },
+  {
+    anchor: { offset: 4, path: [0, 1, 0] },
+    focus: { offset: 1, path: [0, 2] },
+    linked: 'abcd',
+    plain: 'efy',
+  },
+];
 
 describe('unwrapLink', () => {
   it('unwraps an entire link when split mode is off', () => {
-    const input = (
-      <editor>
-        <hp>
-          before <ha url="https://example.com">link</ha> after
-        </hp>
-      </editor>
-    ) as any as SlateEditor;
-
-    const editor = createSlateEditor({
-      plugins: [BaseLinkPlugin],
-      selection: {
-        anchor: { offset: 0, path: [0, 1, 0] },
-        focus: { offset: 4, path: [0, 1, 0] },
-      },
-      value: input.children,
-    });
-
-    unwrapLink(editor);
-
-    expect(editor.children).toEqual(
-      (
-        <editor>
-          <hp>before link after</hp>
-        </editor>
-      ).children
+    const editor = createEditor(
+      { offset: 0, path: [0, 1, 0] },
+      { offset: 6, path: [0, 1, 0] }
     );
+
+    editor.update.link.unwrap();
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'xabcdefy' }], type: 'p' },
+    ]);
   });
 
-  it('split mode preserves the linked prefix and unwraps the trailing fragment', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseLinkPlugin],
-      selection: {
-        anchor: { offset: 1, path: [0, 0] },
-        focus: { offset: 4, path: [0, 1, 0] },
-      },
-      value: [
-        {
-          children: [
-            { text: 'x' },
-            {
-              children: [{ text: 'abcdef' }],
-              type: 'a',
-              url: 'https://example.com',
-            },
-            { text: 'y' },
-          ],
-          type: 'p',
-        },
-      ],
-    });
+  it.each(
+    splitCases
+  )('preserves the linked fragment in split mode', (fixture) => {
+    const editor = createEditor(fixture.anchor, fixture.focus);
 
-    unwrapLink(editor, { split: true });
+    editor.update.link.unwrap({ split: true });
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         children: [
           { text: 'x' },
           {
-            children: [{ text: 'abcd' }],
+            children: [{ text: fixture.linked }],
             type: 'a',
             url: 'https://example.com',
           },
-          { text: 'efy' },
+          { text: fixture.plain },
         ],
         type: 'p',
       },
     ]);
   });
 
-  it('split mode preserves the linked suffix when only the focus is inside the link', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseLinkPlugin],
-      selection: {
-        anchor: { offset: 1, path: [0, 0] },
-        focus: { offset: 2, path: [0, 1, 0] },
-      },
-      value: [
-        {
-          children: [
-            { text: 'x' },
-            {
-              children: [{ text: 'abcdef' }],
-              type: 'a',
-              url: 'https://example.com',
-            },
-            { text: 'y' },
-          ],
-          type: 'p',
-        },
-      ],
-    });
+  it('unwraps only the selected middle fragment in split mode', () => {
+    const editor = createEditor(
+      { offset: 2, path: [0, 1, 0] },
+      { offset: 4, path: [0, 1, 0] }
+    );
 
-    unwrapLink(editor, { split: true });
+    editor.update.link.unwrap({ split: true });
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         children: [
           { text: 'x' },
@@ -115,48 +105,13 @@ describe('unwrapLink', () => {
             type: 'a',
             url: 'https://example.com',
           },
-          { text: 'cdefy' },
-        ],
-        type: 'p',
-      },
-    ]);
-  });
-
-  it('split mode preserves the linked suffix when only the anchor is inside the link', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseLinkPlugin],
-      selection: {
-        anchor: { offset: 4, path: [0, 1, 0] },
-        focus: { offset: 1, path: [0, 2] },
-      },
-      value: [
-        {
-          children: [
-            { text: 'x' },
-            {
-              children: [{ text: 'abcdef' }],
-              type: 'a',
-              url: 'https://example.com',
-            },
-            { text: 'y' },
-          ],
-          type: 'p',
-        },
-      ],
-    });
-
-    unwrapLink(editor, { split: true });
-
-    expect(editor.children).toEqual([
-      {
-        children: [
-          { text: 'x' },
+          { text: 'cd' },
           {
-            children: [{ text: 'abcd' }],
+            children: [{ text: 'ef' }],
             type: 'a',
             url: 'https://example.com',
           },
-          { text: 'efy' },
+          { text: 'y' },
         ],
         type: 'p',
       },

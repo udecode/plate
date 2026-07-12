@@ -1,6 +1,5 @@
-import type { Value } from 'platejs';
-import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
-import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
+import { createBaseEditor } from '@platejs/core';
+import type { Selection, Value } from '@platejs/plite';
 
 import { BaseColumnPlugin } from './BaseColumnPlugin';
 
@@ -8,15 +7,12 @@ const createColumnRuntimeEditor = ({
   selection,
   value,
 }: {
-  selection?: {
-    anchor: { offset: number; path: number[] };
-    focus: { offset: number; path: number[] };
-  };
+  selection?: Selection;
   value: Value;
 }) =>
-  createPlateRuntimeEditor({
-    initialSelection: selection,
-    initialValue: value,
+  createBaseEditor({
+    selection,
+    value,
     plugins: [BaseColumnPlugin],
   });
 
@@ -39,7 +35,7 @@ describe('BaseColumnPlugin Plite runtime', () => {
 
     editor.update.normalize({ force: true });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: 'Only' }], type: 'p' },
     ]);
   });
@@ -67,7 +63,7 @@ describe('BaseColumnPlugin Plite runtime', () => {
 
     editor.update.normalize({ force: true });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         children: [
           {
@@ -101,7 +97,7 @@ describe('BaseColumnPlugin Plite runtime', () => {
 
     editor.update.normalize({ force: true });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: 'A' }], type: 'p' },
       { children: [{ text: 'B' }], type: 'blockquote' },
     ]);
@@ -130,7 +126,7 @@ describe('BaseColumnPlugin Plite runtime', () => {
 
     editor.update.normalize({ force: true });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: 'A' }], type: 'p' },
     ]);
   });
@@ -160,14 +156,46 @@ describe('BaseColumnPlugin Plite runtime', () => {
       ],
     });
 
-    expect(getCurrentRuntimeTransforms(editor).selectAll()).toBe(true);
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.update.column.selectAll()).toBe(true);
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 0, 0] },
       focus: { offset: 3, path: [0, 0, 0, 0] },
     });
 
-    expect(getCurrentRuntimeTransforms(editor).selectAll()).toBe(true);
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.update.column.selectAll()).toBe(true);
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [0, 0, 0, 0] },
+      focus: { offset: 3, path: [0, 1, 0, 0] },
+    });
+  });
+
+  it('expands a backward full-column selection to the parent group', () => {
+    const editor = createColumnRuntimeEditor({
+      selection: {
+        anchor: { offset: 3, path: [0, 0, 0, 0] },
+        focus: { offset: 0, path: [0, 0, 0, 0] },
+      },
+      value: [
+        {
+          children: [
+            {
+              children: [{ children: [{ text: 'abc' }], type: 'p' }],
+              type: 'column',
+              width: '50%',
+            },
+            {
+              children: [{ children: [{ text: 'def' }], type: 'p' }],
+              type: 'column',
+              width: '50%',
+            },
+          ],
+          type: 'column_group',
+        },
+      ],
+    });
+
+    expect(editor.update.column.selectAll()).toBe(true);
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 0, 0] },
       focus: { offset: 3, path: [0, 1, 0, 0] },
     });

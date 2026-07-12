@@ -1,19 +1,21 @@
 import React from 'react';
 
-import { mergeProps } from 'platejs';
+import type { CorePluginConfig } from '@platejs/core';
 import {
-  useEditorReadOnly,
+  type PlateEditor,
   useEditorRef,
   useEditorSelector,
-  useFocused,
-  useOnClickOutside,
-} from 'platejs/react';
+} from '@platejs/core/react';
+import type { Value } from '@platejs/plite';
+import { useEditorFocused, useEditorReadOnly } from '@platejs/plite-react';
+import { useOnClickOutside } from '@udecode/react-utils';
+import { mergeProps } from '@udecode/utils';
 
+import { getSelectionBoundingClientRect } from '../utils';
 import {
   type UseVirtualFloatingOptions,
-  getSelectionBoundingClientRect,
   useVirtualFloating,
-} from '..';
+} from './useVirtualFloating';
 
 export type FloatingToolbarState = {
   floatingOptions?: UseVirtualFloatingOptions;
@@ -31,15 +33,20 @@ export const useFloatingToolbarState = ({
   editorId: string;
   focusedEditorId: string | null;
 } & FloatingToolbarState) => {
-  const editor = useEditorRef();
+  const editor = useEditorRef<PlateEditor<Value, CorePluginConfig>>(editorId);
   const selectionExpanded = useEditorSelector(
-    () => editor.api.isExpanded(),
-    []
+    (editor) => editor.read.selection.isExpanded(),
+    [],
+    { id: editorId }
   );
-  const selectionText = useEditorSelector(() => editor.api.string(), []);
+  const selectionText = useEditorSelector(
+    (editor) => editor.read.text.string(),
+    [],
+    { id: editorId }
+  );
   const readOnly = useEditorReadOnly();
 
-  const focused = useFocused();
+  const focused = useEditorFocused();
 
   const [open, setOpen] = React.useState(false);
   const [waitForCollapsedSelection, setWaitForCollapsedSelection] =
@@ -95,7 +102,7 @@ export const useFloatingToolbar = ({
   // On refocus, the editor keeps the previous selection,
   // so we need to wait it's collapsed at the new position before displaying the floating toolbar.
   React.useEffect(() => {
-    if (!(editorId === focusedEditorId)) {
+    if (editorId !== focusedEditorId) {
       setWaitForCollapsedSelection(true);
     }
     if (!selectionExpanded) {
@@ -119,15 +126,14 @@ export const useFloatingToolbar = ({
       document.removeEventListener('mouseup', mouseup);
       document.removeEventListener('mousedown', mousedown);
     };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setMousedown]);
 
   React.useEffect(() => {
-    setOpen((prevOpen: boolean) => {
+    setOpen((prevOpen) => {
       if (
         !selectionExpanded ||
         !selectionText ||
+        editorId !== focusedEditorId ||
         (mousedown && !prevOpen) ||
         hideToolbar ||
         (readOnly && !showWhenReadOnly)
@@ -141,7 +147,7 @@ export const useFloatingToolbar = ({
       ) {
         return true;
       }
-      return prevOpen; // No change needed
+      return prevOpen;
     });
   }, [
     setOpen,
@@ -153,15 +159,20 @@ export const useFloatingToolbar = ({
     selectionText,
     mousedown,
     waitForCollapsedSelection,
-    open,
     readOnly,
   ]);
 
   const { update } = floating;
 
-  useEditorSelector(() => {
+  const editorVersion = useEditorSelector(
+    (editor) => editor.read.lastCommit()?.version ?? 0,
+    [],
+    { id: editorId }
+  );
+
+  React.useEffect(() => {
     update?.();
-  }, [update]);
+  }, [editorVersion, update]);
 
   const clickOutsideRef = useOnClickOutside(
     () => {

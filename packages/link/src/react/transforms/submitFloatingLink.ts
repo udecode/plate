@@ -1,4 +1,4 @@
-import { type SlateEditor, getEditorPlugin } from 'platejs';
+import type { PlateEditor } from '@platejs/core/react';
 
 import { upsertLink, validateUrl } from '../../lib';
 import { LinkPlugin } from '../LinkPlugin';
@@ -7,10 +7,10 @@ import { LinkPlugin } from '../LinkPlugin';
  * Insert link if url is valid. Text is url if empty. Close floating link. Focus
  * editor.
  */
-export const submitFloatingLink = (editor: SlateEditor) => {
-  if (!editor.selection) return;
+export const submitFloatingLink = (editor: PlateEditor) => {
+  if (!editor.read.selection()) return;
 
-  const { api, getOptions } = getEditorPlugin(editor, LinkPlugin);
+  const { api, getOptions } = editor.plugin(LinkPlugin);
 
   const {
     forceSubmit,
@@ -28,15 +28,17 @@ export const submitFloatingLink = (editor: SlateEditor) => {
 
   api.floatingLink.hide();
 
-  upsertLink(editor, {
-    skipValidation: true,
-    target,
-    text,
-    url,
+  editor.update((tx) => {
+    upsertLink(editor, tx, {
+      skipValidation: true,
+      target,
+      text,
+      url,
+    });
   });
 
   setTimeout(() => {
-    editor.tf.focus({ at: editor.selection! });
+    editor.api.dom.focus();
   }, 0);
 
   return true;

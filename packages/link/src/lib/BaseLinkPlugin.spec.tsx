@@ -1,74 +1,70 @@
+import { createBaseEditor, getEditorPlugin } from '@platejs/core';
 import { getHtmlDocument } from '@platejs/test-utils';
-import { createSlateEditor, KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 
 describe('BaseLinkPlugin', () => {
-  const createEditor = () =>
-    createSlateEditor({
-      plugins: [BaseLinkPlugin],
-    } as any);
+  const createEditor = () => createBaseEditor({ plugins: [BaseLinkPlugin] });
 
-  it('parses valid anchor elements into link nodes with a default target', () => {
+  it('parses valid anchors with a default target', () => {
     const editor = createEditor();
     const plugin = editor.getPlugin(BaseLinkPlugin);
+    const parse = plugin.parsers.html?.deserializer?.parse;
     const element = getHtmlDocument(
       '<html><body><a href="https://example.com">Link</a></body></html>'
-    ).querySelector('a')!;
-    const parse = plugin.parsers.html?.deserializer?.parse;
+    ).querySelector('a');
 
-    if (!parse) {
-      throw new Error('Missing html link deserializer');
-    }
+    expect(parse).toBeDefined();
+    expect(element).toBeDefined();
 
-    const parsed = parse({
-      editor,
-      element,
-      type: editor.getType(KEYS.link),
-    } as any);
+    if (!parse || !element) return;
 
-    expect(parsed).toEqual({
+    expect(
+      parse({
+        ...getEditorPlugin(editor, plugin),
+        element,
+        node: {},
+        type: editor.getType(KEYS.link),
+      })
+    ).toEqual({
       target: '_blank',
       type: editor.getType(KEYS.link),
       url: 'https://example.com',
     });
   });
 
-  it('rejects anchors with missing or invalid href values', () => {
+  it('rejects missing and unsafe href values', () => {
     const editor = createEditor();
     const plugin = editor.getPlugin(BaseLinkPlugin);
-    const missingHref = getHtmlDocument(
-      '<html><body><a>No href</a></body></html>'
-    ).querySelector('a')!;
-    const invalidHref = getHtmlDocument(
-      '<html><body><a href="javascript:alert(1)">Bad</a></body></html>'
-    ).querySelector('a')!;
     const parse = plugin.parsers.html?.deserializer?.parse;
+    const document = getHtmlDocument(
+      '<html><body><a>No href</a><a href="javascript:alert(1)">Bad</a></body></html>'
+    );
+    const links = document.querySelectorAll('a');
 
-    if (!parse) {
-      throw new Error('Missing html link deserializer');
+    expect(parse).toBeDefined();
+    expect(links).toHaveLength(2);
+
+    if (!parse) return;
+
+    const context = getEditorPlugin(editor, plugin);
+
+    for (const element of links) {
+      expect(
+        parse({
+          ...context,
+          element,
+          node: {},
+          type: editor.getType(KEYS.link),
+        })
+      ).toBeUndefined();
     }
-
-    expect(
-      parse({
-        editor,
-        element: missingHref,
-        type: editor.getType(KEYS.link),
-      } as any)
-    ).toBeUndefined();
-
-    expect(
-      parse({
-        editor,
-        element: invalidHref,
-        type: editor.getType(KEYS.link),
-      } as any)
-    ).toBeUndefined();
   });
 
   it('registers no input rules by default', () => {
     const editor = createEditor();
 
-    expect(editor.meta.inputRules.plugins[KEYS.link].rules).toEqual([]);
+    expect(editor.runtime.inputRules.plugins[KEYS.link].rules).toEqual([]);
   });
 });

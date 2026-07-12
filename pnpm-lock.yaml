@@ -1405,9 +1405,18 @@ importers:
       '@excalidraw/excalidraw':
         specifier: 0.18.0
         version: 0.18.0(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(immer@10.2.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/plite-react':
+        specifier: workspace:^
+        version: link:../plite-react
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -1421,25 +1430,22 @@ importers:
       '@types/lodash':
         specifier: ^4.17.13
         version: 4.17.17
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/find-replace:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
-      react-compiler-runtime:
-        specifier: ^1.0.0
-        version: 1.0.0(react@19.2.4)
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
     devDependencies:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/floating:
     dependencies:
@@ -1449,9 +1455,24 @@ importers:
       '@floating-ui/react':
         specifier: ^0.26.23
         version: 0.26.28(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/plite-dom':
+        specifier: workspace:^
+        version: link:../plite-dom
+      '@platejs/plite-react':
+        specifier: workspace:^
+        version: link:../plite-react
+      '@udecode/react-utils':
+        specifier: workspace:^
+        version: link:../udecode/react-utils
+      '@udecode/utils':
+        specifier: workspace:^
+        version: link:../udecode/utils
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1459,18 +1480,21 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/footnote:
     dependencies:
       '@platejs/combobox':
         specifier: workspace:^
         version: link:../combobox
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1478,9 +1502,6 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/indent:
     dependencies:
@@ -1503,22 +1524,31 @@ importers:
 
   packages/juice:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       juice:
         specifier: ^11.0.1
         version: 11.1.1
-      react-compiler-runtime:
-        specifier: ^1.0.0
-        version: 1.0.0(react@19.2.4)
     devDependencies:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/layout:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
+      '@platejs/plite':
+        specifier: workspace:^
+        version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1526,18 +1556,30 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/link:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/floating':
         specifier: workspace:^
         version: link:../floating
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
+      '@udecode/react-hotkeys':
+        specifier: workspace:^
+        version: link:../udecode/react-hotkeys
+      '@udecode/react-utils':
+        specifier: workspace:^
+        version: link:../udecode/react-utils
+      '@udecode/utils':
+        specifier: workspace:^
+        version: link:../udecode/utils
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1545,9 +1587,6 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/list:
     dependencies:

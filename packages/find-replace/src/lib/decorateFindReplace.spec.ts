@@ -1,20 +1,37 @@
-import { createSlateEditor, getEditorPlugin } from 'platejs';
+import {
+  createBaseEditor,
+  createBasePlugin,
+  getEditorPlugin,
+} from '@platejs/core';
+import type { Descendant } from '@platejs/plite';
 
 import { FindReplacePlugin } from './FindReplacePlugin';
 import { decorateFindReplace } from './decorateFindReplace';
+
+const InlinePlugin = createBasePlugin({
+  key: 'a',
+  node: { isElement: true, isInline: true },
+});
 
 const decorate = ({
   children,
   search,
 }: {
-  children: Record<string, unknown>[];
+  children: Descendant[];
   search: string;
-}) =>
-  decorateFindReplace({
+}) => {
+  const editor = createBaseEditor({
+    plugins: [FindReplacePlugin, InlinePlugin],
+  });
+  const plugin = editor.getPlugin(FindReplacePlugin);
+
+  editor.plugin(FindReplacePlugin).setOption('search', search);
+
+  return decorateFindReplace({
+    ...getEditorPlugin(editor, plugin),
     entry: [{ children, type: 'p' }, [0]],
-    getOptions: () => ({ search }),
-    type: FindReplacePlugin.key,
-  } as any);
+  });
+};
 
 describe('decorateFindReplace', () => {
   it('returns no ranges when the search term is empty', () => {
@@ -76,6 +93,52 @@ describe('decorateFindReplace', () => {
         search: 'test',
       })
     ).toEqual(expected);
+  });
+
+  it('matches across text and inline element descendants', () => {
+    const expected = [
+      {
+        [FindReplacePlugin.key]: true,
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 6, path: [0, 0] },
+        search: 'hello ',
+      },
+      {
+        [FindReplacePlugin.key]: true,
+        anchor: { offset: 0, path: [0, 1, 0] },
+        focus: { offset: 5, path: [0, 1, 0] },
+        search: 'world',
+      },
+      {
+        [FindReplacePlugin.key]: true,
+        anchor: { offset: 0, path: [0, 2] },
+        focus: { offset: 6, path: [0, 2] },
+        search: ' again',
+      },
+    ];
+
+    expect(
+      decorate({
+        children: [
+          { text: 'hello ' },
+          { children: [{ text: 'world' }], type: 'a' },
+          { text: ' again' },
+        ],
+        search: 'hello world again',
+      })
+    ).toEqual(expected);
+  });
+
+  it('does not join text across nested block boundaries', () => {
+    expect(
+      decorate({
+        children: [
+          { children: [{ text: 'end' }], type: 'p' },
+          { children: [{ text: 'start' }], type: 'p' },
+        ],
+        search: 'endstart',
+      })
+    ).toEqual([]);
   });
 
   it('returns ranges for multiple matches across text nodes', () => {
@@ -155,9 +218,9 @@ describe('decorateFindReplace', () => {
   });
 
   it('is wired into FindReplacePlugin.decorate', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [FindReplacePlugin],
-    } as any);
+    });
 
     const plugin = editor.getPlugin(FindReplacePlugin);
 

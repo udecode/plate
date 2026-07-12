@@ -1,8 +1,21 @@
+import React from 'react';
+
+import { PlateTest, createPlateEditor } from '@platejs/core/react';
+import { act, render } from '@testing-library/react';
+
 import { makeClientRect } from './makeClientRect';
 import { createVirtualRef } from './createVirtualRef';
 
 describe('createVirtualRef', () => {
-  it('returns the computed bounding rect for the given editor location', () => {
+  const originalRangeGetBoundingClientRect =
+    globalThis.Range.prototype.getBoundingClientRect;
+
+  afterEach(() => {
+    globalThis.Range.prototype.getBoundingClientRect =
+      originalRangeGetBoundingClientRect;
+  });
+
+  it('returns the computed bounding rect for the given editor location', async () => {
     const selection = {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
@@ -13,14 +26,20 @@ describe('createVirtualRef', () => {
       right: 11,
       top: 2,
     });
-    const editor: any = {
+    const editor = createPlateEditor({
       selection,
-      api: {
-        toDOMRange: () => ({
-          getBoundingClientRect: () => rect,
-        }),
-      },
-    };
+      value: [{ children: [{ text: 'a' }], type: 'p' }],
+    });
+
+    await act(async () => {
+      render(
+        React.createElement(PlateTest, {
+          editableProps: { autoFocus: false },
+          editor,
+        })
+      );
+    });
+    globalThis.Range.prototype.getBoundingClientRect = () => rect;
 
     expect(
       createVirtualRef(editor).current!.getBoundingClientRect()
@@ -34,12 +53,7 @@ describe('createVirtualRef', () => {
       right: 9,
       top: 0,
     });
-    const editor: any = {
-      selection: null,
-      api: {
-        toDOMRange: () => {},
-      },
-    };
+    const editor = createPlateEditor();
 
     expect(
       createVirtualRef(editor, undefined, {
@@ -49,12 +63,7 @@ describe('createVirtualRef', () => {
   });
 
   it('throws when neither a computed rect nor a fallback rect exists', () => {
-    const editor: any = {
-      selection: null,
-      api: {
-        toDOMRange: () => {},
-      },
-    };
+    const editor = createPlateEditor();
 
     expect(() =>
       createVirtualRef(editor).current!.getBoundingClientRect()

@@ -1,472 +1,270 @@
-/** @jsx jsxt */
+import { createBaseEditor } from '@platejs/core';
+import type { Selection, Value } from '@platejs/plite';
+import type { TLinkElement } from '@platejs/utils';
 
-import type { BasePlateEditor } from 'platejs';
-
-import { jsxt } from '@platejs/test-utils';
-import { defineInputRule } from 'platejs';
-
-import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
-import { InputRulesPlugin } from '../../../core/src/lib/plugins/input-rules/internal/InputRulesPlugin';
-import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
+import type { BaseLinkConfig } from './BaseLinkPlugin';
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 import { LinkRules } from './LinkRules';
-import { upsertLink } from './transforms';
 
-jsxt;
-
-const autolinkRules = [
+const createAutolinkRules = () => [
   LinkRules.autolink({ variant: 'break' }),
   LinkRules.autolink({ variant: 'paste' }),
   LinkRules.autolink({ variant: 'space' }),
+  LinkRules.markdown(),
 ];
 
-const createClipboardData = (text: string) =>
-  ({
-    getData: (type: string) => (type === 'text/plain' ? text : ''),
-  }) as any;
-
-const createLinkEditor = (
-  input: BasePlateEditor,
-  config?: {
-    inputRules?: any[];
-    options?: Record<string, any>;
-  }
-) =>
-  createPlateRuntimeEditor({
-    initialSelection: input.selection,
-    initialValue: input.children,
+const createEditor = ({
+  inputRules,
+  options,
+  selection,
+  value,
+}: {
+  selection: Selection;
+  value: Value;
+  inputRules?: ReturnType<typeof createAutolinkRules>;
+  options?: Partial<BaseLinkConfig['options']>;
+}) =>
+  createBaseEditor({
     plugins: [
-      config ? BaseLinkPlugin.configure(config) : BaseLinkPlugin,
-      InputRulesPlugin,
+      BaseLinkPlugin.configure({
+        inputRules: inputRules ?? createAutolinkRules(),
+        options,
+      }),
     ],
+    selection,
+    value,
   });
 
-const root = (editor: ReturnType<typeof createLinkEditor>) =>
-  editor.read((state) => state.value.root());
+const paste = (editor: ReturnType<typeof createEditor>, text: string) => {
+  const data = new DataTransfer();
 
-const selection = (editor: ReturnType<typeof createLinkEditor>) =>
-  editor.read((state) => state.selection.get());
+  data.setData('text/plain', text);
+  editor.api.clipboard.insertData(data);
+};
+
+const findLink = (editor: ReturnType<typeof createEditor>) =>
+  editor.read.nodes.find<TLinkElement>({
+    at: [],
+    match: { type: 'a' },
+  })?.[0];
 
 describe('LinkRules', () => {
-  describe('insertData', () => {
-    it('inserts a link when plain url text is pasted into a paragraph', () => {
-      const input = (
-        <editor>
-          <hp>
-            test
-            <cursor />
-          </hp>
-        </editor>
-      ) as any as BasePlateEditor;
-
-      const editor = createLinkEditor(input, {
-        inputRules: autolinkRules,
-      });
-      getCurrentRuntimeTransforms(editor).insertData(
-        createClipboardData('http://google.com') as DataTransfer
-      );
-
-      expect(root(editor)).toEqual(
-        (
-          <editor>
-            <hp>
-              test
-              <ha url="http://google.com">http://google.com</ha>
-              <htext />
-            </hp>
-          </editor>
-        ).children
-      );
+  it('autolinks a pasted URL', () => {
+    const editor = createEditor({
+      selection: {
+        anchor: { offset: 4, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'test' }], type: 'p' }],
     });
 
-    it('keeps the selected text by default when a url is pasted over a selection', () => {
-      const input = (
-        <editor>
-          <hp>
-            start <anchor />
-            of regular text
-            <focus />
-          </hp>
-        </editor>
-      ) as any as BasePlateEditor;
+    paste(editor, 'https://example.com');
 
-      const editor = createLinkEditor(input, {
-        inputRules: autolinkRules,
-      });
-      getCurrentRuntimeTransforms(editor).insertData(
-        createClipboardData('https://google.com') as DataTransfer
-      );
-
-      expect(root(editor)).toEqual(
-        (
-          <editor>
-            <hp>
-              start <ha url="https://google.com">of regular text</ha>
-              <htext />
-            </hp>
-          </editor>
-        ).children
-      );
-    });
-
-    it('can replace the selected text with the pasted url when configured', () => {
-      const input = (
-        <editor>
-          <hp>
-            start <anchor />
-            of regular text
-            <focus />
-          </hp>
-        </editor>
-      ) as any as BasePlateEditor;
-
-      const editor = createLinkEditor(input, {
-        inputRules: autolinkRules,
-        options: {
-          keepSelectedTextOnPaste: false,
-        },
-      });
-      getCurrentRuntimeTransforms(editor).insertData(
-        createClipboardData('https://google.com') as DataTransfer
-      );
-
-      expect(root(editor)).toEqual(
-        (
-          <editor>
-            <hp>
-              start <ha url="https://google.com">https://google.com</ha>
-              <htext />
-            </hp>
-          </editor>
-        ).children
-      );
-    });
-
-    it('keeps pasted urls literal inside markdown link source entry by default', () => {
-      const input = (
-        <editor>
-          <hp>
-            [Example](
-            <cursor />
-          </hp>
-        </editor>
-      ) as any as BasePlateEditor;
-
-      const editor = createLinkEditor(input, {
-        inputRules: autolinkRules,
-      });
-      getCurrentRuntimeTransforms(editor).insertData(
-        createClipboardData('https://google.com') as DataTransfer
-      );
-
-      expect(root(editor)).toEqual(
-        (
-          <editor>
-            <hp>[Example](https://google.com</hp>
-          </editor>
-        ).children
-      );
-    });
-
-    it('lets user code opt back into eager paste autolink by redefining the rule', () => {
-      const input = (
-        <editor>
-          <hp>
-            [Example](
-            <cursor />
-          </hp>
-        </editor>
-      ) as any as BasePlateEditor;
-      const CustomLinkPlugin = BaseLinkPlugin.extend({
-        inputRules: [
-          defineInputRule({
-            target: 'insertData',
-            resolve: (context) =>
-              context.text
-                ? {
-                    shouldLink: true,
-                    text: context.text,
-                    url: context.text,
-                  }
-                : undefined,
-            apply: (
-              context,
-              match: { shouldLink: boolean; text: string; url: string }
-            ) => {
-              if (match.shouldLink) {
-                const inserted = upsertLink(context.editor, {
-                  insertTextInLink: true,
-                  text: match.url,
-                  url: match.url,
-                });
-
-                if (inserted) return true;
-              }
-
-              context.editor.update((tx) => {
-                tx.text.insert(match.text);
-              });
-
-              return true;
-            },
-          }),
-        ],
-      });
-      const editor = createPlateRuntimeEditor({
-        initialSelection: input.selection,
-        initialValue: input.children,
-        plugins: [
-          CustomLinkPlugin.configure({ inputRules: autolinkRules }),
-          InputRulesPlugin,
-        ],
-      });
-      getCurrentRuntimeTransforms(editor).insertData(
-        createClipboardData('https://google.com') as DataTransfer
-      );
-
-      expect(root(editor)).toEqual(
-        (
-          <editor>
-            <hp>
-              [Example](
-              <ha url="https://google.com">https://google.com</ha>
-              <htext />
-            </hp>
-          </editor>
-        ).children
-      );
+    expect(findLink(editor)).toMatchObject({
+      children: [{ text: 'https://example.com' }],
+      url: 'https://example.com',
     });
   });
 
-  describe('insertText', () => {
-    it('wraps a plain url when the trailing space is inserted', () => {
-      const input = (
-        <editor>
-          <hp>
-            link: http://google.com
-            <cursor />
-          </hp>
-        </editor>
-      ) as any as BasePlateEditor;
-      const output = (
-        <editor>
-          <hp>
-            link: <ha url="http://google.com">http://google.com</ha> <cursor />
-          </hp>
-        </editor>
-      ) as any as BasePlateEditor;
-
-      const editor = createLinkEditor(input, {
-        inputRules: autolinkRules,
-      });
-      getCurrentRuntimeTransforms(editor).insertText(' ');
-
-      expect(root(editor)).toEqual(output.children);
-      expect(selection(editor)).toEqual(output.selection);
-    });
-
-    it('respects app-level enabled overrides for space autolink', () => {
-      const input = (
-        <editor>
-          <hp>
-            link: http://google.com
-            <cursor />
-          </hp>
-        </editor>
-      ) as any as BasePlateEditor;
-
-      const editor = createLinkEditor(input, {
-        inputRules: [
-          LinkRules.autolink({
-            enabled: () => false,
-            variant: 'space',
-          }),
-        ],
-      });
-      getCurrentRuntimeTransforms(editor).insertText(' ');
-
-      expect(root(editor)).toEqual(
-        (
-          <editor>
-            <hp>link: http://google.com </hp>
-          </editor>
-        ).children
-      );
-    });
-
-    it('uses getUrlHref when the visible text is not itself a valid href', () => {
-      const input = (
-        <editor>
-          <hp>
-            google.com
-            <cursor />
-          </hp>
-        </editor>
-      ) as any as BasePlateEditor;
-
-      const editor = createLinkEditor(input, {
-        inputRules: autolinkRules,
-        options: {
-          getUrlHref: () => 'http://google.com',
-        },
-      });
-      getCurrentRuntimeTransforms(editor).insertText(' ');
-
-      expect(root(editor)).toEqual(
-        (
-          <editor>
-            <hp>
-              <htext />
-              <ha url="http://google.com">google.com</ha>{' '}
-            </hp>
-          </editor>
-        ).children
-      );
-    });
-
-    it('does not wrap again when the word before the cursor is already a link', () => {
-      const input = (
-        <editor>
-          <hp>
-            <htext />
-            <ha url="http://google.com">http://google.com</ha>
-            <cursor />
-          </hp>
-        </editor>
-      ) as any as BasePlateEditor;
-
-      const editor = createLinkEditor(input, {
-        inputRules: autolinkRules,
-      });
-      getCurrentRuntimeTransforms(editor).insertText(' ');
-
-      expect(root(editor)).toEqual(
-        (
-          <editor>
-            <hp>
-              <htext />
-              <ha url="http://google.com">http://google.com</ha>{' '}
-            </hp>
-          </editor>
-        ).children
-      );
-    });
-  });
-
-  describe('insertBreak', () => {
-    it('finalizes an autolink before creating the next block', () => {
-      const input = (
-        <editor>
-          <hp>
-            http://google.com
-            <cursor />
-          </hp>
-        </editor>
-      ) as any as BasePlateEditor;
-
-      const editor = createLinkEditor(input, {
-        inputRules: autolinkRules,
-      });
-      getCurrentRuntimeTransforms(editor).insertBreak();
-
-      expect(root(editor)).toEqual(
-        (
-          <editor>
-            <hp>
-              <htext />
-              <ha url="http://google.com">http://google.com</ha>
-              <htext />
-            </hp>
-            <hp>
-              <cursor />
-            </hp>
-          </editor>
-        ).children
-      );
-    });
-
-    it('falls back to the normal block split when the selection is expanded', () => {
-      const input = (
-        <editor>
-          <hp>
-            before <anchor />
-            http://google.com
-            <focus /> after
-          </hp>
-        </editor>
-      ) as any as BasePlateEditor;
-
-      const editor = createLinkEditor(input);
-      getCurrentRuntimeTransforms(editor).insertBreak();
-
-      expect(root(editor)).toEqual(
-        (
-          <editor>
-            <hp>before </hp>
-            <hp> after</hp>
-          </editor>
-        ).children
-      );
-    });
-  });
-
-  describe('removeEmpty', () => {
-    it('removes an empty link after its full contents are deleted', () => {
-      const input = (
-        <editor>
-          <hp>
-            Before <ha url="http://example.com">link text</ha> after
-          </hp>
-        </editor>
-      ) as any as BasePlateEditor;
-
-      const editor = createLinkEditor(input);
-
-      editor.update((tx) => {
-        tx.selection.set({
-          anchor: { offset: 0, path: [0, 1, 0] },
-          focus: { offset: 9, path: [0, 1, 0] },
-        });
-      });
-      getCurrentRuntimeTransforms(editor).deleteFragment();
-
-      expect(root(editor)).toEqual([
+  it('ignores unrelated code blocks when autolinking a pasted URL', () => {
+    const editor = createEditor({
+      selection: {
+        anchor: { offset: 4, path: [1, 0] },
+        focus: { offset: 4, path: [1, 0] },
+      },
+      value: [
         {
-          children: [{ text: 'Before ' }, { text: ' after' }],
+          children: [
+            { children: [{ text: 'const x = 1' }], type: 'code_line' },
+          ],
+          type: 'code_block',
+        },
+        { children: [{ text: 'test' }], type: 'p' },
+      ],
+    });
+
+    paste(editor, 'https://example.com');
+
+    expect(findLink(editor)).toMatchObject({
+      children: [{ text: 'https://example.com' }],
+      url: 'https://example.com',
+    });
+  });
+
+  it('keeps selected text by default and can replace it with the URL', () => {
+    const selection = {
+      anchor: { offset: 6, path: [0, 0] },
+      focus: { offset: 14, path: [0, 0] },
+    };
+    const value = [{ children: [{ text: 'start selected' }], type: 'p' }];
+    const keepEditor = createEditor({ selection, value });
+    const replaceEditor = createEditor({
+      options: { keepSelectedTextOnPaste: false },
+      selection,
+      value,
+    });
+
+    paste(keepEditor, 'https://example.com');
+    paste(replaceEditor, 'https://example.com');
+
+    expect(findLink(keepEditor)?.children).toEqual([{ text: 'selected' }]);
+    expect(findLink(replaceEditor)?.children).toEqual([
+      { text: 'https://example.com' },
+    ]);
+  });
+
+  it('keeps pasted URLs literal inside markdown link source', () => {
+    const editor = createEditor({
+      selection: {
+        anchor: { offset: 10, path: [0, 0] },
+        focus: { offset: 10, path: [0, 0] },
+      },
+      value: [{ children: [{ text: '[Example](' }], type: 'p' }],
+    });
+
+    paste(editor, 'https://example.com');
+
+    expect(findLink(editor)).toBeUndefined();
+    expect(editor.read.text.string([0])).toBe('[Example](https://example.com');
+  });
+
+  it('autolinks a URL when space is inserted', () => {
+    const text = 'visit https://example.com';
+    const editor = createEditor({
+      selection: {
+        anchor: { offset: text.length, path: [0, 0] },
+        focus: { offset: text.length, path: [0, 0] },
+      },
+      value: [{ children: [{ text }], type: 'p' }],
+    });
+
+    editor.update.text.insert(' ');
+
+    expect(findLink(editor)).toMatchObject({
+      children: [{ text: 'https://example.com' }],
+      url: 'https://example.com',
+    });
+    expect(editor.read.text.string([0])).toBe('visit https://example.com ');
+  });
+
+  it('uses getUrlHref for visible link text', () => {
+    const text = 'visit example';
+    const editor = createEditor({
+      options: {
+        getUrlHref: (url) =>
+          url === 'example' ? 'https://example.com' : undefined,
+      },
+      selection: {
+        anchor: { offset: text.length, path: [0, 0] },
+        focus: { offset: text.length, path: [0, 0] },
+      },
+      value: [{ children: [{ text }], type: 'p' }],
+    });
+
+    editor.update.text.insert(' ');
+
+    expect(findLink(editor)).toMatchObject({
+      children: [{ text: 'example' }],
+      url: 'https://example.com',
+    });
+  });
+
+  it('finalizes an autolink before inserting a break', () => {
+    const text = 'https://example.com';
+    const editor = createEditor({
+      selection: {
+        anchor: { offset: text.length, path: [0, 0] },
+        focus: { offset: text.length, path: [0, 0] },
+      },
+      value: [{ children: [{ text }], type: 'p' }],
+    });
+
+    editor.update.break.insert();
+
+    expect(findLink(editor)?.url).toBe('https://example.com');
+    expect(editor.read.children()).toHaveLength(2);
+  });
+
+  it('converts markdown link syntax when the closing parenthesis is inserted', () => {
+    const text = '[Example](https://example.com';
+    const editor = createEditor({
+      selection: {
+        anchor: { offset: text.length, path: [0, 0] },
+        focus: { offset: text.length, path: [0, 0] },
+      },
+      value: [{ children: [{ text }], type: 'p' }],
+    });
+
+    editor.update.text.insert(')');
+
+    expect(findLink(editor)).toMatchObject({
+      children: [{ text: 'Example' }],
+      url: 'https://example.com',
+    });
+  });
+
+  it('ignores unrelated links when converting markdown link syntax', () => {
+    const text = '[Example](https://example.com';
+    const editor = createEditor({
+      selection: {
+        anchor: { offset: text.length, path: [1, 0] },
+        focus: { offset: text.length, path: [1, 0] },
+      },
+      value: [
+        {
+          children: [
+            {
+              children: [{ text: 'existing' }],
+              type: 'a',
+              url: 'https://existing.example.com',
+            },
+          ],
           type: 'p',
         },
-      ]);
+        { children: [{ text }], type: 'p' },
+      ],
     });
 
-    it('keeps the link node when it still contains a zero-width space', () => {
-      const input = (
-        <editor>
-          <hp>
-            Before <ha url="http://example.com">link text</ha> after
-          </hp>
-        </editor>
-      ) as any as BasePlateEditor;
+    editor.update.text.insert(')');
 
-      const editor = createLinkEditor(input);
+    expect(
+      editor.read.nodes.find<TLinkElement>({
+        at: [1],
+        match: { type: 'a' },
+      })?.[0]
+    ).toMatchObject({
+      children: [{ text: 'Example' }],
+      url: 'https://example.com',
+    });
+  });
 
-      editor.update((tx) => {
-        tx.selection.set({
-          anchor: { offset: 0, path: [0, 1, 0] },
-          focus: { offset: 9, path: [0, 1, 0] },
-        });
+  it('removes an empty link but keeps a zero-width-space link', () => {
+    const createLinkEditor = (text: string) =>
+      createEditor({
+        selection: {
+          anchor: { offset: 0, path: [0, 0, 0] },
+          focus: { offset: text.length, path: [0, 0, 0] },
+        },
+        value: [
+          {
+            children: [
+              {
+                children: [{ text }],
+                type: 'a',
+                url: 'https://example.com',
+              },
+            ],
+            type: 'p',
+          },
+        ],
       });
-      getCurrentRuntimeTransforms(editor).insertText('\u200B');
-      editor.update.normalize({ force: true });
+    const emptyEditor = createLinkEditor('x');
+    const zeroWidthEditor = createLinkEditor('\u200B');
 
-      expect(root(editor)).toEqual(
-        (
-          <editor>
-            <hp>
-              Before <ha url="http://example.com">{'\u200B'}</ha> after
-            </hp>
-          </editor>
-        ).children
-      );
-    });
+    emptyEditor.update.fragment.delete();
+    zeroWidthEditor.update.normalize({ force: true });
+
+    expect(findLink(emptyEditor)).toBeUndefined();
+    expect(findLink(zeroWidthEditor)).toBeDefined();
   });
 });

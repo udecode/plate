@@ -2683,8 +2683,12 @@ const getStateView = <
     }),
     selection: selectionApi,
     text: Object.freeze({
-      string: (target: NodeTarget, options = {}) => {
-        const at = resolveReadableNodeTarget(editor, target);
+      string: (target?: NodeTarget, options = {}) => {
+        const resolvedTarget = target ?? getCurrentSelection(editor);
+
+        if (!resolvedTarget) return '';
+
+        const at = resolveReadableNodeTarget(editor, resolvedTarget);
 
         if (!at) return '';
 

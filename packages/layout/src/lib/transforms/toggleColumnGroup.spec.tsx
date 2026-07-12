@@ -1,182 +1,122 @@
-import type { Path } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import type { Selection, Value } from '@platejs/plite';
+import type { TColumnGroupElement } from '@platejs/utils';
 
-import { createSlateEditor } from 'platejs';
+import { BaseColumnPlugin } from '../BaseColumnPlugin';
 
-import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
-import { toggleColumnGroup } from './toggleColumnGroup';
+const createEditor = ({
+  selection,
+  value,
+}: {
+  selection?: Selection;
+  value: Value;
+}) => createBaseEditor({ plugins: [BaseColumnPlugin], selection, value });
 
 describe('toggleColumnGroup', () => {
-  let editor: ReturnType<typeof createSlateEditor>;
-  let initialValue: any[];
-
-  beforeEach(() => {
-    initialValue = [
-      {
-        children: [{ text: 'Some paragraph text' }],
-        type: 'p',
+  it('wraps the selected block in a column group', () => {
+    const editor = createEditor({
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
       },
-    ];
-
-    editor = createSlateEditor({
-      plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
-      value: initialValue,
-    });
-  });
-
-  it('wrap a paragraph in a column group when toggling from a paragraph', () => {
-    const at: Path = [0, 0]; // Inside the paragraph text
-    editor.tf.select(editor.api.start(at)!);
-
-    // Toggle to 2 columns
-    toggleColumnGroup(editor, { columns: 2 });
-
-    const node: any = editor.children[0];
-    expect(node.type).toBe('column_group');
-    expect(node.children).toHaveLength(2);
-    expect(node.children[0].type).toBe('column');
-    expect(node.children[1].type).toBe('column');
-    expect(node.children[0].children[0].children[0].text).toBe(
-      'Some paragraph text'
-    );
-    // The second column should have a newly created block
-    expect(node.children[1].children[0].type).toBe('p');
-    expect(node.children[1].children[0].children[0].text).toBe('');
-  });
-
-  it('update the number of columns if already a column group', () => {
-    // Start with a column group of 2 columns
-    editor.children = [
-      {
-        children: [
-          {
-            children: [{ children: [{ text: 'Col1 text' }], type: 'p' }],
-            type: 'column',
-            width: '50%',
-          },
-          {
-            children: [{ children: [{ text: 'Col2 text' }], type: 'p' }],
-            type: 'column',
-            width: '50%',
-          },
-        ],
-        type: 'column_group',
-      },
-    ];
-
-    const columnGroupPath: Path = [0];
-    editor.tf.select(editor.api.start(columnGroupPath.concat([0, 0, 0]))!);
-
-    // Toggle to 3 columns (from 2 columns)
-    toggleColumnGroup(editor, { columns: 3 });
-
-    const node: any = editor.children[0];
-    expect(node.type).toBe('column_group');
-    expect(node.children).toHaveLength(3);
-
-    // All widths should be adjusted
-    expect(node.children[0].width).toContain('33.3333');
-    expect(node.children[1].width).toContain('33.3333');
-    expect(node.children[2].width).toContain('33.3333');
-
-    // Content from the original 2 columns should still exist
-    expect(node.children[0].children[0].children[0].text).toBe('Col1 text');
-    expect(node.children[1].children[0].children[0].text).toBe('Col2 text');
-
-    // The new 3rd column should have one empty paragraph
-    expect(node.children[2].children).toHaveLength(1);
-    expect(node.children[2].children[0].type).toBe('p');
-    expect(node.children[2].children[0].children[0].text).toBe('');
-  });
-
-  it('preserve content when toggling between different column counts', () => {
-    // Start with a column group of 2 columns
-    editor.children = [
-      {
-        children: [
-          {
-            children: [{ children: [{ text: 'Col1 text' }], type: 'p' }],
-            type: 'column',
-            width: '50%',
-          },
-          {
-            children: [{ children: [{ text: 'Col2 text' }], type: 'p' }],
-            type: 'column',
-            width: '50%',
-          },
-        ],
-        type: 'column_group',
-      },
-    ];
-
-    const columnGroupPath: Path = [0];
-    editor.tf.select(editor.api.start(columnGroupPath)!);
-
-    // Toggle to 3 columns
-    toggleColumnGroup(editor, { columns: 3 });
-    let node: any = editor.children[0];
-    expect(node.children).toHaveLength(3);
-
-    // Insert content in the third column
-    editor.tf.apply({
-      node: { children: [{ text: 'Col3 extra text' }], type: 'p' },
-      path: [0, 2, 1],
-      type: 'insert_node',
+      value: [{ children: [{ text: 'Some paragraph text' }], type: 'p' }],
     });
 
-    // Toggle back to 2 columns
-    toggleColumnGroup(editor, { columns: 2 });
-    node = editor.children[0];
-    expect(node.children).toHaveLength(2);
+    editor.update.column.toggle({ columns: 2 });
 
-    // Col3 content should have merged into column 2
-    const col2Texts = node.children[1].children
-      .flatMap((child: any) => child.children)
-      .map((child: any) => child.text);
+    const group = editor.read.nodes.get<TColumnGroupElement>([0], {
+      required: true,
+    })[0];
 
-    expect(col2Texts).toContain('Col2 text');
-    expect(col2Texts).toContain('Col3 extra text');
+    expect(group.children).toHaveLength(2);
+    expect(editor.read.text.string([0, 0])).toBe('Some paragraph text');
+    expect(editor.read.text.string([0, 1])).toBe('');
   });
 
-  it('keeps the document unchanged if no selection is provided', () => {
-    // No selection
-    toggleColumnGroup(editor, { columns: 2 });
-    // Should remain a single paragraph
-    const node = editor.children[0];
-    expect(node.type).toBe('p');
-  });
-
-  it('handle toggling from a selection inside a column as well', () => {
-    // Start with a column group of 2 columns
-    editor.children = [
-      {
-        children: [
-          {
-            children: [{ children: [{ text: 'Col1 text' }], type: 'p' }],
-            type: 'column',
-            width: '50%',
-          },
-          {
-            children: [{ children: [{ text: 'Col2 text' }], type: 'p' }],
-            type: 'column',
-            width: '50%',
-          },
-        ],
-        type: 'column_group',
+  it('updates an existing column group', () => {
+    const editor = createEditor({
+      selection: {
+        anchor: { offset: 0, path: [0, 0, 0, 0] },
+        focus: { offset: 0, path: [0, 0, 0, 0] },
       },
-    ];
-    const _columnGroupPath: Path = [0];
-    // Select inside second column's paragraph
-    editor.tf.select(editor.api.start([0, 1, 0, 0])!);
+      value: [
+        {
+          children: [
+            {
+              children: [{ children: [{ text: 'A' }], type: 'p' }],
+              type: 'column',
+              width: '50%',
+            },
+            {
+              children: [{ children: [{ text: 'B' }], type: 'p' }],
+              type: 'column',
+              width: '50%',
+            },
+          ],
+          type: 'column_group',
+        },
+      ],
+    });
 
-    // Toggle to 3 columns
-    toggleColumnGroup(editor, { columns: 3 });
-    const node: any = editor.children[0];
+    editor.update.column.toggle({ columns: 3 });
 
-    expect(node.children).toHaveLength(3);
-    // Should keep Col1 text and Col2 text
-    expect(node.children[0].children[0].children[0].text).toBe('Col1 text');
-    expect(node.children[1].children[0].children[0].text).toBe('Col2 text');
-    // New column
-    expect(node.children[2].children[0].children[0].text).toBe('');
+    const group = editor.read.nodes.get<TColumnGroupElement>([0], {
+      required: true,
+    })[0];
+
+    expect(group.children).toHaveLength(3);
+    expect(group.children.map((column) => column.width)).toEqual([
+      `${100 / 3}%`,
+      `${100 / 3}%`,
+      `${100 / 3}%`,
+    ]);
+    expect(editor.read.text.string([0, 0])).toBe('A');
+    expect(editor.read.text.string([0, 1])).toBe('B');
+    expect(editor.read.text.string([0, 2])).toBe('');
+  });
+
+  it('merges content when reducing an existing group', () => {
+    const editor = createEditor({
+      selection: {
+        anchor: { offset: 0, path: [0, 1, 0, 0] },
+        focus: { offset: 0, path: [0, 1, 0, 0] },
+      },
+      value: [
+        {
+          children: [
+            {
+              children: [{ children: [{ text: 'A' }], type: 'p' }],
+              type: 'column',
+              width: '33%',
+            },
+            {
+              children: [{ children: [{ text: 'B' }], type: 'p' }],
+              type: 'column',
+              width: '33%',
+            },
+            {
+              children: [{ children: [{ text: 'C' }], type: 'p' }],
+              type: 'column',
+              width: '34%',
+            },
+          ],
+          type: 'column_group',
+        },
+      ],
+    });
+
+    editor.update.column.toggle({ columns: 2 });
+
+    expect(editor.read.text.string([0, 0])).toBe('A');
+    expect(editor.read.text.string([0, 1])).toBe('BC');
+  });
+
+  it('does nothing without a selected block', () => {
+    const value = [{ children: [{ text: 'Some paragraph text' }], type: 'p' }];
+    const editor = createEditor({ value });
+
+    editor.update.column.toggle({ columns: 2 });
+
+    expect(editor.read.children()).toEqual(value);
   });
 });

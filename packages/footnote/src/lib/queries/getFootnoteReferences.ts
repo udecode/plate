@@ -1,8 +1,8 @@
-import type { NodeEntry, SlateEditor, TElement } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
 
 import { getRegistryReferences } from '../registry';
 
 export const getFootnoteReferences = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { identifier }: { identifier: string }
-) => getRegistryReferences(editor, { identifier }) as NodeEntry<TElement>[];
+) => getRegistryReferences(editor, { identifier });

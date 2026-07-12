@@ -1,20 +1,19 @@
+import type { BaseEditor } from '@platejs/core';
 import type {
-  InsertNodesOptions,
-  SlateEditor,
-  TLinkElement,
-  TText,
-} from 'platejs';
+  EditorUpdateTransaction,
+  NodeInsertNodesOptions,
+  Text,
+} from '@platejs/plite';
+import type { TLinkElement } from '@platejs/utils';
 
 import { type CreateLinkNodeOptions, createLinkNode } from '../utils';
 
 /** Insert a link node. */
 export const insertLink = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   createLinkNodeOptions: CreateLinkNodeOptions,
-  options?: InsertNodesOptions
+  options?: NodeInsertNodesOptions<TLinkElement | Text>
 ) => {
-  editor.tf.insertNodes<TLinkElement | TText>(
-    [createLinkNode(editor, createLinkNodeOptions)],
-    options as any
-  );
+  tx.nodes.insert(createLinkNode(editor, createLinkNodeOptions), options);
 };

@@ -1,4 +1,5 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import {
   BaseFootnoteDefinitionPlugin,
@@ -8,21 +9,22 @@ import {
 
 describe('BaseFootnotePlugins', () => {
   it('configures footnote reference as an inline void element', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseFootnoteReferencePlugin],
-    } as any);
-    const plugin = editor.getPlugin(BaseFootnoteReferencePlugin);
-    const inputPlugin = editor.getPlugin(BaseFootnoteInputPlugin);
+    });
+    const plugin = editor.plugins[BaseFootnoteReferencePlugin.key];
+    const inputPlugin = editor.plugins[BaseFootnoteInputPlugin.key];
+    const options = editor.plugin(BaseFootnoteReferencePlugin).getOptions();
 
     expect(plugin.node).toMatchObject({
       isElement: true,
       isInline: true,
       isVoid: true,
     });
-    expect(plugin.options.trigger).toBe('^');
-    expect(plugin.options.triggerPreviousCharPattern?.test('[')).toBe(true);
-    expect(plugin.options.triggerPreviousCharPattern?.test('x')).toBe(false);
-    expect(plugin.options.createComboboxInput?.('^')).toEqual({
+    expect(options.trigger).toBe('^');
+    expect(options.triggerPreviousCharPattern?.test('[')).toBe(true);
+    expect(options.triggerPreviousCharPattern?.test('x')).toBe(false);
+    expect(options.createComboboxInput?.('^')).toEqual({
       children: [{ text: '' }],
       type: 'footnoteInput',
     });
@@ -34,10 +36,10 @@ describe('BaseFootnotePlugins', () => {
   });
 
   it('configures footnote definition as a block element', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseFootnoteDefinitionPlugin],
-    } as any);
-    const plugin = editor.getPlugin(BaseFootnoteDefinitionPlugin);
+    });
+    const plugin = editor.plugins[BaseFootnoteDefinitionPlugin.key];
 
     expect(plugin.node).toMatchObject({
       isElement: true,
@@ -46,12 +48,14 @@ describe('BaseFootnotePlugins', () => {
   });
 
   it('provides footnote api and insert / navigation transforms on the editor', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
-    } as any);
-    const api = (editor.api as any).footnote;
-    const insert = (editor.tf as any).insert;
-    const footnote = (editor.tf as any).footnote;
+    const editor = createBaseEditor({
+      plugins: [
+        BaseFootnoteReferencePlugin,
+        BaseFootnoteDefinitionPlugin,
+      ] as const,
+    });
+    const api = editor.api.footnote;
+    const footnote = editor.update.footnote;
 
     expect(api).toBeDefined();
     expect(typeof api.nextId).toBe('function');
@@ -65,8 +69,8 @@ describe('BaseFootnotePlugins', () => {
     expect(typeof api.hasDuplicateDefinitions).toBe('function');
     expect(typeof api.duplicateIdentifiers).toBe('function');
 
-    expect(insert).toBeDefined();
-    expect(typeof insert.footnote).toBe('function');
+    expect(editor.update.insert).toBeDefined();
+    expect(typeof editor.update.insert.footnote).toBe('function');
     expect(typeof footnote.createDefinition).toBe('function');
     expect(typeof footnote.focusDefinition).toBe('function');
     expect(typeof footnote.focusReference).toBe('function');
@@ -74,7 +78,7 @@ describe('BaseFootnotePlugins', () => {
   });
 
   it('deleteBackward removes the adjacent footnote atom', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseFootnoteReferencePlugin],
       selection: {
         anchor: { offset: 0, path: [0, 2] },
@@ -94,24 +98,24 @@ describe('BaseFootnotePlugins', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
-    editor.tf.deleteBackward('character');
+    editor.update.text.deleteBackward({ unit: 'character' });
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.value().children).toMatchObject([
       {
         children: [{ text: 'hi  after' }],
         type: 'p',
       },
     ]);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
   });
 
   it('deleteForward removes the next footnote atom', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseFootnoteReferencePlugin],
       selection: {
         anchor: { offset: 3, path: [0, 0] },
@@ -131,24 +135,24 @@ describe('BaseFootnotePlugins', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
-    editor.tf.deleteForward('character');
+    editor.update.text.deleteForward({ unit: 'character' });
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.value().children).toMatchObject([
       {
         children: [{ text: 'hi  after' }],
         type: 'p',
       },
     ]);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
   });
 
   it('typing "^" after "[" inserts a footnote combobox input', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseFootnoteReferencePlugin],
       selection: {
         anchor: { offset: 1, path: [0, 0] },
@@ -160,11 +164,11 @@ describe('BaseFootnotePlugins', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
-    editor.tf.insertText('^');
+    editor.update.text.insert('^');
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.value().children).toMatchObject([
       {
         children: [
           { text: '[' },

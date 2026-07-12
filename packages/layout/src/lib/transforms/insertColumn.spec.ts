@@ -1,11 +1,11 @@
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import type { TColumnGroupElement } from '@platejs/utils';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
-import { insertColumn } from './insertColumn';
 
 describe('insertColumn', () => {
   it('insert a column with the default width and an empty block', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
       value: [
         {
@@ -21,20 +21,21 @@ describe('insertColumn', () => {
       ],
     });
 
-    insertColumn(editor, { at: [0, 1] });
+    editor.update.column.insert({ at: [0, 1] });
 
-    const columnGroup = editor.children[0] as any;
+    const columnGroup = editor.read.nodes.get<TColumnGroupElement>([0], {
+      required: true,
+    })[0];
 
     expect(columnGroup.children).toHaveLength(2);
     expect(columnGroup.children[1].type).toBe('column');
     expect(columnGroup.children[1].width).toBe('33%');
     expect(columnGroup.children[0].width).toBe('67%');
-    expect(columnGroup.children[1].children[0].type).toBe('p');
-    expect(columnGroup.children[1].children[0].children[0].text).toBe('');
+    expect(columnGroup.children[1].children[0]).toMatchObject({ type: 'p' });
   });
 
   it('respect a custom width and insertion path', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
       value: [
         {
@@ -50,16 +51,16 @@ describe('insertColumn', () => {
       ],
     });
 
-    insertColumn(editor, { at: [0, 0], width: '25%' });
+    editor.update.column.insert({ at: [0, 0], width: '25%' });
 
-    const columnGroup = editor.children[0] as any;
+    const columnGroup = editor.read.nodes.get<TColumnGroupElement>([0], {
+      required: true,
+    })[0];
 
     expect(columnGroup.children).toHaveLength(2);
     expect(columnGroup.children[0].width).toBe('25%');
     expect(columnGroup.children[1].width).toBe('75%');
-    expect(columnGroup.children[0].children[0].children[0].text).toBe('');
-    expect(columnGroup.children[1].children[0].children[0].text).toBe(
-      'Existing'
-    );
+    expect(editor.read.text.string([0, 0])).toBe('');
+    expect(editor.read.text.string([0, 1])).toBe('Existing');
   });
 });

@@ -1,5 +1,6 @@
-import { type ExtendConfig, type OmitFirst, bindFirst } from 'platejs';
-import { toTPlatePlugin } from 'platejs/react';
+import type { ExtendConfig } from '@platejs/core';
+import { toPlatePlugin } from '@platejs/core/react';
+import { type OmitFirst, bindFirst } from '@udecode/utils';
 
 import { type BaseLinkConfig, BaseLinkPlugin } from '../lib';
 import { getLinkAttributes } from '../lib/utils';
@@ -41,19 +42,22 @@ export type LinkConfig = ExtendConfig<
 >;
 
 /** Enables support for hyperlinks. */
-export const LinkPlugin = toTPlatePlugin<LinkConfig>(BaseLinkPlugin, {
-  options: {
-    isEditing: false,
-    mode: '' as FloatingLinkMode,
-    mouseDown: false,
-    newTab: false,
-    openEditorId: null,
-    text: '',
-    triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
-    updated: false,
-    url: '',
-  },
-})
+export const LinkPlugin = toPlatePlugin<LinkConfig, BaseLinkConfig>(
+  BaseLinkPlugin,
+  {
+    options: {
+      isEditing: false,
+      mode: '',
+      mouseDown: false,
+      newTab: false,
+      openEditorId: null,
+      text: '',
+      triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
+      updated: false,
+      url: '',
+    },
+  }
+)
   .extendEditorApi<Partial<LinkConfig['api']>>(({ editor }) => ({
     link: {
       getAttributes: bindFirst(getLinkAttributes, editor),
@@ -64,7 +68,7 @@ export const LinkPlugin = toTPlatePlugin<LinkConfig>(BaseLinkPlugin, {
       hide: () => {
         setOptions({
           isEditing: false,
-          mode: '' as FloatingLinkMode,
+          mode: '',
           mouseDown: false,
           newTab: false,
           openEditorId: null,
@@ -76,7 +80,7 @@ export const LinkPlugin = toTPlatePlugin<LinkConfig>(BaseLinkPlugin, {
       reset: () => {
         setOptions({
           isEditing: false,
-          mode: '' as FloatingLinkMode,
+          mode: '',
           mouseDown: false,
           newTab: false,
           text: '',

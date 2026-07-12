@@ -68,7 +68,9 @@ export const replaceSelectionAIChat = (
 ) => {
   if (!sourceEditor || sourceEditor.api.isEmpty()) return;
 
-  const isBlockSelecting = editor.plugin(BlockSelectionPlugin).getOption('isSelectingSome');
+  const isBlockSelecting = editor
+    .plugin(BlockSelectionPlugin)
+    .getOption('isSelectingSome');
 
   editor.getApi<AIChatPluginConfig>({ key: KEYS.ai }).aiChat.hide();
 

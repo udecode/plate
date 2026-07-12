@@ -22,7 +22,9 @@ export const insertMedia = (
   options?: Omit<InsertNodesOptions, 'at'> & { at?: Path }
 ): any => {
   const api = editor.getApi(PlaceholderPlugin);
-  const uploadConfig = editor.plugin(PlaceholderPlugin).getOption('uploadConfig');
+  const uploadConfig = editor
+    .plugin(PlaceholderPlugin)
+    .getOption('uploadConfig');
   const multiple = editor.plugin(PlaceholderPlugin).getOption('multiple');
 
   try {
@@ -34,21 +36,28 @@ export const insertMedia = (
   }
 
   if (!multiple && files.length > 1) {
-    return editor.plugin(PlaceholderPlugin).setOption('error', createUploadError(UploadErrorCode.TOO_MANY_FILES, {
+    return editor.plugin(PlaceholderPlugin).setOption(
+      'error',
+      createUploadError(UploadErrorCode.TOO_MANY_FILES, {
         files: Array.from(files),
         fileType: null,
         maxFileCount: 1,
-      }));
+      })
+    );
   }
 
-  const maxFileCount = editor.plugin(PlaceholderPlugin).getOption('maxFileCount') ?? 3;
+  const maxFileCount =
+    editor.plugin(PlaceholderPlugin).getOption('maxFileCount') ?? 3;
 
   if (files.length > maxFileCount) {
-    return editor.plugin(PlaceholderPlugin).setOption('error', createUploadError(UploadErrorCode.TOO_MANY_FILES, {
+    return editor.plugin(PlaceholderPlugin).setOption(
+      'error',
+      createUploadError(UploadErrorCode.TOO_MANY_FILES, {
         files: Array.from(files),
         fileType: null,
         maxFileCount,
-      }));
+      })
+    );
   }
 
   let currentAt: Path | undefined;
@@ -79,7 +88,9 @@ export const insertMedia = (
       );
     };
 
-    const disableEmptyPlaceholder = editor.plugin(PlaceholderPlugin).getOption('disableEmptyPlaceholder');
+    const disableEmptyPlaceholder = editor
+      .plugin(PlaceholderPlugin)
+      .getOption('disableEmptyPlaceholder');
 
     if (disableEmptyPlaceholder) {
       editor.tf.withoutMerging(() => {

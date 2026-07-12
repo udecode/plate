@@ -1,10 +1,7 @@
 import React from 'react';
 
-import {
-  createPrimitiveComponent,
-  useEditorPlugin,
-  usePluginOption,
-} from 'platejs/react';
+import { useEditorPlugin, usePluginOption } from '@platejs/core/react';
+import { createPrimitiveComponent } from '@udecode/react-utils';
 
 import { encodeUrlIfNeeded, safeDecodeUrl } from '../../../lib';
 import { LinkPlugin } from '../../LinkPlugin';

@@ -39,17 +39,12 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "juice": "^11.0.1",
-    "react-compiler-runtime": "^1.0.0"
+    "@platejs/core": "workspace:^",
+    "@platejs/utils": "workspace:^",
+    "juice": "^11.0.1"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:*",
-    "platejs": "workspace:^"
-  },
-  "peerDependencies": {
-    "platejs": ">=54.0.0-beta.0",
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "@plate/scripts": "workspace:*"
   },
   "publishConfig": {
     "access": "public"

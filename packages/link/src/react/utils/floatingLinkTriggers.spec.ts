@@ -1,104 +1,125 @@
-import * as platejs from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
 
-const getEditorPluginMock = mock();
-
-mock.module('../LinkPlugin', () => ({
-  LinkPlugin: { key: 'link' },
-}));
+import { LinkPlugin } from '../LinkPlugin';
+import { triggerFloatingLink } from './triggerFloatingLink';
+import { triggerFloatingLinkEdit } from './triggerFloatingLinkEdit';
+import { triggerFloatingLinkInsert } from './triggerFloatingLinkInsert';
 
 describe('floating link triggers', () => {
-  beforeEach(() => {
-    spyOn(platejs, 'getEditorPlugin').mockImplementation(
-      getEditorPluginMock as any
-    );
-    getEditorPluginMock.mockReset();
-  });
-
-  afterEach(() => {
-    mock.restore();
-  });
-
-  it('opens insert mode with selected text when the current selection is eligible', async () => {
-    const { triggerFloatingLinkInsert } = await import(
-      `./triggerFloatingLinkInsert?test=${Math.random().toString(36).slice(2)}`
-    );
-    const setOption = mock();
-    const show = mock();
-
-    getEditorPluginMock.mockReturnValue({
-      api: {
-        floatingLink: { show },
+  it('opens insert mode with selected text', () => {
+    const editor = createPlateEditor({
+      plugins: [LinkPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 13, path: [0, 0] },
       },
-      getOptions: () => ({
-        mode: '',
-      }),
-      setOption,
-      type: 'a',
+      value: [{ children: [{ text: 'selected text' }], type: 'p' }],
     });
-
-    const editor = {
-      api: {
-        isAt: () => false,
-        string: () => 'selected text',
-      },
-      id: 'editor-id',
-      read: { nodes: { some: () => false } },
-      selection: { anchor: { path: [0, 0], offset: 0 } },
-    } as any;
 
     expect(triggerFloatingLinkInsert(editor, { focused: true })).toBe(true);
-    expect(setOption).toHaveBeenCalledWith('text', 'selected text');
-    expect(show).toHaveBeenCalledWith('insert', 'editor-id');
+    expect(editor.plugin(LinkPlugin).getOptions()).toMatchObject({
+      mode: 'insert',
+      openEditorId: editor.id,
+      text: 'selected text',
+    });
   });
 
-  it('loads link state into edit mode and strips duplicate url text', async () => {
-    const { triggerFloatingLinkEdit } = await import(
-      `./triggerFloatingLinkEdit?test=${Math.random().toString(36).slice(2)}`
-    );
-    const setOption = mock();
-
-    getEditorPluginMock.mockReturnValue({
-      setOption,
-    });
-
-    const editor = {
-      api: {
-        node: () => [{ target: '_blank', url: 'https://x.dev' }, [0]],
-        string: () => 'https://x.dev',
+  it('loads link state into edit mode and strips duplicate URL text', () => {
+    const editor = createPlateEditor({
+      plugins: [LinkPlugin],
+      selection: {
+        anchor: { offset: 3, path: [0, 0, 0] },
+        focus: { offset: 3, path: [0, 0, 0] },
       },
-      getType: () => 'link',
-    } as any;
+      value: [
+        {
+          children: [
+            {
+              children: [{ text: 'https://x.dev' }],
+              target: '_blank',
+              type: 'a',
+              url: 'https://x.dev',
+            },
+          ],
+          type: 'p',
+        },
+      ],
+    });
 
     expect(triggerFloatingLinkEdit(editor)).toBe(true);
-    expect(setOption).toHaveBeenCalledWith('url', 'https://x.dev');
-    expect(setOption).toHaveBeenCalledWith('newTab', true);
-    expect(setOption).toHaveBeenCalledWith('text', '');
-    expect(setOption).toHaveBeenCalledWith('isEditing', true);
+    expect(editor.plugin(LinkPlugin).getOptions()).toMatchObject({
+      isEditing: true,
+      newTab: true,
+      text: '',
+      url: 'https://x.dev',
+    });
   });
 
-  it('routes to edit when the floating link mode is edit', async () => {
-    const { triggerFloatingLink } = await import(
-      `./triggerFloatingLink?test=${Math.random().toString(36).slice(2)}`
-    );
-    const setOption = mock();
-
-    getEditorPluginMock.mockReturnValue({
-      getOption: () => 'edit',
-      setOption,
+  it('loads the selected link when the document contains multiple links', () => {
+    const editor = createPlateEditor({
+      plugins: [LinkPlugin],
+      selection: {
+        anchor: { offset: 3, path: [0, 2, 0] },
+        focus: { offset: 3, path: [0, 2, 0] },
+      },
+      value: [
+        {
+          children: [
+            {
+              children: [{ text: 'first' }],
+              type: 'a',
+              url: 'https://first.dev',
+            },
+            { text: ' and ' },
+            {
+              children: [{ text: 'second' }],
+              type: 'a',
+              url: 'https://second.dev',
+            },
+          ],
+          type: 'p',
+        },
+      ],
     });
 
-    const editor = {
-      api: {
-        node: () => [{ target: undefined, url: 'https://x.dev' }, [0]],
-        string: () => 'hello',
+    expect(triggerFloatingLinkEdit(editor)).toBe(true);
+    expect(editor.plugin(LinkPlugin).getOptions()).toMatchObject({
+      text: 'second',
+      url: 'https://second.dev',
+    });
+  });
+
+  it('routes edit mode through the edit trigger', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        LinkPlugin.configure({
+          options: { mode: 'edit' },
+        }),
+      ],
+      selection: {
+        anchor: { offset: 2, path: [0, 0, 0] },
+        focus: { offset: 2, path: [0, 0, 0] },
       },
-      getType: () => 'link',
-    } as any;
+      value: [
+        {
+          children: [
+            {
+              children: [{ text: 'hello' }],
+              type: 'a',
+              url: 'https://x.dev',
+            },
+          ],
+          type: 'p',
+        },
+      ],
+    });
 
     triggerFloatingLink(editor, { focused: true });
 
-    expect(setOption).toHaveBeenCalledWith('url', 'https://x.dev');
-    expect(setOption).toHaveBeenCalledWith('text', 'hello');
-    expect(setOption).toHaveBeenCalledWith('isEditing', true);
+    expect(editor.plugin(LinkPlugin).getOptions()).toMatchObject({
+      isEditing: true,
+      text: 'hello',
+      url: 'https://x.dev',
+    });
   });
 });

@@ -6,5 +6,7 @@ export function getEnclosingToggleIds(
   editor: SlateEditor,
   elementId: string
 ): string[] {
-  return editor.plugin(TogglePlugin).getOptions().toggleIndex?.get(elementId) || [];
+  return (
+    editor.plugin(TogglePlugin).getOptions().toggleIndex?.get(elementId) || []
+  );
 }

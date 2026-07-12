@@ -15,6 +15,32 @@ const paragraph = (text: string): Element => ({
 });
 
 describe('state query contract', () => {
+  it('reads the current selection when text.string omits its target', () => {
+    const editor = createEditor({
+      initialSelection: {
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+      initialValue: [paragraph('one'), paragraph('two')],
+    });
+
+    assert.equal(editor.read.text.string(), 'ne');
+    assert.equal(
+      editor.read((state) => state.text.string()),
+      'ne'
+    );
+    assert.equal(editor.read.text.string([]), 'onetwo');
+
+    editor.update((tx) => {
+      assert.equal(tx.text.string(), 'ne');
+      tx.selection.clear();
+      assert.equal(tx.text.string(), '');
+    });
+
+    assert.equal(editor.read.text.string(), '');
+    assert.equal(editor.read.text.string([]), 'onetwo');
+  });
+
   it('reports whether the current selection is collapsed', () => {
     const editor = createEditor({
       initialSelection: {

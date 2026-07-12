@@ -1,4 +1,4 @@
-import { type SlateEditor, getEditorPlugin } from 'platejs';
+import type { PlateEditor } from '@platejs/core/react';
 
 import { LinkPlugin } from '../LinkPlugin';
 
@@ -13,31 +13,33 @@ import { LinkPlugin } from '../LinkPlugin';
  * - Selection has a link node
  */
 export const triggerFloatingLinkInsert = (
-  editor: SlateEditor,
+  editor: PlateEditor,
   {
     focused,
   }: {
     focused?: boolean;
   } = {}
 ) => {
-  const { api, getOptions, setOption, type } = getEditorPlugin(
-    editor,
-    LinkPlugin
-  );
+  const { api, getOptions, setOption, type } = editor.plugin(LinkPlugin);
 
   const { mode } = getOptions();
 
   if (mode) return;
   if (!focused) return;
-  if (editor.api.isAt({ blocks: true })) return;
+  if (editor.read.selection.isAcrossBlocks()) return;
+
+  const selection = editor.read.selection();
+
+  if (!selection) return;
 
   const hasLink = editor.read.nodes.some({
+    at: selection,
     match: { type },
   });
 
   if (hasLink) return;
 
-  setOption('text', editor.api.string(editor.selection));
+  setOption('text', editor.read.text.string());
   api.floatingLink.show('insert', editor.id);
 
   return true;

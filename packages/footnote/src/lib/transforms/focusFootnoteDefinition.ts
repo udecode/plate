@@ -1,31 +1,24 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 
+import { navigateToFootnote } from '../../internal/navigateToFootnote';
 import { getFootnoteDefinition } from '../queries/getFootnoteDefinition';
 
 export const focusFootnoteDefinition = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   { identifier }: { identifier: string }
 ) => {
   const definition = getFootnoteDefinition(editor, { identifier });
 
   if (!definition) return false;
 
-  const firstTextPath = definition[1].concat([0, 0]);
-  const point = editor.api.start(firstTextPath);
+  const point = tx.points.start(definition[1]);
 
   if (!point) return false;
 
-  return editor.tf.navigation.navigate({
-    focus: true,
-    scroll: true,
-    scrollTarget: point,
-    select: {
-      anchor: { offset: 0, path: firstTextPath },
-      focus: { offset: 0, path: firstTextPath },
-    },
-    target: {
-      path: definition[1],
-      type: 'node',
-    },
+  return navigateToFootnote(editor, tx, {
+    point,
+    targetPath: definition[1],
   });
 };

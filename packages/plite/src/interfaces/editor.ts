@@ -616,7 +616,8 @@ export type EditorStateRangesApi = {
 };
 
 export type EditorStateTextApi = {
-  string: (at: NodeTarget, options?: EditorStringOptions) => string;
+  /** Return text at a target, or at the current selection when omitted. */
+  string: (at?: NodeTarget, options?: EditorStringOptions) => string;
 };
 
 export type EditorTransactionFragmentApi<V extends Value = Value> =

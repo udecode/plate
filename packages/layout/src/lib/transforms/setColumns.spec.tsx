@@ -1,345 +1,157 @@
-import type { Path } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import type { TColumnGroupElement } from '@platejs/utils';
 
-import { createSlateEditor } from 'platejs';
+import { BaseColumnPlugin } from '../BaseColumnPlugin';
 
-import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
-import { setColumns } from './setColumns';
+const createEditor = (value = twoColumns) =>
+  createBaseEditor({ plugins: [BaseColumnPlugin], value });
+
+const twoColumns = [
+  {
+    children: [
+      {
+        children: [{ children: [{ text: 'Column 1 text' }], type: 'p' }],
+        type: 'column',
+        width: '50%',
+      },
+      {
+        children: [{ children: [{ text: 'Column 2 text' }], type: 'p' }],
+        type: 'column',
+        width: '50%',
+      },
+    ],
+    type: 'column_group',
+  },
+];
 
 describe('setColumns', () => {
-  let editor: ReturnType<typeof createSlateEditor>;
-  let columnGroupPath: Path;
+  it('updates widths without changing content', () => {
+    const editor = createEditor();
 
-  beforeEach(() => {
-    editor = createSlateEditor({
-      plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
-      // Initial value: a column_group with 2 columns
-      value: [
-        {
-          children: [
-            {
-              children: [{ children: [{ text: 'Column 1 text' }], type: 'p' }],
-              type: 'column',
-              width: '50%',
-            },
-            {
-              children: [{ children: [{ text: 'Column 2 text' }], type: 'p' }],
-              type: 'column',
-              width: '50%',
-            },
-          ],
-          type: 'column_group',
-        },
-      ],
-    });
-    columnGroupPath = [0];
+    editor.update.column.set({ at: [0], widths: ['30%', '70%'] });
+
+    const group = editor.read.nodes.get<TColumnGroupElement>([0], {
+      required: true,
+    })[0];
+
+    expect(group.children.map((column) => column.width)).toEqual([
+      '30%',
+      '70%',
+    ]);
+    expect(editor.read.text.string([0, 0])).toBe('Column 1 text');
+    expect(editor.read.text.string([0, 1])).toBe('Column 2 text');
   });
 
-  it('update widths if same number of columns', () => {
-    // Currently 2 columns, set new widths for these 2 columns
-    setColumns(editor, {
-      at: columnGroupPath,
-      widths: ['30%', '70%'],
+  it('adds empty columns while preserving existing content', () => {
+    const editor = createEditor();
+
+    editor.update.column.set({
+      at: [0],
+      widths: ['33%', '33%', '34%'],
     });
 
-    const node = editor.children[0] as any;
-    expect(node.children).toHaveLength(2);
-    expect(node.children[0].width).toBe('30%');
-    expect(node.children[1].width).toBe('70%');
-    // Content remains the same
-    expect(node.children[0].children[0].children[0].text).toBe('Column 1 text');
-    expect(node.children[1].children[0].children[0].text).toBe('Column 2 text');
+    const group = editor.read.nodes.get<TColumnGroupElement>([0], {
+      required: true,
+    })[0];
+
+    expect(group.children.map((column) => column.width)).toEqual([
+      '33%',
+      '33%',
+      '34%',
+    ]);
+    expect(editor.read.text.string([0, 0])).toBe('Column 1 text');
+    expect(editor.read.text.string([0, 1])).toBe('Column 2 text');
+    expect(editor.read.text.string([0, 2])).toBe('');
   });
 
-  it('insert new columns if targetCount > currentCount', () => {
-    // Currently 2 columns, want 3 columns
-    setColumns(editor, {
-      at: columnGroupPath,
-      widths: ['33%', '33%', '33%'],
-    });
-
-    const node = editor.children[0] as any;
-    expect(node.children).toHaveLength(3);
-
-    // First two columns updated
-    expect(node.children[0].width).toContain('33.');
-    expect(node.children[1].width).toContain('33.');
-
-    // New column inserted
-    expect(node.children[2].width).toContain('33.');
-    // Should have a default block inside
-    expect(node.children[2].children).toHaveLength(1);
-    expect(node.children[2].children[0].type).toBe('p');
-    // Original content untouched in the first two columns
-    expect(node.children[0].children[0].children[0].text).toBe('Column 1 text');
-    expect(node.children[1].children[0].children[0].text).toBe('Column 2 text');
-  });
-
-  it('merge columns and remove extras if targetCount < currentCount', () => {
-    // Setup initial state with 3 columns
-    editor.children = [
+  it('merges removed column content into the last kept column', () => {
+    const editor = createEditor([
       {
         children: [
           {
-            children: [{ children: [{ text: 'C1 text' }], type: 'p' }],
+            children: [{ children: [{ text: 'A' }], type: 'p' }],
             type: 'column',
-            width: '33%',
+            width: '25%',
           },
           {
-            children: [{ children: [{ text: 'C2 text' }], type: 'p' }],
+            children: [{ children: [{ text: 'B' }], type: 'p' }],
             type: 'column',
-            width: '33%',
+            width: '25%',
           },
           {
-            children: [{ children: [{ text: 'C3 text' }], type: 'p' }],
+            children: [{ children: [{ text: 'C' }], type: 'p' }],
             type: 'column',
-            width: '33%',
+            width: '25%',
+          },
+          {
+            children: [{ children: [{ text: 'D' }], type: 'p' }],
+            type: 'column',
+            width: '25%',
           },
         ],
         type: 'column_group',
       },
-    ];
+    ]);
 
-    // Now reduce to 2 columns
-    setColumns(editor, {
-      at: columnGroupPath,
-      widths: ['50%', '50%'],
+    editor.update.column.set({ at: [0], widths: ['50%', '50%'] });
+
+    const group = editor.read.nodes.get<TColumnGroupElement>([0], {
+      required: true,
+    })[0];
+
+    expect(group.children).toHaveLength(2);
+    expect(group.children.map((column) => column.width)).toEqual([
+      '50%',
+      '50%',
+    ]);
+    expect(editor.read.text.string([0, 0])).toBe('A');
+    expect(editor.read.text.string([0, 1])).toBe('BCD');
+  });
+
+  it('preserves content across repeated column count changes', () => {
+    const editor = createEditor();
+
+    editor.update.column.set({
+      at: [0],
+      widths: ['33%', '33%', '34%'],
     });
-
-    const node = editor.children[0] as any;
-    expect(node.children).toHaveLength(2);
-    // Check widths updated
-    expect(node.children[0].width).toBe('50%');
-    expect(node.children[1].width).toBe('50%');
-
-    // Content from column 3 should have moved into column 2
-    const col1Text = node.children[0].children[0].children[0].text;
-    const col2TextChildren = node.children[1].children.flatMap(
-      (n: any) => n.children
-    );
-    const col2Texts = col2TextChildren.map((t: any) => t.text);
-
-    expect(col1Text).toBe('C1 text');
-    expect(col2Texts).toContain('C2 text');
-    expect(col2Texts).toContain('C3 text');
-
-    // Column 3 should now be removed
-  });
-
-  it('keeps columns unchanged if no path is provided', () => {
-    // Call without at
-    setColumns(editor, { widths: ['100%'] });
-
-    const node = editor.children[0] as any;
-    // Should remain unchanged
-    expect(node.children).toHaveLength(2);
-    expect(node.children[0].width).toBe('50%');
-    expect(node.children[1].width).toBe('50%');
-  });
-
-  it('keeps columns unchanged if the target node is missing', () => {
-    setColumns(editor, { at: [999], widths: ['100%'] });
-
-    const node = editor.children[0] as any;
-    // Should remain unchanged
-    expect(node.children).toHaveLength(2);
-    expect(node.children[0].width).toBe('50%');
-    expect(node.children[1].width).toBe('50%');
-  });
-
-  it('keeps columns unchanged if widths are empty', () => {
-    setColumns(editor, { at: columnGroupPath, widths: [] });
-
-    const node = editor.children[0] as any;
-    expect(node.children).toHaveLength(2);
-    // Should remain unchanged
-    expect(node.children[0].width).toBe('50%');
-    expect(node.children[1].width).toBe('50%');
-    expect(node.children[0].children[0].children[0].text).toBe('Column 1 text');
-    expect(node.children[1].children[0].children[0].text).toBe('Column 2 text');
-  });
-
-  it('handle decimal widths', () => {
-    setColumns(editor, { at: columnGroupPath, widths: ['33.3%', '66.7%'] });
-
-    const node = editor.children[0] as any;
-    expect(node.children).toHaveLength(2);
-    expect(node.children[0].width).toBe('33.3%');
-    expect(node.children[1].width).toBe('66.7%');
-  });
-
-  it('handle widths that do not sum to 100%', () => {
-    setColumns(editor, { at: columnGroupPath, widths: ['40%', '40%'] });
-
-    const node = editor.children[0] as any;
-    expect(node.children).toHaveLength(2);
-    expect(node.children[0].width).toBe('50%');
-    expect(node.children[1].width).toBe('50%');
-  });
-
-  it('handle multiple toggles without losing content', () => {
-    // Start: 2 columns
-    // Toggle to 3 columns
-    setColumns(editor, { at: columnGroupPath, widths: ['33%', '33%', '34%'] });
-
-    let node = editor.children[0] as any;
-    expect(node.children).toHaveLength(3);
-    expect(node.children[0].children[0].children[0].text).toBe('Column 1 text');
-    expect(node.children[1].children[0].children[0].text).toBe('Column 2 text');
-    expect(node.children[2].width).toBe('34%');
-
-    // Add some new content in the third column
-    editor.tf.insertNodes(
+    editor.update.nodes.insert(
       { children: [{ text: 'Column 3 text' }], type: 'p' },
-      {
-        at: [0, 2, 1],
-      }
+      { at: [0, 2, 1] }
     );
-
-    // Toggle back to 2 columns
-    setColumns(editor, { at: columnGroupPath, widths: ['50%', '50%'] });
-
-    node = editor.children[0] as any;
-    expect(node.children).toHaveLength(2);
-    // Col3 content should have merged into column 2
-    expect(node.children[1].children[0].children[0].text).toBe('Column 2 text');
-    expect(node.children[1].children[2].children[0].text).toBe('Column 3 text');
-
-    // Toggle again to 3 columns
-    setColumns(editor, { at: columnGroupPath, widths: ['33%', '33%', '34%'] });
-
-    node = editor.children[0] as any;
-    expect(node.children).toHaveLength(3);
-    // Column 3 added again with empty content
-    expect(node.children[2].children.length).toBeGreaterThan(0);
-    // Original content is still preserved in columns 2
-    expect(node.children[1].children[0].children[0].text).toBe('Column 2 text');
-    expect(node.children[1].children[2].children[0].text).toBe('Column 3 text');
-    expect(node.children[2].children[0].children[0].text).toBe('');
-  });
-
-  it('gracefully handle toggling to zero columns (though not practical)', () => {
-    // Set columns to an empty widths array (no columns)
-    setColumns(editor, { at: columnGroupPath, widths: [] });
-
-    // Should have done nothing as per previous test, but let's check stability
-    const node = editor.children[0] as any;
-    expect(node.children).toHaveLength(2);
-  });
-
-  it('append content to the end when merging columns', () => {
-    // Setup initial state with 3 columns
-    editor.children = [
-      {
-        children: [
-          {
-            children: [{ children: [{ text: 'Col 1' }], type: 'p' }],
-            type: 'column',
-            width: '33%',
-          },
-          {
-            children: [
-              { children: [{ text: '21' }], type: 'p' },
-              { children: [{ text: '22' }], type: 'p' },
-              { children: [{ text: '23' }], type: 'p' },
-              { children: [{ text: '24' }], type: 'p' },
-              { children: [{ text: '25' }], type: 'p' },
-            ],
-            type: 'column',
-            width: '33%',
-          },
-          {
-            children: [
-              { children: [{ text: 'Col 3 first' }], type: 'p' },
-              { children: [{ text: 'Col 3 second' }], type: 'p' },
-            ],
-            type: 'column',
-            width: '33%',
-          },
-        ],
-        type: 'column_group',
-      },
-    ];
-
-    // Reduce to 2 columns
-    setColumns(editor, {
-      at: columnGroupPath,
-      widths: ['50%', '50%'],
+    editor.update.column.set({ at: [0], widths: ['50%', '50%'] });
+    editor.update.column.set({
+      at: [0],
+      widths: ['33%', '33%', '34%'],
     });
 
-    const node = editor.children[0] as any;
-    expect(node.children).toHaveLength(2);
-
-    // Check column 2's content order
-    const col2Children = node.children[1].children;
-    expect(col2Children).toHaveLength(7);
-    expect(col2Children[0].children[0].text).toBe('21');
-    expect(col2Children[1].children[0].text).toBe('22');
-    expect(col2Children[2].children[0].text).toBe('23');
-    expect(col2Children[3].children[0].text).toBe('24');
-    expect(col2Children[4].children[0].text).toBe('25');
-    expect(col2Children[5].children[0].text).toBe('Col 3 first');
-    expect(col2Children[6].children[0].text).toBe('Col 3 second');
+    expect(editor.read.text.string([0, 0])).toBe('Column 1 text');
+    expect(editor.read.text.string([0, 1])).toBe('Column 2 textColumn 3 text');
+    expect(editor.read.text.string([0, 2])).toBe('');
   });
 
-  it('correctly merge multiple columns when reducing from 4 to 2', () => {
-    // Setup initial state with 4 columns
-    editor.children = [
-      {
-        children: [
-          {
-            children: [{ children: [{ text: 'Col 1' }], type: 'p' }],
-            type: 'column',
-            width: '25%',
-          },
-          {
-            children: [
-              { children: [{ text: 'Col 2 first' }], type: 'p' },
-              { children: [{ text: 'Col 2 second' }], type: 'p' },
-            ],
-            type: 'column',
-            width: '25%',
-          },
-          {
-            children: [
-              { children: [{ text: 'Col 3 first' }], type: 'p' },
-              { children: [{ text: 'Col 3 second' }], type: 'p' },
-            ],
-            type: 'column',
-            width: '25%',
-          },
-          {
-            children: [
-              { children: [{ text: 'Col 4 first' }], type: 'p' },
-              { children: [{ text: 'Col 4 second' }], type: 'p' },
-            ],
-            type: 'column',
-            width: '25%',
-          },
-        ],
-        type: 'column_group',
-      },
-    ];
+  it('does nothing without a valid target or widths', () => {
+    const editor = createEditor();
 
-    // Reduce to 2 columns
-    setColumns(editor, {
-      at: columnGroupPath,
-      widths: ['50%', '50%'],
-    });
+    editor.update.column.set({ widths: ['100%'] });
+    editor.update.column.set({ at: [999], widths: ['100%'] });
+    editor.update.column.set({ at: [0], widths: [] });
 
-    const node = editor.children[0] as any;
-    expect(node.children).toHaveLength(2);
+    expect(editor.read.children()).toEqual(twoColumns);
+  });
 
-    // Check column 1's content (should be unchanged)
-    expect(node.children[0].children[0].children[0].text).toBe('Col 1');
+  it('normalizes widths through the column group normalizer', () => {
+    const editor = createEditor();
 
-    // Check column 2's content order (should have content from cols 2, 3, and 4)
-    const col2Children = node.children[1].children;
-    expect(col2Children).toHaveLength(6);
-    expect(col2Children[0].children[0].text).toBe('Col 2 first');
-    expect(col2Children[1].children[0].text).toBe('Col 2 second');
-    expect(col2Children[2].children[0].text).toBe('Col 3 first');
-    expect(col2Children[3].children[0].text).toBe('Col 3 second');
-    expect(col2Children[4].children[0].text).toBe('Col 4 first');
-    expect(col2Children[5].children[0].text).toBe('Col 4 second');
+    editor.update.column.set({ at: [0], widths: ['40%', '40%'] });
+
+    const group = editor.read.nodes.get<TColumnGroupElement>([0], {
+      required: true,
+    })[0];
+
+    expect(group.children.map((column) => column.width)).toEqual([
+      '50%',
+      '50%',
+    ]);
   });
 });

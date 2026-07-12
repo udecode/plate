@@ -1,17 +1,14 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
-
-import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
-import { wrapLink } from './wrapLink';
 
 jsxt;
 
 describe('wrapLink', () => {
-  it('wraps the selected text and preserves surrounding content', () => {
+  it('wraps selected text and preserves surrounding content', () => {
     const input = (
       <editor>
         <hp>
@@ -20,20 +17,19 @@ describe('wrapLink', () => {
           <focus />!
         </hp>
       </editor>
-    ) as any as SlateEditor;
-
-    const editor = createSlateEditor({
+    ) as TestEditor;
+    const editor = createBaseEditor({
       plugins: [BaseLinkPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    wrapLink(editor, {
+    editor.update.link.wrap({
       target: '_self',
       url: 'https://example.com',
     });
 
-    expect(editor.children).toEqual(
+    expect(editor.read.children()).toEqual(
       (
         <editor>
           <hp>

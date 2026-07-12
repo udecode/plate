@@ -1,17 +1,26 @@
-import type { InsertNodesOptions, SlateEditor, TColumnElement } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type {
+  EditorUpdateTransaction,
+  Element,
+  NodeInsertNodesOptions,
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
-import { KEYS } from 'platejs';
+export type InsertColumnOptions = NodeInsertNodesOptions<Element> & {
+  width?: string;
+};
 
 export const insertColumn = (
-  editor: SlateEditor,
-  { width = '33%', ...options }: { width?: string } & InsertNodesOptions = {}
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  { width = '33%', ...options }: InsertColumnOptions = {}
 ) => {
-  editor.tf.insertNodes<TColumnElement>(
+  tx.nodes.insert(
     {
-      children: [editor.api.create.block()],
-      type: editor.getType(KEYS.column) as any,
+      children: [{ children: [{ text: '' }], type: editor.getType(KEYS.p) }],
+      type: editor.getType(KEYS.column),
       width,
     },
-    options as any
+    options
   );
 };

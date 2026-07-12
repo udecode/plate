@@ -1,27 +1,24 @@
 import React from 'react';
 
-import { type TLinkElement, KEYS } from 'platejs';
-import {
-  createPrimitiveComponent,
-  useEditorRef,
-  useEditorSelection,
-} from 'platejs/react';
+import { useEditorRef, useEditorSelector } from '@platejs/core/react';
+import type { TLinkElement } from '@platejs/utils';
+import { KEYS } from '@platejs/utils';
+import { createPrimitiveComponent } from '@udecode/react-utils';
 
 import { getLinkAttributes } from '../../../lib/utils/getLinkAttributes';
 
 // @deprecated
 export const useLinkOpenButtonState = () => {
-  const editor = useEditorRef();
-  const selection = useEditorSelection();
+  const entry = useEditorSelector((editor) => {
+    const selection = editor.read.selection();
 
-  const entry = React.useMemo(
-    () =>
-      editor.api.node<TLinkElement>({
-        match: { type: editor.getType(KEYS.link) },
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [editor, selection]
-  );
+    if (!selection) return;
+
+    return editor.read.nodes.find<TLinkElement>({
+      at: selection,
+      match: { type: editor.getType(KEYS.link) },
+    });
+  }, []);
 
   if (!entry) {
     return {};

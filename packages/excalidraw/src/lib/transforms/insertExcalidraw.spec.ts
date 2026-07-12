@@ -1,52 +1,69 @@
-import { KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
+import { BaseExcalidrawPlugin } from '../BaseExcalidrawPlugin';
 import { insertExcalidraw } from './insertExcalidraw';
 
 describe('insertExcalidraw', () => {
-  it('does nothing without a selection or parent entry', () => {
-    const editor = {
-      api: { parent: mock(() => null) },
-      selection: null,
-      tf: { insertNodes: mock() },
-    } as any;
+  it('does nothing without a selection', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseExcalidrawPlugin],
+      value: [{ children: [{ text: '' }], type: 'p' }],
+    });
 
-    insertExcalidraw(editor);
+    editor.update.excalidraw.insert();
 
-    editor.selection = {
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 0, path: [0, 0] },
-    };
-    insertExcalidraw(editor);
-
-    expect(editor.tf.insertNodes).not.toHaveBeenCalled();
+    expect(editor.read.children()).toHaveLength(1);
   });
 
-  it('inserts a next block at the parent path and merges custom props', () => {
-    const editor = {
-      api: {
-        parent: mock(() => [{ children: [{ text: '' }], type: 'p' }, [0]]),
-      },
-      getType: mock(() => KEYS.excalidraw),
+  it('uses an explicit insertion target without a selection', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseExcalidrawPlugin],
+      value: [{ children: [{ text: '' }], type: 'p' }],
+    });
+
+    editor.update.excalidraw.insert({}, { at: [1] });
+
+    expect(editor.read.children()).toMatchObject([
+      { type: 'p' },
+      { children: [{ text: '' }], type: KEYS.excalidraw },
+    ]);
+  });
+
+  it('inserts after the selected block and merges custom props', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        BaseExcalidrawPlugin.configure({
+          node: { type: 'custom-excalidraw' },
+        }),
+      ],
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      tf: { insertNodes: mock() },
-    } as any;
+      value: [{ children: [{ text: '' }], type: 'p' }],
+    });
 
-    insertExcalidraw(
-      editor,
-      { data: { elements: [], state: { theme: 'dark' } as any } } as any,
-      { select: true } as any
-    );
+    editor.update((tx) => {
+      insertExcalidraw(
+        editor,
+        tx,
+        editor.getType(KEYS.excalidraw),
+        { data: { elements: [], state: { theme: 'dark' } } },
+        { select: true }
+      );
+    });
 
-    expect(editor.tf.insertNodes).toHaveBeenCalledWith(
+    expect(editor.read.children()).toMatchObject([
+      {
+        children: [{ text: '' }],
+        type: 'p',
+      },
       {
         children: [{ text: '' }],
         data: { elements: [], state: { theme: 'dark' } },
-        type: KEYS.excalidraw,
+        type: 'custom-excalidraw',
       },
-      { at: [0], nextBlock: true, select: true }
-    );
+    ]);
   });
 });

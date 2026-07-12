@@ -34,7 +34,9 @@ export const useEditorChat = ({
       if (onOpenBlockSelection) {
         const blockSelectionApi =
           editor.getApi(BlockSelectionPlugin).blockSelection;
-        const isBlockSelecting = editor.plugin(BlockSelectionPlugin).getOption('isSelectingSome');
+        const isBlockSelecting = editor
+          .plugin(BlockSelectionPlugin)
+          .getOption('isSelectingSome');
 
         if (isBlockSelecting) {
           onOpenBlockSelection(blockSelectionApi.getNodes());

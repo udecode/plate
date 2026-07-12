@@ -1,96 +1,77 @@
 import {
-  type EditorBeforeOptions,
+  type BaseEditor,
+  type PlatePluginTxGroup,
   type PluginConfig,
-  type TLinkElement,
-  createTSlatePlugin,
-  isUrl,
-  KEYS,
-} from 'platejs';
+  createBasePlugin,
+} from '@platejs/core';
+import type { NodeInsertNodesOptions, Text } from '@platejs/plite';
+import type { TLinkElement } from '@platejs/utils';
+import { KEYS } from '@platejs/utils';
+import { isUrl } from '@udecode/utils';
 
-import { getLinkAttributes, validateUrl } from './utils/index';
+import {
+  insertLink,
+  type UpsertLinkOptions,
+  upsertLink,
+  upsertLinkText,
+  type WrapLinkOptions,
+  wrapLink,
+} from './transforms';
+import { type UnwrapLinkOptions, unwrapLink } from './transforms/unwrapLink';
+import {
+  type CreateLinkNodeOptions,
+  getLinkAttributes,
+  validateUrl,
+} from './utils';
 import { withLink } from './withLink';
 
 export type BaseLinkConfig = PluginConfig<
   'a',
   {
-    /**
-     * List of allowed URL schemes.
-     *
-     * @default ['http', 'https', 'mailto', 'tel']
-     */
+    /** List of allowed URL schemes. */
     allowedSchemes?: string[];
-    /**
-     * Skips sanitation of links.
-     *
-     * @default false
-     */
+    /** Skips sanitation of links. */
     dangerouslySkipSanitization?: boolean;
     defaultLinkAttributes?: React.AnchorHTMLAttributes<HTMLAnchorElement>;
     forceSubmit?: boolean;
-    /**
-     * Keeps selected text on pasting links by default.
-     *
-     * @default true
-     */
+    /** Keeps selected text on pasting links by default. */
     keepSelectedTextOnPaste?: boolean;
-    /**
-     * Allow custom config for rangeBeforeOptions.
-     *
-     * @example
-     *   {
-     *     "matchString": " ",
-     *     "skipInvalid": true,
-     *     "afterMatch": true
-     *   }
-     */
-    rangeBeforeOptions?: EditorBeforeOptions;
-    /**
-     * Hotkeys to trigger floating link.
-     *
-     * @default 'meta+k, ctrl+k'
-     */
+    /** Configures the range used to find text before the selection. */
+    rangeBeforeOptions?: Parameters<BaseEditor['read']['points']['before']>[1];
+    /** Hotkeys that trigger the floating link UI. */
     triggerFloatingLinkHotkeys?: string[] | string;
-    /**
-     * On keyboard shortcut or toolbar mousedown, get the link url by calling
-     * this promise. The default behavior is to use the browser's native
-     * `prompt`.
-     */
+    /** Resolves a URL for the keyboard shortcut and toolbar action. */
     getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
-    /**
-     * Callback to optionally get the href for a url
-     *
-     * @returns Href: an optional link to be used that is different from the
-     *   text content (example https://google.com for google.com)
-     */
+    /** Resolves an href that differs from the displayed URL. */
     getUrlHref?: (url: string) => string | undefined;
-    /**
-     * Callback to validate an url.
-     *
-     * @default isUrl
-     */
+    /** Validates link text. */
     isUrl?: (text: string) => boolean;
-    /**
-     * Transform the content of the URL input before validating it. Useful for
-     * adding a protocol to a URL. E.g. `google.com` -> `https://google.com`
-     *
-     * Similar to `getUrlHref` but is used on URL inputs. Whereas that is used
-     * on any entered text.
-     *
-     * @returns The transformed URL.
-     */
+    /** Transforms URL input before validation. */
     transformInput?: (url: string) => string | undefined;
+  },
+  {},
+  {
+    link: {
+      insert: (
+        node: CreateLinkNodeOptions,
+        options?: NodeInsertNodesOptions<TLinkElement | Text>
+      ) => void;
+      unwrap: (options?: UnwrapLinkOptions) => boolean | void;
+      upsert: (options: UpsertLinkOptions) => boolean | void;
+      upsertText: (options: UpsertLinkOptions) => void;
+      wrap: (options: WrapLinkOptions) => void;
+    };
   }
 >;
 
 /** Enables support for hyperlinks. */
-export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
+export const BaseLinkPlugin = createBasePlugin<BaseLinkConfig>({
   key: KEYS.link,
   node: {
     dangerouslyAllowAttributes: ['target'],
     isElement: true,
     isInline: true,
-    props: ({ editor, element }) =>
-      getLinkAttributes(editor, element as TLinkElement),
+    props: ({ editor, element }) => getLinkAttributes(editor, element),
   },
   options: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
@@ -108,11 +89,7 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
   parsers: {
     html: {
       deserializer: {
-        rules: [
-          {
-            validNodeName: 'A',
-          },
-        ],
+        rules: [{ validNodeName: 'A' }],
         parse: ({ editor, element, type }) => {
           const url = element.getAttribute('href');
 
@@ -131,4 +108,16 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
     normalize: { removeEmpty: true },
     selection: { affinity: 'directional' },
   },
-}).overrideEditor(withLink);
+})
+  .extendExtension(withLink)
+  .extendTxGroup<'link', PlatePluginTxGroup<BaseLinkConfig['tx']['link']>>(
+    'link',
+    ({ editor }) =>
+      (tx) => ({
+        insert: (node, options) => insertLink(editor, tx, node, options),
+        unwrap: (options) => unwrapLink(editor, tx, options),
+        upsert: (options) => upsertLink(editor, tx, options),
+        upsertText: (options) => upsertLinkText(editor, tx, options),
+        wrap: (options) => wrapLink(editor, tx, options),
+      })
+  );

@@ -8,12 +8,16 @@ describe('BaseTogglePlugin', () => {
       plugins: [BaseTogglePlugin],
     });
 
-    expect(editor.plugin(BaseTogglePlugin).getOptions().openIds).toEqual(new Set());
+    expect(editor.plugin(BaseTogglePlugin).getOptions().openIds).toEqual(
+      new Set()
+    );
 
     editor.getApi(BaseTogglePlugin).toggle.toggleIds(['a', 'b']);
 
     expect(
-      [...(editor.plugin(BaseTogglePlugin).getOptions().openIds ?? new Set())].sort()
+      [
+        ...(editor.plugin(BaseTogglePlugin).getOptions().openIds ?? new Set()),
+      ].sort()
     ).toEqual(['a', 'b']);
 
     editor.getApi(BaseTogglePlugin).toggle.toggleIds(['b'], false);
@@ -25,7 +29,9 @@ describe('BaseTogglePlugin', () => {
     editor.getApi(BaseTogglePlugin).toggle.toggleIds(['a', 'c'], true);
 
     expect(
-      [...(editor.plugin(BaseTogglePlugin).getOptions().openIds ?? new Set())].sort()
+      [
+        ...(editor.plugin(BaseTogglePlugin).getOptions().openIds ?? new Set()),
+      ].sort()
     ).toEqual(['a', 'c']);
   });
 });

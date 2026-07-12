@@ -1,6 +1,6 @@
-import type { NodeEntry, SlateEditor, TElement } from 'platejs';
-
-import { KEYS, PathApi } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import { PathApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import {
   getRegistryDefinition,
@@ -8,42 +8,40 @@ import {
   getRegistryIdentifiers,
   ensureFootnoteRegistry,
 } from '../registry';
+import type { TFootnoteElement } from '../types';
 
 export const getFootnoteDefinition = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { identifier }: { identifier: string }
 ) => getRegistryDefinition(editor, { identifier });
 
-export const getFootnoteDefinitions = (editor: SlateEditor) =>
-  [
-    ...editor.api.nodes<TElement>({
-      at: [],
-      match: (node) =>
-        (node as TElement).type === editor.getType(KEYS.footnoteDefinition),
-    }),
-  ] as NodeEntry<TElement>[];
+export const getFootnoteDefinitions = (editor: BaseEditor) =>
+  editor.read.nodes.toArray<TFootnoteElement>({
+    at: [],
+    match: { type: editor.getType(KEYS.footnoteDefinition) },
+  });
 
 export const getFootnoteDefinitionsByIdentifier = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { identifier }: { identifier: string }
 ) => getRegistryDefinitions(editor, { identifier });
 
 export const getDuplicateFootnoteDefinitions = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { identifier }: { identifier: string }
 ) => getRegistryDefinitions(editor, { identifier }).slice(1);
 
 export const isFootnoteResolved = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { identifier }: { identifier: string }
 ) => getRegistryDefinitions(editor, { identifier }).length > 0;
 
 export const hasDuplicateFootnoteDefinitions = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { identifier }: { identifier: string }
 ) => getRegistryDefinitions(editor, { identifier }).length > 1;
 
-export const getDuplicateFootnoteIdentifiers = (editor: SlateEditor) => {
+export const getDuplicateFootnoteIdentifiers = (editor: BaseEditor) => {
   const registry = ensureFootnoteRegistry(editor);
 
   return [...registry.definitionsByIdentifier.entries()]
@@ -51,14 +49,14 @@ export const getDuplicateFootnoteIdentifiers = (editor: SlateEditor) => {
     .map(([identifier]) => identifier);
 };
 
-export const getFootnoteIdentifiers = (editor: SlateEditor) =>
+export const getFootnoteIdentifiers = (editor: BaseEditor) =>
   getRegistryIdentifiers(editor);
 
 export const isDuplicateFootnoteDefinition = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { path }: { path: number[] }
 ) => {
-  const entry = editor.api.node<TElement>(path);
+  const entry = editor.read.nodes.get<TFootnoteElement>(path);
 
   if (!entry) return false;
 
@@ -67,7 +65,7 @@ export const isDuplicateFootnoteDefinition = (
 
   if (node.type !== definitionType) return false;
 
-  const identifier = (node as TElement & { identifier?: string }).identifier;
+  const { identifier } = node;
 
   if (!identifier) return false;
 

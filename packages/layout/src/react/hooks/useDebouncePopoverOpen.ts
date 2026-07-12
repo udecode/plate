@@ -1,14 +1,17 @@
-import { useEditorSelector, useReadOnly, useSelected } from 'platejs/react';
+import {
+  useEditorReadOnly,
+  useEditorSelector,
+  useElementSelected,
+} from '@platejs/core/react';
 
 export const useDebouncePopoverOpen = () => {
-  const readOnly = useReadOnly();
-  const selected = useSelected();
+  const readOnly = useEditorReadOnly();
+  const selected = useElementSelected();
 
   const selectionCollapsed = useEditorSelector(
-    (editor) => editor.api.isCollapsed(),
+    (editor) => editor.read.selection.isCollapsed(),
     []
   );
 
-  // TODO:should add debounce
   return !readOnly && selected && selectionCollapsed;
 };

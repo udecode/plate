@@ -1,6 +1,5 @@
-import type { TLinkElement } from 'platejs';
-
-import { useEditorRef } from 'platejs/react';
+import { useEditorRef } from '@platejs/core/react';
+import type { TLinkElement } from '@platejs/utils';
 
 import { getLinkAttributes } from '../../lib';
 

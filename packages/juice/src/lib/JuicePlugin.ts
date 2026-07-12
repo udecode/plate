@@ -1,7 +1,8 @@
 import juice from 'juice';
-import { createSlatePlugin, KEYS } from 'platejs';
+import { createBasePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
-export const JuicePlugin = createSlatePlugin({
+export const JuicePlugin = createBasePlugin({
   key: KEYS.juice,
   editOnly: true,
   inject: {

@@ -1,6 +1,7 @@
 import type React from 'react';
 
-import type { Editor, TLocation } from 'platejs';
+import type { Location, Value } from '@platejs/plite';
+import type { DOMCapableEditor } from '@platejs/plite-dom';
 
 import { getBoundingClientRect } from './getBoundingClientRect';
 
@@ -9,9 +10,12 @@ export type VirtualRef = React.RefObject<Pick<
   'getBoundingClientRect'
 > | null>;
 
-export const createVirtualRef = (
-  editor: Editor,
-  at?: TLocation | TLocation[],
+export const createVirtualRef = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: DOMCapableEditor<V, TExtensions>,
+  at?: Location | Location[],
   {
     fallbackRect,
   }: {

@@ -93,7 +93,7 @@ export const BaseIndentPlugin = createBasePlugin<IndentConfig>({
           (!match || match(node, path)),
       });
 
-      tx.withoutNormalizing(() => {
+      tx.withoutNormalizing(({ tx }) => {
         for (const [node, path] of entries) {
           const currentIndent = Number(node[nodeKey] ?? 0);
           const nextIndent = currentIndent + offset;

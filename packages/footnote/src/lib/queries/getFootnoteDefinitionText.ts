@@ -1,14 +1,14 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
 
 import { getFootnoteDefinition } from './getFootnoteDefinition';
 
 export const getFootnoteDefinitionText = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { identifier }: { identifier: string }
 ) => {
   const definition = getFootnoteDefinition(editor, { identifier });
 
   if (!definition) return;
 
-  return editor.api.string(definition[1]);
+  return editor.read.text.string(definition[1]);
 };

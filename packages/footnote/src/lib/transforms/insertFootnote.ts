@@ -1,73 +1,81 @@
-import type { InsertNodesOptions, SlateEditor, TElement, TNode } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type {
+  EditorUpdateTransaction,
+  NodeInsertNodesOptions,
+  Path,
+} from '@platejs/plite';
+import { PathApi } from '@platejs/plite';
 
 import { getNextFootnoteIdentifier } from '../queries/getNextFootnoteIdentifier';
+import type { TFootnoteElement } from '../types';
 import { createFootnoteDefinition } from './createFootnoteDefinition';
 import { focusFootnoteDefinition } from './focusFootnoteDefinition';
-import { getFootnoteReferenceSelectionPoint } from './focusFootnoteReference';
 
-export type InsertFootnoteOptions = InsertNodesOptions & {
+export type InsertFootnoteOptions = NodeInsertNodesOptions<TFootnoteElement> & {
   focusDefinition?: boolean;
   identifier?: string;
 };
 
 export const insertFootnote = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  referenceType: string,
   {
     focusDefinition: shouldFocusDefinition = true,
     identifier,
     ...options
   }: InsertFootnoteOptions = {}
 ) => {
-  if (!editor.selection) return;
+  const selection = tx.selection();
 
-  const selectionBefore = structuredClone(editor.selection);
+  if (!selection && options.at === undefined) return;
+
   const nextIdentifier = identifier ?? getNextFootnoteIdentifier(editor);
-  const fragment = editor.api.isExpanded()
-    ? (editor.api.fragment(editor.selection) as TNode[])
-    : undefined;
-  const referenceType = editor.getType(KEYS.footnoteReference);
-  let referencePath: number[] | undefined;
+  const fragment =
+    selection && tx.selection.isExpanded()
+      ? tx.fragment({ at: selection })
+      : undefined;
+  const reference: TFootnoteElement = {
+    children: [{ text: '' }],
+    identifier: nextIdentifier,
+    type: referenceType,
+  };
+  let referencePath: Path | undefined;
 
-  editor.tf.withoutNormalizing(() => {
-    editor.tf.insertNodes<TElement>(
-      {
-        children: [{ text: '' }],
-        identifier: nextIdentifier,
-        type: referenceType,
-      },
-      options as any
-    );
+  if (selection && options.at === undefined) {
+    const childIndex = selection.anchor.path.at(-1);
 
-    createFootnoteDefinition(editor, {
+    if (childIndex !== undefined) {
+      referencePath = selection.anchor.path.slice(0, -1).concat(childIndex + 1);
+    }
+  }
+
+  tx.withoutNormalizing(({ tx }) => {
+    tx.nodes.insert(reference, options);
+
+    createFootnoteDefinition(editor, tx, {
       focus: false,
       fragment,
       identifier: nextIdentifier,
     });
-
-    const anchorPath = selectionBefore.anchor.path;
-    const childIndex = anchorPath.at(-1);
-
-    if (childIndex !== undefined) {
-      referencePath = anchorPath.slice(0, -1).concat([childIndex + 1]);
-    }
   });
 
   if (shouldFocusDefinition) {
-    focusFootnoteDefinition(editor, { identifier: nextIdentifier });
+    focusFootnoteDefinition(editor, tx, { identifier: nextIdentifier });
 
     return;
   }
 
   if (referencePath) {
-    const point = getFootnoteReferenceSelectionPoint(editor, referencePath);
+    // The caret target exists only after Plite repairs the trailing text
+    // required beside an inline void.
+    tx.normalize({ force: false });
 
-    if (point) {
-      editor.tf.select({
-        anchor: point,
-        focus: point,
-      });
-    }
+    const point = { offset: 0, path: PathApi.next(referencePath) };
+
+    tx.selection.set({
+      anchor: point,
+      focus: point,
+    });
   }
 };

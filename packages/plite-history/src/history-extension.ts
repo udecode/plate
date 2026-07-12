@@ -44,11 +44,7 @@ import {
   shouldPreserveHistoricDOMSelection,
   shouldRestoreHistoricSelection,
 } from './history-selection';
-import {
-  clearHistoryState,
-  getHistory,
-  writeHistory,
-} from './history-state';
+import { clearHistoryState, getHistory, writeHistory } from './history-state';
 
 export type HistoryStateApi<V extends Value = Value> = (() => History<V>) & {
   /** Read the complete undo/redo history object. */

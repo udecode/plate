@@ -1,25 +1,30 @@
-import type { SlateEditor, TElement, TNode } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import {
+  type Descendant,
+  type EditorUpdateTransaction,
+  ElementApi,
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 import { getFootnoteDefinition } from '../queries/getFootnoteDefinition';
+import type { TFootnoteElement } from '../types';
 import { focusFootnoteDefinition } from './focusFootnoteDefinition';
 
 export type CreateFootnoteDefinitionOptions = {
   focus?: boolean;
-  fragment?: TNode[];
+  fragment?: Descendant[];
   identifier: string;
 };
 
 const getDefinitionChildren = (
-  editor: SlateEditor,
-  { fragment }: { fragment?: TNode[] }
+  editor: BaseEditor,
+  { fragment }: { fragment?: Descendant[] }
 ) => {
   const paragraphType = editor.getType(KEYS.p);
   const clonedFragment = fragment ? structuredClone(fragment) : [];
   const blocks =
     clonedFragment.length > 0
-      ? clonedFragment.map((child: any) =>
-          child.type === paragraphType
+      ? clonedFragment.map((child) =>
+          ElementApi.isElement(child) && child.type === paragraphType
             ? child
             : {
                 children: [child],
@@ -32,7 +37,8 @@ const getDefinitionChildren = (
 };
 
 export const createFootnoteDefinition = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   {
     focus: shouldFocusDefinition = true,
     fragment,
@@ -43,19 +49,17 @@ export const createFootnoteDefinition = (
 
   if (existingDefinition) {
     if (shouldFocusDefinition) {
-      focusFootnoteDefinition(editor, { identifier });
+      focusFootnoteDefinition(editor, tx, { identifier });
     }
 
     return existingDefinition[1];
   }
 
-  const definitionPath = [editor.children.length];
+  const definitionPath = [tx.value().children.length];
 
-  editor.tf.insertNodes<TElement>(
+  tx.nodes.insert<TFootnoteElement>(
     {
-      children: getDefinitionChildren(editor, {
-        fragment,
-      }) as any,
+      children: getDefinitionChildren(editor, { fragment }),
       identifier,
       type: editor.getType(KEYS.footnoteDefinition),
     },
@@ -63,7 +67,7 @@ export const createFootnoteDefinition = (
   );
 
   if (shouldFocusDefinition) {
-    focusFootnoteDefinition(editor, { identifier });
+    focusFootnoteDefinition(editor, tx, { identifier });
   }
 
   return definitionPath;

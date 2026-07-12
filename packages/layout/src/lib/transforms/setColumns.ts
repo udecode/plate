@@ -1,50 +1,42 @@
-import {
-  type At,
-  type SlateEditor,
-  type TColumnElement,
-  type TColumnGroupElement,
-  NodeApi,
-} from 'platejs';
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { EditorUpdateTransaction, Location } from '@platejs/plite';
+import type { TColumnElement, TColumnGroupElement } from '@platejs/utils';
+import { KEYS } from '@platejs/utils';
 
 import { columnsToWidths } from '../utils/columnsToWidths';
 
+export type SetColumnsOptions = {
+  /** Column group location. */
+  at?: Location;
+  columns?: number;
+  widths?: string[];
+};
+
 export const setColumns = (
-  editor: SlateEditor,
-  {
-    at,
-    columns,
-    widths,
-  }: {
-    /** Column group path */
-    at?: At;
-    columns?: number;
-    widths?: string[];
-  }
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  { at, columns, widths }: SetColumnsOptions
 ) => {
-  editor.tf.withoutNormalizing(() => {
-    if (!at) return;
+  if (!at) return;
 
-    widths = widths ?? columnsToWidths({ columns });
+  const nextWidths = widths ?? columnsToWidths({ columns });
 
-    // If widths is empty, do nothing.
-    if (widths.length === 0) {
-      return;
-    }
+  if (nextWidths.length === 0) return;
 
-    const columnGroup = editor.api.node<TColumnGroupElement>(at);
+  tx.withoutNormalizing(({ tx }) => {
+    const columnGroup = tx.nodes.get<TColumnGroupElement>(at);
 
     if (!columnGroup) return;
 
     const [{ children }, path] = columnGroup;
 
     const currentCount = children.length;
-    const targetCount = widths.length;
+    const targetCount = nextWidths.length;
 
     if (currentCount === targetCount) {
       // Same number of columns: just set widths directly
-      widths.forEach((width, i) => {
-        editor.tf.setNodes<TColumnElement>({ width }, { at: path.concat([i]) });
+      nextWidths.forEach((width, i) => {
+        tx.nodes.set<TColumnElement>({ width }, { at: path.concat([i]) });
       });
 
       return;
@@ -56,16 +48,16 @@ export const setColumns = (
 
       // Insert the extra columns
       const newColumns = new Array(columnsToAdd).fill(null).map((_, i) => ({
-        children: [editor.api.create.block()],
+        children: [{ children: [{ text: '' }], type: editor.getType(KEYS.p) }],
         type: editor.getType(KEYS.column),
-        width: widths![currentCount + i] || `${100 / targetCount}%`,
+        width: nextWidths[currentCount + i] || `${100 / targetCount}%`,
       }));
 
-      editor.tf.insertNodes(newColumns, { at: insertPath });
+      tx.nodes.insert(newColumns, { at: insertPath });
 
       // Just ensure final widths match exactly
-      widths.forEach((width, i) => {
-        editor.tf.setNodes<TColumnElement>({ width }, { at: path.concat([i]) });
+      nextWidths.forEach((width, i) => {
+        tx.nodes.set<TColumnElement>({ width }, { at: path.concat([i]) });
       });
 
       return;
@@ -74,39 +66,27 @@ export const setColumns = (
       // Need fewer columns than we have: merge extra columns into the last kept column
       const keepColumnIndex = targetCount - 1;
       const keepColumnPath = path.concat([keepColumnIndex]);
-      const keepColumnNode = NodeApi.get<TColumnElement>(
-        editor,
-        keepColumnPath
-      );
+      const keepColumnNode = tx.nodes.get<TColumnElement>(keepColumnPath)?.[0];
 
       if (!keepColumnNode) return;
 
-      const to = keepColumnPath.concat([keepColumnNode.children.length]);
+      const mergedChildren = children
+        .slice(keepColumnIndex)
+        .flatMap((column) => column.children);
 
-      // Move content from columns beyond keepIndex into keepIndex column
-      for (let i = currentCount - 1; i > keepColumnIndex; i--) {
-        const columnPath = path.concat([i]);
-        const columnEntry = editor.api.node<TColumnElement>(columnPath);
-
-        if (!columnEntry) continue;
-
-        editor.tf.moveNodes({
-          at: columnEntry[1],
-          children: true,
-          to,
-        });
-      }
+      tx.nodes.replaceChildren(mergedChildren, { at: keepColumnPath });
 
       // Remove the now-empty extra columns
       // Removing from the end to avoid path shifts
       for (let i = currentCount - 1; i > keepColumnIndex; i--) {
-        editor.tf.removeNodes({ at: path.concat([i]) });
+        tx.nodes.remove({ at: path.concat([i]) });
       }
 
       // Set the final widths
-      widths.forEach((width, i) => {
-        editor.tf.setNodes<TColumnElement>({ width }, { at: path.concat([i]) });
+      nextWidths.forEach((width, i) => {
+        tx.nodes.set<TColumnElement>({ width }, { at: path.concat([i]) });
       });
     }
   });
+  tx.normalize({ force: false });
 };

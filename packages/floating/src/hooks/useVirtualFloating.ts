@@ -2,14 +2,13 @@ import React from 'react';
 
 import type { ClientRectObject } from '@floating-ui/core';
 
-import { useIsomorphicLayoutEffect } from 'platejs/react';
+import { useIsomorphicLayoutEffect } from '@udecode/react-utils';
 
 import {
   createVirtualElement,
   getDefaultBoundingClientRect,
 } from '../createVirtualElement';
 import {
-  type ReferenceType,
   type UseFloatingOptions,
   type UseFloatingReturn,
   type VirtualElement,
@@ -22,9 +21,8 @@ export interface UseVirtualFloatingOptions extends Partial<UseFloatingOptions> {
   getBoundingClientRect?: () => ClientRectObject;
 }
 
-export interface UseVirtualFloatingReturn<
-  RT extends ReferenceType = ReferenceType,
-> extends UseFloatingReturn<RT> {
+export interface UseVirtualFloatingReturn
+  extends UseFloatingReturn<VirtualElement> {
   style: React.CSSProperties;
   virtualElementRef: React.MutableRefObject<VirtualElement>;
 }
@@ -50,14 +48,13 @@ export interface UseVirtualFloatingReturn<
  * @see useFloating
  * @see https://floating-ui.com/docs/react-dom#virtual-element
  */
-export const useVirtualFloating = <RT extends ReferenceType = ReferenceType>({
+export const useVirtualFloating = ({
   getBoundingClientRect = getDefaultBoundingClientRect,
   ...floatingOptions
-}: UseVirtualFloatingOptions): UseVirtualFloatingReturn<RT> => {
-  const virtualElementRef = React.useRef<RT>(createVirtualElement() as RT);
-  const [visible, setVisible] = React.useState(true);
+}: UseVirtualFloatingOptions): UseVirtualFloatingReturn => {
+  const virtualElementRef = React.useRef(createVirtualElement());
 
-  const floatingResult = useFloating<RT>({
+  const floatingResult = useFloating<VirtualElement>({
     // update on scroll and resize
     whileElementsMounted: autoUpdate,
     ...floatingOptions,
@@ -67,19 +64,11 @@ export const useVirtualFloating = <RT extends ReferenceType = ReferenceType>({
 
   useIsomorphicLayoutEffect(() => {
     virtualElementRef.current.getBoundingClientRect = getBoundingClientRect;
-  }, [getBoundingClientRect, update]);
-
-  useIsomorphicLayoutEffect(() => {
     refs.setReference(virtualElementRef.current);
-  }, [refs]);
+    void update();
+  }, [getBoundingClientRect, refs.setReference, update]);
 
-  useIsomorphicLayoutEffect(() => {
-    if (!middlewareData?.hide) return;
-
-    const { referenceHidden } = middlewareData.hide;
-
-    setVisible(!referenceHidden);
-  }, [middlewareData.hide]);
+  const visible = middlewareData.hide?.referenceHidden !== true;
 
   return {
     ...floatingResult,

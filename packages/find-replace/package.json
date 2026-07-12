@@ -39,13 +39,7 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:*",
-    "platejs": "workspace:^"
-  },
-  "peerDependencies": {
-    "platejs": ">=54.0.0-beta.0",
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "@plate/scripts": "workspace:*"
   },
   "publishConfig": {
     "access": "public"
@@ -53,7 +47,8 @@
   "type": "module",
   "module": "./dist/index.js",
   "dependencies": {
+    "@platejs/core": "workspace:^",
     "@platejs/plite": "workspace:^",
-    "react-compiler-runtime": "^1.0.0"
+    "@platejs/utils": "workspace:^"
   }
 }

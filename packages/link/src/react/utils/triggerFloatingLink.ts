@@ -1,18 +1,18 @@
-import { type SlateEditor, getEditorPlugin } from 'platejs';
+import type { PlateEditor } from '@platejs/core/react';
 
 import { LinkPlugin } from '../LinkPlugin';
 import { triggerFloatingLinkEdit } from './triggerFloatingLinkEdit';
 import { triggerFloatingLinkInsert } from './triggerFloatingLinkInsert';
 
 export const triggerFloatingLink = (
-  editor: SlateEditor,
+  editor: PlateEditor,
   {
     focused,
   }: {
     focused?: boolean;
   } = {}
 ) => {
-  const { getOption } = getEditorPlugin(editor, LinkPlugin);
+  const { getOption } = editor.plugin(LinkPlugin);
 
   if (getOption('mode') === 'edit') {
     triggerFloatingLinkEdit(editor);

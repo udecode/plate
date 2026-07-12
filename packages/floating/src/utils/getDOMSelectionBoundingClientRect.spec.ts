@@ -4,9 +4,7 @@ import { getDOMSelectionBoundingClientRect } from './getDOMSelectionBoundingClie
 
 describe('getDOMSelectionBoundingClientRect', () => {
   it('returns the default rect when there is no DOM selection', () => {
-    const getSelectionSpy = spyOn(window, 'getSelection').mockReturnValue(
-      null as any
-    );
+    const getSelectionSpy = spyOn(window, 'getSelection').mockReturnValue(null);
 
     expect(getDOMSelectionBoundingClientRect()).toEqual(
       getDefaultBoundingClientRect()
@@ -16,15 +14,15 @@ describe('getDOMSelectionBoundingClientRect', () => {
   });
 
   it('returns the default rect when there are no ranges', () => {
-    const getSelectionSpy = spyOn(window, 'getSelection').mockReturnValue({
-      rangeCount: 0,
-    } as any);
+    const selection = window.getSelection();
+
+    if (!selection) throw new Error('DOM selection unavailable');
+
+    selection.removeAllRanges();
 
     expect(getDOMSelectionBoundingClientRect()).toEqual(
       getDefaultBoundingClientRect()
     );
-
-    getSelectionSpy.mockRestore();
   });
 
   it('returns the first DOM selection range rect', () => {
@@ -35,15 +33,16 @@ describe('getDOMSelectionBoundingClientRect', () => {
       top: 2,
     });
 
-    const getSelectionSpy = spyOn(window, 'getSelection').mockReturnValue({
-      getRangeAt: () => ({
-        getBoundingClientRect: () => rect,
-      }),
-      rangeCount: 1,
-    } as any);
+    const selection = window.getSelection();
+
+    if (!selection) throw new Error('DOM selection unavailable');
+
+    const range = document.createRange();
+    range.getBoundingClientRect = () => rect;
+    selection.removeAllRanges();
+    selection.addRange(range);
 
     expect(getDOMSelectionBoundingClientRect()).toEqual(rect);
-
-    getSelectionSpy.mockRestore();
+    selection.removeAllRanges();
   });
 });

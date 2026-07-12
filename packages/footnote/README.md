@@ -29,8 +29,8 @@ import {
   FootnoteDefinitionPlugin,
   FootnoteReferencePlugin,
 } from '@platejs/footnote/react';
+import { createPlateEditor } from '@platejs/core/react';
 import { MarkdownPlugin } from '@platejs/markdown';
-import { createPlateEditor } from 'platejs/react';
 import remarkGfm from 'remark-gfm';
 
 const editor = createPlateEditor({
@@ -61,13 +61,13 @@ Queries:
 - `api.footnote.isResolved`
 - `api.footnote.references`
 
-Transforms:
+Commands:
 
-- `tf.insert.footnote`
-- `tf.footnote.createDefinition`
-- `tf.footnote.focusDefinition`
-- `tf.footnote.focusReference`
-- `tf.footnote.normalizeDuplicateDefinition`
+- `editor.update.insert.footnote`
+- `editor.update.footnote.createDefinition`
+- `editor.update.footnote.focusDefinition`
+- `editor.update.footnote.focusReference`
+- `editor.update.footnote.normalizeDuplicateDefinition`
 
 ## Documentation
 

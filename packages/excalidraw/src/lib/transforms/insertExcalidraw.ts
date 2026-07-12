@@ -1,28 +1,43 @@
-import type { InsertNodesOptions, NodeProps, SlateEditor } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import {
+  PathApi,
+  type EditorUpdateTransaction,
+  type NodeInsertNodesOptions,
+  type NodeProps,
+} from '@platejs/plite';
 
 import type { TExcalidrawElement } from '../BaseExcalidrawPlugin';
 
 export const insertExcalidraw = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  type: string,
   props: NodeProps<TExcalidrawElement> = {},
-  options: InsertNodesOptions = {}
+  options: NodeInsertNodesOptions<TExcalidrawElement> = {}
 ): void => {
-  if (!editor.selection) return;
+  let at = options.at;
 
-  const selectionParentEntry = editor.api.parent(editor.selection);
+  if (at === undefined) {
+    const selection = tx.selection();
 
-  if (!selectionParentEntry) return;
+    if (!selection) return;
 
-  const [, path] = selectionParentEntry;
+    const currentBlock = editor.read.nodes.block({ at: selection });
 
-  editor.tf.insertNodes<TExcalidrawElement>(
+    if (!currentBlock) return;
+
+    at = PathApi.next(currentBlock[1]);
+  }
+
+  tx.nodes.insert<TExcalidrawElement>(
     {
       children: [{ text: '' }],
-      type: editor.getType(KEYS.excalidraw),
+      type,
       ...props,
     },
-    { at: path, nextBlock: true, ...(options as any) }
+    {
+      ...options,
+      at,
+    }
   );
 };

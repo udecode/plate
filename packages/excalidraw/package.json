@@ -41,17 +41,18 @@
   },
   "dependencies": {
     "@excalidraw/excalidraw": "0.18.0",
+    "@platejs/core": "workspace:^",
     "@platejs/plite": "workspace:^",
+    "@platejs/plite-react": "workspace:^",
+    "@platejs/utils": "workspace:^",
     "lodash": "^4.17.21",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
-    "platejs": "workspace:^",
     "@types/lodash": "^4.17.13"
   },
   "peerDependencies": {
-    "platejs": ">=54.0.0-beta.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

@@ -1,18 +1,20 @@
-import type { SlateEditor, TElement } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { EditorUpdateTransaction } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { isDuplicateFootnoteDefinition } from '../queries/getFootnoteDefinition';
 import {
   getFootnoteDefinitionsByIdentifier,
   getNextFootnoteIdentifier,
 } from '../queries';
+import type { TFootnoteElement } from '../types';
 
 export const normalizeDuplicateFootnoteDefinition = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   { path, identifier }: { path: number[]; identifier?: string }
 ) => {
-  const entry = editor.api.node<TElement>(path);
+  const entry = editor.read.nodes.get<TFootnoteElement>(path);
 
   if (!entry) return false;
 
@@ -26,8 +28,7 @@ export const normalizeDuplicateFootnoteDefinition = (
 
   if (!nextIdentifier) return false;
   if (
-    nextIdentifier !==
-      (node as TElement & { identifier?: string }).identifier &&
+    nextIdentifier !== node.identifier &&
     getFootnoteDefinitionsByIdentifier(editor, {
       identifier: nextIdentifier,
     }).length > 0
@@ -35,7 +36,7 @@ export const normalizeDuplicateFootnoteDefinition = (
     return false;
   }
 
-  editor.tf.setNodes({ identifier: nextIdentifier }, { at: path });
+  tx.nodes.set({ identifier: nextIdentifier }, { at: path });
 
   return nextIdentifier;
 };

@@ -91,7 +91,9 @@ export function streamInsertChunk(
         }
       );
 
-      editor.plugin(AIChatPlugin).setOption('_blockPath', getCurrentBlockPath(editor));
+      editor
+        .plugin(AIChatPlugin)
+        .setOption('_blockPath', getCurrentBlockPath(editor));
       editor.plugin(AIChatPlugin).setOption('_blockChunks', chunk);
 
       if (blocks.length > 1) {
@@ -179,7 +181,9 @@ export function streamInsertChunk(
           serializedBlock === tempBlockChunks &&
           blockText === serializedBlock
         ) {
-          editor.plugin(AIChatPlugin).setOption('_blockChunks', tempBlockChunks);
+          editor
+            .plugin(AIChatPlugin)
+            .setOption('_blockChunks', tempBlockChunks);
         } else {
           editor.tf.replaceNodes(
             nodesWithProps(editor, [tempBlocks[0]], insertOptions),
@@ -197,12 +201,14 @@ export function streamInsertChunk(
             tempBlockChunks
           );
 
-          editor.plugin(AIChatPlugin).setOption('_blockChunks', // one block includes multiple children
+          editor.plugin(AIChatPlugin).setOption(
+            '_blockChunks', // one block includes multiple children
             tempBlocks[0].type === getPluginType(editor, KEYS.codeBlock) ||
               tempBlocks[0].type === getPluginType(editor, KEYS.table) ||
               tempBlocks[0].type === getPluginType(editor, KEYS.equation)
               ? tempBlockChunks
-              : serializedBlock);
+              : serializedBlock
+          );
         }
       } else {
         const serializedBlock = streamSerializeMd(

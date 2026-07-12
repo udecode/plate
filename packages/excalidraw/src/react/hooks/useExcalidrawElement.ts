@@ -1,17 +1,17 @@
 import React from 'react';
 
 import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
-import type {
-  AppState,
-  ExcalidrawImperativeAPI,
-  LibraryItems,
-} from '@excalidraw/excalidraw/types';
+import type { AppState, LibraryItems } from '@excalidraw/excalidraw/types';
 
+import { type PlateEditor, useEditorRef } from '@platejs/core/react';
+import { useEditorReadOnly } from '@platejs/plite-react';
 import { cloneDeep, isEqual } from 'lodash';
-import { useEditorRef, useReadOnly } from 'platejs/react';
 
 import type { TExcalidrawElement } from '../../lib';
 import type { TExcalidrawProps } from '../types';
+
+type ExcalidrawComponent =
+  typeof import('@excalidraw/excalidraw')['Excalidraw'];
 
 export const useExcalidrawElement = ({
   element,
@@ -22,56 +22,51 @@ export const useExcalidrawElement = ({
   libraryItems?: LibraryItems;
   scrollToContent?: boolean;
 }) => {
-  const [Excalidraw, setExcalidraw] = React.useState<any>(null);
-  const editor = useEditorRef();
-  const readOnly = useReadOnly();
+  const [Excalidraw, setExcalidraw] =
+    React.useState<ExcalidrawComponent | null>(null);
+  const editor = useEditorRef<PlateEditor<TExcalidrawElement[]>>();
+  const readOnly = useEditorReadOnly();
 
-  // Store last saved data for deduplication
-  const lastSavedDataRef = React.useRef<{ elements: any; state: any } | null>(
-    null
-  );
+  const lastSavedDataRef = React.useRef<TExcalidrawElement['data']>(null);
 
   React.useEffect(() => {
     void import('@excalidraw/excalidraw').then((comp) =>
       setExcalidraw(comp.Excalidraw)
     );
-  });
+  }, []);
 
-  const _excalidrawRef = React.useRef<ExcalidrawImperativeAPI>(null);
+  const handleChange = (
+    elements: readonly Partial<OrderedExcalidrawElement>[],
+    state: Partial<AppState>
+  ) => {
+    if (readOnly) return;
 
-  // Create save function with deduplication only
-  const handleChange = React.useCallback(
-    (elements: readonly OrderedExcalidrawElement[], state: AppState) => {
-      if (readOnly) return;
+    const newData = {
+      elements: cloneDeep(elements),
+      state: cloneDeep(state),
+    };
 
-      // Create deep copies to avoid read-only property errors
-      const newData = {
-        elements: cloneDeep(elements),
-        state: cloneDeep(state),
-      };
+    if (
+      lastSavedDataRef.current &&
+      isEqual(lastSavedDataRef.current, newData)
+    ) {
+      return;
+    }
 
-      // Use lodash isEqual for deep comparison and deduplication
-      if (
-        lastSavedDataRef.current &&
-        isEqual(lastSavedDataRef.current, newData)
-      ) {
-        return;
+    try {
+      const path = editor.read.nodes.path(element);
+      if (path) {
+        lastSavedDataRef.current = newData;
+        editor.update((tx) => {
+          tx.nodes.set({ data: newData }, { at: path });
+        });
       }
+    } catch (error) {
+      console.error('Failed to save Excalidraw data:', error);
+    }
+  };
 
-      try {
-        const path = editor.read.nodes.path(element);
-        if (path) {
-          lastSavedDataRef.current = newData;
-          editor.tf.setNodes({ data: newData }, { at: path });
-        }
-      } catch (error) {
-        console.error('Failed to save Excalidraw data:', error);
-      }
-    },
-    [editor, element, readOnly]
-  );
-
-  // Create mutable copies of initial data to ensure Excalidraw can modify them
+  // Excalidraw treats initialData as an initialization boundary and mutates it.
   const initialData = React.useMemo(
     () => ({
       appState: element.data?.state ? cloneDeep(element.data.state) : undefined,
@@ -82,15 +77,11 @@ export const useExcalidrawElement = ({
     [element.data?.state, element.data?.elements, libraryItems, scrollToContent]
   );
 
-  const excalidrawProps: TExcalidrawProps = {
+  const excalidrawProps = {
     autoFocus: false,
     initialData,
-    excalidrawAPI: (api) => {
-      _excalidrawRef.current = api;
-    },
-    // Use deduplicated onChange handler without debouncing
     onChange: readOnly ? undefined : handleChange,
-  };
+  } satisfies TExcalidrawProps;
 
   return {
     Excalidraw,

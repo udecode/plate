@@ -43,7 +43,9 @@ export const getEditorPrompt = (
 ): string => {
   const params: EditorPromptParams = {
     editor,
-    isBlockSelecting: editor.plugin({ key: KEYS.blockSelection }).getOption('isSelectingSome'),
+    isBlockSelecting: editor
+      .plugin({ key: KEYS.blockSelection })
+      .getOption('isSelectingSome'),
     isSelecting: isSelecting(editor),
   };
 

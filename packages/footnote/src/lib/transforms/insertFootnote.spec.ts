@@ -1,15 +1,18 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
+import { defineEditorExtension } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import {
   BaseFootnoteDefinitionPlugin,
   BaseFootnoteReferencePlugin,
 } from '../index';
-import { insertFootnote } from './insertFootnote';
-
 describe('insertFootnote', () => {
   it('inserts a reference, creates a definition, and focuses the definition body', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
+    const editor = createPlateEditor({
+      plugins: [
+        BaseFootnoteReferencePlugin,
+        BaseFootnoteDefinitionPlugin,
+      ] as const,
       selection: {
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
@@ -20,11 +23,11 @@ describe('insertFootnote', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
-    insertFootnote(editor);
+    editor.update.insert.footnote();
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.value().children).toMatchObject([
       {
         children: expect.arrayContaining([
           { text: 'hello' },
@@ -47,15 +50,18 @@ describe('insertFootnote', () => {
         type: 'footnoteDefinition',
       },
     ]);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
   });
 
   it('uses the selected content as the initial definition body', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
+    const editor = createPlateEditor({
+      plugins: [
+        BaseFootnoteReferencePlugin,
+        BaseFootnoteDefinitionPlugin,
+      ] as const,
       selection: {
         anchor: { offset: 6, path: [0, 0] },
         focus: { offset: 11, path: [0, 0] },
@@ -66,36 +72,82 @@ describe('insertFootnote', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
-    insertFootnote(editor);
+    editor.update.insert.footnote();
 
-    expect(editor.children[0]).toMatchObject({
-      type: KEYS.p,
-    });
-    expect((editor.children[0] as any).children[0]).toMatchObject({
-      text: 'hello ',
-    });
-    expect((editor.children[0] as any).children[1]).toMatchObject({
-      children: [{ text: '' }],
-      identifier: '1',
-      type: 'footnoteReference',
-    });
-    expect(editor.children[1]).toMatchObject({
-      children: [
+    expect(editor.read.value().children).toMatchObject([
+      {
+        children: [
+          { text: 'hello ' },
+          {
+            children: [{ text: '' }],
+            identifier: '1',
+            type: 'footnoteReference',
+          },
+          { text: '' },
+        ],
+        type: KEYS.p,
+      },
+      {
+        children: [
+          {
+            children: [{ text: 'world' }],
+            type: KEYS.p,
+          },
+        ],
+        identifier: '1',
+        type: 'footnoteDefinition',
+      },
+    ]);
+  });
+
+  it('inserts at an explicit target without an active selection', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        BaseFootnoteReferencePlugin,
+        BaseFootnoteDefinitionPlugin,
+      ] as const,
+      value: [
         {
-          children: [{ text: 'world' }],
+          children: [{ text: 'hello' }],
           type: KEYS.p,
         },
       ],
-      identifier: '1',
-      type: 'footnoteDefinition',
     });
+
+    editor.update.insert.footnote({
+      at: [0, 0],
+      focusDefinition: false,
+    });
+
+    expect(editor.read.value().children).toMatchObject([
+      {
+        children: [
+          { text: '' },
+          {
+            children: [{ text: '' }],
+            identifier: '1',
+            type: 'footnoteReference',
+          },
+          { text: 'hello' },
+        ],
+        type: KEYS.p,
+      },
+      {
+        children: [{ children: [{ text: '' }], type: KEYS.p }],
+        identifier: '1',
+        type: 'footnoteDefinition',
+      },
+    ]);
   });
 
   it('skips used numeric identifiers and avoids duplicate definitions', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
+    const editor = createPlateEditor({
+      plugins: [
+        BaseFootnoteReferencePlugin,
+        BaseFootnoteDefinitionPlugin,
+      ] as const,
       selection: {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
@@ -126,11 +178,11 @@ describe('insertFootnote', () => {
           type: 'footnoteDefinition',
         },
       ],
-    } as any);
+    });
 
-    insertFootnote(editor);
+    editor.update.insert.footnote();
 
-    expect(editor.children[0]).toMatchObject({
+    expect(editor.read.value().children[0]).toMatchObject({
       children: expect.arrayContaining([
         { text: 'x' },
         {
@@ -140,16 +192,19 @@ describe('insertFootnote', () => {
         },
       ]),
     });
-    expect(editor.children).toHaveLength(5);
-    expect(editor.children[4]).toMatchObject({
+    expect(editor.read.value().children).toHaveLength(5);
+    expect(editor.read.value().children[4]).toMatchObject({
       identifier: '2',
       type: 'footnoteDefinition',
     });
   });
 
   it('focuses an existing definition instead of creating a duplicate when identifier is provided', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
+    const editor = createPlateEditor({
+      plugins: [
+        BaseFootnoteReferencePlugin,
+        BaseFootnoteDefinitionPlugin,
+      ] as const,
       selection: {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
@@ -165,11 +220,11 @@ describe('insertFootnote', () => {
           type: 'footnoteDefinition',
         },
       ],
-    } as any);
+    });
 
-    insertFootnote(editor, { identifier: '7' });
+    editor.update.insert.footnote({ identifier: '7' });
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.value().children).toMatchObject([
       {
         children: expect.arrayContaining([
           { text: 'x' },
@@ -186,16 +241,19 @@ describe('insertFootnote', () => {
         type: 'footnoteDefinition',
       },
     ]);
-    expect(editor.children).toHaveLength(2);
-    expect(editor.selection).toEqual({
+    expect(editor.read.value().children).toHaveLength(2);
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
   });
 
   it('can keep the caret inline after inserting a new footnote', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
+    const editor = createPlateEditor({
+      plugins: [
+        BaseFootnoteReferencePlugin,
+        BaseFootnoteDefinitionPlugin,
+      ] as const,
       selection: {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
@@ -206,11 +264,11 @@ describe('insertFootnote', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
-    insertFootnote(editor, { focusDefinition: false });
+    editor.update.insert.footnote({ focusDefinition: false });
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.value().children).toMatchObject([
       {
         children: [
           { text: 'x' },
@@ -229,14 +287,14 @@ describe('insertFootnote', () => {
         type: 'footnoteDefinition',
       },
     ]);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 2] },
       focus: { offset: 0, path: [0, 2] },
     });
   });
 
   it('bound insert.footnote respects configured node types', () => {
-    const editor = createSlateEditor({
+    const editor = createPlateEditor({
       plugins: [
         BaseFootnoteReferencePlugin.configure({
           node: { type: 'custom-footnote-reference' },
@@ -244,7 +302,7 @@ describe('insertFootnote', () => {
         BaseFootnoteDefinitionPlugin.configure({
           node: { type: 'custom-footnote-definition' },
         }),
-      ],
+      ] as const,
       selection: {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
@@ -255,26 +313,37 @@ describe('insertFootnote', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
-    (editor.tf as any).insert.footnote();
+    editor.update.insert.footnote();
 
-    expect((editor.children[0] as any).children[0]).toMatchObject({
-      text: 'x',
-    });
-    expect((editor.children[0] as any).children[1]).toMatchObject({
-      identifier: '1',
-      type: 'custom-footnote-reference',
-    });
-    expect(editor.children[1]).toMatchObject({
-      identifier: '1',
-      type: 'custom-footnote-definition',
-    });
+    expect(editor.read.value().children).toMatchObject([
+      {
+        children: [
+          { text: 'x' },
+          {
+            children: [{ text: '' }],
+            identifier: '1',
+            type: 'custom-footnote-reference',
+          },
+          { text: '' },
+        ],
+        type: KEYS.p,
+      },
+      {
+        children: [{ children: [{ text: '' }], type: KEYS.p }],
+        identifier: '1',
+        type: 'custom-footnote-definition',
+      },
+    ]);
   });
 
   it('provides focus helpers for definitions and references', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
+    const editor = createPlateEditor({
+      plugins: [
+        BaseFootnoteReferencePlugin,
+        BaseFootnoteDefinitionPlugin,
+      ] as const,
       value: [
         {
           children: [
@@ -293,18 +362,23 @@ describe('insertFootnote', () => {
           type: 'footnoteDefinition',
         },
       ],
-    } as any);
+    });
     const scrollIntoView = mock();
-    (editor.api as any).scrollIntoView = scrollIntoView;
+    editor.extend(
+      defineEditorExtension({
+        api: { dom: { scrollIntoView } },
+        name: 'test:scroll-service',
+      })
+    );
 
-    expect(
-      (editor.tf as any).footnote.focusDefinition({ identifier: '1' })
-    ).toBe(true);
-    expect(editor.selection).toEqual({
+    expect(editor.update.footnote.focusDefinition({ identifier: '1' })).toBe(
+      true
+    );
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
-    expect((editor.api as any).navigation.activeTarget()).toMatchObject({
+    expect(editor.api.navigation.activeTarget()).toMatchObject({
       path: [1],
       type: 'node',
       variant: 'navigated',
@@ -314,14 +388,14 @@ describe('insertFootnote', () => {
       path: [1, 0, 0],
     });
 
-    expect(
-      (editor.tf as any).footnote.focusReference({ identifier: '1' })
-    ).toBe(true);
-    expect(editor.selection).toEqual({
+    expect(editor.update.footnote.focusReference({ identifier: '1' })).toBe(
+      true
+    );
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     });
-    expect((editor.api as any).navigation.activeTarget()).toMatchObject({
+    expect(editor.api.navigation.activeTarget()).toMatchObject({
       path: [0, 1],
       type: 'node',
       variant: 'navigated',
@@ -333,8 +407,11 @@ describe('insertFootnote', () => {
   });
 
   it('focuses the next sibling text when a reference has visible trailing text', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
+    const editor = createPlateEditor({
+      plugins: [
+        BaseFootnoteReferencePlugin,
+        BaseFootnoteDefinitionPlugin,
+      ] as const,
       value: [
         {
           children: [
@@ -349,18 +426,23 @@ describe('insertFootnote', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
     const scrollIntoView = mock();
-    (editor.api as any).scrollIntoView = scrollIntoView;
+    editor.extend(
+      defineEditorExtension({
+        api: { dom: { scrollIntoView } },
+        name: 'test:scroll-service',
+      })
+    );
 
-    expect(
-      (editor.tf as any).footnote.focusReference({ identifier: '1' })
-    ).toBe(true);
-    expect(editor.selection).toEqual({
+    expect(editor.update.footnote.focusReference({ identifier: '1' })).toBe(
+      true
+    );
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 2] },
       focus: { offset: 0, path: [0, 2] },
     });
-    expect((editor.api as any).navigation.activeTarget()).toMatchObject({
+    expect(editor.api.navigation.activeTarget()).toMatchObject({
       path: [0, 1],
       type: 'node',
       variant: 'navigated',

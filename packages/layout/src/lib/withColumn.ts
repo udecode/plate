@@ -1,141 +1,109 @@
-import {
-  type OverrideEditor,
-  type TColumnElement,
-  type TColumnGroupElement,
-  ElementApi,
-  KEYS,
-  PathApi,
-} from 'platejs';
+import type { ExtendPlateEditorExtension } from '@platejs/core';
+import type { EditorUpdateTransaction, Element } from '@platejs/plite';
+import { ElementApi, PathApi, RangeApi } from '@platejs/plite';
+import type { TColumnElement, TColumnGroupElement } from '@platejs/utils';
+import { KEYS } from '@platejs/utils';
 
-export const withColumn: OverrideEditor = ({
+import type { ColumnConfig } from './BaseColumnPlugin';
+export const selectColumnAll = (
+  tx: EditorUpdateTransaction,
+  columnType: string
+) => {
+  const selection = tx.selection();
+
+  if (!selection) return false;
+
+  const column = tx.nodes.above<Element>({
+    at: selection,
+    match: { type: columnType },
+  });
+
+  if (!column) return false;
+
+  let targetPath = column[1];
+  const [start, end] = RangeApi.edges(selection);
+
+  if (
+    tx.points.isStart(start, targetPath) &&
+    tx.points.isEnd(end, targetPath)
+  ) {
+    targetPath = PathApi.parent(targetPath);
+  }
+
+  if (targetPath.length === 0) return false;
+
+  tx.selection.set(targetPath);
+
+  return true;
+};
+
+export const withColumn: ExtendPlateEditorExtension<ColumnConfig> = ({
   editor,
-  tf: { normalizeNode, selectAll },
   type,
 }) => ({
-  transforms: {
-    normalizeNode([n, path]) {
-      // If it's a column group, ensure it has valid children
-      if (
-        ElementApi.isElement(n) &&
-        n.type === editor.getType(KEYS.columnGroup)
-      ) {
-        const node = n as TColumnGroupElement;
+  normalizers: {
+    node({ entry: [node, path], next, tx }) {
+      const columnGroupType = editor.getType(KEYS.columnGroup);
 
-        // If the group only wraps a paragraph, keep the paragraph and drop the group.
+      if (
+        ElementApi.isElementType<TColumnGroupElement>(node, columnGroupType)
+      ) {
         const firstChild = node.children[0];
+
         if (
           node.children.length === 1 &&
-          firstChild.type === editor.getType(KEYS.p)
+          firstChild?.type === editor.getType(KEYS.p)
         ) {
-          editor.tf.unwrapNodes({ at: path });
+          tx.nodes.unwrap({ at: path });
 
           return;
         }
 
-        // If no columns found, unwrap the column group
-        if (
-          !node.children.some(
-            (child) => ElementApi.isElement(child) && child.type === type
-          )
-        ) {
-          editor.tf.unwrapNodes({ at: path });
+        if (!node.children.some((child) => child.type === type)) {
+          tx.nodes.unwrap({ at: path });
 
           return;
         }
-        // If only one column remains, unwrap the group (optional logic)
+
         if (node.children.length < 2) {
-          editor.tf.withoutNormalizing(() => {
-            editor.tf.unwrapNodes({ at: path });
-            editor.tf.unwrapNodes({ at: path });
-          });
+          tx.nodes.unwrap({ at: path });
+          tx.nodes.unwrap({ at: path });
 
           return;
         }
 
-        // PERF: only run when the number of columns changes
-        editor.tf.withoutNormalizing(() => {
-          // Add new width normalization logic
-          const totalColumns = node.children.length;
-          let widths = node.children.map((col) => {
-            const parsed = Number.parseFloat(col.width);
+        const totalColumns = node.children.length;
+        const widths = node.children.map((column) => {
+          const parsed = Number.parseFloat(column.width);
 
-            return Number.isNaN(parsed) ? 0 : parsed;
-          });
-
-          const sum = widths.reduce((acc, w) => acc + w, 0);
-
-          if (sum !== 100) {
-            const diff = 100 - sum;
-            const adjustment = diff / totalColumns;
-
-            widths = widths.map((w) => w + adjustment);
-
-            // Update the columns with the new widths
-            widths.forEach((w, i) => {
-              const columnPath = path.concat([i]);
-              editor.tf.setNodes<TColumnElement>(
-                { width: `${w}%` },
-                { at: columnPath }
-              );
-            });
-          }
+          return Number.isNaN(parsed) ? 0 : parsed;
         });
-      }
-      // If it's a column, ensure it has at least one block (optional)
-      if (ElementApi.isElement(n) && n.type === type) {
-        const node = n as TColumnElement;
+        const sum = widths.reduce((total, width) => total + width, 0);
 
-        // node.children.forEach((child, index) => {
-        //   if (TextApi.isText(child)) {
-        //     editor.tf.wrapNodes(
-        //       { children: [], type: editor.getType(KEYS.p) },
-        //       {
-        //         at: PathApi.child(path, index),
-        //       }
-        //     );
-        //   }
-        // });
+        if (sum !== 100) {
+          const adjustment = (100 - sum) / totalColumns;
 
-        if (node.children.length === 0) {
-          editor.tf.removeNodes({ at: path });
+          widths.forEach((width, index) => {
+            tx.nodes.set<TColumnElement>(
+              { width: `${width + adjustment}%` },
+              { at: path.concat([index]) }
+            );
+          });
 
           return;
         }
       }
 
-      return normalizeNode([n, path]);
-    },
-    selectAll: () => {
-      const apply = () => {
-        const at = editor.selection;
+      if (
+        ElementApi.isElementType<TColumnElement>(node, type) &&
+        node.children.length === 0
+      ) {
+        tx.nodes.remove({ at: path });
 
-        if (!at) return;
+        return;
+      }
 
-        const column = editor.api.above({
-          match: { type },
-        });
-
-        if (!column) return;
-
-        let targetPath = column[1];
-
-        if (
-          editor.api.isStart(editor.api.start(at), targetPath) &&
-          editor.api.isEnd(editor.api.end(at), targetPath)
-        ) {
-          targetPath = PathApi.parent(targetPath);
-        }
-
-        if (targetPath.length === 0) return;
-
-        editor.tf.select(targetPath);
-
-        return true;
-      };
-
-      if (apply()) return true;
-
-      return selectAll();
+      next();
     },
   },
 });

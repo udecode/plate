@@ -1,36 +1,24 @@
 import type React from 'react';
 
-import {
-  type SlateEditor,
-  type TLinkElement,
-  type UnknownObject,
-  KEYS,
-  sanitizeUrl,
-} from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { Element } from '@platejs/plite';
+import { sanitizeUrl } from '@udecode/utils';
 
-import type { BaseLinkConfig } from '../BaseLinkPlugin';
+import { BaseLinkPlugin } from '../BaseLinkPlugin';
 
-export const getLinkAttributes = (editor: SlateEditor, link: TLinkElement) => {
+export const getLinkAttributes = (editor: BaseEditor, link: Element) => {
   const { allowedSchemes, dangerouslySkipSanitization, defaultLinkAttributes } =
-    editor.getOptions<BaseLinkConfig>({ key: KEYS.link });
-
-  const attributes = { ...defaultLinkAttributes };
-
+    editor.plugin(BaseLinkPlugin).getOptions();
+  const attributes: React.AnchorHTMLAttributes<HTMLAnchorElement> = {
+    ...defaultLinkAttributes,
+  };
+  const url = typeof link.url === 'string' ? link.url : '';
   const href = dangerouslySkipSanitization
-    ? link.url
-    : sanitizeUrl(link.url, { allowedSchemes }) || undefined;
+    ? url
+    : sanitizeUrl(url, { allowedSchemes }) || undefined;
 
-  // Avoid passing `undefined` for href or target
-  if (href !== undefined) {
-    attributes.href = href;
-  }
-  if ('target' in link && link.target !== undefined) {
-    attributes.target = link.target;
-  }
+  if (href !== undefined) attributes.href = href;
+  if (typeof link.target === 'string') attributes.target = link.target;
 
-  return attributes as Pick<
-    React.AnchorHTMLAttributes<HTMLAnchorElement>,
-    'href' | 'target'
-  > &
-    UnknownObject;
+  return attributes;
 };

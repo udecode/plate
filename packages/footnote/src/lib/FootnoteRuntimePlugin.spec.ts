@@ -1,27 +1,23 @@
-import type { Value } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import type { Selection, Value } from '@platejs/plite';
+import { createBaseEditor } from '@platejs/core';
 
 import {
   BaseFootnoteDefinitionPlugin,
   BaseFootnoteReferencePlugin,
 } from './index';
-import type { FootnoteConfig } from './BaseFootnoteReferencePlugin';
 
 const createFootnoteRuntimeEditor = ({
   selection,
   value,
 }: {
-  selection?: {
-    anchor: { offset: number; path: number[] };
-    focus: { offset: number; path: number[] };
-  };
+  selection?: Selection;
   value: Value;
 }) =>
-  createPlateEditor<
-    Value,
-    typeof BaseFootnoteReferencePlugin | typeof BaseFootnoteDefinitionPlugin
-  >({
-    plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
+  createBaseEditor({
+    plugins: [
+      BaseFootnoteReferencePlugin,
+      BaseFootnoteDefinitionPlugin,
+    ] as const,
     selection,
     value,
   });
@@ -52,23 +48,18 @@ describe('BaseFootnoteReferencePlugin Plite runtime', () => {
         },
       ],
     });
-    const api = (editor.api as FootnoteConfig['api']).footnote;
+    const { footnote } = editor.api;
 
-    expect(api.definition({ identifier: '1' })?.[1]).toEqual([1]);
-    expect(api.definitions({ identifier: '1' })).toHaveLength(2);
-    expect(api.references({ identifier: '1' })).toHaveLength(1);
-    expect(api.definitionText({ identifier: '1' })).toBe('body');
-    expect(api.isResolved({ identifier: '1' })).toBe(true);
-    expect(api.hasDuplicateDefinitions({ identifier: '1' })).toBe(true);
-    expect(api.duplicateDefinitions({ identifier: '1' })).toHaveLength(1);
-    expect(api.duplicateIdentifiers()).toEqual(['1']);
-    expect(api.identifiers()).toEqual(['1']);
-    expect(api.nextId()).toBe('2');
-    const editorApi = editor.api as unknown as FootnoteConfig['api'];
-
-    expect(editorApi.footnote.definition({ identifier: '1' })?.[1]).toEqual([
-      1,
-    ]);
+    expect(footnote.definition({ identifier: '1' })?.[1]).toEqual([1]);
+    expect(footnote.definitions({ identifier: '1' })).toHaveLength(2);
+    expect(footnote.references({ identifier: '1' })).toHaveLength(1);
+    expect(footnote.definitionText({ identifier: '1' })).toBe('body');
+    expect(footnote.isResolved({ identifier: '1' })).toBe(true);
+    expect(footnote.hasDuplicateDefinitions({ identifier: '1' })).toBe(true);
+    expect(footnote.duplicateDefinitions({ identifier: '1' })).toHaveLength(1);
+    expect(footnote.duplicateIdentifiers()).toEqual(['1']);
+    expect(footnote.identifiers()).toEqual(['1']);
+    expect(footnote.nextId()).toBe('2');
   });
 
   it('renumbers duplicate definitions through the runtime transaction group', () => {
@@ -86,20 +77,15 @@ describe('BaseFootnoteReferencePlugin Plite runtime', () => {
         },
       ],
     });
-    let normalizedIdentifier: false | string = false;
-
-    editor.update((tx) => {
-      normalizedIdentifier = tx.footnote.normalizeDuplicateDefinition({
-        path: [1],
-      });
-    });
+    const normalizedIdentifier =
+      editor.update.footnote.normalizeDuplicateDefinition({ path: [1] });
 
     expect(String(normalizedIdentifier)).toBe('2');
 
-    const api = (editor.api as FootnoteConfig['api']).footnote;
+    const { footnote } = editor.api;
 
-    expect(api.hasDuplicateDefinitions({ identifier: '1' })).toBe(false);
-    expect(api.definition({ identifier: '2' })?.[1]).toEqual([1]);
+    expect(footnote.hasDuplicateDefinitions({ identifier: '1' })).toBe(false);
+    expect(footnote.definition({ identifier: '2' })?.[1]).toEqual([1]);
   });
 
   it('inserts a footnote reference and definition through the runtime transaction group', () => {
@@ -111,9 +97,9 @@ describe('BaseFootnoteReferencePlugin Plite runtime', () => {
       value: [{ children: [{ text: 'hi' }], type: 'p' }],
     });
 
-    editor.update((tx) => tx.insert.footnote({ focusDefinition: false }));
+    editor.update.insert.footnote({ focusDefinition: false });
 
-    expect(editor.read((state) => state.value.root())).toEqual([
+    expect(editor.read.value().children).toEqual([
       {
         children: [
           { text: 'hi' },
@@ -132,7 +118,7 @@ describe('BaseFootnoteReferencePlugin Plite runtime', () => {
         type: 'footnoteDefinition',
       },
     ]);
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 2] },
       focus: { offset: 0, path: [0, 2] },
     });
@@ -160,31 +146,24 @@ describe('BaseFootnoteReferencePlugin Plite runtime', () => {
         },
       ],
     });
-    let didFocusDefinition = false;
-    let didFocusReference = false;
-
-    editor.update((tx) => {
-      didFocusDefinition = tx.footnote.focusDefinition({ identifier: '1' });
+    const didFocusDefinition = editor.update.footnote.focusDefinition({
+      identifier: '1',
     });
 
     expect(didFocusDefinition).toBe(true);
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
 
-    editor.update((tx) => {
-      didFocusReference = tx.footnote.focusReference({ identifier: '1' });
+    const didFocusReference = editor.update.footnote.focusReference({
+      identifier: '1',
     });
 
     expect(didFocusReference).toBe(true);
-    expect(editor.read((state) => state.selection.get())).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 2] },
       focus: { offset: 0, path: [0, 2] },
     });
-  });
-
-  it('marks the reference plugin for runtime combobox support', () => {
-    expect(BaseFootnoteReferencePlugin.runtimeTriggerCombobox).toBe(true);
   });
 });

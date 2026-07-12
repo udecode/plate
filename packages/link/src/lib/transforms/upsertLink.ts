@@ -1,131 +1,99 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  type TLinkElement,
-  type UnwrapNodesOptions,
-  type WrapNodesOptions,
-  isDefined,
-  NodeApi,
-  RangeApi,
-} from 'platejs';
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type {
+  EditorUpdateTransaction,
+  NodeInsertNodesOptions,
+  Text,
+} from '@platejs/plite';
+import { NodeApi, RangeApi } from '@platejs/plite';
+import type { TLinkElement } from '@platejs/utils';
+import { KEYS } from '@platejs/utils';
+import { isDefined } from '@udecode/utils';
 
 import { type CreateLinkNodeOptions, validateUrl } from '../utils';
 import { insertLink } from './insertLink';
+import type { UnwrapLinkOptions } from './unwrapLink';
 import { unwrapLink } from './unwrapLink';
 import { upsertLinkText } from './upsertLinkText';
-import { wrapLink } from './wrapLink';
+import { type WrapLinkOptions, wrapLink } from './wrapLink';
 
 export type UpsertLinkOptions = {
-  insertNodesOptions?: InsertNodesOptions;
-  /** If true, insert text when selection is in url. */
+  insertNodesOptions?: NodeInsertNodesOptions<TLinkElement | Text>;
+  /** Insert text when the selection is already in a link. */
   insertTextInLink?: boolean;
   skipValidation?: boolean;
-  unwrapNodesOptions?: UnwrapNodesOptions;
-  wrapNodesOptions?: WrapNodesOptions;
+  unwrapNodesOptions?: UnwrapLinkOptions;
+  wrapNodesOptions?: Omit<WrapLinkOptions, 'url'>;
 } & CreateLinkNodeOptions;
 
-/**
- * If selection in a link or is not url:
- *
- * - Insert text with url, exit If selection is expanded or `update` in a link:
- * - Remove link node, get link text Then:
- * - Insert link node
- */
+/** Insert or update a link at the current selection. */
 export const upsertLink = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   {
     insertNodesOptions,
     insertTextInLink,
     skipValidation = false,
     target,
     text,
+    unwrapNodesOptions,
     url,
+    wrapNodesOptions,
   }: UpsertLinkOptions
 ) => {
-  const at = editor.selection;
+  const selection = tx.selection();
 
-  if (!at) return;
+  if (!selection) return;
 
-  const linkAbove = editor.api.above<TLinkElement>({
-    at,
+  const linkAbove = tx.nodes.above<TLinkElement>({
+    at: selection,
     match: { type: editor.getType(KEYS.link) },
   });
 
-  // anchor and focus in link -> insert text
   if (insertTextInLink && linkAbove) {
-    // we don't want to insert marks in links
-    editor.tf.insertText(url);
+    tx.text.insert(url, { at: selection });
 
     return true;
   }
   if (!skipValidation && !validateUrl(editor, url)) return;
-  if (isDefined(text) && text.length === 0) {
-    text = url;
-  }
-  // edit the link url and/or target
+
+  const nextText = isDefined(text) && text.length === 0 ? url : text;
+
   if (linkAbove) {
-    if (url !== linkAbove[0]?.url || target !== linkAbove[0]?.target) {
-      editor.tf.setNodes<TLinkElement>(
-        { target, url },
-        {
-          at: linkAbove[1],
-        }
-      );
+    const [link] = linkAbove;
+
+    if (url !== link.url || target !== link.target) {
+      tx.nodes.set<TLinkElement>({ target, url }, { at: link });
     }
 
-    upsertLinkText(editor, { target, text, url });
+    upsertLinkText(editor, tx, { target, text: nextText, url });
 
     return true;
   }
 
-  // selection contains at one edge edge or between the edges
-  const linkEntry = editor.api.node<TLinkElement>({
-    at,
+  const linkEntry = tx.nodes.find<TLinkElement>({
+    at: selection,
     match: { type: editor.getType(KEYS.link) },
   });
 
-  const [linkNode] = linkEntry ?? [];
-
-  if (RangeApi.isExpanded(at)) {
-    unwrapLink(editor, {
-      split: true,
-    });
-
-    wrapLink(editor, {
-      target,
-      url,
-    });
-
-    upsertLinkText(editor, { target, text, url });
+  if (RangeApi.isExpanded(selection)) {
+    unwrapLink(editor, tx, { split: true, ...unwrapNodesOptions });
+    wrapLink(editor, tx, { target, url, ...wrapNodesOptions });
+    upsertLinkText(editor, tx, { target, text: nextText, url });
 
     return true;
   }
 
-  const props = NodeApi.extractProps(linkNode ?? ({} as any));
+  const path = selection.focus.path;
+  const leaf = tx.nodes.leaf(path);
 
-  const path = editor.selection?.focus.path;
-
-  if (!path) return;
-
-  // link text should have the focused leaf marks
-  const leaf = NodeApi.leaf(editor, path);
-
-  // if text is empty, text is url
-  if (!text?.length) {
-    text = url;
-  }
+  if (!leaf) return;
 
   insertLink(
     editor,
+    tx,
     {
-      ...props,
-      children: [
-        {
-          ...leaf,
-          text,
-        },
-      ],
+      ...(linkEntry ? NodeApi.extractProps(linkEntry[0]) : {}),
+      children: [{ ...leaf[0], text: nextText?.length ? nextText : url }],
       target,
       url,
     },

@@ -1,11 +1,11 @@
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
 import { validateUrl } from './validateUrl';
 
 describe('validateUrl', () => {
   const createTestEditor = (options?: any) =>
-    createSlateEditor({
+    createBaseEditor({
       plugins: [BaseLinkPlugin.configure({ options })],
     });
 

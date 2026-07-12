@@ -2,7 +2,7 @@ import {
   type UseVirtualFloatingOptions,
   useVirtualFloating,
 } from '@platejs/floating';
-import { useEditorPlugin } from 'platejs/react';
+import { useEditorPlugin } from '@platejs/core/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 

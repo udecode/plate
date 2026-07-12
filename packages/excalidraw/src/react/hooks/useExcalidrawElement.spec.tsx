@@ -1,10 +1,12 @@
 import { act, renderHook } from '@testing-library/react';
 
+import type { TExcalidrawElement } from '../../lib';
+
 const useEditorRefMock = mock();
-const useReadOnlyMock = mock();
-const cloneDeepMock = mock((value: any) => structuredClone(value));
+const useEditorReadOnlyMock = mock();
+const cloneDeepMock = mock(<T,>(value: T): T => structuredClone(value));
 const isEqualMock = mock(
-  (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b)
+  (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 );
 
 mock.module('lodash', () => ({
@@ -12,15 +14,18 @@ mock.module('lodash', () => ({
   isEqual: isEqualMock,
 }));
 
-mock.module('platejs/react', () => ({
+mock.module('@platejs/core/react', () => ({
   useEditorRef: useEditorRefMock,
-  useReadOnly: useReadOnlyMock,
+}));
+
+mock.module('@platejs/plite-react', () => ({
+  useEditorReadOnly: useEditorReadOnlyMock,
 }));
 
 describe('useExcalidrawElement', () => {
   beforeEach(() => {
     useEditorRefMock.mockReset();
-    useReadOnlyMock.mockReset();
+    useEditorReadOnlyMock.mockReset();
     cloneDeepMock.mockClear();
     isEqualMock.mockClear();
   });
@@ -41,37 +46,39 @@ describe('useExcalidrawElement', () => {
           path: () => [0],
         },
       },
-      tf: { setNodes },
+      update: (
+        run: (tx: { nodes: { set: typeof setNodes } }) => void
+      ): void => {
+        run({ nodes: { set: setNodes } });
+      },
     });
-    useReadOnlyMock.mockReturnValue(false);
+    useEditorReadOnlyMock.mockReturnValue(false);
 
     const element = {
+      children: [{ text: '' }],
       data: {
         elements: [{ id: 'el-1' }],
-        state: { zoom: 1 },
+        state: { viewBackgroundColor: '#fff' },
       },
       id: 'node-1',
-    } as any;
+      type: 'excalidraw',
+    } satisfies TExcalidrawElement;
 
-    const { result } = renderHook(() =>
-      useExcalidrawElement({ element, libraryItems: [{ id: 'lib' }] as any })
-    );
+    const { result } = renderHook(() => useExcalidrawElement({ element }));
 
     act(() => {
-      result.current.excalidrawProps.onChange?.(
-        [{ id: 'el-2' }] as any,
-        { zoom: 2 } as any
-      );
-      result.current.excalidrawProps.onChange?.(
-        [{ id: 'el-2' }] as any,
-        { zoom: 2 } as any
-      );
+      result.current.excalidrawProps.onChange?.([{ id: 'el-2' }], {
+        viewBackgroundColor: '#000',
+      });
+      result.current.excalidrawProps.onChange?.([{ id: 'el-2' }], {
+        viewBackgroundColor: '#000',
+      });
     });
 
     expect(result.current.excalidrawProps.initialData).toEqual({
-      appState: { zoom: 1 },
+      appState: { viewBackgroundColor: '#fff' },
       elements: [{ id: 'el-1' }],
-      libraryItems: [{ id: 'lib' }],
+      libraryItems: [],
       scrollToContent: true,
     });
     expect(setNodes).toHaveBeenCalledTimes(1);

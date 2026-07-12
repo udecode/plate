@@ -1,11 +1,11 @@
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import type { TColumnGroupElement } from '@platejs/utils';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
-import { moveMiddleColumn } from './moveMiddleColumn';
 
 describe('moveMiddleColumn', () => {
   it('merge a non-empty middle column into the first column and remove the wrapper', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
       value: [
         {
@@ -31,20 +31,24 @@ describe('moveMiddleColumn', () => {
       ],
     });
 
-    moveMiddleColumn(editor, editor.api.node([0])! as any, {
-      direction: 'left',
-    });
+    editor.update.column.moveMiddle(
+      editor.read.nodes.get<TColumnGroupElement>([0], { required: true }),
+      {
+        direction: 'left',
+      }
+    );
 
-    const columnGroup = editor.children[0] as any;
+    const columnGroup = editor.read.nodes.get<TColumnGroupElement>([0], {
+      required: true,
+    })[0];
 
     expect(columnGroup.children).toHaveLength(2);
-    expect(columnGroup.children[0].children[0].children[0].text).toBe('Left');
-    expect(columnGroup.children[0].children[1].children[0].text).toBe('Middle');
-    expect(columnGroup.children[1].children[0].children[0].text).toBe('Right');
+    expect(editor.read.text.string([0, 0])).toBe('LeftMiddle');
+    expect(editor.read.text.string([0, 1])).toBe('Right');
   });
 
   it('remove an empty middle column and report failure', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
       value: [
         {
@@ -70,14 +74,17 @@ describe('moveMiddleColumn', () => {
       ],
     });
 
-    const result = moveMiddleColumn(editor, editor.api.node([0])! as any, {
-      direction: 'left',
-    });
-    const columnGroup = editor.children[0] as any;
+    const result = editor.update.column.moveMiddle(
+      editor.read.nodes.get<TColumnGroupElement>([0], { required: true }),
+      { direction: 'left' }
+    );
+    const columnGroup = editor.read.nodes.get<TColumnGroupElement>([0], {
+      required: true,
+    })[0];
 
     expect(result).toBe(false);
     expect(columnGroup.children).toHaveLength(2);
-    expect(columnGroup.children[0].children[0].children[0].text).toBe('Left');
-    expect(columnGroup.children[1].children[0].children[0].text).toBe('Right');
+    expect(editor.read.text.string([0, 0])).toBe('Left');
+    expect(editor.read.text.string([0, 1])).toBe('Right');
   });
 });

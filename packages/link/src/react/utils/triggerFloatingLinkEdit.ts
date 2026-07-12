@@ -1,16 +1,17 @@
-import {
-  type SlateEditor,
-  type TLinkElement,
-  getEditorPlugin,
-  KEYS,
-} from 'platejs';
+import type { PlateEditor } from '@platejs/core/react';
+import type { TLinkElement } from '@platejs/utils';
+import { KEYS } from '@platejs/utils';
 
 import { LinkPlugin } from '../LinkPlugin';
 
-export const triggerFloatingLinkEdit = (editor: SlateEditor) => {
-  const { setOption } = getEditorPlugin(editor, LinkPlugin);
+export const triggerFloatingLinkEdit = (editor: PlateEditor) => {
+  const { setOption } = editor.plugin(LinkPlugin);
+  const selection = editor.read.selection();
 
-  const entry = editor.api.node<TLinkElement>({
+  if (!selection) return;
+
+  const entry = editor.read.nodes.find<TLinkElement>({
+    at: selection,
     match: { type: editor.getType(KEYS.link) },
   });
 
@@ -18,7 +19,7 @@ export const triggerFloatingLinkEdit = (editor: SlateEditor) => {
 
   const [link, path] = entry;
 
-  let text = editor.api.string(path);
+  let text = editor.read.text.string(path);
 
   setOption('url', link.url);
   setOption('newTab', link.target === '_blank');

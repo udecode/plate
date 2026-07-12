@@ -1,8 +1,21 @@
+import React from 'react';
+
+import { PlateTest, createPlateEditor } from '@platejs/core/react';
+import { act, render } from '@testing-library/react';
+
 import { makeClientRect } from './makeClientRect';
 import { getBoundingClientRect } from './getBoundingClientRect';
 
 describe('getBoundingClientRect', () => {
-  it('uses the current selection when no location is provided', () => {
+  const originalRangeGetBoundingClientRect =
+    globalThis.Range.prototype.getBoundingClientRect;
+
+  afterEach(() => {
+    globalThis.Range.prototype.getBoundingClientRect =
+      originalRangeGetBoundingClientRect;
+  });
+
+  it('uses the current selection when no location is provided', async () => {
     const selection = {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
@@ -13,28 +26,25 @@ describe('getBoundingClientRect', () => {
       right: 40,
       top: 5,
     });
-    const editor: any = {
+    const editor = createPlateEditor({
       selection,
-      api: {
-        toDOMRange: (range: any) =>
-          range === selection
-            ? { getBoundingClientRect: () => rect }
-            : undefined,
-      },
-    };
+      value: [{ children: [{ text: 'a' }], type: 'p' }],
+    });
+
+    await act(async () => {
+      render(
+        React.createElement(PlateTest, {
+          editableProps: { autoFocus: false },
+          editor,
+        })
+      );
+    });
+    globalThis.Range.prototype.getBoundingClientRect = () => rect;
 
     expect(getBoundingClientRect(editor)).toMatchObject(rect);
   });
 
-  it('merges the DOM rects for multiple explicit locations', () => {
-    const rangeA = {
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 1, path: [0, 0] },
-    };
-    const rangeB = {
-      anchor: { offset: 0, path: [1, 0] },
-      focus: { offset: 1, path: [1, 0] },
-    };
+  it('merges the DOM rects for multiple explicit locations', async () => {
     const rectA = makeClientRect({
       bottom: 20,
       left: 10,
@@ -47,17 +57,26 @@ describe('getBoundingClientRect', () => {
       right: 50,
       top: 5,
     });
-    const editor: any = {
-      api: {
-        range: (location: any) => (location[0] === 0 ? rangeA : rangeB),
-        toDOMRange: (range: any) =>
-          range === rangeA
-            ? { getBoundingClientRect: () => rectA }
-            : { getBoundingClientRect: () => rectB },
-      },
-    };
+    const editor = createPlateEditor({
+      value: [
+        { children: [{ text: 'a' }], type: 'p' },
+        { children: [{ text: 'b' }], type: 'p' },
+      ],
+    });
 
-    expect(getBoundingClientRect(editor, [[0], [1]] as any)).toMatchObject({
+    await act(async () => {
+      render(
+        React.createElement(PlateTest, {
+          editableProps: { autoFocus: false },
+          editor,
+        })
+      );
+    });
+    let rectIndex = 0;
+    globalThis.Range.prototype.getBoundingClientRect = () =>
+      [rectA, rectB][rectIndex++]!;
+
+    expect(getBoundingClientRect(editor, [[0], [1]])).toMatchObject({
       bottom: 25,
       left: 5,
       right: 50,
@@ -66,12 +85,7 @@ describe('getBoundingClientRect', () => {
   });
 
   it('returns undefined when there is no selection or DOM range', () => {
-    const editor: any = {
-      selection: null,
-      api: {
-        toDOMRange: () => {},
-      },
-    };
+    const editor = createPlateEditor();
 
     expect(getBoundingClientRect(editor)).toBeUndefined();
   });

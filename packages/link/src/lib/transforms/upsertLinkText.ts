@@ -1,36 +1,32 @@
-import type { SlateEditor, TLinkElement, TText } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { EditorUpdateTransaction, Element } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import type { UpsertLinkOptions } from './upsertLink';
 
-/**
- * If the text is different than the link above text, replace link children by a
- * new text. The new text has the same marks than the first text replaced.
- */
+/** Replace the current link text while preserving its first leaf marks. */
 export const upsertLinkText = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   { text }: UpsertLinkOptions
 ) => {
-  const newLink = editor.api.above<TLinkElement>({
+  const link = tx.nodes.above<Element>({
     match: { type: editor.getType(KEYS.link) },
   });
 
-  if (newLink) {
-    const [newLinkNode, newLinkPath] = newLink;
+  if (!link) return;
 
-    if (text?.length && text !== editor.api.string(newLinkPath)) {
-      const firstText = newLinkNode.children[0];
+  const [linkNode, linkPath] = link;
 
-      // remove link children
-      editor.tf.replaceNodes<TText>(
-        { ...firstText, text },
-        {
-          at: newLinkPath,
-          children: true,
-          select: true,
-        }
-      );
-    }
+  if (!text?.length || text === tx.text.string(linkPath)) return;
+
+  tx.nodes.replaceChildren([{ ...linkNode.children[0], text }], {
+    at: linkPath,
+  });
+
+  const end = tx.points.end(linkPath);
+
+  if (end) {
+    tx.selection.set(end);
   }
 };

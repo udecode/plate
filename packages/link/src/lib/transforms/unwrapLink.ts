@@ -1,55 +1,88 @@
-import type { SlateEditor, UnwrapNodesOptions } from 'platejs';
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type {
+  EditorUpdateTransaction,
+  Location,
+  MaximizeMode,
+} from '@platejs/plite';
+import { PathApi, RangeApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
-/** Unwrap link node. */
+export type UnwrapLinkOptions = {
+  at?: Location;
+  mode?: MaximizeMode;
+  split?: boolean;
+  voids?: boolean;
+};
+
+/** Unwrap link nodes. */
 export const unwrapLink = (
-  editor: SlateEditor,
-  options?: {
-    split?: boolean;
-  } & UnwrapNodesOptions
-) => {
-  return editor.tf.withoutNormalizing(() => {
-    if (options?.split) {
-      const linkAboveAnchor = editor.api.above({
-        at: editor.selection?.anchor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  options?: UnwrapLinkOptions
+) =>
+  tx.withoutNormalizing(({ tx }) => {
+    const selection = tx.selection();
+
+    if (options?.split && selection) {
+      const [start, end] = RangeApi.edges(selection);
+      const linkAboveStart = tx.nodes.above({
+        at: start,
+        match: { type: editor.getType(KEYS.link) },
+      });
+      const linkAboveEnd = tx.nodes.above({
+        at: end,
         match: { type: editor.getType(KEYS.link) },
       });
 
-      // anchor in link
-      if (linkAboveAnchor) {
-        editor.tf.splitNodes({
-          at: editor.selection?.anchor,
+      if (
+        linkAboveStart &&
+        linkAboveEnd &&
+        PathApi.equals(linkAboveStart[1], linkAboveEnd[1])
+      ) {
+        const linkPath = linkAboveStart[1];
+        let selectedPath = linkPath;
+
+        if (!tx.points.isEnd(end, linkPath)) {
+          tx.nodes.split({
+            at: end,
+            match: { type: editor.getType(KEYS.link) },
+          });
+        }
+        if (!tx.points.isStart(start, linkPath)) {
+          tx.nodes.split({
+            at: start,
+            match: { type: editor.getType(KEYS.link) },
+          });
+          selectedPath = PathApi.next(linkPath);
+        }
+
+        tx.nodes.unwrap({
+          at: selectedPath,
           match: { type: editor.getType(KEYS.link) },
-        });
-        unwrapLink(editor, {
-          at: editor.selection?.anchor,
         });
 
         return true;
       }
 
-      const linkAboveFocus = editor.api.above({
-        at: editor.selection?.focus,
-        match: { type: editor.getType(KEYS.link) },
-      });
+      const point = linkAboveStart ? start : linkAboveEnd ? end : undefined;
+      const link = linkAboveStart ?? linkAboveEnd;
 
-      // focus in link
-      if (linkAboveFocus) {
-        editor.tf.splitNodes({
-          at: editor.selection?.focus,
+      if (point && link) {
+        tx.nodes.split({
+          at: point,
           match: { type: editor.getType(KEYS.link) },
         });
-        unwrapLink(editor, {
-          at: editor.selection?.focus,
+        tx.nodes.unwrap({
+          at: PathApi.next(link[1]),
+          match: { type: editor.getType(KEYS.link) },
         });
 
         return true;
       }
     }
 
-    editor.tf.unwrapNodes({
+    tx.nodes.unwrap({
       match: { type: editor.getType(KEYS.link) },
       ...options,
     });
   });
-};
