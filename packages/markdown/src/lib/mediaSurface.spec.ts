@@ -1,22 +1,9 @@
-import {
-  BaseAudioPlugin,
-  BaseFilePlugin,
-  BaseMediaEmbedPlugin,
-  BaseVideoPlugin,
-} from '../../../media/src/lib';
-
 import { createTestEditor } from './__tests__/createTestEditor';
 import { deserializeMd } from './deserializer';
 import { serializeMd } from './serializer';
 
 describe('media package surfaces', () => {
-  const createMediaEditor = () =>
-    createTestEditor([
-      BaseFilePlugin,
-      BaseAudioPlugin,
-      BaseMediaEmbedPlugin,
-      BaseVideoPlugin,
-    ]);
+  const createMediaEditor = () => createTestEditor();
 
   it.each([
     {

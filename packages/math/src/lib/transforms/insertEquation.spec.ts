@@ -1,11 +1,12 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseEquationPlugin } from '../BaseEquationPlugin';
 import { insertEquation } from './insertEquation';
 
 describe('insertEquation', () => {
   it('inserts the default equation node shape at the cursor', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseEquationPlugin],
       selection: {
         anchor: { offset: 2, path: [0, 0] },
@@ -19,9 +20,9 @@ describe('insertEquation', () => {
       ],
     });
 
-    insertEquation(editor);
+    editor.update((tx) => insertEquation(tx, editor.getType(KEYS.equation)));
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.value().children).toMatchObject([
       {
         children: [{ text: 'hi' }],
         type: KEYS.p,
@@ -35,7 +36,7 @@ describe('insertEquation', () => {
   });
 
   it('respects the configured node type and explicit insertion target', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseEquationPlugin.configure({
           node: { type: 'custom-equation' },
@@ -53,9 +54,11 @@ describe('insertEquation', () => {
       ],
     });
 
-    insertEquation(editor, { at: [1] });
+    editor.update((tx) =>
+      insertEquation(tx, editor.getType(KEYS.equation), { at: [1] })
+    );
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.value().children).toMatchObject([
       {
         children: [{ text: 'a' }, { text: 'b' }],
         type: KEYS.p,

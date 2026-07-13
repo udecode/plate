@@ -1,11 +1,9 @@
-import { BaseImagePlugin } from '../../../media/src/lib';
-
 import { createTestEditor } from './__tests__/createTestEditor';
 import { buildRules } from './rules/defaultRules';
 
 describe('defaultRules', () => {
   it('prefers image attributes over mdast url and alt fields', () => {
-    const editor = createTestEditor([BaseImagePlugin]);
+    const editor = createTestEditor();
 
     const result = buildRules(editor).img.deserialize!(
       {
@@ -34,7 +32,7 @@ describe('defaultRules', () => {
   });
 
   it('keeps mdast image fields when mdx attributes are absent', () => {
-    const editor = createTestEditor([BaseImagePlugin]);
+    const editor = createTestEditor();
 
     const result = buildRules(editor).img.deserialize!(
       {
@@ -57,7 +55,7 @@ describe('defaultRules', () => {
   });
 
   it('parses numeric width and height image attributes', () => {
-    const editor = createTestEditor([BaseImagePlugin]);
+    const editor = createTestEditor();
 
     const result = buildRules(editor).img.deserialize!(
       {

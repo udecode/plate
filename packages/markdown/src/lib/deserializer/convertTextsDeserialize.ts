@@ -1,4 +1,4 @@
-import { getPluginType } from 'platejs';
+import { getPluginType } from '@platejs/core';
 
 import type { MdDelete, MdEmphasis, MdStrong } from '../mdast';
 import type { MdDecoration } from '../types';

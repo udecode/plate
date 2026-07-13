@@ -1,6 +1,7 @@
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
-import { getPluginKey, getPluginType, KEYS } from 'platejs';
+import { getPluginKey, getPluginType } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import type { MdDecoration } from '../../types';
 import type { DeserializeMdOptions } from '../deserializeMd';

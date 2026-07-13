@@ -1,4 +1,4 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
 
 import type { SerializeMdOptions } from '../serializeMd';
 
@@ -14,7 +14,7 @@ import { buildRules } from '../../rules';
  * @returns The final merged configuration
  */
 export const getMergedOptionsSerialize = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   options?: SerializeMdOptions
 ): SerializeMdOptions => {
   const {
@@ -44,7 +44,7 @@ export const getMergedOptionsSerialize = (
       options?.remarkStringifyOptions ?? PluginRemarkStringifyOptions,
     rules: mergedRules,
     spread: options?.spread,
-    value: options?.value ?? editor.children,
+    value: options?.value ?? editor.read.value().children,
     withBlockId: options?.withBlockId ?? false,
   };
 };

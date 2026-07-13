@@ -1,12 +1,11 @@
+import { getPluginKey, getPluginType } from '@platejs/core';
 import {
   type Descendant,
-  type TElement,
-  type TText,
-  getPluginKey,
-  getPluginType,
-  KEYS,
+  type Element,
+  type Text,
   TextApi,
-} from 'platejs';
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import type { unistLib } from '../types';
 import type { SerializeMdOptions } from './serializeMd';
@@ -23,9 +22,9 @@ export const convertNodesSerialize = (
   isBlock = false
 ): unistLib.Node[] => {
   const mdastNodes: unistLib.Node[] = [];
-  let textQueue: TText[] = [];
+  let textQueue: Text[] = [];
 
-  const listBlock: TElement[] = [];
+  const listBlock: Element[] = [];
 
   for (let i = 0; i <= nodes.length; i++) {
     const n = nodes[i] as any;
@@ -57,7 +56,7 @@ export const convertNodesSerialize = (
       if (n?.type === pType && 'listStyleType' in n) {
         listBlock.push(n);
 
-        const next = nodes[i + 1] as TElement;
+        const next = nodes[i + 1] as Element;
         const isNextIndent =
           next && next.type === pType && 'listStyleType' in next;
         const firstList = listBlock.at(0);
@@ -129,7 +128,7 @@ export const buildMdastNode = (
 };
 
 const shouldIncludeText = (
-  text: TText,
+  text: Text,
   options: SerializeMdOptions
 ): boolean => {
   const { allowedNodes, allowNode, disallowedNodes } = options;
@@ -168,7 +167,7 @@ const shouldIncludeText = (
 };
 
 const shouldIncludeNode = (
-  node: TElement,
+  node: Element,
   options: SerializeMdOptions
 ): boolean => {
   const { allowedNodes, allowNode, disallowedNodes } = options;

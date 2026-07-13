@@ -1,6 +1,8 @@
 import type { Root } from 'mdast';
 
-import { type Descendant, getPluginKey, KEYS } from 'platejs';
+import { getPluginKey } from '@platejs/core';
+import type { Descendant } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import type { MdRoot } from '../mdast';
 import type { DeserializeMdOptions } from './deserializeMd';

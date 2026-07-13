@@ -1,4 +1,4 @@
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { MarkdownPlugin } from './MarkdownPlugin';
 
@@ -16,7 +16,7 @@ const createDataTransfer = ({
 
 describe('MarkdownPlugin', () => {
   it('exposes default options, bound markdown api, and text parser deserialization', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [MarkdownPlugin],
     });
     const plugin = editor.getPlugin(MarkdownPlugin);
@@ -32,19 +32,17 @@ describe('MarkdownPlugin', () => {
     expect(typeof editor.api.markdown.deserialize).toBe('function');
     expect(typeof editor.api.markdown.deserializeInline).toBe('function');
     expect(typeof editor.api.markdown.serialize).toBe('function');
-    expect(typeof editor.getApi(MarkdownPlugin).markdown.deserialize).toBe(
-      'function'
-    );
     expect(plugin.parser.format).toBe('text/plain');
     expect(
       plugin.parser.deserialize?.({
+        api: editor.api.markdown,
         data: '**bold**',
       } as any)
     ).toEqual(editor.api.markdown.deserialize('**bold**'));
   });
 
   it('skips plain-text parsing when html is present', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [MarkdownPlugin],
     });
 
@@ -59,7 +57,7 @@ describe('MarkdownPlugin', () => {
   });
 
   it('passes through URL-only clipboard text so link handling can own it', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [MarkdownPlugin],
     });
 
@@ -74,7 +72,7 @@ describe('MarkdownPlugin', () => {
   });
 
   it('parses plain text when the clipboard carries files', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [MarkdownPlugin],
     });
 
@@ -89,7 +87,7 @@ describe('MarkdownPlugin', () => {
   });
 
   it('parses non-url plain text by default', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [MarkdownPlugin],
     });
 

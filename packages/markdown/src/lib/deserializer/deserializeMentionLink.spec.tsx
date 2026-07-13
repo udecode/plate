@@ -1,5 +1,4 @@
 /** @jsx jsx */
-import { BaseMentionPlugin } from '@platejs/mention';
 import { jsx } from '@platejs/test-utils';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
@@ -9,7 +8,7 @@ jsx;
 
 describe('deserializeMd - mention link format', () => {
   it('deserialize [display text](mention:id) format', () => {
-    const editor = createTestEditor([BaseMentionPlugin]);
+    const editor = createTestEditor();
 
     const markdown = 'Hello [John Doe](mention:john_doe), how are you?';
     const value = deserializeMd(editor, markdown);
@@ -26,7 +25,7 @@ describe('deserializeMd - mention link format', () => {
   });
 
   it('deserialize mentions with spaces in ID', () => {
-    const editor = createTestEditor([BaseMentionPlugin]);
+    const editor = createTestEditor();
 
     const markdown = 'CC: [Jane Smith](mention:jane%20smith)';
     const value = deserializeMd(editor, markdown);
@@ -42,7 +41,7 @@ describe('deserializeMd - mention link format', () => {
   });
 
   it('deserialize mixed mention formats', () => {
-    const editor = createTestEditor([BaseMentionPlugin]);
+    const editor = createTestEditor();
 
     const markdown =
       '@alice mentioned [Bob Johnson](mention:bob_johnson) and @charlie';
@@ -66,7 +65,7 @@ describe('deserializeMd - mention link format', () => {
   });
 
   it('handle multiple link mentions in one paragraph', () => {
-    const editor = createTestEditor([BaseMentionPlugin]);
+    const editor = createTestEditor();
 
     const markdown =
       '[Team Lead](mention:team_lead) assigned this to [QA Team](mention:qa_team)';
@@ -86,7 +85,7 @@ describe('deserializeMd - mention link format', () => {
   });
 
   it('handle special characters in mention IDs', () => {
-    const editor = createTestEditor([BaseMentionPlugin]);
+    const editor = createTestEditor();
 
     const markdown =
       '[User 123](mention:user-123) and [Dev Team](mention:dev.team)';
@@ -106,7 +105,7 @@ describe('deserializeMd - mention link format', () => {
   });
 
   it('does not convert regular links to mentions even with @ in text', () => {
-    const editor = createTestEditor([BaseMentionPlugin]);
+    const editor = createTestEditor();
 
     const markdown = '[@mention](/docs/mention)';
     const value = deserializeMd(editor, markdown);
@@ -121,7 +120,7 @@ describe('deserializeMd - mention link format', () => {
   });
 
   it('handle mixed links and mentions correctly', () => {
-    const editor = createTestEditor([BaseMentionPlugin]);
+    const editor = createTestEditor();
 
     const markdown =
       'Check [@docs](https://docs.com) and [Alice](mention:alice) plus @bob';

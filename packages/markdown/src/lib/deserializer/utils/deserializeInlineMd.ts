@@ -1,15 +1,18 @@
-import { type Descendant, type SlateEditor, ElementApi } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import { type Descendant, ElementApi } from '@platejs/plite';
 
-import type { DeserializeMdOptions } from '../deserializeMd';
+import {
+  type DeserializeMdOptions,
+  markdownToSlateNodes,
+} from '../deserializeMd';
 
-import { MarkdownPlugin } from '../../MarkdownPlugin';
 import { stripMarkdownBlocks } from './stripMarkdown';
 
 const LEADING_SPACES_REGEX = /^\s*/;
 const TRAILING_SPACES_REGEX = /\s*$/;
 
 export const deserializeInlineMd = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   text: string,
   options?: DeserializeMdOptions
 ) => {
@@ -29,9 +32,7 @@ export const deserializeInlineMd = (
     fragment.push({ text: leadingSpaces });
   }
 
-  const result = editor
-    .getApi(MarkdownPlugin)
-    .markdown.deserialize(strippedText, options)[0];
+  const result = markdownToSlateNodes(editor, strippedText, options)[0];
 
   if (result) {
     const nodes = ElementApi.isElement(result) ? result.children : [result];

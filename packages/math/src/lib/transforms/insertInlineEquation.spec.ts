@@ -1,11 +1,12 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseInlineEquationPlugin } from '../BaseInlineEquationPlugin';
 import { insertInlineEquation } from './insertInlineEquation';
 
 describe('insertInlineEquation', () => {
   it('uses the selected text as the default tex expression', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseInlineEquationPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 0] },
@@ -19,9 +20,11 @@ describe('insertInlineEquation', () => {
       ],
     });
 
-    insertInlineEquation(editor);
+    editor.update((tx) =>
+      insertInlineEquation(tx, editor.getType(KEYS.inlineEquation))
+    );
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.value().children).toMatchObject([
       {
         children: [
           { text: '' },
@@ -38,7 +41,7 @@ describe('insertInlineEquation', () => {
   });
 
   it('prefers the provided tex expression and configured node type', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseInlineEquationPlugin.configure({
           node: { type: 'custom-inline-equation' },
@@ -56,9 +59,14 @@ describe('insertInlineEquation', () => {
       ],
     });
 
-    insertInlineEquation(editor, 'x^2', { at: [0, 1] });
+    editor.update((tx) =>
+      insertInlineEquation(tx, editor.getType(KEYS.inlineEquation), {
+        at: [0, 1],
+        texExpression: 'x^2',
+      })
+    );
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.value().children).toMatchObject([
       {
         children: [
           { text: 'x' },

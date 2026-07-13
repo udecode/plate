@@ -1,15 +1,14 @@
 import type { Root } from 'mdast';
-import type { Plugin } from 'unified';
+import type { Pluggable, Plugin } from 'unified';
 
+import { type BaseEditor, getPluginKey } from '@platejs/core';
 import {
   type Descendant,
-  type SlateEditor,
-  type TElement,
+  type Element,
   type Value,
-  getPluginKey,
-  KEYS,
   TextApi,
-} from 'platejs';
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
@@ -31,11 +30,11 @@ export type DeserializeMdOptions = {
   allowedNodes?: PlateType[] | null;
   allowNode?: AllowNodeConfig;
   disallowedNodes?: PlateType[] | null;
-  editor?: SlateEditor;
+  editor?: BaseEditor;
   memoize?: boolean;
   parser?: ParseMarkdownBlocksOptions;
   preserveEmptyParagraphs?: boolean;
-  remarkPlugins?: Plugin[];
+  remarkPlugins?: Pluggable[];
   rules?: MdRules | null;
   splitLineBreaks?: boolean;
   withoutMdx?: boolean;
@@ -43,7 +42,7 @@ export type DeserializeMdOptions = {
 };
 
 export const markdownToAstProcessor = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   data: string,
   options?: DeserializeMdOptions
 ) => {
@@ -56,7 +55,7 @@ export const markdownToAstProcessor = (
 };
 
 export const markdownToSlateNodes = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   data: string,
   options?: Omit<DeserializeMdOptions, 'editor'>
 ): Descendant[] => {
@@ -74,7 +73,8 @@ export const markdownToSlateNodes = (
       (token) => {
         if (token.type === 'space') {
           return {
-            ...editor.api.create.block(),
+            children: [{ text: '' }],
+            type: editor.getType(KEYS.p),
             _memo: token.raw,
           };
         }
@@ -93,7 +93,7 @@ export const markdownToSlateNodes = (
 };
 
 export const deserializeMd = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   data: string,
   options?: Omit<DeserializeMdOptions, 'editor'>
 ): Value => {
@@ -117,7 +117,7 @@ export const deserializeMd = (
       ? ({
           children: [item],
           type: getPluginKey(editor, KEYS.p) ?? KEYS.p,
-        } as TElement)
+        } as Element)
       : item
   );
 };

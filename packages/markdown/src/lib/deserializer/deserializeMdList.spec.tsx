@@ -1,6 +1,5 @@
 /** @jsx jsxt */
 
-import { BaseListPlugin } from '@platejs/list';
 import { jsxt } from '@platejs/test-utils';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
@@ -8,10 +7,10 @@ import { deserializeMd } from './deserializeMd';
 jsxt;
 
 describe('deserializeMdList - comprehensive coverage', () => {
-  const editor = createTestEditor([BaseListPlugin]);
+  const editor = createTestEditor();
 
   it('preserves ordered-list starts after setValue normalizes the value', () => {
-    const editor = createTestEditor([BaseListPlugin]);
+    const editor = createTestEditor();
     const input = `
 1. First list item
 
@@ -51,9 +50,9 @@ Break between lists.
       },
     ]);
 
-    editor.tf.setValue(value);
+    editor.update((tx) => tx.value.replace({ children: value }));
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.value().children).toMatchObject([
       {
         children: [{ text: 'First list item' }],
         indent: 1,

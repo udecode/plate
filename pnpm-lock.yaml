@@ -1643,12 +1643,21 @@ importers:
 
   packages/markdown:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/date':
         specifier: workspace:*
         version: link:../date
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
+      '@udecode/utils':
+        specifier: workspace:^
+        version: link:../udecode/utils
       lodash:
         specifier: ^4.17.23
         version: 4.17.23
@@ -1686,21 +1695,15 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      '@platejs/footnote':
-        specifier: workspace:*
-        version: link:../footnote
-      '@platejs/table':
-        specifier: workspace:*
-        version: link:../table
+      '@platejs/test-utils':
+        specifier: workspace:^
+        version: link:../test-utils
       '@types/mdast':
         specifier: ^4.0.4
         version: 4.0.4
       '@types/unist':
         specifier: ^3.0.3
         version: 3.0.3
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
       remark-emoji:
         specifier: 5.0.1
         version: 5.0.1
@@ -1713,9 +1716,15 @@ importers:
 
   packages/math:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       katex:
         specifier: 0.16.22
         version: 0.16.22
@@ -1726,12 +1735,15 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      '@platejs/test-utils':
+        specifier: workspace:^
+        version: link:../test-utils
+      '@testing-library/react':
+        specifier: 16.3.0
+        version: 16.3.0(@testing-library/dom@10.4.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@types/katex':
         specifier: 0.16.7
         version: 0.16.7
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/media:
     dependencies:

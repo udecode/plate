@@ -1,14 +1,16 @@
-import { bindFirst, createSlatePlugin, KEYS } from 'platejs';
+import { createBasePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
+
+import type { InsertEquationOptions } from './transforms';
 
 import { insertEquation } from './transforms';
 
 import 'katex/dist/katex.min.css';
 
-export const BaseEquationPlugin = createSlatePlugin({
+export const BaseEquationPlugin = createBasePlugin({
   key: KEYS.equation,
   node: { isElement: true, isVoid: true },
-}).extendEditorTransforms(({ editor }) => ({
-  insert: {
-    equation: bindFirst(insertEquation, editor),
-  },
+}).extendTx(({ type }) => (tx) => ({
+  insert: (options?: InsertEquationOptions) =>
+    insertEquation(tx, type, options),
 }));

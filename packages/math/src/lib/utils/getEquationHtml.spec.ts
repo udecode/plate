@@ -1,9 +1,15 @@
 import { getEquationHtml } from './getEquationHtml';
 
+const equation = {
+  children: [{ text: '' }],
+  texExpression: 'x^2',
+  type: 'equation',
+};
+
 describe('getEquationHtml', () => {
   it('renders KaTeX html for the equation expression', () => {
     const html = getEquationHtml({
-      element: { texExpression: 'x^2' } as any,
+      element: equation,
     });
 
     expect(html).toContain('katex');
@@ -12,7 +18,7 @@ describe('getEquationHtml', () => {
 
   it('forwards KaTeX options to the rendered output', () => {
     const html = getEquationHtml({
-      element: { texExpression: 'x^2' } as any,
+      element: equation,
       options: { displayMode: true },
     });
 

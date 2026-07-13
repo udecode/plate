@@ -1,7 +1,6 @@
 import React from 'react';
 
-import type { TEquationElement } from 'platejs';
-
+import type { TEquationElement } from '@platejs/utils';
 import katex, { type KatexOptions } from 'katex';
 
 export const useEquationElement = ({
@@ -17,6 +16,5 @@ export const useEquationElement = ({
     if (!katexRef.current) return;
 
     katex.render(element.texExpression, katexRef.current, options);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [element.texExpression]);
+  }, [element.texExpression, katexRef, options]);
 };

@@ -1,22 +1,25 @@
 import type {
-  InsertNodesOptions,
-  SlateEditor,
-  TEquationElement,
-} from 'platejs';
+  EditorUpdateTransaction,
+  NodeInsertNodesOptions,
+} from '@platejs/plite';
+import type { TEquationElement } from '@platejs/utils';
 
-import { KEYS } from 'platejs';
+export type InsertInlineEquationOptions =
+  NodeInsertNodesOptions<TEquationElement> & {
+    texExpression?: string;
+  };
 
 export const insertInlineEquation = (
-  editor: SlateEditor,
-  texExpression?: string,
-  options?: InsertNodesOptions
+  tx: EditorUpdateTransaction,
+  type: string,
+  { texExpression, ...options }: InsertInlineEquationOptions = {}
 ) => {
-  editor.tf.insertNodes<TEquationElement>(
+  tx.nodes.insert<TEquationElement>(
     {
       children: [{ text: '' }],
-      texExpression: texExpression ?? editor.api.string(editor.selection),
-      type: editor.getType(KEYS.inlineEquation),
+      texExpression: texExpression ?? tx.text.string(),
+      type,
     },
-    options as any
+    options
   );
 };

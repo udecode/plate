@@ -1,13 +1,14 @@
-import type { BlockFenceInputRuleMatch, SlateEditor, TRange } from 'platejs';
-
-import { createRuleFactory, KEYS, matchDelimitedInline } from 'platejs';
+import type { BaseEditor, BlockFenceInputRuleMatch } from '@platejs/core';
+import { createRuleFactory, matchDelimitedInline } from '@platejs/core';
+import type { Range } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { insertEquation, insertInlineEquation } from './transforms';
 
 const INLINE_BOUNDARY_RE = /[\s([{'"`]/;
 const INLINE_FOLLOW_RE = /[\s)\]}:;,.!?'"`]/;
 
-const isEquationInputBlocked = (editor: SlateEditor) =>
+const isEquationInputBlocked = (editor: BaseEditor) =>
   editor.read.nodes.some({
     match: {
       type: [
@@ -22,7 +23,7 @@ const getInlineEquationMatch = (
   context: Parameters<typeof matchDelimitedInline>[0]
 ):
   | {
-      deleteRange: TRange;
+      deleteRange: Range;
       texExpression: string;
     }
   | undefined => {
@@ -52,13 +53,15 @@ export const MathRules = {
           fence: '$$',
           block: KEYS.p,
           on: options.on,
-          enabled: ({ editor }) => !isEquationInputBlocked(editor),
+          enabled: (context) =>
+            (options.enabled?.(context) ?? true) &&
+            !isEquationInputBlocked(context.editor),
           priority: 100,
-          apply: ({ editor }, match) => {
+          apply: ({ editor, tx }, match) => {
             const blockMatch = match as BlockFenceInputRuleMatch;
 
-            editor.tf.removeNodes({ at: blockMatch.path });
-            insertEquation(editor, {
+            tx.nodes.remove({ at: blockMatch.path });
+            insertEquation(tx, editor.getType(KEYS.equation), {
               at: blockMatch.path,
               select: true,
             });
@@ -68,7 +71,9 @@ export const MathRules = {
         }
       : {
           type: 'insertText',
-          enabled: ({ editor }) => !isEquationInputBlocked(editor),
+          enabled: (context) =>
+            (options.enabled?.(context) ?? true) &&
+            !isEquationInputBlocked(context.editor),
           trigger: '$',
           resolve: (context) => {
             if (context.text !== '$' || context.options?.at) {
@@ -77,17 +82,19 @@ export const MathRules = {
 
             return getInlineEquationMatch(context);
           },
-          apply: ({ editor }, match) => {
+          apply: ({ editor, tx }, match) => {
             const inlineMatch = match as {
-              deleteRange: TRange;
+              deleteRange: Range;
               texExpression: string;
             };
 
-            editor.tf.delete({
+            tx.text.delete({
               at: inlineMatch.deleteRange,
             });
-            editor.tf.select(inlineMatch.deleteRange.anchor);
-            insertInlineEquation(editor, inlineMatch.texExpression);
+            tx.selection.set(inlineMatch.deleteRange.anchor);
+            insertInlineEquation(tx, editor.getType(KEYS.inlineEquation), {
+              texExpression: inlineMatch.texExpression,
+            });
 
             return true;
           },

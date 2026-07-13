@@ -1,13 +1,10 @@
-import { BaseEquationPlugin } from '../../../math/src/lib/BaseEquationPlugin';
-import { BaseInlineEquationPlugin } from '../../../math/src/lib/BaseInlineEquationPlugin';
-
 import { createTestEditor } from './__tests__/createTestEditor';
 import { deserializeMd } from './deserializer';
 import { serializeMd } from './serializer';
 
 describe('math package surfaces', () => {
   it('round-trips inline math through the markdown package surfaces', () => {
-    const editor = createTestEditor([BaseInlineEquationPlugin]);
+    const editor = createTestEditor();
     const input = 'Inline $x+1$ math';
     const expected = 'Inline $x+1$ math\n';
 
@@ -35,7 +32,7 @@ describe('math package surfaces', () => {
   });
 
   it('round-trips block math through the markdown package surfaces', () => {
-    const editor = createTestEditor([BaseEquationPlugin]);
+    const editor = createTestEditor();
     const input = '$$\nx+1\n$$';
     const expected = '$$\nx+1\n$$\n';
 

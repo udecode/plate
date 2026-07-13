@@ -1,8 +1,12 @@
 /** @jsx jsxt */
 
-import { BaseParagraphPlugin, KEYS, createSlatePlugin } from 'platejs';
-import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  createBasePlugin,
+} from '@platejs/core';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
+import { KEYS } from '@platejs/utils';
 
 import { BaseEquationPlugin } from './BaseEquationPlugin';
 import { BaseInlineEquationPlugin } from './BaseInlineEquationPlugin';
@@ -10,25 +14,25 @@ import { MathRules } from './MathRules';
 
 jsxt;
 
-const CodeBlockPlugin = createSlatePlugin({
+const CodeBlockPlugin = createBasePlugin({
   key: KEYS.codeBlock,
   node: { isElement: true },
 });
 
 describe('math input rules', () => {
   const createEditor = (
-    value: any,
+    value: TestEditor,
     {
       blockMathRule = MathRules.markdown({ on: 'break', variant: '$$' }),
       inlineMathRule = MathRules.markdown({ variant: '$' }),
-      plugins = [],
+      withCodeBlock = false,
     }: {
       blockMathRule?: ReturnType<typeof MathRules.markdown>;
       inlineMathRule?: ReturnType<typeof MathRules.markdown>;
-      plugins?: any[];
+      withCodeBlock?: boolean;
     } = {}
   ) =>
-    createSlateEditor({
+    createBaseEditor({
       plugins: [
         BaseParagraphPlugin,
         BaseInlineEquationPlugin.configure({
@@ -37,52 +41,63 @@ describe('math input rules', () => {
         BaseEquationPlugin.configure({
           inputRules: [blockMathRule],
         }),
-        ...plugins,
+        ...(withCodeBlock ? [CodeBlockPlugin] : []),
       ],
-      value,
-    } as any);
+      selection: value.selection,
+      value: value.children,
+    });
 
   it('converts a completed $...$ sequence into an inline equation on the closing delimiter', () => {
     const input = (
-      <fragment>
+      <editor>
         <hp>
           Math: $x
           <cursor />
         </hp>
-      </fragment>
-    ) as any;
+      </editor>
+    ) as TestEditor;
 
     const editor = createEditor(input);
 
-    editor.tf.insertText('$');
+    editor.update((tx) => tx.text.insert('$'));
 
-    expect(input.children).toEqual(
-      (
-        <fragment>
-          <hp>
-            Math: <hinlineequation texExpression="x" />
-          </hp>
-        </fragment>
-      ).children
-    );
+    expect(editor.read.value().children).toEqual([
+      {
+        children: [
+          { text: 'Math: ' },
+          {
+            children: [{ text: '' }],
+            texExpression: 'x',
+            type: KEYS.inlineEquation,
+          },
+          { text: '' },
+        ],
+        type: KEYS.p,
+      },
+    ]);
   });
 
   it('promotes a $$ paragraph into a block equation on Enter', () => {
     const input = (
-      <fragment>
+      <editor>
         <hp>
           $$
           <cursor />
         </hp>
-      </fragment>
-    ) as any;
+      </editor>
+    ) as TestEditor;
 
     const editor = createEditor(input);
-    editor.tf.select(editor.api.end([0])!);
+    const end = editor.read.points.end([0]);
 
-    editor.tf.insertBreak();
+    if (!end) throw new Error('Expected paragraph end');
 
-    expect(editor.children).toMatchObject([
+    editor.update((tx) => {
+      tx.selection.set(end);
+      tx.break.insert();
+    });
+
+    expect(editor.read.value().children).toMatchObject([
       {
         texExpression: '',
         type: KEYS.equation,
@@ -92,25 +107,27 @@ describe('math input rules', () => {
 
   it('promotes a $$ prefix into a block equation on the matching delimiter when configured with on: match', () => {
     const input = (
-      <fragment>
+      <editor>
         <hp>
           $
           <cursor />
         </hp>
-      </fragment>
-    ) as any;
+      </editor>
+    ) as TestEditor;
 
     const editor = createEditor(input, {
       blockMathRule: MathRules.markdown({ on: 'match', variant: '$$' }),
     });
 
-    editor.tf.select({
-      anchor: { offset: 1, path: [0, 0] },
-      focus: { offset: 1, path: [0, 0] },
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      });
+      tx.text.insert('$');
     });
-    editor.tf.insertText('$');
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.value().children).toMatchObject([
       {
         texExpression: '',
         type: KEYS.equation,
@@ -120,40 +137,71 @@ describe('math input rules', () => {
 
   it('keeps $...$ literal inside code blocks', () => {
     const input = (
-      <fragment>
+      <editor>
         <hcodeblock>
           <hcodeline>
             $x
             <cursor />
           </hcodeline>
         </hcodeblock>
-      </fragment>
-    ) as any;
+      </editor>
+    ) as TestEditor;
 
-    const editor = createEditor(input, { plugins: [CodeBlockPlugin] });
+    const editor = createEditor(input, { withCodeBlock: true });
 
-    editor.tf.insertText('$');
+    editor.update((tx) => tx.text.insert('$'));
 
-    expect(input.children).toEqual(
+    expect(editor.read.value().children).toEqual(
       (
-        <fragment>
+        <editor>
           <hcodeblock>
             <hcodeline>$x$</hcodeline>
           </hcodeblock>
-        </fragment>
+        </editor>
       ).children
     );
   });
 
-  it('respects app-level enabled overrides for inline math', () => {
+  it('converts inline math when an unrelated code block exists', () => {
     const input = (
-      <fragment>
+      <editor>
+        <hcodeblock>
+          <hcodeline>const value = 1;</hcodeline>
+        </hcodeblock>
         <hp>
           Math: $x
           <cursor />
         </hp>
-      </fragment>
-    ) as any;
+      </editor>
+    ) as TestEditor;
+
+    const editor = createEditor(input, { withCodeBlock: true });
+
+    editor.update((tx) => tx.text.insert('$'));
+
+    expect(editor.read.value().children[1]).toEqual({
+      children: [
+        { text: 'Math: ' },
+        {
+          children: [{ text: '' }],
+          texExpression: 'x',
+          type: KEYS.inlineEquation,
+        },
+        { text: '' },
+      ],
+      type: KEYS.p,
+    });
+  });
+
+  it('respects app-level enabled overrides for inline math', () => {
+    const input = (
+      <editor>
+        <hp>
+          Math: $x
+          <cursor />
+        </hp>
+      </editor>
+    ) as TestEditor;
 
     const editor = createEditor(input, {
       inlineMathRule: MathRules.markdown({
@@ -162,13 +210,13 @@ describe('math input rules', () => {
       }),
     });
 
-    editor.tf.insertText('$');
+    editor.update((tx) => tx.text.insert('$'));
 
-    expect(input.children).toEqual(
+    expect(editor.read.value().children).toEqual(
       (
-        <fragment>
+        <editor>
           <hp>Math: $x$</hp>
-        </fragment>
+        </editor>
       ).children
     );
   });

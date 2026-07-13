@@ -1,26 +1,12 @@
 /** @jsx jsxt */
 
-import {
-  BulletedListPlugin,
-  ListItemContentPlugin,
-  ListItemPlugin,
-  NumberedListPlugin,
-  TaskListPlugin,
-} from '@platejs/list-classic/react';
 import { jsxt } from '@platejs/test-utils';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { serializeMd } from './serializeMd';
 
 jsxt;
-const editor = createTestEditor([
-  ListItemPlugin,
-  ListItemContentPlugin,
-  BulletedListPlugin,
-  NumberedListPlugin,
-  TaskListPlugin,
-  ListItemPlugin,
-]);
+const editor = createTestEditor();
 
 describe('serializeMd list', () => {
   it('serialize unordered lists', () => {

@@ -1,21 +1,8 @@
-import {
-  BaseTableCellHeaderPlugin,
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from '@platejs/table';
-
 import { createTestEditor } from './__tests__/createTestEditor';
 import { deserializeMd } from './deserializer';
 import { serializeMd } from './serializer';
 
-const createTableEditor = () =>
-  createTestEditor([
-    BaseTablePlugin,
-    BaseTableRowPlugin,
-    BaseTableCellPlugin,
-    BaseTableCellHeaderPlugin,
-  ]);
+const createTableEditor = () => createTestEditor();
 
 describe('markdown tables', () => {
   it('round-trips a simple GFM table through markdown package surfaces', () => {

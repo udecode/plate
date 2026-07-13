@@ -198,13 +198,16 @@ const getPreviousCharacter = (editor: BaseEditor) => {
   return range ? editor.read.text.string(range) : '';
 };
 
-const getRuntimeChildren = (node: unknown) =>
-  node &&
-  typeof node === 'object' &&
-  'children' in node &&
-  Array.isArray((node as { children?: unknown }).children)
+const getRuntimeChildren = (node: unknown) => {
+  if (Array.isArray(node)) return node;
+
+  return node &&
+    typeof node === 'object' &&
+    'children' in node &&
+    Array.isArray((node as { children?: unknown }).children)
     ? (node as { children: unknown[] }).children
     : null;
+};
 
 const isRuntimeTextNode = (node: unknown): node is { text: string } =>
   node !== null &&
@@ -285,6 +288,7 @@ const shouldRemoveEmptyMergeTarget = (
   const plugin = type ? getPluginByType(editor, type) : undefined;
 
   if (!plugin) return true;
+  // Plugin-owned blocks preserve empty merge targets unless they opt into removal.
   if (!plugin.rules?.merge?.removeEmpty) return false;
 
   const overrideRules = getMergeOverrideRules(
@@ -438,11 +442,12 @@ export const OverridePlugin = createBasePlugin({
     };
   })
   .extendExtension(({ editor }) => {
-    const hasDeleteRules = editor.runtime.pluginList.some(
-      (plugin) => plugin.rules?.delete || plugin.rules?.match
+    const hasDeleteBehavior = editor.runtime.pluginList.some(
+      (plugin) =>
+        plugin.node.isVoid || plugin.rules?.delete || plugin.rules?.match
     );
 
-    if (!hasDeleteRules) return;
+    if (!hasDeleteBehavior) return;
 
     return {
       transforms: {
@@ -459,6 +464,19 @@ export const OverridePlugin = createBasePlugin({
             const [blockNode, blockPath] = block;
 
             if (editor.read.points.isStart(selection.anchor, blockPath)) {
+              const previous = editor.read.nodes.previous({ at: blockPath });
+
+              if (
+                previous &&
+                ElementApi.isElement(previous[0]) &&
+                editor.read.schema.isVoid(previous[0])
+              ) {
+                tx.selection.set(
+                  editor.read.points.start(previous[1], { required: true })
+                );
+                return true;
+              }
+
               const rules = getEffectiveDeleteRules(
                 editor,
                 'delete.start',

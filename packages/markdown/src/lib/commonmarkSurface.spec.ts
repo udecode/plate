@@ -1,5 +1,3 @@
-import { BaseImagePlugin } from '../../../media/src/lib';
-
 import { createTestEditor } from './__tests__/createTestEditor';
 import { deserializeMd } from './deserializer';
 import { serializeMd } from './serializer';
@@ -110,7 +108,7 @@ describe('commonmark package surfaces', () => {
       title: 'ignores width and height when serializing plain markdown images',
     },
   ])('$title', ({ expected, input, output }) => {
-    const editor = createTestEditor([BaseImagePlugin]);
+    const editor = createTestEditor();
 
     const value = deserializeMd(editor, input);
 

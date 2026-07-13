@@ -1,14 +1,9 @@
 import type { Options as RemarkStringifyOptions } from 'remark-stringify';
-import type { Plugin } from 'unified';
+import type { Pluggable } from 'unified';
 
-import {
-  type OmitFirst,
-  type PluginConfig,
-  bindFirst,
-  createTSlatePlugin,
-  isUrl,
-  KEYS,
-} from 'platejs';
+import { type PluginConfig, createBasePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
+import { type OmitFirst, bindFirst, isUrl } from '@udecode/utils';
 
 import type { MdRules, PlateType } from './types';
 
@@ -45,7 +40,7 @@ export type MarkdownConfig = PluginConfig<
      *
      * @default undefined
      */
-    remarkPlugins: Plugin[];
+    remarkPlugins: Pluggable[];
     /**
      * Custom options passed to remark-stringify.
      *
@@ -88,7 +83,7 @@ export type MarkdownConfig = PluginConfig<
   }
 >;
 
-export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
+export const MarkdownPlugin = createBasePlugin<MarkdownConfig>({
   key: KEYS.markdown,
   options: {
     allowedNodes: null,
@@ -104,10 +99,10 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
     deserializeInline: bindFirst(deserializeInlineMd, editor),
     serialize: bindFirst(serializeMd, editor),
   }))
-  .extend(({ api }) => ({
+  .extend({
     parser: {
       format: 'text/plain',
-      deserialize: ({ data }) => api.markdown.deserialize(data),
+      deserialize: ({ api, data }) => api.deserialize(data),
       query: ({ data, dataTransfer }) => {
         const htmlData = dataTransfer.getData('text/html');
 
@@ -125,4 +120,4 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
         return true;
       },
     },
-  }));
+  });

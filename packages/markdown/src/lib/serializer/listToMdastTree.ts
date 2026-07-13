@@ -1,4 +1,4 @@
-import type { TListElement } from 'platejs';
+import type { TListElement } from '@platejs/utils';
 
 import type { MdList, MdListItem, MdParagraph } from '../mdast';
 import type { SerializeMdOptions } from './serializeMd';

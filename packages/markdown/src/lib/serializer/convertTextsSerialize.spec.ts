@@ -1,4 +1,4 @@
-import type { TText } from 'platejs';
+import type { Text } from '@platejs/plite';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { defaultRules } from '../rules';
@@ -13,7 +13,7 @@ describe('convertTextsSerialize', () => {
 
   it('keeps outer whitespace outside a single closing mark', () => {
     const result = convertTextsSerialize(
-      [{ bold: true, text: ' padded ' }] as TText[],
+      [{ bold: true, text: ' padded ' }] as Text[],
       options
     );
 
@@ -29,7 +29,7 @@ describe('convertTextsSerialize', () => {
 
   it('nests inline code inside other marks instead of wrapping the mark itself', () => {
     const result = convertTextsSerialize(
-      [{ bold: true, code: true, text: 'x' }] as TText[],
+      [{ bold: true, code: true, text: 'x' }] as Text[],
       options
     );
 
@@ -43,7 +43,7 @@ describe('convertTextsSerialize', () => {
 
   it('flattens empty formatted output back to an empty text node', () => {
     const result = convertTextsSerialize(
-      [{ bold: true, text: '' }] as TText[],
+      [{ bold: true, text: '' }] as Text[],
       options
     );
 

@@ -1,16 +1,13 @@
+import { type BaseEditor, getPluginKey, getPluginType } from '@platejs/core';
+import { normalizeDateValue } from '@platejs/date';
 import {
   type Descendant,
+  type Element,
   ElementApi,
-  type SlateEditor,
-  type TElement,
-  type TListElement,
-  type TMentionElement,
-  type TText,
-  getPluginKey,
-  getPluginType,
-  KEYS,
-} from 'platejs';
-import { normalizeDateValue } from '@platejs/date';
+  type Text,
+  TextApi,
+} from '@platejs/plite';
+import { KEYS, type TListElement, type TMentionElement } from '@platejs/utils';
 
 import type {
   MdBlockquote,
@@ -56,7 +53,7 @@ function isBoolean(value: any) {
 }
 
 const createClassicListItemContent = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   children: Descendant[] = []
 ) => ({
   children: children.length > 0 ? children : [{ text: '' }],
@@ -66,7 +63,7 @@ const createClassicListItemContent = (
 const deserializeClassicListItemChildren = (
   mdastChildren: MdRootContent[],
   deco: any,
-  options: { editor?: SlateEditor } & Record<string, any>
+  options: { editor?: BaseEditor } & Record<string, any>
 ) => {
   const licType = getPluginType(options.editor!, KEYS.lic);
   const children = mdastChildren
@@ -90,7 +87,7 @@ const deserializeClassicListItemChildren = (
 };
 
 const groupInlineChildrenIntoParagraphs = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   children: Descendant[] = []
 ) => {
   const paragraphType = getPluginType(editor, KEYS.p);
@@ -103,15 +100,15 @@ const groupInlineChildrenIntoParagraphs = (
     elements.push({
       children: inlineNodes as any,
       type: paragraphType,
-    } as TElement);
+    } as Element);
     inlineNodes = [];
   };
 
   children.forEach((child) => {
     const isBlock =
       ElementApi.isElement(child) &&
-      !editor.api.isInline(child) &&
-      editor.api.isBlock(child);
+      !editor.read.schema.isInline(child) &&
+      editor.read.schema.isBlock(child);
 
     if (isBlock) {
       flushInlineNodes();
@@ -132,18 +129,27 @@ const groupInlineChildrenIntoParagraphs = (
     {
       children: [{ text: '' }],
       type: paragraphType,
-    } as TElement,
+    } as Element,
   ];
 };
 
 const normalizeParagraphLineBreaks = (
   children: Descendant[],
   options: { preserveEmptyParagraphs?: boolean }
-) =>
-  children.flatMap((child): Descendant[] => {
+) => {
+  const isEmptyParagraph =
+    children.length === 1 &&
+    TextApi.isText(children[0]) &&
+    children[0].text === '';
+
+  return children.flatMap((child): Descendant[] => {
     const text = (child as { text?: unknown }).text;
 
-    if (text === '' && options.preserveEmptyParagraphs !== false) {
+    if (
+      isEmptyParagraph &&
+      text === '' &&
+      options.preserveEmptyParagraphs !== false
+    ) {
       return [{ ...child, text: '\u200B' }];
     }
 
@@ -164,6 +170,7 @@ const normalizeParagraphLineBreaks = (
       return nodes;
     });
   });
+};
 
 export const defaultRules: MdRules = {
   a: {
@@ -262,7 +269,7 @@ export const defaultRules: MdRules = {
   code_block: {
     deserialize: (mdastNode, _deco, options) => ({
       children: (mdastNode.value || '').split('\n').map((line) => ({
-        children: [{ text: line } as TText],
+        children: [{ text: line } as Text],
         type: getPluginType(options.editor!, KEYS.codeLine),
       })),
       lang: mdastNode.lang ?? undefined,
@@ -479,7 +486,7 @@ export const defaultRules: MdRules = {
   },
   hr: {
     deserialize: (_, __, options) => ({
-      children: [{ text: '' } as TText],
+      children: [{ text: '' } as Text],
       type: getPluginType(options.editor!, KEYS.hr),
     }),
     serialize: () => ({ type: 'thematicBreak' }),
@@ -499,8 +506,8 @@ export const defaultRules: MdRules = {
       } = attributes ? parseAttributes(attributes) : ({} as any);
 
       return {
-        caption: [{ text: altAttr || alt || '' } as TText],
-        children: [{ text: '' } as TText],
+        caption: [{ text: altAttr || alt || '' } as Text],
+        children: [{ text: '' } as Text],
         ...(title && { title }),
         type: getPluginType(options.editor!, KEYS.img),
         url: src || url,
@@ -678,7 +685,7 @@ export const defaultRules: MdRules = {
       const startIndex = (mdastNode as any).start || 1;
       return parseListItems(mdastNode, 1, startIndex);
     },
-    serialize: (node: { type: 'ol' | 'ul' } & TElement, options): MdList => {
+    serialize: (node: { type: 'ol' | 'ul' } & Element, options): MdList => {
       const editor = options.editor!;
       const isOrdered = getPluginKey(editor, node.type) === KEYS.olClassic;
 
@@ -1112,7 +1119,7 @@ export const defaultRules: MdRules = {
   ...columnRules,
 };
 
-export const buildRules = (editor: SlateEditor) => {
+export const buildRules = (editor: BaseEditor) => {
   const keys = Object.keys(defaultRules);
 
   const newRules: Record<string, any> = {};

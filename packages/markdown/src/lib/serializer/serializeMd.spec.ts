@@ -5,12 +5,16 @@ describe('serializeMd', () => {
   it('serializes the editor value by default when no explicit value is passed', () => {
     const editor = createTestEditor();
 
-    editor.children = [
-      {
-        children: [{ text: 'editor value' }],
-        type: 'p',
-      },
-    ] as any;
+    editor.update((tx) =>
+      tx.value.replace({
+        children: [
+          {
+            children: [{ text: 'editor value' }],
+            type: 'p',
+          },
+        ],
+      })
+    );
 
     expect(serializeMd(editor)).toBe('editor value\n');
   });

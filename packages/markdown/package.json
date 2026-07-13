@@ -42,8 +42,11 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
+    "@platejs/core": "workspace:^",
     "@platejs/date": "workspace:*",
     "@platejs/plite": "workspace:^",
+    "@platejs/utils": "workspace:^",
+    "@udecode/utils": "workspace:^",
     "lodash": "^4.17.23",
     "marked": "^15.0.12",
     "mdast-util-math": "3.0.0",
@@ -58,9 +61,7 @@
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
-    "@platejs/footnote": "workspace:*",
-    "@platejs/table": "workspace:*",
-    "platejs": "workspace:^",
+    "@platejs/test-utils": "workspace:^",
     "@types/mdast": "^4.0.4",
     "@types/unist": "^3.0.3",
     "remark-emoji": "5.0.1",
@@ -68,7 +69,6 @@
     "remark-math": "6.0.0"
   },
   "peerDependencies": {
-    "platejs": ">=54.0.0-beta.1",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

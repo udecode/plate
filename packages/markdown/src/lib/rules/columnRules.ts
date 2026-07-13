@@ -1,4 +1,5 @@
-import { getPluginType, KEYS } from 'platejs';
+import { getPluginType } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import type { MdRules } from '../types';
 

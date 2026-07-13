@@ -1,11 +1,6 @@
-import {
-  type Descendant,
-  type SlateEditor,
-  ElementApi,
-  getPluginType,
-  KEYS,
-  TextApi,
-} from 'platejs';
+import { type BaseEditor, getPluginType } from '@platejs/core';
+import { type Descendant, ElementApi, TextApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import {
   type DeserializeMdOptions,
@@ -26,7 +21,7 @@ const isSplitInsideTableRow = (completeString: string) => {
 };
 
 const markdownToSlateNodesWithoutMdx = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   data: string,
   options?: Omit<DeserializeMdOptions, 'editor'>
 ) =>
@@ -36,7 +31,7 @@ const markdownToSlateNodesWithoutMdx = (
   });
 
 const markdownToSlateNodesWithMdxFallback = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   data: string,
   options?: Omit<DeserializeMdOptions, 'editor'>
 ) => {
@@ -48,11 +43,11 @@ const markdownToSlateNodesWithMdxFallback = (
 };
 
 const appendInlineNodesToLastTextContainer = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   node: unknown,
   inlineNodes: Descendant[]
 ): boolean => {
-  if (!ElementApi.isElement(node) || editor.api.isVoid(node)) {
+  if (!ElementApi.isElement(node) || editor.read.schema.isVoid(node)) {
     return false;
   }
 
@@ -95,7 +90,7 @@ const appendInlineNodesToLastTextContainer = (
 };
 
 export const markdownToSlateNodesSafely = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   data: string,
   options?: Omit<DeserializeMdOptions, 'editor'>
 ) => {
@@ -129,7 +124,7 @@ export const markdownToSlateNodesSafely = (
 
   const lastBlock = completeNodes.at(-1);
 
-  if (ElementApi.isElement(lastBlock) && editor.api.isVoid(lastBlock)) {
+  if (ElementApi.isElement(lastBlock) && editor.read.schema.isVoid(lastBlock)) {
     return [...completeNodes, newBlock];
   }
 

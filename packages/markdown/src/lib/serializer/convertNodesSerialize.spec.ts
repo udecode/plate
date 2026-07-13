@@ -1,4 +1,4 @@
-import type { Descendant } from 'platejs';
+import type { Descendant } from '@platejs/plite';
 
 import type { SerializeMdOptions } from './serializeMd';
 

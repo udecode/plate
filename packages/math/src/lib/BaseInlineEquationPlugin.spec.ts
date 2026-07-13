@@ -1,13 +1,13 @@
-import { createSlateEditor } from 'platejs';
-import { KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseInlineEquationPlugin } from './BaseInlineEquationPlugin';
 
 describe('BaseInlineEquationPlugin', () => {
   it('configures inlineEquation as an inline void element and exposes insert.inlineEquation', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseInlineEquationPlugin],
-    } as any);
+    });
     const plugin = editor.getPlugin(BaseInlineEquationPlugin);
 
     expect(plugin.node).toMatchObject({
@@ -15,11 +15,13 @@ describe('BaseInlineEquationPlugin', () => {
       isInline: true,
       isVoid: true,
     });
-    expect(typeof (editor as any).tf.insert.inlineEquation).toBe('function');
+    editor.update((tx) => {
+      expect(typeof tx.inline_equation.insert).toBe('function');
+    });
   });
 
   it('moves into the inline equation from the left boundary', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseInlineEquationPlugin],
       selection: {
         anchor: { offset: 3, path: [0, 0] },
@@ -39,18 +41,20 @@ describe('BaseInlineEquationPlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
-    editor.tf.move({ distance: 1, unit: 'character' });
+    editor.update((tx) =>
+      tx.selection.move({ distance: 1, unit: 'character' })
+    );
 
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 0, path: [0, 1, 0] },
     });
   });
 
   it('moves into the inline equation from the right boundary', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseInlineEquationPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 2] },
@@ -70,11 +74,13 @@ describe('BaseInlineEquationPlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
-    editor.tf.move({ distance: 1, reverse: true, unit: 'character' });
+    editor.update((tx) =>
+      tx.selection.move({ distance: 1, reverse: true, unit: 'character' })
+    );
 
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 0, path: [0, 1, 0] },
     });

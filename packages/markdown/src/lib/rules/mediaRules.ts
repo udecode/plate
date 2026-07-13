@@ -1,4 +1,4 @@
-import type { TMediaElement } from 'platejs';
+import type { TMediaElement } from '@platejs/utils';
 
 import type { MdMdxJsxFlowElement } from '../mdast';
 import type { MdRules } from '../types';

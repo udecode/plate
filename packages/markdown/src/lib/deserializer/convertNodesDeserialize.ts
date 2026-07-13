@@ -1,4 +1,4 @@
-import type { Descendant } from 'platejs';
+import type { Descendant } from '@platejs/plite';
 
 import type { MdRootContent } from '../mdast';
 import type { MdDecoration } from '../types';

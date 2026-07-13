@@ -2,15 +2,10 @@ export type * as unistLib from 'unist';
 
 import type { StrictExtract } from 'ts-essentials';
 
-import {
-  type NodeKey,
-  type Nullable,
-  type SlateEditor,
-  type TElement,
-  type TNodeMap,
-  type TText,
-  getPluginKey,
-} from 'platejs';
+import { type BaseEditor, getPluginKey } from '@platejs/core';
+import type { Element, Text } from '@platejs/plite';
+import type { NodeKey, NodeMap } from '@platejs/utils';
+import type { Nullable } from '@udecode/utils';
 
 import type { DeserializeMdOptions } from './deserializer';
 import type {
@@ -142,7 +137,7 @@ export type StrictPlateType =
 export type PlateType = (string & {}) | StrictPlateType;
 
 type PlateNodeMap = Pick<
-  TNodeMap,
+  NodeMap,
   | 'a'
   | 'audio'
   | 'blockquote'
@@ -176,9 +171,9 @@ type PlateNodeMap = Pick<
   | 'video'
 > & {
   /** Markdown only */
-  text: TText;
+  text: Text;
   list: any;
-  heading: TElement;
+  heading: Element;
   footnoteReference: any;
   definition: any;
   footnoteDefinition: any;
@@ -327,7 +322,7 @@ const MDAST_TO_PLATE = {
  * the mdast type itself.
  */
 export const mdastToPlate = <T extends StrictMdType>(
-  editor: SlateEditor,
+  editor: BaseEditor,
   mdastType: T
 ) => {
   const plateKey = MDAST_TO_PLATE[mdastType];

@@ -1,15 +1,9 @@
-import {
-  BaseColumnItemPlugin,
-  BaseColumnPlugin,
-} from '../../../layout/src/lib';
-
 import { createTestEditor } from './__tests__/createTestEditor';
 import { deserializeMd } from './deserializer';
 import { serializeMd } from './serializer';
 
 describe('column package surfaces', () => {
-  const createColumnEditor = () =>
-    createTestEditor([BaseColumnPlugin, BaseColumnItemPlugin]);
+  const createColumnEditor = () => createTestEditor();
 
   it('round-trips a column group through the markdown package surfaces', () => {
     const editor = createColumnEditor();
