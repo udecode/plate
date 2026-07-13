@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-07-09-table-toolbar-single-cell-selection",
+      "href": "/registry/changelog/2026-07-09-table-toolbar-single-cell-selection.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep table floating toolbar row/column controls while a single cell's content is selected",
+      "change": {
+        "type": "source",
+        "date": "2026-07-09",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["table-node"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-06-28-ai-sdk-v7",
       "href": "/registry/changelog/2026-06-28-ai-sdk-v7.json",
       "status": "draft",
