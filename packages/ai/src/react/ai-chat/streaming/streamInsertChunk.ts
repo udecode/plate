@@ -21,8 +21,8 @@ import { isSameNode } from './utils/isSameNode';
 import { nodesWithProps } from './utils/nodesWithProps';
 
 export type SteamInsertChunkOptions = {
-  elementProps?: any;
-  textProps?: any;
+  elementProps?: Record<string, unknown>;
+  textProps?: Record<string, unknown>;
 };
 
 const getNextPath = (path: Path, length: number) => {
@@ -82,14 +82,15 @@ export function streamInsertChunk(
     }
 
     if (blocks.length > 0) {
-      editor.tf.insertNodes(
-        nodesWithProps(editor, [blocks[0]], insertOptions),
-        {
-          at: path,
-          nextBlock: !startInEmptyParagraph,
-          select: true,
+      const firstBlock = nodesWithProps(editor, [blocks[0]], insertOptions);
+
+      editor.update((tx) => {
+        if (startInEmptyParagraph) {
+          tx.nodes.insert(firstBlock, { at: path, select: true });
+        } else {
+          tx.blocks.insertAfter(firstBlock, { at: path, select: true });
         }
-      );
+      });
 
       editor
         .plugin(AIChatPlugin)
@@ -101,13 +102,9 @@ export function streamInsertChunk(
 
         const nextPath = getCurrentBlockPath(editor);
 
-        editor.tf.insertNodes(
+        editor.update.blocks.insertAfter(
           nodesWithProps(editor, nextBlocks, insertOptions),
-          {
-            at: nextPath,
-            nextBlock: true,
-            select: true,
-          }
+          { at: nextPath, select: true }
         );
 
         const lastBlock = editor.api.node(
@@ -154,7 +151,10 @@ export function streamInsertChunk(
 
       // If the types are the same
       if (isSameNode(editor, currentBlock, tempBlocks[0])) {
-        const chunkNodes = streamDeserializeInlineMd(editor as any, chunk);
+        const chunkNodes = streamDeserializeInlineMd(
+          editor as Parameters<typeof streamDeserializeInlineMd>[0],
+          chunk
+        );
 
         // Deserialize the chunk and add it to the end of the current block
         editor.tf.insertNodes(
@@ -241,12 +241,9 @@ export function streamInsertChunk(
       if (tempBlocks.length > 1) {
         const newEndBlockPath = getNextPath(_blockPath, tempBlocks.length - 1);
 
-        editor.tf.insertNodes(
+        editor.update.blocks.insertAfter(
           nodesWithProps(editor, tempBlocks.slice(1), insertOptions),
-          {
-            at: PathApi.next(_blockPath),
-            select: true,
-          }
+          { at: _blockPath, select: true }
         );
 
         editor.plugin(AIChatPlugin).setOption('_blockPath', newEndBlockPath);

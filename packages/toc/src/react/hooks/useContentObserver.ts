@@ -1,12 +1,11 @@
 import React from 'react';
 
-import { NodeApi } from 'platejs';
-import { useEditorRef, useEditorSelector } from 'platejs/react';
+import { useEditorRef, useEditorSelector } from '@platejs/core/react';
 
 import { getHeadingList } from '../../internal/getHeadingList';
 
 type UseContentObserver = {
-  editorContentRef: React.RefObject<HTMLElement | null>;
+  editorContent: HTMLElement | null;
   isObserve: boolean;
   isScroll: boolean;
   rootMargin: string;
@@ -14,7 +13,7 @@ type UseContentObserver = {
 };
 
 export const useContentObserver = ({
-  editorContentRef,
+  editorContent,
   isObserve,
   isScroll,
   rootMargin,
@@ -30,8 +29,7 @@ export const useContentObserver = ({
   const [activeId, setActiveId] = React.useState('');
 
   React.useEffect(() => {
-    // ✅ Access ref inside effect, not during render
-    const root = isScroll ? editorContentRef.current : undefined;
+    const root = isScroll ? editorContent : undefined;
 
     const callback = (headings: IntersectionObserverEntry[]) => {
       if (!isObserve) return;
@@ -49,11 +47,9 @@ export const useContentObserver = ({
 
         if (headingElement.isIntersecting) visibleHeadings.push(key);
       });
-      const lastKey = Object.keys(headingElementsRef.current).pop()!;
+      const [firstVisible] = visibleHeadings;
 
-      if (visibleHeadings.length > 0) {
-        setActiveId(visibleHeadings[0] || lastKey);
-      }
+      if (firstVisible) setActiveId(firstVisible);
       headingElementsRef.current = {};
     };
     const observer = new IntersectionObserver(callback, {
@@ -64,11 +60,11 @@ export const useContentObserver = ({
     headingList.forEach((item) => {
       const { path } = item;
 
-      const node = NodeApi.get(editor, path);
+      const node = editor.read.nodes.get(path)?.[0];
 
       if (!node) return;
 
-      const element = editor.api.toDOMNode(node);
+      const element = editor.api.dom.resolveDOMNode(node);
 
       if (element) {
         observer.observe(element);
@@ -82,7 +78,7 @@ export const useContentObserver = ({
     headingList,
     isObserve,
     editor,
-    editorContentRef,
+    editorContent,
     isScroll,
     rootMargin,
     status,

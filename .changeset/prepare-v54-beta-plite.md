@@ -15,3 +15,5 @@ Accept live text and element targets in public `at` options, resolve paths with 
 Expose explicit selection and point predicates for text scope, block scope, block edges, range intersection and containment, and word endings.
 
 Centralize pure predicate and property matching in `NodeApi.matches`, including path-aware predicates and one-of property values.
+
+Add `tx.blocks.insertAfter` and `editor.update.blocks.insertAfter` for block-relative insertion from locations or live nodes.

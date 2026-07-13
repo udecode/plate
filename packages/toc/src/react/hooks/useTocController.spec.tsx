@@ -20,10 +20,13 @@ describe('useTocController', () => {
       `./useTocController?test=${Math.random().toString(36).slice(2)}`
     );
     const scrollTo = mock();
-    const wrapper = { scrollTo, scrollTop: 20 };
-    const root = {
-      querySelector: () => wrapper,
-    } as any;
+    const wrapper = document.createElement('div');
+    const root = document.createElement('nav');
+
+    wrapper.id = 'toc_wrap';
+    wrapper.scrollTop = 20;
+    wrapper.scrollTo = scrollTo;
+    root.append(wrapper);
 
     useTocObserverMock.mockReturnValue({ offset: 15, visible: false });
 

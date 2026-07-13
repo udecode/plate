@@ -1,11 +1,12 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseTocPlugin } from '../BaseTocPlugin';
 import { insertToc } from './insertToc';
 
 describe('insertToc', () => {
   it('inserts the default toc node shape', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseTocPlugin],
       value: [
         {
@@ -15,9 +16,9 @@ describe('insertToc', () => {
       ],
     });
 
-    insertToc(editor, { at: [1] });
+    editor.update((tx) => insertToc(editor, tx, { at: [1] }));
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: 'a' }],
         type: KEYS.p,
@@ -30,7 +31,7 @@ describe('insertToc', () => {
   });
 
   it('respects the configured node type', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseTocPlugin.configure({ node: { type: 'custom-toc' } })],
       value: [
         {
@@ -40,9 +41,9 @@ describe('insertToc', () => {
       ],
     });
 
-    insertToc(editor, { at: [1] });
+    editor.update((tx) => insertToc(editor, tx, { at: [1] }));
 
-    expect(editor.children[1]).toMatchObject({
+    expect(editor.read.children()[1]).toMatchObject({
       children: [{ text: '' }],
       type: 'custom-toc',
     });

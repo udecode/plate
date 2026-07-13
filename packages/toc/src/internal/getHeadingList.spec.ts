@@ -1,11 +1,11 @@
-import { createSlateEditor } from 'platejs';
+import { type BaseEditor, createBaseEditor } from '@platejs/core';
 
 import { BaseTocPlugin } from '../lib/BaseTocPlugin';
 import { getHeadingList } from './getHeadingList';
 
 describe('getHeadingList', () => {
   it('returns titled headings with depth, path, and id', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseTocPlugin],
       value: [
         {
@@ -50,19 +50,16 @@ describe('getHeadingList', () => {
   });
 
   it('uses the configured queryHeading override when present', () => {
-    const queryHeading = mock(
-      () =>
-        [
-          {
-            depth: 9,
-            id: 'custom',
-            path: [42],
-            title: 'Custom',
-            type: 'custom-heading',
-          },
-        ] as any
-    ) as any;
-    const editor = createSlateEditor({
+    const queryHeading = mock((_editor: BaseEditor) => [
+      {
+        depth: 9,
+        id: 'custom',
+        path: [42],
+        title: 'Custom',
+        type: 'custom-heading',
+      },
+    ]);
+    const editor = createBaseEditor({
       plugins: [BaseTocPlugin.configure({ options: { queryHeading } })],
       value: [
         {

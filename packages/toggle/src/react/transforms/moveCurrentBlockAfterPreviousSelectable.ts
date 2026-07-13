@@ -1,42 +1,51 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import {
+  type EditorUpdateTransaction,
+  ElementApi,
+  PathApi,
+} from '@platejs/plite';
 
 import { isInClosedToggle } from '../queries';
 
-const isElement = (value: any): value is { id?: string; type?: string } =>
-  !!value && typeof value === 'object' && !Array.isArray(value);
-
 // Return false only if the all previous blocks are not selectable
 export const moveCurrentBlockAfterPreviousSelectable = (
-  editor: SlateEditor
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction
 ): boolean | undefined => {
-  const { selection } = editor;
+  const selection = tx.selection();
 
   if (!selection) return;
 
-  const aboveBlock = editor.api.block();
+  const aboveBlock = tx.nodes.block();
 
   if (!aboveBlock) return;
-  if (!editor.api.isAt({ start: true })) return;
+  if (!tx.points.isStart(selection.anchor, aboveBlock[1])) return;
 
-  const beforePoint = editor.api.before(selection);
+  const blockIndex = aboveBlock[1].at(-1);
 
-  if (!beforePoint) return;
+  if (blockIndex === undefined || blockIndex === 0) return;
 
-  const blockBefore = editor.api.block({ at: beforePoint });
+  const blockBefore = tx.nodes.get(PathApi.previous(aboveBlock[1]));
 
-  if (!blockBefore) return;
-  if (!isInClosedToggle(editor, blockBefore[0].id as string)) return; // We're already after a selectable then
+  if (!blockBefore || !ElementApi.isElement(blockBefore[0])) return;
+  if (
+    typeof blockBefore[0].id !== 'string' ||
+    !isInClosedToggle(editor, blockBefore[0].id)
+  ) {
+    return;
+  }
 
-  const previousSelectableBlock = editor.api.previous({
-    match: (node: any) =>
-      isElement(node) && !isInClosedToggle(editor, node.id as string),
+  const previousSelectableBlock = tx.nodes.previous({
+    at: blockBefore[1],
+    match: (node) =>
+      ElementApi.isElement(node) &&
+      (typeof node.id !== 'string' || !isInClosedToggle(editor, node.id)),
   });
 
   if (!previousSelectableBlock) return false;
 
-  const afterSelectableBlock = [previousSelectableBlock[1][0] + 1];
-  editor.tf.moveNodes({
+  tx.nodes.move({
     at: aboveBlock[1],
-    to: afterSelectableBlock,
+    to: PathApi.next(previousSelectableBlock[1]),
   });
 };

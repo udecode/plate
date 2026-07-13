@@ -1,4 +1,4 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
 
 import type { TabbableEntry, TabDestination } from './types';
 
@@ -24,7 +24,7 @@ export type FindTabDestinationOptions = {
 };
 
 export const findTabDestination = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { activeTabbableEntry, direction, tabbableEntries }: FindTabDestinationOptions
 ): TabDestination | null => {
   // Case 1: A tabbable entry was active before tab was pressed
@@ -70,7 +70,7 @@ export const findTabDestination = (
      * tabbable entry specify custom before and after points.
      */
     if (direction === 'forward') {
-      const pointAfter = editor.api.after(activeTabbableEntry.path);
+      const pointAfter = editor.read.points.after(activeTabbableEntry.path);
 
       if (!pointAfter) return null;
 
@@ -80,15 +80,14 @@ export const findTabDestination = (
       };
     }
 
-    return {
-      path: editor.api.point(activeTabbableEntry.path)!.path,
-      type: 'path',
-    };
+    const point = editor.read.points.get(activeTabbableEntry.path);
+
+    return point ? { path: point.path, type: 'path' } : null;
   }
 
   // Case 2: No tabbable entry was active before tab was pressed
 
-  const selectionPath = editor.selection?.anchor?.path || [];
+  const selectionPath = editor.read.selection()?.anchor.path ?? [];
 
   // Find the first tabbable entry after the selection
   const nextTabbableEntry =

@@ -7,7 +7,7 @@ import {
   useContentControllerMock,
   useEditorPluginMock,
   useEditorSelectorMock,
-  useScrollRefMock,
+  useEditorScrollElementMock,
 } from './__tests__/tocHookMocks';
 
 describe('useTocElement', () => {
@@ -36,7 +36,8 @@ describe('useTocElement', () => {
 
     useEditorPluginMock.mockReturnValue({
       editor: {
-        api: { toDOMNode },
+        api: { dom: { resolveDOMNode: toDOMNode } },
+        read: { nodes: { get: () => [{ id: 'h1' }, [0]] } },
       },
       getOptions: () => ({
         isScroll: true,
@@ -44,9 +45,7 @@ describe('useTocElement', () => {
       }),
     });
     useEditorSelectorMock.mockReturnValue([{ id: 'h1', path: [0] }]);
-    useScrollRefMock.mockReturnValue({
-      current: document.createElement('div'),
-    });
+    useEditorScrollElementMock.mockReturnValue(document.createElement('div'));
     useContentControllerMock.mockReturnValue({
       activeContentId: 'h1',
       onContentScroll,
@@ -57,8 +56,16 @@ describe('useTocElement', () => {
 
     act(() => {
       hook.result.current.props.onClick(
-        { preventDefault: mock() } as any,
-        { id: 'h1', path: [0] } as any,
+        { preventDefault: mock() } as Parameters<
+          typeof hook.result.current.props.onClick
+        >[0],
+        {
+          depth: 1,
+          id: 'h1',
+          path: [0],
+          title: 'Heading',
+          type: 'h1',
+        },
         'instant'
       );
     });

@@ -1,4 +1,5 @@
-import { type PluginConfig, createTSlatePlugin, KEYS } from 'platejs';
+import { type PluginConfig, createBasePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import type { TabbableEntry } from './types';
 
@@ -23,7 +24,7 @@ export type TabblableConfig = PluginConfig<
     /**
      * Determine whether an element should be included in the tabbable list.
      *
-     * @default: (editor, tabbableEntry) => editor.api.isVoid(tabbableEntry.slateNode)
+     * @default: (entry) => editor.read.schema.isVoid(entry.slateNode)
      */
     isTabbable?: (entry: TabbableEntry) => boolean;
     /**
@@ -35,7 +36,7 @@ export type TabblableConfig = PluginConfig<
   }
 >;
 
-export const BaseTabbablePlugin = createTSlatePlugin<TabblableConfig>({
+export const BaseTabbablePlugin = createBasePlugin<TabblableConfig>({
   key: KEYS.tabbable,
   options: {
     globalEventListener: false,
@@ -44,6 +45,6 @@ export const BaseTabbablePlugin = createTSlatePlugin<TabblableConfig>({
   },
 }).extend(({ editor }) => ({
   options: {
-    isTabbable: (tabbableEntry) => editor.api.isVoid(tabbableEntry.slateNode),
+    isTabbable: (entry) => editor.read.schema.isVoid(entry.slateNode),
   },
 }));

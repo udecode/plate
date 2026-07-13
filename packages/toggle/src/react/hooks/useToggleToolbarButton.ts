@@ -1,7 +1,13 @@
-import { KEYS } from 'platejs';
-import { useEditorRef, useEditorSelector } from 'platejs/react';
+import {
+  type PlateEditor,
+  useEditorRef,
+  useEditorSelector,
+} from '@platejs/core/react';
+import type { Value } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { someToggle } from '../../lib';
+import type { ToggleConfig } from '../TogglePlugin';
 import { openNextToggles } from '../transforms';
 
 export const useToggleToolbarButtonState = () => {
@@ -15,16 +21,18 @@ export const useToggleToolbarButtonState = () => {
 export const useToggleToolbarButton = ({
   pressed,
 }: ReturnType<typeof useToggleToolbarButtonState>) => {
-  const editor = useEditorRef();
+  const editor = useEditorRef<PlateEditor<Value, ToggleConfig>>();
 
   return {
     props: {
       pressed,
       onClick: () => {
         openNextToggles(editor);
-        editor.tf.toggleBlock(KEYS.toggle);
-        editor.tf.collapse();
-        editor.tf.focus();
+        editor.update((tx) => {
+          tx.blocks.toggle(KEYS.toggle);
+          tx.selection.collapse();
+        });
+        editor.api.dom.focus();
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();

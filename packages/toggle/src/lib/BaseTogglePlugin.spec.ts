@@ -1,10 +1,10 @@
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BaseTogglePlugin } from './BaseTogglePlugin';
 
 describe('BaseTogglePlugin', () => {
   it('tracks open ids and respects explicit force overrides', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseTogglePlugin],
     });
 
@@ -12,7 +12,7 @@ describe('BaseTogglePlugin', () => {
       new Set()
     );
 
-    editor.getApi(BaseTogglePlugin).toggle.toggleIds(['a', 'b']);
+    editor.api.toggle.toggleIds(['a', 'b']);
 
     expect(
       [
@@ -20,13 +20,13 @@ describe('BaseTogglePlugin', () => {
       ].sort()
     ).toEqual(['a', 'b']);
 
-    editor.getApi(BaseTogglePlugin).toggle.toggleIds(['b'], false);
+    editor.api.toggle.toggleIds(['b'], false);
 
     expect([
       ...(editor.plugin(BaseTogglePlugin).getOptions().openIds ?? new Set()),
     ]).toEqual(['a']);
 
-    editor.getApi(BaseTogglePlugin).toggle.toggleIds(['a', 'c'], true);
+    editor.api.toggle.toggleIds(['a', 'c'], true);
 
     expect(
       [

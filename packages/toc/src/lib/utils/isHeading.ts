@@ -1,4 +1,7 @@
-import { type TNode, KEYS } from 'platejs';
+import { type Node, ElementApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
-export const isHeading = (node: TNode) =>
-  node.type && KEYS.heading.includes(node.type as any);
+export const isHeading = (node: Node) =>
+  ElementApi.isElement(node) &&
+  typeof node.type === 'string' &&
+  KEYS.heading.some((type) => type === node.type);

@@ -1,12 +1,10 @@
-import type React from 'react';
-
 export const heightToTop = (
   ele: HTMLElement,
-  editorContentRef?: React.RefObject<HTMLDivElement | null>
+  editorContent?: HTMLElement | null
 ) => {
-  const root = editorContentRef ? editorContentRef.current : document.body;
+  const root = editorContent ?? document.body;
 
-  if (!root || !ele) return 0;
+  if (!root) return 0;
 
   const containerRect = root.getBoundingClientRect();
   const elementRect = ele.getBoundingClientRect();

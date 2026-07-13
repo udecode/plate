@@ -1,7 +1,9 @@
 import React from 'react';
 
-import { type TTagProps, isDefined } from 'platejs';
-import { useEditorRef, useEditorString } from 'platejs/react';
+import { useEditorRef } from '@platejs/core/react';
+import { TextApi } from '@platejs/plite';
+import type { TTagProps } from '@platejs/utils';
+import { useEditorString } from '@platejs/utils/react';
 
 import { useSelectedItems } from './useSelectedItems';
 
@@ -24,14 +26,22 @@ export const useSelectEditorCombobox = ({
   // Remove text and select end of editor when combobox closes
   React.useEffect(() => {
     if (!open) {
-      editor.tf.removeNodes({ at: [], empty: false, text: true });
-      editor.tf.select([], { edge: 'end' });
+      editor.update((tx) => {
+        tx.nodes.remove({
+          at: [],
+          match: (node) => TextApi.isText(node) && node.text.length > 0,
+        });
+
+        const end = tx.points.end([]);
+
+        if (end) tx.selection.set(end);
+      });
     }
   }, [editor, open]);
 
   // Select first item when search updates
   React.useEffect(() => {
-    if (isDefined(search)) {
+    if (search !== undefined) {
       selectFirstItem();
     }
   }, [search, selectFirstItem]);
@@ -40,6 +50,5 @@ export const useSelectEditorCombobox = ({
 
   React.useEffect(() => {
     onValueChange?.(selectedItems);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedItems]);
+  }, [onValueChange, selectedItems]);
 };

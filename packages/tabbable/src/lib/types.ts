@@ -1,15 +1,16 @@
-type Path = number[];
+import type { Node, Path } from '@platejs/plite';
+import type { FocusableElement } from 'tabbable';
 
 export type TabbableEntry = {
-  domNode: HTMLElement;
+  domNode: FocusableElement;
   path: Path;
-  slateNode: any;
+  slateNode: Node;
 };
 
 export type TabDestination = TabDestinationDOMNode | TabDestinationPath;
 
 export type TabDestinationDOMNode = {
-  domNode: HTMLElement;
+  domNode: FocusableElement;
   type: 'dom-node';
 };
 

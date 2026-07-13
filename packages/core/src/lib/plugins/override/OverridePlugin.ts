@@ -537,6 +537,7 @@ export const OverridePlugin = createBasePlugin({
           if (
             OperationApi.isRemoveNodeOperation(operation) &&
             ElementApi.isElement(operation.node) &&
+            !editor.read.schema.isVoid(operation.node) &&
             operation.node.children.length > 0 &&
             operation.path.length > 0 &&
             getRuntimeNodeText(operation.node).length === 0 &&

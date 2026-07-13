@@ -1,112 +1,82 @@
-import { toPlatePlugin } from 'platejs/react';
+import { toPlatePlugin } from '@platejs/core/react';
+import { ElementApi, PathApi, TextApi, type Text } from '@platejs/plite';
+import type { TTagElement } from '@platejs/utils';
 
 import { BaseTagPlugin } from '../lib';
 
-type TextLike = {
-  text: string;
-};
-
-const isPathEqual = (a: number[], b: number[]) =>
-  a.length === b.length && a.every((value, index) => value === b[index]);
-
-const isTextNode = (value: any): value is TextLike =>
-  typeof value?.text === 'string';
-
 export const TagPlugin = toPlatePlugin(BaseTagPlugin);
 
-export const MultiSelectPlugin = toPlatePlugin(
-  BaseTagPlugin.overrideEditor(
-    ({
-      api: { onChange },
-      editor,
-      tf: { deleteBackward, normalizeNode },
-      type,
-    }) => ({
-      api: {
-        onChange(op: any) {
-          onChange(op);
-
-          const someTag = editor.read.nodes.some({
-            match: { type },
-          });
-
-          if (someTag || !editor.selection) {
-            // Remove non-empty texts when selecting a tag or when no selection
-            editor.tf.removeNodes({
-              at: [],
-              empty: false,
-              text: true,
-            });
-          } else {
-            const texts = new Set(
+export const MultiSelectPlugin = toPlatePlugin(BaseTagPlugin, {
+  handlers: {
+    onChange: ({ editor, type }) => {
+      editor.update((tx) => {
+        const selection = tx.selection();
+        const removeAllText = !selection || tx.nodes.some({ match: { type } });
+        const selectedPaths = removeAllText
+          ? null
+          : new Set(
               Array.from(
-                editor.api.nodes<TextLike>({
-                  text: true,
+                tx.nodes.entries<Text>({
+                  at: selection,
+                  match: TextApi.isText,
                 })
-              ).map((entry: any) => entry[0])
+              ).map(([, path]) => path.join(','))
             );
 
-            // Remove text not in selection
-            editor.tf.removeNodes({
-              at: [],
-              empty: false,
-              text: true,
-              match: (text: TextLike) => !texts.has(text),
-            });
-          }
-        },
-      },
-      transforms: {
-        deleteBackward(unit: any) {
-          deleteBackward(unit);
+        tx.nodes.remove({
+          at: [],
+          match: (node, path) =>
+            TextApi.isText(node) &&
+            node.text.length > 0 &&
+            (removeAllText || !selectedPaths?.has(path.join(','))),
+        });
+      });
+    },
+  },
+}).extendExtension(({ editor, type }) => ({
+  normalizers: {
+    node({ entry: [node, path], next, tx }) {
+      if (
+        ElementApi.isElementType<TTagElement>(node, type) &&
+        editor.read.nodes.some<TTagElement>({
+          at: [],
+          match: (candidate, candidatePath) =>
+            ElementApi.isElementType<TTagElement>(candidate, type) &&
+            candidate.value === node.value &&
+            !PathApi.equals(candidatePath, path),
+        })
+      ) {
+        tx.nodes.remove({ at: path });
+        return;
+      }
 
-          if (
-            editor.read.nodes.some({
-              match: { type },
-            })
-          ) {
-            editor.tf.move();
-          }
-        },
+      if (TextApi.isText(node)) {
+        const leadingWhitespace =
+          node.text.length - node.text.trimStart().length;
 
-        normalizeNode([node, path]: [any, number[]]) {
-          // Duplicate tag removal
-          if (
-            node.type === type &&
-            editor.read.nodes.some({
-              at: [],
-              match: (n: any, p: number[]) =>
-                n.type === type &&
-                n.value === node.value &&
-                !isPathEqual(p, path),
-            })
-          ) {
-            editor.tf.removeNodes({
-              at: path,
-            });
+        if (leadingWhitespace > 0) {
+          tx.text.delete({
+            at: {
+              anchor: { offset: 0, path },
+              focus: { offset: leadingWhitespace, path },
+            },
+          });
+          return;
+        }
+      }
 
-            return;
-          }
-          // Trim leading whitespace
-          if (isTextNode(node) && node.text) {
-            const trimmedText = node.text.trimStart();
+      next();
+    },
+  },
+  transforms: {
+    deleteBackward({ next, tx, unit }) {
+      const result = next({ unit });
 
-            if (trimmedText !== node.text) {
-              editor.tf.replaceNodes(
-                { text: trimmedText },
-                {
-                  at: path,
-                  select: true,
-                }
-              );
+      if (tx.nodes.some({ match: { type } })) {
+        tx.selection.move();
+      }
 
-              return;
-            }
-          }
-
-          normalizeNode([node, path]);
-        },
-      },
-    })
-  )
-);
+      return result;
+    },
+  },
+}));

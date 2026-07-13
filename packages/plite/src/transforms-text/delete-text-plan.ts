@@ -74,6 +74,7 @@ export const getHighestNonEditable = (editor: Editor, at: Path | Point) =>
       (getEditorSchema(editor).isVoid(node) ||
         getEditorSchema(editor).isReadOnly(node)),
     mode: 'highest',
+    voids: true,
   });
 
 export const pathContainsPoint = (path: readonly number[], point: Point) =>

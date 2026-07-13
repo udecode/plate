@@ -2,8 +2,12 @@
 
 import React from 'react';
 
-import type { Path } from 'platejs';
-import { useEditorRef } from 'platejs/react';
+import {
+  type NavigationFeedbackConfig,
+  type PlateEditor,
+  useEditorRef,
+} from '@platejs/core/react';
+import type { Path, Value } from '@platejs/plite';
 
 import type { UseContentController } from '../types';
 
@@ -11,82 +15,72 @@ import { heightToTop } from '../utils';
 import { useContentObserver } from './useContentObserver';
 
 export const useContentController = ({
-  containerRef,
+  container,
   isObserve,
   rootMargin,
   topOffset,
 }: UseContentController) => {
-  const editor = useEditorRef();
-  const [editorContentRef, setEditorContentRef] = React.useState(containerRef);
-
-  const isScrollRef = React.useRef(false);
+  const editor = useEditorRef<PlateEditor<Value, NavigationFeedbackConfig>>();
 
   const isScroll =
-    (editorContentRef.current?.scrollHeight || 0) >
-    (editorContentRef.current?.clientHeight || 0);
+    (container?.scrollHeight || 0) > (container?.clientHeight || 0);
 
-  isScrollRef.current = isScroll;
-
-  const scrollContainer = React.useMemo(() => {
-    if (typeof window !== 'object') return;
-
-    return isScroll ? editorContentRef.current : window;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isScroll]);
+  const scrollContainer =
+    typeof window === 'object' ? (isScroll ? container : window) : undefined;
 
   const [status, setStatus] = React.useState(0);
 
   const { activeId } = useContentObserver({
-    editorContentRef,
+    editorContent: container,
     isObserve,
     isScroll,
     rootMargin,
     status,
   });
 
-  const [activeContentId, setActiveContentId] = React.useState(activeId);
-
-  const onContentScroll = ({
-    behavior = 'instant',
-    el,
-    id,
-    path,
-  }: {
-    behavior?: ScrollBehavior;
-    el: HTMLElement;
+  const [selectedContent, setSelectedContent] = React.useState<{
     id: string;
-    path?: Path;
-  }) => {
-    setActiveContentId(id);
+    observedId: string;
+  }>();
+  const activeContentId =
+    selectedContent?.observedId === activeId ? selectedContent.id : activeId;
 
-    if (isScrollRef.current) {
-      editorContentRef.current?.scrollTo({
-        behavior,
-        top: heightToTop(el, editorContentRef) - topOffset,
-      });
-    } else {
-      const top = heightToTop(el) - topOffset;
-      // Note: if behavior === smooth,scrolling the toc then click the title immediately will scroll to the wrong position.It should be a chrome bug.
-      window.scrollTo({ behavior, top });
-    }
+  const onContentScroll = React.useCallback(
+    ({
+      behavior = 'instant',
+      el,
+      id,
+      path,
+    }: {
+      behavior?: ScrollBehavior;
+      el: HTMLElement;
+      id: string;
+      path?: Path;
+    }) => {
+      setSelectedContent({ id, observedId: activeId });
 
-    if (path) {
-      editor.tf.navigation.flashTarget({
-        target: {
-          path,
-          type: 'node',
-        },
-      });
-    }
-  };
+      if (isScroll) {
+        container?.scrollTo({
+          behavior,
+          top: heightToTop(el, container) - topOffset,
+        });
+      } else {
+        const top = heightToTop(el) - topOffset;
 
-  React.useEffect(() => {
-    setEditorContentRef(containerRef);
-  }, [containerRef]);
+        window.scrollTo({ behavior, top });
+      }
 
-  React.useEffect(() => {
-    setActiveContentId(activeId);
-  }, [activeId]);
+      if (path) {
+        editor.update.navigation.flashTarget({
+          target: {
+            path,
+            type: 'node',
+          },
+        });
+      }
+    },
+    [activeId, container, editor, isScroll, topOffset]
+  );
 
   React.useEffect(() => {
     if (!scrollContainer) return;

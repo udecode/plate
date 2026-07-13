@@ -1,103 +1,196 @@
-/** @jsx jsxt */
+import { createPlateEditor } from '@platejs/core/react';
+import { KEYS } from '@platejs/utils';
 
-import { IndentPlugin } from '@platejs/indent/react';
-import { jsxt } from '@platejs/test-utils';
-import { KEYS, createSlateEditor } from 'platejs';
-
-import { BaseTogglePlugin } from '../lib';
 import { TogglePlugin } from './TogglePlugin';
-
-jsxt;
+import { buildToggleIndex } from './toggleIndexAtom';
 
 describe('withToggle', () => {
-  const plugins = [
-    IndentPlugin.configure({
-      inject: {
-        targetPlugins: [KEYS.p, KEYS.toggle],
+  it('inserts an indented paragraph inside an open toggle', () => {
+    const editor = createPlateEditor({
+      plugins: [TogglePlugin],
+      selection: {
+        anchor: { offset: 6, path: [0, 0] },
+        focus: { offset: 6, path: [0, 0] },
       },
-    }),
-    TogglePlugin,
-  ];
-
-  it('insertBreak in an open toggle creates an indented paragraph inside the toggle', () => {
-    const input = (
-      <editor>
-        <htoggle id="t1">
-          Toggle
-          <cursor />
-        </htoggle>
-        <hp>after</hp>
-      </editor>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins,
-      selection: input.selection,
-      value: input.children,
+      value: [
+        { children: [{ text: 'Toggle' }], id: 't1', type: KEYS.toggle },
+        { children: [{ text: 'after' }], type: KEYS.p },
+      ],
     });
 
-    editor.getApi(BaseTogglePlugin).toggle.toggleIds(['t1'], true);
-    editor.tf.insertBreak();
+    editor.api.toggle.toggleIds(['t1'], true);
+    editor.update.break.insert();
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: 'Toggle' }],
         id: 't1',
-        type: 'toggle',
+        type: KEYS.toggle,
       },
       {
         children: [{ text: '' }],
         indent: 1,
-        type: 'p',
+        type: KEYS.p,
       },
       {
         children: [{ text: 'after' }],
-        type: 'p',
+        type: KEYS.p,
       },
     ]);
   });
 
-  it('insertBreak in a closed toggle places the new toggle after hidden children', () => {
-    const input = (
-      <editor>
-        <htoggle id="t1">
-          Toggle
-          <cursor />
-        </htoggle>
-        <hp id="p1" indent={1}>
-          hidden child
-        </hp>
-        <hp>after</hp>
-      </editor>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins,
-      selection: input.selection,
-      value: input.children,
+  it('places a new closed-toggle block after hidden children', () => {
+    const editor = createPlateEditor({
+      plugins: [TogglePlugin],
+      selection: {
+        anchor: { offset: 6, path: [0, 0] },
+        focus: { offset: 6, path: [0, 0] },
+      },
+      value: [
+        { children: [{ text: 'Toggle' }], id: 't1', type: KEYS.toggle },
+        {
+          children: [{ text: 'hidden child' }],
+          id: 'p1',
+          indent: 1,
+          type: KEYS.p,
+        },
+        { children: [{ text: 'after' }], type: KEYS.p },
+      ],
     });
 
-    editor.tf.insertBreak();
+    editor
+      .plugin(TogglePlugin)
+      .setOption('toggleIndex', buildToggleIndex(editor.read.children()));
+    editor.update.break.insert();
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: 'Toggle' }],
         id: 't1',
-        type: 'toggle',
+        type: KEYS.toggle,
       },
       {
         children: [{ text: 'hidden child' }],
         id: 'p1',
         indent: 1,
-        type: 'p',
+        type: KEYS.p,
       },
       {
         children: [{ text: '' }],
-        type: 'toggle',
+        type: KEYS.toggle,
       },
       {
         children: [{ text: 'after' }],
-        type: 'p',
+        type: KEYS.p,
+      },
+    ]);
+  });
+
+  it('marks descendants of closed toggles as non-selectable', () => {
+    const editor = createPlateEditor({
+      plugins: [TogglePlugin],
+      value: [
+        { children: [{ text: 'Toggle' }], id: 't1', type: KEYS.toggle },
+        {
+          children: [{ text: 'hidden child' }],
+          id: 'p1',
+          indent: 1,
+          type: KEYS.p,
+        },
+      ],
+    });
+
+    editor
+      .plugin(TogglePlugin)
+      .setOption('toggleIndex', buildToggleIndex(editor.read.children()));
+
+    const hiddenChild = editor.read.nodes.get([1])?.[0];
+
+    expect(hiddenChild && editor.read.schema.isSelectable(hiddenChild)).toBe(
+      false
+    );
+
+    editor.api.toggle.toggleIds(['t1'], true);
+
+    expect(hiddenChild && editor.read.schema.isSelectable(hiddenChild)).toBe(
+      true
+    );
+  });
+
+  it('moves past hidden descendants before deleting backward', () => {
+    const editor = createPlateEditor({
+      plugins: [TogglePlugin],
+      selection: {
+        anchor: { offset: 0, path: [2, 0] },
+        focus: { offset: 0, path: [2, 0] },
+      },
+      value: [
+        { children: [{ text: 'Toggle' }], id: 't1', type: KEYS.toggle },
+        {
+          children: [{ text: 'hidden' }],
+          id: 'p1',
+          indent: 1,
+          type: KEYS.p,
+        },
+        { children: [{ text: 'after' }], id: 'p2', type: KEYS.p },
+      ],
+    });
+
+    editor
+      .plugin(TogglePlugin)
+      .setOption('toggleIndex', buildToggleIndex(editor.read.children()));
+    editor.update.text.deleteBackward({ unit: 'character' });
+
+    expect(editor.read.children()).toMatchObject([
+      {
+        children: [{ text: 'Toggleafter' }],
+        id: 't1',
+        type: KEYS.toggle,
+      },
+      {
+        children: [{ text: 'hidden' }],
+        id: 'p1',
+        indent: 1,
+        type: KEYS.p,
+      },
+    ]);
+  });
+
+  it('moves past hidden descendants before deleting forward', () => {
+    const editor = createPlateEditor({
+      plugins: [TogglePlugin],
+      selection: {
+        anchor: { offset: 6, path: [0, 0] },
+        focus: { offset: 6, path: [0, 0] },
+      },
+      value: [
+        { children: [{ text: 'Toggle' }], id: 't1', type: KEYS.toggle },
+        {
+          children: [{ text: 'hidden' }],
+          id: 'p1',
+          indent: 1,
+          type: KEYS.p,
+        },
+        { children: [{ text: 'after' }], id: 'p2', type: KEYS.p },
+      ],
+    });
+
+    editor
+      .plugin(TogglePlugin)
+      .setOption('toggleIndex', buildToggleIndex(editor.read.children()));
+    editor.update.text.deleteForward({ unit: 'character' });
+
+    expect(editor.read.children()).toMatchObject([
+      {
+        children: [{ text: 'Toggleafter' }],
+        id: 't1',
+        type: KEYS.toggle,
+      },
+      {
+        children: [{ text: 'hidden' }],
+        id: 'p1',
+        indent: 1,
+        type: KEYS.p,
       },
     ]);
   });

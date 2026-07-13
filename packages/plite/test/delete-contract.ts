@@ -59,6 +59,36 @@ const table = (): Element => ({
 });
 
 describe('plite delete contract', () => {
+  it('deletes a selected block void on Delete without merging the next block into it', () => {
+    const editor = createEditor();
+
+    editor.extend(
+      defineEditorExtension({
+        elements: [{ type: 'toc', void: 'block' }],
+        name: 'block-void-delete-contract',
+      })
+    );
+
+    editorReplace(editor, {
+      children: [{ type: 'toc', children: [{ text: '' }] }, paragraph('after')],
+      marks: null,
+      selection: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.text.deleteForward();
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('after')]);
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    });
+  });
+
   it('profiles whole-block range delete phases for huge-document attribution', () => {
     const wholeBlockSource = readFileSync(
       new URL(

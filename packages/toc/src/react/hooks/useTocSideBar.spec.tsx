@@ -9,7 +9,7 @@ import {
   useContentControllerMock,
   useEditorRefMock,
   useEditorSelectorMock,
-  useScrollRefMock,
+  useEditorScrollElementMock,
   useTocControllerMock,
 } from './__tests__/tocHookMocks';
 
@@ -42,17 +42,14 @@ describe('useTocSideBar', () => {
       `./useTocSideBar?test=${Math.random().toString(36).slice(2)}`
     );
     const onContentScroll = mock();
-    const setIsObserve = mock();
-    const setMouseInToc = mock();
     const toDOMNode = mock(() => document.createElement('h2'));
 
     useEditorRefMock.mockReturnValue({
-      api: { toDOMNode },
+      api: { dom: { resolveDOMNode: toDOMNode } },
+      read: { nodes: { get: () => [{ id: 'h1' }, [0]] } },
     });
     useEditorSelectorMock.mockReturnValue([{ id: 'h1', path: [0] }]);
-    useScrollRefMock.mockReturnValue({
-      current: document.createElement('div'),
-    });
+    useEditorScrollElementMock.mockReturnValue(document.createElement('div'));
     useContentControllerMock.mockReturnValue({
       activeContentId: 'h1',
       onContentScroll,
@@ -63,27 +60,28 @@ describe('useTocSideBar', () => {
     const stateHook = renderHook(() =>
       useTocSideBarState({ open: true, rootMargin: '0px', topOffset: 0 })
     );
-    const hook = renderHook(() =>
-      useTocSideBar({
-        ...stateHook.result.current,
-        mouseInToc: false,
-        setIsObserve,
-        setMouseInToc,
-      } as any)
-    );
+    const hook = renderHook(() => useTocSideBar(stateHook.result.current));
 
-    hook.result.current.navProps.onMouseEnter();
     act(() => {
+      hook.result.current.navProps.onMouseEnter();
       hook.result.current.onContentClick(
-        { preventDefault: mock() } as any,
-        { id: 'h1', path: [0] } as any
+        { preventDefault: mock() } as Parameters<
+          typeof hook.result.current.onContentClick
+        >[0],
+        {
+          depth: 1,
+          id: 'h1',
+          path: [0],
+          title: 'Heading',
+          type: 'h1',
+        }
       );
     });
 
     expect(stateHook.result.current.headingList).toEqual([
       { id: 'h1', path: [0] },
     ]);
-    expect(setMouseInToc).toHaveBeenCalledWith(true);
+    expect(stateHook.result.current.mouseInToc).toBe(true);
     expect(onContentScroll).toHaveBeenCalledWith({
       behavior: undefined,
       el: expect.any(HTMLElement),

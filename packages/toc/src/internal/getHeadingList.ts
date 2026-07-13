@@ -1,4 +1,5 @@
-import { type SlateEditor, type TElement, NodeApi } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import { type Element, NodeApi } from '@platejs/plite';
 
 import type { Heading } from '../lib/types';
 
@@ -14,7 +15,7 @@ const headingDepth: Record<string, number> = {
   h6: 6,
 };
 
-export const getHeadingList = (editor: SlateEditor) => {
+export const getHeadingList = (editor: BaseEditor) => {
   const options = editor.plugin(BaseTocPlugin).getOptions();
 
   if (options.queryHeading) {
@@ -23,20 +24,18 @@ export const getHeadingList = (editor: SlateEditor) => {
 
   const headingList: Heading[] = [];
 
-  const values = editor.api.nodes<TElement>({
+  const values = editor.read.nodes.entries<Element>({
     at: [],
-    match: (n) => isHeading(n),
+    match: isHeading,
   });
-
-  if (!values) return [];
 
   for (const [node, path] of values) {
     const { type } = node;
     const title = NodeApi.string(node);
     const depth = headingDepth[type];
-    const id = node.id as string;
+    const { id } = node;
 
-    if (title) {
+    if (title && typeof id === 'string') {
       headingList.push({ id, depth, path, title, type });
     }
   }

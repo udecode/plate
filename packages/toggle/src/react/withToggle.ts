@@ -1,7 +1,6 @@
-import type { OverrideEditor } from 'platejs/react';
-
-import { indent } from '@platejs/indent';
-import { type SlateEditor, type TIndentElement, KEYS } from 'platejs';
+import type { ExtendPlateEditorExtension } from '@platejs/core/react';
+import { PathApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import type { ToggleConfig } from './TogglePlugin';
 
@@ -11,75 +10,81 @@ import {
   moveNextSelectableAfterCurrentBlock,
 } from './transforms';
 
-const isNode = (value: any): value is { id?: string; type?: string } =>
-  value !== null && value !== undefined;
-
-export const withToggle: OverrideEditor<ToggleConfig> = ({
-  api: { isSelectable },
+export const withToggle: ExtendPlateEditorExtension<ToggleConfig> = ({
   editor,
   getOption,
-  tf: { deleteBackward, deleteForward, insertBreak },
 }) => ({
-  api: {
-    isSelectable(element: any) {
-      if (isNode(element) && isInClosedToggle(editor, element.id as string))
-        return false;
-
-      return isSelectable(element);
+  elements: [
+    {
+      match: (element) =>
+        typeof element.id === 'string' && isInClosedToggle(editor, element.id),
+      selectable: false,
+      type: 'toggle-hidden-descendant',
     },
-  },
+  ],
   transforms: {
-    deleteBackward(unit: any) {
-      if (
-        moveCurrentBlockAfterPreviousSelectable(editor as SlateEditor) === false
-      )
-        return;
-
-      deleteBackward(unit);
-    },
-
-    deleteForward(unit: any) {
-      if (moveNextSelectableAfterCurrentBlock(editor as SlateEditor) === false)
-        return;
-
-      deleteForward(unit);
-    },
-
-    insertBreak() {
-      const currentBlockEntry = editor.api.block<TIndentElement>();
-
-      if (!currentBlockEntry || currentBlockEntry[0].type !== KEYS.toggle) {
-        return insertBreak();
+    deleteBackward({ next, tx, unit }) {
+      if (moveCurrentBlockAfterPreviousSelectable(editor, tx) === false) {
+        return true;
       }
 
-      const toggleId = currentBlockEntry[0].id as string;
+      return next({ unit });
+    },
+    deleteForward({ next, tx, unit }) {
+      if (moveNextSelectableAfterCurrentBlock(editor, tx) === false) {
+        return true;
+      }
+
+      return next({ unit });
+    },
+    insertBreak({ next, tx }) {
+      const currentBlockEntry = tx.nodes.block();
+
+      if (
+        !currentBlockEntry ||
+        currentBlockEntry[0].type !== KEYS.toggle ||
+        typeof currentBlockEntry[0].id !== 'string'
+      ) {
+        return next();
+      }
+
+      const toggleId = currentBlockEntry[0].id;
       const isOpen = getOption('isOpen', toggleId);
+      const lastEntryEnclosedInToggle = isOpen
+        ? undefined
+        : getLastEntryEnclosedInToggle(editor, toggleId);
 
-      editor.tf.withoutNormalizing(() => {
+      tx.withoutNormalizing(({ tx }) => {
+        next();
+
         if (isOpen) {
-          insertBreak();
-          editor.tf.toggleBlock(KEYS.toggle);
-          indent(editor);
-        } else {
-          const lastEntryEnclosedInToggle = getLastEntryEnclosedInToggle(
-            editor,
-            toggleId
-          );
+          tx.blocks.toggle(KEYS.toggle);
 
-          insertBreak();
+          const insertedBlock = tx.nodes.block();
 
-          if (lastEntryEnclosedInToggle) {
-            const newlyInsertedTogglePath = [currentBlockEntry[1][0] + 1];
-            const afterLastEntryEncloseInToggle = [
-              lastEntryEnclosedInToggle[1][0] + 1,
-            ];
-            editor.tf.moveNodes({
-              at: newlyInsertedTogglePath,
-              to: afterLastEntryEncloseInToggle,
-            });
+          if (insertedBlock) {
+            const indent = insertedBlock[0][KEYS.indent];
+
+            tx.nodes.set(
+              { [KEYS.indent]: typeof indent === 'number' ? indent + 1 : 1 },
+              { at: insertedBlock[1] }
+            );
           }
+
+          return;
+        }
+
+        const insertedBlock = tx.nodes.block();
+
+        if (lastEntryEnclosedInToggle && insertedBlock) {
+          tx.nodes.move({
+            at: insertedBlock[1],
+            to: PathApi.next(lastEntryEnclosedInToggle[1]),
+          });
         }
       });
+
+      return true;
     },
   },
 });

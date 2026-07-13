@@ -1,5 +1,5 @@
-import { KEYS } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createPlateEditor, pipeOnChange } from '@platejs/core/react';
+import { KEYS } from '@platejs/utils';
 
 import { MultiSelectPlugin } from './TagPlugin';
 
@@ -22,9 +22,9 @@ describe('MultiSelectPlugin', () => {
     });
 
     editor.update.normalize({ force: true });
+    pipeOnChange(editor, [...editor.read.children()]);
 
-    const children = editor.read((state) => state.value.root())[0]
-      .children as Record<string, unknown>[];
+    const children = editor.read.children()[0].children;
     const tags = children.filter((node) => node.type === KEYS.tag);
     const nonEmptyTexts = children.filter(
       (node) => typeof node.text === 'string' && node.text.length > 0
@@ -57,8 +57,10 @@ describe('MultiSelectPlugin', () => {
     editor.update((tx) => {
       tx.text.insert('!', { at: { offset: 7, path: [0, 0] } });
     });
+    pipeOnChange(editor, [...editor.read.children()]);
+    editor.update.normalize({ force: true });
 
-    expect(editor.read((state) => state.value.root()) as unknown).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: 'query!' }], type: 'p' },
       { children: [{ text: '' }], type: 'p' },
     ]);

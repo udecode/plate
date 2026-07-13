@@ -1,16 +1,21 @@
-import type { InsertNodesOptions, SlateEditor, TElement } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type {
+  EditorUpdateTransaction,
+  Element,
+  NodeInsertNodesOptions,
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 export const insertToc = (
-  editor: SlateEditor,
-  options?: InsertNodesOptions
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  options?: NodeInsertNodesOptions<Element>
 ) => {
-  editor.tf.insertNodes<TElement>(
+  tx.nodes.insert(
     {
       children: [{ text: '' }],
       type: editor.getType(KEYS.toc),
     },
-    options as any
+    options
   );
 };

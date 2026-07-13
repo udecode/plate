@@ -1,7 +1,10 @@
 import React from 'react';
 
-import { NodeApi } from 'platejs';
-import { useEditorRef, useEditorSelector, useScrollRef } from 'platejs/react';
+import {
+  useEditorRef,
+  useEditorScrollElement,
+  useEditorSelector,
+} from '@platejs/core/react';
 
 import type { Heading } from '../../lib/types';
 import type { TocSideBarProps } from '../types';
@@ -17,7 +20,6 @@ type TocSideBarState = {
   mouseInToc: boolean;
   onContentScroll: ReturnType<typeof useContentController>['onContentScroll'];
   open: boolean;
-  setIsObserve: React.Dispatch<React.SetStateAction<boolean>>;
   setMouseInToc: React.Dispatch<React.SetStateAction<boolean>>;
   tocRef: React.RefObject<HTMLElement | null>;
 };
@@ -29,16 +31,16 @@ export const useTocSideBarState = ({
 }: TocSideBarProps): TocSideBarState => {
   const editor = useEditorRef();
   const headingList = useEditorSelector(getHeadingList, []);
-  const containerRef = useScrollRef();
+  const container = useEditorScrollElement(editor);
 
   const tocRef = React.useRef<HTMLElement>(null);
 
   const [mouseInToc, setMouseInToc] = React.useState(false);
 
-  const [isObserve, setIsObserve] = React.useState(open);
+  const isObserve = open && !mouseInToc;
 
   const { activeContentId, onContentScroll } = useContentController({
-    containerRef,
+    container,
     isObserve,
     rootMargin,
     topOffset,
@@ -56,7 +58,6 @@ export const useTocSideBarState = ({
     headingList,
     mouseInToc,
     open,
-    setIsObserve,
     setMouseInToc,
     tocRef,
     onContentScroll,
@@ -67,20 +68,10 @@ export const useTocSideBar = ({
   editor,
   mouseInToc,
   open,
-  setIsObserve,
   setMouseInToc,
   tocRef,
   onContentScroll,
 }: TocSideBarState) => {
-  React.useEffect(() => {
-    if (mouseInToc) {
-      setIsObserve(false);
-    } else {
-      setIsObserve(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mouseInToc]);
-
   const onContentClick = React.useCallback(
     (
       e: React.MouseEvent<HTMLElement, globalThis.MouseEvent>,
@@ -89,11 +80,11 @@ export const useTocSideBar = ({
     ) => {
       e.preventDefault();
       const { id, path } = item;
-      const node = NodeApi.get(editor, path);
+      const node = editor.read.nodes.get(path)?.[0];
 
       if (!node) return;
 
-      const el = editor.api.toDOMNode(node);
+      const el = editor.api.dom.resolveDOMNode(node);
 
       if (!el) return;
 

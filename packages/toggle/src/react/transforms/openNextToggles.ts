@@ -1,19 +1,21 @@
-import type { SlateEditor } from 'platejs';
+import type { PlateEditor } from '@platejs/core/react';
+import { type Element, type Value, ElementApi } from '@platejs/plite';
 
-import { TogglePlugin } from '../TogglePlugin';
+import type { ToggleConfig } from '../TogglePlugin';
 
 // When creating a toggle, we open it by default.
 // So before inserting the toggle, we update the store to mark the id of the blocks about to be turned into toggles as open.
-export const openNextToggles = (editor: SlateEditor) => {
-  const nodeEntries = Array.from(
-    editor.api.nodes({
-      block: true,
-      mode: 'lowest',
-    })
-  ) as [any, number[]][];
+export const openNextToggles = (editor: PlateEditor<Value, ToggleConfig>) => {
+  const nodeEntries = editor.read.nodes.toArray<Element>({
+    match: (node) =>
+      ElementApi.isElement(node) && editor.read.nodes.isBlock(node),
+    mode: 'lowest',
+  });
 
-  editor.getApi(TogglePlugin).toggle.toggleIds(
-    nodeEntries.map(([node]) => node.id as string),
+  editor.api.toggle.toggleIds(
+    nodeEntries.flatMap(([node]) =>
+      typeof node.id === 'string' ? [node.id] : []
+    ),
     true
   );
 };

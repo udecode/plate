@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { useEditorReadOnly, useEditorRef } from 'platejs/react';
+import {
+  useEditorReadOnly,
+  useEditorRef,
+  usePluginOption,
+} from '@platejs/core/react';
 import { tabbable } from 'tabbable';
 
 import type { TabbableEntry } from '../lib/types';
@@ -23,14 +27,21 @@ const comparePaths = (a: number[], b: number[]) => {
 export function TabbableEffects() {
   const editor = useEditorRef();
   const readOnly = useEditorReadOnly();
+  const globalEventListener = usePluginOption(
+    BaseTabbablePlugin,
+    'globalEventListener'
+  );
+  const insertTabbableEntries = usePluginOption(
+    BaseTabbablePlugin,
+    'insertTabbableEntries'
+  );
+  const isTabbable = usePluginOption(BaseTabbablePlugin, 'isTabbable');
+  const query = usePluginOption(BaseTabbablePlugin, 'query');
 
   React.useEffect(() => {
     if (readOnly) return;
 
-    const { globalEventListener, insertTabbableEntries, isTabbable, query } =
-      editor.plugin(BaseTabbablePlugin).getOptions();
-
-    const editorDOMNode = editor.api.toDOMNode(editor);
+    const editorDOMNode = editor.api.dom.editable();
 
     if (!editorDOMNode) return;
 
@@ -44,50 +55,50 @@ export function TabbableEffects() {
        * Get the list of additional tabbable entries specified in the plugin
        * options
        */
-      const insertedTabbableEntries = insertTabbableEntries?.(
-        event
-      ) as TabbableEntry[];
+      const insertedTabbableEntries = insertTabbableEntries?.(event) ?? [];
 
       /**
        * Global event listener only. Do not handle the tab event if the keydown
        * was sent to an element other than the editor or one of the additional
        * tabbable elements.
        */
+      const eventTarget = event.target;
+
       if (
         globalEventListener &&
-        event.target &&
+        eventTarget instanceof Node &&
         ![
           editorDOMNode,
           ...insertedTabbableEntries.map(({ domNode }) => domNode),
-        ].some((container) => container.contains(event.target as Node))
+        ].some((container) => container.contains(eventTarget))
       ) {
         return;
       }
 
       // Get all tabbable DOM nodes in the editor
-      const tabbableDOMNodes = tabbable(editorDOMNode) as HTMLElement[];
+      const tabbableDOMNodes = tabbable(editorDOMNode);
 
       /**
        * Construct a tabbable entry for each tabbable Slate node, filtered by
        * the `isTabbable` option (defaulting to only void nodes).
        */
-      const defaultTabbableEntries = tabbableDOMNodes
-        .map((domNode) => {
-          const slateNode = editor.api.toSlateNode(domNode);
+      const defaultTabbableEntries = tabbableDOMNodes.flatMap((domNode) => {
+        const slateNode = editor.api.dom.resolvePliteNode(domNode);
 
-          if (!slateNode) return null;
+        if (!slateNode) return [];
 
-          const path = editor.read.nodes.path(slateNode);
+        const path = editor.api.dom.resolvePath(slateNode);
 
-          if (!path) return null;
+        if (!path) return [];
 
-          return {
-            domNode,
-            path,
-            slateNode,
-          } as TabbableEntry;
-        })
-        .filter((entry) => entry && isTabbable?.(entry)) as TabbableEntry[];
+        const entry: TabbableEntry = {
+          domNode,
+          path,
+          slateNode,
+        };
+
+        return isTabbable?.(entry) ? [entry] : [];
+      });
 
       /**
        * The list of all tabbable entries. Sorting by path ensures a consistent
@@ -127,12 +138,11 @@ export function TabbableEffects() {
             break;
           }
           case 'path': {
-            editor.tf.focus({
-              at: {
-                anchor: { offset: 0, path: tabDestination.path },
-                focus: { offset: 0, path: tabDestination.path },
-              },
+            editor.update.selection.set({
+              anchor: { offset: 0, path: tabDestination.path },
+              focus: { offset: 0, path: tabDestination.path },
             });
+            editor.api.dom.focus();
 
             break;
           }
@@ -169,7 +179,14 @@ export function TabbableEffects() {
 
     return () =>
       eventListenerNode.removeEventListener('keydown', handler, true);
-  }, [readOnly, editor]);
+  }, [
+    editor,
+    globalEventListener,
+    insertTabbableEntries,
+    isTabbable,
+    query,
+    readOnly,
+  ]);
 
   return null;
 }

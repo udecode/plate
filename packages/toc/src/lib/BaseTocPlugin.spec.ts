@@ -1,12 +1,13 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseTocPlugin } from './BaseTocPlugin';
 
 describe('BaseTocPlugin', () => {
   it('configures toc as a void element with the shipped defaults', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseTocPlugin],
-    } as any);
+    });
     const plugin = editor.getPlugin(BaseTocPlugin);
 
     expect(plugin.key).toBe(KEYS.toc);
@@ -18,10 +19,11 @@ describe('BaseTocPlugin', () => {
       isScroll: true,
       topOffset: 80,
     });
+    expect(editor.update.toc.insert).toBeDefined();
   });
 
   it('deleteForward removes the selected toc block', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseTocPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 0] },
@@ -37,24 +39,24 @@ describe('BaseTocPlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
-    editor.tf.deleteForward('character');
+    editor.update.text.deleteForward({ unit: 'character' });
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: 'after' }],
         type: KEYS.p,
       },
     ]);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
   });
 
   it('deleteBackward from the next block selects the toc instead of deleting through it', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseTocPlugin],
       selection: {
         anchor: { offset: 0, path: [1, 0] },
@@ -70,19 +72,19 @@ describe('BaseTocPlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
-    editor.tf.deleteBackward('character');
+    editor.update.text.deleteBackward({ unit: 'character' });
 
-    expect(editor.children).toHaveLength(2);
-    expect(editor.selection).toEqual({
+    expect(editor.read.children()).toHaveLength(2);
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
   });
 
   it('moveLine from the next block selects the toc instead of entering its empty child', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseTocPlugin],
       selection: {
         anchor: { offset: 0, path: [1, 0] },
@@ -98,18 +100,18 @@ describe('BaseTocPlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
-    editor.tf.move({ reverse: true, unit: 'line' });
+    editor.update.selection.move({ reverse: true, unit: 'line' });
 
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
   });
 
-  it('keeps Enter on the toc selection from creating text inside the toc', () => {
-    const editor = createSlateEditor({
+  it('inserts a paragraph after the toc on Enter', () => {
+    const editor = createBaseEditor({
       plugins: [BaseTocPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 0] },
@@ -125,49 +127,27 @@ describe('BaseTocPlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
-    editor.tf.insertBreak();
+    editor.update.break.insert();
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         children: [{ text: '' }],
         type: KEYS.toc,
+      },
+      {
+        children: [{ text: '' }],
+        type: 'paragraph',
       },
       {
         children: [{ text: 'after' }],
         type: KEYS.p,
       },
     ]);
-    expect(editor.selection).toEqual({
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 0, path: [0, 0] },
-    });
-  });
-
-  it('lets Tab fall through instead of tabbing into toc text', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseTocPlugin],
-      selection: {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      },
-      value: [
-        {
-          children: [{ text: '' }],
-          type: KEYS.toc,
-        },
-        {
-          children: [{ text: 'after' }],
-          type: KEYS.p,
-        },
-      ],
-    } as any);
-
-    expect(editor.tf.tab({ reverse: false })).toBe(false);
-    expect(editor.selection).toEqual({
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 0, path: [0, 0] },
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [1, 0] },
+      focus: { offset: 0, path: [1, 0] },
     });
   });
 });

@@ -24,16 +24,16 @@ describe('useContentController', () => {
     const flashTarget = mock();
     const scrollTo = mock();
     const editor = {
-      tf: {
+      update: {
         navigation: { flashTarget },
       },
-    } as any;
+    };
     const container = document.createElement('div');
     Object.defineProperties(container, {
       clientHeight: { value: 10 },
       scrollHeight: { value: 50 },
     });
-    (container as any).scrollTo = scrollTo;
+    container.scrollTo = scrollTo;
 
     useEditorRefMock.mockReturnValue(editor);
     useContentObserverMock.mockReturnValue({ activeId: 'h1' });
@@ -44,11 +44,11 @@ describe('useContentController', () => {
 
     const { result } = renderHook(() =>
       useContentController({
-        containerRef: { current: container },
+        container,
         isObserve: true,
         rootMargin: '0px',
         topOffset: 5,
-      } as any)
+      })
     );
 
     act(() => {

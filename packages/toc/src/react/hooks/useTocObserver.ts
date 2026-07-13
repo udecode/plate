@@ -15,13 +15,15 @@ export const useTocObserver = ({
   const [offset, setOffset] = React.useState<number>(0);
 
   React.useEffect(() => {
-    // ✅ Access ref inside effect, not during render
     const root = tocRef.current;
 
     const updateOffset = (entries: IntersectionObserverEntry[]) => {
       if (!isObserve) return;
 
       const [entry] = entries;
+
+      if (!entry) return;
+
       const { boundingClientRect, intersectionRatio, rootBounds } = entry;
 
       if (!rootBounds) return;
@@ -35,9 +37,9 @@ export const useTocObserver = ({
 
       if (!isVisible) {
         const offset = isAbove
-          ? boundingClientRect.top - rootBounds!.top! - halfHeight
+          ? boundingClientRect.top - rootBounds.top - halfHeight
           : isBelow
-            ? boundingClientRect.bottom - rootBounds!.bottom! + halfHeight
+            ? boundingClientRect.bottom - rootBounds.bottom + halfHeight
             : 0;
 
         setOffset(offset);
@@ -48,7 +50,7 @@ export const useTocObserver = ({
       root,
     });
 
-    const element = root?.querySelectorAll('#toc_item_active')[0];
+    const element = root?.querySelector('#toc_item_active');
 
     if (element) observer.observe(element);
 

@@ -1,18 +1,17 @@
 import { useEffect } from 'react';
 
-import type { UseHooks } from 'platejs/react';
+import type { PlatePluginContext } from '@platejs/core/react';
 
 import type { ToggleConfig } from './TogglePlugin';
 
 import { useToggleIndex } from './toggleIndexAtom';
 
-export const useHooksToggle: UseHooks<ToggleConfig> = ({
-  editor,
-  setOption,
-}) => {
+export const useHooksToggle = (
+  setOption: PlatePluginContext<ToggleConfig>['setOption']
+) => {
   const toggleIndex = useToggleIndex();
 
   useEffect(() => {
     setOption('toggleIndex', toggleIndex);
-  }, [editor, setOption, toggleIndex]);
+  }, [setOption, toggleIndex]);
 };

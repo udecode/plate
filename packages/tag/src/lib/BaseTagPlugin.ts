@@ -1,26 +1,30 @@
-import { type TTagProps, createSlatePlugin, KEYS } from 'platejs';
+import { createBasePlugin } from '@platejs/core';
+import type { NodeInsertNodesOptions, Text } from '@platejs/plite';
+import type { TTagElement, TTagProps } from '@platejs/utils';
+import { KEYS } from '@platejs/utils';
 
-export const BaseTagPlugin = createSlatePlugin({
+export const BaseTagPlugin = createBasePlugin({
   key: KEYS.tag,
   node: {
     isElement: true,
     isInline: true,
     isVoid: true,
   },
-}).extendEditorTransforms(({ editor, type }) => ({
-  insert: {
-    tag: (props: TTagProps, options?: any) => {
-      editor.tf.insertNodes(
-        [
-          {
-            children: [{ text: '' }],
-            type,
-            ...props,
-          },
-          { text: '' },
-        ],
-        options
-      );
-    },
+}).extendTx(({ type }) => (tx) => ({
+  insert: (
+    props: TTagProps,
+    options?: NodeInsertNodesOptions<TTagElement | Text>
+  ) => {
+    tx.nodes.insert(
+      [
+        {
+          children: [{ text: '' }],
+          type,
+          ...props,
+        },
+        { text: '' },
+      ],
+      options
+    );
   },
 }));

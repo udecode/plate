@@ -29,11 +29,17 @@ describe('useContentObserver', () => {
     intersectionCallback = null;
     observeMock.mockReset();
     disconnectMock.mockReset();
-    (globalThis as any).IntersectionObserver = IntersectionObserverMock;
+    Object.defineProperty(globalThis, 'IntersectionObserver', {
+      configurable: true,
+      value: IntersectionObserverMock,
+    });
   });
 
   afterEach(() => {
-    (globalThis as any).IntersectionObserver = OriginalIntersectionObserver;
+    Object.defineProperty(globalThis, 'IntersectionObserver', {
+      configurable: true,
+      value: OriginalIntersectionObserver,
+    });
   });
 
   it('observes heading elements and promotes the first visible heading id', async () => {
@@ -43,8 +49,9 @@ describe('useContentObserver', () => {
     useEditorSelectorMock.mockReturnValue([{ id: 'h1', path: [0] }]);
     useEditorRefMock.mockReturnValue({
       api: {
-        toDOMNode: () => headingEl,
+        dom: { resolveDOMNode: () => headingEl },
       },
+      read: { nodes: { get: () => [{ id: 'h1' }, [0]] } },
     });
 
     const { useContentObserver } = await import(
@@ -53,7 +60,7 @@ describe('useContentObserver', () => {
 
     const { result } = renderHook(() =>
       useContentObserver({
-        editorContentRef: { current: document.createElement('div') },
+        editorContent: document.createElement('div'),
         isObserve: true,
         isScroll: true,
         rootMargin: '0px',
@@ -67,11 +74,16 @@ describe('useContentObserver', () => {
       intersectionCallback?.(
         [
           {
+            boundingClientRect: DOMRect.fromRect({}),
+            intersectionRatio: 1,
+            intersectionRect: DOMRect.fromRect({}),
             isIntersecting: true,
+            rootBounds: DOMRect.fromRect({}),
             target: headingEl,
-          } as unknown as IntersectionObserverEntry,
+            time: 0,
+          } as IntersectionObserverEntry,
         ],
-        {} as IntersectionObserver
+        new IntersectionObserver(() => {})
       );
     });
 

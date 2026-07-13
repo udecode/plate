@@ -1,9 +1,10 @@
-import { type PluginConfig, createTSlatePlugin, KEYS } from 'platejs';
+import { type PluginConfig, createBasePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 export type BaseToggleConfig = PluginConfig<
   'toggle',
   {
-    openIds?: Set<string>;
+    openIds: Set<string>;
   },
   {
     toggle: {
@@ -17,7 +18,7 @@ export type BaseToggleConfig = PluginConfig<
   }
 >;
 
-export const BaseTogglePlugin = createTSlatePlugin<BaseToggleConfig>({
+export const BaseTogglePlugin = createBasePlugin<BaseToggleConfig>({
   key: KEYS.toggle,
   node: { isElement: true },
   options: {
@@ -25,24 +26,28 @@ export const BaseTogglePlugin = createTSlatePlugin<BaseToggleConfig>({
   },
 })
   .extendSelectors<BaseToggleConfig['selectors']>(({ getOptions }) => ({
-    isOpen: (toggleId) => getOptions().openIds!.has(toggleId),
+    isOpen: (toggleId) => getOptions().openIds.has(toggleId),
     someClosed: (toggleIds) => {
       const { openIds } = getOptions();
 
-      return toggleIds.some((id) => !openIds!.has(id));
+      return toggleIds.some((id) => !openIds.has(id));
     },
   }))
   .extendApi<BaseToggleConfig['api']['toggle']>(({ setOptions }) => ({
     toggleIds: (ids, force = null) => {
       setOptions((draft) => {
+        if (!draft.openIds) draft.openIds = new Set();
+
+        const { openIds } = draft;
+
         ids.forEach((id) => {
-          const isCurrentlyOpen = draft.openIds!.has(id);
+          const isCurrentlyOpen = openIds.has(id);
           const newIsOpen = force === null ? !isCurrentlyOpen : force;
 
           if (newIsOpen) {
-            draft.openIds!.add(id);
+            openIds.add(id);
           } else {
-            draft.openIds!.delete(id);
+            openIds.delete(id);
           }
         });
       });

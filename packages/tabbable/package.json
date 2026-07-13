@@ -40,11 +40,15 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
+    "@platejs/core": "workspace:^",
+    "@platejs/plite": "workspace:^",
+    "@platejs/utils": "workspace:^",
     "react-compiler-runtime": "^1.0.0",
     "tabbable": "^6.2.0"
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
+    "@platejs/test-utils": "workspace:^",
     "platejs": "workspace:^"
   },
   "peerDependencies": {

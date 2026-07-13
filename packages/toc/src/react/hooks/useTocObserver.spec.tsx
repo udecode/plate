@@ -20,11 +20,17 @@ describe('useTocObserver', () => {
     intersectionCallback = null;
     observeMock.mockReset();
     disconnectMock.mockReset();
-    (globalThis as any).IntersectionObserver = IntersectionObserverMock;
+    Object.defineProperty(globalThis, 'IntersectionObserver', {
+      configurable: true,
+      value: IntersectionObserverMock,
+    });
   });
 
   afterEach(() => {
-    (globalThis as any).IntersectionObserver = OriginalIntersectionObserver;
+    Object.defineProperty(globalThis, 'IntersectionObserver', {
+      configurable: true,
+      value: OriginalIntersectionObserver,
+    });
   });
 
   it('tracks visibility and offset for the active toc item', async () => {
@@ -33,8 +39,10 @@ describe('useTocObserver', () => {
     );
     const activeItem = document.createElement('div');
     const root = document.createElement('nav');
-    root.querySelectorAll = () => [activeItem] as any;
-    root.getBoundingClientRect = () => ({ height: 100 }) as DOMRect;
+
+    activeItem.id = 'toc_item_active';
+    root.append(activeItem);
+    root.getBoundingClientRect = () => DOMRect.fromRect({ height: 100 });
 
     const { result } = renderHook(() =>
       useTocObserver({
@@ -48,12 +56,12 @@ describe('useTocObserver', () => {
       intersectionCallback?.(
         [
           {
-            boundingClientRect: { bottom: 120, top: -20 },
+            boundingClientRect: DOMRect.fromRect({ height: 140, y: -20 }),
             intersectionRatio: 0,
-            rootBounds: { bottom: 100, top: 0 },
-          } as any,
+            rootBounds: DOMRect.fromRect({ height: 100 }),
+          } as IntersectionObserverEntry,
         ],
-        {} as any
+        new IntersectionObserver(() => {})
       );
     });
 

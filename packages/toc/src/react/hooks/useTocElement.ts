@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { type Path, NodeApi } from 'platejs';
 import {
   useEditorPlugin,
+  useEditorScrollElement,
   useEditorSelector,
-  useScrollRef,
-} from 'platejs/react';
+} from '@platejs/core/react';
+import type { Path } from '@platejs/plite';
 
 import type { Heading } from '../../lib/types';
 
@@ -19,10 +19,10 @@ export const useTocElementState = () => {
 
   const headingList = useEditorSelector(getHeadingList, []);
 
-  const containerRef = useScrollRef();
+  const container = useEditorScrollElement(editor);
 
   const { activeContentId, onContentScroll } = useContentController({
-    containerRef,
+    container,
     isObserve: true,
     rootMargin: '0px 0px 0px 0px',
     topOffset,
@@ -65,11 +65,11 @@ export const useTocElement = ({
     ) => {
       e.preventDefault();
       const { id, path } = item;
-      const node = NodeApi.get(editor, path);
+      const node = editor.read.nodes.get(path)?.[0];
 
       if (!node) return;
 
-      const el = editor.api.toDOMNode(node);
+      const el = editor.api.dom.resolveDOMNode(node);
 
       if (!el) return;
 

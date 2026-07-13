@@ -31,6 +31,34 @@ describe('OverridePlugin', () => {
     });
   });
 
+  it('removes a selected block void without merging the next block into it', () => {
+    const VoidPlugin = createBasePlugin({
+      key: 'void',
+      node: { isElement: true, isVoid: true },
+    });
+    const editor = createBaseEditor({
+      plugins: [VoidPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [
+        { children: [{ text: '' }], type: 'void' },
+        { children: [{ text: 'after' }], type: 'p' },
+      ],
+    });
+
+    editor.update((tx) => tx.text.deleteForward({ unit: 'character' }));
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'after' }], type: 'p' },
+    ]);
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
+  });
+
   it('handles deleteExit through the OverridePlugin Plite extension', () => {
     const CalloutPlugin = createBasePlugin({
       key: 'callout',

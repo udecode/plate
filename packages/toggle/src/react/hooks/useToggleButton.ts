@@ -1,9 +1,9 @@
-import { useEditorPlugin, usePluginOption } from 'platejs/react';
+import { useEditorPlugin, usePluginOption } from '@platejs/core/react';
 
 import { BaseTogglePlugin } from '../../lib';
 
 export const useToggleButtonState = (toggleId: string) => {
-  const openIds = usePluginOption(BaseTogglePlugin, 'openIds')!;
+  const openIds = usePluginOption(BaseTogglePlugin, 'openIds');
 
   return {
     open: openIds.has(toggleId),
@@ -21,7 +21,7 @@ export const useToggleButton = (
     buttonProps: {
       onClick: (e: React.MouseEvent) => {
         e.preventDefault();
-        api.toggle.toggleIds([state.toggleId]);
+        api.toggleIds([state.toggleId]);
       },
       onMouseDown: (e: React.MouseEvent) => {
         e.preventDefault();

@@ -1,4 +1,4 @@
-import { toPlatePlugin } from 'platejs/react';
+import { toPlatePlugin } from '@platejs/core/react';
 
 import { BaseTabbablePlugin } from '../lib/BaseTabbablePlugin';
 import { TabbableEffects } from './TabbableEffects';

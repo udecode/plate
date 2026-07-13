@@ -1,17 +1,27 @@
 import type { PlateEditor } from 'platejs/react';
 
-import { type Descendant, ElementApi } from 'platejs';
+import { type Descendant, type Element, ElementApi } from 'platejs';
 
 import type { SteamInsertChunkOptions } from '../streamInsertChunk';
 
 import { getListNode } from './getListNode';
 
-export const nodesWithProps = (
+export function nodesWithProps(
+  editor: PlateEditor,
+  nodes: Element[],
+  options: SteamInsertChunkOptions
+): Element[];
+export function nodesWithProps(
   editor: PlateEditor,
   nodes: Descendant[],
   options: SteamInsertChunkOptions
-): Descendant[] =>
-  nodes.map((node): Descendant => {
+): Descendant[];
+export function nodesWithProps(
+  editor: PlateEditor,
+  nodes: Descendant[],
+  options: SteamInsertChunkOptions
+): Descendant[] {
+  return nodes.map((node): Descendant => {
     if (ElementApi.isElement(node)) {
       return {
         ...getListNode(editor, node),
@@ -25,3 +35,4 @@ export const nodesWithProps = (
       text: node.text,
     };
   });
+}

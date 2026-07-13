@@ -1,40 +1,47 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import {
+  type EditorUpdateTransaction,
+  ElementApi,
+  PathApi,
+} from '@platejs/plite';
 
 import { isInClosedToggle } from '../queries';
 
-const isElement = (value: any): value is { id?: string; type?: string } =>
-  !!value && typeof value === 'object' && !Array.isArray(value);
-
 // Return false only if all next blocks are not selectable
-export const moveNextSelectableAfterCurrentBlock = (editor: SlateEditor) => {
-  const { selection } = editor;
+export const moveNextSelectableAfterCurrentBlock = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction
+) => {
+  const selection = tx.selection();
 
   if (!selection) return;
 
-  const aboveBlock = editor.api.block();
+  const aboveBlock = tx.nodes.block();
 
   if (!aboveBlock) return;
-  if (!editor.api.isAt({ end: true })) return;
+  if (!tx.points.isEnd(selection.anchor, aboveBlock[1])) return;
 
-  const afterPoint = editor.api.after(selection);
+  const blockAfter = tx.nodes.get(PathApi.next(aboveBlock[1]));
 
-  if (!afterPoint) return;
+  if (!blockAfter || !ElementApi.isElement(blockAfter[0])) return;
+  if (
+    typeof blockAfter[0].id !== 'string' ||
+    !isInClosedToggle(editor, blockAfter[0].id)
+  ) {
+    return;
+  }
 
-  const blockAfter = editor.api.block({ at: afterPoint });
-
-  if (!blockAfter) return;
-  if (!isInClosedToggle(editor, blockAfter[0].id as string)) return; // We're already before a selectable then
-
-  const nextSelectableBlock = editor.api.next({
-    match: (node: any) =>
-      isElement(node) && !isInClosedToggle(editor, node.id as string),
+  const nextSelectableBlock = tx.nodes.next({
+    at: blockAfter[1],
+    match: (node) =>
+      ElementApi.isElement(node) &&
+      (typeof node.id !== 'string' || !isInClosedToggle(editor, node.id)),
   });
 
   if (!nextSelectableBlock) return false;
 
-  const afterCurrentBlock = [aboveBlock[1][0] + 1];
-  editor.tf.moveNodes({
+  tx.nodes.move({
     at: nextSelectableBlock[1],
-    to: afterCurrentBlock,
+    to: PathApi.next(aboveBlock[1]),
   });
 };

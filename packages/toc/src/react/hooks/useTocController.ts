@@ -13,23 +13,19 @@ export const useTocController = ({
   isObserve,
   tocRef,
 }: UseTocController) => {
-  const [activeTocId, setActiveTocId] = React.useState('');
   const { offset, visible } = useTocObserver({
-    activeId: activeTocId,
+    activeId,
     isObserve,
     tocRef,
   });
 
   React.useEffect(() => {
     if (!visible) {
-      const tocItemWrapper = tocRef.current?.querySelector('#toc_wrap');
-      const top = (tocItemWrapper?.scrollTop as any) + offset;
+      const tocItemWrapper =
+        tocRef.current?.querySelector<HTMLElement>('#toc_wrap');
+      const top = (tocItemWrapper?.scrollTop ?? 0) + offset;
 
       tocItemWrapper?.scrollTo({ behavior: 'instant', top });
     }
   }, [visible, offset, tocRef]);
-
-  React.useEffect(() => {
-    setActiveTocId(activeId);
-  }, [activeId]);
 };

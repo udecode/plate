@@ -1,20 +1,22 @@
-import type { TIndentElement } from 'platejs';
+import type { Element } from '@platejs/plite';
 
 import { buildToggleIndex } from '../toggleIndexAtom';
 
 export const findElementIdsHiddenInToggle = (
   openToggleIds: Set<string>,
-  elements: TIndentElement[]
+  elements: readonly Element[]
 ): string[] => {
   const toggleIndex = buildToggleIndex(elements);
 
   return elements
     .filter((element) => {
-      const enclosingToggleIds = toggleIndex.get(element.id as string) || [];
+      if (typeof element.id !== 'string') return false;
+
+      const enclosingToggleIds = toggleIndex.get(element.id) ?? [];
 
       return enclosingToggleIds.some(
         (toggleId) => !openToggleIds.has(toggleId)
       );
     })
-    .map((element) => element.id as string);
+    .flatMap((element) => (typeof element.id === 'string' ? [element.id] : []));
 };

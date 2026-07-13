@@ -2009,6 +2009,12 @@ importers:
       '@platejs/combobox':
         specifier: workspace:*
         version: link:../combobox
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -2053,6 +2059,15 @@ importers:
 
   packages/tabbable:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
+      '@platejs/plite':
+        specifier: workspace:^
+        version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -2063,6 +2078,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      '@platejs/test-utils':
+        specifier: workspace:^
+        version: link:../test-utils
       platejs:
         specifier: workspace:^
         version: link:../plate
@@ -2094,9 +2112,15 @@ importers:
 
   packages/tag:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -2104,9 +2128,6 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/test-utils:
     dependencies:
@@ -2120,9 +2141,15 @@ importers:
 
   packages/toc:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -2130,21 +2157,18 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/toggle:
     dependencies:
-      '@platejs/indent':
-        specifier: workspace:*
-        version: link:../indent
-      jotai:
-        specifier: ^2.18.0
-        version: 2.18.0(@babel/core@7.29.0)(@babel/template@7.28.6)(@types/react@19.2.7)(react@19.2.4)
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.23
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
+      '@platejs/plite':
+        specifier: workspace:^
+        version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -2152,9 +2176,6 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/udecode/cmdk:
     dependencies:
@@ -9277,24 +9298,6 @@ packages:
       '@types/react': '>=17.0.0'
       react: '>=17.0.0'
     peerDependenciesMeta:
-      '@types/react':
-        optional: true
-      react:
-        optional: true
-
-  jotai@2.18.0:
-    resolution: {integrity: sha512-XI38kGWAvtxAZ+cwHcTgJsd+kJOJGf3OfL4XYaXWZMZ7IIY8e53abpIHvtVn1eAgJ5dlgwlGFnP4psrZ/vZbtA==}
-    engines: {node: '>=12.20.0'}
-    peerDependencies:
-      '@babel/core': '>=7.0.0'
-      '@babel/template': '>=7.0.0'
-      '@types/react': '>=17.0.0'
-      react: '>=17.0.0'
-    peerDependenciesMeta:
-      '@babel/core':
-        optional: true
-      '@babel/template':
-        optional: true
       '@types/react':
         optional: true
       react:
@@ -19788,13 +19791,6 @@ snapshots:
 
   jotai@2.11.0(@types/react@19.2.7)(react@19.2.4):
     optionalDependencies:
-      '@types/react': 19.2.7
-      react: 19.2.4
-
-  jotai@2.18.0(@babel/core@7.29.0)(@babel/template@7.28.6)(@types/react@19.2.7)(react@19.2.4):
-    optionalDependencies:
-      '@babel/core': 7.29.0
-      '@babel/template': 7.28.6
       '@types/react': 19.2.7
       react: 19.2.4
 
