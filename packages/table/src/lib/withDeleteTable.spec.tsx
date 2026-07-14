@@ -1,61 +1,119 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
-import { preventDeleteTableCell, withDeleteTable } from './withDeleteTable';
 
 jsxt;
 
 describe('withDeleteTable', () => {
-  describe('preventDeleteTableCell', () => {
-    it('blocks deletion at the start of the current cell', () => {
-      const move = mock();
-      const start = { offset: 0, path: [0, 0] };
-      const editor = {
-        api: {
-          after: mock(),
-          before: mock(),
-          block: mock(() => [{ type: 'td' }, [0, 0]]),
-          end: mock(),
-          isCollapsed: mock(() => true),
-          start: mock(() => start),
-        },
-        getType: (key: string) => key,
-        selection: {
-          anchor: start,
-          focus: start,
-        },
-        tf: { move },
-      } as any;
+  describe('cell boundaries', () => {
+    it('blocks Backspace at the start of the current cell', () => {
+      const input = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  <cursor />
+                  cell
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor;
+      const editor = createPlateEditor({
+        plugins: getTestTablePlugins(),
+        selection: input.selection,
+        value: input.children,
+      });
 
-      expect(preventDeleteTableCell(editor, {})).toBe(true);
-      expect(move).not.toHaveBeenCalled();
+      editor.update.text.deleteBackward({ unit: 'character' });
+
+      expect(editor.read.children()).toEqual(input.children);
     });
 
-    it('moves the selection away from an adjacent table cell instead of deleting it', () => {
-      const move = mock();
-      const block = mock()
-        .mockReturnValueOnce(undefined)
-        .mockReturnValueOnce([{ type: 'td' }, [1, 0]]);
-      const editor = {
-        api: {
-          before: mock(() => ({ offset: 0, path: [1, 0] })),
-          block,
-          isCollapsed: mock(() => true),
-        },
-        getType: (key: string) => key,
-        selection: {
-          anchor: { offset: 0, path: [2, 0] },
-          focus: { offset: 0, path: [2, 0] },
-        },
-        tf: { move },
-      } as any;
+    it('blocks Delete at the end of the current cell', () => {
+      const input = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  cell
+                  <cursor />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor;
+      const editor = createPlateEditor({
+        plugins: getTestTablePlugins(),
+        selection: input.selection,
+        value: input.children,
+      });
 
-      expect(preventDeleteTableCell(editor, { unit: 'character' })).toBe(true);
-      expect(move).toHaveBeenCalledWith({ reverse: true });
+      editor.update.text.deleteForward({ unit: 'character' });
+
+      expect(editor.read.children()).toEqual(input.children);
+    });
+
+    it('keeps the table intact when Backspace runs after it', () => {
+      const input = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>cell</hp>
+              </htd>
+            </htr>
+          </htable>
+          <hp>
+            <cursor />
+            after
+          </hp>
+        </editor>
+      ) as TestEditor;
+      const editor = createPlateEditor({
+        plugins: getTestTablePlugins(),
+        selection: input.selection,
+        value: input.children,
+      });
+
+      editor.update.text.deleteBackward({ unit: 'character' });
+
+      expect(editor.read.children()).toEqual(input.children);
+    });
+
+    it('keeps the table intact when Delete runs before it', () => {
+      const input = (
+        <editor>
+          <hp>
+            before
+            <cursor />
+          </hp>
+          <htable>
+            <htr>
+              <htd>
+                <hp>cell</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor;
+      const editor = createPlateEditor({
+        plugins: getTestTablePlugins(),
+        selection: input.selection,
+        value: input.children,
+      });
+
+      editor.update.text.deleteForward({ unit: 'character' });
+
+      expect(editor.read.children()).toEqual(input.children);
     });
   });
 
@@ -66,8 +124,8 @@ describe('withDeleteTable', () => {
       { disableMerge: true },
       { disableMerge: false },
     ])('with disableMerge: $disableMerge', ({ disableMerge }) => {
-      let editor: any;
-      let output: any;
+      let editor: ReturnType<typeof createPlateEditor>;
+      let output: TestEditor;
 
       beforeEach(() => {
         const input = (
@@ -93,7 +151,7 @@ describe('withDeleteTable', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         output = (
           <editor>
@@ -122,42 +180,48 @@ describe('withDeleteTable', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
-        editor = createSlateEditor({
+        editor = createPlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           value: input.children,
         });
 
-        editor.tf.deleteFragment();
+        editor.update.fragment.delete();
       });
 
       it('remove the cells content', () => {
-        expect(editor.children).toMatchObject(output.children);
+        expect(editor.read.children()).toMatchObject(output.children!);
       });
 
       it('set the selection to the last cell', () => {
-        expect(editor.selection).toEqual(output.selection);
+        expect(editor.read.selection()).toEqual(output.selection!);
       });
     });
   });
 
-  it('falls back to the original deleteFragment when the selection is not a table block', () => {
-    const deleteFragment = mock();
-    const transforms = withDeleteTable({
-      editor: {
-        api: {
-          isAt: () => false,
-        },
-      } as any,
-      tf: { deleteFragment },
-      type: 'table',
-    } as any).transforms;
+  it('keeps normal fragment deletion outside tables', () => {
+    const input = (
+      <editor>
+        <hp>
+          be
+          <anchor />
+          fore
+          <focus />
+          after
+        </hp>
+      </editor>
+    ) as TestEditor;
+    const editor = createPlateEditor({
+      plugins: getTestTablePlugins(),
+      selection: input.selection,
+      value: input.children,
+    });
 
-    transforms!.deleteFragment!({ direction: 'forward' });
+    editor.update.fragment.delete();
 
-    expect(deleteFragment).toHaveBeenCalledWith({ direction: 'forward' });
+    expect(editor.read.text.string([])).toBe('beafter');
   });
 });

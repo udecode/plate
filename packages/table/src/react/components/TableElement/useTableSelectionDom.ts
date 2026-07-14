@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useEditorSelector } from 'platejs/react';
+import { useEditorSelector } from '@platejs/core/react';
 
 import { getSelectedCellIds } from '../../../lib';
 

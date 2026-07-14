@@ -1,15 +1,18 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
+import type { TTableCellElement } from '@platejs/utils';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
+import { BaseTablePlugin } from './BaseTablePlugin';
+import { getCellIndices } from './utils';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: TestEditor) =>
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
@@ -33,7 +36,7 @@ describe('withApplyTable', () => {
           after
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const requested = (
       <editor>
@@ -53,7 +56,7 @@ describe('withApplyTable', () => {
           after
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const expected = (
       <editor>
@@ -71,13 +74,13 @@ describe('withApplyTable', () => {
         </htable>
         <hp>after</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
-    editor.tf.select(requested.selection!);
+    editor.update.selection.set(requested.selection!);
 
-    expect(editor.selection).toEqual(expected.selection);
+    expect(editor.read.selection()).toEqual(expected.selection!);
   });
 
   it('clamps backward selection focus to the point before the table when dragging from a block after it into the table', () => {
@@ -96,7 +99,7 @@ describe('withApplyTable', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const requested = (
       <editor>
@@ -116,7 +119,7 @@ describe('withApplyTable', () => {
           <anchor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const expected = (
       <editor>
@@ -136,12 +139,47 @@ describe('withApplyTable', () => {
           <anchor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
-    editor.tf.select(requested.selection!);
+    editor.update.selection.set(requested.selection!);
 
-    expect(editor.selection).toEqual(expected.selection);
+    expect(editor.read.selection()).toEqual(expected.selection!);
+  });
+
+  it('drops removed cell indices and recomputes the remaining table indices', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd id="keep">
+              <hp>11</hp>
+            </htd>
+            <htd id="remove">
+              <hp>
+                12
+                <cursor />
+              </hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const editor = createTableEditor(input);
+    const keep = editor.read.nodes.get<TTableCellElement>([0, 0, 0], {
+      required: true,
+    })[0];
+    const remove = editor.read.nodes.get<TTableCellElement>([0, 0, 1], {
+      required: true,
+    })[0];
+
+    getCellIndices(editor, keep);
+    getCellIndices(editor, remove);
+    editor.update.remove.tableColumn();
+
+    expect(editor.plugin(BaseTablePlugin).getOptions()._cellIndices).toEqual({
+      keep: { col: 0, row: 0 },
+    });
   });
 });

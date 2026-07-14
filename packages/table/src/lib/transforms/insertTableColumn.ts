@@ -1,13 +1,18 @@
-import type { Path, SlateEditor, TElement, TTableElement } from 'platejs';
+import type { EditorUpdateTransaction, Element, Path } from '@platejs/plite';
+import type { BaseEditor } from '@platejs/core';
+import type { TTableElement, TTableRowElement } from '@platejs/utils';
 
-import { getEditorPlugin, KEYS, NodeApi, PathApi } from 'platejs';
+import { getEditorPlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
+import { PathApi } from '@platejs/plite';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { insertTableMergeColumn } from '../merge/insertTableColumn';
 import { getCellTypes } from '../utils/index';
 
 export const insertTableColumn = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   options: {
     /** Exact path of the cell to insert the column at. Will overrule `fromCell`. */
     at?: Path;
@@ -24,22 +29,26 @@ export const insertTableColumn = (
   const { disableMerge, initialTableWidth, minColumnWidth } = getOptions();
 
   if (!disableMerge) {
-    return insertTableMergeColumn(editor, options);
+    return insertTableMergeColumn(editor, tx, options);
   }
 
   const { before, header, select: shouldSelect } = options;
   let { at, fromCell } = options;
 
   if (at && !fromCell) {
-    const table = NodeApi.get<TTableElement>(editor, at);
+    const table = editor.read.nodes.get<TTableElement>(at)?.[0];
 
     if (table?.type === editor.getType(KEYS.table)) {
-      fromCell = NodeApi.lastChild(editor, at.concat([0]))![1];
+      const firstRow = table.children[0] as TTableRowElement | undefined;
+
+      if (!firstRow?.children.length) return;
+
+      fromCell = at.concat([0, firstRow.children.length - 1]);
       at = undefined;
     }
   }
 
-  const cellEntry = editor.api.block({
+  const cellEntry = editor.read.nodes.find({
     at: fromCell,
     match: { type: getCellTypes(editor) },
   });
@@ -48,8 +57,7 @@ export const insertTableColumn = (
 
   const [, cellPath] = cellEntry;
 
-  const tableEntry = editor.api.block<TTableElement>({
-    above: true,
+  const tableEntry = editor.read.nodes.above<TTableElement>({
     at: cellPath,
     match: { type },
   });
@@ -71,7 +79,7 @@ export const insertTableColumn = (
 
   const currentRowIndex = cellPath.at(-2);
 
-  editor.tf.withoutNormalizing(() => {
+  tx.withoutNormalizing(({ tx }) => {
     // for each row, insert a new cell
     tableNode.children.forEach((row, rowIndex) => {
       const insertCellPath = [...nextCellPath];
@@ -84,13 +92,13 @@ export const insertTableColumn = (
 
       const isHeaderRow =
         header === undefined
-          ? (row as TElement).children.every(
+          ? (row as Element).children.every(
               (c) => c.type === editor.getType(KEYS.th)
             )
           : header;
 
-      editor.tf.insertNodes(
-        api.create.tableCell({
+      tx.nodes.insert(
+        api.createCell({
           header: isHeaderRow,
         }),
         {
@@ -127,7 +135,7 @@ export const insertTableColumn = (
         }
       }
 
-      editor.tf.setNodes<TTableElement>(
+      tx.nodes.set<TTableElement>(
         {
           colSizes: newColSizes,
         },

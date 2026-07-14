@@ -1,142 +1,116 @@
+import type { ExtendPlateEditorExtension } from '@platejs/core';
+import { ElementApi, RangeApi } from '@platejs/plite';
 import {
-  type OverrideEditor,
-  type TElement,
-  type TRange,
+  KEYS,
   type TTableCellElement,
   type TTableElement,
-  type TTableRowElement,
-  KEYS,
-  RangeApi,
-} from 'platejs';
+} from '@platejs/utils';
 
 import type { TableConfig } from './BaseTablePlugin';
 
 import { computeCellIndices, getCellTypes } from './utils';
 
-// TODO: tests
-
-/**
- * Selection table:
- *
- * - If anchor is in table, focus in a block before: set focus to start of table
- * - If anchor is in table, focus in a block after: set focus to end of table
- * - If focus is in table, anchor in a block before: set focus to end of table
- * - If focus is in table, anchor in a block after: set focus to the point before
- *   start of table
- */
-export const withApplyTable: OverrideEditor<TableConfig> = ({
-  api: _api,
+/** Keep table selection boundaries and cached cell indices valid. */
+export const withApplyTable: ExtendPlateEditorExtension<TableConfig> = ({
   editor,
   getOptions,
-  tf: { apply },
   type: tableType,
 }) => ({
-  transforms: {
-    apply(op) {
-      if (op.type === 'set_selection' && op.newProperties) {
-        const newSelection = {
-          ...editor.selection,
-          ...op.newProperties,
-        } as TRange | null;
+  operations: {
+    apply({ next, operation }) {
+      if (operation.type === 'set_selection' && operation.newProperties) {
+        const selection = editor.read.selection();
+        const nextSelection = selection
+          ? { ...selection, ...operation.newProperties }
+          : null;
 
         if (
-          RangeApi.isRange(newSelection) &&
-          editor.api.isAt({
-            at: newSelection,
-            blocks: true,
+          RangeApi.isRange(nextSelection) &&
+          RangeApi.isExpanded(nextSelection) &&
+          editor.read.nodes.some({
+            at: nextSelection,
             match: { type: tableType },
           })
         ) {
-          const anchorEntry = editor.api.block({
-            at: newSelection.anchor,
+          const anchorTable = editor.read.nodes.block({
+            at: nextSelection.anchor,
             match: { type: tableType },
           });
 
-          if (anchorEntry) {
-            const [, anchorPath] = anchorEntry;
-            const isBackward = RangeApi.isBackward(newSelection);
+          if (anchorTable) {
+            const [, path] = anchorTable;
 
-            if (isBackward) {
-              op.newProperties.focus = editor.api.start(anchorPath);
-            } else {
-              const pointBefore = editor.api.before(anchorPath);
-
-              // if the table is the first block
-              if (pointBefore) {
-                op.newProperties.focus = editor.api.end(anchorPath);
-              }
+            if (RangeApi.isBackward(nextSelection)) {
+              operation.newProperties.focus = editor.read.points.start(path);
+            } else if (editor.read.points.before(path)) {
+              operation.newProperties.focus = editor.read.points.end(path);
             }
           } else {
-            const focusEntry = editor.api.block({
-              at: newSelection.focus,
+            const focusTable = editor.read.nodes.block({
+              at: nextSelection.focus,
               match: { type: tableType },
             });
 
-            if (focusEntry) {
-              const [, focusPath] = focusEntry;
-              const isBackward = RangeApi.isBackward(newSelection);
+            if (focusTable) {
+              const [, path] = focusTable;
 
-              if (isBackward) {
-                const startPoint = editor.api.start(focusPath)!;
-                const pointBefore = editor.api.before(startPoint);
-                op.newProperties.focus = pointBefore ?? startPoint;
+              if (RangeApi.isBackward(nextSelection)) {
+                const start = editor.read.points.start(path);
+
+                if (start) {
+                  operation.newProperties.focus =
+                    editor.read.points.before(start) ?? start;
+                }
               } else {
-                op.newProperties.focus = editor.api.end(focusPath);
+                operation.newProperties.focus = editor.read.points.end(path);
               }
             }
           }
         }
       }
 
-      const opType =
-        op.type === 'remove_node'
-          ? (op.node.type as string)
-          : op.type === 'move_node'
-            ? editor.api.node<TElement>(op.path)?.[0].type
-            : undefined;
+      let nodeType: string | undefined;
 
+      if (
+        operation.type === 'remove_node' &&
+        ElementApi.isElement(operation.node)
+      ) {
+        nodeType = operation.node.type;
+      } else if (operation.type === 'move_node') {
+        const node = editor.read.nodes.get(operation.path)?.[0];
+
+        if (ElementApi.isElement(node)) nodeType = node.type;
+      }
       const isTableOperation =
-        (op.type === 'remove_node' || op.type === 'move_node') &&
-        opType &&
+        (operation.type === 'remove_node' || operation.type === 'move_node') &&
+        typeof nodeType === 'string' &&
         [editor.getType(KEYS.tr), tableType, ...getCellTypes(editor)].includes(
-          opType as string
+          nodeType
         );
 
-      // Cleanup cell indices when removing a table cell
-      if (isTableOperation && op.type === 'remove_node') {
-        const cells = [
-          ...editor.api.nodes<TTableCellElement>({
-            at: op.path,
-            match: { type: getCellTypes(editor) },
-          }),
-        ];
-
+      if (isTableOperation && operation.type === 'remove_node') {
+        const cells = editor.read.nodes.toArray<TTableCellElement>({
+          at: operation.path,
+          match: { type: getCellTypes(editor) },
+        });
         const cellIndices = getOptions()._cellIndices;
 
         cells.forEach(([cell]) => {
-          delete cellIndices[cell.id as string];
+          if (cell.id) delete cellIndices[cell.id];
         });
       }
 
-      apply(op);
+      next(operation);
 
-      let table: TTableElement | undefined;
-
-      if (
-        isTableOperation &&
-        // There is no new indices when moving/removing a table
-        opType !== tableType
-      ) {
-        table = editor.api.node<TTableRowElement>({
-          at: op.type === 'move_node' ? op.newPath : op.path,
+      if (isTableOperation && nodeType !== tableType) {
+        const path =
+          operation.type === 'move_node' ? operation.newPath : operation.path;
+        const table = editor.read.nodes.above<TTableElement>({
+          at: path,
           match: { type: tableType },
         })?.[0];
 
-        if (table) {
-          computeCellIndices(editor, {
-            tableNode: table,
-          });
-        }
+        if (table) computeCellIndices(editor, { tableNode: table });
       }
     },
   },

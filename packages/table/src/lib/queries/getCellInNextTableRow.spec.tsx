@@ -1,16 +1,16 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { getCellInNextTableRow } from './getCellInNextTableRow';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: TestEditor) =>
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     value: input.children,
@@ -39,13 +39,13 @@ describe('getCellInNextTableRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
     const nextCell = getCellInNextTableRow(editor, [0, 0])!;
 
     expect(nextCell[1]).toEqual([0, 1, 0]);
-    expect(editor.api.string(nextCell[1])).toBe('21');
+    expect(editor.read.text.string(nextCell[1])).toBe('21');
   });
 
   it('returns undefined when there is no next row', () => {
@@ -59,7 +59,7 @@ describe('getCellInNextTableRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 

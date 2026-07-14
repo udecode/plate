@@ -1,30 +1,29 @@
 /** @jsx jsxt */
 
-import { type BasePlateEditor, KEYS, createBasePlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
+import { NodeApi } from '@platejs/plite';
+import type {
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+} from '@platejs/utils';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
-import { deleteColumnWhenExpanded } from './deleteColumnWhenExpanded';
-import { deleteRowWhenExpanded } from './deleteRowWhenExpanded';
-import { mergeTableCells } from './mergeTableCells';
-import { splitTableCell } from './splitTableCell';
 
 jsxt;
 
 const createTableEditor = (
-  input: BasePlateEditor,
+  input: TestEditor,
   { disableMerge = false }: { disableMerge?: boolean } = {}
 ) =>
-  createBasePlateEditor({
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins({ disableMerge }),
     selection: input.selection,
     value: input.children,
   });
-
-const getTableEntry = (editor: BasePlateEditor) =>
-  editor.api.above({ match: { type: editor.getType(KEYS.table) } })!;
 
 describe('table merge behavior', () => {
   describe('mergeTableCells', () => {
@@ -56,25 +55,28 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as BasePlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
 
-      mergeTableCells(editor);
+      editor.update.table.merge();
 
-      const table = editor.children[0] as any;
-      const mergedCell = table.children[0].children[0];
+      const table = editor.read.nodes.get<TTableElement>([0], {
+        required: true,
+      })[0];
+      const firstRow = table.children[0] as TTableRowElement;
+      const mergedCell = firstRow.children[0] as TTableCellElement;
 
-      expect(table.children[0].children).toHaveLength(1);
+      expect(firstRow.children).toHaveLength(1);
       expect(mergedCell).toMatchObject({
         colSpan: 2,
         rowSpan: 2,
         type: 'td',
       });
-      expect(
-        mergedCell.children.map((child: any) => child.children[0].text)
-      ).toEqual(['11', '12', '21', '22']);
-      expect(editor.selection).toEqual({
+      expect(mergedCell.children.map((child) => NodeApi.string(child))).toEqual(
+        ['11', '12', '21', '22']
+      );
+      expect(editor.read.selection()).toEqual({
         anchor: { offset: 2, path: [0, 0, 0, 3, 0] },
         focus: { offset: 2, path: [0, 0, 0, 3, 0] },
       });
@@ -96,7 +98,7 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as BasePlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -128,14 +130,14 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as BasePlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
 
-      splitTableCell(editor);
+      editor.update.table.split();
 
-      expect(editor.children).toMatchObject(output.children);
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
 
     it('inserts split cells into existing rows before later siblings', () => {
@@ -160,22 +162,21 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as BasePlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
 
-      splitTableCell(editor);
+      editor.update.table.split();
 
-      const table = editor.children[0] as any;
+      const table = editor.read.nodes.get<TTableElement>([0], {
+        required: true,
+      })[0];
+      const rows = table.children as TTableRowElement[];
 
-      expect(table.children[0].children).toHaveLength(3);
-      expect(table.children[0].children[2].children[0].children[0].text).toBe(
-        '13'
-      );
-      expect(table.children[1].children).toHaveLength(3);
-      expect(table.children[1].children[2].children[0].children[0].text).toBe(
-        '23'
-      );
+      expect(rows[0].children).toHaveLength(3);
+      expect(NodeApi.string(rows[0].children[2])).toBe('13');
+      expect(rows[1].children).toHaveLength(3);
+      expect(NodeApi.string(rows[1].children[2])).toBe('23');
     });
   });
 
@@ -208,7 +209,7 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as BasePlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -226,14 +227,14 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as BasePlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input, { disableMerge: true });
 
-      deleteRowWhenExpanded(editor, getTableEntry(editor) as any);
+      editor.update.remove.tableRow();
 
-      expect(editor.children).toMatchObject(output.children);
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
 
     it('keeps the table unchanged when the selection does not span the full row width', () => {
@@ -264,14 +265,14 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as BasePlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input, { disableMerge: true });
 
-      deleteRowWhenExpanded(editor, getTableEntry(editor) as any);
+      editor.update.remove.tableRow();
 
-      expect(editor.children).toMatchObject(input.children);
-      expect(editor.selection).toEqual(input.selection);
+      expect(editor.read.children()).toMatchObject(input.children);
+      expect(editor.read.selection()).toEqual(input.selection!);
     });
   });
 
@@ -304,7 +305,7 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as BasePlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -327,14 +328,14 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as BasePlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input, { disableMerge: true });
 
-      deleteColumnWhenExpanded(editor, getTableEntry(editor) as any);
+      editor.update.remove.tableColumn();
 
-      expect(editor.children).toMatchObject(output.children);
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
 
     it('keeps the table unchanged when the selection does not span every row', () => {
@@ -365,14 +366,14 @@ describe('table merge behavior', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as BasePlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input, { disableMerge: true });
 
-      deleteColumnWhenExpanded(editor, getTableEntry(editor) as any);
+      editor.update.remove.tableColumn();
 
-      expect(editor.children).toMatchObject(input.children);
-      expect(editor.selection).toEqual(input.selection);
+      expect(editor.read.children()).toMatchObject(input.children);
+      expect(editor.read.selection()).toEqual(input.selection!);
     });
   });
 });

@@ -1,4 +1,5 @@
-import type { SlateEditor, TTableCellElement } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { TTableCellElement } from '@platejs/utils';
 
 import type { BorderDirection } from '../types';
 
@@ -7,7 +8,7 @@ import { getLeftTableCell } from './getLeftTableCell';
 import { getTopTableCell } from './getTopTableCell';
 
 export const isTableBorderHidden = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   border: BorderDirection
 ) => {
   if (border === 'left') {
@@ -26,7 +27,7 @@ export const isTableBorderHidden = (
   }
 
   return (
-    editor.api.node<TTableCellElement>({
+    editor.read.nodes.find<TTableCellElement>({
       match: { type: getCellTypes(editor) },
     })?.[0].borders?.[border]?.size === 0
   );

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { atom, createAtomStore } from 'platejs/react';
+import { atom, createAtomStore } from '@platejs/core/react';
 
 import type { TableStoreSizeOverrides } from '../../lib';
 
@@ -13,12 +13,12 @@ export const {
   useTableValue,
 } = createAtomStore(
   {
-    colSizeOverrides: atom(new Map() as TableStoreSizeOverrides),
+    colSizeOverrides: atom(new Map<number, number>()),
     marginLeftOverride: null as number | null,
-    rowSizeOverrides: atom(new Map() as TableStoreSizeOverrides),
+    rowSizeOverrides: atom(new Map<number, number>()),
   },
   { name: 'table' as const }
-) as any;
+);
 
 const useOverrideSizeFactory = (
   setOverrides: (

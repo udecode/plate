@@ -1,5 +1,6 @@
-import { KEYS, PathApi } from 'platejs';
-import { useElementSelector } from 'platejs/react';
+import { KEYS } from '@platejs/utils';
+import { PathApi } from '@platejs/plite';
+import { useElementSelector } from '@platejs/core/react';
 
 import { getTableOverriddenColSizes } from '../../../lib';
 import { useTableValue } from '../../stores';

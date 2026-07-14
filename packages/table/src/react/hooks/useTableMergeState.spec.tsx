@@ -1,11 +1,13 @@
 import { renderHook } from '@testing-library/react';
-import * as platejsReact from 'platejs/react';
+import type { BaseEditor } from '@platejs/core';
+import * as plateReact from '@platejs/core/react';
+import * as pliteReact from '@platejs/plite-react';
+import type { TTableCellElement } from '@platejs/utils';
 import * as tableLib from '../../lib';
 
 const useEditorPluginMock = mock();
 const useEditorSelectorMock = mock();
 const useReadOnlyMock = mock();
-const getSelectedCellEntriesMock = mock();
 const getSelectedCellsBoundingBoxMock = mock();
 
 mock.module('../TablePlugin', () => ({
@@ -14,25 +16,21 @@ mock.module('../TablePlugin', () => ({
 
 describe('useTableMergeState', () => {
   beforeEach(() => {
-    spyOn(platejsReact, 'useEditorPlugin').mockImplementation(
-      useEditorPluginMock as any
+    spyOn(plateReact, 'useEditorPlugin').mockImplementation(
+      useEditorPluginMock as unknown as typeof plateReact.useEditorPlugin
     );
-    spyOn(platejsReact, 'useEditorSelector').mockImplementation(
-      useEditorSelectorMock as any
+    spyOn(plateReact, 'useEditorSelector').mockImplementation(
+      useEditorSelectorMock as unknown as typeof plateReact.useEditorSelector
     );
-    spyOn(platejsReact, 'useReadOnly').mockImplementation(
-      useReadOnlyMock as any
-    );
-    spyOn(tableLib, 'getSelectedCellEntries').mockImplementation(
-      getSelectedCellEntriesMock as any
+    spyOn(pliteReact, 'useEditorReadOnly').mockImplementation(
+      useReadOnlyMock as unknown as typeof pliteReact.useEditorReadOnly
     );
     spyOn(tableLib, 'getSelectedCellsBoundingBox').mockImplementation(
-      getSelectedCellsBoundingBoxMock as any
+      getSelectedCellsBoundingBoxMock as unknown as typeof tableLib.getSelectedCellsBoundingBox
     );
     useEditorPluginMock.mockReset();
     useEditorSelectorMock.mockReset();
     useReadOnlyMock.mockReset();
-    getSelectedCellEntriesMock.mockReset();
     getSelectedCellsBoundingBoxMock.mockReset();
   });
 
@@ -46,27 +44,23 @@ describe('useTableMergeState', () => {
     );
 
     useReadOnlyMock.mockReturnValue(false);
+    const selectedCells: [TTableCellElement, number[]][] = [
+      [{ children: [{ text: '' }], colSpan: 1, rowSpan: 1, type: 'td' }, [0]],
+      [{ children: [{ text: '' }], colSpan: 1, rowSpan: 1, type: 'td' }, [1]],
+    ];
+
     useEditorSelectorMock
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(true)
-      .mockReturnValueOnce([
-        [{ colSpan: 1, rowSpan: 1 }, [0]],
-        [{ colSpan: 1, rowSpan: 1 }, [1]],
-      ]);
+      .mockReturnValueOnce(selectedCells);
     useEditorPluginMock.mockReturnValue({
       api: {
-        table: {
-          getColSpan: (cell: any) => cell.colSpan,
-          getRowSpan: (cell: any) => cell.rowSpan,
-        },
+        getColSpan: (cell: TTableCellElement) => cell.colSpan ?? 1,
+        getRowSpan: (cell: TTableCellElement) => cell.rowSpan ?? 1,
       },
-      editor: {},
+      editor: {} as BaseEditor,
       getOptions: () => ({ disableMerge: false }),
     });
-    getSelectedCellEntriesMock.mockReturnValue([
-      [{ colSpan: 1, rowSpan: 1 }, [0]],
-      [{ colSpan: 1, rowSpan: 1 }, [1]],
-    ]);
     getSelectedCellsBoundingBoxMock.mockReturnValue({
       maxCol: 1,
       maxRow: 0,

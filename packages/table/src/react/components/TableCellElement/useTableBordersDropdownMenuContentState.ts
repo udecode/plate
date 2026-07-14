@@ -1,6 +1,10 @@
-import type { TTableElement } from 'platejs';
+import type { TTableElement } from '@platejs/utils';
 
-import { useEditorPlugin, useEditorSelector, useElement } from 'platejs/react';
+import {
+  useEditorPlugin,
+  useEditorSelector,
+  useElement,
+} from '@platejs/core/react';
 
 import {
   type TableBorderStates,

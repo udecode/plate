@@ -1,4 +1,4 @@
-import type { TTableCellElement } from 'platejs';
+import type { TTableCellElement } from '@platejs/utils';
 
 /**
  * Returns the colspan attribute of the table cell element.

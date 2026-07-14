@@ -1,22 +1,16 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { isTableBorderHidden } from './isTableBorderHidden';
 
 jsxt;
 
-const createEditorInstance = ({
-  children,
-  selection,
-}: {
-  children?: any;
-  selection?: any;
-}) =>
-  createSlateEditor({
+const createEditorInstance = ({ children, selection }: TestEditor) =>
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection,
@@ -54,7 +48,7 @@ describe('isTableBorderHidden', () => {
         </htr>
       </htable>
     </editor>
-  ) as any as SlateEditor;
+  ) as TestEditor;
 
   it('returns true if left border is hidden', () => {
     const editor = createEditorInstance(input);
@@ -70,26 +64,27 @@ describe('isTableBorderHidden', () => {
 
   it('returns false if left border is not hidden', () => {
     const editor = createEditorInstance(input);
-    editor.selection = {
+    editor.update.selection.set({
       anchor: { offset: 0, path: [0, 0, 0] },
       focus: { offset: 0, path: [0, 0, 0] },
-    };
+    });
     const hidden = isTableBorderHidden(editor, 'left');
     expect(hidden).toBe(false);
   });
 
   it('returns false if top border is not hidden', () => {
     const editor = createEditorInstance(input);
-    editor.selection = {
+    editor.update.selection.set({
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 0, path: [0, 1, 0] },
-    };
+    });
     const hidden = isTableBorderHidden(editor, 'top');
     expect(hidden).toBe(false);
   });
 
   it('returns false if no matching cell is found', () => {
-    const emptyEditor = createEditorInstance({ children: [] });
+    const emptyInput = (<editor />) as TestEditor;
+    const emptyEditor = createEditorInstance(emptyInput);
     const hidden = isTableBorderHidden(emptyEditor, 'left');
     expect(hidden).toBe(false);
   });

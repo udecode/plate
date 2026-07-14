@@ -1,9 +1,5 @@
-import {
-  type SlateEditor,
-  type TTableCellElement,
-  getEditorPlugin,
-  KEYS,
-} from 'platejs';
+import { type BaseEditor, getEditorPlugin } from '@platejs/core';
+import { type TTableCellElement, KEYS } from '@platejs/utils';
 
 import type { TableConfig } from '../BaseTablePlugin';
 
@@ -15,7 +11,7 @@ export type CellIndices = {
 };
 
 export const getCellIndices = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   element: TTableCellElement
 ): CellIndices => {
   const { getOption } = getEditorPlugin<TableConfig>(editor, {

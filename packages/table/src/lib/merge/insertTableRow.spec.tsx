@@ -1,16 +1,16 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
+import type { TTableElement } from '@platejs/utils';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
-import { insertTableMergeRow } from './insertTableRow';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: TestEditor) =>
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins({ disableMerge: false }),
     selection: input.selection,
@@ -43,13 +43,15 @@ describe('insertTableMergeRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
-    insertTableMergeRow(editor, { at: [0], select: true });
+    editor.update.insert.tableRow({ at: [0], select: true });
 
-    expect((editor.children[0] as any).children).toHaveLength(3);
+    expect(
+      editor.read.nodes.get<TTableElement>([0], { required: true })[0].children
+    ).toHaveLength(3);
   });
 
   it('extends row-spanning cells and updates rowspan attributes when inserting inside a merged span', () => {
@@ -74,13 +76,13 @@ describe('insertTableMergeRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
-    insertTableMergeRow(editor, { at: [0, 1] });
+    editor.update.insert.tableRow({ at: [0, 1] });
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         children: [
           {

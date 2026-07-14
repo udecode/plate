@@ -1,10 +1,11 @@
 import {
   type EditorAboveOptions,
+  type Element,
   type ElementEntry,
-  type SlateEditor,
-  KEYS,
   PathApi,
-} from 'platejs';
+} from '@platejs/plite';
+import type { BaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import type { TableConfig } from '../BaseTablePlugin';
 
@@ -14,25 +15,35 @@ import {
   getTableGridByRange,
 } from './getTableGridByRange';
 
-export type GetTableGridAboveOptions = EditorAboveOptions &
+export type GetTableGridAboveOptions = EditorAboveOptions<Element> &
   Pick<GetTableGridByRangeOptions, 'format'>;
 
 /** Get sub table above anchor and focus. Format: tables or cells. */
 export const getTableGridAbove = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { format = 'table', ...options }: GetTableGridAboveOptions = {}
 ): ElementEntry[] => {
   const { api } = editor.getPlugin<TableConfig>({ key: KEYS.table });
+  const at = options.at ?? editor.read.selection();
 
-  const edges = editor.api.edgeBlocks({
-    match: {
-      type: getCellTypes(editor),
-    },
-    ...options,
-  });
+  if (!at) return [];
+
+  const edges = editor.read.ranges.edges(at);
 
   if (edges) {
-    const [start, end] = edges;
+    const [startPoint, endPoint] = edges;
+    const start = editor.read.nodes.above<Element>({
+      ...options,
+      at: startPoint,
+      match: { type: getCellTypes(editor) },
+    });
+    const end = editor.read.nodes.above<Element>({
+      ...options,
+      at: endPoint,
+      match: { type: getCellTypes(editor) },
+    });
+
+    if (!start || !end) return [];
 
     if (!PathApi.equals(start[1], end[1])) {
       return getTableGridByRange(editor, {
@@ -50,7 +61,7 @@ export const getTableGridAbove = (
       });
     }
     if (format === 'table') {
-      const table = api.create.table({ rowCount: 1 });
+      const table = api.table.createTable({ rowCount: 1 });
       table.children[0].children = [start[0]];
 
       return [[table, start[1].slice(0, -2)]];

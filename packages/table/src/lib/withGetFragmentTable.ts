@@ -1,57 +1,50 @@
-import type {
-  Descendant,
-  OverrideEditor,
-  TElement,
-  TTableCellElement,
-  TTableRowElement,
-} from 'platejs';
+import type { ExtendPlateEditorExtension } from '@platejs/core';
+import { type Descendant, ElementApi } from '@platejs/plite';
+import type { TTableCellElement, TTableRowElement } from '@platejs/utils';
 
 import type { TableConfig } from './BaseTablePlugin';
 
 import { getTableGridAbove } from './queries/getTableGridAbove';
 
-/** If selection is in a table, get subtable above. */
-export const withGetFragmentTable: OverrideEditor<TableConfig> = ({
+/** If selection is in a table, return the selected subtable. */
+export const withGetFragmentTable: ExtendPlateEditorExtension<TableConfig> = ({
   api,
-  api: { getFragment },
   editor,
   type,
 }) => ({
-  api: {
-    getFragment() {
-      const fragment = getFragment();
-      const newFragment: Descendant[] = [];
+  queries: {
+    fragment: {
+      get({ next }) {
+        const fragment = next();
+        const nextFragment: Descendant[] = [];
 
-      fragment.forEach((node) => {
-        if (node.type === type) {
+        fragment.forEach((node) => {
+          if (!ElementApi.isElement(node) || node.type !== type) {
+            nextFragment.push(node);
+            return;
+          }
+
           const rows = node.children as TTableRowElement[];
           const rowCount = rows.length;
 
           if (!rowCount) return;
 
           const colCount = rows[0].children.length;
-          const hasOneCell = rowCount <= 1 && colCount <= 1;
 
-          if (hasOneCell) {
-            const cell = rows[0] as TTableCellElement;
-            const cellChildren = api.table.getCellChildren!(cell);
-            newFragment.push(...(cellChildren[0].children as TElement[]));
+          if (rowCount <= 1 && colCount <= 1) {
+            const cell = rows[0].children[0] as TTableCellElement;
+            nextFragment.push(...api.getCellChildren!(cell));
 
             return;
           }
-          const subTable = getTableGridAbove(editor);
 
-          if (subTable.length > 0) {
-            newFragment.push(subTable[0][0]);
+          const [subTable] = getTableGridAbove(editor);
 
-            return;
-          }
-        }
+          if (subTable) nextFragment.push(subTable[0]);
+        });
 
-        newFragment.push(node);
-      });
-
-      return newFragment;
+        return nextFragment;
+      },
     },
   },
 });

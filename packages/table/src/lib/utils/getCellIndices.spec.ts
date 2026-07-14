@@ -1,54 +1,69 @@
-import * as platejs from 'platejs';
+import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
+import type { Value } from '@platejs/plite';
+import type { TTableCellElement } from '@platejs/utils';
 
-import * as computeCellIndicesModule from './computeCellIndices';
+import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getCellIndices } from './getCellIndices';
 
+const value: Value = [
+  {
+    children: [
+      {
+        children: [
+          {
+            children: [{ children: [{ text: '11' }], type: 'p' }],
+            id: 'c11',
+            type: 'td',
+          },
+          {
+            children: [{ children: [{ text: '12' }], type: 'p' }],
+            id: 'c12',
+            type: 'td',
+          },
+        ],
+        type: 'tr',
+      },
+    ],
+    type: 'table',
+  },
+];
+
 describe('getCellIndices', () => {
-  afterEach(() => {
-    mock.restore();
-  });
+  it('computes and caches indices on the table plugin', () => {
+    const editor = createPlateEditor({
+      nodeId: true,
+      plugins: getTestTablePlugins(),
+      value,
+    });
+    const cell = editor.read.nodes.get<TTableCellElement>([0, 0, 1], {
+      required: true,
+    })[0];
 
-  it('returns cached indices without recomputing', () => {
-    const getOption = mock(() => ({ col: 2, row: 1 }));
-    const computeSpy = spyOn(
-      computeCellIndicesModule,
-      'computeCellIndices'
-    ).mockReturnValue(undefined as any);
-
-    spyOn(platejs, 'getEditorPlugin').mockReturnValue({
-      getOption,
-    } as any);
-
+    expect(getCellIndices(editor, cell)).toEqual({ col: 1, row: 0 });
     expect(
-      getCellIndices(
-        { api: { debug: { warn: mock() } } } as any,
-        {
-          id: 'cell-1',
-        } as any
-      )
-    ).toEqual({ col: 2, row: 1 });
-    expect(getOption).toHaveBeenCalledWith('cellIndices', 'cell-1');
-    expect(computeSpy).not.toHaveBeenCalled();
+      editor.plugin(BaseTablePlugin).getOptions()._cellIndices.c12
+    ).toEqual({ col: 1, row: 0 });
+    expect(getCellIndices(editor, cell)).toEqual({ col: 1, row: 0 });
   });
 
-  it('warns and falls back when neither cache nor recompute returns indices', () => {
+  it('warns and falls back when the cell does not belong to a table', () => {
     const warn = mock();
+    const DebugPlugin = createPlatePlugin({
+      key: 'table-test-debug',
+    }).extendEditorApi(() => ({ debug: { warn } }));
+    const orphanValue: Value = [{ children: [{ text: '' }], type: 'p' }];
+    const editor = createPlateEditor({
+      plugins: [...getTestTablePlugins(), DebugPlugin],
+      value: orphanValue,
+    });
+    const cell: TTableCellElement = {
+      children: [{ text: '' }],
+      id: 'orphan',
+      type: 'td',
+    };
 
-    spyOn(platejs, 'getEditorPlugin').mockReturnValue({
-      getOption: mock(() => {}),
-    } as any);
-    spyOn(computeCellIndicesModule, 'computeCellIndices').mockReturnValue(
-      undefined as any
-    );
-
-    expect(
-      getCellIndices(
-        { api: { debug: { warn } } } as any,
-        {
-          id: 'cell-2',
-        } as any
-      )
-    ).toEqual({ col: 0, row: 0 });
+    expect(getCellIndices(editor, cell)).toEqual({ col: 0, row: 0 });
     expect(warn).toHaveBeenCalledWith(
       'No cell indices found for element. Make sure all table cells have an id.',
       'TABLE_CELL_INDICES'

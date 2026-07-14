@@ -1,11 +1,10 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
-import { insertTable } from './insertTable';
 
 jsxt;
 
@@ -24,7 +23,7 @@ describe('insertTable', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -56,19 +55,22 @@ describe('insertTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      insertTable(editor, { colCount: 2, rowCount: 2 }, { select: true });
+      editor.update.insert.table(
+        { colCount: 2, rowCount: 2 },
+        { select: true }
+      );
 
-      expect(editor.children).toMatchObject(output.children);
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
 
     it.each([
@@ -85,7 +87,7 @@ describe('insertTable', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -118,23 +120,22 @@ describe('insertTable', () => {
           <hp>test</hp>
           <hp>another</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      insertTable(
-        editor,
+      editor.update.insert.table(
         { colCount: 2, rowCount: 2 },
         { at: [0], select: true }
       );
 
-      expect(editor.children).toMatchObject(output.children);
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
 
     it.each([
@@ -156,7 +157,7 @@ describe('insertTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -194,19 +195,22 @@ describe('insertTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      insertTable(editor, { colCount: 2, rowCount: 2 }, { select: true });
+      editor.update.insert.table(
+        { colCount: 2, rowCount: 2 },
+        { select: true }
+      );
 
-      expect(editor.children).toMatchObject(output.children);
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
 
     it.each([
@@ -230,7 +234,7 @@ describe('insertTable', () => {
           </htable>
           <hp>after</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -270,23 +274,22 @@ describe('insertTable', () => {
           </htable>
           <hp>after</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      insertTable(
-        editor,
+      editor.update.insert.table(
         { colCount: 2, rowCount: 2 },
         { at: [1], select: true }
       );
 
-      expect(editor.children).toMatchObject(output.children);
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
 
     it.each([
@@ -308,7 +311,7 @@ describe('insertTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -346,19 +349,22 @@ describe('insertTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      insertTable(editor, { colCount: 2, rowCount: 2 }, { select: true });
+      editor.update.insert.table(
+        { colCount: 2, rowCount: 2 },
+        { select: true }
+      );
 
-      expect(editor.children).toMatchObject(output.children);
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
   });
 });

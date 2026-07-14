@@ -1,21 +1,19 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
+import type { TTableElement } from '@platejs/utils';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
-import * as mergeModule from '../merge';
-import * as deleteMergeRowModule from '../merge/deleteRow';
-import { deleteRow } from './deleteRow';
 
 jsxt;
 
 const createTableEditor = (
-  input: SlateEditor,
+  input: TestEditor,
   { disableMerge = true }: { disableMerge?: boolean } = {}
 ) =>
-  createSlateEditor({
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins({ disableMerge }),
     selection: input.selection,
@@ -23,35 +21,7 @@ const createTableEditor = (
   });
 
 describe('deleteRow', () => {
-  it('delegates to merged-row deletion when merge support is enabled', () => {
-    const input = (
-      <editor>
-        <htable>
-          <htr>
-            <htd>
-              <hp>
-                11
-                <cursor />
-              </hp>
-            </htd>
-          </htr>
-        </htable>
-      </editor>
-    ) as any as SlateEditor;
-
-    const editor = createTableEditor(input, { disableMerge: false });
-    const spy = spyOn(
-      deleteMergeRowModule,
-      'deleteTableMergeRow'
-    ).mockReturnValue(undefined as any);
-
-    deleteRow(editor);
-
-    expect(spy).toHaveBeenCalledWith(editor);
-    spy.mockRestore();
-  });
-
-  it('delegates expanded selections to deleteRowWhenExpanded', () => {
+  it('deletes a fully selected row', () => {
     const input = (
       <editor>
         <htable>
@@ -79,19 +49,16 @@ describe('deleteRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const spy = spyOn(mergeModule, 'deleteRowWhenExpanded').mockReturnValue(
-      undefined as any
+
+    editor.update.remove.tableRow();
+
+    expect(editor.read.text.string([0])).toBe('2122');
+    expect(editor.read.nodes.toArray({ match: { type: 'tr' } })).toHaveLength(
+      1
     );
-
-    deleteRow(editor);
-
-    expect(spy).toHaveBeenCalledTimes(1);
-    expect(spy.mock.calls[0]?.[0]).toBe(editor);
-    expect(spy.mock.calls[0]?.[1][1]).toEqual([0]);
-    spy.mockRestore();
   });
 
   it('removes the current row when the table has more than one row', () => {
@@ -113,14 +80,16 @@ describe('deleteRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
-    deleteRow(editor);
+    editor.update.remove.tableRow();
 
-    expect((editor.children[0] as any).children).toHaveLength(1);
-    expect(editor.api.string([0, 0, 0])).toBe('11');
+    expect(
+      editor.read.nodes.get<TTableElement>([0], { required: true })[0].children
+    ).toHaveLength(1);
+    expect(editor.read.text.string([0, 0, 0])).toBe('11');
   });
 
   it('keeps the last remaining row intact', () => {
@@ -137,12 +106,12 @@ describe('deleteRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
-    deleteRow(editor);
+    editor.update.remove.tableRow();
 
-    expect(editor.children).toMatchObject(input.children);
+    expect(editor.read.children()).toMatchObject(input.children);
   });
 });

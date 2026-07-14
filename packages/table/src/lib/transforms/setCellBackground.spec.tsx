@@ -1,8 +1,9 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
+import type { TTableCellElement } from '@platejs/utils';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { setCellBackground } from './setCellBackground';
@@ -14,8 +15,8 @@ jsxt;
 // sets the background color for the given cell or selection of cells,
 // and then checks if the output matches the expected output.
 describe('setCellBackground', () => {
-  const createEditorInstance = (input: any) =>
-    createSlateEditor({
+  const createEditorInstance = (input: TestEditor) =>
+    createPlateEditor({
       nodeId: true,
       plugins: getTestTablePlugins(),
       selection: input.selection,
@@ -37,7 +38,7 @@ describe('setCellBackground', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -52,12 +53,12 @@ describe('setCellBackground', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editorInstance = createEditorInstance(input);
       setCellBackground(editorInstance, { color: 'red' });
 
-      expect(editorInstance.children).toMatchObject(output.children);
+      expect(editorInstance.read.children()).toMatchObject(output.children!);
     });
 
     it('set background color for selected cells', () => {
@@ -77,7 +78,7 @@ describe('setCellBackground', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -92,18 +93,22 @@ describe('setCellBackground', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editorInstance = createEditorInstance(input);
       setCellBackground(editorInstance, {
         color: 'red',
         selectedCells: [
-          editorInstance.children[0].children[0].children[0],
-          editorInstance.children[0].children[0].children[1],
+          editorInstance.read.nodes.get<TTableCellElement>([0, 0, 0], {
+            required: true,
+          })[0],
+          editorInstance.read.nodes.get<TTableCellElement>([0, 0, 1], {
+            required: true,
+          })[0],
         ],
       });
 
-      expect(editorInstance.children).toMatchObject(output.children);
+      expect(editorInstance.read.children()).toMatchObject(output.children!);
     });
   });
 
@@ -125,7 +130,7 @@ describe('setCellBackground', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -140,12 +145,12 @@ describe('setCellBackground', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editorInstance = createEditorInstance(input);
       setCellBackground(editorInstance, { color: null });
 
-      expect(editorInstance.children).toMatchObject(output.children);
+      expect(editorInstance.read.children()).toMatchObject(output.children!);
     });
 
     it('reset the background color to transparent for selected cells', () => {
@@ -162,7 +167,7 @@ describe('setCellBackground', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -177,18 +182,22 @@ describe('setCellBackground', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editorInstance = createEditorInstance(input);
       setCellBackground(editorInstance, {
         color: null,
         selectedCells: [
-          editorInstance.children[0].children[0].children[0],
-          editorInstance.children[0].children[0].children[1],
+          editorInstance.read.nodes.get<TTableCellElement>([0, 0, 0], {
+            required: true,
+          })[0],
+          editorInstance.read.nodes.get<TTableCellElement>([0, 0, 1], {
+            required: true,
+          })[0],
         ],
       });
 
-      expect(editorInstance.children).toMatchObject(output.children);
+      expect(editorInstance.read.children()).toMatchObject(output.children!);
     });
   });
 });

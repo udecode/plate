@@ -2,19 +2,19 @@ import {
   type Editor,
   type NodeEntry,
   type Path,
-  type TElement,
+  type Element,
   PathApi,
-} from 'platejs';
+} from '@platejs/plite';
 
 export const getCellInPreviousTableRow = (
   editor: Editor,
   currentRowPath: Path
 ): NodeEntry | undefined => {
+  if (currentRowPath.at(-1) === 0) return;
+
   const prevPath = PathApi.previous(currentRowPath);
 
-  if (!prevPath) return;
-
-  const previousRow = editor.api.node<TElement>(prevPath);
+  const previousRow = editor.read.nodes.get<Element>(prevPath);
 
   if (!previousRow) return;
 
@@ -26,6 +26,6 @@ export const getCellInPreviousTableRow = (
   );
 
   if (previousCell && previousCellPath) {
-    return editor.api.node(previousCellPath);
+    return editor.read.nodes.get(previousCellPath);
   }
 };

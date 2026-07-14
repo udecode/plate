@@ -1,4 +1,11 @@
-import { type SlateEditor, type TLocation, KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { Location } from '@platejs/plite';
+import {
+  KEYS,
+  type TTableCellElement,
+  type TTableElement,
+  type TTableRowElement,
+} from '@platejs/utils';
 
 import { getCellTypes } from '../utils';
 
@@ -7,12 +14,12 @@ import { getCellTypes } from '../utils';
  * node entries.
  */
 export const getTableEntries = (
-  editor: SlateEditor,
-  { at = editor.selection }: { at?: TLocation | null } = {}
+  editor: BaseEditor,
+  { at = editor.read.selection() }: { at?: Location | null } = {}
 ) => {
   if (!at) return;
 
-  const cellEntry = editor.api.node({
+  const cellEntry = editor.read.nodes.find<TTableCellElement>({
     at,
     match: {
       type: getCellTypes(editor),
@@ -23,7 +30,7 @@ export const getTableEntries = (
 
   const [, cellPath] = cellEntry;
 
-  const rowEntry = editor.api.above({
+  const rowEntry = editor.read.nodes.above<TTableRowElement>({
     at: cellPath,
     match: { type: editor.getType(KEYS.tr) },
   });
@@ -32,7 +39,7 @@ export const getTableEntries = (
 
   const [, rowPath] = rowEntry;
 
-  const tableEntry = editor.api.above({
+  const tableEntry = editor.read.nodes.above<TTableElement>({
     at: rowPath,
     match: { type: editor.getType(KEYS.table) },
   });

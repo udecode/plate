@@ -1,8 +1,13 @@
-import type { TTableCellElement } from 'platejs';
+import type { TTableCellElement } from '@platejs/utils';
 
-import { useEditorPlugin, useEditorSelector, useElement } from 'platejs/react';
+import {
+  useEditorPlugin,
+  useEditorSelector,
+  useElement,
+} from '@platejs/core/react';
 
 import type { BorderStylesDefault } from '../../../lib';
+import { BaseTablePlugin } from '../../../lib/BaseTablePlugin';
 
 import { useCellIndices } from '../../hooks/useCellIndices';
 import { useTableValue } from '../../stores';
@@ -27,7 +32,7 @@ export const useTableCellElement = (): TableCellElementState => {
   const element = useElement<TTableCellElement>();
   const isCellSelected = useIsCellSelected(element);
   const isSelectingCell = useEditorSelector(
-    (editor) => editor.getApi(TablePlugin).table.isSelectingCell(),
+    (editor) => editor.plugin(BaseTablePlugin).api.isSelectingCell(),
     []
   );
 
@@ -40,8 +45,8 @@ export const useTableCellElement = (): TableCellElementState => {
    * or you can do something simpler if row-spanning is unusual in your app.
    */
   const { col, row } = useCellIndices();
-  const colSpan = api.table.getColSpan(element);
-  const rowSpan = api.table.getRowSpan(element);
+  const colSpan = api.getColSpan(element);
+  const rowSpan = api.getRowSpan(element);
   const endingRowIndex = row + rowSpan - 1;
   const endingColIndex = col + colSpan - 1;
 

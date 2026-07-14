@@ -1,11 +1,12 @@
 import type {
+  EditorUpdateTransaction,
   NodeEntry,
   PathRef,
-  SlateEditor,
-  TTableCellElement,
-} from 'platejs';
+} from '@platejs/plite';
+import type { BaseEditor } from '@platejs/core';
+import type { TTableCellElement, TTableElement } from '@platejs/utils';
 
-import { getEditorPlugin } from 'platejs';
+import { getEditorPlugin } from '@platejs/core';
 
 import {
   BaseTablePlugin,
@@ -15,8 +16,9 @@ import {
 import { getTableGridAbove } from '../queries';
 
 export const deleteRowWhenExpanded = (
-  editor: SlateEditor,
-  [table, tablePath]: NodeEntry<TTableCellElement>
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  [table, tablePath]: NodeEntry<TTableElement>
 ) => {
   const { api } = getEditorPlugin(editor, BaseTablePlugin);
   const columnCount = getTableMergedColumnCount(table);
@@ -48,7 +50,7 @@ export const deleteRowWhenExpanded = (
         return;
       }
 
-      const rowSpan = api.table.getRowSpan(cell);
+      const rowSpan = api.getRowSpan(cell);
 
       rowSpanCarry = rowSpan && rowSpan > 1 ? rowSpan - 1 : 0;
       acrossRow += rowSpan ?? 1;
@@ -62,11 +64,13 @@ export const deleteRowWhenExpanded = (
 
     for (let i = firsRowIndex; i < firsRowIndex + acrossRow; i++) {
       const removedPath = tablePath.concat(i);
-      pathRefs.push(editor.update.refs.path(removedPath));
+      pathRefs.push(tx.refs.path(removedPath));
     }
 
-    pathRefs.forEach((item) => {
-      editor.tf.removeNodes({ at: item.unref()! });
+    pathRefs.forEach((pathRef) => {
+      const path = pathRef.unref();
+
+      if (path) tx.nodes.remove({ at: path });
     });
   }
 };

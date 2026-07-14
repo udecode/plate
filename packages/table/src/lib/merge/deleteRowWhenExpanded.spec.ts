@@ -1,19 +1,17 @@
-import { createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
+import type { TTableElement } from '@platejs/utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
-import * as tableLib from '..';
-import * as tableQueries from '../queries';
-import { deleteRowWhenExpanded } from './deleteRowWhenExpanded';
 
 describe('deleteRowWhenExpanded', () => {
-  afterEach(() => {
-    mock.restore();
-  });
-
-  it('removes every carried row when a selected row includes a rowspan cell', () => {
-    const editor = createSlateEditor({
+  it('removes every row covered by a selected rowspan cell', () => {
+    const editor = createPlateEditor({
       nodeId: true,
       plugins: getTestTablePlugins({ disableMerge: true }),
+      selection: {
+        anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
+        focus: { offset: 2, path: [0, 0, 1, 0, 0] },
+      },
       value: [
         {
           children: [
@@ -21,6 +19,33 @@ describe('deleteRowWhenExpanded', () => {
               children: [
                 {
                   children: [{ children: [{ text: '11' }], type: 'p' }],
+                  rowSpan: 2,
+                  type: 'td',
+                },
+                {
+                  children: [{ children: [{ text: '12' }], type: 'p' }],
+                  type: 'td',
+                },
+              ],
+              type: 'tr',
+            },
+            {
+              children: [
+                {
+                  children: [{ children: [{ text: '22' }], type: 'p' }],
+                  type: 'td',
+                },
+              ],
+              type: 'tr',
+            },
+            {
+              children: [
+                {
+                  children: [{ children: [{ text: '31' }], type: 'p' }],
+                  type: 'td',
+                },
+                {
+                  children: [{ children: [{ text: '32' }], type: 'p' }],
                   type: 'td',
                 },
               ],
@@ -30,30 +55,13 @@ describe('deleteRowWhenExpanded', () => {
           type: 'table',
         },
       ],
-    } as any);
-    const removeNodesSpy = spyOn(editor.tf, 'removeNodes').mockImplementation(
-      () => {}
-    );
+    });
 
-    spyOn(tableQueries, 'getTableGridAbove').mockReturnValue([
-      [{ children: [], rowSpan: 2, type: 'td' } as any, [0, 0, 0]],
-      [{ children: [], type: 'td' } as any, [0, 0, 1]],
-      [{ children: [], type: 'td' } as any, [0, 1, 0]],
-    ] as any);
-    spyOn(tableLib, 'getTableMergedColumnCount').mockReturnValue(2);
-    spyOn(tableLib, 'getCellRowIndexByPath').mockImplementation(
-      (path: any) => path.at(-2) ?? null
-    );
-    spyOn(
-      editor.getApi(tableLib.BaseTablePlugin).table,
-      'getRowSpan'
-    ).mockImplementation((cell: any) => cell.rowSpan ?? 1);
+    editor.update.remove.tableRow();
 
-    deleteRowWhenExpanded(editor, [editor.children[0] as any, [0]] as any);
+    const table = editor.read.nodes.get<TTableElement>([0], { required: true });
 
-    expect(removeNodesSpy.mock.calls).toEqual([
-      [{ at: [0, 0] }],
-      [{ at: [0, 1] }],
-    ]);
+    expect(table[0].children).toHaveLength(1);
+    expect(editor.read.text.string([0])).toBe('3132');
   });
 });

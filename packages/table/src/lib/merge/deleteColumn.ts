@@ -1,12 +1,14 @@
+import type { EditorUpdateTransaction, Path } from '@platejs/plite';
+import type { BaseEditor } from '@platejs/core';
 import type {
-  Path,
-  SlateEditor,
   TTableCellElement,
   TTableElement,
-} from 'platejs';
+  TTableRowElement,
+} from '@platejs/utils';
 
 import cloneDeep from 'lodash/cloneDeep.js';
-import { getEditorPlugin, KEYS } from 'platejs';
+import { getEditorPlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { getCellIndices, getCellTypes } from '..';
 import { BaseTablePlugin } from '../BaseTablePlugin';
@@ -15,24 +17,27 @@ import { findCellByIndexes } from './findCellByIndexes';
 import { getCellPath } from './getCellPath';
 import { getTableMergedColumnCount } from './getTableMergedColumnCount';
 
-export const deleteTableMergeColumn = (editor: SlateEditor) => {
+export const deleteTableMergeColumn = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction
+) => {
   const type = editor.getType(KEYS.table);
-  const tableEntry = editor.api.above<TTableElement>({
+  const tableEntry = editor.read.nodes.above<TTableElement>({
     match: { type },
   });
 
   if (!tableEntry) return;
 
-  editor.tf.withoutNormalizing(() => {
+  tx.withoutNormalizing(({ tx }) => {
     const { api } = getEditorPlugin(editor, BaseTablePlugin);
 
-    if (editor.api.isExpanded()) {
-      return deleteColumnWhenExpanded(editor, tableEntry);
+    if (editor.read.selection.isExpanded()) {
+      return deleteColumnWhenExpanded(editor, tx, tableEntry);
     }
 
     const table = tableEntry[0] as TTableElement;
 
-    const selectedCellEntry = editor.api.above({
+    const selectedCellEntry = editor.read.nodes.above({
       match: {
         type: getCellTypes(editor),
       },
@@ -43,10 +48,10 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
     const selectedCell = selectedCellEntry[0] as TTableCellElement;
 
     const { col: deletingColIndex } = getCellIndices(editor, selectedCell);
-    const colsDeleteNumber = api.table.getColSpan(selectedCell);
+    const colsDeleteNumber = api.getColSpan(selectedCell);
 
     if (getTableMergedColumnCount(table) <= colsDeleteNumber) {
-      editor.tf.removeNodes({ at: tableEntry[1] });
+      tx.nodes.remove({ at: tableEntry[1] });
 
       return;
     }
@@ -76,7 +81,7 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
 
         const currentCell = cur as TTableCellElement;
         const { col: curColIndex } = getCellIndices(editor, currentCell);
-        const curColSpan = api.table.getColSpan(currentCell);
+        const curColSpan = api.getColSpan(currentCell);
 
         if (curColIndex < deletingColIndex && curColSpan > 1) {
           acc.squizeColSpanCells.push(currentCell);
@@ -100,7 +105,7 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
         editor,
         curCell
       );
-      const curColSpan = api.table.getColSpan(curCell);
+      const curColSpan = api.getColSpan(curCell);
 
       const curCellPath = getCellPath(
         editor,
@@ -121,10 +126,10 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
         newCell.attributes.colspan = colSpan.toString();
       }
 
-      editor.tf.setNodes<TTableCellElement>(newCell, { at: curCellPath });
+      tx.nodes.set<TTableCellElement>(newCell, { at: curCellPath });
     });
 
-    const trEntry = editor.api.above({
+    const trEntry = editor.read.nodes.above<TTableRowElement>({
       match: { type: editor.getType(KEYS.tr) },
     });
 
@@ -170,9 +175,7 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
       paths.forEach((cellPaths) => {
         const pathToDelete = cellPaths[0];
         cellPaths.forEach(() => {
-          editor.tf.removeNodes({
-            at: pathToDelete,
-          });
+          tx.nodes.remove({ at: pathToDelete });
         });
       });
 
@@ -182,7 +185,7 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
         const newColSizes = [...colSizes];
         newColSizes.splice(deletingColIndex, 1);
 
-        editor.tf.setNodes<TTableElement>(
+        tx.nodes.set<TTableElement>(
           { colSizes: newColSizes },
           { at: tablePath }
         );

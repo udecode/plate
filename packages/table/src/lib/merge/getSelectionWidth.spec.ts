@@ -1,11 +1,22 @@
+import type { NodeEntry } from '@platejs/plite';
+import type { TTableCellElement } from '@platejs/utils';
+
 import { getSelectionWidth } from './getSelectionWidth';
+
+const cell = (
+  props: Partial<TTableCellElement>,
+  path: number[]
+): NodeEntry<TTableCellElement> => [
+  { children: [{ text: '' }], type: 'td', ...props },
+  path,
+];
 
 describe('getSelectionWidth', () => {
   it('sums colSpan values across cells on the same row', () => {
     expect(
       getSelectionWidth([
-        [{ attributes: { colspan: '2' } } as any, [0, 0, 0]],
-        [{ colSpan: 3 } as any, [0, 0, 1]],
+        cell({ attributes: { colspan: '2' } }, [0, 0, 0]),
+        cell({ colSpan: 3 }, [0, 0, 1]),
       ])
     ).toBe(5);
   });
@@ -13,9 +24,9 @@ describe('getSelectionWidth', () => {
   it('keeps counting when a wider row starts after a row change', () => {
     expect(
       getSelectionWidth([
-        [{ colSpan: 1 } as any, [0, 0, 0]],
-        [{ colSpan: 2 } as any, [0, 1, 0]],
-        [{ colSpan: 1 } as any, [0, 1, 1]],
+        cell({ colSpan: 1 }, [0, 0, 0]),
+        cell({ colSpan: 2 }, [0, 1, 0]),
+        cell({ colSpan: 1 }, [0, 1, 1]),
       ])
     ).toBe(3);
   });

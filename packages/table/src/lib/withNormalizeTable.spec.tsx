@@ -1,7 +1,8 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type Value, createSlateEditor } from 'platejs';
+import { type Value } from '@platejs/plite';
+import { createPlateEditor } from '@platejs/core/react';
 
 import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
 
@@ -15,7 +16,7 @@ describe('withNormalizeTable', () => {
     ])('removes tables without row children (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         value: (
@@ -24,12 +25,12 @@ describe('withNormalizeTable', () => {
               <hp>bad</hp>
             </htable>
           </fragment>
-        ) as any as Value,
+        ) as Value,
       });
 
       editor.update.normalize({ force: true });
 
-      expect(editor.children).toEqual([]);
+      expect(editor.read.children()).toEqual([]);
     });
   });
 
@@ -53,7 +54,7 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as Value;
+      ) as Value;
 
       const output = (
         <fragment>
@@ -69,9 +70,9 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as Value;
+      ) as Value;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         value: input,
@@ -80,7 +81,7 @@ describe('withNormalizeTable', () => {
       editor.update.normalize({
         force: true,
       });
-      expect(editor.children).toMatchObject(output);
+      expect(editor.read.children()).toMatchObject(output);
     });
   });
 
@@ -120,7 +121,7 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as Value;
+      ) as Value;
 
       const output = (
         <fragment>
@@ -153,9 +154,9 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as Value;
+      ) as Value;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({
           disableMerge,
@@ -167,7 +168,7 @@ describe('withNormalizeTable', () => {
       editor.update.normalize({
         force: true,
       });
-      expect(editor.children).toMatchObject(output);
+      expect(editor.read.children()).toMatchObject(output);
     });
   });
 
@@ -207,7 +208,7 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as Value;
+      ) as Value;
 
       const output = (
         <fragment>
@@ -240,9 +241,9 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as Value;
+      ) as Value;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({
           disableMerge,
@@ -254,7 +255,7 @@ describe('withNormalizeTable', () => {
       editor.update.normalize({
         force: true,
       });
-      expect(editor.children).toMatchObject(output);
+      expect(editor.read.children()).toMatchObject(output);
     });
   });
 
@@ -296,7 +297,7 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as Value;
+      ) as Value;
 
       const output = (
         <fragment>
@@ -329,9 +330,9 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as Value;
+      ) as Value;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({
           disableMerge,
@@ -343,7 +344,7 @@ describe('withNormalizeTable', () => {
       editor.update.normalize({
         force: true,
       });
-      expect(editor.children).toMatchObject(output);
+      expect(editor.read.children()).toMatchObject(output);
     });
   });
 
@@ -354,7 +355,7 @@ describe('withNormalizeTable', () => {
     ])('unsets colSizes for single-column tables (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({
           disableMerge,
@@ -370,12 +371,12 @@ describe('withNormalizeTable', () => {
               </htr>
             </htable>
           </fragment>
-        ) as any as Value,
+        ) as Value,
       });
 
       editor.update.normalize({ force: true });
 
-      expect(editor.children).toMatchObject(
+      expect(editor.read.children()).toMatchObject(
         (
           <fragment>
             <htable>
@@ -386,7 +387,7 @@ describe('withNormalizeTable', () => {
               </htr>
             </htable>
           </fragment>
-        ) as any as Value
+        ) as Value
       );
     });
   });
@@ -419,7 +420,7 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as Value;
+      ) as Value;
 
       const output = (
         <fragment>
@@ -433,9 +434,9 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as Value;
+      ) as Value;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         value: input,
@@ -444,7 +445,7 @@ describe('withNormalizeTable', () => {
       editor.update.normalize({
         force: true,
       });
-      expect(editor.children).toMatchObject(output);
+      expect(editor.read.children()).toMatchObject(output);
     });
   });
 });

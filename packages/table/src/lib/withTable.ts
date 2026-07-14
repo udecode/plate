@@ -1,186 +1,101 @@
-import { RangeApi, type OverrideEditor, type TElement } from 'platejs';
-
-import type { TableConfig } from './BaseTablePlugin';
+import type { BaseEditor } from '@platejs/core';
+import { RangeApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import {
   getNextTableCell,
   getPreviousTableCell,
   getTableEntries,
 } from './queries';
-import { getCellTypes } from './utils';
-import { withApplyTable } from './withApplyTable';
-import { withDeleteTable } from './withDeleteTable';
-import { withGetFragmentTable } from './withGetFragmentTable';
-import { withInsertFragmentTable } from './withInsertFragmentTable';
-import { withInsertTextTable } from './withInsertTextTable';
-import { withNormalizeTable } from './withNormalizeTable';
-import { withSetFragmentDataTable } from './withSetFragmentDataTable';
-import { withTableCellSelection } from './withTableCellSelection';
 import { moveSelectionFromCell } from './transforms';
 import {
   getTableMoveSelectionContext,
   hasAdjacentBlockInCell,
   shouldMoveSelectionFromCell,
 } from './transforms/shouldMoveSelectionFromCell';
+import { getCellTypes } from './utils';
 
-export const withTable: OverrideEditor<TableConfig> = (ctx) => {
-  const {
-    editor,
-    tf: { moveLine, selectAll, tab },
-    type,
-  } = ctx;
-  const cellSelection = withTableCellSelection(ctx);
+export const moveLineTable = (
+  editor: BaseEditor,
+  { reverse = false }: { reverse?: boolean }
+) => {
+  if (!editor.read.selection.isCollapsed()) return false;
 
-  return {
-    api: {
-      // getFragment
-      ...withGetFragmentTable(ctx).api,
-      ...cellSelection.api,
-    },
-    transforms: {
-      moveLine: (options) => {
-        const apply = () => {
-          if (!editor.api.isCollapsed()) return;
+  const context = getTableMoveSelectionContext(editor);
 
-          const context = getTableMoveSelectionContext(editor);
+  if (!context) return false;
 
-          if (!context) return;
+  const { blockPath, cellPath, point } = context;
 
-          const { blockPath, cellPath, point } = context;
+  if (hasAdjacentBlockInCell(editor, { blockPath, cellPath, reverse })) {
+    return false;
+  }
 
-          if (
-            hasAdjacentBlockInCell(editor, {
-              blockPath,
-              cellPath,
-              reverse: options.reverse,
-            })
-          ) {
-            return;
-          }
+  if (
+    !shouldMoveSelectionFromCell(editor, {
+      blockPath,
+      point,
+      reverse,
+    })
+  ) {
+    return false;
+  }
 
-          const shouldMoveAcrossCell = shouldMoveSelectionFromCell(editor, {
-            blockPath,
-            point,
-            reverse: options.reverse,
-          });
+  return !!moveSelectionFromCell(editor, { reverse });
+};
 
-          if (!shouldMoveAcrossCell) {
-            return;
-          }
+export const selectAllTable = (editor: BaseEditor) => {
+  const type = editor.getType(KEYS.table);
+  const table = editor.read.nodes.above({ match: { type } });
 
-          return moveSelectionFromCell(editor, {
-            reverse: options.reverse,
-          });
-        };
+  if (!table) return false;
 
-        if (apply()) return true;
+  const [, tablePath] = table;
+  const tableRange = editor.read.ranges.get(tablePath);
+  const selection = editor.read.selection();
 
-        return moveLine(options);
-      },
-      selectAll: () => {
-        const apply = () => {
-          const table = editor.api.above<TElement>({ match: { type } });
+  if (tableRange && selection && RangeApi.equals(selection, tableRange)) {
+    const documentRange = editor.read.ranges.get([]);
 
-          if (!table) return;
+    if (documentRange) editor.update.selection.set(documentRange);
 
-          const [, tablePath] = table;
-          const tableRange = editor.api.range(tablePath);
+    return true;
+  }
 
-          if (
-            tableRange &&
-            editor.selection &&
-            RangeApi.equals(editor.selection, tableRange)
-          ) {
-            const documentRange = editor.api.range([]);
+  editor.update.selection.set(tablePath);
 
-            if (!documentRange) return true;
+  return true;
+};
 
-            editor.tf.select(documentRange);
+export const tabTable = (
+  editor: BaseEditor,
+  { reverse = false }: { reverse?: boolean } = {}
+) => {
+  const selection = editor.read.selection();
 
-            return true;
-          }
+  if (selection && editor.read.selection.isExpanded()) {
+    const cells = editor.read.nodes.toArray({
+      at: selection,
+      match: { type: getCellTypes(editor) },
+    });
 
-          // select the whole table
-          editor.tf.select(tablePath);
+    if (cells.length > 1) {
+      editor.update.selection.collapse({ edge: 'end' });
+      return true;
+    }
+  }
 
-          return true;
-        };
+  const entries = getTableEntries(editor);
 
-        if (apply()) return true;
+  if (!entries) return false;
 
-        return selectAll();
-      },
-      tab: (options) => {
-        const apply = () => {
-          if (editor.selection && editor.api.isExpanded()) {
-            // fix the exception of inputting Chinese when selecting multiple cells
-            const tdEntries = Array.from(
-              editor.api.nodes({
-                at: editor.selection,
-                match: { type: getCellTypes(editor) },
-              })
-            );
+  const { cell, row } = entries;
+  const [, cellPath] = cell;
+  const target = reverse
+    ? getPreviousTableCell(editor, cell, cellPath, row)
+    : getNextTableCell(editor, cell, cellPath, row);
 
-            if (tdEntries.length > 1) {
-              editor.tf.collapse({
-                edge: 'end',
-              });
+  if (target) editor.update.selection.set(target[1]);
 
-              return true;
-            }
-          }
-
-          const entries = getTableEntries(editor);
-
-          if (!entries) return;
-
-          const { cell, row } = entries;
-          const [, cellPath] = cell;
-
-          if (options.reverse) {
-            // move left with shift+tab
-            const previousCell = getPreviousTableCell(
-              editor,
-              cell,
-              cellPath,
-              row
-            );
-
-            if (previousCell) {
-              const [, previousCellPath] = previousCell;
-              editor.tf.select(previousCellPath);
-            }
-          } else {
-            // move right with tab
-            const nextCell = getNextTableCell(editor, cell, cellPath, row);
-
-            if (nextCell) {
-              const [, nextCellPath] = nextCell;
-              editor.tf.select(nextCellPath);
-            }
-          }
-
-          return true;
-        };
-
-        if (apply()) return true;
-
-        return tab(options);
-      },
-      // normalize
-      ...withNormalizeTable(ctx).transforms,
-      // delete
-      ...withDeleteTable(ctx).transforms,
-      // insertFragment
-      ...withInsertFragmentTable(ctx).transforms,
-      // insertText
-      ...withInsertTextTable(ctx).transforms,
-      // apply
-      ...withApplyTable(ctx).transforms,
-      // setFragmentData
-      ...withSetFragmentDataTable(ctx).transforms,
-      // addMark, removeMark, setNodes, unsetNodes
-      ...cellSelection.transforms,
-    },
-  };
+  return true;
 };

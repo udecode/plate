@@ -1,3 +1,5 @@
+import type { TTableElement } from '@platejs/utils';
+
 import { isTableRectangular } from './isTableRectangular';
 
 describe('isTableRectangular', () => {
@@ -22,7 +24,7 @@ describe('isTableRectangular', () => {
           },
         ],
         type: 'table',
-      } as any)
+      } satisfies TTableElement)
     ).toBe(true);
   });
 
@@ -44,7 +46,7 @@ describe('isTableRectangular', () => {
           },
         ],
         type: 'table',
-      } as any)
+      } satisfies TTableElement)
     ).toBe(false);
   });
 });

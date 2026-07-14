@@ -1,13 +1,10 @@
-import {
-  type ElementEntry,
-  type SlateEditor,
-  type TElement,
-  type TRange,
-  type TTableCellElement,
-  type TTableElement,
-  type TTableRowElement,
-  getEditorPlugin,
-} from 'platejs';
+import type { ElementEntry, Element, Range } from '@platejs/plite';
+import { type BaseEditor, getEditorPlugin } from '@platejs/core';
+import type {
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+} from '@platejs/utils';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getCellTypes } from '../utils';
@@ -18,7 +15,7 @@ import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';
 type FormatType = 'all' | 'cell' | 'table';
 
 type GetTableGridByRangeOptions<T extends FormatType> = {
-  at: TRange;
+  at: Range;
 
   /**
    * Format of the output:
@@ -29,10 +26,6 @@ type GetTableGridByRangeOptions<T extends FormatType> = {
   format?: T;
 };
 
-type GetTableGridReturnType<T> = T extends 'all'
-  ? TableGridEntries
-  : ElementEntry[];
-
 type TableGridEntries = {
   cellEntries: ElementEntry[];
   tableEntries: ElementEntry[];
@@ -42,20 +35,32 @@ type TableGridEntries = {
  * Get sub table between 2 cell paths. Ensure that the selection is always a
  * valid table grid.
  */
-export const getTableMergeGridByRange = <T extends FormatType>(
-  editor: SlateEditor,
-  { at, format }: GetTableGridByRangeOptions<T>
-): GetTableGridReturnType<T> => {
+export function getTableMergeGridByRange(
+  editor: BaseEditor,
+  options: GetTableGridByRangeOptions<'all'>
+): TableGridEntries;
+export function getTableMergeGridByRange(
+  editor: BaseEditor,
+  options: GetTableGridByRangeOptions<'cell' | 'table'>
+): ElementEntry[];
+export function getTableMergeGridByRange(
+  editor: BaseEditor,
+  { at, format }: GetTableGridByRangeOptions<FormatType>
+): ElementEntry[] | TableGridEntries {
   const { api, type } = getEditorPlugin(editor, BaseTablePlugin);
 
-  const startCellEntry = editor.api.node<TTableCellElement>({
+  const startCellEntry = editor.read.nodes.above<TTableCellElement>({
     at: at.anchor.path,
     match: { type: getCellTypes(editor) },
-  })!;
-  const endCellEntry = editor.api.node<TTableCellElement>({
+  });
+  const endCellEntry = editor.read.nodes.above<TTableCellElement>({
     at: at.focus.path,
     match: { type: getCellTypes(editor) },
-  })!;
+  });
+
+  if (!startCellEntry || !endCellEntry) {
+    return format === 'all' ? { cellEntries: [], tableEntries: [] } : [];
+  }
 
   const startCell = startCellEntry[0];
   const endCell = endCellEntry[0];
@@ -63,10 +68,11 @@ export const getTableMergeGridByRange = <T extends FormatType>(
   const startCellPath = startCellEntry[1];
   const tablePath = startCellPath.slice(0, -2);
 
-  const tableEntry = editor.api.node<TTableElement>({
-    at: tablePath,
-    match: { type },
-  })!;
+  const tableEntry = editor.read.nodes.get<TTableElement>(tablePath);
+
+  if (!tableEntry || tableEntry[0].type !== type) {
+    return format === 'all' ? { cellEntries: [], tableEntries: [] } : [];
+  }
   const realTable = tableEntry[0];
 
   const { col: _startColIndex, row: _startRowIndex } = getCellIndicesWithSpans(
@@ -87,7 +93,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
   const relativeRowIndex = endRowIndex - startRowIndex;
   const relativeColIndex = endColIndex - startColIndex;
 
-  let table: TTableElement = api.create.table({
+  let table: TTableElement = api.createTable({
     children: [],
     colCount: relativeColIndex + 1,
     rowCount: relativeRowIndex + 1,
@@ -134,7 +140,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
       colIndex = startColIndex;
       const newRelativeRowIndex = endRowIndex - startRowIndex;
       const newRelativeColIndex = endColIndex - startColIndex;
-      table = api.create.table({
+      table = api.createTable({
         children: [],
         colCount: newRelativeColIndex + 1,
         rowCount: newRelativeRowIndex + 1,
@@ -146,7 +152,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
       cellsSet.add(cell);
 
       const rows = table.children[rowIndex - startRowIndex]
-        .children as TElement[];
+        .children as Element[];
       rows[colIndex - startColIndex] = cell;
 
       const cellPath = editor.read.nodes.path(cell);
@@ -168,7 +174,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
   const formatType = (format as string) || 'table';
 
   if (formatType === 'cell') {
-    return cellEntries as GetTableGridReturnType<T>;
+    return cellEntries;
   }
 
   // clear redundant cells
@@ -178,18 +184,18 @@ export const getTableMergeGridByRange = <T extends FormatType>(
     const filteredChildren = rowElement.children?.filter((cellEl) => {
       const cellElement = cellEl as TTableCellElement;
 
-      return api.table.getCellChildren!(cellElement).length > 0;
+      return api.getCellChildren!(cellElement).length > 0;
     });
 
     rowElement.children = filteredChildren;
   });
 
   if (formatType === 'table') {
-    return [[table, tablePath]] as GetTableGridReturnType<T>;
+    return [[table, tablePath]];
   }
 
   return {
     cellEntries,
     tableEntries: [[table, tablePath]],
-  } as GetTableGridReturnType<T>;
-};
+  };
+}

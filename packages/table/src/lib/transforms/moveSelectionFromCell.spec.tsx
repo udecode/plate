@@ -1,16 +1,16 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { moveSelectionFromCell } from './moveSelectionFromCell';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: TestEditor) =>
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
@@ -32,13 +32,13 @@ describe('moveSelectionFromCell', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const initialSelection = editor.selection;
+    const initialSelection = editor.read.selection();
 
     expect(moveSelectionFromCell(editor, { edge: 'right' })).toBeUndefined();
-    expect(editor.selection).toEqual(initialSelection);
+    expect(editor.read.selection()).toEqual(initialSelection);
   });
 
   it('can expand from a single active cell when fromOneCell is true', () => {
@@ -58,14 +58,14 @@ describe('moveSelectionFromCell', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
     expect(
       moveSelectionFromCell(editor, { edge: 'right', fromOneCell: true })
     ).toBe(true);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 0, 1, 0, 0] },
     });
@@ -90,14 +90,14 @@ describe('moveSelectionFromCell', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
     expect(
       moveSelectionFromCell(editor, { edge: 'top', fromOneCell: true })
     ).toBe(true);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 1, 0, 0, 0] },
     });
@@ -122,14 +122,14 @@ describe('moveSelectionFromCell', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
     expect(
       moveSelectionFromCell(editor, { edge: 'bottom', fromOneCell: true })
     ).toBe(true);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 1, 0, 0, 0] },
     });
@@ -149,14 +149,14 @@ describe('moveSelectionFromCell', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const initialSelection = editor.selection;
+    const initialSelection = editor.read.selection();
 
     expect(
       moveSelectionFromCell(editor, { edge: 'left', fromOneCell: true })
     ).toBe(true);
-    expect(editor.selection).toEqual(initialSelection);
+    expect(editor.read.selection()).toEqual(initialSelection);
   });
 });

@@ -1,14 +1,16 @@
-import type { EditorAboveOptions, SlateEditor, TTableElement } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { TTableElement } from '@platejs/utils';
 
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
+import type { TableFindOptions } from '../types';
 
 export const setTableMarginLeft = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { marginLeft }: { marginLeft: number },
-  options: EditorAboveOptions = {}
+  options: TableFindOptions = {}
 ) => {
-  const table = editor.api.node<TTableElement>({
-    match: { type: KEYS.table },
+  const table = editor.read.nodes.find<TTableElement>({
+    match: { type: editor.getType(KEYS.table) },
     ...options,
   });
 
@@ -16,5 +18,5 @@ export const setTableMarginLeft = (
 
   const [, tablePath] = table;
 
-  editor.tf.setNodes<TTableElement>({ marginLeft }, { at: tablePath });
+  editor.update.nodes.set<TTableElement>({ marginLeft }, { at: tablePath });
 };

@@ -1,9 +1,14 @@
 import React from 'react';
 
-import type { NodeEntry, TTableCellElement, TTableRowElement } from 'platejs';
+import type { NodeEntry } from '@platejs/plite';
+import type { TTableCellElement, TTableRowElement } from '@platejs/utils';
 
-import { KEYS } from 'platejs';
-import { useEditorPlugin, useElement, useElementSelector } from 'platejs/react';
+import { KEYS } from '@platejs/utils';
+import {
+  useEditorPlugin,
+  useElement,
+  useElementSelector,
+} from '@platejs/core/react';
 
 import { useCellIndices } from '../../hooks/useCellIndices';
 import { TablePlugin } from '../../TablePlugin';
@@ -28,7 +33,7 @@ export function useTableCellSize({
   );
 
   return React.useMemo(
-    () => api.table.getCellSize({ cellIndices, colSizes, element, rowSize }),
-    [api.table, cellIndices, colSizes, element, rowSize]
+    () => api.getCellSize({ cellIndices, colSizes, element, rowSize }),
+    [api, cellIndices, colSizes, element, rowSize]
   );
 }

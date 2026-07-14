@@ -1,158 +1,159 @@
-import cloneDeep from 'lodash/cloneDeep.js';
+import type { ExtendPlateEditorExtension } from '@platejs/core';
 import {
-  type OverrideEditor,
+  type Element,
+  type NodeEntry,
   type Path,
-  type TElement,
+  ElementApi,
+} from '@platejs/plite';
+import {
+  KEYS,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
-  KEYS,
-  NodeApi,
-} from 'platejs';
+} from '@platejs/utils';
+import cloneDeep from 'lodash/cloneDeep.js';
 
-import { type TableConfig, getTableAbove } from '.';
-import { getTableGridAbove } from './queries/getTableGridAbove';
+import type { TableConfig } from './BaseTablePlugin';
 
-/**
- * If inserting a table, If block above anchor is a table,
- *
- * - Replace each cell above by the inserted table until out of bounds.
- * - Select the inserted cells.
- */
-export const withInsertFragmentTable: OverrideEditor<TableConfig> = ({
-  api,
-  editor,
-  getOptions,
-  tf: { insert, insertFragment },
-  type,
-}) => ({
+import { getTableAbove, getTableGridAbove } from './queries';
+
+/** Paste a table into the selected cell grid, expanding it when allowed. */
+export const withInsertFragmentTable: ExtendPlateEditorExtension<
+  TableConfig
+> = ({ api, editor, getOptions, type }) => ({
   transforms: {
-    insertFragment(fragment) {
+    insertFragment({ fragment, next, options, tx }) {
       const insertedTable = fragment.find(
-        (n) => (n as TElement).type === type
+        (node) => ElementApi.isElement(node) && node.type === type
       ) as TTableElement | undefined;
+      const selection = editor.read.selection();
+      const tableEntry = selection
+        ? getTableAbove(editor, { at: selection.anchor })
+        : undefined;
 
-      if (!insertedTable) {
-        const tableEntry = getTableAbove(editor, {
-          at: editor.selection?.anchor,
-        });
+      if (!insertedTable && tableEntry) {
+        const cells = getTableGridAbove(editor, { format: 'cell' });
 
-        if (tableEntry) {
-          const cellEntries = getTableGridAbove(editor, {
-            format: 'cell',
+        if (cells.length > 1) {
+          cells.forEach(([, path]) => {
+            tx.nodes.replaceChildren(cloneDeep(fragment), { at: path });
           });
 
-          if (cellEntries.length > 1) {
-            cellEntries.forEach((cellEntry) => {
-              if (cellEntry) {
-                const [, cellPath] = cellEntry;
+          const anchor = editor.read.points.start(cells[0][1]);
+          const focus = editor.read.points.end(cells.at(-1)![1]);
 
-                editor.tf.replaceChildren(cloneDeep(fragment), {
-                  at: cellPath,
-                });
-              }
-            });
+          if (anchor && focus) tx.selection.set({ anchor, focus });
 
-            editor.tf.select({
-              anchor: editor.api.start(cellEntries[0][1])!,
-              focus: editor.api.end(cellEntries.at(-1)![1])!,
-            });
-
-            return;
-          }
+          return true;
         }
       }
-      if (insertedTable) {
-        const tableEntry = getTableAbove(editor, {
-          at: editor.selection?.anchor,
+
+      if (insertedTable && tableEntry) {
+        const [cellEntry] = getTableGridAbove(editor, {
+          at: selection?.anchor,
+          format: 'cell',
         });
 
-        // inserting inside table
-        if (tableEntry) {
-          const [cellEntry] = getTableGridAbove(editor, {
-            at: editor.selection?.anchor,
-            format: 'cell',
-          });
+        if (cellEntry) {
+          const [table, tablePath] = tableEntry as NodeEntry<TTableElement>;
+          const [, startCellPath] = cellEntry;
+          const nextTable = cloneDeep(table);
+          const startRow = startCellPath.at(-2)!;
+          const startColumn = startCellPath.at(-1)!;
+          let lastCellPath: Path | undefined;
 
-          if (cellEntry) {
-            editor.tf.withoutNormalizing(() => {
-              const [, startCellPath] = cellEntry;
-              const cellPath = [...startCellPath];
+          const createCell = (row: TTableRowElement) =>
+            api.createCell({
+              header: (row.children as Element[]).every(
+                (cell) => cell.type === editor.getType(KEYS.th)
+              ),
+            });
 
-              const startColIndex = cellPath.at(-1)!;
-              let lastCellPath: Path | null = null;
+          for (
+            let rowOffset = 0;
+            rowOffset < insertedTable.children.length;
+            rowOffset++
+          ) {
+            const sourceRow = insertedTable.children[
+              rowOffset
+            ] as TTableRowElement;
+            const rowIndex = startRow + rowOffset;
 
-              let initRow = true;
-              const insertedRows = insertedTable.children as TTableRowElement[];
-              insertedRows.forEach((row) => {
-                cellPath[cellPath.length - 1] = startColIndex;
+            while (nextTable.children.length <= rowIndex) {
+              if (getOptions().disableExpandOnInsert) break;
 
-                // last inserted row
-                if (!initRow) {
-                  const fromRow = cellPath.slice(0, -1);
-                  cellPath[cellPath.length - 2] += 1;
+              const template =
+                (nextTable.children.at(-1) as TTableRowElement | undefined) ??
+                ({
+                  children: [api.createCell()],
+                  type: editor.getType(KEYS.tr),
+                } satisfies TTableRowElement);
 
-                  if (!NodeApi.has(editor, cellPath)) {
-                    if (getOptions().disableExpandOnInsert) {
-                      return;
-                    }
-                    insert.tableRow({
-                      fromRow,
-                    });
-                  }
-                }
-
-                initRow = false;
-
-                const insertedCells = row.children as TTableCellElement[];
-                let initCell = true;
-
-                insertedCells.forEach((cell) => {
-                  if (!initCell) {
-                    const fromCell = [...cellPath];
-                    cellPath[cellPath.length - 1] += 1;
-
-                    if (!NodeApi.has(editor, cellPath)) {
-                      if (getOptions().disableExpandOnInsert) {
-                        return;
-                      }
-                      insert.tableColumn({
-                        fromCell,
-                      });
-                    }
-                  }
-
-                  initCell = false;
-
-                  const cellChildren = api.table.getCellChildren!(cell);
-
-                  editor.tf.replaceChildren(cloneDeep(cellChildren), {
-                    at: cellPath,
-                  });
-
-                  lastCellPath = [...cellPath];
-                });
+              nextTable.children.push({
+                children: template.children.map(() => createCell(template)),
+                type: editor.getType(KEYS.tr),
               });
+            }
 
-              if (lastCellPath) {
-                editor.tf.select({
-                  anchor: editor.api.start(startCellPath)!,
-                  focus: editor.api.end(lastCellPath)!,
+            const targetRow = nextTable.children[rowIndex] as
+              | TTableRowElement
+              | undefined;
+
+            if (!targetRow) continue;
+
+            for (
+              let columnOffset = 0;
+              columnOffset < sourceRow.children.length;
+              columnOffset++
+            ) {
+              const columnIndex = startColumn + columnOffset;
+
+              while (targetRow.children.length <= columnIndex) {
+                if (getOptions().disableExpandOnInsert) break;
+
+                (nextTable.children as TTableRowElement[]).forEach((row) => {
+                  while (row.children.length <= columnIndex) {
+                    row.children.push(createCell(row));
+                  }
                 });
               }
-            });
 
-            return;
+              const targetCell = targetRow.children[columnIndex] as
+                | TTableCellElement
+                | undefined;
+              const sourceCell = sourceRow.children[
+                columnOffset
+              ] as TTableCellElement;
+
+              if (!targetCell) continue;
+
+              targetCell.children = cloneDeep(api.getCellChildren!(sourceCell));
+              lastCellPath = [...tablePath, rowIndex, columnIndex];
+            }
           }
-        } else if (fragment.length === 1 && fragment[0].type === KEYS.table) {
-          // needed to insert as node, otherwise it will be inserted as text
-          editor.tf.insertNodes(fragment[0]);
 
-          return;
+          if (lastCellPath) {
+            tx.nodes.replace(nextTable, { at: tablePath });
+
+            const anchor = editor.read.points.start(startCellPath);
+            const focus = editor.read.points.end(lastCellPath);
+
+            if (anchor && focus) tx.selection.set({ anchor, focus });
+
+            return true;
+          }
         }
+      } else if (
+        insertedTable &&
+        fragment.length === 1 &&
+        fragment[0].type === KEYS.table
+      ) {
+        tx.nodes.insert(insertedTable);
+
+        return true;
       }
 
-      insertFragment(fragment);
+      return next({ fragment, options });
     },
   },
 });

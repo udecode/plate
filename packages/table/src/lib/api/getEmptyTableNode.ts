@@ -1,6 +1,7 @@
-import type { SlateEditor, TTableElement } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { TTableElement } from '@platejs/utils';
 
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
 import type { TableConfig } from '../BaseTablePlugin';
 import type { GetEmptyRowNodeOptions } from './getEmptyRowNode';
@@ -10,7 +11,7 @@ export interface GetEmptyTableNodeOptions extends GetEmptyRowNodeOptions {
 }
 
 export const getEmptyTableNode = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   {
     colCount,
     header,
@@ -23,7 +24,7 @@ export const getEmptyTableNode = (
   const rows = Array.from({ length: rowCount })
     .fill(rowCount)
     .map((_, index) =>
-      api.create.tableRow({
+      api.table.createRow({
         colCount,
         ...cellOptions,
         header: header && index === 0,

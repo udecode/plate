@@ -1,16 +1,17 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
+import type { TTableCellElement } from '@platejs/utils';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { getTableColumnIndex } from './getTableColumnIndex';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: TestEditor) =>
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     value: input.children,
@@ -34,11 +35,12 @@ describe('getTableColumnIndex', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const cellNode = ((editor.children[0] as any).children[0] as any)
-      .children[1];
+    const cellNode = editor.read.nodes.get<TTableCellElement>([0, 0, 1], {
+      required: true,
+    })[0];
 
     expect(getTableColumnIndex(editor, cellNode)).toBe(1);
   });
@@ -57,11 +59,11 @@ describe('getTableColumnIndex', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
     const clonedCell = structuredClone(
-      ((editor.children[0] as any).children[0] as any).children[1]
+      editor.read.nodes.get<TTableCellElement>([0, 0, 1], { required: true })[0]
     );
 
     expect(getTableColumnIndex(editor, clonedCell)).toBe(-1);
@@ -69,7 +71,7 @@ describe('getTableColumnIndex', () => {
       getTableColumnIndex(editor, {
         children: [{ text: 'ghost' }],
         type: 'td',
-      } as any)
+      })
     ).toBe(-1);
   });
 });

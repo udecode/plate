@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { setBorderSize } from './setBorderSize';
@@ -14,8 +14,8 @@ jsxt;
 // sets the border size for the given border,
 // and then checks if the output matches the expected output.
 describe('setBorderSize', () => {
-  const createEditorInstance = (input: any) =>
-    createSlateEditor({
+  const createEditorInstance = (input: TestEditor) =>
+    createPlateEditor({
       nodeId: true,
       plugins: getTestTablePlugins(),
       selection: input.selection,
@@ -48,7 +48,7 @@ describe('setBorderSize', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -74,12 +74,12 @@ describe('setBorderSize', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createEditorInstance(input);
       setBorderSize(editor, 2, { border: 'top' });
 
-      expect(editor.children).toMatchObject(output.children);
+      expect(editor.read.children()).toMatchObject(output.children!);
     });
 
     it('sets all borders by delegating to each side', () => {
@@ -96,12 +96,12 @@ describe('setBorderSize', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createEditorInstance(input);
       setBorderSize(editor, 2, { border: 'all' });
 
-      expect(editor.children).toMatchObject(
+      expect(editor.read.children()).toMatchObject(
         (
           <editor>
             <htable>
@@ -151,7 +151,7 @@ describe('setBorderSize', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -177,12 +177,12 @@ describe('setBorderSize', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createEditorInstance(input);
       setBorderSize(editor, 2, { border: 'left' });
 
-      expect(editor.children).toMatchObject(output.children);
+      expect(editor.read.children()).toMatchObject(output.children!);
     });
 
     describe('when in cell 21', () => {
@@ -211,7 +211,7 @@ describe('setBorderSize', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const output = (
           <editor>
@@ -237,12 +237,12 @@ describe('setBorderSize', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const editor = createEditorInstance(input);
         setBorderSize(editor, 3, { border: 'left' });
 
-        expect(editor.children).toMatchObject(output.children);
+        expect(editor.read.children()).toMatchObject(output.children!);
       });
 
       describe('set border top', () => {
@@ -273,7 +273,7 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const output = (
             <editor>
@@ -299,12 +299,12 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const editor = createEditorInstance(input);
           setBorderSize(editor, 2, { border: 'top' });
 
-          expect(editor.children).toMatchObject(output.children);
+          expect(editor.read.children()).toMatchObject(output.children!);
         });
       });
 
@@ -334,7 +334,7 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const output = (
             <editor>
@@ -360,12 +360,12 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const editor = createEditorInstance(input);
           setBorderSize(editor, 1, { border: 'right' });
 
-          expect(editor.children).toMatchObject(output.children);
+          expect(editor.read.children()).toMatchObject(output.children!);
         });
 
         describe('set border left', () => {
@@ -394,7 +394,7 @@ describe('setBorderSize', () => {
                   </htr>
                 </htable>
               </editor>
-            ) as any as SlateEditor;
+            ) as TestEditor;
 
             const output = (
               <editor>
@@ -420,12 +420,12 @@ describe('setBorderSize', () => {
                   </htr>
                 </htable>
               </editor>
-            ) as any as SlateEditor;
+            ) as TestEditor;
 
             const editor = createEditorInstance(input);
             setBorderSize(editor, 2, { border: 'left' });
 
-            expect(editor.children).toMatchObject(output.children);
+            expect(editor.read.children()).toMatchObject(output.children!);
           });
         });
       });
@@ -456,7 +456,7 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const output = (
             <editor>
@@ -482,12 +482,12 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const editor = createEditorInstance(input);
           setBorderSize(editor, 4, { border: 'bottom' });
 
-          expect(editor.children).toMatchObject(output.children);
+          expect(editor.read.children()).toMatchObject(output.children!);
         });
       });
     });

@@ -1,19 +1,16 @@
-import { type SlateEditor, KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { EditorUpdateTransaction } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
-export const deleteTable = (editor: SlateEditor) => {
-  if (
-    editor.read.nodes.some({
-      match: { type: editor.getType(KEYS.table) },
-    })
-  ) {
-    const tableItem = editor.api.above({
-      match: { type: editor.getType(KEYS.table) },
-    });
+export const deleteTable = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction
+) => {
+  const tableItem = editor.read.nodes.above({
+    match: { type: editor.getType(KEYS.table) },
+  });
 
-    if (tableItem) {
-      editor.tf.removeNodes({
-        at: tableItem[1],
-      });
-    }
+  if (tableItem) {
+    tx.nodes.remove({ at: tableItem[1] });
   }
 };

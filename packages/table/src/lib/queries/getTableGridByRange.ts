@@ -1,13 +1,10 @@
+import type { ElementEntry, Element, Range } from '@platejs/plite';
+import type { BaseEditor } from '@platejs/core';
 import {
-  type ElementEntry,
-  type SlateEditor,
-  type TElement,
-  type TRange,
   type TTableCellElement,
   type TTableElement,
   KEYS,
-  NodeApi,
-} from 'platejs';
+} from '@platejs/utils';
 
 import { type TableConfig, BaseTablePlugin } from '../../lib/BaseTablePlugin';
 import { getTableMergeGridByRange } from '../merge/getTableGridByRange';
@@ -16,7 +13,7 @@ import { getRowSpan } from './getRowSpan';
 
 const hasMergedCells = (table?: TTableElement) =>
   !!table?.children.some((row) =>
-    (row as TElement & { children: TTableCellElement[] }).children.some(
+    (row as Element & { children: TTableCellElement[] }).children.some(
       (cell: TTableCellElement) => {
         const tableCell = cell as TTableCellElement;
 
@@ -26,7 +23,7 @@ const hasMergedCells = (table?: TTableElement) =>
   );
 
 export type GetTableGridByRangeOptions = {
-  at: TRange;
+  at: Range;
 
   /**
    * Format of the output:
@@ -39,7 +36,7 @@ export type GetTableGridByRangeOptions = {
 
 /** Get sub table between 2 cell paths. */
 export const getTableGridByRange = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { at, format = 'table' }: GetTableGridByRangeOptions
 ): ElementEntry[] => {
   const { api } = editor.getPlugin<TableConfig>({ key: KEYS.table });
@@ -47,7 +44,7 @@ export const getTableGridByRange = (
   const startCellPath = at.anchor.path;
   const endCellPath = at.focus.path;
   const tablePath = startCellPath.slice(0, -2);
-  const tableNode = NodeApi.get<TTableElement>(editor, tablePath);
+  const tableNode = editor.read.nodes.get<TTableElement>(tablePath)?.[0];
 
   if (!disableMerge && hasMergedCells(tableNode)) {
     return getTableMergeGridByRange(editor, { at, format });
@@ -66,7 +63,7 @@ export const getTableGridByRange = (
   const relativeRowIndex = endRowIndex - startRowIndex;
   const relativeColIndex = endColIndex - startColIndex;
 
-  const table: TTableElement = api.create.table({
+  const table: TTableElement = api.table.createTable({
     children: [],
     colCount: relativeColIndex + 1,
     rowCount: relativeRowIndex + 1,
@@ -80,12 +77,11 @@ export const getTableGridByRange = (
   while (true) {
     const cellPath = tablePath.concat([rowIndex, colIndex]);
 
-    const cell = NodeApi.get<TElement>(editor, cellPath);
+    const cell = editor.read.nodes.get<Element>(cellPath)?.[0];
 
     if (!cell) break;
 
-    const rows = table.children[rowIndex - startRowIndex]
-      .children as TElement[];
+    const rows = table.children[rowIndex - startRowIndex].children as Element[];
 
     rows[colIndex - startColIndex] = cell;
 

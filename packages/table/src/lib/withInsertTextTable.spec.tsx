@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
 
@@ -42,7 +42,7 @@ describe('withInsertTextTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -67,18 +67,18 @@ describe('withInsertTextTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      editor.tf.deleteFragment();
-      editor.tf.insertText('e');
-      expect(editor.children).toMatchObject(output.children);
+      editor.update.fragment.delete();
+      editor.update.text.insert('e');
+      expect(editor.read.children()).toMatchObject(output.children!);
     });
   });
 });

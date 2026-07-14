@@ -1,8 +1,9 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, type TElement, createSlateEditor } from 'platejs';
+import { type Element, type Text, TextApi } from '@platejs/plite';
+import { createPlateEditor } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseTablePlugin, type TableConfig } from './BaseTablePlugin';
 
@@ -18,10 +19,10 @@ const getTestTablePlugins = (options?: Partial<TableConfig['options']>) => [
 ];
 
 const createTableEditor = (
-  input: SlateEditor,
+  input: TestEditor,
   options?: Partial<TableConfig['options']>
 ) =>
-  createSlateEditor({
+  createPlateEditor({
     plugins: getTestTablePlugins(options),
     selection: input.selection,
     value: input.children,
@@ -44,9 +45,9 @@ describe('withTableCellSelection', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      expect(createTableEditor(input).api.marks()).toEqual({ bold: true });
+      expect(createTableEditor(input).read.marks()).toEqual({ bold: true });
     });
 
     it.each([
@@ -87,7 +88,7 @@ describe('withTableCellSelection', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor,
+        ) as TestEditor,
         name: 'returns marks shared by every selected text node',
       },
       {
@@ -127,11 +128,11 @@ describe('withTableCellSelection', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor,
+        ) as TestEditor,
         name: 'drops marks that are not shared by every selected text node',
       },
     ])('$name', ({ expected, input }) => {
-      expect(createTableEditor(input).api.marks()).toEqual(expected);
+      expect(createTableEditor(input).read.marks()).toEqual(expected);
     });
   });
 
@@ -173,12 +174,12 @@ describe('withTableCellSelection', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
-      editor.tf.addMark('bold', true);
+      editor.update.marks.add('bold', true);
 
-      expect(editor.children).toEqual(
+      expect(editor.read.children()).toEqual(
         (
           <editor>
             <htable>
@@ -257,43 +258,21 @@ describe('withTableCellSelection', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
-      editor.tf.removeMark('bold');
+      editor.update.marks.remove('bold');
 
-      expect(editor.children).toEqual(
-        (
-          <editor>
-            <htable>
-              <htr>
-                <htd>
-                  <hp>
-                    <htext>bold</htext>
-                    <htext italic> bold italic</htext>
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>
-                    <htext>test2</htext>
-                  </hp>
-                </htd>
-              </htr>
-              <htr>
-                <htd>
-                  <hp>
-                    <htext>plain bold</htext>
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>
-                    <htext>test4</htext>
-                  </hp>
-                </htd>
-              </htr>
-            </htable>
-          </editor>
-        ).children
+      const texts = editor.read.nodes.toArray<Text>({
+        match: (node) => TextApi.isText(node),
+      });
+
+      expect(texts.every(([text]) => text.bold === undefined)).toBe(true);
+      expect(texts.find(([text]) => text.italic)?.[0].text).toBe(
+        ' bold italic'
+      );
+      expect(editor.read.text.string([0])).toBe(
+        'bold bold italictest2plain boldtest4'
       );
     });
   });
@@ -327,12 +306,12 @@ describe('withTableCellSelection', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
-      editor.tf.setNodes({ align: 'center' }, { match: { type: 'p' } });
+      editor.update.nodes.set({ align: 'center' }, { match: { type: 'p' } });
 
-      expect(editor.children).toEqual(
+      expect(editor.read.children()).toEqual(
         (
           <editor>
             <htable>
@@ -386,13 +365,13 @@ describe('withTableCellSelection', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
 
-      editor.tf.setNodes({ background: 'red' }, { at: [0, 1, 0] });
+      editor.update.nodes.set({ background: 'red' }, { at: [0, 1, 0] });
 
-      expect(editor.children).toEqual(
+      expect(editor.read.children()).toEqual(
         (
           <editor>
             <htable>
@@ -438,14 +417,14 @@ describe('withTableCellSelection', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
-      editor.tf.unsetNodes(['align', 'indent'], {
+      editor.update.nodes.unset(['align', 'indent'], {
         match: { type: 'p' },
       });
 
-      expect(editor.children).toEqual(
+      expect(editor.read.children()).toEqual(
         (
           <editor>
             <htable>
@@ -493,7 +472,7 @@ describe('withTableCellSelection', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
 
@@ -502,13 +481,15 @@ describe('withTableCellSelection', () => {
       ).toStrictEqual(['c11', 'c12', 'c21', 'c22']);
       expect(
         editor
-          .getOption(BaseTablePlugin, 'selectedCells')
-          ?.map((cell: TElement) => cell.id)
+          .plugin(BaseTablePlugin)
+          .getOption('selectedCells')
+          ?.map((cell: Element) => cell.id)
       ).toStrictEqual(['c11', 'c12', 'c21', 'c22']);
       expect(
         editor
-          .getOption(BaseTablePlugin, 'selectedTables')
-          ?.map((table: TElement) => table.type)
+          .plugin(BaseTablePlugin)
+          .getOption('selectedTables')
+          ?.map((table: Element) => table.type)
       ).toStrictEqual(['table']);
       expect(editor.plugin(BaseTablePlugin).getOption('isSelectingCell')).toBe(
         true
@@ -545,7 +526,7 @@ describe('withTableCellSelection', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
 
@@ -589,11 +570,11 @@ describe('withTableCellSelection', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
 
-      editor.tf.setNodes({ background: 'red' }, { at: [0, 0, 0] });
+      editor.update.nodes.set({ background: 'red' }, { at: [0, 0, 0] });
 
       expect(
         editor.plugin(BaseTablePlugin).getOption('selectedCell', 'c11')
@@ -603,8 +584,9 @@ describe('withTableCellSelection', () => {
       });
       expect(
         editor
-          .getOption(BaseTablePlugin, 'selectedCells')
-          ?.map((cell: TElement) => cell.id)
+          .plugin(BaseTablePlugin)
+          .getOption('selectedCells')
+          ?.map((cell: Element) => cell.id)
       ).toStrictEqual(['c11', 'c12']);
     });
 
@@ -625,20 +607,20 @@ describe('withTableCellSelection', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
 
-      editor.tf.select({
-        anchor: editor.api.start([0, 0, 0])!,
-        focus: editor.api.end([0, 0, 1])!,
+      editor.update.selection.set({
+        anchor: editor.read.points.start([0, 0, 0])!,
+        focus: editor.read.points.end([0, 0, 1])!,
       });
 
       expect(
         editor.plugin(BaseTablePlugin).getOption('selectedCellIds')
       ).toStrictEqual(['c11', 'c12']);
 
-      editor.tf.select(editor.api.start([0, 0, 0])!);
+      editor.update.selection.set(editor.read.points.start([0, 0, 0])!);
 
       expect(
         editor.plugin(BaseTablePlugin).getOption('selectedCellIds')
@@ -670,13 +652,13 @@ describe('withTableCellSelection', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input, { disableMerge: false });
 
-      editor.tf.select({
-        anchor: editor.api.start([0, 0, 0])!,
-        focus: editor.api.end([0, 1, 1])!,
+      editor.update.selection.set({
+        anchor: editor.read.points.start([0, 0, 0])!,
+        focus: editor.read.points.end([0, 1, 1])!,
       });
 
       expect(

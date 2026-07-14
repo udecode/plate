@@ -1,17 +1,11 @@
 /** @jsx jsxt */
 
-import {
-  type Editor,
-  type SlateEditor,
-  type TElement,
-  createSlateEditor,
-} from 'platejs';
+import type { Element } from '@platejs/plite';
+import { createPlateEditor } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
-import { insertTableColumn } from './insertTableColumn';
-import { insertTableRow } from './insertTableRow';
 
 jsxt;
 
@@ -45,7 +39,7 @@ const makeTableWithCols = ({
         ))}
       </htable>
     </editor>
-  ) as unknown as Editor;
+  ) as TestEditor;
 
 describe('insertTableColumn', () => {
   describe('without initialTableWidth', () => {
@@ -71,17 +65,17 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      insertTableColumn(editor, { select: true });
+      editor.update.insert.tableColumn({ select: true });
 
-      expect(editor.children).toMatchObject(output.children);
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
 
     it.each([
@@ -105,17 +99,17 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      insertTableColumn(editor, { fromCell: [0, 1, 0], select: true });
+      editor.update.insert.tableColumn({ fromCell: [0, 1, 0], select: true });
 
-      expect(editor.children).toMatchObject(output.children);
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
 
     it.each([
@@ -138,17 +132,17 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      insertTableColumn(editor, { at: [0, 0, 0], select: true });
+      editor.update.insert.tableColumn({ at: [0, 0, 0], select: true });
 
-      expect(editor.children).toMatchObject(output.children);
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
 
     it.each([
@@ -173,17 +167,17 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      insertTableColumn(editor, { before: true, select: true });
+      editor.update.insert.tableColumn({ before: true, select: true });
 
-      expect(editor.children).toMatchObject(output.children);
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
   });
 
@@ -213,7 +207,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createSlateEditor({
+        const editor = createPlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -224,9 +218,9 @@ describe('insertTableColumn', () => {
           value: input.children,
         });
 
-        insertTableColumn(editor);
+        editor.update.insert.tableColumn();
 
-        expect(editor.children).toMatchObject(output.children);
+        expect(editor.read.children()).toMatchObject(output.children!);
       });
     });
 
@@ -255,7 +249,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createSlateEditor({
+        const editor = createPlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -266,9 +260,9 @@ describe('insertTableColumn', () => {
           value: input.children,
         });
 
-        insertTableColumn(editor);
+        editor.update.insert.tableColumn();
 
-        expect(editor.children).toMatchObject(output.children);
+        expect(editor.read.children()).toMatchObject(output.children!);
       });
 
       it.each([
@@ -295,7 +289,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createSlateEditor({
+        const editor = createPlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -306,9 +300,9 @@ describe('insertTableColumn', () => {
           value: input.children,
         });
 
-        insertTableColumn(editor, { at: [0, 0, 0] });
+        editor.update.insert.tableColumn({ at: [0, 0, 0] });
 
-        expect(editor.children).toMatchObject(output.children);
+        expect(editor.read.children()).toMatchObject(output.children!);
       });
     });
 
@@ -337,7 +331,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createSlateEditor({
+        const editor = createPlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -348,9 +342,9 @@ describe('insertTableColumn', () => {
           value: input.children,
         });
 
-        insertTableColumn(editor);
+        editor.update.insert.tableColumn();
 
-        expect(editor.children).toMatchObject(output.children);
+        expect(editor.read.children()).toMatchObject(output.children!);
       });
 
       it.each([
@@ -377,7 +371,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createSlateEditor({
+        const editor = createPlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -388,9 +382,9 @@ describe('insertTableColumn', () => {
           value: input.children,
         });
 
-        insertTableColumn(editor);
+        editor.update.insert.tableColumn();
 
-        expect(editor.children).toMatchObject(output.children);
+        expect(editor.read.children()).toMatchObject(output.children!);
       });
     });
 
@@ -418,7 +412,7 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({
           disableMerge,
@@ -429,9 +423,9 @@ describe('insertTableColumn', () => {
         value: input.children,
       });
 
-      insertTableColumn(editor, { before: true });
+      editor.update.insert.tableColumn({ before: true });
 
-      expect(editor.children).toMatchObject(output.children);
+      expect(editor.read.children()).toMatchObject(output.children!);
     });
   });
 
@@ -466,9 +460,9 @@ describe('insertTableColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -476,14 +470,14 @@ describe('insertTableColumn', () => {
       });
 
       // Insert row first
-      insertTableRow(editor);
+      editor.update.insert.tableRow();
 
       // Then insert column
-      insertTableColumn(editor);
+      editor.update.insert.tableColumn();
 
       // Count cells in each row
-      const table = editor.children[0] as TElement;
-      const rows = table.children as TElement[];
+      const table = editor.read.children()[0] as Element;
+      const rows = table.children as Element[];
 
       // Should have 3 rows with 3 cells each
       expect(rows).toHaveLength(3);

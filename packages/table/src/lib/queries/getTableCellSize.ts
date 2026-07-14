@@ -1,11 +1,12 @@
+import type { BaseEditor } from '@platejs/core';
 import type {
-  SlateEditor,
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-} from 'platejs';
+} from '@platejs/utils';
 
-import { getEditorPlugin, KEYS } from 'platejs';
+import { getEditorPlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import {
   type CellIndices,
@@ -16,7 +17,7 @@ import {
 
 /** Get the width of a cell with colSpan support. */
 export const getTableCellSize = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   {
     cellIndices,
     colSizes,
@@ -37,7 +38,7 @@ export const getTableCellSize = (
   if (!path) return { minHeight: rowSize ?? 0, width: 0 };
 
   if (!rowSize) {
-    const [rowElement] = editor.api.parent<TTableRowElement>(path) ?? [];
+    const [rowElement] = editor.read.nodes.parent<TTableRowElement>(path) ?? [];
 
     if (!rowElement || rowElement.type !== editor.getType(KEYS.tr)) {
       return { minHeight: 0, width: 0 };
@@ -46,18 +47,18 @@ export const getTableCellSize = (
     rowSize = rowElement.size ?? 0;
   }
   if (!colSizes) {
-    const [, rowPath] = editor.api.parent<TTableRowElement>(path) ?? [];
+    const [, rowPath] = editor.read.nodes.parent<TTableRowElement>(path) ?? [];
 
     if (!rowPath) return { minHeight: rowSize, width: 0 };
 
-    const [tableNode] = editor.api.parent<TTableElement>(rowPath) ?? [];
+    const [tableNode] = editor.read.nodes.parent<TTableElement>(rowPath) ?? [];
 
     if (!tableNode) return { minHeight: rowSize, width: 0 };
 
     colSizes = getTableOverriddenColSizes(tableNode);
   }
 
-  const colSpan = api.table.getColSpan(element);
+  const colSpan = api.getColSpan(element);
 
   const { col } = cellIndices ?? getCellIndices(editor, element);
 

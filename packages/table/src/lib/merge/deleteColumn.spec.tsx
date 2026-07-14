@@ -1,17 +1,15 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
-import * as deleteColumnExpandedModule from './deleteColumnWhenExpanded';
-import { deleteTableMergeColumn } from './deleteColumn';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: TestEditor) =>
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins({ disableMerge: false }),
     selection: input.selection,
@@ -19,7 +17,7 @@ const createTableEditor = (input: SlateEditor) =>
   });
 
 describe('deleteTableMergeColumn', () => {
-  it('delegates expanded selections to deleteColumnWhenExpanded', () => {
+  it('deletes a selected column spanning every row', () => {
     const input = (
       <editor>
         <htable>
@@ -31,15 +29,15 @@ describe('deleteTableMergeColumn', () => {
               </hp>
             </htd>
             <htd>
-              <hp>
-                12
-                <focus />
-              </hp>
+              <hp>12</hp>
             </htd>
           </htr>
           <htr>
             <htd>
-              <hp>21</hp>
+              <hp>
+                21
+                <focus />
+              </hp>
             </htd>
             <htd>
               <hp>22</hp>
@@ -47,19 +45,16 @@ describe('deleteTableMergeColumn', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const spy = spyOn(
-      deleteColumnExpandedModule,
-      'deleteColumnWhenExpanded'
-    ).mockReturnValue(undefined as any);
 
-    deleteTableMergeColumn(editor);
+    editor.update.remove.tableColumn();
 
-    expect(spy).toHaveBeenCalledTimes(1);
-    expect(spy.mock.calls[0]?.[1][1]).toEqual([0]);
-    spy.mockRestore();
+    expect(editor.read.text.string([0])).toBe('1222');
+    expect(editor.read.nodes.toArray({ match: { type: 'td' } })).toHaveLength(
+      2
+    );
   });
 
   it('shrinks spanning cells and table colSizes when deleting a merged column', () => {
@@ -84,13 +79,13 @@ describe('deleteTableMergeColumn', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
-    deleteTableMergeColumn(editor);
+    editor.update.remove.tableColumn();
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         colSizes: [40],
         type: 'table',

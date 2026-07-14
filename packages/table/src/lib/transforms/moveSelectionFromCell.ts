@@ -1,18 +1,19 @@
-import { type SlateEditor, type TLocation, NodeApi } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import { type Location, NodeApi } from '@platejs/plite';
 
 import { getTableGridAbove } from '../queries/getTableGridAbove';
 import { getCellTypes } from '../utils/getCellType';
 
 /** Move selection by cell unit. */
 export const moveSelectionFromCell = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   {
     at,
     edge,
     fromOneCell,
     reverse,
   }: {
-    at?: TLocation;
+    at?: Location;
     /** Expand cell selection to an edge. */
     edge?: 'bottom' | 'left' | 'right' | 'top';
     /** Move selection from one selected cell */
@@ -58,10 +59,10 @@ export const moveSelectionFromCell = (
       }
 
       if (NodeApi.has(editor, anchorPath) && NodeApi.has(editor, focusPath)) {
-        editor.tf.select({
-          anchor: editor.api.start(anchorPath)!,
-          focus: editor.api.start(focusPath)!,
-        });
+        const anchor = editor.read.points.start(anchorPath);
+        const focus = editor.read.points.start(focusPath);
+
+        if (anchor && focus) editor.update.selection.set({ anchor, focus });
       }
 
       return true;
@@ -70,7 +71,7 @@ export const moveSelectionFromCell = (
     return;
   }
 
-  const cellEntry = editor.api.block({
+  const cellEntry = editor.read.nodes.block({
     at,
     match: { type: getCellTypes(editor) },
   });
@@ -85,21 +86,16 @@ export const moveSelectionFromCell = (
     nextCellPath[nextCellPath.length - 2] += offset;
 
     if (NodeApi.has(editor, nextCellPath)) {
-      editor.tf.select(editor.api.start(nextCellPath)!);
+      const point = editor.read.points.start(nextCellPath);
+
+      if (point) editor.update.selection.set(point);
     } else {
       const tablePath = cellPath.slice(0, -2);
+      const point = reverse
+        ? editor.read.points.before(tablePath)
+        : editor.read.points.after(tablePath);
 
-      if (reverse) {
-        editor.tf.withoutNormalizing(() => {
-          editor.tf.select(editor.api.start(tablePath)!);
-          editor.tf.move({ reverse: true });
-        });
-      } else {
-        editor.tf.withoutNormalizing(() => {
-          editor.tf.select(editor.api.end(tablePath)!);
-          editor.tf.move();
-        });
-      }
+      if (point) editor.update.selection.set({ anchor: point, focus: point });
     }
 
     return true;

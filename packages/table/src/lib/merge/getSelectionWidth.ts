@@ -1,4 +1,5 @@
-import type { Path, TTableCellElement } from 'platejs';
+import type { Path } from '@platejs/plite';
+import type { TTableCellElement } from '@platejs/utils';
 
 import { getCellRowIndexByPath } from '../utils/getCellRowIndexByPath';
 

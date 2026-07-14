@@ -47,6 +47,7 @@ const reviewedPackageSlugs = [
   'slash-command',
   'suggestion',
   'tabbable',
+  'table',
   'tag',
   'toc',
   'toggle',

@@ -1,9 +1,18 @@
-import type { TElement } from 'platejs';
+import type {
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+} from '@platejs/utils';
 
 import { getColSpan } from '../queries';
 
-export const getTableMergedColumnCount = (tableNode: TElement) =>
-  (tableNode.children as TElement[])?.[0]?.children?.reduce(
-    (prev, cur) => prev + (getColSpan(cur as any) ?? 1),
-    0
+export const getTableMergedColumnCount = (tableNode: TTableElement) => {
+  const firstRow = tableNode.children[0] as TTableRowElement | undefined;
+
+  return (
+    (firstRow?.children as TTableCellElement[] | undefined)?.reduce(
+      (count, cell) => count + getColSpan(cell),
+      0
+    ) ?? 0
   );
+};

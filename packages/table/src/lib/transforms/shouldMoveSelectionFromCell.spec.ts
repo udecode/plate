@@ -1,3 +1,5 @@
+import type { BaseEditor } from '@platejs/core';
+
 import { shouldMoveSelectionFromCell } from './shouldMoveSelectionFromCell';
 
 type RectInit = Pick<DOMRect, 'bottom' | 'height' | 'top'>;
@@ -24,22 +26,30 @@ const createEditor = ({
 }) =>
   ({
     api: {
-      isEnd: () => isEnd,
-      isStart: () => isStart,
-      range: () => blockRange,
-      toDOMRange: (range: unknown) => {
-        if (range === blockRange) {
-          return {
-            getClientRects: () => blockRects,
-          };
-        }
+      dom: {
+        resolveDOMRange: (range: unknown) => {
+          if (range === blockRange) {
+            return {
+              getClientRects: () => blockRects,
+            };
+          }
 
-        return {
-          getClientRects: () => caretRects,
-        };
+          return {
+            getClientRects: () => caretRects,
+          };
+        },
       },
     },
-  }) as any;
+    read: {
+      points: {
+        isEnd: () => isEnd,
+        isStart: () => isStart,
+      },
+      ranges: {
+        get: () => blockRange,
+      },
+    },
+  }) as unknown as BaseEditor;
 
 describe('shouldMoveSelectionFromCell', () => {
   const blockPath = [0, 0, 0, 0];

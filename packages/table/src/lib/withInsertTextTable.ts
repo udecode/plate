@@ -1,33 +1,30 @@
-import type { OverrideEditor } from 'platejs';
+import type { ExtendPlateEditorExtension } from '@platejs/core';
 
-import { type TableConfig, getTableAbove } from '.';
-import { getTableGridAbove } from './queries';
+import type { TableConfig } from './BaseTablePlugin';
 
-export const withInsertTextTable: OverrideEditor<TableConfig> = ({
+import { getTableAbove, getTableGridAbove } from './queries';
+
+export const withInsertTextTable: ExtendPlateEditorExtension<TableConfig> = ({
   editor,
-  tf: { insertText },
 }) => ({
   transforms: {
-    insertText(text, options) {
-      if (editor.api.isExpanded()) {
-        const entry = getTableAbove(editor, {
-          at: editor.selection?.anchor,
-        });
+    insertText({ next, options, text, tx }) {
+      if (editor.read.selection.isExpanded()) {
+        const selection = editor.read.selection();
+        const entry = selection
+          ? getTableAbove(editor, { at: selection.anchor })
+          : undefined;
 
         if (entry) {
-          const cellEntries = getTableGridAbove(editor, {
-            format: 'cell',
-          });
+          const cellEntries = getTableGridAbove(editor, { format: 'cell' });
 
           if (cellEntries.length > 1) {
-            editor.tf.collapse({
-              edge: 'focus',
-            });
+            tx.selection.collapse({ edge: 'focus' });
           }
         }
       }
 
-      insertText(text, options);
+      return next({ options, text });
     },
   },
 });

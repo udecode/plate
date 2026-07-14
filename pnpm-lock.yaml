@@ -2132,12 +2132,24 @@ importers:
 
   packages/table:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/plite-react':
+        specifier: workspace:^
+        version: link:../plite-react
       '@platejs/resizable':
         specifier: workspace:^
         version: link:../resizable
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
+      '@udecode/utils':
+        specifier: workspace:^
+        version: link:../udecode/utils
       lodash:
         specifier: ^4.17.21
         version: 4.17.23

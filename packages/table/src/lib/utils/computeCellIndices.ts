@@ -1,16 +1,15 @@
+import { type BaseEditor, getEditorPlugin } from '@platejs/core';
 import {
-  type SlateEditor,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
-  getEditorPlugin,
   KEYS,
-} from 'platejs';
+} from '@platejs/utils';
 
 import type { BaseTablePlugin } from '../BaseTablePlugin';
 
 export function computeCellIndices(
-  editor: SlateEditor,
+  editor: BaseEditor,
   {
     all,
     cellNode,
@@ -30,7 +29,7 @@ export function computeCellIndices(
   if (!tableNode) {
     if (!cellNode) return;
 
-    tableNode = editor.api.above<TTableElement>({
+    tableNode = editor.read.nodes.above<TTableElement>({
       at: cellNode,
       match: { type: editor.getType(KEYS.table) },
     })?.[0];
@@ -75,8 +74,8 @@ export function computeCellIndices(
         if (!all) break;
       }
 
-      const colSpan = api.table.getColSpan(cellElement);
-      const rowSpan = api.table.getRowSpan(cellElement);
+      const colSpan = api.getColSpan(cellElement);
+      const rowSpan = api.getRowSpan(cellElement);
 
       for (let r = 0; r < rowSpan; r++) {
         skipCells[rowIndex + r] = skipCells[rowIndex + r] || [];

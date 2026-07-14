@@ -1,14 +1,14 @@
-import type { TElement } from 'platejs';
+import type { Element } from '@platejs/plite';
 
-import { useEditorSelector } from 'platejs/react';
+import { useEditorSelector } from '@platejs/core/react';
 
-import { TablePlugin } from '../../TablePlugin';
+import { BaseTablePlugin } from '../../../lib/BaseTablePlugin';
 
-export const useIsCellSelected = (element: TElement) =>
+export const useIsCellSelected = (element: Element) =>
   useEditorSelector(
     (editor) =>
       editor
-        .getApi(TablePlugin)
-        .table.isCellSelected(element.id as string | null | undefined),
+        .plugin(BaseTablePlugin)
+        .api.isCellSelected(element.id as string | null | undefined),
     [element.id]
   );

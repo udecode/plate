@@ -1,15 +1,12 @@
 import {
-  type Descendant,
   type HtmlDeserializer,
-  type OmitFirst,
+  type PlatePluginTxGroup,
   type PluginConfig,
-  type TElement,
-  type TTableCellElement,
-  bindFirst,
-  createSlatePlugin,
-  createTSlatePlugin,
-  KEYS,
-} from 'platejs';
+  createBasePlugin,
+} from '@platejs/core';
+import type { Descendant, Element } from '@platejs/plite';
+import { KEYS, type TTableCellElement } from '@platejs/utils';
+import { type OmitFirst, bindFirst } from '@udecode/utils';
 
 import type { CellIndices } from './utils';
 
@@ -37,7 +34,13 @@ import {
   insertTableColumn,
   insertTableRow,
 } from './transforms/index';
-import { withTable } from './withTable';
+import { withApplyTable } from './withApplyTable';
+import { withDeleteTable } from './withDeleteTable';
+import { withGetFragmentTable } from './withGetFragmentTable';
+import { withInsertFragmentTable } from './withInsertFragmentTable';
+import { withInsertTextTable } from './withInsertTextTable';
+import { withNormalizeTable } from './withNormalizeTable';
+import { withTableCellSelection } from './withTableCellSelection';
 
 const parse: HtmlDeserializer['parse'] = ({ element, type }) => {
   const background = element.style.background || element.style.backgroundColor;
@@ -52,7 +55,16 @@ const parse: HtmlDeserializer['parse'] = ({ element, type }) => {
   return { type };
 };
 
-export const BaseTableRowPlugin = createSlatePlugin({
+const getCellAttributeProps = (element?: Descendant) => {
+  const attributes = (element as TTableCellElement | undefined)?.attributes;
+
+  return {
+    colSpan: attributes?.colspan,
+    rowSpan: attributes?.rowspan,
+  };
+};
+
+export const BaseTableRowPlugin = createBasePlugin({
   key: KEYS.tr,
   node: { isContainer: true, isElement: true, isStrictSiblings: true },
   parsers: {
@@ -64,17 +76,14 @@ export const BaseTableRowPlugin = createSlatePlugin({
   },
 });
 
-export const BaseTableCellPlugin = createSlatePlugin({
+export const BaseTableCellPlugin = createBasePlugin({
   key: KEYS.td,
   node: {
     dangerouslyAllowAttributes: ['colspan', 'rowspan'],
     isContainer: true,
     isElement: true,
     isStrictSiblings: true,
-    props: ({ element }) => ({
-      colSpan: (element?.attributes as any)?.colspan,
-      rowSpan: (element?.attributes as any)?.rowspan,
-    }),
+    props: ({ element }) => getCellAttributeProps(element),
   },
   parsers: {
     html: {
@@ -90,17 +99,14 @@ export const BaseTableCellPlugin = createSlatePlugin({
   },
 });
 
-export const BaseTableCellHeaderPlugin = createSlatePlugin({
+export const BaseTableCellHeaderPlugin = createBasePlugin({
   key: KEYS.th,
   node: {
     dangerouslyAllowAttributes: ['colspan', 'rowspan'],
     isContainer: true,
     isElement: true,
     isStrictSiblings: true,
-    props: ({ element }) => ({
-      colSpan: (element?.attributes as any)?.colspan,
-      rowSpan: (element?.attributes as any)?.rowspan,
-    }),
+    props: ({ element }) => getCellAttributeProps(element),
   },
   parsers: {
     html: {
@@ -127,10 +133,6 @@ export type TableConfig = PluginConfig<
     _selectedTableIds: string[] | null | undefined;
     /** @private Forces selection-derived selectors to refresh. */
     _selectionVersion: number;
-    /** Legacy selector key. Selected cells are derived from editor selection. */
-    selectedCells: TElement[] | null;
-    /** Legacy selector key. Selected tables are derived from editor selection. */
-    selectedTables: TElement[] | null;
     /** Disable expanding the table when inserting cells. */
     disableExpandOnInsert?: boolean;
     // Disable first column left resizer.
@@ -160,13 +162,11 @@ export type TableConfig = PluginConfig<
     minColumnWidth?: number;
   },
   {
-    create: {
-      table: OmitFirst<typeof getEmptyTableNode>;
-      /** Cell node factory used each time a cell is created. */
-      tableCell: OmitFirst<typeof getEmptyCellNode>;
-      tableRow: OmitFirst<typeof getEmptyRowNode>;
-    };
     table: {
+      /** Cell node factory used each time a cell is created. */
+      createCell: OmitFirst<typeof getEmptyCellNode>;
+      createRow: OmitFirst<typeof getEmptyRowNode>;
+      createTable: OmitFirst<typeof getEmptyTableNode>;
       getCellBorders: OmitFirst<typeof getTableCellBorders>;
       getCellSize: OmitFirst<typeof getTableCellSize>;
       getSelectedCell: OmitFirst<typeof getSelectedCell>;
@@ -183,34 +183,34 @@ export type TableConfig = PluginConfig<
   },
   {
     insert: {
-      table: OmitFirst<typeof insertTable>;
-      tableColumn: OmitFirst<typeof insertTableColumn>;
-      tableRow: OmitFirst<typeof insertTableRow>;
+      table: OmitFirst<OmitFirst<typeof insertTable>>;
+      tableColumn: OmitFirst<OmitFirst<typeof insertTableColumn>>;
+      tableRow: OmitFirst<OmitFirst<typeof insertTableRow>>;
     };
     remove: {
-      table: OmitFirst<typeof deleteTable>;
-      tableColumn: OmitFirst<typeof deleteColumn>;
-      tableRow: OmitFirst<typeof deleteRow>;
+      table: OmitFirst<OmitFirst<typeof deleteTable>>;
+      tableColumn: OmitFirst<OmitFirst<typeof deleteColumn>>;
+      tableRow: OmitFirst<OmitFirst<typeof deleteRow>>;
     };
     table: {
-      merge: OmitFirst<typeof mergeTableCells>;
-      split: OmitFirst<typeof splitTableCell>;
+      merge: OmitFirst<OmitFirst<typeof mergeTableCells>>;
+      split: OmitFirst<OmitFirst<typeof splitTableCell>>;
     };
   },
   {
     cellIndices?: (id: string) => CellIndices;
     isCellSelected?: (id?: string | null) => boolean;
     isSelectingCell?: () => boolean;
-    selectedCell?: (id?: string | null) => TElement | null;
+    selectedCell?: (id?: string | null) => Element | null;
     selectedCellIds?: () => string[] | null;
-    selectedCells?: () => TElement[] | null;
+    selectedCells?: () => Element[] | null;
     selectedTableIds?: () => string[] | null;
-    selectedTables?: () => TElement[] | null;
+    selectedTables?: () => Element[] | null;
   }
 >;
 
 /** Enables support for tables. */
-export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
+export const BaseTablePlugin = createBasePlugin<TableConfig>({
   key: KEYS.table,
   node: {
     isContainer: true,
@@ -219,13 +219,11 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   transformInitialValue: normalizeInitialValueTable,
   options: {
     _cellIndices: {},
-    _selectedCellIds: undefined as string[] | null | undefined,
-    _selectedTableIds: undefined as string[] | null | undefined,
+    _selectedCellIds: undefined,
+    _selectedTableIds: undefined,
     _selectionVersion: 0,
     disableMerge: false,
     minColumnWidth: 48,
-    selectedCells: null as TElement[] | null,
-    selectedTables: null as TElement[] | null,
   },
   parsers: {
     html: {
@@ -291,12 +289,10 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
     },
   }))
   .extendEditorApi<TableConfig['api']>(({ editor }) => ({
-    create: {
-      table: bindFirst(getEmptyTableNode, editor),
-      tableCell: bindFirst(getEmptyCellNode, editor),
-      tableRow: bindFirst(getEmptyRowNode, editor),
-    },
     table: {
+      createCell: bindFirst(getEmptyCellNode, editor),
+      createRow: bindFirst(getEmptyRowNode, editor),
+      createTable: bindFirst(getEmptyTableNode, editor),
       getCellBorders: bindFirst(getTableCellBorders, editor),
       getCellSize: bindFirst(getTableCellSize, editor),
       getSelectedCell: bindFirst(getSelectedCell, editor),
@@ -311,20 +307,37 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
       isSelectingCell: bindFirst(isSelectingCell, editor),
     },
   }))
-  .extendEditorTransforms<TableConfig['transforms']>(({ editor }) => ({
-    insert: {
-      table: bindFirst(insertTable, editor),
-      tableColumn: bindFirst(insertTableColumn, editor),
-      tableRow: bindFirst(insertTableRow, editor),
-    },
-    remove: {
-      table: bindFirst(deleteTable, editor),
-      tableColumn: bindFirst(deleteColumn, editor),
-      tableRow: bindFirst(deleteRow, editor),
-    },
-    table: {
-      merge: bindFirst(mergeTableCells, editor),
-      split: bindFirst(splitTableCell, editor),
-    },
-  }))
-  .overrideEditor(withTable);
+  .extendTxGroup<'insert', PlatePluginTxGroup<TableConfig['tx']['insert']>>(
+    'insert',
+    ({ editor }) =>
+      (tx) => ({
+        table: (tableOptions, options) =>
+          insertTable(editor, tx, tableOptions, options),
+        tableColumn: (options) => insertTableColumn(editor, tx, options),
+        tableRow: (options) => insertTableRow(editor, tx, options),
+      })
+  )
+  .extendTxGroup<'remove', PlatePluginTxGroup<TableConfig['tx']['remove']>>(
+    'remove',
+    ({ editor }) =>
+      (tx) => ({
+        table: () => deleteTable(editor, tx),
+        tableColumn: () => deleteColumn(editor, tx),
+        tableRow: () => deleteRow(editor, tx),
+      })
+  )
+  .extendTxGroup<'table', PlatePluginTxGroup<TableConfig['tx']['table']>>(
+    'table',
+    ({ editor }) =>
+      (tx) => ({
+        merge: () => mergeTableCells(editor, tx),
+        split: () => splitTableCell(editor, tx),
+      })
+  )
+  .extendExtension(withApplyTable)
+  .extendExtension(withDeleteTable)
+  .extendExtension(withGetFragmentTable)
+  .extendExtension(withInsertFragmentTable)
+  .extendExtension(withInsertTextTable)
+  .extendExtension(withNormalizeTable)
+  .extendExtension(withTableCellSelection);

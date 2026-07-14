@@ -1,6 +1,9 @@
-import type { SlateEditor, TElement, TTableElement } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { EditorUpdateTransaction } from '@platejs/plite';
+import type { TTableElement, TTableRowElement } from '@platejs/utils';
 
-import { getEditorPlugin, KEYS } from 'platejs';
+import { getEditorPlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import type { TableConfig } from '../BaseTablePlugin';
 
@@ -9,36 +12,39 @@ import { deleteColumnWhenExpanded } from '../merge/deleteColumnWhenExpanded';
 import { getTableColumnCount } from '../queries';
 import { getCellTypes } from '../utils';
 
-export const deleteColumn = (editor: SlateEditor) => {
+export const deleteColumn = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction
+) => {
   const { getOptions, type } = getEditorPlugin<TableConfig>(editor, {
     key: KEYS.table,
   });
   const { disableMerge } = getOptions();
 
-  const tableEntry = editor.api.above<TTableElement>({
+  const tableEntry = editor.read.nodes.above<TTableElement>({
     match: { type },
   });
 
   if (!tableEntry) return;
 
-  editor.tf.withoutNormalizing(() => {
+  tx.withoutNormalizing(({ tx }) => {
     if (!disableMerge) {
-      deleteTableMergeColumn(editor);
+      deleteTableMergeColumn(editor, tx);
 
       return;
     }
-    if (editor.api.isExpanded())
-      return deleteColumnWhenExpanded(editor, tableEntry);
+    if (editor.read.selection.isExpanded())
+      return deleteColumnWhenExpanded(editor, tx, tableEntry);
 
-    const tdEntry = editor.api.above({
+    const tdEntry = editor.read.nodes.above({
       match: { type: getCellTypes(editor) },
     });
-    const trEntry = editor.api.above({
+    const trEntry = editor.read.nodes.above<TTableRowElement>({
       match: { type: editor.getType(KEYS.tr) },
     });
 
     if (tdEntry && trEntry && getTableColumnCount(tableEntry[0]) <= 1) {
-      editor.tf.removeNodes({ at: tableEntry[1] });
+      tx.nodes.remove({ at: tableEntry[1] });
 
       return;
     }
@@ -59,18 +65,20 @@ export const deleteColumn = (editor: SlateEditor) => {
       const replacePathPos = pathToDelete.length - 2;
 
       tableNode.children.forEach((row, rowIdx) => {
+        const rowElement = row as TTableRowElement;
+
         pathToDelete[replacePathPos] = rowIdx;
 
         // for tables containing rows of different lengths
         // - don't delete if only one cell in row
         // - don't delete if row doesn't have this cell
         if (
-          (row.children as TElement[]).length === 1 ||
-          colIndex > (row.children as TElement[]).length - 1
+          rowElement.children.length === 1 ||
+          colIndex > rowElement.children.length - 1
         )
           return;
 
-        editor.tf.removeNodes({ at: pathToDelete });
+        tx.nodes.remove({ at: pathToDelete });
       });
 
       const { colSizes } = tableNode;
@@ -79,7 +87,7 @@ export const deleteColumn = (editor: SlateEditor) => {
         const newColSizes = [...colSizes];
         newColSizes.splice(colIndex, 1);
 
-        editor.tf.setNodes<TTableElement>(
+        tx.nodes.set<TTableElement>(
           { colSizes: newColSizes },
           { at: tablePath }
         );

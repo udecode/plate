@@ -1,15 +1,16 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, type TElement, createSlateEditor } from 'platejs';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
+import { type Element } from '@platejs/plite';
+import { createPlateEditor } from '@platejs/core/react';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { getTopTableCell } from './getTopTableCell';
 
 jsxt;
 
-const createEditorInstance = (input: any) =>
-  createSlateEditor({
+const createEditorInstance = (input: TestEditor) =>
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
@@ -41,30 +42,31 @@ describe('getTopTableCell', () => {
         </htr>
       </htable>
     </editor>
-  ) as any as SlateEditor;
+  ) as TestEditor;
 
   it('returns the cell above the current cell', () => {
     const editor = createEditorInstance(input);
     const cellAbove = getTopTableCell(editor);
-    expect((cellAbove?.[0].children as TElement[])[0].children[0].text).toBe(
+    expect((cellAbove?.[0].children as Element[])[0].children[0].text).toBe(
       '12'
     );
   });
 
   it('returns undefined if the current cell is in the first row', () => {
     const editor = createEditorInstance(input);
-    editor.selection = {
+    editor.update.selection.set({
       anchor: { offset: 0, path: [0, 0, 0] },
       focus: { offset: 0, path: [0, 0, 0] },
-    };
+    });
     const cellAbove = getTopTableCell(editor, {
-      at: editor.selection.anchor.path,
+      at: editor.read.selection()!.anchor.path,
     });
     expect(cellAbove).toBeUndefined();
   });
 
   it('returns undefined if no matching cell is found', () => {
-    const emptyEditor = createEditorInstance({ children: [] });
+    const emptyInput = (<editor />) as TestEditor;
+    const emptyEditor = createEditorInstance(emptyInput);
     const cellAbove = getTopTableCell(emptyEditor);
     expect(cellAbove).toBeUndefined();
   });
@@ -97,7 +99,7 @@ describe('getTopTableCell', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
     const editor = createEditorInstance(mergedInput);
 
     expect(getTopTableCell(editor)).toEqual([

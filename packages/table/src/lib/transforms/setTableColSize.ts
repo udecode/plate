@@ -1,16 +1,18 @@
-import type { EditorAboveOptions, SlateEditor, TTableElement } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { TTableElement } from '@platejs/utils';
 
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
 import { getTableColumnCount } from '../queries/getTableColumnCount';
+import type { TableFindOptions } from '../types';
 
 export const setTableColSize = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { colIndex, width }: { colIndex: number; width: number },
-  options: EditorAboveOptions = {}
+  options: TableFindOptions = {}
 ) => {
-  const table = editor.api.node<TTableElement>({
-    match: { type: KEYS.table },
+  const table = editor.read.nodes.find<TTableElement>({
+    match: { type: editor.getType(KEYS.table) },
     ...options,
   });
 
@@ -24,5 +26,5 @@ export const setTableColSize = (
 
   colSizes[colIndex] = width;
 
-  editor.tf.setNodes<TTableElement>({ colSizes }, { at: tablePath });
+  editor.update.nodes.set<TTableElement>({ colSizes }, { at: tablePath });
 };

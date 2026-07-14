@@ -1,6 +1,6 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
 
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
 import type { TableConfig } from '../BaseTablePlugin';
 import type { CreateCellOptions } from '../types';
@@ -10,7 +10,7 @@ export interface GetEmptyRowNodeOptions extends CreateCellOptions {
 }
 
 export const getEmptyRowNode = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { colCount = 1, ...cellOptions }: GetEmptyRowNodeOptions = {}
 ) => {
   const { api } = editor.getPlugin<TableConfig>({ key: KEYS.table });
@@ -18,7 +18,7 @@ export const getEmptyRowNode = (
   return {
     children: Array.from({ length: colCount })
       .fill(colCount)
-      .map(() => api.create.tableCell(cellOptions)),
+      .map(() => api.table.createCell(cellOptions)),
     type: editor.getType(KEYS.tr),
   };
 };

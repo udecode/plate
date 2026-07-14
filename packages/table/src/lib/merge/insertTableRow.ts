@@ -1,15 +1,16 @@
 import cloneDeep from 'lodash/cloneDeep.js';
 import {
+  type EditorUpdateTransaction,
   type Path,
-  type SlateEditor,
+  PathApi,
+} from '@platejs/plite';
+import { type BaseEditor, getEditorPlugin } from '@platejs/core';
+import {
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
-  getEditorPlugin,
   KEYS,
-  NodeApi,
-  PathApi,
-} from 'platejs';
+} from '@platejs/utils';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getTableColumnCount } from '../queries';
@@ -19,7 +20,8 @@ import { findCellByIndexes } from './findCellByIndexes';
 import { getCellPath } from './getCellPath';
 
 export const insertTableMergeRow = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   {
     at,
     before,
@@ -39,15 +41,17 @@ export const insertTableMergeRow = (
   const { api, type } = getEditorPlugin(editor, BaseTablePlugin);
 
   if (at && !fromRow) {
-    const table = NodeApi.get<TTableElement>(editor, at);
+    const table = editor.read.nodes.get<TTableElement>(at)?.[0];
 
     if (table?.type === editor.getType(KEYS.table)) {
-      fromRow = NodeApi.lastChild(editor, at)![1];
+      if (!table.children.length) return;
+
+      fromRow = at.concat(table.children.length - 1);
       at = undefined;
     }
   }
 
-  const trEntry = editor.api.block({
+  const trEntry = editor.read.nodes.find({
     at: fromRow,
     match: { type: editor.getType(KEYS.tr) },
   });
@@ -56,8 +60,7 @@ export const insertTableMergeRow = (
 
   const [, trPath] = trEntry;
 
-  const tableEntry = editor.api.block<TTableElement>({
-    above: true,
+  const tableEntry = editor.read.nodes.above<TTableElement>({
     at: trPath,
     match: { type },
   });
@@ -66,7 +69,7 @@ export const insertTableMergeRow = (
 
   const tableNode = tableEntry[0] as TTableElement;
 
-  const cellEntry = editor.api.node({
+  const cellEntry = editor.read.nodes.find({
     at: fromRow,
     match: { type: getCellTypes(editor) },
   });
@@ -75,7 +78,7 @@ export const insertTableMergeRow = (
 
   const [cellNode, cellPath] = cellEntry;
   const cellElement = cellNode as TTableCellElement;
-  const cellRowSpan = api.table.getRowSpan(cellElement);
+  const cellRowSpan = api.getRowSpan(cellElement);
   const { row: cellRowIndex } = getCellIndices(editor, cellElement);
 
   const rowPath = cellPath.at(-2)!;
@@ -124,8 +127,8 @@ export const insertTableMergeRow = (
       curCell
     );
 
-    const curRowSpan = api.table.getRowSpan(curCell);
-    const curColSpan = api.table.getColSpan(curCell);
+    const curRowSpan = api.getRowSpan(curCell);
+    const curColSpan = api.getColSpan(curCell);
     const currentCellPath = getCellPath(
       editor,
       tableEntry,
@@ -144,12 +147,12 @@ export const insertTableMergeRow = (
       }
 
       // make higher
-      editor.tf.setNodes<TTableCellElement>(newCell, { at: currentCellPath });
+      tx.nodes.set<TTableCellElement>(newCell, { at: currentCellPath });
     } else {
       // add new
-      const row = editor.api.parent(currentCellPath)!;
+      const row = editor.read.nodes.parent(currentCellPath)!;
       const rowElement = row[0] as TTableRowElement;
-      const emptyCell = api.create.tableCell({ header, row: rowElement });
+      const emptyCell = api.createCell({ header, row: rowElement });
 
       newRowChildren.push({
         ...emptyCell,
@@ -159,8 +162,8 @@ export const insertTableMergeRow = (
     }
   });
 
-  editor.tf.withoutNormalizing(() => {
-    editor.tf.insertNodes(
+  tx.withoutNormalizing(({ tx }) => {
+    tx.nodes.insert(
       {
         children: newRowChildren,
         type: editor.getType(KEYS.tr),
@@ -172,14 +175,16 @@ export const insertTableMergeRow = (
     );
 
     if (shouldSelect) {
-      const cellEntry = editor.api.node({
+      const cellEntry = tx.nodes.find({
         at: nextRowPath,
         match: { type: getCellTypes(editor) },
       });
 
       if (cellEntry) {
         const [, nextCellPath] = cellEntry;
-        editor.tf.select(nextCellPath);
+        const point = tx.points.start(nextCellPath);
+
+        if (point) tx.selection.set({ anchor: point, focus: point });
       }
     }
   });

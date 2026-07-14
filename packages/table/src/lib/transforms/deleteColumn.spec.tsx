@@ -1,12 +1,10 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
-import * as deleteColumnExpandedModule from '../merge/deleteColumnWhenExpanded';
-import { deleteColumn } from './deleteColumn';
 
 jsxt;
 
@@ -37,18 +35,18 @@ describe('deleteColumn', () => {
         </htable>
         <hp>after</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createPlateEditor({
       nodeId: true,
       plugins: getTestTablePlugins({ disableMerge }),
       selection: input.selection,
       value: input.children,
     });
 
-    deleteColumn(editor);
+    editor.update.remove.tableColumn();
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       { children: [{ text: 'before' }], type: 'p' },
       { children: [{ text: 'after' }], type: 'p' },
     ]);
@@ -83,7 +81,7 @@ describe('deleteColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -100,18 +98,18 @@ describe('deleteColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      deleteColumn(editor);
+      editor.update.remove.tableColumn();
 
-      expect(editor.children).toMatchObject(output.children);
+      expect(editor.read.children()).toMatchObject(output.children!);
     });
   });
 
@@ -141,7 +139,7 @@ describe('deleteColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -158,18 +156,18 @@ describe('deleteColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      deleteColumn(editor);
+      editor.update.remove.tableColumn();
 
-      expect(editor.children).toMatchObject(output.children);
+      expect(editor.read.children()).toMatchObject(output.children!);
     });
   });
 
@@ -199,7 +197,7 @@ describe('deleteColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -216,18 +214,18 @@ describe('deleteColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      deleteColumn(editor);
+      editor.update.remove.tableColumn();
 
-      expect(editor.children).toMatchObject(output.children);
+      expect(editor.read.children()).toMatchObject(output.children!);
     });
   });
 
@@ -259,7 +257,7 @@ describe('deleteColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -282,18 +280,18 @@ describe('deleteColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      deleteColumn(editor);
+      editor.update.remove.tableColumn();
 
-      expect(editor.children).toMatchObject(output.children);
+      expect(editor.read.children()).toMatchObject(output.children!);
     });
   });
 
@@ -322,18 +320,18 @@ describe('deleteColumn', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createPlateEditor({
       nodeId: true,
       plugins: getTestTablePlugins({ disableMerge: true }),
       selection: input.selection,
       value: input.children,
     });
 
-    deleteColumn(editor);
+    editor.update.remove.tableColumn();
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         colSizes: [40],
         type: 'table',
@@ -341,7 +339,7 @@ describe('deleteColumn', () => {
     ]);
   });
 
-  it('delegates expanded selections to deleteColumnWhenExpanded', () => {
+  it('deletes a selected column spanning every row', () => {
     const input = (
       <editor>
         <htable>
@@ -353,15 +351,15 @@ describe('deleteColumn', () => {
               </hp>
             </htd>
             <htd>
-              <hp>
-                12
-                <focus />
-              </hp>
+              <hp>12</hp>
             </htd>
           </htr>
           <htr>
             <htd>
-              <hp>21</hp>
+              <hp>
+                21
+                <focus />
+              </hp>
             </htd>
             <htd>
               <hp>22</hp>
@@ -369,23 +367,19 @@ describe('deleteColumn', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createPlateEditor({
       nodeId: true,
       plugins: getTestTablePlugins({ disableMerge: true }),
       selection: input.selection,
       value: input.children,
     });
-    const spy = spyOn(
-      deleteColumnExpandedModule,
-      'deleteColumnWhenExpanded'
-    ).mockReturnValue(undefined as any);
+    editor.update.remove.tableColumn();
 
-    deleteColumn(editor);
-
-    expect(spy).toHaveBeenCalledTimes(1);
-    expect(spy.mock.calls[0]?.[1][1]).toEqual([0]);
-    spy.mockRestore();
+    expect(editor.read.text.string([0])).toBe('1222');
+    expect(editor.read.nodes.toArray({ match: { type: 'td' } })).toHaveLength(
+      2
+    );
   });
 });

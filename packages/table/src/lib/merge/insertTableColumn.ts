@@ -1,15 +1,16 @@
 import cloneDeep from 'lodash/cloneDeep.js';
 import {
+  type EditorUpdateTransaction,
   type Path,
-  type SlateEditor,
+  PathApi,
+} from '@platejs/plite';
+import { type BaseEditor, getEditorPlugin } from '@platejs/core';
+import {
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
-  getEditorPlugin,
   KEYS,
-  NodeApi,
-  PathApi,
-} from 'platejs';
+} from '@platejs/utils';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getCellTypes } from '../utils';
@@ -18,7 +19,8 @@ import { findCellByIndexes } from './findCellByIndexes';
 import { getCellPath } from './getCellPath';
 
 export const insertTableMergeColumn = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   {
     at,
     before,
@@ -40,20 +42,24 @@ export const insertTableMergeColumn = (
   const { initialTableWidth, minColumnWidth } = getOptions();
 
   if (at && !fromCell) {
-    const table = NodeApi.get<TTableElement>(editor, at);
+    const table = editor.read.nodes.get<TTableElement>(at)?.[0];
 
     if (table?.type === editor.getType(KEYS.table)) {
-      fromCell = NodeApi.lastChild(editor, at.concat([0]))![1];
+      const firstRow = table.children[0] as TTableRowElement | undefined;
+
+      if (!firstRow?.children.length) return;
+
+      fromCell = at.concat([0, firstRow.children.length - 1]);
       at = undefined;
     }
   }
 
   const cellEntry = fromCell
-    ? editor.api.node<TTableCellElement>({
+    ? editor.read.nodes.find<TTableCellElement>({
         at: fromCell,
         match: { type: getCellTypes(editor) },
       })
-    : editor.api.block<TTableCellElement>({
+    : editor.read.nodes.above<TTableCellElement>({
         match: { type: getCellTypes(editor) },
       });
 
@@ -62,8 +68,7 @@ export const insertTableMergeColumn = (
   const [, cellPath] = cellEntry;
   const cell = cellEntry[0];
 
-  const tableEntry = editor.api.block<TTableElement>({
-    above: true,
+  const tableEntry = editor.read.nodes.above<TTableElement>({
     at: cellPath,
     match: { type },
   });
@@ -73,7 +78,7 @@ export const insertTableMergeColumn = (
   const [tableNode, tablePath] = tableEntry;
 
   const { col: cellColIndex } = getCellIndices(editor, cell);
-  const cellColSpan = api.table.getColSpan(cell);
+  const cellColSpan = api.getColSpan(cell);
 
   let nextColIndex: number;
   let checkingColIndex: number;
@@ -112,8 +117,8 @@ export const insertTableMergeColumn = (
       curCell
     );
 
-    const curRowSpan = api.table.getRowSpan(curCell);
-    const curColSpan = api.table.getColSpan(curCell);
+    const curRowSpan = api.getRowSpan(curCell);
+    const curColSpan = api.getColSpan(curCell);
 
     const currentCellPath = getCellPath(
       editor,
@@ -132,7 +137,7 @@ export const insertTableMergeColumn = (
         newCell.attributes.colspan = colSpan.toString();
       }
 
-      editor.tf.setNodes<TTableCellElement>(newCell, { at: currentCellPath });
+      tx.nodes.set<TTableCellElement>(newCell, { at: currentCellPath });
     } else {
       const curRowPath = currentCellPath.slice(0, -1);
       const curColPath = currentCellPath.at(-1)!;
@@ -141,21 +146,21 @@ export const insertTableMergeColumn = (
         before ? curColPath : curColPath + placementCorrection,
       ];
 
-      const row = editor.api.parent(currentCellPath)!;
+      const row = editor.read.nodes.parent(currentCellPath)!;
       const rowElement = row[0] as TTableRowElement;
       const emptyCell = {
-        ...api.create.tableCell({ header, row: rowElement }),
+        ...api.createCell({ header, row: rowElement }),
         colSpan: 1,
         rowSpan: curRowSpan,
       };
-      editor.tf.insertNodes(emptyCell, {
+      tx.nodes.insert(emptyCell, {
         at: placementPath,
         select: shouldSelect,
       });
     }
   });
 
-  editor.tf.withoutNormalizing(() => {
+  tx.withoutNormalizing(({ tx }) => {
     const { colSizes } = tableNode;
 
     if (colSizes) {
@@ -183,7 +188,7 @@ export const insertTableMergeColumn = (
         }
       }
 
-      editor.tf.setNodes<TTableElement>(
+      tx.nodes.set<TTableElement>(
         {
           colSizes: newColSizes,
         },

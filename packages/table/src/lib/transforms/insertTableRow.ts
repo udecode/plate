@@ -1,20 +1,22 @@
 import {
+  type EditorUpdateTransaction,
+  type Element,
   type Path,
-  type SlateEditor,
-  type TElement,
-  type TTableElement,
-  getEditorPlugin,
-  KEYS,
-  NodeApi,
   PathApi,
-} from 'platejs';
+} from '@platejs/plite';
+import { type BaseEditor, getEditorPlugin } from '@platejs/core';
+import {
+  type TTableElement,
+  type TTableRowElement,
+  KEYS,
+} from '@platejs/utils';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { insertTableMergeRow } from '../merge/insertTableRow';
-import { getCellTypes } from '../utils/index';
 
 export const insertTableRow = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   options: {
     /**
      * Exact path of the row to insert the column at. Pass the table path to
@@ -33,22 +35,24 @@ export const insertTableRow = (
   const { disableMerge } = getOptions();
 
   if (!disableMerge) {
-    return insertTableMergeRow(editor, options);
+    return insertTableMergeRow(editor, tx, options);
   }
 
   const { before, header, select: shouldSelect } = options;
   let { at, fromRow } = options;
 
   if (at && !fromRow) {
-    const table = NodeApi.get<TTableElement>(editor, at);
+    const table = editor.read.nodes.get<TTableElement>(at)?.[0];
 
     if (table?.type === editor.getType(KEYS.table)) {
-      fromRow = NodeApi.lastChild(editor, at)![1];
+      if (!table.children.length) return;
+
+      fromRow = at.concat(table.children.length - 1);
       at = undefined;
     }
   }
 
-  const trEntry = editor.api.block({
+  const trEntry = editor.read.nodes.find<TTableRowElement>({
     at: fromRow,
     match: { type: editor.getType(KEYS.tr) },
   });
@@ -57,8 +61,7 @@ export const insertTableRow = (
 
   const [trNode, trPath] = trEntry;
 
-  const tableEntry = editor.api.block({
-    above: true,
+  const tableEntry = editor.read.nodes.above<TTableElement>({
     at: trPath,
     match: { type },
   });
@@ -66,44 +69,32 @@ export const insertTableRow = (
   if (!tableEntry) return;
 
   const getEmptyRowNode = () => ({
-    children: (trNode.children as TElement[]).map((_, i) => {
+    children: (trNode.children as Element[]).map((_, i) => {
       const hasSingleRow = tableEntry[0].children.length === 1;
       const isHeaderColumn =
         !hasSingleRow &&
-        (tableEntry[0].children as TElement[]).every(
+        (tableEntry[0].children as Element[]).every(
           (n) => n.children[i].type === editor.getType(KEYS.th)
         );
 
-      return api.create.tableCell({
+      return api.createCell({
         header: header ?? isHeaderColumn,
       });
     }),
     type: editor.getType(KEYS.tr),
   });
 
-  editor.tf.withoutNormalizing(() => {
-    editor.tf.insertNodes(getEmptyRowNode(), {
-      at: PathApi.isPath(at) ? at : before ? trPath : PathApi.next(trPath),
-    });
-  });
+  const insertPath = PathApi.isPath(at)
+    ? at
+    : before
+      ? trPath
+      : PathApi.next(trPath);
+
+  tx.nodes.insert(getEmptyRowNode(), { at: insertPath });
 
   if (shouldSelect) {
-    const cellEntry = editor.api.block({
-      match: { type: getCellTypes(editor) },
-    });
+    const point = tx.points.start(insertPath);
 
-    if (!cellEntry) return;
-
-    const [, nextCellPath] = cellEntry;
-
-    if (PathApi.isPath(at)) {
-      nextCellPath[nextCellPath.length - 2] = at.at(-2)!;
-    } else {
-      nextCellPath[nextCellPath.length - 2] = before
-        ? nextCellPath.at(-2)!
-        : nextCellPath.at(-2)! + 1;
-    }
-
-    editor.tf.select(nextCellPath);
+    if (point) tx.selection.set({ anchor: point, focus: point });
   }
 };

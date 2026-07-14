@@ -1,4 +1,5 @@
-import { PathApi, type SlateEditor } from 'platejs';
+import { PathApi } from '@platejs/plite';
+import type { BaseEditor } from '@platejs/core';
 
 import { getCellTypes } from '../utils/getCellType';
 
@@ -16,21 +17,16 @@ const getRangeClientRects = (domRange?: Pick<Range, 'getClientRects'> | null) =>
   );
 
 export const getTableMoveSelectionContext = (
-  editor: SlateEditor,
-  point = editor.selection?.anchor
+  editor: BaseEditor,
+  point = editor.read.selection()?.anchor
 ): TableMoveSelectionContext | undefined => {
-  if (
-    !point ||
-    !editor.api.isAt({ block: true, match: { type: getCellTypes(editor) } })
-  ) {
-    return;
-  }
+  if (!point) return;
 
-  const cellEntry = editor.api.block({
+  const cellEntry = editor.read.nodes.above({
     at: point,
     match: { type: getCellTypes(editor) },
   });
-  const blockEntry = editor.api.block({ at: point });
+  const blockEntry = editor.read.nodes.block({ at: point });
 
   if (!cellEntry || !blockEntry) return;
 
@@ -41,7 +37,7 @@ export const getTableMoveSelectionContext = (
 };
 
 export const hasAdjacentBlockInCell = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   {
     blockPath,
     cellPath,
@@ -51,14 +47,20 @@ export const hasAdjacentBlockInCell = (
   }
 ) => {
   const adjacentBlock = reverse
-    ? editor.api.previous({ at: blockPath, block: true })
-    : editor.api.next({ at: blockPath, block: true });
+    ? editor.read.nodes.previous({
+        at: blockPath,
+        match: (node) => editor.read.nodes.isBlock(node),
+      })
+    : editor.read.nodes.next({
+        at: blockPath,
+        match: (node) => editor.read.nodes.isBlock(node),
+      });
 
   return !!adjacentBlock && PathApi.isAncestor(cellPath, adjacentBlock[1]);
 };
 
 export const shouldMoveSelectionFromCell = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   {
     blockPath,
     point,
@@ -69,17 +71,19 @@ export const shouldMoveSelectionFromCell = (
     reverse: boolean;
   }
 ) => {
-  const blockRange = editor.api.range(blockPath);
+  const blockRange = editor.read.ranges.get(blockPath);
   const isAtBlockEdge = reverse
-    ? editor.api.isStart(point, blockPath)
-    : editor.api.isEnd(point, blockPath);
+    ? editor.read.points.isStart(point, blockPath)
+    : editor.read.points.isEnd(point, blockPath);
 
   if (!blockRange) return isAtBlockEdge;
 
   const caretRects = getRangeClientRects(
-    editor.api.toDOMRange({ anchor: point, focus: point })
+    editor.api.dom.resolveDOMRange({ anchor: point, focus: point })
   );
-  const blockRects = getRangeClientRects(editor.api.toDOMRange(blockRange));
+  const blockRects = getRangeClientRects(
+    editor.api.dom.resolveDOMRange(blockRange)
+  );
 
   if (caretRects.length === 0 || blockRects.length === 0) return isAtBlockEdge;
 

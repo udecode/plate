@@ -1,16 +1,18 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
+import { NodeApi } from '@platejs/plite';
+import type { TTableRowElement } from '@platejs/utils';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { getTableMergeGridByRange } from './getTableGridByRange';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: TestEditor) =>
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins({ disableMerge: false }),
     selection: input.selection,
@@ -46,21 +48,22 @@ describe('getTableMergeGridByRange', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
     const result = getTableMergeGridByRange(editor, {
-      at: editor.selection!,
+      at: editor.read.selection()!,
       format: 'all',
     });
 
     expect(result.cellEntries).toHaveLength(4);
     expect(result.tableEntries).toHaveLength(1);
     expect(result.tableEntries[0]?.[1]).toEqual([0]);
-    expect((result.tableEntries[0]?.[0] as any).children).toHaveLength(2);
-    expect(
-      (result.tableEntries[0]?.[0] as any).children[0].children
-    ).toHaveLength(2);
+    const table = result.tableEntries[0]?.[0];
+    const firstRow = table?.children[0] as TTableRowElement | undefined;
+
+    expect(table?.children).toHaveLength(2);
+    expect(firstRow?.children).toHaveLength(2);
   });
 
   it('returns only the cell entries for format=cell', () => {
@@ -94,16 +97,18 @@ describe('getTableMergeGridByRange', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
     const result = getTableMergeGridByRange(editor, {
-      at: editor.selection!,
+      at: editor.read.selection()!,
       format: 'cell',
     });
 
-    expect(
-      result.map(([cell]) => (cell as any).children[0].children[0].text)
-    ).toEqual(['11', '21', '22']);
+    expect(result.map(([cell]) => NodeApi.string(cell))).toEqual([
+      '11',
+      '21',
+      '22',
+    ]);
   });
 });

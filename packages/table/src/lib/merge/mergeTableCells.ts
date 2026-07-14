@@ -1,26 +1,34 @@
-import type {
-  Descendant,
-  NodeEntry,
-  SlateEditor,
-  TTableCellElement,
-} from 'platejs';
+import {
+  type Descendant,
+  type EditorUpdateTransaction,
+  type NodeEntry,
+  ElementApi,
+} from '@platejs/plite';
+import type { BaseEditor } from '@platejs/core';
+import type { TTableCellElement } from '@platejs/utils';
 
 import cloneDeep from 'lodash/cloneDeep.js';
-import { getEditorPlugin, KEYS } from 'platejs';
+import { getEditorPlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { getCellIndices } from '..';
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getTableGridAbove } from '../queries';
 
 /** Merges multiple selected cells into one. */
-export const mergeTableCells = (editor: SlateEditor) => {
+export const mergeTableCells = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction
+) => {
   const { api } = getEditorPlugin(editor, BaseTablePlugin);
 
   const cellEntries = getTableGridAbove(editor, {
     format: 'cell',
   }) as NodeEntry<TTableCellElement>[];
 
-  editor.tf.withoutNormalizing(() => {
+  if (cellEntries.length < 2) return;
+
+  tx.withoutNormalizing(({ tx }) => {
     // calculate the colSpan which is the number of horizontal cells that a cell should span.
     let colSpan = 0;
 
@@ -31,7 +39,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
 
       // count only those cells that are in the first selected row.
       if (rowIndex === cellEntries[0][1].at(-2)!) {
-        const cellColSpan = api.table.getColSpan(cell);
+        const cellColSpan = api.getColSpan(cell);
         colSpan += cellColSpan;
       }
     }
@@ -44,7 +52,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
       const { col: curCol } = getCellIndices(editor, cell);
 
       if (col === curCol) {
-        rowSpan += api.table.getRowSpan(cell);
+        rowSpan += api.getRowSpan(cell);
       }
     });
 
@@ -54,11 +62,12 @@ export const mergeTableCells = (editor: SlateEditor) => {
     for (const cellEntry of cellEntries) {
       const [el] = cellEntry;
 
-      const cellChildren = api.table.getCellChildren!(el);
+      const cellChildren = api.getCellChildren!(el);
 
       if (
         cellChildren.length !== 1 ||
-        !editor.api.isEmpty(cellChildren[0] as any)
+        !ElementApi.isElement(cellChildren[0]) ||
+        !editor.read.nodes.isEmpty(cellChildren[0])
       ) {
         mergingCellChildren.push(...cloneDeep(cellChildren));
       }
@@ -82,14 +91,14 @@ export const mergeTableCells = (editor: SlateEditor) => {
     // once cell removed, next cell in the row will settle down on that path
     Object.values(cols).forEach((paths) => {
       paths?.forEach(() => {
-        editor.tf.removeNodes({ at: paths[0] });
+        tx.nodes.remove({ at: paths[0] });
       });
     });
 
     // Create a new cell to replace the merged cells, with
     // calculated colSpan and rowSpan attributes and combined content
     const mergedCell = {
-      ...api.create.tableCell({
+      ...api.createCell({
         children: mergingCellChildren,
         header: cellEntries[0][0].type === editor.getType(KEYS.th),
       }),
@@ -98,8 +107,10 @@ export const mergeTableCells = (editor: SlateEditor) => {
     };
 
     // insert the new merged cell in place of the first cell in the selection
-    editor.tf.insertNodes(mergedCell, { at: cellEntries[0][1] });
+    tx.nodes.insert(mergedCell, { at: cellEntries[0][1] });
   });
 
-  editor.tf.select(editor.api.end(cellEntries[0][1])!);
+  const point = tx.points.end(cellEntries[0][1]);
+
+  if (point) tx.selection.set(point);
 };

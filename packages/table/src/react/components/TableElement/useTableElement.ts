@@ -1,6 +1,6 @@
-import type { TTableElement } from 'platejs';
+import type { TTableElement } from '@platejs/utils';
 
-import { useEditorPlugin, useElement } from 'platejs/react';
+import { useEditorPlugin, useElement } from '@platejs/core/react';
 
 import { useTableValue } from '../../stores';
 import { TablePlugin } from '../../TablePlugin';
@@ -23,7 +23,7 @@ export const useTableElement = () => {
       onMouseDown: () => {
         // until cell dnd is supported, we collapse the selection on mouse down
         if (editor.plugin(TablePlugin).getOption('isSelectingCell')) {
-          editor.tf.collapse();
+          editor.update.selection.collapse();
         }
       },
     },

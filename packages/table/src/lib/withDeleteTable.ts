@@ -1,16 +1,19 @@
-import { type OverrideEditor, type SlateEditor, PointApi } from 'platejs';
+import type { BaseEditor, ExtendPlateEditorExtension } from '@platejs/core';
+import { type EditorUpdateTransaction, PointApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
-import { type TableConfig, getCellTypes } from '.';
+import type { TableConfig } from './BaseTablePlugin';
+
 import { getTableGridAbove } from './queries/getTableGridAbove';
+import { getCellTypes } from './utils';
 
 /**
- * Return true if:
- *
- * - At start/end of a cell.
- * - Next to a table cell. Move selection to the table cell.
+ * Return true if the selection is at a cell edge or immediately next to a
+ * table cell.
  */
-export const preventDeleteTableCell = (
-  editor: SlateEditor,
+const preventDeleteTableCell = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   {
     reverse,
     unit,
@@ -19,72 +22,88 @@ export const preventDeleteTableCell = (
     unit?: 'block' | 'character' | 'line' | 'word';
   }
 ) => {
-  const { selection } = editor;
-  const getNextPoint = reverse ? editor.api.after : editor.api.before;
+  const selection = editor.read.selection();
+  const getNextPoint = reverse
+    ? editor.read.points.after
+    : editor.read.points.before;
 
-  if (editor.api.isCollapsed()) {
-    const cellEntry = editor.api.block({
+  if (!selection || !editor.read.selection.isCollapsed()) return;
+
+  const cellEntry = editor.read.nodes.block({
+    match: { type: getCellTypes(editor) },
+  });
+
+  if (cellEntry) {
+    const [, cellPath] = cellEntry;
+    const edge = reverse
+      ? editor.read.points.end(cellPath)
+      : editor.read.points.start(cellPath);
+
+    if (edge && PointApi.equals(selection.anchor, edge)) return true;
+
+    return;
+  }
+
+  const nextPoint = getNextPoint(selection, { unit });
+
+  if (
+    nextPoint &&
+    editor.read.nodes.block({
+      at: nextPoint,
       match: { type: getCellTypes(editor) },
-    });
+    })
+  ) {
+    tx.selection.move({ reverse: !reverse });
 
-    if (cellEntry) {
-      // Prevent deleting cell at the start or end of a cell
-      const [, cellPath] = cellEntry;
-      const start = reverse
-        ? editor.api.end(cellPath)
-        : editor.api.start(cellPath);
-
-      if (selection && PointApi.equals(selection.anchor, start!)) {
-        return true;
-      }
-    } else {
-      // Prevent deleting cell when selection is before or after a table
-      const nextPoint = getNextPoint(selection!, { unit });
-      const nextCellEntry = editor.api.block({
-        at: nextPoint,
-        match: { type: getCellTypes(editor) },
-      });
-
-      if (nextCellEntry) {
-        editor.tf.move({ reverse: !reverse });
-
-        return true;
-      }
-    }
+    return true;
   }
 };
 
 /** Prevent cell deletion. */
-export const withDeleteTable: OverrideEditor<TableConfig> = ({
+export const withDeleteTable: ExtendPlateEditorExtension<TableConfig> = ({
   editor,
-  tf: { deleteFragment },
   type,
 }) => ({
   transforms: {
-    deleteFragment(direction) {
-      if (editor.api.isAt({ block: true, match: { type } })) {
+    deleteBackward({ next, tx, unit }) {
+      if (preventDeleteTableCell(editor, tx, { unit })) return true;
+
+      return next({ unit });
+    },
+    deleteForward({ next, tx, unit }) {
+      if (preventDeleteTableCell(editor, tx, { reverse: true, unit })) {
+        return true;
+      }
+
+      return next({ unit });
+    },
+    deleteFragment({ next, options, tx }) {
+      if (editor.read.nodes.above({ match: { type } })) {
         const cellEntries = getTableGridAbove(editor, { format: 'cell' });
 
         if (cellEntries.length > 1) {
-          editor.tf.withoutNormalizing(() => {
-            cellEntries.forEach(([, cellPath]) => {
-              editor.tf.replaceChildren([editor.api.create.block()], {
-                at: cellPath,
-              });
-            });
-
-            // set back the selection
-            editor.tf.select({
-              anchor: editor.api.start(cellEntries[0][1])!,
-              focus: editor.api.end(cellEntries.at(-1)![1])!,
-            });
+          cellEntries.forEach(([, cellPath]) => {
+            tx.nodes.replaceChildren(
+              [
+                {
+                  children: [{ text: '' }],
+                  type: editor.getType(KEYS.p),
+                },
+              ],
+              { at: cellPath }
+            );
           });
 
-          return;
+          const anchor = editor.read.points.start(cellEntries[0][1]);
+          const focus = editor.read.points.end(cellEntries.at(-1)![1]);
+
+          if (anchor && focus) tx.selection.set({ anchor, focus });
+
+          return true;
         }
       }
 
-      deleteFragment(direction);
+      return next({ options });
     },
   },
 });

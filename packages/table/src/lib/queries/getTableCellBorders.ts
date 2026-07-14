@@ -1,12 +1,12 @@
+import type { BaseEditor } from '@platejs/core';
 import type {
-  SlateEditor,
   TTableCellBorder,
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-} from 'platejs';
+} from '@platejs/utils';
 
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
 import type { BorderDirection } from '../types';
 
@@ -20,7 +20,7 @@ export type BorderStylesDefault = {
 };
 
 export const getTableCellBorders = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   {
     cellIndices,
     defaultBorder = {
@@ -43,14 +43,14 @@ export const getTableCellBorders = (
   }
 
   const [rowNode, rowPath] =
-    editor.api.parent<TTableRowElement>(cellPath) ?? [];
+    editor.read.nodes.parent<TTableRowElement>(cellPath) ?? [];
   if (!rowNode || !rowPath) {
     return {
       bottom: defaultBorder,
       right: defaultBorder,
     };
   }
-  const [tableNode] = editor.api.parent<TTableElement>(rowPath) ?? [];
+  const [tableNode] = editor.read.nodes.parent<TTableElement>(rowPath) ?? [];
   const tableType = editor.getType(KEYS.table);
 
   if (!tableNode || tableNode.type !== tableType) {

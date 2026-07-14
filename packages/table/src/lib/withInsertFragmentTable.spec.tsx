@@ -1,7 +1,8 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, type TElement, createSlateEditor } from 'platejs';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
+import { type Element } from '@platejs/plite';
+import { createPlateEditor } from '@platejs/core/react';
 
 import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
 
@@ -40,7 +41,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const fragment = (
         <fragment>
@@ -57,7 +58,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as TElement[];
+      ) as Element[];
 
       const output = (
         <editor>
@@ -80,18 +81,18 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      editor.tf.insertFragment(fragment);
+      editor.update.fragment.insert(fragment);
 
-      expect(editor.children).toMatchObject(output.children);
+      expect(editor.read.children()).toMatchObject(output.children!);
     });
   });
 
@@ -125,7 +126,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const fragment = (
         <fragment>
@@ -140,7 +141,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as TElement[];
+      ) as Element[];
 
       const output = (
         <editor>
@@ -163,18 +164,18 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      editor.tf.insertFragment(fragment);
+      editor.update.fragment.insert(fragment);
 
-      expect(editor.children).toMatchObject(output.children);
+      expect(editor.read.children()).toMatchObject(output.children!);
     });
   });
 
@@ -213,7 +214,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const fragment = (
         <fragment>
@@ -228,7 +229,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as TElement[];
+      ) as Element[];
 
       const output = (
         <editor>
@@ -255,19 +256,19 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      editor.tf.deleteFragment();
-      editor.tf.insertFragment(fragment);
+      editor.update.fragment.delete();
+      editor.update.fragment.insert(fragment);
 
-      expect(editor.children).toMatchObject(output.children);
+      expect(editor.read.children()).toMatchObject(output.children!);
     });
   });
 
@@ -298,7 +299,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const fragment = (
         <fragment>
@@ -315,7 +316,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as TElement[];
+      ) as Element[];
 
       const output = (
         <editor>
@@ -342,20 +343,20 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         value: input.children,
       });
 
-      editor.tf.insertFragment(fragment);
+      editor.update.fragment.insert(fragment);
 
-      expect(editor.children).toMatchObject(output.children);
+      expect(editor.read.children()).toMatchObject(output.children!);
 
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
   });
 
@@ -402,7 +403,7 @@ describe('withInsertFragmentTable', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const fragment = (
           <fragment>
@@ -425,7 +426,7 @@ describe('withInsertFragmentTable', () => {
               </htr>
             </htable>
           </fragment>
-        ) as any as TElement[];
+        ) as Element[];
 
         const output = (
           <editor>
@@ -475,31 +476,29 @@ describe('withInsertFragmentTable', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const plugins = getTestTablePlugins(options, (plugin) =>
-          plugin.extendEditorApi(() => ({
-            create: {
-              tableCell: () => ({
-                children: [{ text: '' }],
-                custom: true,
-                type: 'td',
-              }),
-            },
+          plugin.extendApi(() => ({
+            createCell: () => ({
+              children: [{ text: '' }],
+              custom: true,
+              type: 'td',
+            }),
           }))
         );
 
-        const editor = createSlateEditor({
+        const editor = createPlateEditor({
           nodeId: true,
           plugins,
           selection: input.selection,
           value: input.children,
         });
 
-        editor.tf.insertFragment(fragment);
+        editor.update.fragment.insert(fragment);
 
-        expect(editor.children).toMatchObject(output.children);
-        expect(editor.selection).toEqual(output.selection);
+        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.selection()).toEqual(output.selection!);
       });
     });
   });
@@ -530,7 +529,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const fragment = (
         <fragment>
@@ -553,7 +552,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as TElement[];
+      ) as Element[];
 
       const output = (
         <editor>
@@ -580,9 +579,9 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({
           disableExpandOnInsert: true,
@@ -591,11 +590,11 @@ describe('withInsertFragmentTable', () => {
         value: input.children,
       });
 
-      editor.tf.insertFragment(fragment);
+      editor.update.fragment.insert(fragment);
 
-      expect(editor.children).toMatchObject(output.children);
+      expect(editor.read.children()).toMatchObject(output.children!);
 
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
   });
 
@@ -619,7 +618,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const fragment = (
         <fragment>
@@ -635,7 +634,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as TElement[];
+      ) as Element[];
 
       const output = (
         <editor>
@@ -651,18 +650,18 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         value: input.children,
       });
 
-      editor.tf.insertFragment(fragment);
+      editor.update.fragment.insert(fragment);
 
-      expect(editor.children).toMatchObject(output.children);
+      expect(editor.read.children()).toMatchObject(output.children!);
     });
   });
 
@@ -693,14 +692,14 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const fragment = (
         <fragment>
           <hp>o11a</hp>
           <hp>o11b</hp>
         </fragment>
-      ) as any as TElement[];
+      ) as Element[];
 
       const output = (
         <editor>
@@ -717,18 +716,18 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      editor.tf.insertFragment(fragment);
+      editor.update.fragment.insert(fragment);
 
-      expect(editor.children).toMatchObject(output.children);
+      expect(editor.read.children()).toMatchObject(output.children!);
     });
   });
 });

@@ -1,16 +1,16 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { getCellInPreviousTableRow } from './getCellInPreviousTableRow';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: TestEditor) =>
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     value: input.children,
@@ -36,13 +36,13 @@ describe('getCellInPreviousTableRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
     const previousCell = getCellInPreviousTableRow(editor, [0, 1])!;
 
     expect(previousCell[1]).toEqual([0, 0, 1]);
-    expect(editor.api.string(previousCell[1])).toBe('12');
+    expect(editor.read.text.string(previousCell[1])).toBe('12');
   });
 
   it('returns undefined when there is no previous row', () => {
@@ -56,7 +56,7 @@ describe('getCellInPreviousTableRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 

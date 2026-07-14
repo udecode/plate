@@ -1,4 +1,5 @@
-import type { TTableElement, TransformInitialValue } from 'platejs';
+import type { TTableElement } from '@platejs/utils';
+import type { TransformInitialValue } from '@platejs/core';
 
 import type { TableConfig } from './BaseTablePlugin';
 
@@ -9,7 +10,7 @@ export const normalizeInitialValueTable: TransformInitialValue<TableConfig> = ({
   type,
   value,
 }) => {
-  const tables = editor.api.nodes<TTableElement>({
+  const tables = editor.read.nodes.entries<TTableElement>({
     at: [],
     match: { type },
   });

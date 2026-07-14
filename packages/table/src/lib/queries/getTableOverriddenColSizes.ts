@@ -1,4 +1,4 @@
-import type { TTableElement } from 'platejs';
+import type { TTableElement } from '@platejs/utils';
 
 import type { TableStoreSizeOverrides } from '../types';
 

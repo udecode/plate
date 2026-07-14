@@ -1,21 +1,20 @@
 /** @jsx jsxt */
 
-import type { SlateEditor, TTableCellElement } from 'platejs';
-import { createSlateEditor } from 'platejs';
+import { type TTableCellElement } from '@platejs/utils';
+import { createPlateEditor } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../../../lib/__tests__/getTestTablePlugins';
 import { getLeftTableCell } from '../../../lib/queries/getLeftTableCell';
 import { getSelectedCells } from '../../../lib/queries/getSelectedCells';
-import * as setBorderSizeModule from '../../../lib/transforms/setBorderSize';
 import { setBorderSize } from '../../../lib/transforms/setBorderSize';
 import { setSelectedCellsBorder } from './getOnSelectTableBorderFactory';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: TestEditor) =>
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
@@ -51,7 +50,7 @@ describe('setSelectedCellsBorder integration', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
     const cells = getSelectedCells(editor) as TTableCellElement[];
@@ -60,7 +59,7 @@ describe('setSelectedCellsBorder integration', () => {
 
     setSelectedCellsBorder(editor, { border: 'left', cells });
 
-    expect(editor.children).toMatchObject(
+    expect(editor.read.children()).toMatchObject(
       (
         <editor>
           <htable>
@@ -120,7 +119,7 @@ describe('setSelectedCellsBorder integration', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
     const cells = getSelectedCells(editor) as TTableCellElement[];
@@ -133,20 +132,11 @@ describe('setSelectedCellsBorder integration', () => {
       })?.[0].id
     ).toBe('c21');
 
-    const setBorderSizeSpy = spyOn(setBorderSizeModule, 'setBorderSize');
-
     setSelectedCellsBorder(editor, { border: 'left', cells });
 
-    expect(
-      setBorderSizeSpy.mock.calls
-        .filter(([, , options]) => options?.border === 'right')
-        .map(([, , options]) => options?.at)
-    ).toEqual([
-      [0, 0, 0],
-      [0, 1, 0],
-    ]);
+    expect(editor.read.history.undos()).toHaveLength(1);
 
-    expect(editor.children).toMatchObject(
+    expect(editor.read.children()).toMatchObject(
       (
         <editor>
           <htable>
@@ -177,7 +167,9 @@ describe('setSelectedCellsBorder integration', () => {
       ).children
     );
 
-    setBorderSizeSpy.mockRestore();
+    editor.update.history.undo();
+
+    expect(editor.read.children()).toMatchObject(input.children);
   });
 
   it('can set the lower-row adjacent right border directly by path', () => {
@@ -205,13 +197,13 @@ describe('setSelectedCellsBorder integration', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
     setBorderSize(editor, 0, { at: [0, 1, 0], border: 'right' });
 
-    expect(editor.children).toMatchObject(
+    expect(editor.read.children()).toMatchObject(
       (
         <editor>
           <htable>
@@ -265,14 +257,14 @@ describe('setSelectedCellsBorder integration', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
     setBorderSize(editor, 0, { at: [0, 0, 0], border: 'right' });
     setBorderSize(editor, 0, { at: [0, 1, 0], border: 'right' });
 
-    expect(editor.children).toMatchObject(
+    expect(editor.read.children()).toMatchObject(
       (
         <editor>
           <htable>
@@ -329,17 +321,18 @@ describe('setSelectedCellsBorder integration', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const table = editor.children[0] as any;
-    const target = table.children[1].children[1] as TTableCellElement;
+    const target = editor.read.nodes.get<TTableCellElement>([0, 1, 1], {
+      required: true,
+    })[0];
 
     expect(target.id).toBe('c22');
 
     setSelectedCellsBorder(editor, { border: 'top', cells: [target] });
 
-    expect(editor.children).toMatchObject(
+    expect(editor.read.children()).toMatchObject(
       (
         <editor>
           <htable>

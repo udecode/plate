@@ -2,7 +2,7 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-} from 'platejs';
+} from '@platejs/utils';
 
 import { getColSpan } from '../queries';
 import { getRowSpan } from '../queries/getRowSpan';

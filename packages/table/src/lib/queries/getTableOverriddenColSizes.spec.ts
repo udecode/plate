@@ -1,20 +1,30 @@
-import type { TTableElement } from 'platejs';
+import type {
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+} from '@platejs/utils';
 
 import { getTableOverriddenColSizes } from './getTableOverriddenColSizes';
 
 const makeTableElement = (
   columnCount: number,
   colSizes?: number[]
-): TTableElement =>
-  ({
-    children: [
-      {
-        children: Array.from({ length: columnCount }).fill({}),
-        type: 'tr',
-      },
-    ],
-    colSizes,
-  }) as unknown as TTableElement;
+): TTableElement => ({
+  children: [
+    {
+      children: Array.from(
+        { length: columnCount },
+        (): TTableCellElement => ({
+          children: [{ text: '' }],
+          type: 'td',
+        })
+      ),
+      type: 'tr',
+    } satisfies TTableRowElement,
+  ],
+  colSizes,
+  type: 'table',
+});
 
 describe('getTableOverriddenColSizes', () => {
   describe('when colSizes is not defined', () => {

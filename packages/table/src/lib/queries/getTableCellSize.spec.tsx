@@ -1,16 +1,17 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
+import type { TTableCellElement } from '@platejs/utils';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { getTableCellSize } from './getTableCellSize';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: TestEditor) =>
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     value: input.children,
@@ -24,10 +25,12 @@ describe('getTableCellSize', () => {
           <hp>orphan</hp>
         </htd>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const element = editor.children[0] as any;
+    const element = editor.read.nodes.get<TTableCellElement>([0], {
+      required: true,
+    })[0];
 
     expect(getTableCellSize(editor, { element })).toEqual({
       minHeight: 0,
@@ -49,11 +52,12 @@ describe('getTableCellSize', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const element = ((editor.children[0] as any).children[0] as any)
-      .children[1];
+    const element = editor.read.nodes.get<TTableCellElement>([0, 0, 1], {
+      required: true,
+    })[0];
 
     expect(getTableCellSize(editor, { element })).toEqual({
       minHeight: 72,
@@ -75,11 +79,12 @@ describe('getTableCellSize', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const element = ((editor.children[0] as any).children[0] as any)
-      .children[1];
+    const element = editor.read.nodes.get<TTableCellElement>([0, 0, 1], {
+      required: true,
+    })[0];
 
     expect(
       getTableCellSize(editor, {

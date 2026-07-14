@@ -1,4 +1,4 @@
-import type { Path } from 'platejs';
+import type { Path } from '@platejs/plite';
 
 export const getCellRowIndexByPath = (cellPath: Path): number => {
   const index = cellPath.at(-2);

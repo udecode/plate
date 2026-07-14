@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { useEditorPlugin, useEditorSelector, useReadOnly } from 'platejs/react';
+import { useEditorPlugin, useEditorSelector } from '@platejs/core/react';
+import { useEditorReadOnly } from '@platejs/plite-react';
 
 import { getSelectedCellIds } from '../../../lib';
 import { BaseTablePlugin } from '../../../lib/BaseTablePlugin';
@@ -24,17 +25,18 @@ const hasSameSelectionState = (
   nextValue: {
     selectedCellIds: string[] | null;
     selectedContent: unknown;
-  },
+  } | null,
   prevValue: {
     selectedCellIds: string[] | null;
     selectedContent: unknown;
   }
 ) =>
+  !!nextValue &&
   nextValue.selectedContent === prevValue.selectedContent &&
   hasSameIds(nextValue.selectedCellIds, prevValue.selectedCellIds);
 
 export const useSelectedCells = () => {
-  const readOnly = useReadOnly();
+  const readOnly = useEditorReadOnly();
   const { setOptions } = useEditorPlugin(BaseTablePlugin);
   const selectionState = useEditorSelector(
     (editor) => {
@@ -46,7 +48,7 @@ export const useSelectedCells = () => {
 
       return {
         selectedCellIds,
-        selectedContent: selectedCellIds ? editor.children : null,
+        selectedContent: selectedCellIds ? editor.read.children() : null,
       };
     },
     [readOnly],

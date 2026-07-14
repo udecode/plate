@@ -1,10 +1,10 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  type TTableElement,
-  KEYS,
-  PathApi,
-} from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type {
+  EditorUpdateTransaction,
+  NodeInsertNodesOptions,
+} from '@platejs/plite';
+import { type TTableElement, KEYS } from '@platejs/utils';
+import { PathApi } from '@platejs/plite';
 
 import type { GetEmptyTableNodeOptions } from '../api/getEmptyTableNode';
 import type { TableConfig } from '../BaseTablePlugin';
@@ -14,59 +14,53 @@ import type { TableConfig } from '../BaseTablePlugin';
  * current table. Select start of new table.
  */
 export const insertTable = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   { colCount = 2, header, rowCount = 2 }: GetEmptyTableNodeOptions = {},
-  { select: shouldSelect, ...options }: InsertNodesOptions = {}
+  options: NodeInsertNodesOptions<TTableElement> = {}
 ) => {
   const { api } = editor.getPlugin<TableConfig>({ key: KEYS.table });
   const type = editor.getType(KEYS.table);
+  const newTable = api.table.createTable({ colCount, header, rowCount });
+  const insertOptions = { ...options, select: false };
+  const selectTableStart = (tablePath: number[] | undefined) => {
+    if (!options.select) return;
 
-  editor.tf.withoutNormalizing(() => {
-    const newTable = api.create.table({
-      colCount,
-      header,
-      rowCount,
-    });
+    const point = tablePath ? tx.points.start(tablePath) : undefined;
 
-    if (!options.at) {
-      const currentTableEntry = editor.api.block({
-        match: { type },
-      });
+    if (point) tx.selection.set({ anchor: point, focus: point });
+  };
 
-      if (currentTableEntry) {
-        // Insert after current table
-        const [, tablePath] = currentTableEntry;
-        const insertPath = PathApi.next(tablePath);
+  if (options.at !== undefined) {
+    const tablePath = PathApi.isPath(options.at)
+      ? options.at
+      : tx.nodes.path(options.at);
 
-        editor.tf.insertNodes<TTableElement>(newTable, {
-          at: insertPath,
-          ...(options as any),
-        });
+    tx.nodes.insert(newTable, insertOptions);
+    selectTableStart(tablePath);
+    return;
+  }
 
-        if (editor.selection) {
-          editor.tf.select(editor.api.start(insertPath)!);
-        }
-
-        return;
-      }
-    }
-
-    // Use specified path or insert at current selection
-    editor.tf.insertNodes<TTableElement>(newTable, {
-      nextBlock: !options.at,
-      select: shouldSelect,
-      ...(options as any),
-    });
-
-    if (shouldSelect) {
-      const tableEntry = editor.api.node({
-        at: options.at,
-        match: { type },
-      });
-
-      if (!tableEntry) return;
-
-      editor.tf.select(editor.api.start(tableEntry[1])!);
-    }
+  const currentTable = editor.read.nodes.above<TTableElement>({
+    match: { type },
   });
+
+  if (currentTable) {
+    const tablePath = PathApi.next(currentTable[1]);
+
+    tx.nodes.insert(newTable, {
+      ...insertOptions,
+      at: tablePath,
+    });
+    selectTableStart(tablePath);
+    return;
+  }
+
+  const currentBlock = editor.read.nodes.block();
+  const tablePath = currentBlock
+    ? PathApi.next(currentBlock[1])
+    : [editor.read.children().length];
+
+  tx.blocks.insertAfter(newTable, insertOptions);
+  selectTableStart(tablePath);
 };

@@ -1,18 +1,19 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
+import { moveLineTable } from '../withTable';
 import { moveSelectionFromCell } from './moveSelectionFromCell';
 import { setTableColSize } from './setTableColSize';
 import { setTableRowSize } from './setTableRowSize';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: TestEditor) =>
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
@@ -27,7 +28,10 @@ describe('table sizing and selection helpers', () => {
           <htable>
             <htr>
               <htd>
-                <hp>11</hp>
+                <hp>
+                  11
+                  <cursor />
+                </hp>
               </htd>
               <htd>
                 <hp>12</hp>
@@ -35,10 +39,7 @@ describe('table sizing and selection helpers', () => {
             </htr>
             <htr>
               <htd>
-                <hp>
-                  21
-                  <cursor />
-                </hp>
+                <hp>21</hp>
               </htd>
               <htd>
                 <hp>22</hp>
@@ -46,13 +47,13 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
 
       setTableColSize(editor, { colIndex: 1, width: 120 });
 
-      expect(editor.children).toMatchObject([
+      expect(editor.read.children()).toMatchObject([
         {
           colSizes: [0, 120],
           type: 'table',
@@ -77,13 +78,13 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
 
       setTableColSize(editor, { colIndex: 0, width: 64 });
 
-      expect(editor.children).toMatchObject([
+      expect(editor.read.children()).toMatchObject([
         {
           colSizes: [64, 30],
           type: 'table',
@@ -99,7 +100,10 @@ describe('table sizing and selection helpers', () => {
           <htable>
             <htr>
               <htd>
-                <hp>11</hp>
+                <hp>
+                  11
+                  <cursor />
+                </hp>
               </htd>
               <htd>
                 <hp>12</hp>
@@ -107,10 +111,7 @@ describe('table sizing and selection helpers', () => {
             </htr>
             <htr>
               <htd>
-                <hp>
-                  21
-                  <cursor />
-                </hp>
+                <hp>21</hp>
               </htd>
               <htd>
                 <hp>22</hp>
@@ -118,13 +119,13 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
 
       setTableRowSize(editor, { height: 48, rowIndex: 0 });
 
-      expect(editor.children).toMatchObject([
+      expect(editor.read.children()).toMatchObject([
         {
           children: [{ size: 48 }, {}],
           type: 'table',
@@ -159,7 +160,7 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -174,24 +175,24 @@ describe('table sizing and selection helpers', () => {
             </htr>
             <htr>
               <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
                 <hp>
-                  22
+                  21
                   <cursor />
                 </hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
               </htd>
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
 
       moveSelectionFromCell(editor);
 
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
 
     it('expands the current cell range to the right edge', () => {
@@ -222,7 +223,7 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -251,13 +252,13 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
 
       moveSelectionFromCell(editor, { edge: 'right' });
 
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
 
     it('moves forward out of the table when there is no next cell', () => {
@@ -276,7 +277,7 @@ describe('table sizing and selection helpers', () => {
           </htable>
           <hp>after</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -293,13 +294,13 @@ describe('table sizing and selection helpers', () => {
             after
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
 
       moveSelectionFromCell(editor);
 
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
 
     it('moves backward out of the table when there is no previous cell', () => {
@@ -318,7 +319,7 @@ describe('table sizing and selection helpers', () => {
           </htable>
           <hp>after</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -335,13 +336,13 @@ describe('table sizing and selection helpers', () => {
           </htable>
           <hp>after</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
 
       moveSelectionFromCell(editor, { reverse: true });
 
-      expect(editor.selection).toEqual(output.selection);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
 
     it('handles ArrowDown through moveLine without relying on browser default movement', () => {
@@ -363,7 +364,7 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -383,12 +384,12 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTableEditor(input);
 
-      expect(editor.tf.moveLine({ reverse: false })).toBe(true);
-      expect(editor.selection).toEqual(output.selection);
+      expect(moveLineTable(editor, { reverse: false })).toBe(true);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
   });
 });

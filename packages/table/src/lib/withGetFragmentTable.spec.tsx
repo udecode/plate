@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTableGridAbove } from './queries/getTableGridAbove';
 import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
@@ -37,16 +37,16 @@ describe('withGetFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      const fragment = editor.api.getFragment();
+      const fragment = editor.read.fragment();
 
       expect(fragment).toMatchObject([getTableGridAbove(editor)[0][0]]);
     });
@@ -81,16 +81,16 @@ describe('withGetFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         value: input.children,
       });
 
-      const fragment = editor.api.getFragment();
+      const fragment = editor.read.fragment();
 
       expect(fragment).toMatchObject(blocks);
     });

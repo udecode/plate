@@ -1,15 +1,15 @@
+import type { NodeEntry } from '@platejs/plite';
+import type { BaseEditor } from '@platejs/core';
 import type {
-  NodeEntry,
-  SlateEditor,
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-} from 'platejs';
+} from '@platejs/utils';
 
 import { getCellIndices } from '../utils/getCellIndices';
 
 export const getCellPath = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   tableEntry: NodeEntry<TTableElement>,
   curRowIndex: number,
   curColIndex: number

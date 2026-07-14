@@ -1,55 +1,86 @@
-import type { TElement } from '@platejs/slate';
+import type {
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+} from '@platejs/utils';
 
 import { getTableColumnCount } from './getTableColumnCount';
 
 describe('getTableColumnCount', () => {
   it('returns 0 if tableNode has no children', () => {
-    const tableNode = {
+    const tableNode: TTableElement = {
       children: [],
-    } as unknown as TElement;
+      type: 'table',
+    };
 
     const result = getTableColumnCount(tableNode);
     expect(result).toBe(0);
   });
 
   it('returns the sum of colSpan values of the first row elements', () => {
-    const tableNode = {
+    const tableNode: TTableElement = {
       children: [
         {
-          children: [{ colSpan: 2 }, { colSpan: 3 }, { colSpan: 1 }],
-        },
+          children: [2, 3, 1].map(
+            (colSpan): TTableCellElement => ({
+              children: [{ text: '' }],
+              colSpan,
+              type: 'td',
+            })
+          ),
+          type: 'tr',
+        } satisfies TTableRowElement,
       ],
-    } as unknown as TElement;
+      type: 'table',
+    };
 
     const result = getTableColumnCount(tableNode);
     expect(result).toBe(6);
   });
 
   it('returns the sum of colSpan values with colspan attribute of the first row elements', () => {
-    const tableNode = {
+    const tableNode: TTableElement = {
       children: [
         {
           children: [
-            { attributes: { colspan: 2 } },
-            { attributes: { colspan: 3 } },
-            {},
+            {
+              attributes: { colspan: '2' },
+              children: [{ text: '' }],
+              type: 'td',
+            },
+            {
+              attributes: { colspan: '3' },
+              children: [{ text: '' }],
+              type: 'td',
+            },
+            { children: [{ text: '' }], type: 'td' },
           ],
-        },
+          type: 'tr',
+        } satisfies TTableRowElement,
       ],
-    } as TElement;
+      type: 'table',
+    };
 
     const result = getTableColumnCount(tableNode);
     expect(result).toBe(6);
   });
 
   it('handle elements without colSpan or colspan attribute', () => {
-    const tableNode = {
+    const tableNode: TTableElement = {
       children: [
         {
-          children: [{}, {}, {}],
-        },
+          children: Array.from(
+            { length: 3 },
+            (): TTableCellElement => ({
+              children: [{ text: '' }],
+              type: 'td',
+            })
+          ),
+          type: 'tr',
+        } satisfies TTableRowElement,
       ],
-    } as TElement;
+      type: 'table',
+    };
 
     const result = getTableColumnCount(tableNode);
     expect(result).toBe(3);

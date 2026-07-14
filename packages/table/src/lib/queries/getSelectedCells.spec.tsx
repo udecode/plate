@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createPlateEditor } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import {
@@ -18,8 +18,8 @@ import {
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: TestEditor) =>
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
@@ -55,7 +55,7 @@ describe('getSelectedCells helpers', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
@@ -90,7 +90,7 @@ describe('getSelectedCells helpers', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
@@ -99,7 +99,7 @@ describe('getSelectedCells helpers', () => {
     expect(getSelectedTables(editor)).toBeNull();
     expect(isSelectingCell(editor)).toBe(false);
 
-    editor.tf.select({
+    editor.update.selection.set({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 0, 1, 0, 0] },
     });
@@ -122,7 +122,7 @@ describe('getSelectedCells helpers', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 

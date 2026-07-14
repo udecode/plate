@@ -1,7 +1,8 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, type TElement, createSlateEditor } from 'platejs';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
+import { type Element } from '@platejs/plite';
+import { createPlateEditor } from '@platejs/core/react';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { getTableGridAbove } from './getTableGridAbove';
@@ -27,7 +28,7 @@ describe('getTableGridByRange', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <htable>
@@ -35,9 +36,9 @@ describe('getTableGridByRange', () => {
             <htd>1</htd>
           </htr>
         </htable>
-      ) as any as TElement[];
+      ) as Element[];
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -76,7 +77,7 @@ describe('getTableGridByRange', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <htable>
@@ -87,9 +88,9 @@ describe('getTableGridByRange', () => {
             <htd>22</htd>
           </htr>
         </htable>
-      ) as any as TElement;
+      ) as Element;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -128,7 +129,7 @@ describe('getTableGridByRange', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <htable>
@@ -137,9 +138,9 @@ describe('getTableGridByRange', () => {
             <htd>22</htd>
           </htr>
         </htable>
-      ) as any as TElement;
+      ) as Element;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -179,7 +180,7 @@ describe('getTableGridByRange', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <htable>
@@ -190,9 +191,9 @@ describe('getTableGridByRange', () => {
             <htd>21</htd>
           </htr>
         </htable>
-      ) as any as TElement;
+      ) as Element;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -231,7 +232,7 @@ describe('getTableGridByRange', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <htable>
@@ -244,9 +245,9 @@ describe('getTableGridByRange', () => {
             <htd>22</htd>
           </htr>
         </htable>
-      ) as any as TElement;
+      ) as Element;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -285,7 +286,7 @@ describe('getTableGridByRange', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <htable>
@@ -298,9 +299,9 @@ describe('getTableGridByRange', () => {
             <htd>22</htd>
           </htr>
         </htable>
-      ) as any as TElement;
+      ) as Element;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -339,7 +340,7 @@ describe('getTableGridByRange', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <htable>
@@ -352,9 +353,9 @@ describe('getTableGridByRange', () => {
             <htd>22</htd>
           </htr>
         </htable>
-      ) as any as TElement;
+      ) as Element;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -393,7 +394,7 @@ describe('getTableGridByRange', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <htable>
@@ -406,9 +407,9 @@ describe('getTableGridByRange', () => {
             <htd>22</htd>
           </htr>
         </htable>
-      ) as any as TElement;
+      ) as Element;
 
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,

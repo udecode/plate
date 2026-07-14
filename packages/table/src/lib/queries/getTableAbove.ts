@@ -1,13 +1,14 @@
-import type { EditorAboveOptions, SlateEditor } from 'platejs';
+import type { EditorAboveOptions } from '@platejs/plite';
+import type { BaseEditor } from '@platejs/core';
+import type { TTableElement } from '@platejs/utils';
 
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
 export const getTableAbove = (
-  editor: SlateEditor,
-  options?: EditorAboveOptions
+  editor: BaseEditor,
+  options?: EditorAboveOptions<TTableElement>
 ) =>
-  editor.api.block({
-    above: true,
+  editor.read.nodes.above<TTableElement>({
     match: {
       type: editor.getType(KEYS.table),
     },

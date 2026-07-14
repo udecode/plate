@@ -1,10 +1,12 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BaseEditor } from '@platejs/core';
+import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
+import { moveLineTable, selectAllTable, tabTable } from './withTable';
 
 jsxt;
 
@@ -22,26 +24,50 @@ const createClientRect = (rect: Partial<DOMRect> = {}) =>
     ...rect,
   }) as DOMRect;
 
-const createDOMRangeMock = (rects: Partial<DOMRect>[]) =>
-  ({
-    getClientRects: () => rects.map(createClientRect),
-  }) as any;
+const createDOMRangeMock = (rects: Partial<DOMRect>[]) => {
+  const range = document.createRange();
 
-const mockToDOMRange = (
-  editor: SlateEditor,
-  ...ranges: ReturnType<typeof createDOMRangeMock>[]
-) => {
-  let index = 0;
+  range.getClientRects = () => {
+    const list = rects.map(createClientRect);
 
-  spyOn(editor.api, 'toDOMRange').mockImplementation(
-    () => ranges[index++] as ReturnType<typeof editor.api.toDOMRange>
-  );
+    return Object.assign(list, {
+      item: (index: number) => list[index] ?? null,
+    });
+  };
+
+  return range;
 };
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const domRanges = new WeakMap<
+  BaseEditor,
+  { index: number; ranges: ReturnType<typeof createDOMRangeMock>[] }
+>();
+
+const TestDOMRangePlugin = createPlatePlugin({
+  key: 'table-test-dom-range',
+}).extendEditorApi(({ editor }) => ({
+  dom: {
+    resolveDOMRange: () => {
+      const state = domRanges.get(editor);
+
+      if (!state) return null;
+
+      return state.ranges[state.index++] ?? null;
+    },
+  },
+}));
+
+const mockToDOMRange = (
+  editor: BaseEditor,
+  ...ranges: ReturnType<typeof createDOMRangeMock>[]
+) => {
+  domRanges.set(editor, { index: 0, ranges });
+};
+
+const createTableEditor = (input: TestEditor) =>
+  createPlateEditor({
     nodeId: true,
-    plugins: getTestTablePlugins(),
+    plugins: [...getTestTablePlugins(), TestDOMRangePlugin],
     selection: input.selection,
     value: input.children,
   });
@@ -64,7 +90,7 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -82,14 +108,14 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
-    editor.tf.insertBreak();
+    editor.update.break.insert();
 
-    expect(editor.children).toMatchObject(output.children);
-    expect(editor.selection).toEqual(output.selection);
+    expect(editor.read.children()).toMatchObject(output.children!);
+    expect(editor.read.selection()).toEqual(output.selection!);
   });
 
   it('keeps Backspace at the start of a cell inside the current cell', () => {
@@ -109,7 +135,7 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -127,14 +153,14 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
-    editor.tf.deleteBackward();
+    editor.update.text.deleteBackward();
 
-    expect(editor.children).toMatchObject(output.children);
-    expect(editor.selection).toEqual(output.selection);
+    expect(editor.read.children()).toMatchObject(output.children!);
+    expect(editor.read.selection()).toEqual(output.selection!);
   });
 
   it('selectAll selects the whole table when the cursor is inside it', () => {
@@ -151,14 +177,14 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const tableRange = editor.api.range([0]);
+    const tableRange = editor.read.ranges.get([0]);
 
-    expect(editor.tf.selectAll()).toBe(true);
+    expect(selectAllTable(editor)).toBe(true);
     if (!tableRange) throw new Error('Expected table range');
-    expect(editor.selection).toEqual(tableRange);
+    expect(editor.read.selection()).toEqual(tableRange);
   });
 
   it('second selectAll escalates from the table to the whole document', () => {
@@ -177,15 +203,15 @@ describe('withTable', () => {
         </htable>
         <hp>after</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const documentRange = editor.api.range([]);
+    const documentRange = editor.read.ranges.get([]);
 
-    expect(editor.tf.selectAll()).toBe(true);
-    expect(editor.tf.selectAll()).toBe(true);
+    expect(selectAllTable(editor)).toBe(true);
+    expect(selectAllTable(editor)).toBe(true);
     if (!documentRange) throw new Error('Expected document range');
-    expect(editor.selection).toEqual(documentRange);
+    expect(editor.read.selection()).toEqual(documentRange);
   });
 
   it('collapses a multi-cell selection before tabbing', () => {
@@ -208,13 +234,13 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
-    expect(editor.tf.tab({ reverse: false })).toBe(true);
-    expect(editor.api.isCollapsed()).toBe(true);
-    expect(editor.selection).toEqual({
+    expect(tabTable(editor, { reverse: false })).toBe(true);
+    expect(editor.read.selection.isCollapsed()).toBe(true);
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 2, path: [0, 0, 1, 0, 0] },
       focus: { offset: 2, path: [0, 0, 1, 0, 0] },
     });
@@ -237,12 +263,12 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
-    expect(editor.tf.tab({ reverse: false })).toBe(true);
-    expect(editor.selection).toEqual({
+    expect(tabTable(editor, { reverse: false })).toBe(true);
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 1, 0, 0] },
       focus: { offset: 2, path: [0, 0, 1, 0, 0] },
     });
@@ -265,12 +291,12 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
-    expect(editor.tf.tab({ reverse: true })).toBe(true);
-    expect(editor.selection).toEqual({
+    expect(tabTable(editor, { reverse: true })).toBe(true);
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 2, path: [0, 0, 0, 0, 0] },
     });
@@ -296,13 +322,13 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const initialSelection = editor.selection;
+    const initialSelection = editor.read.selection();
 
-    expect(editor.tf.moveLine({ reverse: false })).toBe(false);
-    expect(editor.selection).toEqual(initialSelection);
+    expect(moveLineTable(editor, { reverse: false })).toBe(false);
+    expect(editor.read.selection()).toEqual(initialSelection);
   });
 
   it('moves ArrowDown to the next cell after the last block in a multi-block cell', () => {
@@ -325,7 +351,7 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -346,12 +372,12 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
-    expect(editor.tf.moveLine({ reverse: false })).toBe(true);
-    expect(editor.selection).toEqual(output.selection!);
+    expect(moveLineTable(editor, { reverse: false })).toBe(true);
+    expect(editor.read.selection()).toEqual(output.selection!);
   });
 
   it('keeps ArrowUp inside a multi-block cell until the caret reaches the start', () => {
@@ -374,13 +400,13 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const initialSelection = editor.selection;
+    const initialSelection = editor.read.selection();
 
-    expect(editor.tf.moveLine({ reverse: true })).toBe(false);
-    expect(editor.selection).toEqual(initialSelection);
+    expect(moveLineTable(editor, { reverse: true })).toBe(false);
+    expect(editor.read.selection()).toEqual(initialSelection);
   });
 
   it('moves ArrowUp to the previous cell before the first block in a multi-block cell', () => {
@@ -403,7 +429,7 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -424,12 +450,12 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
-    expect(editor.tf.moveLine({ reverse: true })).toBe(true);
-    expect(editor.selection).toEqual(output.selection!);
+    expect(moveLineTable(editor, { reverse: true })).toBe(true);
+    expect(editor.read.selection()).toEqual(output.selection!);
   });
 
   it('keeps ArrowDown native inside a soft-break cell before the last visual line', () => {
@@ -448,7 +474,7 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
@@ -456,7 +482,7 @@ describe('withTable', () => {
       anchor: { offset: 1, path: [0, 0, 0, 0, 0] },
       focus: { offset: 1, path: [0, 0, 0, 0, 0] },
     };
-    editor.selection = selection;
+    editor.update.selection.set(selection);
 
     mockToDOMRange(
       editor,
@@ -467,8 +493,8 @@ describe('withTable', () => {
       ])
     );
 
-    expect(editor.tf.moveLine({ reverse: false })).toBe(false);
-    expect(editor.selection).toEqual(selection);
+    expect(moveLineTable(editor, { reverse: false })).toBe(false);
+    expect(editor.read.selection()).toEqual(selection);
   });
 
   it('keeps ArrowDown native when DOM ranges are unavailable', () => {
@@ -487,7 +513,7 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
@@ -495,12 +521,12 @@ describe('withTable', () => {
       anchor: { offset: 1, path: [0, 0, 0, 0, 0] },
       focus: { offset: 1, path: [0, 0, 0, 0, 0] },
     };
-    editor.selection = selection;
+    editor.update.selection.set(selection);
 
-    spyOn(editor.api, 'toDOMRange').mockReturnValue(undefined as any);
+    spyOn(editor.api.dom, 'resolveDOMRange').mockReturnValue(null);
 
-    expect(editor.tf.moveLine({ reverse: false })).toBe(false);
-    expect(editor.selection).toEqual(selection);
+    expect(moveLineTable(editor, { reverse: false })).toBe(false);
+    expect(editor.read.selection()).toEqual(selection);
   });
 
   it('moves ArrowDown to the next cell from the last visual line in a soft-break cell', () => {
@@ -519,7 +545,7 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -539,14 +565,14 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
-    editor.selection = {
+    editor.update.selection.set({
       anchor: { offset: 5, path: [0, 0, 0, 0, 0] },
       focus: { offset: 5, path: [0, 0, 0, 0, 0] },
-    };
+    });
 
     mockToDOMRange(
       editor,
@@ -557,8 +583,8 @@ describe('withTable', () => {
       ])
     );
 
-    expect(editor.tf.moveLine({ reverse: false })).toBe(true);
-    expect(editor.selection).toEqual(output.selection!);
+    expect(moveLineTable(editor, { reverse: false })).toBe(true);
+    expect(editor.read.selection()).toEqual(output.selection!);
   });
 
   it('keeps ArrowUp native inside a soft-wrapped cell after the first visual line', () => {
@@ -577,7 +603,7 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
@@ -585,7 +611,7 @@ describe('withTable', () => {
       anchor: { offset: 8, path: [0, 1, 0, 0, 0] },
       focus: { offset: 8, path: [0, 1, 0, 0, 0] },
     };
-    editor.selection = selection;
+    editor.update.selection.set(selection);
 
     mockToDOMRange(
       editor,
@@ -596,8 +622,8 @@ describe('withTable', () => {
       ])
     );
 
-    expect(editor.tf.moveLine({ reverse: true })).toBe(false);
-    expect(editor.selection).toEqual(selection);
+    expect(moveLineTable(editor, { reverse: true })).toBe(false);
+    expect(editor.read.selection()).toEqual(selection);
   });
 
   it('moves ArrowUp to the previous cell from the first visual line in a soft-wrapped cell', () => {
@@ -616,7 +642,7 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -636,14 +662,14 @@ describe('withTable', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createTableEditor(input);
 
-    editor.selection = {
+    editor.update.selection.set({
       anchor: { offset: 1, path: [0, 1, 0, 0, 0] },
       focus: { offset: 1, path: [0, 1, 0, 0, 0] },
-    };
+    });
 
     mockToDOMRange(
       editor,
@@ -654,7 +680,7 @@ describe('withTable', () => {
       ])
     );
 
-    expect(editor.tf.moveLine({ reverse: true })).toBe(true);
-    expect(editor.selection).toEqual(output.selection!);
+    expect(moveLineTable(editor, { reverse: true })).toBe(true);
+    expect(editor.read.selection()).toEqual(output.selection!);
   });
 });

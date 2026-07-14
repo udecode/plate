@@ -1,11 +1,10 @@
+import type { NodeEntry, Path } from '@platejs/plite';
+import type { BaseEditor } from '@platejs/core';
 import type {
-  NodeEntry,
-  Path,
-  SlateEditor,
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-} from 'platejs';
+} from '@platejs/utils';
 
 import { getCellIndicesWithSpans } from '../merge/getCellIndicesWithSpans';
 import { getCellIndices } from '../utils/getCellIndices';
@@ -18,7 +17,7 @@ const adjacentTableCellLookup = new WeakMap<TTableElement, TableCellLookup>();
 const getLookupKey = (row: number, col: number) => `${row}:${col}`;
 
 const createTableCellLookup = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   tableEntry: NodeEntry<TTableElement>
 ) => {
   const [table, tablePath] = tableEntry;
@@ -54,7 +53,7 @@ const createTableCellLookup = (
 };
 
 export const getAdjacentTableCell = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   {
     at,
     deltaCol = 0,

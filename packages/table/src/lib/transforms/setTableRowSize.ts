@@ -1,19 +1,16 @@
-import type {
-  EditorAboveOptions,
-  SlateEditor,
-  TTableElement,
-  TTableRowElement,
-} from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { TTableElement, TTableRowElement } from '@platejs/utils';
 
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
+import type { TableFindOptions } from '../types';
 
 export const setTableRowSize = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { height, rowIndex }: { height: number; rowIndex: number },
-  options: EditorAboveOptions = {}
+  options: TableFindOptions = {}
 ) => {
-  const table = editor.api.node<TTableElement>({
-    match: { type: KEYS.table },
+  const table = editor.read.nodes.find<TTableElement>({
+    match: { type: editor.getType(KEYS.table) },
     ...options,
   });
 
@@ -22,5 +19,10 @@ export const setTableRowSize = (
   const [, tablePath] = table;
   const tableRowPath = [...tablePath, rowIndex];
 
-  editor.tf.setNodes<TTableRowElement>({ size: height }, { at: tableRowPath });
+  editor.update.nodes.set<TTableRowElement>(
+    { size: height },
+    {
+      at: tableRowPath,
+    }
+  );
 };

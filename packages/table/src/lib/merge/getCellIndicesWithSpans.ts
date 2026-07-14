@@ -1,4 +1,4 @@
-import type { TTableCellElement } from 'platejs';
+import type { TTableCellElement } from '@platejs/utils';
 
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';

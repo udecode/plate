@@ -1,12 +1,14 @@
-import type { SlateEditor, TElement, TTableCellElement } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { Element } from '@platejs/plite';
+import type { TTableCellElement } from '@platejs/utils';
 
 import { getCellTypes } from '../utils/getCellType';
 
 export const setCellBackground = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   options: {
     color: string | null;
-    selectedCells?: TElement[];
+    selectedCells?: Element[];
   }
 ) => {
   const { color, selectedCells } = options;
@@ -14,23 +16,23 @@ export const setCellBackground = (
   const hasSelectedCells = selectedCells && selectedCells.length > 0;
 
   if (hasSelectedCells) {
-    selectedCells.forEach((cell) => {
-      const cellPath = editor.read.nodes.path(cell);
+    editor.update((tx) => {
+      selectedCells.forEach((cell) => {
+        const cellPath = editor.read.nodes.path(cell);
 
-      if (cellPath) {
-        editor.tf.setNodes<TTableCellElement>(
-          { background: color },
-          {
-            at: cellPath,
-          }
-        );
-      }
+        if (cellPath) {
+          tx.nodes.set<TTableCellElement>(
+            { background: color },
+            { at: cellPath }
+          );
+        }
+      });
     });
 
     return;
   }
 
-  const currentCell = editor.api.node<TTableCellElement>({
+  const currentCell = editor.read.nodes.find<TTableCellElement>({
     match: { type: getCellTypes(editor) },
   })?.[0];
 
@@ -38,11 +40,9 @@ export const setCellBackground = (
     const cellPath = editor.read.nodes.path(currentCell);
 
     if (cellPath) {
-      editor.tf.setNodes<TTableCellElement>(
+      editor.update.nodes.set<TTableCellElement>(
         { background: color },
-        {
-          at: cellPath,
-        }
+        { at: cellPath }
       );
     }
   }
