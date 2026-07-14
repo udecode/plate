@@ -46,20 +46,16 @@ const createPeers = (ids: readonly ClientId[]): Peer[] =>
   });
 
 const insertFragment = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.selection.set({
-      anchor: { path: [0, 0], offset: 'alpha'.length },
-      focus: { path: [0, 0], offset: 'alpha'.length },
-    });
+  peer.editor.update.selection.set({
+    anchor: { path: [0, 0], offset: 'alpha'.length },
+    focus: { path: [0, 0], offset: 'alpha'.length },
   });
-  peer.editor.update((tx) => {
-    tx.fragment.insert([{ text: 'Lin fragment' }]);
-  });
+  peer.editor.update.fragment.insert([{ text: 'Lin fragment' }]);
 };
 
 const appendRemoteText = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert(' Ada', { at: { path: [0, 0], offset: 'alpha'.length } });
+  peer.editor.update.text.insert(' Ada', {
+    at: { path: [0, 0], offset: 'alpha'.length },
   });
 };
 

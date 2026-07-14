@@ -163,11 +163,12 @@ const seedProviderDoc = (
   provider.emitSync(true);
 };
 
-const insertFirstBlockTextAtEnd = (editor: BasePlateEditor, text = '!'): void => {
-  editor.update((tx) => {
-    tx.text.insert(text, {
-      at: { path: [0, 0], offset: editorString(editor, [0]).length },
-    });
+const insertFirstBlockTextAtEnd = (
+  editor: BasePlateEditor,
+  text = '!'
+): void => {
+  editor.update.text.insert(text, {
+    at: { path: [0, 0], offset: editorString(editor, [0]).length },
   });
 };
 

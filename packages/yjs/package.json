@@ -1,10 +1,11 @@
 {
   "name": "@platejs/yjs",
   "version": "54.0.0-beta.0",
-  "description": "Yjs collaboration bindings for Plite.",
+  "description": "Yjs collaboration bindings for Plate and Plite.",
   "keywords": [
     "collaboration",
     "editor",
+    "plate",
     "@platejs/plite",
     "yjs"
   ],
@@ -31,11 +32,6 @@
       "import": "./dist/core/index.js",
       "default": "./dist/core/index.js"
     },
-    "./internal": {
-      "types": "./dist/internal/index.d.ts",
-      "import": "./dist/internal/index.js",
-      "default": "./dist/internal/index.js"
-    },
     "./react": {
       "types": "./dist/react/index.d.ts",
       "import": "./dist/react/index.js",
@@ -55,8 +51,11 @@
     "clean": "rimraf dist lib",
     "lint": "plate-pkg p:lint",
     "lint:fix": "plate-pkg p:lint:fix",
-    "test": "bun test --preload ../../config/plite-source-test-setup.ts ./test --path-ignore-patterns ''",
+    "test": "bun test --preload ../../config/plite-source-test-setup.ts ./src ./test --path-ignore-patterns ''",
     "typecheck": "tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@platejs/core": "workspace:^"
   },
   "devDependencies": {
     "@types/node": "24.12.0",

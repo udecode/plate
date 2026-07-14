@@ -3625,6 +3625,13 @@ export const withOperationRootChildren = <T>(
 ): T => {
   const root = getOperationRoot(operation);
 
+  if (
+    (root ?? MAIN_ROOT_KEY) === editor.read((state) => state.view.root()) &&
+    getEditorChildrenRoot(editor) === undefined
+  ) {
+    return fn();
+  }
+
   return root
     ? withEditorOperationRoot(editor, root, () =>
         withEditorOperationRootChildren(editor, root, fn)

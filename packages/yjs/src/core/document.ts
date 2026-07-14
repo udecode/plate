@@ -1243,7 +1243,6 @@ export const getYjsNodeIf = (root: Y.XmlElement, path: Path): YjsNode | null =>
   getYjsNodeWithResolverIf(root, path, createLazyYjsNodeIdResolver(root));
 
 export const setVirtualYjsMove = (
-  root: Y.XmlElement,
   target: YjsNode,
   wrapper: Y.XmlElement
 ): void => {

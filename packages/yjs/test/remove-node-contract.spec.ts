@@ -41,14 +41,12 @@ const createPeers = (clientIds: readonly string[]): Peer[] =>
   createSeededYjsPeers({ children: initialValue(), clientIds });
 
 const removeMiddleBlock = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.remove({ at: [1] });
-  });
+  peer.editor.update.nodes.remove({ at: [1] });
 };
 
 const insertRemoteText = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: [0, 0], offset: 'alpha'.length } });
+  peer.editor.update.text.insert('!', {
+    at: { path: [0, 0], offset: 'alpha'.length },
   });
 };
 
@@ -159,20 +157,16 @@ describe('@platejs/yjs remove_node collaboration contract', () => {
       paragraph('moved'),
     ]);
 
-    peer.editor.update((tx) => {
-      tx.operations.replay([
-        {
-          newPath: [1, 0],
-          path: [2],
-          type: 'move_node',
-        },
-      ]);
-    });
+    peer.editor.update.operations.replay([
+      {
+        newPath: [1, 0],
+        path: [2],
+        type: 'move_node',
+      },
+    ]);
 
     disconnectAndClearYjsTrace(peer);
-    peer.editor.update((tx) => {
-      tx.nodes.remove({ at: [1, 0] });
-    });
+    peer.editor.update.nodes.remove({ at: [1, 0] });
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['left', '']);
     assert.deepEqual(getYjsTrace(peer), [

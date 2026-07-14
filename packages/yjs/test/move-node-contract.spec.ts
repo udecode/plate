@@ -1,9 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import type { Descendant, Operation } from '@platejs/plite';
-import {
-  string as editorString,
-} from '@platejs/plite/internal';
+import { string as editorString } from '@platejs/plite/internal';
 
 import {
   connectYjsPeerAndSync,
@@ -83,26 +81,22 @@ const nestedTexts = (peer: Peer): string[][] =>
   );
 
 const moveFirstBlockToEnd = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.move({ at: [0], to: [2] });
-  });
+  peer.editor.update.nodes.move({ at: [0], to: [2] });
 };
 
 const moveNestedBlockToSecondSection = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.move({ at: [0, 0], to: [1, 1] });
-  });
+  peer.editor.update.nodes.move({ at: [0, 0], to: [1, 1] });
 };
 
 const appendRemoteAlpha = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: [0, 0], offset: 'alpha'.length } });
+  peer.editor.update.text.insert('!', {
+    at: { path: [0, 0], offset: 'alpha'.length },
   });
 };
 
 const appendNestedRemoteAlpha = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: [0, 0, 0], offset: 'alpha'.length } });
+  peer.editor.update.text.insert('!', {
+    at: { path: [0, 0, 0], offset: 'alpha'.length },
   });
 };
 
@@ -208,16 +202,12 @@ describe('@platejs/yjs move_node collaboration contract', () => {
       paragraph('before'),
     ]);
 
-    peer.editor.update((tx) => {
-      tx.nodes.move({ at: [1], to: [0, 0] });
-    });
+    peer.editor.update.nodes.move({ at: [1], to: [0, 0] });
     const moved = getVisibleYjsNodeAt(peer, [0, 0]);
     const before = getVisibleYjsNodeAt(peer, [1]);
 
     disconnectAndClearYjsTrace(peer);
-    peer.editor.update((tx) => {
-      tx.nodes.move({ at: [1], to: [0, 0] });
-    });
+    peer.editor.update.nodes.move({ at: [1], to: [0, 0] });
 
     assert.deepEqual(nestedTexts(peer), [['before', 'moved', '']]);
     assert.equal(getVisibleYjsNodeAt(peer, [0, 0]), before);

@@ -1,9 +1,11 @@
-import type {
-  Descendant,
-  Editor,
-  EditorCommit,
-  EditorSnapshot,
-  Operation,
+import {
+  type Descendant,
+  type Editor,
+  type EditorCommit,
+  type EditorSnapshot,
+  type EditorUpdateTransaction,
+  type Operation,
+  OperationApi,
 } from '@platejs/plite';
 import * as Y from 'yjs';
 
@@ -21,12 +23,9 @@ import {
   type YjsEditorAdapter,
 } from './editor-adapter';
 import {
-  removeRejectedYjsOperationsFromHistory,
-  removeRejectedYjsOperationsFromHistoryAfterCommit,
-} from './history';
-import {
   applyPliteOperationToYjs,
   isNoopPliteOperationForYjs,
+  willYjsOperationRequireImport,
 } from './operations';
 import {
   createYjsProviderLifecycleAdapter,
@@ -76,13 +75,16 @@ const copyTraceEntries = (
 
 const collectYjsCommitOperations = (
   commit: EditorCommit,
-  autoSendSelection: boolean
+  autoSendSelection: boolean,
+  editorRoot: string
 ): {
   readonly operations: Operation[];
+  readonly selectionRoot: string | undefined;
   readonly shouldSendSelection: boolean;
 } => {
   const operations = new Array<Operation>(commit.operations.length);
   let operationCount = 0;
+  let selectionRoot: string | undefined;
   let shouldSendSelection = false;
   let index = 0;
 
@@ -94,12 +96,16 @@ const collectYjsCommitOperations = (
     }
 
     if (operation.type === 'set_selection') {
+      selectionRoot = OperationApi.root(operation);
       shouldSendSelection = autoSendSelection || shouldSendSelection;
       index++;
       continue;
     }
 
-    if (!isNoopPliteOperationForYjs(operation)) {
+    if (
+      OperationApi.root(operation) === editorRoot &&
+      !isNoopPliteOperationForYjs(operation)
+    ) {
       operations[operationCount] = operation;
       operationCount++;
     }
@@ -108,7 +114,7 @@ const collectYjsCommitOperations = (
 
   operations.length = operationCount;
 
-  return { operations, shouldSendSelection };
+  return { operations, selectionRoot, shouldSendSelection };
 };
 
 export class YjsController {
@@ -124,6 +130,7 @@ export class YjsController {
   private readonly doc: Y.Doc;
   private readonly editor: Editor;
   private readonly editorAdapter: YjsEditorAdapter;
+  private readonly editorRoot: string;
   private readonly canonicalizeOrigin = {};
   private readonly historyOrigin = {};
   private readonly localOrigin = {};
@@ -147,6 +154,7 @@ export class YjsController {
   constructor(editor: Editor, options: YjsExtensionOptions) {
     this.editor = editor;
     this.editorAdapter = createYjsEditorAdapter(editor);
+    this.editorRoot = editor.read.view.root();
     this.provider = options.provider;
     this.providerOwnedDoc =
       this.provider !== undefined &&
@@ -199,6 +207,7 @@ export class YjsController {
       clientId: this.clientId,
       doc: this.doc,
       editor: this.editor,
+      editorRoot: this.editorRoot,
       isConnected: () => this.providerLifecycle.connected(),
       root: this.root,
     });
@@ -253,26 +262,28 @@ export class YjsController {
       return;
     }
 
-    const { operations, shouldSendSelection } = collectYjsCommitOperations(
-      commit,
-      this.autoSendSelection
-    );
+    const { operations, selectionRoot, shouldSendSelection } =
+      collectYjsCommitOperations(
+        commit,
+        this.autoSendSelection,
+        this.editorRoot
+      );
 
     if (operations.length === 0) {
       if (shouldSendSelection) {
-        this.awarenessAdapter.sendSelection(snapshot.selection);
+        this.awarenessAdapter.sendSelection(
+          selectionRoot === this.editorRoot ? snapshot.selection : null
+        );
       }
 
       return;
     }
 
     if (this.shouldRejectUnsafeProviderCommit()) {
-      removeRejectedYjsOperationsFromHistory(this.editor, operations);
       this.editorAdapter.replaceValue(
         this.editorAdapter.readChildrenBeforeOperations(operations),
         commit.selectionBefore
       );
-      this.removeRejectedOperationsFromHistory(operations);
 
       return;
     }
@@ -315,11 +326,28 @@ export class YjsController {
         readPliteValueFromYjs(this.root),
         snapshot.selection
       );
-      this.removeRejectedOperationsFromHistory(rejectedLocalOperations);
     }
 
     if (shouldSendSelection) {
-      this.awarenessAdapter.sendSelection(snapshot.selection);
+      this.awarenessAdapter.sendSelection(
+        selectionRoot === this.editorRoot ? snapshot.selection : null
+      );
+    }
+  }
+
+  handleOperationApply(
+    operation: Operation,
+    tx: EditorUpdateTransaction
+  ): void {
+    if (OperationApi.root(operation) !== this.editorRoot) {
+      return;
+    }
+
+    if (
+      this.shouldRejectUnsafeProviderCommit() ||
+      willYjsOperationRequireImport(this.root, operation)
+    ) {
+      tx.metadata.merge({ collab: { saveToHistory: false } });
     }
   }
 
@@ -337,13 +365,6 @@ export class YjsController {
       commit.tags.includes('collaboration') ||
       commit.metadata.collab?.origin === 'remote'
     );
-  }
-
-  private removeRejectedOperationsFromHistory(
-    operations: readonly Operation[]
-  ): void {
-    removeRejectedYjsOperationsFromHistory(this.editor, operations);
-    removeRejectedYjsOperationsFromHistoryAfterCommit(this.editor, operations);
   }
 
   state(): YjsState {

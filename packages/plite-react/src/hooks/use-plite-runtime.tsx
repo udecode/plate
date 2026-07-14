@@ -563,7 +563,7 @@ export function PliteRuntime<
     [viewEffectQueue]
   );
   const syncRuntimeTextOperationsToDOM = useCallback(
-    (operations: readonly Operation[]) => {
+    (operations: readonly Operation[], modelOwned: boolean) => {
       if (mountedViewEditorsRef.current.size === 0) {
         return { syncedTextOperationCount: 0, textOperationCount: 0 };
       }
@@ -591,15 +591,23 @@ export function PliteRuntime<
           continue;
         }
 
+        let didSyncEveryView = true;
+
         for (const viewEditor of viewEditors) {
-          const textSync = syncTextOperationsToDOM(viewEditor, rootOperations);
+          const textSync = syncTextOperationsToDOM(viewEditor, rootOperations, {
+            modelOwned,
+          });
 
           if (textSync.syncedTextOperationCount < textSync.textOperationCount) {
-            return {
-              syncedTextOperationCount: 0,
-              textOperationCount: textOperations.length,
-            };
+            didSyncEveryView = false;
           }
+        }
+
+        if (!didSyncEveryView) {
+          return {
+            syncedTextOperationCount: 0,
+            textOperationCount: textOperations.length,
+          };
         }
       }
 
@@ -632,7 +640,13 @@ export function PliteRuntime<
       maybeBatchUpdates(() => {
         setFocused(ReactEditor.isFocused(reactEditor));
 
-        const textSync = syncRuntimeTextOperationsToDOM(nextOperations);
+        const modelOwnedDOMUpdate =
+          commit.command?.type === 'history_undo' ||
+          commit.command?.type === 'history_redo';
+        const textSync = syncRuntimeTextOperationsToDOM(
+          nextOperations,
+          modelOwnedDOMUpdate
+        );
         const hasUnsyncedTextOperation =
           textSync.textOperationCount > textSync.syncedTextOperationCount;
 

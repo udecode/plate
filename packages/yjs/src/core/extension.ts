@@ -3,9 +3,7 @@ import { defineEditorExtension } from '@platejs/plite';
 import { YjsController } from './controller';
 import type { YjsExtensionOptions } from './types';
 
-export const createYjsExtension = (
-  options: YjsExtensionOptions = {}
-): ReturnType<typeof defineEditorExtension> =>
+export const createYjsExtension = (options: YjsExtensionOptions = {}) =>
   defineEditorExtension({
     name: 'yjs',
     setup(context) {
@@ -19,6 +17,12 @@ export const createYjsExtension = (
         },
         onCommit({ commit, snapshot }): void {
           controller.handleCommit(commit, snapshot);
+        },
+        operations: {
+          apply({ operation, next, tx }): void {
+            controller.handleOperationApply(operation, tx);
+            next(operation);
+          },
         },
         state: {
           yjs: () => controller.state(),

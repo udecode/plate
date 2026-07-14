@@ -4,6 +4,7 @@ import type { Descendant, Operation } from '@platejs/plite';
 
 import {
   assertPeerTexts,
+  clearYjsTrace,
   connectYjsPeerAndSync,
   createSeededYjsPeers,
   createYjsPeer,
@@ -14,6 +15,7 @@ import {
   getYjsTrace,
   type Peer,
   paragraph,
+  readPeerPliteValue,
   redoYjsPeerAndSync,
   syncConnectedPeers,
   undoYjsPeer,
@@ -52,27 +54,26 @@ const createPeers = (ids: readonly ClientId[]): Peer[] =>
   });
 
 const appendRemoteAlpha = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: [0, 0], offset: 'alpha'.length } });
+  peer.editor.update.text.insert('!', {
+    at: { path: [0, 0], offset: 'alpha'.length },
   });
 };
 
 const insertBetaBang = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: [1, 0], offset: 'beta'.length } });
+  peer.editor.update.text.insert('!', {
+    at: { path: [1, 0], offset: 'beta'.length },
   });
 };
 
 const removeBetaMiddle = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.delete({ at: { path: [1, 0], offset: 1 }, distance: 2 });
+  peer.editor.update.text.delete({
+    at: { path: [1, 0], offset: 1 },
+    distance: 2,
   });
 };
 
 const insertMiddleBlock = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.insert([paragraph('bravo')], { at: [1] });
-  });
+  peer.editor.update.nodes.insert([paragraph('bravo')], { at: [1] });
 };
 
 const replaceMiddleBlock = (peer: Peer): void => {
@@ -86,9 +87,7 @@ const replaceMiddleBlock = (peer: Peer): void => {
     type: 'replace_children',
   };
 
-  peer.editor.update((tx) => {
-    tx.operations.replay([operation]);
-  });
+  peer.editor.update.operations.replay([operation]);
 };
 
 const replaceFirstBlock = (peer: Peer): void => {
@@ -102,9 +101,7 @@ const replaceFirstBlock = (peer: Peer): void => {
     type: 'replace_children',
   };
 
-  peer.editor.update((tx) => {
-    tx.operations.replay([operation]);
-  });
+  peer.editor.update.operations.replay([operation]);
 };
 
 describe('@platejs/yjs simple operation collaboration contract', () => {
@@ -201,21 +198,17 @@ describe('@platejs/yjs simple operation collaboration contract', () => {
       paragraph('moved'),
     ]);
 
-    peer.editor.update((tx) => {
-      tx.operations.replay([
-        {
-          newPath: [0, 0],
-          path: [1],
-          type: 'move_node',
-        },
-      ]);
-    });
+    peer.editor.update.operations.replay([
+      {
+        newPath: [0, 0],
+        path: [1],
+        type: 'move_node',
+      },
+    ]);
     const movedParagraph = getVisibleYjsNodeAt(peer, [0, 0]);
 
     disconnectAndClearYjsTrace(peer);
-    peer.editor.update((tx) => {
-      tx.nodes.insert([paragraph('before')], { at: [0, 0] });
-    });
+    peer.editor.update.nodes.insert([paragraph('before')], { at: [0, 0] });
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['beforemoved']);
     assert.equal(getVisibleYjsNodeAt(peer, [0, 1]), movedParagraph);
@@ -266,31 +259,27 @@ describe('@platejs/yjs simple operation collaboration contract', () => {
       paragraph('moved'),
     ]);
 
-    peer.editor.update((tx) => {
-      tx.operations.replay([
-        {
-          newPath: [1, 0],
-          path: [2],
-          type: 'move_node',
-        },
-      ]);
-    });
+    peer.editor.update.operations.replay([
+      {
+        newPath: [1, 0],
+        path: [2],
+        type: 'move_node',
+      },
+    ]);
     const movedParagraph = getVisibleYjsNodeAt(peer, [1, 0]);
 
     disconnectAndClearYjsTrace(peer);
-    peer.editor.update((tx) => {
-      tx.operations.replay([
-        {
-          children: [paragraph('moved')],
-          index: 0,
-          newChildren: [paragraph('moved!')],
-          newSelection: null,
-          path: [1],
-          selection: null,
-          type: 'replace_children',
-        },
-      ]);
-    });
+    peer.editor.update.operations.replay([
+      {
+        children: [paragraph('moved')],
+        index: 0,
+        newChildren: [paragraph('moved!')],
+        newSelection: null,
+        path: [1],
+        selection: null,
+        type: 'replace_children',
+      },
+    ]);
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['left', 'moved!']);
     assert.equal(getVisibleYjsNodeAt(peer, [1, 0]), movedParagraph);
@@ -306,31 +295,27 @@ describe('@platejs/yjs simple operation collaboration contract', () => {
       paragraph('moved'),
     ]);
 
-    peer.editor.update((tx) => {
-      tx.operations.replay([
-        {
-          newPath: [1, 0],
-          path: [2],
-          type: 'move_node',
-        },
-      ]);
-    });
+    peer.editor.update.operations.replay([
+      {
+        newPath: [1, 0],
+        path: [2],
+        type: 'move_node',
+      },
+    ]);
 
     disconnectAndClearYjsTrace(peer);
     assert.doesNotThrow(() => {
-      peer.editor.update((tx) => {
-        tx.operations.replay([
-          {
-            children: [paragraph('moved')],
-            index: 0,
-            newChildren: [paragraph('bravo'), paragraph('charlie')],
-            newSelection: null,
-            path: [1],
-            selection: null,
-            type: 'replace_children',
-          },
-        ]);
-      });
+      peer.editor.update.operations.replay([
+        {
+          children: [paragraph('moved')],
+          index: 0,
+          newChildren: [paragraph('bravo'), paragraph('charlie')],
+          newSelection: null,
+          path: [1],
+          selection: null,
+          type: 'replace_children',
+        },
+      ]);
     });
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['left', 'bravocharlie']);
@@ -381,5 +366,18 @@ describe('@platejs/yjs simple operation collaboration contract', () => {
     connectYjsPeerAndSync(b, peers);
 
     assertPeerTexts(peers, ['alpha!', 'beta', 'gamma']);
+  });
+
+  it('keeps non-main root edits out of the collaborative Yjs document', () => {
+    const peer = createPeer('b');
+
+    clearYjsTrace(peer);
+    peer.editor.update.roots.create('header', [paragraph('header')]);
+    peer.editor.update.roots.replace('header', [paragraph('updated')]);
+
+    assert.deepEqual(peer.editor.read.root('header'), [paragraph('updated')]);
+    assert.deepEqual(readPeerPliteValue(peer), initialValue());
+    assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha', 'beta', 'gamma']);
+    assert.deepEqual(getYjsTrace(peer), []);
   });
 });

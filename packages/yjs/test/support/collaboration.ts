@@ -6,7 +6,6 @@ import {
   type EditorCommitContext,
   type EditorExtensionSetupOutput,
   type Operation,
-  type Range,
   type Selection,
   type Editor as BasePlateEditor,
 } from '@platejs/plite';
@@ -16,6 +15,7 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 import type {} from '@platejs/plite-history';
+import { createReactEditor, type ReactEditor } from '@platejs/plite-react';
 import * as Y from 'yjs';
 
 import { createYjsExtension } from '../../src';
@@ -35,21 +35,23 @@ import type {
 
 export { FakeAwareness, FakeProvider } from './provider';
 
-type TestEditorDomApi = {
-  readonly isFocused?: () => boolean;
-  readonly resolveRangeRect?: (range: Range) => unknown;
-};
+type TestEditor = BasePlateEditor;
 
-type TestEditor = BasePlateEditor & {
-  api?: {
-    dom?: TestEditorDomApi;
-  };
-};
-
-export type Peer = {
+export type Peer<TEditor extends TestEditor = TestEditor> = {
   readonly cleanup: () => void;
   readonly doc: Y.Doc;
-  readonly editor: TestEditor;
+  readonly editor: TEditor;
+};
+
+export type ReactPeer = Peer<ReactEditor>;
+
+type CreateYjsPeerOptions = {
+  awareness?: YjsAwarenessLike;
+  children: readonly Descendant[];
+  clientId: string;
+  numericClientId?: number;
+  provider?: YjsProviderLike;
+  seedUpdate?: Uint8Array;
 };
 
 type OperationTypeRecorderOptions = {
@@ -72,23 +74,17 @@ const isYjsNode = (value: unknown): value is YjsNode =>
 const getRawYjsChildren = (node: Y.XmlElement): YjsNode[] =>
   node.toArray().filter(isYjsNode);
 
-export const createYjsPeer = ({
-  children,
-  awareness,
-  clientId,
-  numericClientId,
-  provider,
-  seedUpdate,
-}: {
-  awareness?: YjsAwarenessLike;
-  children: readonly Descendant[];
-  clientId: string;
-  numericClientId?: number;
-  provider?: YjsProviderLike;
-  seedUpdate?: Uint8Array;
-}): Peer => {
-  const editor: TestEditor = createEditor();
-
+const createYjsPeerWithEditor = <TEditor extends TestEditor>(
+  editor: TEditor,
+  {
+    children,
+    awareness,
+    clientId,
+    numericClientId,
+    provider,
+    seedUpdate,
+  }: CreateYjsPeerOptions
+): Peer<TEditor> => {
   editorReplace(editor, {
     children: [...children],
     marks: null,
@@ -117,6 +113,12 @@ export const createYjsPeer = ({
 
   return { cleanup, doc, editor };
 };
+
+export const createYjsPeer = (options: CreateYjsPeerOptions): Peer =>
+  createYjsPeerWithEditor(createEditor(), options);
+
+export const createYjsReactPeer = (options: CreateYjsPeerOptions): ReactPeer =>
+  createYjsPeerWithEditor(createReactEditor(), options);
 
 export const createSeededYjsPeers = ({
   children,
@@ -307,22 +309,20 @@ export const disconnectAndClearYjsTrace = (peer: Peer): void => {
 };
 
 export const getHistoryUndoCount = (editor: TestEditor): number =>
-  editor.read((state) => state.history.undos().length);
+  editor.read.history.undos().length;
 
 export const undoEditorHistory = (editor: TestEditor): void => {
-  editor.update((tx) => {
-    tx.history.undo();
-  });
+  editor.update.history.undo();
 };
 
 export const setEditorDomApi = (
-  editor: TestEditor,
-  dom: TestEditorDomApi
+  editor: ReactEditor,
+  dom: Partial<Pick<ReactEditor['api']['dom'], 'resolveRangeRect'>>
 ): void => {
   editor.api = {
     ...editor.api,
     dom: {
-      ...editor.api?.dom,
+      ...editor.api.dom,
       ...dom,
     },
   };

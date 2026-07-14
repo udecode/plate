@@ -24,6 +24,7 @@ type YjsAwarenessAdapterOptions = {
   readonly clientId: number | string;
   readonly doc: Y.Doc;
   readonly editor: Editor;
+  readonly editorRoot: string;
   readonly isConnected: () => boolean;
   readonly root: Y.XmlElement;
 };
@@ -91,11 +92,11 @@ export const createYjsAwarenessAdapter = ({
   clientId,
   doc,
   editor,
+  editorRoot,
   isConnected,
   root,
 }: YjsAwarenessAdapterOptions): YjsAwarenessAdapter => {
-  const currentSelection = (): Range | null =>
-    editor.read((state) => state.selection.get());
+  const currentSelection = (): Range | null => editor.read.selection();
 
   const getLocalAwarenessClientId = (): number =>
     awareness?.doc?.clientID ??
@@ -103,6 +104,10 @@ export const createYjsAwarenessAdapter = ({
     (typeof clientId === 'number' ? clientId : doc.clientID);
 
   const isValidYjsSelectionPoint = (point: Range['anchor']): boolean => {
+    if (point.root !== undefined && point.root !== editorRoot) {
+      return false;
+    }
+
     const node = getYjsNodeIf(root, point.path);
 
     return (

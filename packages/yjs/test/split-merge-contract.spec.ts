@@ -1,9 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { type Descendant } from '@platejs/plite';
-import {
-  string as editorString,
-} from '@platejs/plite/internal';
+import { string as editorString } from '@platejs/plite/internal';
 
 import {
   clearYjsTrace,
@@ -63,27 +61,19 @@ const createPeers = (ids: readonly ClientId[]): Peer[] =>
 const splitThenDeleteBackwardEmptyParagraph = (peer: Peer): void => {
   const textLength = editorString(peer.editor, [0]).length;
 
-  peer.editor.update((tx) => {
-    tx.selection.set({
-      anchor: { path: [0, 0], offset: textLength },
-      focus: { path: [0, 0], offset: textLength },
-    });
+  peer.editor.update.selection.set({
+    anchor: { path: [0, 0], offset: textLength },
+    focus: { path: [0, 0], offset: textLength },
   });
 
-  peer.editor.update((tx) => {
-    tx.break.insert();
+  peer.editor.update.break.insert();
+
+  peer.editor.update.selection.set({
+    anchor: { path: [1, 0], offset: 0 },
+    focus: { path: [1, 0], offset: 0 },
   });
 
-  peer.editor.update((tx) => {
-    tx.selection.set({
-      anchor: { path: [1, 0], offset: 0 },
-      focus: { path: [1, 0], offset: 0 },
-    });
-  });
-
-  peer.editor.update((tx) => {
-    tx.text.deleteBackward({ unit: 'character' });
-  });
+  peer.editor.update.text.deleteBackward({ unit: 'character' });
 };
 
 const repeatSplitMerge = (peer: Peer, times: number): void => {
@@ -155,24 +145,20 @@ describe('@platejs/yjs split and merge collaboration contract', () => {
       quote([paragraph('intro'), paragraph('alpha'), paragraph('beta')]),
     ]);
 
-    peer.editor.update((tx) => {
-      tx.nodes.merge({ at: [0, 2] });
-    });
+    peer.editor.update.nodes.merge({ at: [0, 2] });
 
     assert.deepEqual(readPeerPliteValue(peer), [
       quote([paragraph('intro'), paragraphParts('alpha', 'beta')]),
     ]);
 
-    peer.editor.update((tx) => {
-      tx.operations.replay([
-        {
-          path: [0],
-          position: 1,
-          properties: { type: 'quote' },
-          type: 'split_node',
-        },
-      ]);
-    });
+    peer.editor.update.operations.replay([
+      {
+        path: [0],
+        position: 1,
+        properties: { type: 'quote' },
+        type: 'split_node',
+      },
+    ]);
 
     assert.deepEqual(readPeerPliteValue(peer), [
       quote([paragraph('intro')]),
@@ -187,24 +173,20 @@ describe('@platejs/yjs split and merge collaboration contract', () => {
       paragraph('moved'),
     ]);
 
-    peer.editor.update((tx) => {
-      tx.operations.replay([
-        {
-          newPath: [1, 0],
-          path: [2],
-          type: 'move_node',
-        },
-      ]);
-    });
+    peer.editor.update.operations.replay([
+      {
+        newPath: [1, 0],
+        path: [2],
+        type: 'move_node',
+      },
+    ]);
 
     assert.deepEqual(readPeerPliteValue(peer), [
       quote([paragraph('left')]),
       quote([paragraph('moved')]),
     ]);
 
-    peer.editor.update((tx) => {
-      tx.nodes.merge({ at: [1] });
-    });
+    peer.editor.update.nodes.merge({ at: [1] });
 
     assert.deepEqual(readPeerPliteValue(peer), [
       quote([paragraph('left'), paragraph('moved')]),
@@ -217,31 +199,27 @@ describe('@platejs/yjs split and merge collaboration contract', () => {
       paragraph('moved'),
     ]);
 
-    peer.editor.update((tx) => {
-      tx.operations.replay([
-        {
-          newPath: [0, 0, 0],
-          path: [1],
-          type: 'move_node',
-        },
-      ]);
-    });
+    peer.editor.update.operations.replay([
+      {
+        newPath: [0, 0, 0],
+        path: [1],
+        type: 'move_node',
+      },
+    ]);
 
     assert.deepEqual(readPeerPliteValue(peer), [
       section([quote([paragraph('moved')]), paragraph('right')]),
     ]);
     const movedParagraph = getVisibleYjsNodeAt(peer, [0, 0, 0]);
 
-    peer.editor.update((tx) => {
-      tx.operations.replay([
-        {
-          path: [0],
-          position: 0,
-          properties: { type: 'section' },
-          type: 'split_node',
-        },
-      ]);
-    });
+    peer.editor.update.operations.replay([
+      {
+        path: [0],
+        position: 0,
+        properties: { type: 'section' },
+        type: 'split_node',
+      },
+    ]);
 
     assert.deepEqual(readPeerPliteValue(peer), [
       section([{ text: '' }]),

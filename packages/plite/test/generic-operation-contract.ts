@@ -37,6 +37,7 @@ const insertText: PliteOperation<CustomValue> = {
   offset: 0,
   text: 'a',
 };
+const insertTextRoot = OperationApi.root(insertText);
 
 const insertNode: InsertNodeOperation<CustomValue> = {
   type: 'insert_node',
@@ -89,3 +90,4 @@ if (!('children' in insertNode.node)) {
 const text: TextOf<typeof editor> = insertNode.node.children[0];
 
 void text;
+void insertTextRoot;

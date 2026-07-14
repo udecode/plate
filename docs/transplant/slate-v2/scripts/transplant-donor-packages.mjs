@@ -129,7 +129,6 @@ const sourceFirstPaths = {
   '@platejs/slate-react': ['../slate-react/src/index.ts'],
   '@platejs/yjs': ['../yjs/src/index.ts'],
   '@platejs/yjs/core': ['../yjs/src/core/index.ts'],
-  '@platejs/yjs/internal': ['../yjs/src/internal/index.ts'],
   '@platejs/yjs/react': ['../yjs/src/react/index.ts'],
 };
 

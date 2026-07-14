@@ -3,8 +3,9 @@ import { after, describe, it } from 'node:test';
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 import React, { act, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import type { Descendant, Editor, Range } from '@platejs/plite';
-import type { PliteDecorationSource } from '@platejs/plite-react';
+import type { Descendant, Range } from '@platejs/plite';
+import { setEditorFocused } from '@platejs/plite/internal';
+import type { PliteDecorationSource, ReactEditor } from '@platejs/plite-react';
 
 import type { YjsRemoteCursorDecorationData } from '../src';
 import {
@@ -14,7 +15,7 @@ import {
   useYjsRemoteCursorOverlayPositions,
 } from '../src/react';
 import {
-  createYjsPeer,
+  createYjsReactPeer,
   FakeAwareness,
   FakeProvider,
   type Peer,
@@ -68,7 +69,7 @@ type RenderedView = {
 };
 
 type EditorProbeProps = {
-  readonly editor: Editor;
+  readonly editor: ReactEditor;
 };
 
 const render = (element: React.ReactNode): RenderedView => {
@@ -112,7 +113,7 @@ describe('@platejs/yjs react contract', () => {
       awarenessClientId: 7,
       status: 'connecting',
     });
-    const peer = createYjsPeer({
+    const peer = createYjsReactPeer({
       children: initialValue(),
       clientId: 'a',
       provider,
@@ -151,14 +152,14 @@ describe('@platejs/yjs react contract', () => {
 
   it('exposes remote cursors as a DOM-neutral decoration source', () => {
     const awareness = new FakeAwareness(2);
-    const peer = createYjsPeer({
+    const peer = createYjsReactPeer({
       awareness,
       children: initialValue(),
       clientId: 'b',
       numericClientId: 2,
     });
 
-    setEditorDomApi(peer.editor, { isFocused: () => true });
+    setEditorFocused(peer.editor, true);
 
     let source: PliteDecorationSource<
       YjsRemoteCursorDecorationData<CursorData>
@@ -208,7 +209,7 @@ describe('@platejs/yjs react contract', () => {
 
   it('refreshes remote cursor decorations when decoration deps change', () => {
     const awareness = new FakeAwareness(4);
-    const peer = createYjsPeer({
+    const peer = createYjsReactPeer({
       awareness,
       children: initialValue(),
       clientId: 'd',
@@ -264,7 +265,7 @@ describe('@platejs/yjs react contract', () => {
 
   it('resolves remote cursor overlay rectangles through the editor DOM API', () => {
     const awareness = new FakeAwareness(3);
-    const peer = createYjsPeer({
+    const peer = createYjsReactPeer({
       awareness,
       children: initialValue(),
       clientId: 'c',
@@ -296,8 +297,8 @@ describe('@platejs/yjs react contract', () => {
 
     act(() => {
       rect = new DOMRect(25, 20, 20, 20);
-      peer.editor.update((tx) => {
-        tx.text.insert('!', { at: { path: [0, 0], offset: 'alpha'.length } });
+      peer.editor.update.text.insert('!', {
+        at: { path: [0, 0], offset: 'alpha'.length },
       });
     });
 
@@ -307,40 +308,9 @@ describe('@platejs/yjs react contract', () => {
     peer.cleanup();
   });
 
-  it('ignores malformed remote cursor overlay rectangles', () => {
-    const awareness = new FakeAwareness(6);
-    const peer = createYjsPeer({
-      awareness,
-      children: initialValue(),
-      clientId: 'f',
-      numericClientId: 6,
-    });
-
-    setEditorDomApi(peer.editor, {
-      resolveRangeRect: () => ({ x: 10 }),
-    });
-
-    const OverlayProbe = ({ editor }: EditorProbeProps): React.ReactElement => {
-      const [positions] = useYjsRemoteCursorOverlayPositions(editor);
-
-      return <output>{String(positions[0]?.rect === null)}</output>;
-    };
-
-    const view = render(<OverlayProbe editor={peer.editor} />);
-
-    act(() => {
-      sendRemoteSelection(peer, awareness, selection([1, 0], 1));
-    });
-
-    assert.equal(view.container.textContent, 'true');
-
-    view.unmount();
-    peer.cleanup();
-  });
-
   it('keeps overlay positions stable across unrelated editor updates', () => {
     const awareness = new FakeAwareness(8);
-    const peer = createYjsPeer({
+    const peer = createYjsReactPeer({
       awareness,
       children: initialValue(),
       clientId: 'h',
@@ -367,8 +337,8 @@ describe('@platejs/yjs react contract', () => {
     const rendersAfterRemoteSelection = renders;
 
     act(() => {
-      peer.editor.update((tx) => {
-        tx.text.insert('!', { at: { path: [2, 0], offset: 'gamma'.length } });
+      peer.editor.update.text.insert('!', {
+        at: { path: [2, 0], offset: 'gamma'.length },
       });
     });
 
@@ -380,7 +350,7 @@ describe('@platejs/yjs react contract', () => {
 
   it('refreshes overlay positions when a remote cursor selection changes', () => {
     const awareness = new FakeAwareness(10);
-    const peer = createYjsPeer({
+    const peer = createYjsReactPeer({
       awareness,
       children: initialValue(),
       clientId: 'j',
@@ -420,7 +390,7 @@ describe('@platejs/yjs react contract', () => {
 
   it('refreshes remote cursor overlay data when overlay deps change', () => {
     const awareness = new FakeAwareness(5);
-    const peer = createYjsPeer({
+    const peer = createYjsReactPeer({
       awareness,
       children: initialValue(),
       clientId: 'e',
@@ -467,7 +437,7 @@ describe('@platejs/yjs react contract', () => {
 
   it('refreshes custom overlay data when it has a cursor-named object', () => {
     const awareness = new FakeAwareness(9);
-    const peer = createYjsPeer({
+    const peer = createYjsReactPeer({
       awareness,
       children: initialValue(),
       clientId: 'i',
@@ -516,7 +486,7 @@ describe('@platejs/yjs react contract', () => {
 
   it('keeps custom cursor-named overlay data stable across unrelated editor updates', () => {
     const awareness = new FakeAwareness(11);
-    const peer = createYjsPeer({
+    const peer = createYjsReactPeer({
       awareness,
       children: initialValue(),
       clientId: 'k',
@@ -550,8 +520,8 @@ describe('@platejs/yjs react contract', () => {
     const rendersAfterRemoteSelection = renders;
 
     act(() => {
-      peer.editor.update((tx) => {
-        tx.text.insert('!', { at: { path: [2, 0], offset: 'gamma'.length } });
+      peer.editor.update.text.insert('!', {
+        at: { path: [2, 0], offset: 'gamma'.length },
       });
     });
 

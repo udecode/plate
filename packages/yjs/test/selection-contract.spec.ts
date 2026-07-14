@@ -48,21 +48,15 @@ const createPeers = (ids: readonly ClientId[]): Peer[] =>
   });
 
 const moveFirstBlockToEnd = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.move({ at: [0], to: [2] });
-  });
+  peer.editor.update.nodes.move({ at: [0], to: [2] });
 };
 
 const insertInsideAlpha = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: [0, 0], offset: 2 } });
-  });
+  peer.editor.update.text.insert('!', { at: { path: [0, 0], offset: 2 } });
 };
 
 const removeFirstBlock = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.remove({ at: [0] });
-  });
+  peer.editor.update.nodes.remove({ at: [0] });
 };
 
 describe('@platejs/yjs selection relative-position contract', () => {

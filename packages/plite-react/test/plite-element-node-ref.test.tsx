@@ -24,6 +24,42 @@ const readElement = (
 ) => editor.read((state) => state.nodes.get(path))[0] as PliteElementNode;
 
 describe('PliteElement node ref binding', () => {
+  test('keeps every DOM binding for a shared editor path', () => {
+    const editor = createReactEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'one' }] }],
+    });
+    const runtimeId = editorGetRuntimeId(editor, [0]);
+
+    if (!runtimeId) {
+      throw new Error('Missing runtime id at 0');
+    }
+
+    const renderElement = (testId: string) => (
+      <EditorContext.Provider value={editor}>
+        <NodeRuntimeIdContext.Provider value={runtimeId}>
+          <ElementPathContext.Provider value={[0]}>
+            <ElementContext.Provider value={readElement(editor, [0])}>
+              <PliteElement data-testid={testId}>content</PliteElement>
+            </ElementContext.Provider>
+          </ElementPathContext.Provider>
+        </NodeRuntimeIdContext.Provider>
+      </EditorContext.Provider>
+    );
+
+    const first = render(renderElement('first'));
+    const second = render(renderElement('second'));
+
+    expect(getPliteNodeElementByPath(editor, [0])).toBe(
+      second.getByTestId('second')
+    );
+
+    second.unmount();
+
+    expect(getPliteNodeElementByPath(editor, [0])).toBe(
+      first.getByTestId('first')
+    );
+  });
+
   test('rebinds DOM maps when a stable runtime id moves to another path', () => {
     const editor = createReactEditor({
       initialValue: [

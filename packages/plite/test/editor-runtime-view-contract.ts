@@ -11,6 +11,7 @@ import {
   defineEditorExtension,
   type EditorUpdateTransaction,
   NodeApi,
+  type Operation,
 } from '@platejs/plite';
 import { getDirtyPathsForRoot } from '../src/core/update-dirty-paths';
 import {
@@ -19,6 +20,7 @@ import {
   deleteBackward as editorDeleteBackward,
   getExtensionRegistry as editorGetExtensionRegistry,
   getLastCommit as editorGetLastCommit,
+  getEditorLiveNode,
   insertText as editorInsertText,
   isEditor as editorIsEditor,
   pathRef as editorPathRef,
@@ -28,6 +30,7 @@ import {
   reset as editorResetBase,
   string as editorString,
   setEditorTargetRuntime,
+  withOperationRootChildren,
 } from '@platejs/plite/internal';
 
 type LegacySnapshotInput = Omit<
@@ -67,6 +70,41 @@ describe('editor runtime/view contract', () => {
     assert.throws(
       () => createEditorView(runtime, { root: 'main' }),
       /Omit root to target the primary document/
+    );
+  });
+
+  it('keeps matching root views scoped when reading operation children', () => {
+    const runtime = createEditorRuntime({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const headerEditor = createEditorView(runtime, { root: 'header' });
+    const operation = {
+      newProperties: null,
+      properties: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      },
+      root: 'header',
+      type: 'set_selection',
+    } satisfies Operation;
+
+    withOperationRootChildren(headerEditor, operation, () => {
+      assert.equal(
+        NodeApi.string(getEditorLiveNode(headerEditor, [0])!),
+        'header'
+      );
+    });
+
+    headerEditor.update((tx) => {
+      tx.text.insert('!', { at: { path: [0, 0], offset: 6 } });
+    });
+
+    assert.equal(
+      NodeApi.string(getEditorLiveNode(headerEditor, [0])!),
+      'header!'
     );
   });
 

@@ -70,10 +70,8 @@ describe('@platejs/yjs remote import contract', () => {
     const remoteImportCommits = recordRemoteImportCommits(target.editor);
 
     clearYjsTrace(target);
-    source.editor.update((tx) => {
-      tx.text.insert('!', {
-        at: { path: [0, 0], offset: 'block-000'.length },
-      });
+    source.editor.update.text.insert('!', {
+      at: { path: [0, 0], offset: 'block-000'.length },
     });
     syncConnectedPeers([source, target]);
 

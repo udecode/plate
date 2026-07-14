@@ -60,7 +60,7 @@ describe('@platejs/yjs document id contract', () => {
     const secondWrapper = new Y.XmlElement('block-quote');
 
     secondRoot.insert(0, [secondWrapper, secondParagraph]);
-    second.setVirtualYjsMove(secondRoot, secondParagraph, secondWrapper);
+    second.setVirtualYjsMove(secondParagraph, secondWrapper);
 
     assert.notEqual(
       firstText.getAttribute('plite:yjs-id'),

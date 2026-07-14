@@ -67,32 +67,26 @@ const createPeers = (
   });
 
 const liftFirstNestedBlock = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.lift({ at: [0, 0] });
-  });
+  peer.editor.update.nodes.lift({ at: [0, 0] });
 };
 
 const liftLastNestedBlock = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.lift({ at: [0, 1] });
-  });
+  peer.editor.update.nodes.lift({ at: [0, 1] });
 };
 
 const liftMiddleNestedBlock = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.lift({ at: [0, 1] });
-  });
+  peer.editor.update.nodes.lift({ at: [0, 1] });
 };
 
 const appendNestedAlpha = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: [0, 0, 0], offset: 'alpha'.length } });
+  peer.editor.update.text.insert('!', {
+    at: { path: [0, 0, 0], offset: 'alpha'.length },
   });
 };
 
 const appendNestedBeta = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: [0, 1, 0], offset: 'beta'.length } });
+  peer.editor.update.text.insert('!', {
+    at: { path: [0, 1, 0], offset: 'beta'.length },
   });
 };
 

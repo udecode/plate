@@ -121,15 +121,27 @@ describe('@platejs/yjs awareness contract', () => {
     const range = selection([0, 0], 1);
 
     clearYjsTrace(peer);
-    peer.editor.update((tx) => {
-      tx.selection.set(range);
-    });
+    peer.editor.update.selection.set(range);
     awareness.setRemoteState(101, {
       selection: awareness.getLocalState()?.selection,
     });
 
     assert.deepEqual(getYjsTrace(peer), []);
     assert.deepEqual(getYjsRemoteCursors(peer)[0]?.selection, range);
+  });
+
+  it('clears main-root awareness when selection moves to another root', () => {
+    const { awareness, peer } = createAwarePeer();
+    const headerRange: Range = {
+      anchor: { path: [0, 0], offset: 1, root: 'header' },
+      focus: { path: [0, 0], offset: 1, root: 'header' },
+    };
+
+    peer.editor.update.selection.set(selection([0, 0], 1));
+    peer.editor.update.roots.create('header', [paragraph('header')]);
+    peer.editor.update.selection.set(headerRange);
+
+    assert.equal(awareness.getLocalState()?.selection, null);
   });
 
   it('does not expose remote cursors while disconnected', () => {
@@ -242,9 +254,7 @@ describe('@platejs/yjs awareness contract', () => {
 
     sendRemoteSelection(peer, awareness, selection([0, 0], 2));
 
-    peer.editor.update((tx) => {
-      tx.nodes.move({ at: [0], to: [2] });
-    });
+    peer.editor.update.nodes.move({ at: [0], to: [2] });
 
     assert.deepEqual(getYjsRemoteCursors(peer)[0]?.selection, {
       anchor: { path: [2, 0], offset: 2 },

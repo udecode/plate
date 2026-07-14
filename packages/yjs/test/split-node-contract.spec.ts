@@ -1,9 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import type { Descendant } from '@platejs/plite';
-import {
-  string as editorString,
-} from '@platejs/plite/internal';
+import { string as editorString } from '@platejs/plite/internal';
 import * as Y from 'yjs';
 
 import {
@@ -48,70 +46,54 @@ const createPeers = (
 ): Peer[] => createSeededYjsPeers({ children, clientIds });
 
 const splitParagraph = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.split({ at: { path: [0, 0], offset: 'alph'.length } });
+  peer.editor.update.nodes.split({
+    at: { path: [0, 0], offset: 'alph'.length },
   });
 };
 
 const splitHelloParagraph = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.split({ at: { path: [0, 0], offset: 'Hello '.length } });
+  peer.editor.update.nodes.split({
+    at: { path: [0, 0], offset: 'Hello '.length },
   });
 };
 
 const insertRemoteTextAtSplitPoint = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: [0, 0], offset: 'alph'.length } });
+  peer.editor.update.text.insert('!', {
+    at: { path: [0, 0], offset: 'alph'.length },
   });
 };
 
 const appendRemoteText = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: [0, 0], offset: 'alphabeta'.length } });
+  peer.editor.update.text.insert('!', {
+    at: { path: [0, 0], offset: 'alphabeta'.length },
   });
 };
 
 const appendExclamationToFirstParagraph = (peer: Peer): void => {
   const offset = editorString(peer.editor, [0]).length;
 
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: [0, 0], offset } });
-  });
+  peer.editor.update.text.insert('!', { at: { path: [0, 0], offset } });
 };
 
 const insertWorldParagraphAfterFirst = (peer: Peer): void => {
   const offset = editorString(peer.editor, [0]).length;
 
-  peer.editor.update((tx) => {
-    tx.selection.set({
-      anchor: { path: [0, 0], offset },
-      focus: { path: [0, 0], offset },
-    });
+  peer.editor.update.selection.set({
+    anchor: { path: [0, 0], offset },
+    focus: { path: [0, 0], offset },
   });
-  peer.editor.update((tx) => {
-    tx.break.insert();
-  });
-  peer.editor.update((tx) => {
-    tx.text.insert('world! after');
-  });
+  peer.editor.update.break.insert();
+  peer.editor.update.text.insert('world! after');
 };
 
 const insertTextSplitAndInsertRightText = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.selection.set({
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 0 },
-    });
+  peer.editor.update.selection.set({
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 0 },
   });
-  peer.editor.update((tx) => {
-    tx.text.insert('a');
-  });
-  peer.editor.update((tx) => {
-    tx.break.insert();
-  });
-  peer.editor.update((tx) => {
-    tx.text.insert('b');
-  });
+  peer.editor.update.text.insert('a');
+  peer.editor.update.break.insert();
+  peer.editor.update.text.insert('b');
 };
 
 describe('@platejs/yjs split_node collaboration contract', () => {
@@ -154,8 +136,8 @@ describe('@platejs/yjs split_node collaboration contract', () => {
       },
     ]);
 
-    peer.editor.update((tx) => {
-      tx.nodes.split({ at: { path: [0, 0], offset: 'alpha'.length } });
+    peer.editor.update.nodes.split({
+      at: { path: [0, 0], offset: 'alpha'.length },
     });
 
     assert.deepEqual(readPeerChildren(peer), [
@@ -176,28 +158,24 @@ describe('@platejs/yjs split_node collaboration contract', () => {
       paragraph('moved'),
     ]);
 
-    peer.editor.update((tx) => {
-      tx.operations.replay([
-        {
-          newPath: [0, 0],
-          path: [1],
-          type: 'move_node',
-        },
-      ]);
-    });
+    peer.editor.update.operations.replay([
+      {
+        newPath: [0, 0],
+        path: [1],
+        type: 'move_node',
+      },
+    ]);
     const movedParagraph = getVisibleYjsNodeAt(peer, [0, 0]);
 
     disconnectAndClearYjsTrace(peer);
-    peer.editor.update((tx) => {
-      tx.operations.replay([
-        {
-          path: [0],
-          position: 0,
-          properties: { type: 'quote' },
-          type: 'split_node',
-        },
-      ]);
-    });
+    peer.editor.update.operations.replay([
+      {
+        path: [0],
+        position: 0,
+        properties: { type: 'quote' },
+        type: 'split_node',
+      },
+    ]);
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['', 'moved']);
     assert.equal(getVisibleYjsNodeAt(peer, [1, 0]), movedParagraph);
@@ -213,33 +191,29 @@ describe('@platejs/yjs split_node collaboration contract', () => {
       paragraph('moved'),
     ]);
 
-    peer.editor.update((tx) => {
-      tx.operations.replay([
-        {
-          newPath: [0, 0],
-          path: [1],
-          type: 'move_node',
-        },
-        {
-          node: paragraph('raw'),
-          path: [0, 1],
-          type: 'insert_node',
-        },
-      ]);
-    });
+    peer.editor.update.operations.replay([
+      {
+        newPath: [0, 0],
+        path: [1],
+        type: 'move_node',
+      },
+      {
+        node: paragraph('raw'),
+        path: [0, 1],
+        type: 'insert_node',
+      },
+    ]);
     const movedParagraph = getVisibleYjsNodeAt(peer, [0, 0]);
 
     disconnectAndClearYjsTrace(peer);
-    peer.editor.update((tx) => {
-      tx.operations.replay([
-        {
-          path: [0],
-          position: 1,
-          properties: { type: 'quote' },
-          type: 'split_node',
-        },
-      ]);
-    });
+    peer.editor.update.operations.replay([
+      {
+        path: [0],
+        position: 1,
+        properties: { type: 'quote' },
+        type: 'split_node',
+      },
+    ]);
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['moved', 'raw']);
     assert.equal(getVisibleYjsNodeAt(peer, [0, 0]), movedParagraph);
@@ -384,27 +358,23 @@ describe('@platejs/yjs split_node collaboration contract', () => {
       paragraph('block 2'),
     ]);
 
-    peer.editor.update((tx) => {
-      tx.nodes.merge({ at: [1] });
-    });
+    peer.editor.update.nodes.merge({ at: [1] });
     assert.deepEqual(getPeerTopLevelTexts(peer), ['Hello world!block 2']);
 
-    peer.editor.update((tx) => {
-      tx.operations.replay([
-        {
-          path: [0, 0],
-          position: 'Hello wor'.length,
-          properties: {},
-          type: 'split_node',
-        },
-        {
-          path: [0],
-          position: 1,
-          properties: { type: 'paragraph' },
-          type: 'split_node',
-        },
-      ]);
-    });
+    peer.editor.update.operations.replay([
+      {
+        path: [0, 0],
+        position: 'Hello wor'.length,
+        properties: {},
+        type: 'split_node',
+      },
+      {
+        path: [0],
+        position: 1,
+        properties: { type: 'paragraph' },
+        type: 'split_node',
+      },
+    ]);
     assert.deepEqual(getPeerTopLevelTexts(peer), ['Hello wor', 'ld!block 2']);
 
     undoYjsPeer(peer);
@@ -417,9 +387,7 @@ describe('@platejs/yjs split_node collaboration contract', () => {
       paragraph('block 2'),
     ]);
 
-    peer.editor.update((tx) => {
-      tx.nodes.merge({ at: [1] });
-    });
+    peer.editor.update.nodes.merge({ at: [1] });
     assert.deepEqual(getPeerTopLevelTexts(peer), ['Hello world!block 2']);
 
     peer.editor.update((tx) => {

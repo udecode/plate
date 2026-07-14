@@ -178,6 +178,7 @@ export type EditableContentRootSlotOptions = {
   ariaLabel?: string;
   className?: string;
   disableDefaultStyles?: boolean;
+  domStrategy?: DOMStrategyOptions | null;
   id?: string;
   maxLength?: number;
   placeholder?: ReactNode;
@@ -415,7 +416,9 @@ function EditableContentRootView({
     ariaLabel,
     className,
     disableDefaultStyles,
+    domStrategy,
     id,
+    maxLength,
     placeholder,
     spellCheck,
     style,
@@ -516,7 +519,9 @@ function EditableContentRootView({
           aria-label={ariaLabel}
           className={className}
           disableDefaultStyles={disableDefaultStyles}
+          domStrategy={domStrategy}
           id={id}
+          maxLength={maxLength}
           placeholder={placeholder}
           readOnly={readOnly}
           renderElement={renderElement}

@@ -1,4 +1,5 @@
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { createPlateEditor, toPlatePlugin } from '@platejs/core/react';
 
 const RuntimeExtensionPlugin = createBasePlugin({
   key: 'runtimeExtension',
@@ -51,3 +52,30 @@ editor.update((tx) => {
 
 // @ts-expect-error unknown API method should not be inferred
 editor.api.runtimeExtension.missing();
+
+const RuntimeStatePlugin = toPlatePlugin(
+  createBasePlugin({
+    key: 'runtimeState',
+  }).extendExtension({
+    state: {
+      runtimeState: () => ({
+        value: 'runtime-state' as const,
+      }),
+    },
+  })
+).extendEditorApi(() => ({
+  runtimeStatePing: () => 'runtime-state-ping' as const,
+}));
+
+const plateEditor = createPlateEditor({
+  plugins: [RuntimeStatePlugin],
+});
+
+const runtimeStateValue: 'runtime-state' = plateEditor.read(
+  (state) => state.runtimeState.value
+);
+const runtimeStatePing: 'runtime-state-ping' =
+  plateEditor.api.runtimeStatePing();
+
+void runtimeStateValue;
+void runtimeStatePing;

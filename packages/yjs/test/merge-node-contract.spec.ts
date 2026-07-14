@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import type { Descendant } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 
 import {
   assertPeerTexts,
@@ -10,6 +11,7 @@ import {
   createYjsPeer,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
+  getHistoryUndoCount,
   getPeerTopLevelTexts,
   getYjsNodeAt,
   getYjsTrace,
@@ -57,27 +59,23 @@ const createPeers = (
 ): Peer[] => createSeededYjsPeers({ children, clientIds });
 
 const mergeSecondParagraph = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.merge({ at: [1] });
-  });
+  peer.editor.update.nodes.merge({ at: [1] });
 };
 
 const mergeRightText = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.operations.replay([
-      {
-        path: [0, 1],
-        position: 'alpha'.length,
-        properties: {},
-        type: 'merge_node',
-      },
-    ]);
-  });
+  peer.editor.update.operations.replay([
+    {
+      path: [0, 1],
+      position: 'alpha'.length,
+      properties: {},
+      type: 'merge_node',
+    },
+  ]);
 };
 
 const appendRemoteTextToLeftParagraph = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: [0, 0], offset: 'alpha'.length } });
+  peer.editor.update.text.insert('!', {
+    at: { path: [0, 0], offset: 'alpha'.length },
   });
 };
 
@@ -103,6 +101,18 @@ describe('@platejs/yjs merge_node collaboration contract', () => {
     reconcileYjsPeer(peer);
 
     assert.deepEqual(readPeerChildren(peer), incompatibleMergeValue());
+  });
+
+  it('does not save an incompatible structural merge in Plite history', () => {
+    const peer = createPeer('b', undefined, incompatibleMergeValue());
+    const cleanupHistory = peer.editor.extend(history());
+
+    mergeSecondParagraph(peer);
+
+    assert.equal(getHistoryUndoCount(peer.editor), 0);
+
+    cleanupHistory();
+    peer.cleanup();
   });
 
   it('applies local offline public merge without a root snapshot fallback', () => {

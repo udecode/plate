@@ -6,7 +6,10 @@ import type {
   Range,
 } from '@platejs/plite';
 import { createEditor, NodeApi, OperationApi } from '@platejs/plite';
-import { getSnapshot as editorGetSnapshot, replace as editorReplace } from '@platejs/plite/internal';
+import {
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 
 export type YjsEditorAdapter = {
   readonly importing: () => boolean;
@@ -98,7 +101,7 @@ export const createYjsEditorAdapter = (editor: Editor): YjsEditorAdapter => {
   let importing = false;
 
   const readChildren = (): Element[] =>
-    editor.read((state) => copyReadonlyArray(state.value.get().children));
+    copyReadonlyArray(editor.read.children());
 
   const readChildrenBeforeOperations = (
     operations: readonly Operation[]
@@ -143,13 +146,11 @@ export const createYjsEditorAdapter = (editor: Editor): YjsEditorAdapter => {
     importing = true;
 
     try {
-      editor.update(
-        (tx) => {
-          tx.value.replace({
-            children: copyReadonlyArray(children),
-            marks: null,
-            selection: nextSelection,
-          });
+      editor.update.value.replace(
+        {
+          children: copyReadonlyArray(children),
+          marks: null,
+          selection: nextSelection,
         },
         canSkipRemoteImportNormalize(children)
           ? remoteNormalizedImportOptions

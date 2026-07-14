@@ -637,7 +637,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       EO & InferOptions<C>,
       EA & InferApi<C>,
       InferTx<C>,
-      InferSelectors<C>
+      InferSelectors<C>,
+      InferState<C>
     >
   >;
   extendApi: <
@@ -650,7 +651,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferOptions<C>,
       InferApi<C> & Record<C['key'], EA>,
       InferTx<C>,
-      InferSelectors<C>
+      InferSelectors<C>,
+      InferState<C>
     >
   >;
   /**
@@ -707,7 +709,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
             };
       },
       InferTx<C>,
-      InferSelectors<C>
+      InferSelectors<C>,
+      InferState<C>
     >
   >;
   extendExtension: {
@@ -760,7 +763,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferOptions<C>,
       InferApi<C>,
       InferTx<C>,
-      ES & InferSelectors<C>
+      ES & InferSelectors<C>,
+      InferState<C>
     >
   >;
   extendTx: {
@@ -777,7 +781,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
         InferOptions<C>,
         InferApi<C>,
         InferTx<C> & PluginTx<C['key'], InferTxGroup<TGroup>>,
-        InferSelectors<C>
+        InferSelectors<C>,
+        InferState<C>
       >
     >;
   };
@@ -793,7 +798,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferOptions<C>,
       InferApi<C>,
       InferTx<C> & PluginTx<K, InferTxGroup<TGroup>>,
-      InferSelectors<C>
+      InferSelectors<C>,
+      InferState<C>
     >
   >;
   /** Returns a new instance of the plugin with the component. */

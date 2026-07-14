@@ -110,6 +110,7 @@ export {
 } from '../core/command-registry';
 export {
   getEditorRuntime,
+  hasEditorRuntime,
   setEditorRuntime,
 } from '../core/editor-runtime';
 export {

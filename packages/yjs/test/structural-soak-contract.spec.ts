@@ -315,7 +315,7 @@ const getNodeAtPath = (
 
 const assertSelectionsTargetText = (peers: readonly Peer[]): void => {
   for (const peer of peers) {
-    const selection = peer.editor.read((state) => state.selection.get());
+    const selection = peer.editor.read.selection();
 
     if (selection === null) {
       continue;
@@ -413,10 +413,8 @@ const appendText = (peer: Peer, peerId: PeerId): void => {
     return;
   }
 
-  peer.editor.update((tx) => {
-    tx.text.insert(appendTexts[peerId], {
-      at: { path: entry.path, offset: entry.text.length },
-    });
+  peer.editor.update.text.insert(appendTexts[peerId], {
+    at: { path: entry.path, offset: entry.text.length },
   });
 };
 
@@ -455,9 +453,7 @@ const ensureTopLevelCount = (peer: Peer, count: number): void => {
 const moveFirstBlockDown = (peer: Peer): void => {
   ensureTopLevelCount(peer, 2);
 
-  peer.editor.update((tx) => {
-    tx.nodes.move({ at: [0], to: [1] });
-  });
+  peer.editor.update.nodes.move({ at: [0], to: [1] });
 };
 
 const moveFirstBlockAfterSecond = (peer: Peer): void => {
@@ -465,9 +461,7 @@ const moveFirstBlockAfterSecond = (peer: Peer): void => {
     return;
   }
 
-  peer.editor.update((tx) => {
-    tx.nodes.move({ at: [0], to: [1] });
-  });
+  peer.editor.update.nodes.move({ at: [0], to: [1] });
 };
 
 const mergeSecondBlock = (peer: Peer): void => {
@@ -475,9 +469,7 @@ const mergeSecondBlock = (peer: Peer): void => {
     return;
   }
 
-  peer.editor.update((tx) => {
-    tx.nodes.merge({ at: [1] });
-  });
+  peer.editor.update.nodes.merge({ at: [1] });
 };
 
 const removeSecondBlock = (peer: Peer): void => {
@@ -485,31 +477,27 @@ const removeSecondBlock = (peer: Peer): void => {
     return;
   }
 
-  peer.editor.update((tx) => {
-    tx.nodes.remove({ at: [1] });
-  });
+  peer.editor.update.nodes.remove({ at: [1] });
 };
 
 const replaceDocument = (peer: Peer, peerId: PeerId): void => {
   const children = editorValueOf(peer);
   const text = replacementTexts[peerId];
 
-  peer.editor.update((tx) => {
-    tx.operations.replay([
-      {
-        children,
-        index: 0,
-        newChildren: [paragraph(text)],
-        newSelection: {
-          anchor: { path: [0, 0], offset: text.length },
-          focus: { path: [0, 0], offset: text.length },
-        },
-        path: [],
-        selection: null,
-        type: 'replace_children',
+  peer.editor.update.operations.replay([
+    {
+      children,
+      index: 0,
+      newChildren: [paragraph(text)],
+      newSelection: {
+        anchor: { path: [0, 0], offset: text.length },
+        focus: { path: [0, 0], offset: text.length },
       },
-    ]);
-  });
+      path: [],
+      selection: null,
+      type: 'replace_children',
+    },
+  ]);
 };
 
 const wrapFirstBlock = (peer: Peer): void => {
@@ -525,9 +513,7 @@ const unwrapFirstBlock = (peer: Peer): void => {
     return;
   }
 
-  peer.editor.update((tx) => {
-    tx.nodes.unwrap({ at: [0] });
-  });
+  peer.editor.update.nodes.unwrap({ at: [0] });
 };
 
 const liftFirstWrappedBlock = (peer: Peer): void => {
@@ -535,9 +521,7 @@ const liftFirstWrappedBlock = (peer: Peer): void => {
     return;
   }
 
-  peer.editor.update((tx) => {
-    tx.nodes.lift({ at: [0, 0] });
-  });
+  peer.editor.update.nodes.lift({ at: [0, 0] });
 };
 
 const unsetFirstBlockRole = (peer: Peer): void => {
@@ -547,15 +531,11 @@ const unsetFirstBlockRole = (peer: Peer): void => {
     return;
   }
 
-  peer.editor.update((tx) => {
-    tx.nodes.unset('role', { at: [0] });
-  });
+  peer.editor.update.nodes.unset('role', { at: [0] });
 };
 
 const setFirstBlockRole = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.set({ role: 'title' }, { at: [0] });
-  });
+  peer.editor.update.nodes.set({ role: 'title' }, { at: [0] });
 };
 
 const insertExclamation = (peer: Peer): void => {
@@ -565,10 +545,8 @@ const insertExclamation = (peer: Peer): void => {
     return;
   }
 
-  peer.editor.update((tx) => {
-    tx.text.insert('!', {
-      at: { path: entry.path, offset: entry.text.length },
-    });
+  peer.editor.update.text.insert('!', {
+    at: { path: entry.path, offset: entry.text.length },
   });
 };
 
@@ -710,11 +688,9 @@ describe('@platejs/yjs structural soak contract', () => {
     const peers = createAwarePeers();
 
     runCommand(peers, 'd', wrapFirstBlock);
-    peers.b.editor.update((tx) => {
-      tx.selection.set({
-        anchor: { path: [0], offset: 0 },
-        focus: { path: [0], offset: 0 },
-      });
+    peers.b.editor.update.selection.set({
+      anchor: { path: [0], offset: 0 },
+      focus: { path: [0], offset: 0 },
     });
 
     assert.doesNotThrow(() => {

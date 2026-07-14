@@ -75,9 +75,7 @@ const replaceAlphaWithFragment = (peer: Peer): void => {
     type: 'replace_fragment',
   };
 
-  peer.editor.update((tx) => {
-    tx.operations.replay([operation]);
-  });
+  peer.editor.update.operations.replay([operation]);
 };
 
 const replaceMultiLeafTextWithFragment = (peer: Peer): void => {
@@ -90,9 +88,7 @@ const replaceMultiLeafTextWithFragment = (peer: Peer): void => {
     type: 'replace_fragment',
   };
 
-  peer.editor.update((tx) => {
-    tx.operations.replay([operation]);
-  });
+  peer.editor.update.operations.replay([operation]);
 };
 
 const replaceRootWithFallback = (peer: Peer): void => {
@@ -105,20 +101,18 @@ const replaceRootWithFallback = (peer: Peer): void => {
     type: 'replace_fragment',
   };
 
-  peer.editor.update((tx) => {
-    tx.operations.replay([operation]);
-  });
+  peer.editor.update.operations.replay([operation]);
 };
 
 const appendRemoteText = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert(' Ada', { at: { path: [0, 0], offset: 'alpha'.length } });
+  peer.editor.update.text.insert(' Ada', {
+    at: { path: [0, 0], offset: 'alpha'.length },
   });
 };
 
 const insertLocalBang = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: [0, 0], offset: 'alpha'.length } });
+  peer.editor.update.text.insert('!', {
+    at: { path: [0, 0], offset: 'alpha'.length },
   });
 };
 
@@ -135,21 +129,17 @@ const replayNoopRootReplaceFragment = (peer: Peer): void => {
     type: 'replace_fragment',
   };
 
-  peer.editor.update((tx) => {
-    tx.operations.replay([operation]);
-  });
+  peer.editor.update.operations.replay([operation]);
 };
 
 const moveParagraphIntoEmptyQuote = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.operations.replay([
-      {
-        newPath: [1, 0],
-        path: [2],
-        type: 'move_node',
-      },
-    ]);
-  });
+  peer.editor.update.operations.replay([
+    {
+      newPath: [1, 0],
+      path: [2],
+      type: 'move_node',
+    },
+  ]);
 };
 
 const replaceMovedQuoteText = (peer: Peer): void => {
@@ -162,9 +152,7 @@ const replaceMovedQuoteText = (peer: Peer): void => {
     type: 'replace_fragment',
   };
 
-  peer.editor.update((tx) => {
-    tx.operations.replay([operation]);
-  });
+  peer.editor.update.operations.replay([operation]);
 };
 
 const replaceMovedQuoteChildren = (peer: Peer): void => {
@@ -177,9 +165,7 @@ const replaceMovedQuoteChildren = (peer: Peer): void => {
     type: 'replace_fragment',
   };
 
-  peer.editor.update((tx) => {
-    tx.operations.replay([operation]);
-  });
+  peer.editor.update.operations.replay([operation]);
 };
 
 describe('@platejs/yjs replace_fragment collaboration contract', () => {

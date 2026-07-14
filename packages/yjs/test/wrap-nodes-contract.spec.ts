@@ -50,14 +50,12 @@ const createPeers = (ids: readonly ClientId[]): Peer[] =>
   });
 
 const wrapFirstBlock = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.wrap({ children: [], type: 'quote' }, { at: [0] });
-  });
+  peer.editor.update.nodes.wrap({ children: [], type: 'quote' }, { at: [0] });
 };
 
 const appendRemoteText = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: [0, 0], offset: 'alpha'.length } });
+  peer.editor.update.text.insert('!', {
+    at: { path: [0, 0], offset: 'alpha'.length },
   });
 };
 
@@ -153,11 +151,9 @@ describe('@platejs/yjs wrapNodes collaboration contract', () => {
     const peers = createPeers(['a', 'b', 'c']);
     const [a, b] = peers;
 
-    a.editor.update((tx) => {
-      tx.selection.set({
-        anchor: { path: [0, 0], offset: 'alpha'.length },
-        focus: { path: [0, 0], offset: 'alpha'.length },
-      });
+    a.editor.update.selection.set({
+      anchor: { path: [0, 0], offset: 'alpha'.length },
+      focus: { path: [0, 0], offset: 'alpha'.length },
     });
 
     disconnectYjsPeer(b);

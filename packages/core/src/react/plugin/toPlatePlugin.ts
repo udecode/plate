@@ -3,6 +3,7 @@ import type {
   InferApi,
   InferOptions,
   InferSelectors,
+  InferState,
   InferTx,
   PluginConfig,
   BasePlugin,
@@ -26,7 +27,8 @@ type PlatePluginConfig<
         EO & InferOptions<C>,
         EA & InferApi<C>,
         InferTx<C>,
-        ES & InferSelectors<C>
+        ES & InferSelectors<C>,
+        InferState<C>
       >
     >
   >,
@@ -87,7 +89,8 @@ type ExtendPlatePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
         Partial<InferOptions<C>>,
         Partial<InferApi<C>>,
         Partial<InferTx<C>>,
-        Partial<InferSelectors<C>>
+        Partial<InferSelectors<C>>,
+        InferState<C>
       >
     >
   >,
@@ -124,7 +127,8 @@ export function toPlatePlugin<
     EO & InferOptions<C>,
     EA & InferApi<C>,
     InferTx<C>,
-    ES & InferSelectors<C>
+    ES & InferSelectors<C>,
+    InferState<C>
   >
 >;
 
@@ -142,7 +146,8 @@ export function toPlatePlugin<
     InferOptions<C>,
     InferApi<C>,
     InferTx<C>,
-    InferSelectors<C>
+    InferSelectors<C>,
+    InferState<C>
   >
 >;
 

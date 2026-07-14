@@ -8,7 +8,10 @@ import {
   RangeApi,
   type Value,
 } from '..';
-import { getSelectionPatchInverseRoot } from '../internal/root-location';
+import {
+  getOperationRoot,
+  getSelectionPatchInverseRoot,
+} from '../internal/root-location';
 import { isObject } from '../utils/is-object';
 
 export type RootedOperationFields = {
@@ -165,6 +168,13 @@ export type Operation<V extends Value = Value> = BaseOperation<V>;
 
 export interface OperationInterface {
   /**
+   * Resolve the document root targeted by an operation.
+   *
+   * Rootless operations target the main document root.
+   */
+  root: (operation: Operation) => string;
+
+  /**
    * Check if a value is an `InsertNodeOperation` object.
    */
   isInsertNodeOperation: <V extends Value = Value>(
@@ -282,6 +292,10 @@ const hasValidOperationRoot = (value: { root?: unknown }) =>
 
 // eslint-disable-next-line no-redeclare
 export const OperationApi: OperationInterface = {
+  root(operation) {
+    return getOperationRoot(operation);
+  },
+
   isInsertNodeOperation<V extends Value = Value>(
     value: unknown
   ): value is InsertNodeOperation<V> {

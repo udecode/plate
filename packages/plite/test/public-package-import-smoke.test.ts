@@ -89,6 +89,7 @@ const exactPublicPackageRuntimeExportExpectations = {
     'unhangRange',
   ],
   '@platejs/yjs': [
+    'BaseYjsPlugin',
     'createYjsAwarenessSelection',
     'createYjsExtension',
     'readYjsAwarenessSelection',
@@ -111,6 +112,7 @@ const exactPublicPackageRuntimeExportExpectations = {
     'yjsRelativeRangesEqual',
   ],
   '@platejs/yjs/react': [
+    'YjsPlugin',
     'getYjsAwarenessRevision',
     'getYjsProviderRevision',
     'getYjsProviderStatus',
@@ -429,6 +431,7 @@ const internalBridgeRuntimeExportExpectations = {
     'getSnapshot',
     'getSnapshotVersion',
     'hasBlocks',
+    'hasEditorRuntime',
     'hasEditorTransformMiddleware',
     'hasInlines',
     'hasPath',

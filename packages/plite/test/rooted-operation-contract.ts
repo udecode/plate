@@ -671,6 +671,28 @@ describe('rooted operation contract', () => {
     );
   });
 
+  it('resolves implicit and explicit operation roots', () => {
+    assert.equal(
+      OperationApi.root({
+        offset: 0,
+        path: [0, 0],
+        text: 'x',
+        type: 'insert_text',
+      }),
+      'main'
+    );
+    assert.equal(
+      OperationApi.root({
+        offset: 0,
+        path: [0, 0],
+        root: 'header',
+        text: 'x',
+        type: 'insert_text',
+      }),
+      'header'
+    );
+  });
+
   it('rejects replayed operations with non-string roots', () => {
     const editor = createEditor({
       initialValue: {

@@ -9,6 +9,7 @@ import {
 import type { Editor, Range } from '@platejs/plite';
 import {
   type PliteDecorationSource,
+  type ReactEditor,
   usePliteRangeDecorationSource,
 } from '@platejs/plite-react';
 
@@ -22,10 +23,7 @@ import { getEditorYjsState } from '../core/editor-yjs';
 import { pathsEqual } from '../core/path';
 import { isRecord } from '../core/record';
 
-type YjsDOMApi = {
-  readonly isFocused?: () => boolean;
-  readonly resolveRangeRect?: (range: Range) => unknown;
-};
+export * from './YjsPlugin';
 
 export type YjsRemoteCursorDecorationData<
   TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
@@ -141,58 +139,19 @@ const createDefaultCursorData = <
   cursor: YjsRemoteCursor<TCursorData>
 ): TData => createCursorData(cursor) as TData;
 
-const isYjsDOMApi = (value: unknown): value is YjsDOMApi =>
-  isRecord(value) &&
-  (value.isFocused === undefined || typeof value.isFocused === 'function') &&
-  (value.resolveRangeRect === undefined ||
-    typeof value.resolveRangeRect === 'function');
-
-const isDOMRectLike = (value: unknown): value is DOMRect =>
-  isRecord(value) && rectFieldsAreNumbers(value);
-
-const rectFieldsAreNumbers = (value: Record<string, unknown>): boolean => {
-  let index = 0;
-
-  while (index < DOM_RECT_FIELDS.length) {
-    const field = DOM_RECT_FIELDS[index];
-
-    if (typeof value[field] !== 'number') {
-      return false;
-    }
-    index++;
-  }
-
-  return true;
-};
-
-const getYjsDOMApi = (editor: Editor): YjsDOMApi | undefined => {
-  const api = isRecord(editor) ? editor.api : undefined;
-
-  if (!isRecord(api)) {
-    return;
-  }
-
-  return isYjsDOMApi(api.dom) ? api.dom : undefined;
-};
-
-const resolveCursorRect = (editor: Editor, range: Range): DOMRect | null => {
-  const resolveRangeRect = getYjsDOMApi(editor)?.resolveRangeRect;
-
-  if (resolveRangeRect === undefined) {
-    return null;
-  }
-
+const resolveCursorRect = (
+  editor: ReactEditor,
+  range: Range
+): DOMRect | null => {
   try {
-    const rect = resolveRangeRect(range);
-
-    return isDOMRectLike(rect) ? rect : null;
+    return editor.api.dom.resolveRangeRect(range);
   } catch {
     return null;
   }
 };
 
 const isEditorFocused = (editor: Editor): boolean =>
-  getYjsDOMApi(editor)?.isFocused?.() === true;
+  editor.read.view.isFocused();
 
 const pointsEqual = (a: Range['anchor'], b: Range['anchor']): boolean =>
   a.offset === b.offset && pathsEqual(a.path, b.path);
@@ -371,7 +330,7 @@ const readYjsRemoteCursorOverlayPositions = <
   TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
   TPositionData = YjsRemoteCursorDecorationData<TCursorData>,
 >(
-  editor: Editor,
+  editor: ReactEditor,
   options: UseYjsRemoteCursorOverlayPositionsOptions<TCursorData, TPositionData>
 ): readonly YjsRemoteCursorOverlayPosition<TCursorData, TPositionData>[] =>
   readYjsState(editor, (state) => {
@@ -555,7 +514,7 @@ export function useYjsRemoteCursorOverlayPositions<
   TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
   TPositionData = YjsRemoteCursorDecorationData<TCursorData>,
 >(
-  editor: Editor,
+  editor: ReactEditor,
   options: UseYjsRemoteCursorOverlayPositionsOptions<
     TCursorData,
     TPositionData

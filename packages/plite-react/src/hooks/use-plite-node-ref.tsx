@@ -25,7 +25,7 @@ import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
 const EDITOR_TO_PATH_TO_ELEMENT = new WeakMap<
   Editor,
-  Map<string, HTMLElement>
+  Map<string, Set<HTMLElement>>
 >();
 const EDITOR_TO_RUNTIME_ID_TO_ELEMENTS = new WeakMap<
   Editor,
@@ -56,9 +56,38 @@ const getPathElementMap = (editor: Editor) => {
     return existing;
   }
 
-  const next = new Map<string, HTMLElement>();
+  const next = new Map<string, Set<HTMLElement>>();
   EDITOR_TO_PATH_TO_ELEMENT.set(editor, next);
   return next;
+};
+
+const bindPathElement = (
+  editor: Editor,
+  path: readonly number[],
+  element: HTMLElement
+) => {
+  const pathElementMap = getPathElementMap(editor);
+  const key = pathKey(path);
+  const elements = pathElementMap.get(key) ?? new Set<HTMLElement>();
+
+  elements.add(element);
+  pathElementMap.set(key, elements);
+};
+
+const unbindPathElement = (
+  editor: Editor,
+  path: readonly number[],
+  element: HTMLElement
+) => {
+  const pathElementMap = getPathElementMap(editor);
+  const key = pathKey(path);
+  const elements = pathElementMap.get(key);
+
+  elements?.delete(element);
+
+  if (elements?.size === 0) {
+    pathElementMap.delete(key);
+  }
 };
 
 const getRuntimeIdElementMap = (editor: Editor) => {
@@ -111,18 +140,14 @@ const syncPliteElementPath = ({
     const previousPathKey = pathKey(previousPath);
 
     if (previousPathKey !== nextPathKey) {
-      const pathToElement = getPathElementMap(editor);
-
-      if (pathToElement.get(previousPathKey) === element) {
-        pathToElement.delete(previousPathKey);
-      }
+      unbindPathElement(editor, previousPath, element);
     }
   }
 
   ELEMENT_TO_PATH.set(element, [...path] as Path);
   element.setAttribute('data-plite-path', path.join(','));
   element.setAttribute('data-plite-runtime-id', runtimeId);
-  getPathElementMap(editor).set(nextPathKey, element);
+  bindPathElement(editor, path, element);
 };
 
 export const syncPliteNodePathBindingsToDOM = (
@@ -157,12 +182,7 @@ export const syncPliteNodePathBindingsToDOM = (
         const previousPath = ELEMENT_TO_PATH.get(element);
 
         if (previousPath) {
-          const previousPathKey = pathKey(previousPath);
-          const pathToElement = getPathElementMap(editor);
-
-          if (pathToElement.get(previousPathKey) === element) {
-            pathToElement.delete(previousPathKey);
-          }
+          unbindPathElement(editor, previousPath, element);
         }
 
         ELEMENT_TO_PATH.delete(element);
@@ -183,15 +203,32 @@ export const getPliteNodeElementByPath = (
   editor: Editor,
   path: readonly number[]
 ) => {
-  const element = EDITOR_TO_PATH_TO_ELEMENT.get(editor)?.get(pathKey(path));
+  const key = pathKey(path);
+  const pathElementMap = EDITOR_TO_PATH_TO_ELEMENT.get(editor);
+  const elements = pathElementMap?.get(key);
 
-  if (!element?.isConnected) {
+  if (!elements) {
     return null;
   }
 
-  return element.getAttribute('data-plite-path') === path.join(',')
-    ? element
-    : null;
+  let result: HTMLElement | null = null;
+
+  for (const element of elements) {
+    if (
+      element.isConnected &&
+      element.getAttribute('data-plite-path') === path.join(',')
+    ) {
+      result = element;
+    } else {
+      elements.delete(element);
+    }
+  }
+
+  if (elements.size === 0) {
+    pathElementMap?.delete(key);
+  }
+
+  return result;
 };
 
 export const didSyncTextPathToDOM = (editor: Editor, path: readonly number[]) =>
@@ -391,9 +428,73 @@ const syncProjectedTextOperationToDOM = ({
   return true;
 };
 
+const syncTextOperationToElement = ({
+  element,
+  operation,
+  text,
+}: {
+  element: HTMLElement;
+  operation: Extract<Operation, { type: 'insert_text' | 'remove_text' }>;
+  text: string;
+}) => {
+  const canUseDOMTextSync =
+    element.getAttribute('data-plite-dom-sync') === 'true';
+  const strings = element.querySelectorAll('[data-plite-string="true"]');
+
+  if (!canUseDOMTextSync || strings.length !== 1) {
+    if (element.textContent?.replace(/\uFEFF/g, '') === text) {
+      recordDOMTextSyncProfile('already-synced-dom-text');
+      return true;
+    }
+
+    if (
+      element.getAttribute('data-plite-projected-dom-sync') === 'true' &&
+      syncProjectedTextOperationToDOM({ element, operation, strings, text })
+    ) {
+      return true;
+    }
+
+    recordDOMTextSyncProfile('skip-disabled');
+    return false;
+  }
+
+  const stringElement = strings[0]!;
+
+  if (text.length === 0) {
+    markDOMTextSyncMutationTarget(stringElement);
+    stringElement.textContent = '';
+    recordDOMTextSyncProfile('skip-empty-text');
+    return false;
+  }
+
+  const textNode = Array.from(stringElement.childNodes).find(
+    (child) => child.nodeType === Node.TEXT_NODE
+  );
+
+  if (textNode) {
+    if (textNode.nodeValue === text) {
+      recordDOMTextSyncProfile('already-synced');
+      return true;
+    }
+    markDOMTextSyncMutationTarget(textNode);
+    textNode.nodeValue = text;
+  } else {
+    if (stringElement.textContent === text) {
+      recordDOMTextSyncProfile('already-synced');
+      return true;
+    }
+    markDOMTextSyncMutationTarget(stringElement);
+    stringElement.textContent = text;
+  }
+
+  recordDOMTextSyncProfile('success');
+  return true;
+};
+
 export const syncTextOperationsToDOM = (
   editor: Editor,
-  operations: readonly Operation[]
+  operations: readonly Operation[],
+  { modelOwned = false } = {}
 ) => {
   const synced = new Set<string>();
   const pathToElement = EDITOR_TO_PATH_TO_ELEMENT.get(editor);
@@ -440,15 +541,35 @@ export const syncTextOperationsToDOM = (
       continue;
     }
 
-    const element = pathToElement.get(pathKey(path));
-    if (!element?.isConnected) {
+    const key = pathKey(path);
+    const mappedElements = pathToElement.get(key);
+
+    if (!mappedElements) {
       recordDOMTextSyncProfile('skip-no-element');
       continue;
     }
 
-    const canUseDOMTextSync =
-      element.getAttribute('data-plite-dom-sync') === 'true';
-    const strings = element?.querySelectorAll('[data-plite-string="true"]');
+    const elements: HTMLElement[] = [];
+
+    for (const element of mappedElements) {
+      if (
+        element.isConnected &&
+        element.getAttribute('data-plite-path') === path.join(',')
+      ) {
+        elements.push(element);
+      } else {
+        mappedElements.delete(element);
+      }
+    }
+
+    if (mappedElements.size === 0) {
+      pathToElement.delete(key);
+    }
+
+    if (elements.length === 0) {
+      recordDOMTextSyncProfile('skip-no-element');
+      continue;
+    }
 
     const text = withOperationRootChildren(editor, operation, () => {
       if (!editorHasPath(editor, path)) {
@@ -472,59 +593,24 @@ export const syncTextOperationsToDOM = (
       continue;
     }
 
-    if (!canUseDOMTextSync || !element || strings?.length !== 1) {
-      if (element.textContent?.replace(/\uFEFF/g, '') === text) {
-        synced.add(pathKey(path));
-        recordDOMTextSyncProfile('already-synced-dom-text');
-      } else if (
-        element.getAttribute('data-plite-projected-dom-sync') === 'true' &&
-        syncProjectedTextOperationToDOM({
-          element,
-          operation,
-          strings,
-          text,
-        })
-      ) {
-        synced.add(pathKey(path));
-      } else {
-        recordDOMTextSyncProfile('skip-disabled');
+    let didSyncEveryElement = true;
+
+    for (const element of elements) {
+      if (!syncTextOperationToElement({ element, operation, text })) {
+        didSyncEveryElement = false;
       }
-      continue;
     }
 
-    const stringElement = strings[0]!;
-
-    if (text.length === 0) {
-      markDOMTextSyncMutationTarget(stringElement);
-      stringElement.textContent = '';
-      recordDOMTextSyncProfile('skip-empty-text');
-      continue;
-    }
-
-    const textNode = Array.from(stringElement.childNodes).find(
-      (child) => child.nodeType === Node.TEXT_NODE
-    );
-
-    if (textNode) {
-      if (textNode.nodeValue === text) {
-        synced.add(pathKey(path));
-        recordDOMTextSyncProfile('already-synced');
-        continue;
-      }
-      markDOMTextSyncMutationTarget(textNode);
-      textNode.nodeValue = text;
+    if (didSyncEveryElement) {
+      synced.add(key);
     } else {
-      if (stringElement.textContent === text) {
-        synced.add(pathKey(path));
-        recordDOMTextSyncProfile('already-synced');
-        continue;
-      }
-      markDOMTextSyncMutationTarget(stringElement);
-      stringElement.textContent = text;
+      synced.delete(key);
     }
+  }
 
-    synced.add(pathKey(path));
-    recordDOMTextSyncProfile('success');
+  if (modelOwned) {
+    recordDOMTextSyncProfile('model-owned-react-fallback');
+    synced.clear();
   }
 
   EDITOR_TO_SYNCED_TEXT_PATHS.set(editor, synced);
@@ -596,12 +682,7 @@ const bindPliteNodeElement = ({
 
     const currentPath = ELEMENT_TO_PATH.get(node);
     if (currentPath) {
-      const currentPathKey = pathKey(currentPath);
-      const pathElementMap = getPathElementMap(editor);
-
-      if (pathElementMap.get(currentPathKey) === node) {
-        pathElementMap.delete(currentPathKey);
-      }
+      unbindPathElement(editor, currentPath, node);
 
       ELEMENT_TO_PATH.delete(node);
     }

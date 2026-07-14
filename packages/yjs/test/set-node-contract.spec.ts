@@ -53,26 +53,26 @@ const createPeers = (
   });
 
 const setHeading = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.set<Element>({ role: 'title', type: 'heading-one' }, { at: [0] });
-  });
+  peer.editor.update.nodes.set<Element>(
+    { role: 'title', type: 'heading-one' },
+    { at: [0] }
+  );
 };
 
 const unsetRole = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.unset('role', { at: [0] });
-  });
+  peer.editor.update.nodes.unset('role', { at: [0] });
 };
 
 const setTextMark = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.set({ bold: true }, { at: [0, 0], match: NodeApi.isText });
-  });
+  peer.editor.update.nodes.set(
+    { bold: true },
+    { at: [0, 0], match: NodeApi.isText }
+  );
 };
 
 const appendRemoteText = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: [0, 0], offset: 'alpha'.length } });
+  peer.editor.update.text.insert('!', {
+    at: { path: [0, 0], offset: 'alpha'.length },
   });
 };
 

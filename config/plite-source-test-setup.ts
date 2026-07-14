@@ -27,7 +27,6 @@ const sourceAliases = new Map<string, string>([
   ['@platejs/utils/react', 'packages/utils/src/react/index.ts'],
   ['@platejs/yjs', 'packages/yjs/src/index.ts'],
   ['@platejs/yjs/core', 'packages/yjs/src/core/index.ts'],
-  ['@platejs/yjs/internal', 'packages/yjs/src/internal/index.ts'],
   ['@platejs/yjs/react', 'packages/yjs/src/react/index.ts'],
   ['platejs', 'packages/plate/src/index.tsx'],
   ['platejs/react', 'packages/plate/src/react/index.tsx'],

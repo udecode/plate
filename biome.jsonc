@@ -37,7 +37,6 @@
       "!!packages/slate-hyperscript",
       "!!packages/slate-layout",
       "!!packages/slate-react",
-      "!!packages/yjs",
       "!!tooling/slate-v2/donor",
       "!!**/dist",
       "!!**/public",

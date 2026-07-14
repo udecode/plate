@@ -6,9 +6,7 @@ import {
   type Operation,
   type Range,
 } from '@platejs/plite';
-import {
-  replace as editorReplace,
-} from '@platejs/plite/internal';
+import { replace as editorReplace } from '@platejs/plite/internal';
 
 import {
   assertPeerTexts,
@@ -71,27 +69,19 @@ const collectDeleteFragmentOperations = (
     name: 'delete-fragment-operation-capture',
   });
 
-  editor.update((tx) => {
-    tx.selection.set(selection);
-  });
+  editor.update.selection.set(selection);
 
   operations.length = 0;
 
-  editor.update((tx) => {
-    tx.fragment.delete();
-  });
+  editor.update.fragment.delete();
 
   return operations;
 };
 
 const selectAndDeleteFragment = (peer: Peer, selection: Range): void => {
-  peer.editor.update((tx) => {
-    tx.selection.set(selection);
-  });
+  peer.editor.update.selection.set(selection);
 
-  peer.editor.update((tx) => {
-    tx.fragment.delete();
-  });
+  peer.editor.update.fragment.delete();
 };
 
 const deleteBetaMiddle = (peer: Peer): void => {
@@ -109,8 +99,8 @@ const deleteFromAlphaIntoGamma = (peer: Peer): void => {
 };
 
 const appendRemoteGamma = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: [2, 0], offset: 'gamma'.length } });
+  peer.editor.update.text.insert('!', {
+    at: { path: [2, 0], offset: 'gamma'.length },
   });
 };
 
@@ -121,7 +111,7 @@ describe('@platejs/yjs delete_fragment collaboration contract', () => {
         anchor: { path: [1, 0], offset: 1 },
         focus: { path: [1, 0], offset: 3 },
       }),
-      ['remove_text', 'set_selection']
+      ['remove_text']
     );
   });
 
@@ -131,14 +121,7 @@ describe('@platejs/yjs delete_fragment collaboration contract', () => {
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [2, 0], offset: 2 },
       }),
-      [
-        'remove_text',
-        'remove_node',
-        'remove_text',
-        'merge_node',
-        'merge_node',
-        'set_selection',
-      ]
+      ['remove_text', 'remove_node', 'remove_text', 'merge_node', 'merge_node']
     );
   });
 

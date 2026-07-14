@@ -374,7 +374,6 @@ describe('@platejs/yjs package config contract', () => {
     assert.deepEqual(Object.keys(yjsPackage.exports ?? {}).sort(), [
       '.',
       './core',
-      './internal',
       './package.json',
       './react',
     ]);
@@ -387,11 +386,6 @@ describe('@platejs/yjs package config contract', () => {
       default: './dist/core/index.js',
       import: './dist/core/index.js',
       types: './dist/core/index.d.ts',
-    });
-    assert.deepEqual(yjsPackage.exports?.['./internal'], {
-      default: './dist/internal/index.js',
-      import: './dist/internal/index.js',
-      types: './dist/internal/index.d.ts',
     });
     assert.deepEqual(yjsPackage.exports?.['./react'], {
       default: './dist/react/index.js',

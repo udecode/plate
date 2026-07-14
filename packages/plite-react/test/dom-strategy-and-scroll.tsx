@@ -1556,6 +1556,65 @@ test('Editable syncs projected leaf strings for Plite-owned text input', async (
   highlightSource.destroy();
 });
 
+test('Editable refreshes projected leaf strings from model-owned history', async () => {
+  const editor = createReactEditor();
+
+  editorReplace(editor, {
+    children: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'alpha beta' }],
+      },
+    ],
+    selection: null,
+  });
+
+  const highlightSource = createDecorationSource(editor, {
+    id: 'highlight-alpha-history',
+    read: () => [
+      {
+        key: 'highlight-alpha-history',
+        range: {
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 5 },
+        },
+      },
+    ],
+  });
+  const rendered = render(
+    <Plite decorationSources={[highlightSource]} editor={editor}>
+      <Editable
+        domStrategy={{
+          overscan: 0,
+          textSync: {
+            projections: 'range-transform',
+            renderLeaf: 'text-invariant',
+          },
+          type: 'partial-dom',
+          segmentSize: 2,
+          threshold: 1,
+        }}
+      />
+    </Plite>
+  );
+
+  await act(async () => {
+    editor.update((tx) => {
+      tx.text.insert('!', { at: { path: [0, 0], offset: 5 } });
+    });
+    editor.update((tx) => tx.history.undo());
+  });
+
+  expect(didSyncTextPathToDOM(editor, [0, 0])).toBe(false);
+  expect(
+    [...rendered.container.querySelectorAll('[data-plite-string]')].map(
+      (element) => element.textContent
+    )
+  ).toEqual(['alpha', ' beta']);
+
+  highlightSource.destroy();
+});
+
 test('Editable disables DOM text sync for empty zero-width text', async () => {
   const editor = createReactEditor();
 

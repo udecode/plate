@@ -1,29 +1,58 @@
 # @platejs/yjs
 
-Yjs collaboration bindings for Plite editors.
+Yjs collaboration bindings for Plate and Plite editors.
 
 `@platejs/yjs` maps Plite operations, selection state, awareness, provider
 lifecycle, and undo/redo coordination onto a Yjs document. Provider packages
 stay at the application edge: wrap your Hocuspocus, WebSocket, WebRTC, or
-custom provider as a `YjsProviderLike`, then pass it to `createYjsExtension`.
+custom provider as a `YjsProviderLike`.
+
+## Plate
+
+Configure `YjsPlugin` with the app-owned document and provider.
 
 ```tsx
-import { createEditor } from '@platejs/plite'
-import { createYjsExtension } from '@platejs/yjs'
-import { history } from '@platejs/plite-history'
+import { YjsPlugin } from "@platejs/yjs/react";
+import { createPlateEditor } from "platejs/react";
+
+const editor = createPlateEditor({
+  plugins: [
+    YjsPlugin.configure({
+      options: {
+        clientId: "local-user",
+        doc,
+        provider,
+        rootName: "room-id",
+      },
+    }),
+  ],
+  value: initialValue,
+});
+```
+
+`BaseYjsPlugin` provides the same extension for non-React Plate editors.
+
+## Plite
+
+Install `createYjsExtension` directly in a Plite editor.
+
+```tsx
+import { createEditor } from "@platejs/plite";
+import { createYjsExtension } from "@platejs/yjs";
+import { history } from "@platejs/plite-history";
 
 const editor = createEditor({
   extensions: [
     history(),
     createYjsExtension({
-      clientId: 'local-user',
+      clientId: "local-user",
       doc,
       provider,
-      rootName: '@platejs/plite',
+      rootName: "@platejs/plite",
     }),
   ],
   initialValue,
-})
+});
 ```
 
 React apps can render remote cursor decorations and provider state through the
@@ -34,20 +63,25 @@ import {
   useYjsProviderStatus,
   useYjsProviderSynced,
   useYjsRemoteCursors,
-} from '@platejs/yjs/react'
+} from "@platejs/yjs/react";
 ```
 
 ## Boundaries
 
 - `@platejs/yjs` owns the Plite/Yjs adapter, awareness model, provider lifecycle
   bridge, operation replay, and Yjs-aware undo/redo coordination.
+- `BaseYjsPlugin` and `YjsPlugin` install that adapter through Plate's plugin
+  composition layer.
+- Collaboration binds to the editor view root that installs the extension.
+  Operations and selections from sibling Plite roots stay outside that Yjs
+  document.
 - App code owns transport packages, authentication, persistence, room naming,
   server scaling, and provider-specific options.
 - Provider integrations are peer application code. The package does not depend
   on Hocuspocus, `y-websocket`, IndexedDB, WebRTC, or another transport
   package.
-- Public imports are `@platejs/yjs`, `@platejs/yjs/core`, and `@platejs/yjs/react`.
-  The `@platejs/yjs/internal` subpath is reserved for sibling Plite packages.
+- Public imports are `@platejs/yjs`, `@platejs/yjs/core`, and
+  `@platejs/yjs/react`.
 
 ## Related Docs
 

@@ -581,7 +581,7 @@ const PliteSingleEditor = <
     [viewEffectQueue]
   );
   const syncMountedRootTextOperationsToDOM = useCallback(
-    (operations: readonly Operation[]) => {
+    (operations: readonly Operation[], modelOwned: boolean) => {
       if (mountedViewEditorsRef.current.size === 0) {
         return { syncedTextOperationCount: 0, textOperationCount: 0 };
       }
@@ -609,15 +609,23 @@ const PliteSingleEditor = <
           continue;
         }
 
+        let didSyncEveryView = true;
+
         for (const viewEditor of viewEditors) {
-          const textSync = syncTextOperationsToDOM(viewEditor, rootOperations);
+          const textSync = syncTextOperationsToDOM(viewEditor, rootOperations, {
+            modelOwned,
+          });
 
           if (textSync.syncedTextOperationCount < textSync.textOperationCount) {
-            return {
-              syncedTextOperationCount: 0,
-              textOperationCount: textOperations.length,
-            };
+            didSyncEveryView = false;
           }
+        }
+
+        if (!didSyncEveryView) {
+          return {
+            syncedTextOperationCount: 0,
+            textOperationCount: textOperations.length,
+          };
         }
       }
 
@@ -651,11 +659,19 @@ const PliteSingleEditor = <
           setIsFocused(ReactEditor.isFocused(reactEditor));
         });
         const mainOperations = getMainRootOperations(nextOperations);
+        const modelOwnedDOMUpdate =
+          commit.command?.type === 'history_undo' ||
+          commit.command?.type === 'history_redo';
         const textSync = profileRuntimeDuration('dom-text-sync', () =>
-          syncTextOperationsToDOM(reactEditor, mainOperations)
+          syncTextOperationsToDOM(reactEditor, mainOperations, {
+            modelOwned: modelOwnedDOMUpdate,
+          })
         );
         const rootTextSync = profileRuntimeDuration('dom-root-text-sync', () =>
-          syncMountedRootTextOperationsToDOM(nextOperations)
+          syncMountedRootTextOperationsToDOM(
+            nextOperations,
+            modelOwnedDOMUpdate
+          )
         );
         if (
           commit &&

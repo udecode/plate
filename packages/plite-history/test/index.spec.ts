@@ -5,7 +5,7 @@ import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   getSnapshot as editorGetSnapshot,
-  isEditor as editorIsEditor,
+  hasEditorRuntime,
 } from '@platejs/plite/internal';
 import { getEditorTransformRegistry } from '@platejs/plite/internal';
 import * as PliteHistory from '../src';
@@ -133,7 +133,7 @@ describe('@platejs/plite-history', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const expected = editorIsEditor(output)
+    const expected = hasEditorRuntime(output)
       ? editorGetSnapshot(output)
       : output?.children !== undefined || output?.selection !== undefined
         ? output

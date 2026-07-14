@@ -47,23 +47,19 @@ const createPeers = (ids: readonly ClientId[]): Peer[] =>
   });
 
 const wrapFirstBlock = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.wrap({ children: [], type: 'quote' }, { at: [0] });
-  });
+  peer.editor.update.nodes.wrap({ children: [], type: 'quote' }, { at: [0] });
 };
 
 const unwrapFirstBlock = (peer: Peer): void => {
-  peer.editor.update((tx) => {
-    tx.nodes.unwrap({ at: [0] });
-  });
+  peer.editor.update.nodes.unwrap({ at: [0] });
 };
 
 const appendRemoteText = (peer: Peer): void => {
   const [type] = getPeerTopLevelTypes(peer);
   const textPath = type === 'quote' ? [0, 0, 0] : [0, 0];
 
-  peer.editor.update((tx) => {
-    tx.text.insert('!', { at: { path: textPath, offset: 'alpha'.length } });
+  peer.editor.update.text.insert('!', {
+    at: { path: textPath, offset: 'alpha'.length },
   });
 };
 

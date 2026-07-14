@@ -123,8 +123,7 @@ const deleteYjsTextRange = (
         root,
         point.parent,
         childIndex,
-        child,
-        readVisibleChildren
+        child
       );
     }
 
@@ -146,8 +145,7 @@ const removeRedundantEmptyYjsText = (
   root: Y.XmlElement,
   parent: Y.XmlElement,
   index: number,
-  text: Y.XmlText,
-  readVisibleChildren: YjsVisibleChildrenReader
+  text: Y.XmlText
 ): boolean => {
   if (!isEmptyYjsText(text) || hasYjsAttributes(text)) {
     return false;
@@ -248,6 +246,41 @@ const traceableFallback = (
   mode: 'traceable-fallback',
   operationType: operation.type,
 });
+
+export const willYjsOperationRequireImport = (
+  root: Y.XmlElement,
+  operation: Operation
+): boolean => {
+  if (operation.type !== 'merge_node') {
+    return false;
+  }
+
+  try {
+    const { index, parent } = getYjsParent(root, operation.path);
+
+    if (index === 0) {
+      return false;
+    }
+
+    const readVisibleChildren = createYjsVisibleChildrenReader(root);
+    const children = readVisibleChildren(parent);
+    const previous = children[index - 1];
+    const target = children[index];
+
+    return (
+      previous instanceof Y.XmlElement &&
+      target instanceof Y.XmlElement &&
+      !canMergeYjsElements(
+        previous,
+        target,
+        readVisibleChildren(previous),
+        readVisibleChildren(target)
+      )
+    );
+  } catch {
+    return false;
+  }
+};
 
 const getYjsElementOperationTarget = (
   root: Y.XmlElement,
@@ -658,7 +691,7 @@ export const applyPliteOperationToYjs = (
         getYjsLength(newParent) === 0 &&
         (firstNewParentChild === undefined || removedEmptyNewParentChild)
       ) {
-        setVirtualYjsMove(root, target, newParent);
+        setVirtualYjsMove(target, newParent);
         removeSourceVirtualPlaceholder();
 
         return traceableFallback(operation, 'virtual-move-ref');
