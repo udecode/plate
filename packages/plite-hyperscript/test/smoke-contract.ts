@@ -1,4 +1,4 @@
-import { createEditor as createBaseEditor } from '@platejs/plite';
+import { createEditor as createBaseEditor, type Element } from '@platejs/plite';
 import {
   getChildren as editorGetChildren,
   getSelection as editorGetSelection,
@@ -6,6 +6,7 @@ import {
 
 import {
   createEditor,
+  createEditorFixture,
   createHyperscript,
   createText,
   jsx as pliteJsx,
@@ -27,6 +28,14 @@ describe('plite-hyperscript smoke contract', () => {
     });
 
     const element = h('paragraph', {}, 'hello');
+    const typedElement: Element = element;
+    const customTag: Parameters<typeof h>[0] = 'paragraph';
+    // @ts-expect-error Custom factories reject undeclared tags.
+    const invalidTag: Parameters<typeof h>[0] = 'heading';
+
+    void customTag;
+    void invalidTag;
+    void typedElement;
 
     expect(element).toEqual({
       type: 'paragraph',
@@ -36,6 +45,38 @@ describe('plite-hyperscript smoke contract', () => {
 
   it('creates empty text through the exported text creator', () => {
     expect(createText('text', {}, [])).toEqual({ text: '' });
+  });
+
+  it('creates a plain fixture without editor normalization', () => {
+    const h = createHyperscript({
+      creators: { editor: createEditorFixture },
+      elements: {
+        date: { type: 'date' },
+        paragraph: { type: 'paragraph' },
+      },
+    });
+    const fixture = h(
+      'editor',
+      {},
+      h('paragraph', {}, h('date'), h('cursor'), h('text', {}, 'test'))
+    );
+
+    expect(fixture).toEqual({
+      children: [
+        {
+          children: [
+            { children: [], type: 'date' },
+            { text: '' },
+            { text: 'test' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+      selection: {
+        anchor: { offset: 0, path: [0, 1] },
+        focus: { offset: 0, path: [0, 1] },
+      },
+    });
   });
 
   it('creates an empty editor through the exported editor creator', () => {

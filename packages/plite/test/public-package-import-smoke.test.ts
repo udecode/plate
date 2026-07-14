@@ -283,6 +283,7 @@ const exactPublicPackageRuntimeExportExpectations = {
   '@platejs/plite-history': ['History', 'history'],
   '@platejs/plite-hyperscript': [
     'createEditor',
+    'createEditorFixture',
     'createHyperscript',
     'createText',
     'jsx',

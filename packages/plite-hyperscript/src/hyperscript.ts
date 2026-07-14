@@ -44,24 +44,30 @@ type HyperscriptCreators<T = any> = Record<
 
 type HyperscriptShorthands = Record<string, Record<string, any>>;
 
+type HyperscriptElementCreators<TElements extends HyperscriptShorthands> = {
+  [TKey in keyof TElements]: HyperscriptCreators<Element>[string];
+};
+
 /**
  * Create a Plite hyperscript factory with optional custom creators and element
  * shorthands.
  */
 
-const createHyperscript = (
-  options: {
-    creators?: HyperscriptCreators;
-    elements?: HyperscriptShorthands;
-  } = {}
-) => {
-  const { elements = {} } = options;
-  const elementCreators = normalizeElements(elements);
-  const creators = {
-    ...DEFAULT_CREATORS,
-    ...elementCreators,
-    ...options.creators,
-  };
+const createHyperscript = <
+  const TCreators extends HyperscriptCreators = {},
+  const TElements extends HyperscriptShorthands = {},
+>(options?: {
+  creators?: TCreators;
+  elements?: TElements;
+}) => {
+  const elementCreators = normalizeElements(options?.elements);
+  // biome-ignore lint/style/useObjectSpread: Object.assign preserves generic custom creator keys in the inferred factory type.
+  const creators = Object.assign(
+    {},
+    DEFAULT_CREATORS,
+    elementCreators,
+    options?.creators
+  );
 
   const jsx = createFactory(creators);
   return jsx;
@@ -105,8 +111,14 @@ const createFactory = <T extends HyperscriptCreators>(creators: T) => {
  * Normalize a dictionary of element shorthands into creator functions.
  */
 
-const normalizeElements = (elements: HyperscriptShorthands) => {
+const normalizeElements = <TElements extends HyperscriptShorthands>(
+  elements: TElements | undefined
+): HyperscriptElementCreators<TElements> => {
   const creators: HyperscriptCreators<Element> = {};
+
+  if (!elements) {
+    return creators as HyperscriptElementCreators<TElements>;
+  }
 
   for (const tagName in elements) {
     if (!Object.hasOwn(elements, tagName)) continue;
@@ -119,13 +131,13 @@ const normalizeElements = (elements: HyperscriptShorthands) => {
     }
 
     creators[tagName] = (
-      tagName: string,
+      _tagName: string,
       attributes: { [key: string]: any },
       children: any[]
     ) => createElement('element', { ...props, ...attributes }, children);
   }
 
-  return creators;
+  return creators as HyperscriptElementCreators<TElements>;
 };
 
 export {

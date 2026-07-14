@@ -40,7 +40,8 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/plite": "workspace:^"
+    "@platejs/plite": "workspace:^",
+    "@platejs/plite-hyperscript": "workspace:^"
   },
   "publishConfig": {
     "access": "public"

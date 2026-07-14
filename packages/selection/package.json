@@ -51,6 +51,7 @@
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
+    "@platejs/test-utils": "workspace:^",
     "platejs": "workspace:^"
   },
   "peerDependencies": {

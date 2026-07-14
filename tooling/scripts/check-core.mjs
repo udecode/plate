@@ -42,6 +42,7 @@ const reviewedPackageSlugs = [
   'math',
   'media',
   'mention',
+  'plate',
   'resizable',
   'selection',
   'slash-command',
@@ -49,6 +50,7 @@ const reviewedPackageSlugs = [
   'tabbable',
   'table',
   'tag',
+  'test-utils',
   'toc',
   'toggle',
 ];

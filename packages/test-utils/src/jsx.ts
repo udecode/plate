@@ -1,100 +1,125 @@
 import {
+  type Descendant,
+  type Element,
+  type Selection,
+  type Text,
+  createEditor as createPliteEditor,
+} from '@platejs/plite';
+import {
+  createEditorFixture,
   createHyperscript,
+  createText,
+  type HyperscriptCreators,
   type HyperscriptShorthands,
-} from './internals/hyperscript';
-import { createText } from './internals/creators';
+  jsx as pliteJsx,
+} from '@platejs/plite-hyperscript';
 
 export {
   createEditor,
-  createEditorFromFixture,
-  type TestEditor,
-  type TestEditorFixture,
-} from './internals/creators';
-export { createHyperscript };
+  createHyperscript,
+} from '@platejs/plite-hyperscript';
+
+export type TestEditorFixture = {
+  children: Element[];
+  selection?: Selection;
+};
+
+export type TestEditor = TestEditorFixture;
+
+export const createEditorFromFixture = (fixture: TestEditorFixture) =>
+  createPliteEditor({
+    initialSelection: fixture.selection,
+    ...(fixture.children.length > 0 ? { initialValue: fixture.children } : {}),
+  });
+
+type HyperscriptIntrinsicAttributes = {
+  [key: string]: unknown;
+  children?: unknown;
+};
 
 declare global {
   // biome-ignore lint/style/noNamespace: Required for TypeScript JSX typing
   namespace JSX {
     interface IntrinsicElements {
-      anchor: any;
-      cursor: any;
-      editor: any;
-      element: any;
-      focus: any;
-      fragment: any;
-      ha: any;
-      haudio: any;
-      hblockquote: any;
-      hcallout: any;
-      hcodeblock: any;
-      hcodedrawing: any;
-      hcodeline: any;
-      hcolumn: any;
-      hcolumngroup: any;
-      hdate: any;
-      hdefault: any;
-      hequation: any;
-      hexcalidraw: any;
-      hfile: any;
-      hfootnoteDefinition: any;
-      hfootnoteReference: any;
-      hh1: any;
-      hh2: any;
-      hh3: any;
-      hh4: any;
-      hh5: any;
-      hh6: any;
-      himg: any;
-      hinlineequation: any;
-      hli: any;
-      hlic: any;
-      hmediaembed: any;
-      hmention: any;
-      hmentioninput: any;
-      hnli: any;
-      hol: any;
-      hp: any;
-      hplaceholder: any;
-      htable: any;
-      htd: any;
+      anchor: HyperscriptIntrinsicAttributes;
+      cursor: HyperscriptIntrinsicAttributes;
+      editor: HyperscriptIntrinsicAttributes;
+      element: HyperscriptIntrinsicAttributes;
+      focus: HyperscriptIntrinsicAttributes;
+      fragment: HyperscriptIntrinsicAttributes;
+      ha: HyperscriptIntrinsicAttributes;
+      haudio: HyperscriptIntrinsicAttributes;
+      hblockquote: HyperscriptIntrinsicAttributes;
+      hcallout: HyperscriptIntrinsicAttributes;
+      hcodeblock: HyperscriptIntrinsicAttributes;
+      hcodedrawing: HyperscriptIntrinsicAttributes;
+      hcodeline: HyperscriptIntrinsicAttributes;
+      hcolumn: HyperscriptIntrinsicAttributes;
+      hcolumngroup: HyperscriptIntrinsicAttributes;
+      hdate: HyperscriptIntrinsicAttributes;
+      hdefault: HyperscriptIntrinsicAttributes;
+      hequation: HyperscriptIntrinsicAttributes;
+      hexcalidraw: HyperscriptIntrinsicAttributes;
+      hfile: HyperscriptIntrinsicAttributes;
+      hfootnoteDefinition: HyperscriptIntrinsicAttributes;
+      hfootnoteReference: HyperscriptIntrinsicAttributes;
+      hh1: HyperscriptIntrinsicAttributes;
+      hh2: HyperscriptIntrinsicAttributes;
+      hh3: HyperscriptIntrinsicAttributes;
+      hh4: HyperscriptIntrinsicAttributes;
+      hh5: HyperscriptIntrinsicAttributes;
+      hh6: HyperscriptIntrinsicAttributes;
+      himg: HyperscriptIntrinsicAttributes;
+      hinlineequation: HyperscriptIntrinsicAttributes;
+      hli: HyperscriptIntrinsicAttributes;
+      hlic: HyperscriptIntrinsicAttributes;
+      hmediaembed: HyperscriptIntrinsicAttributes;
+      hmention: HyperscriptIntrinsicAttributes;
+      hmentioninput: HyperscriptIntrinsicAttributes;
+      hnli: HyperscriptIntrinsicAttributes;
+      hol: HyperscriptIntrinsicAttributes;
+      hp: HyperscriptIntrinsicAttributes;
+      hplaceholder: HyperscriptIntrinsicAttributes;
+      htable: HyperscriptIntrinsicAttributes;
+      htd: HyperscriptIntrinsicAttributes;
       htext: {
-        [key: string]: any;
+        [key: string]: unknown;
         bold?: boolean;
-        children?: any;
+        children?: unknown;
         code?: boolean;
         italic?: boolean;
         underline?: boolean;
       };
-      hth: any;
-      htoc: any;
-      htodoli: any;
-      htoggle: any;
-      htr: any;
-      hul: any;
-      hvideo: any;
-      selection: any;
-      text: any;
+      hth: HyperscriptIntrinsicAttributes;
+      htoc: HyperscriptIntrinsicAttributes;
+      htodoli: HyperscriptIntrinsicAttributes;
+      htoggle: HyperscriptIntrinsicAttributes;
+      htr: HyperscriptIntrinsicAttributes;
+      hul: HyperscriptIntrinsicAttributes;
+      hvideo: HyperscriptIntrinsicAttributes;
+      selection: HyperscriptIntrinsicAttributes;
+      text: HyperscriptIntrinsicAttributes;
     }
   }
 }
 
-export const voidChildren = [{ text: '' }];
+export const voidChildren: Text[] = [{ text: '' }];
 
-export const elements: HyperscriptShorthands = {
+export const elements = {
   ha: { type: 'a' },
-  haudio: { children: voidChildren, type: 'audio' },
+  haudio: { type: 'audio' },
   hblockquote: { type: 'blockquote' },
   hcallout: { type: 'callout' },
   hcodeblock: { type: 'code_block' },
-  hcodedrawing: { children: voidChildren, type: 'code_drawing' },
+  hcodedrawing: { type: 'code_drawing' },
   hcodeline: { type: 'code_line' },
   hcolumn: { type: 'column' },
   hcolumngroup: { type: 'column_group' },
-  hdate: { children: voidChildren, type: 'date' },
+  hdate: { type: 'date' },
   hdefault: { type: 'p' },
   hequation: { type: 'equation' },
   hexcalidraw: { type: 'excalidraw' },
-  hfile: { children: voidChildren, type: 'file' },
+  hfile: { type: 'file' },
   hfootnoteDefinition: { type: 'footnoteDefinition' },
   hfootnoteReference: { type: 'footnoteReference' },
   hh1: { type: 'h1' },
@@ -103,17 +128,17 @@ export const elements: HyperscriptShorthands = {
   hh4: { type: 'h4' },
   hh5: { type: 'h5' },
   hh6: { type: 'h6' },
-  himg: { children: voidChildren, type: 'img' },
+  himg: { type: 'img' },
   hinlineequation: { type: 'inline_equation' },
   hli: { type: 'li' },
   hlic: { type: 'lic' },
-  hmediaembed: { children: voidChildren, type: 'media_embed' },
-  hmention: { children: voidChildren, type: 'mention' },
-  hmentioninput: { children: voidChildren, type: 'mention_input' },
+  hmediaembed: { type: 'media_embed' },
+  hmention: { type: 'mention' },
+  hmentioninput: { type: 'mention_input' },
   hnli: { type: 'nli' },
   hol: { type: 'ol' },
   hp: { type: 'p' },
-  hplaceholder: { children: voidChildren, type: 'placeholder' },
+  hplaceholder: { type: 'placeholder' },
   htable: { type: 'table' },
   htd: { type: 'td' },
   hth: { type: 'th' },
@@ -122,32 +147,76 @@ export const elements: HyperscriptShorthands = {
   htoggle: { type: 'toggle' },
   htr: { type: 'tr' },
   hul: { type: 'ul' },
-  hvideo: { children: voidChildren, type: 'video' },
-};
+  hvideo: { type: 'video' },
+} as const satisfies HyperscriptShorthands;
 
-type PlateTestHyperscript = (
-  tagName: string,
+const createVoidElement =
+  (type: string) =>
+  (
+    _tagName: string,
+    attributes: Record<string, unknown>,
+    children: unknown[]
+  ): Element => ({
+    type,
+    ...attributes,
+    children:
+      children.length > 0
+        ? pliteJsx('fragment', {}, ...children)
+        : voidChildren.map((child) => ({ ...child })),
+  });
+
+const voidElementCreators = {
+  haudio: createVoidElement('audio'),
+  hcodedrawing: createVoidElement('code_drawing'),
+  hdate: createVoidElement('date'),
+  hfile: createVoidElement('file'),
+  himg: createVoidElement('img'),
+  hmediaembed: createVoidElement('media_embed'),
+  hmention: createVoidElement('mention'),
+  hmentioninput: createVoidElement('mention_input'),
+  hplaceholder: createVoidElement('placeholder'),
+  hvideo: createVoidElement('video'),
+} satisfies HyperscriptCreators<Element>;
+
+const plateHyperscript = createHyperscript({
+  creators: {
+    ...voidElementCreators,
+    editor: createEditorFixture,
+    htext: createText,
+  },
+  elements,
+});
+
+type PlateElementTag = keyof typeof elements;
+type PlateHyperscriptTag = Parameters<typeof plateHyperscript>[0];
+
+export function jsx(
+  tagName: 'editor',
   attributes?: object | null,
-  ...children: any[]
-) => any;
+  ...children: unknown[]
+): TestEditor;
+export function jsx(
+  tagName: 'fragment',
+  attributes?: object | null,
+  ...children: unknown[]
+): Descendant[];
+export function jsx(
+  tagName: 'htext' | 'text',
+  attributes?: object | null,
+  ...children: unknown[]
+): Text;
+export function jsx(
+  tagName: PlateElementTag,
+  attributes?: object | null,
+  ...children: unknown[]
+): Element;
+export function jsx(
+  tagName: PlateHyperscriptTag,
+  attributes?: object | null,
+  ...children: unknown[]
+): unknown {
+  return plateHyperscript(tagName, attributes ?? undefined, ...children);
+}
 
-export const jsx = createHyperscript({
-  creators: {
-    htext: createText,
-  },
-  elements,
-}) as PlateTestHyperscript;
-
-export const jsxt = createHyperscript({
-  creators: {
-    htext: createText,
-  },
-  elements,
-}) as PlateTestHyperscript;
-
-export const hjsx = createHyperscript({
-  creators: {
-    htext: createText,
-  },
-  elements,
-}) as PlateTestHyperscript;
+export const jsxt = jsx;
+export const hjsx = jsx;

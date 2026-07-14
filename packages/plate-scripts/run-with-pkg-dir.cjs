@@ -7,7 +7,9 @@
 const { spawnSync } = require('node:child_process');
 const path = require('node:path');
 
-const [command, ..._args] = process.argv.slice(2);
+const [command, ...rawCommandArgs] = process.argv.slice(2);
+const commandArgs =
+  rawCommandArgs[0] === '--' ? rawCommandArgs.slice(1) : rawCommandArgs;
 if (!command) {
   console.error('Usage: plate-pkg <command> [args...]');
   process.exit(1);
@@ -49,7 +51,7 @@ const runTsdown = (watch = false) => {
   );
   const args = ['--config', tsdownConfig, '--log-level', 'warn'];
   if (watch) args.push('--watch');
-  const result = run(tsdownBin, args);
+  const result = run(tsdownBin, [...args, ...commandArgs]);
 
   if (!watch && result.status === 0) {
     const buildTsconfig = path.join(INIT_CWD, 'tsconfig.build.json');
@@ -70,19 +72,20 @@ switch (command) {
     result = runTsdown(true);
     break;
   case 'p:clean':
-    result = runPnpm('rimraf', ['dist']);
+    result = runPnpm('rimraf', ['dist', ...commandArgs]);
     break;
   case 'p:lint':
-    result = runPnpm('biome', ['check', INIT_CWD]);
+    result = runPnpm('biome', ['check', INIT_CWD, ...commandArgs]);
     break;
   case 'p:lint:fix':
-    result = runPnpm('biome', ['check', INIT_CWD, '--fix']);
+    result = runPnpm('biome', ['check', INIT_CWD, '--fix', ...commandArgs]);
     break;
   case 'p:test': {
     const bunTestArgs = [
       'test',
       '--preload',
       path.join(PROJECT_CWD, 'tooling/config/bunTestSetup.ts'),
+      ...commandArgs,
     ];
     result = runPnpm('bun', bunTestArgs);
     break;
@@ -93,18 +96,27 @@ switch (command) {
       '--watch',
       '--preload',
       path.join(PROJECT_CWD, 'tooling/config/bunTestSetup.ts'),
+      ...commandArgs,
     ];
     result = runPnpm('bun', bunTestArgs);
     break;
   }
   case 'p:typecheck':
-    result = runPnpm('tsc', ['-p', path.join(INIT_CWD, 'tsconfig.json')]);
+    result = runPnpm('tsc', [
+      '-p',
+      path.join(INIT_CWD, 'tsconfig.json'),
+      ...commandArgs,
+    ]);
     break;
   case 'p:brl': {
     const sh = process.platform === 'win32' ? 'sh' : 'sh';
-    result = run(sh, [path.join(PROJECT_CWD, 'tooling/scripts/brl.sh')], {
-      env: { ...process.env, INIT_CWD, PROJECT_CWD },
-    });
+    result = run(
+      sh,
+      [path.join(PROJECT_CWD, 'tooling/scripts/brl.sh'), ...commandArgs],
+      {
+        env: { ...process.env, INIT_CWD, PROJECT_CWD },
+      }
+    );
     break;
   }
   default:

@@ -51,6 +51,7 @@
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
+    "@platejs/test-utils": "workspace:^",
     "mutative": "^1.1.0",
     "platejs": "workspace:^"
   },

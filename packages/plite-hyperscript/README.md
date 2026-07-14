@@ -21,8 +21,7 @@ const editor = (
 
 The built-in tags create normal Plite objects:
 
-- `<editor>` creates an editor-like fixture with `children`, `selection`, and
-  `marks`.
+- `<editor>` creates a Plite editor.
 - `<fragment>` creates a `Descendant[]`.
 - `<element>` creates an element with resolved `children`.
 - `<text>` creates one text node.
@@ -44,9 +43,10 @@ const h = createHyperscript({
 const paragraph = h('paragraph', {}, 'hello')
 ```
 
-`createEditor` and `createText` are low-level creators for custom factories and
-fixture helpers. `HyperscriptCreators` and `HyperscriptShorthands` are
-TypeScript helper types for custom factories.
+`createEditor` and `createText` are low-level creators for custom factories.
+Use `createEditorFixture` as the `editor` creator when a test needs a plain
+`HyperscriptEditorFixture` without editor normalization. `HyperscriptCreators`
+and `HyperscriptShorthands` are TypeScript helper types for custom factories.
 
 Keep hyperscript in tests and fixtures. Runtime editor code should use normal
 Plite node values.

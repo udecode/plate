@@ -10,6 +10,7 @@ const packageReadmePath = fileURLToPath(
 );
 const expectedPliteHyperscriptRuntimeRootExports = [
   'createEditor',
+  'createEditorFixture',
   'createHyperscript',
   'createText',
   'jsx',
@@ -30,6 +31,7 @@ describe('plite-hyperscript package README contract', () => {
       'jsx',
       'createHyperscript',
       'createEditor',
+      'createEditorFixture',
       'createText',
       'HyperscriptCreators',
       'HyperscriptShorthands',

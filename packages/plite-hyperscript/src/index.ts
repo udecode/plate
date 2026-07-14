@@ -6,7 +6,12 @@ import { createHyperscript } from './hyperscript';
 
 const jsx = createHyperscript();
 
-export { createEditor, createText } from './creators';
+export {
+  createEditor,
+  createEditorFixture,
+  createText,
+} from './creators';
+export type { HyperscriptEditorFixture } from './creators';
 export type { HyperscriptCreators, HyperscriptShorthands } from './hyperscript';
 export { createHyperscript } from './hyperscript';
 export { jsx };

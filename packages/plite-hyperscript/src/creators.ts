@@ -7,6 +7,7 @@ import {
   NodeApi,
   type Range,
   RangeApi,
+  type Selection,
   type Text,
   TextApi,
 } from '@platejs/plite';
@@ -20,6 +21,11 @@ import {
   getFocusOffset,
   Token,
 } from './tokens';
+
+export type HyperscriptEditorFixture = {
+  children: Descendant[];
+  selection: Selection;
+};
 
 /**
  * Resolve the descendants of a node by normalizing the children that can be
@@ -92,9 +98,9 @@ const resolveDescendants = (children: any[]): Descendant[] => {
  */
 
 export function createAnchor(
-  tagName: string,
+  _tagName: string,
   attributes: { [key: string]: any },
-  children: any[]
+  _children: any[]
 ): AnchorToken {
   return new AnchorToken(attributes);
 }
@@ -104,9 +110,9 @@ export function createAnchor(
  */
 
 export function createCursor(
-  tagName: string,
+  _tagName: string,
   attributes: { [key: string]: any },
-  children: any[]
+  _children: any[]
 ): Token[] {
   return [new AnchorToken(attributes), new FocusToken(attributes)];
 }
@@ -116,7 +122,7 @@ export function createCursor(
  */
 
 export function createElement(
-  tagName: string,
+  _tagName: string,
   attributes: { [key: string]: any },
   children: any[]
 ): Element {
@@ -128,9 +134,9 @@ export function createElement(
  */
 
 export function createFocus(
-  tagName: string,
+  _tagName: string,
   attributes: { [key: string]: any },
-  children: any[]
+  _children: any[]
 ): FocusToken {
   return new FocusToken(attributes);
 }
@@ -140,8 +146,8 @@ export function createFocus(
  */
 
 export function createFragment(
-  tagName: string,
-  attributes: { [key: string]: any },
+  _tagName: string,
+  _attributes: { [key: string]: any },
   children: any[]
 ): Descendant[] {
   return resolveDescendants(children);
@@ -152,7 +158,7 @@ export function createFragment(
  */
 
 export function createSelection(
-  tagName: string,
+  _tagName: string,
   attributes: { [key: string]: any },
   children: any[]
 ): Range {
@@ -189,7 +195,7 @@ export function createSelection(
  */
 
 export function createText(
-  tagName: string,
+  _tagName: string,
   attributes: { [key: string]: any },
   children: any[]
 ): Text {
@@ -220,73 +226,101 @@ export function createText(
 }
 
 /**
+ * Resolve a top-level editor fixture without running editor normalization.
+ */
+
+const resolveEditorFixture = (children: any[]): HyperscriptEditorFixture => {
+  const otherChildren: any[] = [];
+  let selectionChild: Range | undefined;
+
+  for (const child of children) {
+    if (RangeApi.isRange(child)) {
+      selectionChild = child;
+    } else {
+      otherChildren.push(child);
+    }
+  }
+
+  const descendants = resolveDescendants(otherChildren);
+
+  const selection: Partial<Range> = {};
+  const root: Element = { children: descendants, type: 'root' };
+
+  for (const [node, path] of NodeApi.texts(root)) {
+    const anchor = getAnchorOffset(node);
+    const focus = getFocusOffset(node);
+
+    if (anchor != null) {
+      const [offset] = anchor;
+      selection.anchor = { path, offset };
+    }
+
+    if (focus != null) {
+      const [offset] = focus;
+      selection.focus = { path, offset };
+    }
+  }
+
+  if (selection.anchor && !selection.focus) {
+    throw new Error(
+      'Plite hyperscript ranges must have both `<anchor />` and `<focus />` defined if one is defined, but you only defined `<anchor />`. For collapsed selections, use `<cursor />` instead.'
+    );
+  }
+
+  if (!selection.anchor && selection.focus) {
+    throw new Error(
+      'Plite hyperscript ranges must have both `<anchor />` and `<focus />` defined if one is defined, but you only defined `<focus />`. For collapsed selections, use `<cursor />` instead.'
+    );
+  }
+
+  return {
+    children: descendants,
+    selection:
+      selectionChild ?? (RangeApi.isRange(selection) ? selection : null),
+  };
+};
+
+/**
+ * Create a plain editor fixture for a custom hyperscript factory.
+ */
+
+export function createEditorFixture(
+  _tagName: string,
+  attributes: { [key: string]: any },
+  children: any[]
+): HyperscriptEditorFixture {
+  return {
+    ...attributes,
+    ...resolveEditorFixture(children),
+  };
+}
+
+/**
  * Create a top-level `Editor` object.
  */
 
 export const createEditor =
   (makeEditor: () => Editor) =>
   (
-    tagName: string,
+    _tagName: string,
     attributes: { [key: string]: any },
     children: any[]
   ): Editor => {
-    const otherChildren: any[] = [];
-    let selectionChild: Range | undefined;
+    const fixture = resolveEditorFixture(children);
 
-    for (const child of children) {
-      if (RangeApi.isRange(child)) {
-        selectionChild = child;
-      } else {
-        otherChildren.push(child);
-      }
-    }
-
-    const descendants = resolveDescendants(otherChildren);
-    const selection: Partial<Range> = {};
     const editor = makeEditor();
     Object.assign(editor, attributes);
 
-    // Search the document's texts to see if any of them have tokens associated
-    // that need incorporated into the selection.
-    for (const [node, path] of NodeApi.texts({
-      children: descendants,
-    } as Node)) {
-      const anchor = getAnchorOffset(node);
-      const focus = getFocusOffset(node);
-
-      if (anchor != null) {
-        const [offset] = anchor;
-        selection.anchor = { path, offset };
-      }
-
-      if (focus != null) {
-        const [offset] = focus;
-        selection.focus = { path, offset };
-      }
-    }
-
-    if (selection.anchor && !selection.focus) {
-      throw new Error(
-        'Plite hyperscript ranges must have both `<anchor />` and `<focus />` defined if one is defined, but you only defined `<anchor />`. For collapsed selections, use `<cursor />` instead.'
-      );
-    }
-
-    if (!selection.anchor && selection.focus) {
-      throw new Error(
-        'Plite hyperscript ranges must have both `<anchor />` and `<focus />` defined if one is defined, but you only defined `<focus />`. For collapsed selections, use `<cursor />` instead.'
-      );
-    }
-
-    if (selectionChild != null || RangeApi.isRange(selection)) {
+    if (fixture.selection) {
       editor.update((tx) => {
         tx.value.replace({
-          children: descendants,
-          selection: selectionChild ?? (selection as Range),
+          children: fixture.children,
+          selection: fixture.selection,
           marks: null,
         });
       });
     } else {
-      setEditorChildren(editor, descendants as Element[]);
+      setEditorChildren(editor, fixture.children);
     }
 
     return editor;
