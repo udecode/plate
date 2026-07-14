@@ -1,10 +1,12 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { ListTransaction } from '../BaseListPlugin';
 
 import { type MoveListItemsOptions, moveListItems } from './moveListItems';
 
 export type UnindentListItemsOptions = Omit<MoveListItemsOptions, 'increase'>;
 
 export const unindentListItems = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: ListTransaction,
   options: UnindentListItemsOptions = {}
-) => moveListItems(editor, { ...options, increase: false });
+) => moveListItems(editor, tx, { ...options, increase: false });

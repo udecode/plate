@@ -617,6 +617,9 @@ const registerExtensionSlots = <TEditor extends Editor>(
           slots.operations?.apply?.({
             ...context,
             next,
+            tx: getActiveUpdateView<ValueOf<TEditor>>(
+              editor as Editor<ValueOf<TEditor>>
+            ),
           });
         })
       );

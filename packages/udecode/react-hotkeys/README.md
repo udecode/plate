@@ -4,7 +4,7 @@ This is a fork of the original [react-hotkeys-hook@5.0.0-1](https://github.com/J
 
 ## Documentation
 
-Visit https://platejs.org/docs/api/react-utils to view the documentation.
+Visit https://platejs.org/docs/plugin-shortcuts for Plate shortcut usage.
 
 ## License
 

@@ -117,6 +117,12 @@ export type EditorReplaceChildrenOptions = Omit<
   at: Element | Path;
 };
 
+/** Options for replacing exactly one node with zero or more nodes. */
+export type EditorReplaceNodeOptions = {
+  at: Descendant | Path;
+  select?: boolean;
+};
+
 type TargetDescendant<T extends Node> = Extract<T, Descendant>;
 
 type WithNodeTarget<
@@ -479,6 +485,10 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       hanging?: boolean;
       voids?: boolean;
     }) => void;
+    replace: <T extends ElementOrTextIn<V>>(
+      nodes: T | T[],
+      options: EditorReplaceNodeOptions
+    ) => void;
     replaceChildren: <T extends ElementOrTextIn<V>>(
       children: T[],
       options: EditorReplaceChildrenOptions
@@ -555,6 +565,11 @@ export type EditorBlockResetOptions<T extends Element = Element> =
 export type EditorTransactionBlocksApi<V extends Value = Value> = {
   duplicate: (
     options?: WithNodeTarget<BlockDuplicateOptions<ElementIn<V>>, ElementIn<V>>
+  ) => void;
+  /** Insert block nodes after the block containing the target. */
+  insertAfter: <T extends ElementIn<V>>(
+    nodes: T | T[],
+    options?: WithNodeTarget<NodeInsertNodesOptions<T>>
   ) => void;
   lift: EditorTransactionNodesApi<V>['lift'];
   reset: <T extends ElementIn<V>>(
@@ -866,6 +881,7 @@ export type EditorCoreUpdateMethods<V extends Value = Value> = {
       | 'merge'
       | 'move'
       | 'remove'
+      | 'replace'
       | 'replaceChildren'
       | 'split'
       | 'toggle'
@@ -1652,6 +1668,7 @@ export type EditorOperationApplyContext<
   TEditor extends BaseEditor<any> = Editor,
 > = EditorOperationContext<TEditor> & {
   next: EditorOperationNext<TEditor>;
+  tx: EditorUpdateTransaction<ValueOf<TEditor>>;
 };
 
 export type EditorOperationApplyHandler<
@@ -1692,7 +1709,14 @@ export type EditorNormalizerNext<TArgs extends object> = (
 
 export type EditorNormalizerTransaction<V extends Value = Value> = Pick<
   EditorCoreUpdateTransaction<V>,
-  'break' | 'fragment' | 'marks' | 'nodes' | 'selection' | 'text'
+  | 'blocks'
+  | 'break'
+  | 'fragment'
+  | 'marks'
+  | 'nodes'
+  | 'refs'
+  | 'selection'
+  | 'text'
 > & {
   value: EditorStateValueApi<V>;
 };

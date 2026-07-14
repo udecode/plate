@@ -1,8 +1,8 @@
 import {
-  type OverrideEditor,
+  type ExtendPlateEditorExtension,
   getInjectedPlugins,
   pipeInsertDataQuery,
-} from 'platejs';
+} from '@platejs/core';
 
 import type { ImageConfig } from './BaseImagePlugin';
 
@@ -12,16 +12,15 @@ import { insertImageFromFiles } from './transforms';
  * Allows for pasting images from clipboard. Not yet: dragging and dropping
  * images, selecting them through a file system dialog.
  */
-export const withImageUpload: OverrideEditor<ImageConfig> = ({
+export const withImageUpload: ExtendPlateEditorExtension<ImageConfig> = ({
   editor,
   getOptions,
   plugin,
-  tf: { insertData },
 }) => ({
-  transforms: {
-    insertData(dataTransfer) {
+  clipboard: {
+    insertData(dataTransfer, { next }) {
       if (getOptions().disableUploadInsert) {
-        return insertData(dataTransfer);
+        return next(dataTransfer);
       }
 
       const mimeType = 'text/plain';
@@ -38,13 +37,13 @@ export const withImageUpload: OverrideEditor<ImageConfig> = ({
             mimeType,
           })
         ) {
-          return insertData(dataTransfer);
+          return next(dataTransfer);
         }
 
         insertImageFromFiles(editor, files);
-      } else {
-        return insertData(dataTransfer);
+        return true;
       }
+      return next(dataTransfer);
     },
   },
 });

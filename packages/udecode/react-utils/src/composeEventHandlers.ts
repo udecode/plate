@@ -1,6 +1,6 @@
 /** @see https://github.com/radix-ui/primitives/blob/b324ec2d7ddf13a2a115cb5b11478e24d2f45b87/packages/core/primitive/src/primitive.tsx#L1 */
 export const composeEventHandlers =
-  <E>(
+  <E extends { defaultPrevented?: boolean }>(
     originalEventHandler?: (event: E) => void,
     ourEventHandler?: (event: E) => void,
     { checkForDefaultPrevented = true } = {}
@@ -8,10 +8,7 @@ export const composeEventHandlers =
   (event: E) => {
     originalEventHandler?.(event);
 
-    if (
-      checkForDefaultPrevented === false ||
-      !(event as unknown as Event).defaultPrevented
-    ) {
+    if (checkForDefaultPrevented === false || !event.defaultPrevented) {
       return ourEventHandler?.(event);
     }
   };

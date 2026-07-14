@@ -1,4 +1,5 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from 'platejs';
 
 import { getTodoListItemEntry } from './getTodoListItemEntry';
 
@@ -29,7 +30,7 @@ const createTodoEditor = ({
   at?: any;
   value?: any[];
 } = {}) =>
-  createSlateEditor({
+  createBaseEditor({
     selection: at,
     value,
   });

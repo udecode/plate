@@ -2,19 +2,12 @@
 
 import type React from 'react';
 
-import type { DebouncedFunc } from 'lodash';
-
 import { serializeMd } from '@platejs/markdown';
 import debounce from 'lodash/debounce.js';
-import {
-  type OmitFirst,
-  type PluginConfig,
-  type TElement,
-  bindFirst,
-  KEYS,
-  NodeApi,
-} from 'platejs';
-import { type PlateEditor, createTPlatePlugin } from 'platejs/react';
+import type { PluginConfig } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
+import { NodeApi } from '@platejs/plite';
+import { type PlateEditor, createPlatePlugin } from '@platejs/core/react';
 
 import type { CompleteOptions } from './utils/callCompletionApi';
 
@@ -23,7 +16,7 @@ import { acceptCopilot } from './transforms/acceptCopilot';
 import { acceptCopilotNextWord } from './transforms/acceptCopilotNextWord';
 import { type GetNextWord, getNextWord } from './utils/getNextWord';
 import { triggerCopilotSuggestion } from './utils/triggerCopilotSuggestion';
-import { withCopilot } from './withCopilot';
+import { copilotSuggestionField, withCopilot } from './withCopilot';
 
 export type CopilotPluginConfig = PluginConfig<
   'copilot',
@@ -60,7 +53,7 @@ export type CopilotPluginConfig = PluginConfig<
     /**
      * Get the prompt for AI completion.
      *
-     * @default serializeMdNodes(editor.api.block({ highest: true }))
+     * @default serializeMd(editor, { value: [editor.read.nodes.block({ mode: 'highest' })[0]] })
      */
     getPrompt?: (options: { editor: PlateEditor }) => string;
     /**
@@ -74,7 +67,9 @@ export type CopilotPluginConfig = PluginConfig<
   },
   {
     copilot: {
-      triggerSuggestion: OmitFirst<typeof triggerCopilotSuggestion>;
+      triggerSuggestion: () =>
+        | ReturnType<typeof triggerCopilotSuggestion>
+        | undefined;
       // Function to abort the current API request and reject the completion state.
       reject: () => false | undefined;
       setBlockSuggestion: (options: { text: string; id?: string }) => void;
@@ -84,8 +79,8 @@ export type CopilotPluginConfig = PluginConfig<
   },
   {
     copilot: {
-      accept: OmitFirst<typeof acceptCopilot>;
-      acceptNextWord: OmitFirst<typeof acceptCopilotNextWord>;
+      accept: () => false | undefined;
+      acceptNextWord: () => false | undefined;
     };
   },
   {
@@ -103,14 +98,14 @@ type CompletionState = {
   isLoading?: boolean;
 };
 
-export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
+export const CopilotPlugin = createPlatePlugin<CopilotPluginConfig>({
   key: KEYS.copilot,
   handlers: {
     onBlur: ({ api }) => {
-      api.copilot.reject();
+      api.reject();
     },
     onMouseDown: ({ api }) => {
-      api.copilot.reject();
+      api.reject();
     },
   },
   options: {
@@ -127,81 +122,66 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     suggestionText: null,
     autoTriggerQuery: ({ editor }) => {
       if (
-        editor.getOptions<CopilotPluginConfig>({ key: KEYS.copilot })
-          .suggestionText
+        editor
+          .plugin<CopilotPluginConfig>(KEYS.copilot)
+          .getOption('suggestionText')
       ) {
         return false;
       }
 
-      const isEmpty = editor.api.isEmpty(editor.selection, { block: true });
+      const blockAbove = editor.read.nodes.block();
 
-      if (isEmpty) return false;
-
-      const blockAbove = editor.api.block();
-
-      if (!blockAbove) return false;
+      if (!blockAbove || editor.read.nodes.isEmpty(blockAbove[0])) return false;
 
       const blockString = NodeApi.string(blockAbove[0]);
 
       return blockString.at(-1) === ' ';
     },
     getPrompt: ({ editor }) => {
-      const contextEntry = editor.api.block({ highest: true });
+      const contextEntry = editor.read.nodes.block({ mode: 'highest' });
 
       if (!contextEntry) return '';
 
       return serializeMd(editor, {
-        value: [contextEntry[0] as TElement],
+        value: [contextEntry[0]],
       });
     },
     triggerQuery: ({ editor }) => {
-      if (editor.api.isExpanded()) return false;
-
-      const isEnd = editor.api.isAt({ end: true });
-
-      if (!isEnd) return false;
+      if (editor.read.selection.isExpanded()) return false;
+      if (!editor.read.selection.isAtBlockEnd()) return false;
 
       return true;
     },
   },
 })
-  .overrideEditor(withCopilot)
+  .extendExtension(copilotSuggestionField)
+  .extendExtension(withCopilot)
   .extendSelectors<CopilotPluginConfig['selectors']>(({ getOptions }) => ({
     isSuggested: (id) => getOptions().suggestionNodeId === id,
   }))
-  .extendTransforms(({ editor }) => ({
-    accept: bindFirst(acceptCopilot, editor),
-    acceptNextWord: bindFirst(acceptCopilotNextWord, editor),
-  }))
   .extendApi<Omit<CopilotPluginConfig['api']['copilot'], 'reject'>>(
-    ({ api, editor, getOptions, setOption, setOptions }) => {
+    ({ editor, getOptions, setOption }) => {
       const debounceDelay = getOptions().debounceDelay;
-
-      let triggerSuggestion = bindFirst(triggerCopilotSuggestion, editor);
-
-      if (debounceDelay) {
-        triggerSuggestion = debounce(
-          bindFirst(triggerCopilotSuggestion, editor),
-          debounceDelay
-        ) as any;
-      }
+      const triggerImmediately = () => triggerCopilotSuggestion(editor);
+      const debouncedTrigger = debounceDelay
+        ? debounce(triggerImmediately, debounceDelay)
+        : null;
 
       return {
-        triggerSuggestion,
+        triggerSuggestion: debouncedTrigger ?? triggerImmediately,
         setBlockSuggestion: ({ id = getOptions().suggestionNodeId, text }) => {
-          if (!id) {
-            id = editor.api.block()![0].id as string;
-          }
+          const blockId = id ?? editor.read.nodes.block()?.[0].id;
 
-          setOptions({
-            suggestionNodeId: id,
-            suggestionText: text,
+          if (typeof blockId !== 'string') return;
+
+          editor.update.history.skip((tx) => {
+            tx.setField(copilotSuggestionField, { id: blockId, text });
           });
         },
         stop: () => {
           const { abortController } = getOptions();
 
-          (api.copilot.triggerSuggestion as DebouncedFunc<any>)?.cancel();
+          debouncedTrigger?.cancel();
 
           if (abortController) {
             abortController.abort();
@@ -211,18 +191,21 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
       };
     }
   )
-  .extendApi(({ api, getOptions, setOptions }) => ({
+  .extendApi(({ api, editor, getOptions, setOptions }) => ({
     reject: () => {
       if (!getOptions().suggestionText?.length) return false;
 
-      api.copilot.stop();
+      api.stop();
 
-      setOptions({
-        completion: null,
-        suggestionNodeId: null,
-        suggestionText: null,
+      editor.update.history.skip((tx) => {
+        tx.setField(copilotSuggestionField, { id: null, text: null });
       });
+      setOptions({ completion: null });
     },
+  }))
+  .extendTx(({ editor }) => (tx) => ({
+    accept: () => acceptCopilot(editor, tx),
+    acceptNextWord: () => acceptCopilotNextWord(editor, tx),
   }))
   .extend({
     render: {

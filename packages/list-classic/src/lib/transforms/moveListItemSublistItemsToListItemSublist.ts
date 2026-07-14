@@ -1,13 +1,14 @@
+import type { BaseEditor } from '@platejs/core';
 import {
+  type Element,
   type ElementEntry,
   type Path,
-  type SlateEditor,
-  type TElement,
-  NodeApi,
-  PathApi,
-} from 'platejs';
+  ElementApi,
+} from '@platejs/plite';
 
+import type { ListTransaction } from '../BaseListPlugin';
 import { getListTypes } from '../queries/getListTypes';
+import { moveListItemsToList } from './moveListItemsToList';
 
 export type MoveListItemSublistItemsToListItemSublistOptions = {
   /** The list item to merge. */
@@ -20,76 +21,61 @@ export type MoveListItemSublistItemsToListItemSublistOptions = {
   start?: boolean;
 };
 
-/**
- * Move fromListItem sublist list items to the end of `toListItem` sublist. If
- * there is no `toListItem` sublist, insert one.
- */
+/** Move one list item's nested items into another list item's nested list. */
 export const moveListItemSublistItemsToListItemSublist = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: ListTransaction,
   {
     fromListItem,
     start,
     toListItem,
   }: MoveListItemSublistItemsToListItemSublistOptions
 ) => {
-  const [, fromListItemPath] = fromListItem;
-  const [, toListItemPath] = toListItem;
-  let moved: boolean | void = false;
+  const fromSublistIndex = fromListItem[0].children.findIndex(
+    (node) =>
+      ElementApi.isElement(node) && getListTypes(editor).includes(node.type)
+  );
 
-  editor.tf.withoutNormalizing(() => {
-    const fromListItemSublist = editor.api.descendant<TElement>({
-      at: fromListItemPath,
-      match: {
-        type: getListTypes(editor),
-      },
-    });
+  if (fromSublistIndex === -1) return false;
 
-    if (!fromListItemSublist) return;
+  const fromListItemSublist = [
+    fromListItem[0].children[fromSublistIndex] as Element,
+    fromListItem[1].concat(fromSublistIndex),
+  ] satisfies ElementEntry;
 
-    const [, fromListItemSublistPath] = fromListItemSublist;
+  const toSublistIndex = toListItem[0].children.findIndex(
+    (node) =>
+      ElementApi.isElement(node) && getListTypes(editor).includes(node.type)
+  );
+  const toListItemSublist =
+    toSublistIndex === -1
+      ? undefined
+      : ([
+          toListItem[0].children[toSublistIndex] as Element,
+          toListItem[1].concat(toSublistIndex),
+        ] satisfies ElementEntry);
+  let to: Path;
 
-    const toListItemSublist = editor.api.descendant<TElement>({
-      at: toListItemPath,
-      match: {
-        type: getListTypes(editor),
-      },
-    });
+  if (!toListItemSublist) {
+    const fromList = editor.read.nodes.parent<Element>(fromListItem[1]);
 
-    let to: Path;
+    if (!fromList) return false;
 
-    if (!toListItemSublist) {
-      const fromList = editor.api.parent(fromListItemPath);
+    const toListItemSublistPath = toListItem[1].concat(1);
 
-      if (!fromList) return;
+    tx.nodes.insert(
+      { children: [], type: fromList[0].type },
+      { at: toListItemSublistPath }
+    );
+    to = toListItemSublistPath.concat(0);
+  } else {
+    to = toListItemSublist[1].concat(
+      start ? 0 : toListItemSublist[0].children.length
+    );
+  }
 
-      const [fromListNode] = fromList;
-
-      const fromListType = fromListNode.type;
-
-      const toListItemSublistPath = toListItemPath.concat([1]);
-
-      editor.tf.insertNodes(
-        { children: [], type: fromListType as string },
-        { at: toListItemSublistPath }
-      );
-
-      to = toListItemSublistPath.concat([0]);
-    } else if (start) {
-      const [, toListItemSublistPath] = toListItemSublist;
-      to = toListItemSublistPath.concat([0]);
-    } else {
-      to = PathApi.next(NodeApi.lastChild(editor, toListItemSublist[1])![1]);
-    }
-
-    moved = editor.tf.moveNodes({
-      at: fromListItemSublistPath,
-      children: true,
-      to,
-    });
-
-    // Remove the empty list
-    editor.tf.delete({ at: fromListItemSublistPath });
+  return moveListItemsToList(editor, tx, {
+    fromList: fromListItemSublist,
+    to,
   });
-
-  return moved;
 };

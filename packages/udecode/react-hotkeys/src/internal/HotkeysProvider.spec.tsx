@@ -5,11 +5,7 @@ import React from 'react';
 import { act, render, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import useHotkeys from './useHotkeys';
-import {
-  HotkeysProvider,
-  useHotkeysContext,
-  type HotkeysContextType,
-} from './HotkeysProvider';
+import { HotkeysProvider, useHotkeysContext } from './HotkeysProvider';
 
 const createWrapper =
   (initiallyActiveScopes?: string[]) =>
@@ -24,7 +20,22 @@ const renderContext = (initiallyActiveScopes?: string[]) =>
     wrapper: createWrapper(initiallyActiveScopes),
   });
 
+const pressA = () => {
+  act(() => {
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { code: 'KeyA', key: 'a' })
+    );
+    document.dispatchEvent(
+      new KeyboardEvent('keyup', { code: 'KeyA', key: 'a' })
+    );
+  });
+};
+
 describe('HotkeysProvider', () => {
+  afterEach(() => {
+    window.dispatchEvent(new Event('blur'));
+  });
+
   it('renders its children', () => {
     const { getByText } = render(
       <HotkeysProvider>
@@ -139,10 +150,7 @@ describe('HotkeysProvider', () => {
   });
 
   it('drops bound hotkeys when their scopes stop matching', () => {
-    const { rerender, result } = renderHook<
-      HotkeysContextType,
-      { scopes: string[] }
-    >(
+    const { rerender, result } = renderHook(
       ({ scopes }) => {
         useHotkeys('a', () => null, { scopes });
 
@@ -195,5 +203,72 @@ describe('HotkeysProvider', () => {
     );
 
     expect(result.current.hotkeys[0].description).toEqual('bar');
+  });
+
+  it('uses the latest callback when dependencies are omitted', () => {
+    const first = mock();
+    const second = mock();
+    const { rerender } = renderHook(
+      ({ callback }) => useHotkeys('a', callback),
+      {
+        initialProps: { callback: first },
+      }
+    );
+
+    pressA();
+    rerender({ callback: second });
+    pressA();
+
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(second).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the returned element ref stable across rerenders', () => {
+    const { rerender, result } = renderHook(() => useHotkeys('a', () => null));
+    const firstRef = result.current;
+
+    rerender();
+
+    expect(result.current).toBe(firstRef);
+  });
+
+  it('updates a dependency-bound callback only when its dependencies change', () => {
+    const first = mock();
+    const second = mock();
+    const { rerender } = renderHook(
+      ({ callback, dependency }) => useHotkeys('a', callback, {}, [dependency]),
+      {
+        initialProps: { callback: first, dependency: 0 },
+      }
+    );
+
+    pressA();
+    rerender({ callback: second, dependency: 0 });
+    pressA();
+    rerender({ callback: second, dependency: 1 });
+    pressA();
+
+    expect(first).toHaveBeenCalledTimes(2);
+    expect(second).toHaveBeenCalledTimes(1);
+  });
+
+  it('unregisters a bound hotkey when explicitly disabled', () => {
+    const { rerender, result } = renderHook(
+      ({ enabled }) => {
+        useHotkeys('a', () => null, { enabled, scopes: ['foo'] });
+
+        return useHotkeysContext();
+      },
+      {
+        initialProps: { enabled: true },
+        wrapper: createWrapper(['foo']),
+      }
+    );
+
+    expect(result.current.hotkeys).toHaveLength(1);
+
+    rerender({ enabled: false });
+
+    expect(result.current.hotkeys).toHaveLength(0);
   });
 });

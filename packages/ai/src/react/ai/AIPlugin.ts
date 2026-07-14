@@ -1,6 +1,6 @@
-import type { ExtendConfig } from 'platejs';
+import type { ExtendConfig } from '@platejs/core';
 
-import { toPlatePlugin } from 'platejs/react';
+import { toPlatePlugin } from '@platejs/core/react';
 
 import { type BaseAIPluginConfig, BaseAIPlugin } from '../../lib';
 

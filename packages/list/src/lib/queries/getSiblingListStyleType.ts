@@ -1,6 +1,6 @@
-import type { ElementOf, NodeEntry, SlateEditor, TElement } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { Element, NodeEntry } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import type { ListStyleType } from '../types';
 
@@ -10,20 +10,20 @@ import { type GetListSiblingsOptions, getListSiblings } from './index';
  * Get the first sibling list style type at the given indent. If none, return
  * the entry list style type.
  */
-export const getSiblingListStyleType = <E extends SlateEditor>(
+export const getSiblingListStyleType = <E extends BaseEditor>(
   editor: E,
   {
     entry,
     indent,
     ...options
   }: {
-    entry: NodeEntry<TElement>;
+    entry: NodeEntry<Element>;
     indent: number;
-  } & GetListSiblingsOptions<ElementOf<E>, E>
+  } & GetListSiblingsOptions<Element>
 ) => {
-  const siblingEntry: NodeEntry<TElement> = [{ ...entry[0], indent }, entry[1]];
+  const siblingEntry: NodeEntry<Element> = [{ ...entry[0], indent }, entry[1]];
 
-  const siblings = getListSiblings(editor, siblingEntry as any, {
+  const siblings = getListSiblings(editor, siblingEntry, {
     breakOnEqIndentNeqListStyleType: false,
     current: false,
     eqIndent: true,

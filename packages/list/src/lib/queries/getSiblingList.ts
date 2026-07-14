@@ -1,44 +1,27 @@
-import {
-  type Editor,
-  type ElementEntryOf,
-  type ElementOf,
-  type ElementOrTextOf,
-  type NodeEntry,
-  type TNode,
-  isDefined,
-  KEYS,
-} from 'platejs';
+import type { Editor, Element, NodeEntry } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
+import { isDefined } from '@udecode/utils';
 
-export type GetSiblingListOptions<
-  N extends ElementOf<E>,
-  E extends Editor = Editor,
-> = {
+export type GetSiblingListOptions<N extends Element = Element> = {
   breakOnEqIndentNeqListStyleType?: boolean;
   breakOnListRestart?: boolean;
   breakOnLowerIndent?: boolean;
-  breakQuery?: (siblingNode: TNode, currentNode: TNode) => boolean | undefined;
-  getNextEntry?: (
-    entry: NodeEntry<ElementOrTextOf<E>>
-  ) => NodeEntry<N> | undefined;
-  getPreviousEntry?: (
-    entry: NodeEntry<ElementOrTextOf<E>>
-  ) => NodeEntry<N> | undefined;
-  /** Query to break lookup */
+  breakQuery?: (
+    siblingNode: Element,
+    currentNode: Element
+  ) => boolean | undefined;
+  getNextEntry?: (entry: NodeEntry<Element>) => NodeEntry<N> | undefined;
+  getPreviousEntry?: (entry: NodeEntry<Element>) => NodeEntry<N> | undefined;
+  /** Query to break lookup. */
   eqIndent?: boolean;
   /** Query to validate lookup. If false, check the next sibling. */
-  query?: (siblingNode: TNode, currentNode: TNode) => boolean | undefined;
+  query?: (siblingNode: Element, currentNode: Element) => boolean | undefined;
 };
 
-/**
- * Get the next sibling indent list node. Default query: the sibling node should
- * have the same listStyleType.
- */
-export const getSiblingList = <
-  N extends ElementOf<E>,
-  E extends Editor = Editor,
->(
-  _editor: E,
-  [node, path]: ElementEntryOf<E>,
+/** Get the next sibling indent-list node. */
+export const getSiblingList = <N extends Element = Element>(
+  _editor: Editor,
+  [node, path]: NodeEntry<Element>,
   {
     breakOnEqIndentNeqListStyleType = true,
     breakOnListRestart = false,
@@ -48,46 +31,41 @@ export const getSiblingList = <
     getNextEntry,
     getPreviousEntry,
     query,
-  }: GetSiblingListOptions<N, E>
+  }: GetSiblingListOptions<N>
 ): NodeEntry<N> | undefined => {
   if (!getPreviousEntry && !getNextEntry) return;
 
   const getSiblingEntry = getNextEntry ?? getPreviousEntry!;
-
   let nextEntry = getSiblingEntry([node, path]);
 
-  while (true) {
-    if (!nextEntry) return;
-
+  while (nextEntry) {
     const [nextNode, nextPath] = nextEntry;
-
-    const indent = (node as any)[KEYS.indent] as number;
-    const nextIndent = (nextNode as any)[KEYS.indent] as number;
+    const indent = node[KEYS.indent];
+    const nextIndent = nextNode[KEYS.indent];
 
     if (breakQuery?.(nextNode, node)) return;
-    if (!isDefined(nextIndent)) return;
-    if (breakOnListRestart) {
-      if (getPreviousEntry && (node as any)[KEYS.listRestart]) {
-        return;
-      }
-      if (getNextEntry && (nextNode as any)[KEYS.listRestart]) {
-        return;
-      }
+    if (typeof indent !== 'number' || typeof nextIndent !== 'number') return;
+    if (
+      breakOnListRestart &&
+      ((getPreviousEntry && isDefined(node[KEYS.listRestart])) ||
+        (getNextEntry && isDefined(nextNode[KEYS.listRestart])))
+    ) {
+      return;
     }
     if (breakOnLowerIndent && nextIndent < indent) return;
     if (
       breakOnEqIndentNeqListStyleType &&
       nextIndent === indent &&
-      (nextNode as any)[KEYS.listType] !== (node as any)[KEYS.listType]
-    )
+      nextNode[KEYS.listType] !== node[KEYS.listType]
+    ) {
       return;
+    }
 
-    let valid = !query || query(nextNode, node);
-
-    if (valid) {
-      valid = !eqIndent || nextIndent === indent;
-
-      if (valid) return [nextNode, nextPath];
+    if (
+      (!query || query(nextNode, node)) &&
+      (!eqIndent || nextIndent === indent)
+    ) {
+      return [nextNode, nextPath];
     }
 
     nextEntry = getSiblingEntry(nextEntry);

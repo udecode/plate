@@ -1,12 +1,11 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
 import {
-  type Descendant,
-  type SlateEditor,
-  type TElement,
-  createEditor,
-} from 'platejs';
+  createEditorFromFixture,
+  jsxt,
+  type TestEditor,
+} from '@platejs/test-utils';
+import { type Descendant, type Element } from 'platejs';
 
 import { getListChildren } from './getListChildren';
 
@@ -27,11 +26,11 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.read.nodes.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([]);
@@ -50,11 +49,11 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.read.nodes.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([]);
@@ -92,11 +91,11 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.read.nodes.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([
@@ -141,11 +140,11 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.read.nodes.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([
@@ -188,11 +187,11 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.read.nodes.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([
@@ -234,11 +233,11 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.read.nodes.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([
@@ -272,11 +271,11 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.read.nodes.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([[output[0], [1]]] as any);
@@ -295,11 +294,11 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.read.nodes.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([]);
@@ -318,11 +317,11 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.read.nodes.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([]);
@@ -364,11 +363,11 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.read.nodes.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([
@@ -408,11 +407,11 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.read.nodes.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([

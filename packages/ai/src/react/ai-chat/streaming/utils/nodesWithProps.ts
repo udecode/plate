@@ -1,6 +1,6 @@
-import type { PlateEditor } from 'platejs/react';
+import type { PlateEditor } from '@platejs/core/react';
 
-import { type Descendant, type Element, ElementApi } from 'platejs';
+import { type Descendant, type Element, ElementApi } from '@platejs/plite';
 
 import type { SteamInsertChunkOptions } from '../streamInsertChunk';
 

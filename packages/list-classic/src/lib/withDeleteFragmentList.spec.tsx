@@ -1,16 +1,15 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
-import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseListPlugin } from './BaseListPlugin';
 
 jsxt;
 
-const createListEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createListEditor = (input: TestEditor) =>
+  createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
@@ -26,18 +25,18 @@ describe('withDeleteFragmentList', () => {
           <focus />d
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
     const expected = (
       <editor>
         <hp>ad</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createListEditor(input);
 
-    editor.tf.deleteFragment();
+    editor.update.fragment.delete();
 
-    expect(editor.children).toEqual(expected.children);
+    expect(editor.read.children()).toEqual(expected.children);
   });
 
   it('merges sibling list items and removes the emptied end item', () => {
@@ -61,7 +60,7 @@ describe('withDeleteFragmentList', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
     const expected = (
       <editor>
         <hul>
@@ -73,13 +72,13 @@ describe('withDeleteFragmentList', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createListEditor(input);
 
-    editor.tf.deleteFragment();
+    editor.update.fragment.delete();
 
-    expect(editor.children).toEqual(expected.children);
+    expect(editor.read.children()).toEqual(expected.children);
   });
 
   it('removes only the emptied nested list when the outer start list is protected', () => {
@@ -105,7 +104,7 @@ describe('withDeleteFragmentList', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
     const expected = (
       <editor>
         <hul>
@@ -117,12 +116,12 @@ describe('withDeleteFragmentList', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const editor = createListEditor(input);
 
-    editor.tf.deleteFragment();
+    editor.update.fragment.delete();
 
-    expect(editor.children).toEqual(expected.children);
+    expect(editor.read.children()).toEqual(expected.children);
   });
 });

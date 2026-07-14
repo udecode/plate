@@ -133,6 +133,7 @@ basePlateEditor.update((tx) => {
   tx.format.setTone('friendly');
   tx.inspector.setFriendly();
 });
+basePlateEditor.plugin(ChildPlugin).update.setMode('view');
 
 void childLabel;
 void childLevel;

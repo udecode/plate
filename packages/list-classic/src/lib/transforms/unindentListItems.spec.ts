@@ -7,13 +7,14 @@ describe('unindentListItems', () => {
       undefined as any
     );
     const editor = {} as any;
+    const tx = {} as any;
 
-    unindentListItems(editor, {
+    unindentListItems(editor, tx, {
       at: [0],
       enableResetOnShiftTab: true,
     });
 
-    expect(spy).toHaveBeenCalledWith(editor, {
+    expect(spy).toHaveBeenCalledWith(editor, tx, {
       at: [0],
       enableResetOnShiftTab: true,
       increase: false,

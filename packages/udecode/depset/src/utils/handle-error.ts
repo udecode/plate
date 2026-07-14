@@ -2,7 +2,7 @@ import { ZodError } from 'zod';
 
 import { highlighter, logger } from './logger';
 
-export function handleError(error: unknown): void {
+export function handleError(error: unknown): never {
   logger.error(
     'Something went wrong. Please check the error below for more details.'
   );
@@ -12,9 +12,7 @@ export function handleError(error: unknown): void {
   } else if (error instanceof ZodError) {
     logger.error('Validation failed:');
     for (const [key, value] of Object.entries(error.flatten().fieldErrors)) {
-      logger.error(
-        `- ${highlighter.info(key)}: ${(value as string[]).join(', ')}`
-      );
+      logger.error(`- ${highlighter.info(key)}: ${value?.join(', ') ?? ''}`);
     }
   } else if (error instanceof Error) {
     logger.error(error.message);

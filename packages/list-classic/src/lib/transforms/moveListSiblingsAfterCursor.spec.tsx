@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -31,17 +31,21 @@ describe('moveListSiblingsAfterCursor', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       value: input.children,
     });
 
-    const result = moveListSiblingsAfterCursor(editor as any, {
-      at: [0, 0],
-      to: [1, 1],
+    let result = false;
+
+    editor.update((tx) => {
+      result = !!moveListSiblingsAfterCursor(editor, tx, {
+        at: [0, 0],
+        to: [1, 1],
+      });
     });
 
     expect(result).toBe(true);
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         children: [
           {
@@ -85,16 +89,20 @@ describe('moveListSiblingsAfterCursor', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       value: input.children,
     });
 
-    const result = moveListSiblingsAfterCursor(editor as any, {
-      at: [0, 0],
-      to: [0, 1],
+    let result = true;
+
+    editor.update((tx) => {
+      result = !!moveListSiblingsAfterCursor(editor, tx, {
+        at: [0, 0],
+        to: [0, 1],
+      });
     });
 
     expect(result).toBe(false);
-    expect(editor.children).toEqual(input.children);
+    expect(editor.read.children()).toEqual(input.children);
   });
 });

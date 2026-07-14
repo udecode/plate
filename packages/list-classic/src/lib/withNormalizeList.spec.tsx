@@ -1,14 +1,22 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+
+import {
+  jsxt,
+  type TestEditor,
+  type TestEditorFixture,
+} from '@platejs/test-utils';
 
 import { BaseListPlugin } from './BaseListPlugin';
 
 jsxt;
 
-const testNormalize = (input: SlateEditor, output: SlateEditor): void => {
-  const editor = createSlateEditor({
+const testNormalize = (
+  input: TestEditorFixture,
+  output: TestEditorFixture
+): void => {
+  const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
@@ -16,7 +24,7 @@ const testNormalize = (input: SlateEditor, output: SlateEditor): void => {
 
   editor.update.normalize({ force: true });
 
-  expect(editor.children).toEqual(output.children);
+  expect(editor.read.children()).toEqual(output.children);
 };
 
 describe('merge lists', () => {
@@ -34,7 +42,7 @@ describe('merge lists', () => {
           </hli>
         </hol>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -49,7 +57,7 @@ describe('merge lists', () => {
           </hli>
         </hol>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     testNormalize(input, output);
   });
@@ -68,7 +76,7 @@ describe('merge lists', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -81,7 +89,7 @@ describe('merge lists', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     testNormalize(input, output);
   });
@@ -100,7 +108,7 @@ describe('merge lists', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -113,7 +121,7 @@ describe('merge lists', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     testNormalize(input, output);
   });
@@ -125,9 +133,9 @@ describe('clean up lists', () => {
       <editor>
         <hul />
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const output = (<editor />) as any as SlateEditor;
+    const output = (<editor />) as TestEditor;
 
     testNormalize(input, output);
   });
@@ -143,7 +151,7 @@ describe('clean up lists', () => {
           <hp>bad</hp>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -159,7 +167,7 @@ describe('clean up lists', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     testNormalize(input, output);
   });
@@ -177,7 +185,7 @@ describe('task list normalization', () => {
           type: 'taskList',
         },
       ],
-    } as any as SlateEditor;
+    } satisfies TestEditorFixture;
 
     const output = {
       children: [
@@ -197,7 +205,7 @@ describe('task list normalization', () => {
           type: 'taskList',
         },
       ],
-    } as any as SlateEditor;
+    } satisfies TestEditorFixture;
 
     testNormalize(input, output);
   });
@@ -216,7 +224,7 @@ describe('task list normalization', () => {
           type: 'ul',
         },
       ],
-    } as any as SlateEditor;
+    } satisfies TestEditorFixture;
 
     const output = {
       children: [
@@ -230,7 +238,7 @@ describe('task list normalization', () => {
           type: 'ul',
         },
       ],
-    } as any as SlateEditor;
+    } satisfies TestEditorFixture;
 
     testNormalize(input, output);
   });
@@ -259,7 +267,7 @@ describe('nested list normalization', () => {
           type: 'ul',
         },
       ],
-    } as any as SlateEditor;
+    } as TestEditor;
 
     const output = {
       children: [
@@ -284,7 +292,7 @@ describe('nested list normalization', () => {
           type: 'ul',
         },
       ],
-    } as any as SlateEditor;
+    } as TestEditor;
 
     testNormalize(input, output);
   });

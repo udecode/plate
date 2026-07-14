@@ -18,15 +18,15 @@ describe('useComposedRef', () => {
   });
 
   it('handle callback refs', () => {
-    let captured1: HTMLDivElement | null = null;
-    let captured2: HTMLDivElement | null = null;
+    const captured1: (HTMLDivElement | null)[] = [];
+    const captured2: (HTMLDivElement | null)[] = [];
 
     const callbackRef1 = (node: HTMLDivElement | null) => {
-      captured1 = node;
+      captured1.push(node);
     };
 
     const callbackRef2 = (node: HTMLDivElement | null) => {
-      captured2 = node;
+      captured2.push(node);
     };
 
     const { result } = renderHook(() =>
@@ -36,16 +36,16 @@ describe('useComposedRef', () => {
     const element = document.createElement('div');
     result.current(element);
 
-    expect(captured1 as any).toBe(element);
-    expect(captured2 as any).toBe(element);
+    expect(captured1).toContain(element);
+    expect(captured2).toContain(element);
   });
 
   it('handle mixed ref types', () => {
     const ref = React.createRef<HTMLDivElement>();
-    let captured: HTMLDivElement | null = null;
+    const captured: (HTMLDivElement | null)[] = [];
 
     const callbackRef = (node: HTMLDivElement | null) => {
-      captured = node;
+      captured.push(node);
     };
 
     const { result } = renderHook(() => useComposedRef(ref, callbackRef));
@@ -54,7 +54,7 @@ describe('useComposedRef', () => {
     result.current(element);
 
     expect(ref.current).toBe(element);
-    expect(captured as any).toBe(element);
+    expect(captured).toContain(element);
   });
 
   it('handle undefined refs', () => {
@@ -73,10 +73,7 @@ describe('useComposedRef', () => {
       // Callback ref without cleanup
     });
 
-    const composedRef = composeRefs(
-      ref,
-      callbackRef as unknown as React.Ref<HTMLDivElement>
-    );
+    const composedRef = composeRefs(ref, callbackRef);
     const element = document.createElement('div');
 
     const result = composedRef(element);
@@ -103,11 +100,7 @@ describe('useComposedRef', () => {
 
     const normalRef = React.createRef<HTMLDivElement>();
 
-    const composedRef = composeRefs(
-      normalRef,
-      callbackRef1 as unknown as React.Ref<HTMLDivElement>,
-      callbackRef2 as unknown as React.Ref<HTMLDivElement>
-    );
+    const composedRef = composeRefs(normalRef, callbackRef1, callbackRef2);
     const element = document.createElement('div');
 
     const result = composedRef(element);
@@ -139,8 +132,8 @@ describe('useComposedRef', () => {
 
     const composedRef = composeRefs(
       normalRef,
-      callbackRefWithCleanup as unknown as React.Ref<HTMLDivElement>,
-      callbackRefWithoutCleanup as unknown as React.Ref<HTMLDivElement>
+      callbackRefWithCleanup,
+      callbackRefWithoutCleanup
     );
     const element = document.createElement('div');
 

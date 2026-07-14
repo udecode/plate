@@ -1,4 +1,4 @@
-import { createBaseEditor, getEditorPlugin } from '@platejs/core';
+import { createBaseEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { BaseFontBackgroundColorPlugin } from './BaseFontBackgroundColorPlugin';
@@ -9,23 +9,20 @@ describe('BaseFontBackgroundColorPlugin', () => {
       plugins: [BaseFontBackgroundColorPlugin],
     });
     const plugin = editor.getPlugin(BaseFontBackgroundColorPlugin);
-    const parse = plugin.parsers!.html!.deserializer!.parse!;
 
     expect(plugin.inject.nodeProps).toMatchObject({
       nodeKey: 'backgroundColor',
     });
     expect(
-      parse({
-        ...getEditorPlugin(editor, plugin),
-        element: {
-          style: { backgroundColor: 'rgb(255, 255, 0)' },
-        } as HTMLElement,
-        node: {},
-        type: KEYS.backgroundColor,
+      editor.api.html.deserialize({
+        element: '<span style="background-color: rgb(255, 255, 0)">text</span>',
       })
-    ).toEqual({
-      [KEYS.backgroundColor]: 'rgb(255, 255, 0)',
-    });
+    ).toMatchObject([
+      {
+        [KEYS.backgroundColor]: 'rgb(255, 255, 0)',
+        text: 'text',
+      },
+    ]);
   });
 
   it('sets background color through the typed tx group', () => {

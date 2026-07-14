@@ -16,13 +16,13 @@ describe('insertExcalidraw', () => {
     expect(editor.read.children()).toHaveLength(1);
   });
 
-  it('uses an explicit insertion target without a selection', () => {
+  it('inserts after an explicit block target without a selection', () => {
     const editor = createBaseEditor({
       plugins: [BaseExcalidrawPlugin],
       value: [{ children: [{ text: '' }], type: 'p' }],
     });
 
-    editor.update.excalidraw.insert({}, { at: [1] });
+    editor.update.excalidraw.insert({}, { at: [0] });
 
     expect(editor.read.children()).toMatchObject([
       { type: 'p' },
@@ -46,7 +46,6 @@ describe('insertExcalidraw', () => {
 
     editor.update((tx) => {
       insertExcalidraw(
-        editor,
         tx,
         editor.getType(KEYS.excalidraw),
         { data: { elements: [], state: { theme: 'dark' } } },

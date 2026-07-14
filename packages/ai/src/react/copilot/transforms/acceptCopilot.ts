@@ -1,16 +1,25 @@
-import type { PlateEditor } from 'platejs/react';
+import type { PlateEditor } from '@platejs/core/react';
 
 import { deserializeInlineMd } from '@platejs/markdown';
-import { KEYS } from 'platejs';
+import type { EditorUpdateTransaction } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import type { CopilotPluginConfig } from '../CopilotPlugin';
+import { copilotSuggestionField } from '../withCopilot';
+import { withoutAbort } from '../utils';
 
-export const acceptCopilot = (editor: PlateEditor) => {
-  const { suggestionText } = editor.getOptions<CopilotPluginConfig>({
-    key: KEYS.copilot,
-  });
+export const acceptCopilot = (
+  editor: PlateEditor,
+  tx: EditorUpdateTransaction
+) => {
+  const { suggestionText } = editor
+    .plugin<CopilotPluginConfig>(KEYS.copilot)
+    .getOptions();
 
   if (!suggestionText?.length) return false;
 
-  editor.tf.insertFragment(deserializeInlineMd(editor, suggestionText));
+  withoutAbort(editor, () => {
+    tx.setField(copilotSuggestionField, { id: null, text: null });
+    tx.fragment.insert(deserializeInlineMd(editor, suggestionText));
+  });
 };

@@ -2,34 +2,30 @@ import {
   type TriggerComboboxPluginOptions,
   withTriggerCombobox,
 } from '@platejs/combobox';
-import {
-  type PluginConfig,
-  type TMentionElement,
-  createSlatePlugin,
-  createTSlatePlugin,
-  KEYS,
-} from 'platejs';
+import { type PluginConfig, createBasePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
+
+export type InsertMentionOptions = {
+  value: string;
+  key?: string;
+  search?: string;
+};
 
 export type MentionConfig = PluginConfig<
   'mention',
   {
     insertSpaceAfterMention?: boolean;
   } & TriggerComboboxPluginOptions,
-  {},
-  {
-    insert: {
-      mention: (options: { search: string; value: any; key?: any }) => void;
-    };
-  }
+  {}
 >;
 
-export const BaseMentionInputPlugin = createSlatePlugin({
+export const BaseMentionInputPlugin = createBasePlugin({
   key: KEYS.mentionInput,
   node: { isElement: true, isInline: true, isVoid: true },
 });
 
 /** Enables support for autocompleting @mentions. */
-export const BaseMentionPlugin = createTSlatePlugin<MentionConfig>({
+export const BaseMentionPlugin = createBasePlugin<MentionConfig>({
   key: KEYS.mention,
   node: {
     isElement: true,
@@ -48,16 +44,14 @@ export const BaseMentionPlugin = createTSlatePlugin<MentionConfig>({
   },
   plugins: [BaseMentionInputPlugin],
 })
-  .extendEditorTransforms<MentionConfig['transforms']>(({ editor, type }) => ({
-    insert: {
-      mention: ({ key, value }: { key?: any; value: any }) => {
-        editor.tf.insertNodes<TMentionElement>({
-          key,
-          children: [{ text: '' }],
-          type,
-          value,
-        });
-      },
+  .extendExtension(withTriggerCombobox)
+  .extendTx(({ type }) => (tx) => ({
+    insert: ({ key, value }: InsertMentionOptions) => {
+      tx.nodes.insert({
+        key,
+        children: [{ text: '' }],
+        type,
+        value,
+      });
     },
-  }))
-  .overrideEditor(withTriggerCombobox as any);
+  }));

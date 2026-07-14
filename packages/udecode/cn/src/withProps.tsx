@@ -2,6 +2,18 @@ import React from 'react';
 
 import { cn } from './cn';
 
+function getClassName(props: object) {
+  if ('className' in props && typeof props.className === 'string') {
+    return props.className;
+  }
+}
+
+export type WithPropsComponent<T extends React.ElementType> =
+  React.ForwardRefExoticComponent<
+    React.PropsWithoutRef<React.ComponentPropsWithoutRef<T>> &
+      React.RefAttributes<React.ComponentRef<T>>
+  >;
+
 /**
  * Set default props with `React.forwardRef`.
  *
@@ -9,24 +21,22 @@ import { cn } from './cn';
  */
 export function withProps<T extends React.ElementType>(
   Component: T,
-  defaultProps: Partial<React.ComponentPropsWithoutRef<T>>
-) {
-  const ComponentWithClassName = Component as React.FC<{ className?: string }>;
-
+  defaultProps:
+    | Partial<React.ComponentPropsWithoutRef<T>>
+    | { className?: string }
+): WithPropsComponent<T> {
   return React.forwardRef<
     React.ComponentRef<T>,
     React.ComponentPropsWithoutRef<T>
   >(function ExtendComponent(props, ref) {
-    const newProps: any = { ...defaultProps, ...props };
-    const className = cn(
-      (defaultProps as any).className,
-      (props as any).className
-    );
+    const className = cn(getClassName(defaultProps), getClassName(props));
+    const componentProps = {
+      ...defaultProps,
+      ...props,
+      ...(className ? { className } : {}),
+      ref,
+    };
 
-    if (className) {
-      newProps.className = className;
-    }
-
-    return <ComponentWithClassName ref={ref} {...newProps} />;
+    return React.createElement(Component, componentProps);
   });
 }

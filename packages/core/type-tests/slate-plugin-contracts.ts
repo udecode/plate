@@ -120,9 +120,18 @@ const OriginalOverridePlugin = createBasePlugin({
     overrideLabel: () => 'original' as const,
     scopedLabel: () => 'scoped' as const,
   }))
-  .extendApi(() => ({
-    pluginScopedLabel: () => 'plugin-scoped' as const,
-  }));
+  .extendApi(({ editor }) => {
+    const rootLabel: 'original' = editor.api.overrideLabel();
+
+    // @ts-expect-error root editor API arguments stay typed in plugin contexts
+    editor.api.overrideLabel('invalid');
+
+    void rootLabel;
+
+    return {
+      pluginScopedLabel: () => 'plugin-scoped' as const,
+    };
+  });
 
 const ReplacementOverridePlugin = createBasePlugin({
   key: 'replacementOverride',
@@ -157,10 +166,8 @@ const portalPluginScopedLabel: 'plugin-scoped' = getEditorPlugin(
   overrideEditor,
   OriginalOverridePlugin
 ).api.pluginScopedLabel();
-const portalRootPluginScopedLabel: 'plugin-scoped' = getEditorPlugin(
-  overrideEditor,
-  OriginalOverridePlugin
-).editorApi.originalOverride.pluginScopedLabel();
+const portalRootPluginScopedLabel: 'plugin-scoped' =
+  overrideEditor.api.originalOverride.pluginScopedLabel();
 const pluginScopedLabel: 'plugin-scoped' =
   overrideEditor.api.originalOverride.pluginScopedLabel();
 

@@ -1294,8 +1294,13 @@ const hasTransactionNetChanges = (
   );
 };
 
-export const getChildren = <V extends Value>(editor: Editor<V>): V =>
-  (CHILDREN.get(editor) ?? []) as V;
+export const getChildren = <V extends Value>(editor: Editor<V>): V => {
+  const children = CHILDREN.get(editor);
+
+  if (children) return children as V;
+
+  return (editor.read?.children?.() ?? []) as V;
+};
 
 const getEditorDocumentRoots = (
   editor: Editor
@@ -2952,6 +2957,42 @@ const getUpdateView = <
       voids,
     });
   };
+  const insertBlocksAfter: EditorTransactionBlocksApi<V>['insertAfter'] = (
+    nodes,
+    { at = state.selection() ?? undefined, ...options } = {}
+  ) => {
+    if (!at) {
+      txRecord.nodes.insert(nodes, options);
+      return;
+    }
+
+    const targetAt = resolveNodeTargetLocation(editor, at);
+
+    if (!targetAt) return;
+
+    const target = LocationApi.isRange(targetAt)
+      ? state.points.end(targetAt)
+      : targetAt;
+
+    if (!target) return;
+
+    const exactEntry = LocationApi.isPath(target)
+      ? state.nodes.get<ElementIn<V>>(target)
+      : undefined;
+    const block =
+      exactEntry &&
+      NodeApi.isElement(exactEntry[0]) &&
+      state.schema.isBlock(exactEntry[0])
+        ? exactEntry
+        : state.nodes.block<ElementIn<V>>({ at: target });
+
+    if (!block) return;
+
+    txRecord.nodes.insert(nodes, {
+      ...options,
+      at: PathApi.next(block[1]),
+    });
+  };
   const setNodes = ((
     ...args: Parameters<EditorTransactionNodesApi<V>['set']>
   ) => {
@@ -2961,6 +3002,55 @@ const getUpdateView = <
       transforms.setNodes(props, resolvedOptions)
     );
   }) as EditorTransactionNodesApi<V>['set'];
+  const replaceNode: EditorTransactionNodesApi<V>['replace'] = (
+    nodes,
+    options
+  ) => {
+    const at = resolveNodeTargetLocation(editor, options.at);
+
+    if (!at || !LocationApi.isPath(at)) return;
+
+    return runMutation({ at }, () => {
+      if (at.length === 0) {
+        throw new Error('Cannot replace the editor root.');
+      }
+
+      NodeApi.get(editor, at);
+
+      const replacements = Array.isArray(nodes) ? nodes : [nodes];
+      const parentPath = PathApi.parent(at);
+      const index = at.at(-1)!;
+      const newSelection =
+        options.select && replacements.length > 0
+          ? (() => {
+              const lastNode = replacements.at(-1)!;
+              const [lastText, relativePath] = NodeApi.last(lastNode, []);
+
+              if (!NodeApi.isText(lastText)) {
+                throw new Error('Cannot select a replacement with no text.');
+              }
+
+              const point = {
+                offset: lastText.text.length,
+                path: [
+                  ...parentPath,
+                  index + replacements.length - 1,
+                  ...relativePath,
+                ],
+              };
+
+              return { anchor: point, focus: point };
+            })()
+          : undefined;
+
+      return transforms.replaceChildren(replacements, {
+        at: parentPath,
+        count: 1,
+        index,
+        newSelection,
+      });
+    });
+  };
   const replaceChildrenNodes: EditorTransactionNodesApi<V>['replaceChildren'] =
     (children, options) => {
       const at = resolveNodeTargetLocation(editor, options.at);
@@ -2976,6 +3066,7 @@ const getUpdateView = <
     ...state,
     blocks: Object.freeze({
       duplicate: duplicateBlocks,
+      insertAfter: insertBlocksAfter,
       lift: (options) =>
         runTargetMutation(options, (resolvedOptions) =>
           transforms.liftNodes(resolvedOptions)
@@ -3056,6 +3147,7 @@ const getUpdateView = <
         runTargetMutation(options, (resolvedOptions) =>
           transforms.removeNodes(resolvedOptions)
         ),
+      replace: replaceNode,
       replaceChildren: replaceChildrenNodes,
       set: setNodes,
       split: (options) =>
@@ -3283,10 +3375,12 @@ export const getNormalizerUpdateView = <V extends Value>(
   const tx = getUpdateView(editor);
 
   return Object.freeze({
+    blocks: tx.blocks,
     break: tx.break,
     fragment: tx.fragment,
     marks: tx.marks,
     nodes: tx.nodes,
+    refs: tx.refs,
     selection: tx.selection,
     text: tx.text,
     value: tx.value,

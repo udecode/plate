@@ -1,6 +1,7 @@
 import React from 'react';
 
-import type { TMediaElement, WithRequiredKey } from 'platejs';
+import type { WithRequiredKey } from '@platejs/core';
+import type { TMediaElement } from '@platejs/utils';
 
 import {
   createPrimitiveComponent,
@@ -9,13 +10,15 @@ import {
   useHotkeys,
 } from 'platejs/react';
 
+import type { MediaPluginConfig } from '../../../lib/media/types';
+
 import { FloatingMediaStore } from './FloatingMediaStore';
 import { submitFloatingMedia } from './submitFloatingMedia';
 
 export const useFloatingMediaUrlInputState = ({
   plugin,
 }: {
-  plugin: WithRequiredKey;
+  plugin: WithRequiredKey<MediaPluginConfig>;
 }) => {
   const editor = useEditorRef();
   const element = useElement<TMediaElement>();
@@ -38,7 +41,7 @@ export const useFloatingMediaUrlInputState = ({
     () => {
       if (FloatingMediaStore.get('isEditing')) {
         FloatingMediaStore.actions.reset();
-        editor.tf.focus({ at: editor.selection! });
+        editor.api.dom.focus();
       }
     },
     {

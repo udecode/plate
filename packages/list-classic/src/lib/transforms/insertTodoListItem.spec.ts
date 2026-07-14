@@ -1,125 +1,64 @@
-import { KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseTodoListPlugin } from '../BaseTodoListPlugin';
 import { insertTodoListItem } from './insertTodoListItem';
 
-describe('insertTodoListItem', () => {
-  it('returns false when there is no selection', () => {
-    const editor = {
-      getOptions: () => ({
-        inheritCheckStateOnLineEndBreak: false,
-        inheritCheckStateOnLineStartBreak: false,
-      }),
-      getType: (key: string) => key,
-      selection: null,
-    } as any;
-
-    expect(insertTodoListItem(editor)).toBe(false);
-  });
-
-  it('inserts a todo before when the cursor is at the start', () => {
-    const insertNodes = mock();
-    const editor = {
-      api: {
-        above: mock(() => [{ checked: true, type: KEYS.listTodoClassic }, [0]]),
-        isCollapsed: mock(() => true),
-        isEmpty: mock(() => false),
-        isStart: mock(() => true),
-        marks: mock(() => null),
-      },
-      getOptions: (plugin: any) =>
-        plugin === BaseTodoListPlugin
-          ? {
-              inheritCheckStateOnLineEndBreak: false,
-              inheritCheckStateOnLineStartBreak: true,
-            }
-          : {},
-      getType: (key: string) => key,
-      selection: { focus: { offset: 0, path: [0] } },
-      tf: {
-        delete: mock(),
-        insertNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
-    } as any;
-
-    expect(insertTodoListItem(editor)).toBe(true);
-    expect(insertNodes).toHaveBeenCalledWith(
+const createTodoEditor = (offset?: number) =>
+  createBaseEditor({
+    plugins: [BaseTodoListPlugin],
+    selection:
+      offset === undefined
+        ? null
+        : {
+            anchor: { offset, path: [0, 0] },
+            focus: { offset, path: [0, 0] },
+          },
+    value: [
       {
         checked: true,
-        children: [{ text: '' }],
+        children: [{ text: 'one' }],
         type: KEYS.listTodoClassic,
       },
-      { at: [0] }
-    );
+    ],
   });
 
-  it('inserts a todo after at the end and preserves marks', () => {
-    const insertNodes = mock();
-    const select = mock();
-    const editor = {
-      api: {
-        above: mock(() => [
-          { checked: false, type: KEYS.listTodoClassic },
-          [0],
-        ]),
-        isCollapsed: mock(() => true),
-        isEmpty: mock(() => true),
-        isStart: mock(() => false),
-        marks: mock(() => ({ italic: true })),
-      },
-      getOptions: () => ({
-        inheritCheckStateOnLineEndBreak: true,
-        inheritCheckStateOnLineStartBreak: false,
-      }),
-      getType: (key: string) => key,
-      selection: { focus: { offset: 1, path: [0] } },
-      tf: {
-        delete: mock(),
-        insertNodes,
-        select,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
-    } as any;
+describe('insertTodoListItem', () => {
+  it('returns false without a selection', () => {
+    const editor = createTodoEditor();
+    let result = true;
 
-    expect(insertTodoListItem(editor)).toBe(true);
-    expect(insertNodes).toHaveBeenCalledWith(
-      {
-        checked: false,
-        children: [{ italic: true, text: '' }],
-        type: KEYS.listTodoClassic,
-      },
-      { at: [1] }
-    );
-    expect(select).toHaveBeenCalledWith([1]);
+    editor.update((tx) => {
+      result = insertTodoListItem(editor, tx);
+    });
+
+    expect(result).toBe(false);
   });
 
-  it('deletes expanded selections and splits nodes for middle breaks', () => {
-    const deleteSelection = mock();
-    const splitNodes = mock();
-    const editor = {
-      api: {
-        above: mock(() => [{ checked: true, type: KEYS.listTodoClassic }, [0]]),
-        isCollapsed: mock(() => false),
-        isEmpty: mock(() => false),
-        isStart: mock(() => false),
-        marks: mock(() => null),
-      },
-      getOptions: () => ({
-        inheritCheckStateOnLineEndBreak: false,
-        inheritCheckStateOnLineStartBreak: false,
-      }),
-      getType: (key: string) => key,
-      selection: { focus: { offset: 1, path: [0] } },
-      tf: {
-        delete: deleteSelection,
-        splitNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
-    } as any;
+  it('inserts before at the start', () => {
+    const editor = createTodoEditor(0);
 
-    expect(insertTodoListItem(editor)).toBe(true);
-    expect(deleteSelection).toHaveBeenCalledTimes(1);
-    expect(splitNodes).toHaveBeenCalledTimes(1);
+    editor.update((tx) => {
+      insertTodoListItem(editor, tx);
+    });
+
+    expect(editor.read.children()).toMatchObject([
+      { checked: false, children: [{ text: '' }] },
+      { checked: true, children: [{ text: 'one' }] },
+    ]);
+  });
+
+  it('inserts after at the end and selects it', () => {
+    const editor = createTodoEditor(3);
+
+    editor.update((tx) => {
+      insertTodoListItem(editor, tx);
+    });
+
+    expect(editor.read.children()).toMatchObject([
+      { checked: true, children: [{ text: 'one' }] },
+      { checked: false, children: [{ text: '' }] },
+    ]);
+    expect(editor.read.selection()?.anchor.path).toEqual([1, 0]);
   });
 });

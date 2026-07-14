@@ -1,19 +1,20 @@
-import {
-  type OmitFirst,
-  type PluginConfig,
-  bindFirst,
-  createSlatePlugin,
-  createTSlatePlugin,
-  KEYS,
-} from 'platejs';
+import { type PluginConfig, createBasePlugin } from '@platejs/core';
+import type { EditorUpdateTransaction } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import {
   toggleBulletedList,
-  toggleList,
   toggleNumberedList,
   toggleTaskList,
 } from './transforms';
+
 import { withList } from './withList';
+import { withDeleteBackwardList } from './withDeleteBackwardList';
+import { withDeleteForwardList } from './withDeleteForwardList';
+import { withDeleteFragmentList } from './withDeleteFragmentList';
+import { withInsertBreakList } from './withInsertBreakList';
+import { withInsertFragmentList } from './withInsertFragmentList';
+import { withNormalizeList } from './withNormalizeList';
 
 export type ListConfig = PluginConfig<
   'listClassic',
@@ -28,16 +29,24 @@ export type ListConfig = PluginConfig<
   },
   {},
   {
+    tab: () => boolean;
     toggle: {
-      bulletedList: OmitFirst<typeof toggleBulletedList>;
-      list: OmitFirst<typeof toggleList>;
-      numberedList: OmitFirst<typeof toggleNumberedList>;
-      taskList: OmitFirst<typeof toggleTaskList>;
+      bulletedList: () => void;
+      list: (options: { type: string }) => void;
+      numberedList: () => void;
+      taskList: (defaultChecked?: boolean) => void;
     };
+    untab: () => boolean;
   }
 >;
 
-export const BaseBulletedListPlugin = createSlatePlugin({
+export type ListTransaction = Pick<
+  EditorUpdateTransaction,
+  'blocks' | 'fragment' | 'nodes' | 'refs' | 'selection' | 'text'
+> &
+  Partial<Pick<EditorUpdateTransaction, 'withoutNormalizing'>>;
+
+export const BaseBulletedListPlugin = createBasePlugin({
   key: KEYS.ulClassic,
   node: { isContainer: true, isElement: true },
   parsers: {
@@ -52,24 +61,20 @@ export const BaseBulletedListPlugin = createSlatePlugin({
     },
   },
   render: { as: 'ul' },
-}).extendTransforms(({ editor }) => ({
-  toggle: () => {
-    toggleBulletedList(editor);
-  },
+}).extendTx(({ editor }) => (tx) => ({
+  toggle: () => toggleBulletedList(editor, tx),
 }));
 
-export const BaseNumberedListPlugin = createSlatePlugin({
+export const BaseNumberedListPlugin = createBasePlugin({
   key: KEYS.olClassic,
   node: { isContainer: true, isElement: true },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'OL' }] } } },
   render: { as: 'ol' },
-}).extendTransforms(({ editor }) => ({
-  toggle: () => {
-    toggleNumberedList(editor);
-  },
+}).extendTx(({ editor }) => (tx) => ({
+  toggle: () => toggleNumberedList(editor, tx),
 }));
 
-export const BaseTaskListPlugin = createSlatePlugin({
+export const BaseTaskListPlugin = createBasePlugin({
   key: KEYS.taskList,
   node: { isContainer: true, isElement: true },
   options: {
@@ -77,13 +82,11 @@ export const BaseTaskListPlugin = createSlatePlugin({
     inheritCheckStateOnLineStartBreak: false,
   },
   render: { as: 'ul' },
-}).extendTransforms(({ editor }) => ({
-  toggle: () => {
-    toggleTaskList(editor);
-  },
+}).extendTx(({ editor }) => (tx) => ({
+  toggle: () => toggleTaskList(editor, tx),
 }));
 
-export const BaseListItemPlugin = createSlatePlugin({
+export const BaseListItemPlugin = createBasePlugin({
   key: KEYS.li,
   inject: {
     plugins: {
@@ -100,7 +103,7 @@ export const BaseListItemPlugin = createSlatePlugin({
   render: { as: 'li' },
 });
 
-export const BaseListItemContentPlugin = createSlatePlugin({
+export const BaseListItemContentPlugin = createBasePlugin({
   key: KEYS.lic,
   node: {
     isElement: true,
@@ -108,7 +111,7 @@ export const BaseListItemContentPlugin = createSlatePlugin({
 });
 
 /** Enables support for bulleted, numbered and to-do lists. */
-export const BaseListPlugin = createTSlatePlugin<ListConfig>({
+export const BaseListPlugin = createBasePlugin<ListConfig>({
   key: KEYS.listClassic,
   plugins: [
     BaseBulletedListPlugin,
@@ -118,12 +121,10 @@ export const BaseListPlugin = createTSlatePlugin<ListConfig>({
     BaseListItemContentPlugin,
   ],
 })
-  .overrideEditor(withList)
-  .extendEditorTransforms(({ editor }) => ({
-    toggle: {
-      bulletedList: bindFirst(toggleBulletedList, editor),
-      list: bindFirst(toggleList, editor),
-      numberedList: bindFirst(toggleNumberedList, editor),
-      taskList: bindFirst(toggleTaskList, editor),
-    },
-  }));
+  .extendTx(withList)
+  .extendExtension(withInsertBreakList)
+  .extendExtension(withDeleteBackwardList)
+  .extendExtension(withDeleteForwardList)
+  .extendExtension(withDeleteFragmentList)
+  .extendExtension(withInsertFragmentList)
+  .extendExtension(withNormalizeList);

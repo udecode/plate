@@ -1,27 +1,30 @@
-import type { PlateEditor } from 'platejs/react';
-
 import {
-  type InsertNodesOptions,
+  type NodeInsertNodesOptions,
   type Path,
-  type TPlaceholderElement,
-  KEYS,
-  nanoid,
   PathApi,
-} from 'platejs';
+} from '@platejs/plite';
+import type { TPlaceholderElement } from '@platejs/utils';
+import { nanoid } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
+import type { PlateEditor } from 'platejs/react';
 
 import { PlaceholderPlugin } from '../PlaceholderPlugin';
 import { UploadErrorCode } from '../type';
 import { createUploadError, isUploadError } from '../utils/createUploadError';
 import { getMediaType } from '../utils/getMediaType';
-import { withHistoryMark } from '../utils/history';
 import { validateFiles } from '../utils/validateFiles';
+
+export type InsertMediaOptions = Omit<
+  NodeInsertNodesOptions<TPlaceholderElement>,
+  'at'
+> & { at?: Path };
 
 export const insertMedia = (
   editor: PlateEditor,
   files: FileList,
-  options?: Omit<InsertNodesOptions, 'at'> & { at?: Path }
+  options?: InsertMediaOptions
 ): any => {
-  const api = editor.getApi(PlaceholderPlugin);
+  const api = editor.plugin(PlaceholderPlugin).api;
   const uploadConfig = editor
     .plugin(PlaceholderPlugin)
     .getOption('uploadConfig');
@@ -60,31 +63,35 @@ export const insertMedia = (
     );
   }
 
-  let currentAt: Path | undefined;
-  const { at, nextBlock = true, ...restOptions } = options ?? {};
+  let currentAt = options?.at;
+
+  if (currentAt === undefined) {
+    const selection = editor.read.selection();
+    const block = selection ? editor.read.nodes.block({ at: selection }) : null;
+
+    if (block) currentAt = PathApi.next(block[1]);
+  }
+
+  const { at: _at, ...restOptions } = options ?? {};
 
   Array.from(files).forEach((file, index) => {
-    if (index === 0) {
-      if (at) {
-        currentAt = at;
-      }
-    } else {
+    if (index > 0) {
       currentAt = currentAt ? PathApi.next(currentAt) : undefined;
     }
 
     const id = nanoid();
 
-    api.placeholder.addUploadingFile(id, file);
+    api.addUploadingFile(id, file);
 
     const insert = () => {
-      editor.tf.insertNodes<TPlaceholderElement>(
+      editor.update.nodes.insert(
         {
           id,
           children: [{ text: '' }],
           mediaType: getMediaType(file, uploadConfig)!,
           type: editor.getType(KEYS.placeholder),
         },
-        { at: currentAt, nextBlock, ...restOptions }
+        { ...restOptions, at: currentAt }
       );
     };
 
@@ -93,11 +100,9 @@ export const insertMedia = (
       .getOption('disableEmptyPlaceholder');
 
     if (disableEmptyPlaceholder) {
-      editor.tf.withoutMerging(() => {
-        withHistoryMark(editor, insert);
-      });
+      editor.update.history.newBatch(insert);
     } else {
-      editor.tf.withoutNormalizing(insert);
+      insert();
     }
   });
 };

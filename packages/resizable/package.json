@@ -52,6 +52,7 @@
   "type": "module",
   "module": "./dist/index.js",
   "dependencies": {
+    "@platejs/plite-react": "workspace:^",
     "react-compiler-runtime": "^1.0.0"
   }
 }

@@ -60,6 +60,8 @@ export type HistoryControlTx<V extends Value = Value> = {
 };
 
 export type HistoryTxApi<V extends Value = Value> = {
+  /** Permanently discard the redo branch without changing the document. */
+  discardRedo: () => void;
   /** Merge this transaction into the previous compatible undo batch. */
   merge: HistoryControlTx<V>;
   /** Make this transaction start a fresh undo batch. */
@@ -236,6 +238,9 @@ const createHistoryExtension = <
     tx: {
       history(tx: EditorUpdateTransaction, editor: Editor) {
         return {
+          discardRedo() {
+            getHistory(editor).redos.length = 0;
+          },
           merge: createHistoryControl(tx, 'merge'),
           newBatch: createHistoryControl(tx, 'push'),
           redo() {

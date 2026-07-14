@@ -1,7 +1,11 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import { type Descendant, type SlateEditor, createEditor } from 'platejs';
+import {
+  createEditorFromFixture,
+  jsxt,
+  type TestEditor,
+} from '@platejs/test-utils';
+import { type Descendant } from 'platejs';
 
 import { expandListItemsWithChildren } from './expandListItemsWithChildren';
 
@@ -20,8 +24,8 @@ describe('expandListItemsWithChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
       const entries = [
@@ -52,8 +56,8 @@ describe('expandListItemsWithChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
       const entries = [
@@ -88,8 +92,8 @@ describe('expandListItemsWithChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
       // Only pass the parent item
@@ -125,8 +129,8 @@ describe('expandListItemsWithChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
       // Pass both parent items
@@ -161,8 +165,8 @@ describe('expandListItemsWithChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
       // Pass parent and one child (child 1)
@@ -198,8 +202,8 @@ describe('expandListItemsWithChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
       const entries = [
@@ -221,7 +225,7 @@ describe('expandListItemsWithChildren', () => {
 
   describe('edge cases', () => {
     it('handle empty input', () => {
-      const editor = createEditor((<editor />) as any as SlateEditor);
+      const editor = createEditorFromFixture((<editor />) as TestEditor);
 
       const result = expandListItemsWithChildren(editor, []);
 
@@ -241,8 +245,8 @@ describe('expandListItemsWithChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
       const entries = [[input[0], [0]]] as any;
@@ -276,8 +280,8 @@ describe('expandListItemsWithChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
       const entries = [[input[0], [0]]] as any;

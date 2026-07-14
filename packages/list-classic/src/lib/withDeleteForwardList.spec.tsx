@@ -1,9 +1,8 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
-import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseListPlugin } from './BaseListPlugin';
 
@@ -22,7 +21,7 @@ describe('p (empty) + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const expected = (
       <editor>
@@ -32,17 +31,17 @@ describe('p (empty) + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    editor.tf.deleteForward();
+    editor.update.text.deleteForward();
 
-    expect(editor.children).toEqual(expected.children);
+    expect(editor.read.children()).toEqual(expected.children);
   });
 });
 
@@ -60,23 +59,23 @@ describe('p /w text + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const expected = (
       <editor>
         <hp>onetwo</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    editor.tf.deleteForward();
+    editor.update.text.deleteForward();
 
-    expect(editor.children).toEqual(expected.children);
+    expect(editor.read.children()).toEqual(expected.children);
   });
 
   it('merge the texts but keep the rest of the list', () => {
@@ -95,7 +94,7 @@ describe('p /w text + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const expected = (
       <editor>
@@ -106,17 +105,17 @@ describe('p /w text + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    editor.tf.deleteForward();
+    editor.update.text.deleteForward();
 
-    expect(editor.children).toEqual(expected.children);
+    expect(editor.read.children()).toEqual(expected.children);
   });
 
   it('merge the texts and move up its first child', () => {
@@ -143,7 +142,7 @@ describe('p /w text + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const expected = (
       <editor>
@@ -162,17 +161,17 @@ describe('p /w text + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    editor.tf.deleteForward();
+    editor.update.text.deleteForward();
 
-    expect(editor.children).toEqual(expected.children);
+    expect(editor.read.children()).toEqual(expected.children);
   });
 });
 
@@ -200,7 +199,7 @@ describe('list + list when selection is at the end of the first list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const expected = (
       <editor>
@@ -219,17 +218,17 @@ describe('list + list when selection is at the end of the first list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    editor.tf.deleteForward();
+    editor.update.text.deleteForward();
 
-    expect(editor.children).toEqual(expected.children);
+    expect(editor.read.children()).toEqual(expected.children);
   });
 });
 
@@ -252,7 +251,7 @@ describe('list where second item has multiple children', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const expected = (
       <editor>
@@ -268,17 +267,17 @@ describe('list where second item has multiple children', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    editor.tf.deleteForward();
+    editor.update.text.deleteForward();
 
-    expect(editor.children).toEqual(expected.children);
+    expect(editor.read.children()).toEqual(expected.children);
   });
 });
 
@@ -308,7 +307,7 @@ describe('list + sublist where second item has multiple children', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const expected = (
       <editor>
@@ -329,16 +328,16 @@ describe('list + sublist where second item has multiple children', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    editor.tf.deleteForward();
+    editor.update.text.deleteForward();
 
-    expect(editor.children).toEqual(expected.children);
+    expect(editor.read.children()).toEqual(expected.children);
   });
 });

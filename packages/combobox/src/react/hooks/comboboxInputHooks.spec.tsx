@@ -63,9 +63,11 @@ describe('combobox input hooks', () => {
 
     result.current.props.onBlur();
 
-    expect(editor.read.children()).toEqual([
-      { children: [{ text: 'after' }], type: 'p' },
-    ]);
+    expect(editor.read.children()).toHaveLength(1);
+    expect(editor.read.children()[0]).toEqual({
+      children: [{ text: 'after' }],
+      type: 'p',
+    });
     expect(onCancelInput).toHaveBeenCalledWith('blur');
   });
 
@@ -113,9 +115,11 @@ describe('combobox input hooks', () => {
       which,
     } as unknown as React.KeyboardEvent<HTMLElement>);
 
-    expect(editor.read.children()).toEqual([
-      { children: [{ text: 'after' }], type: 'p' },
-    ]);
+    expect(editor.read.children()).toHaveLength(1);
+    expect(editor.read.children()[0]).toEqual({
+      children: [{ text: 'after' }],
+      type: 'p',
+    });
     expect(onCancelInput).toHaveBeenCalledWith(cause);
   });
 

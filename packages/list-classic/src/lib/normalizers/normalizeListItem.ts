@@ -1,17 +1,16 @@
+import type { BaseEditor } from '@platejs/core';
 import {
   type Descendant,
   type ElementEntry,
   type NodeEntry,
   type PathRef,
-  type SlateEditor,
-  type TElement,
-  KEYS,
-  match,
+  ElementApi,
   NodeApi,
   PathApi,
-} from 'platejs';
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
-import type { ListConfig } from '../BaseListPlugin';
+import type { ListConfig, ListTransaction } from '../BaseListPlugin';
 
 import { getListTypes } from '../queries/index';
 import { moveListItemUp } from '../transforms/index';
@@ -23,7 +22,7 @@ import { moveListItemUp } from '../transforms/index';
  * - Inline children except those at excludeDepth
  */
 export const getDeepInlineChildren = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   {
     children,
   }: {
@@ -33,7 +32,7 @@ export const getDeepInlineChildren = (
   const inlineChildren: NodeEntry<Descendant>[] = [];
 
   for (const child of children) {
-    if (editor.api.isBlock(child[0])) {
+    if (editor.read.nodes.isBlock(child[0])) {
       inlineChildren.push(
         ...getDeepInlineChildren(editor, {
           children: Array.from(NodeApi.children(editor, child[1])),
@@ -52,7 +51,8 @@ export const getDeepInlineChildren = (
  * move the children that are not valid to the list item container.
  */
 export const normalizeListItem = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: ListTransaction,
   {
     listItem,
     validLiChildrenTypes = [],
@@ -69,24 +69,23 @@ export const normalizeListItem = (
   ]);
 
   const [, liPath] = listItem;
-  const liChildren = Array.from(
-    NodeApi.children<TElement>(editor, listItem[1])
-  );
+  const liChildren = Array.from(NodeApi.children(editor, listItem[1]));
 
   // Get invalid (type) li children path refs to be moved
   const invalidLiChildrenPathRefs = liChildren
-    .filter(([child]) => !allValidLiChildrenTypes.has(child.type))
-    .map(([, childPath]) => editor.update.refs.path(childPath));
+    .filter(
+      ([child]) =>
+        !ElementApi.isElement(child) || !allValidLiChildrenTypes.has(child.type)
+    )
+    .map(([, childPath]) => tx.refs.path(childPath));
 
-  const firstLiChild: ElementEntry | undefined = liChildren[0];
+  const firstLiChild = liChildren[0];
   const [firstLiChildNode, firstLiChildPath] = firstLiChild ?? [];
 
   // If li has no child or inline child, insert lic
-  if (!firstLiChild || !editor.api.isBlock(firstLiChildNode)) {
-    editor.tf.insertNodes(
-      editor.api.create.block({
-        type: editor.getType(KEYS.lic),
-      }),
+  if (!firstLiChild || !editor.read.nodes.isBlock(firstLiChildNode)) {
+    tx.nodes.insert(
+      { children: [{ text: '' }], type: editor.getType(KEYS.lic) },
       {
         at: liPath.concat([0]),
       }
@@ -96,30 +95,29 @@ export const normalizeListItem = (
   }
   // If first li child is a block but not lic, set it to lic
   if (
-    editor.api.isBlock(firstLiChildNode) &&
-    !match(firstLiChildNode, [], {
-      type: editor.getType(KEYS.lic),
-    })
+    ElementApi.isElement(firstLiChildNode) &&
+    editor.read.nodes.isBlock(firstLiChildNode) &&
+    firstLiChildNode.type !== editor.getType(KEYS.lic)
   ) {
-    if (
-      match(firstLiChildNode, [], {
-        type: getListTypes(editor),
-      })
-    ) {
+    if (getListTypes(editor).includes(firstLiChildNode.type)) {
       // the listItem has no lic so we move the children up a level
-      const parent = editor.api.parent(listItem[1]);
-      const sublist = firstLiChild;
-      const children = Array.from(
-        NodeApi.children<TElement>(editor, firstLiChild[1])
-      ).reverse();
+      const parent = editor.read.nodes.parent(listItem[1]);
+      const sublist: ElementEntry = [firstLiChildNode, firstLiChildPath];
+      const children = Array.from(NodeApi.children(editor, firstLiChild[1]))
+        .filter((entry): entry is ElementEntry =>
+          ElementApi.isElement(entry[0])
+        )
+        .reverse();
       children.forEach((c) => {
-        moveListItemUp(editor, {
+        moveListItemUp(editor, tx, {
           list: sublist,
           listItem: c,
         });
       });
 
-      editor.tf.removeNodes({ at: [...parent![1], 0] });
+      if (!parent) return false;
+
+      tx.nodes.remove({ at: [...parent[1], 0] });
 
       return true;
     }
@@ -128,7 +126,7 @@ export const normalizeListItem = (
       return true;
     }
 
-    editor.tf.setNodes(
+    tx.nodes.set(
       {
         type: editor.getType(KEYS.lic),
       },
@@ -148,11 +146,11 @@ export const normalizeListItem = (
 
     // Check that lic has no block children
     for (const licChild of licChildren) {
-      if (!editor.api.isBlock(licChild[0])) {
+      if (!editor.read.nodes.isBlock(licChild[0])) {
         break;
       }
 
-      blockPathRefs.push(editor.update.refs.path(licChild[1]));
+      blockPathRefs.push(tx.refs.path(licChild[1]));
 
       inlineChildren.push(
         ...getDeepInlineChildren(editor, {
@@ -165,7 +163,7 @@ export const normalizeListItem = (
 
     // Move lic nested inline children to its children
     inlineChildren.reverse().forEach(([, path]) => {
-      editor.tf.moveNodes({
+      tx.nodes.move({
         at: path,
         to,
       });
@@ -176,7 +174,7 @@ export const normalizeListItem = (
       const path = pathRef.unref();
 
       if (path) {
-        editor.tf.removeNodes({
+        tx.nodes.remove({
           at: path,
         });
       }
@@ -193,7 +191,7 @@ export const normalizeListItem = (
     const path = ref.unref();
 
     if (path) {
-      editor.tf.moveNodes({
+      tx.nodes.move({
         at: path,
         to: firstLiChildPath.concat([0]),
       });

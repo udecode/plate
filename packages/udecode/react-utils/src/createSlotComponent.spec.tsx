@@ -35,7 +35,10 @@ describe('createSlotComponent', () => {
 
   it('forwards refs through the asChild path', () => {
     const Box = createSlotComponent('div');
-    const ref = React.createRef<HTMLButtonElement>();
+    const current: (HTMLElement | null)[] = [];
+    const ref = (element: HTMLElement | null) => {
+      current.push(element);
+    };
 
     const { getByTestId } = render(
       <Box asChild ref={ref}>
@@ -43,6 +46,6 @@ describe('createSlotComponent', () => {
       </Box>
     );
 
-    expect(ref.current).toBe(getByTestId('child') as HTMLButtonElement);
+    expect(current).toContain(getByTestId('child'));
   });
 });

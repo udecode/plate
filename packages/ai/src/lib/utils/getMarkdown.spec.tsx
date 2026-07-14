@@ -1,31 +1,71 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import { MarkdownPlugin } from '@platejs/markdown';
-import {
-  BaseTableCellHeaderPlugin,
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from '@platejs/table';
-import {
-  BaseParagraphPlugin,
-  type SlateEditor,
-  createSlateEditor,
-} from 'platejs';
+import { afterAll, describe, expect, it, mock } from 'bun:test';
 
-import { getMarkdown } from './getMarkdown';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
+import {
+  type BaseEditor,
+  BaseParagraphPlugin,
+  createBaseEditor,
+  createBasePlugin,
+} from '@platejs/core';
+import { MarkdownPlugin } from '@platejs/markdown';
+import { type Element, type ElementEntry } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 jsxt;
 
-const createTestEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const getTableGridAbove = (editor: BaseEditor): ElementEntry[] => {
+  const selection = editor.read.selection();
+  if (!selection) return [];
+
+  const start = editor.read.nodes.above<Element>({
+    at: selection.anchor,
+    match: { type: [KEYS.td, KEYS.th] },
+  });
+  const end = editor.read.nodes.above<Element>({
+    at: selection.focus,
+    match: { type: [KEYS.td, KEYS.th] },
+  });
+  if (!start || !end) return [];
+
+  const tablePath = start[1].slice(0, -2);
+  const startRow = Math.min(start[1].at(-2)!, end[1].at(-2)!);
+  const endRow = Math.max(start[1].at(-2)!, end[1].at(-2)!);
+  const startColumn = Math.min(start[1].at(-1)!, end[1].at(-1)!);
+  const endColumn = Math.max(start[1].at(-1)!, end[1].at(-1)!);
+  const entries: ElementEntry[] = [];
+
+  for (let row = startRow; row <= endRow; row++) {
+    for (let column = startColumn; column <= endColumn; column++) {
+      const entry = editor.read.nodes.get<Element>([...tablePath, row, column]);
+      if (entry) entries.push(entry);
+    }
+  }
+
+  return entries;
+};
+
+mock.module('@platejs/table', () => ({ getTableGridAbove }));
+
+afterAll(() => {
+  mock.restore();
+});
+
+const element = (key: string, isContainer = false) =>
+  createBasePlugin({
+    key,
+    node: { isContainer, isElement: true },
+  });
+
+const createTestEditor = (input: TestEditor) =>
+  createBaseEditor({
     plugins: [
       BaseParagraphPlugin,
-      BaseTablePlugin,
-      BaseTableRowPlugin,
-      BaseTableCellPlugin,
-      BaseTableCellHeaderPlugin,
+      element(KEYS.table, true),
+      element(KEYS.tr),
+      element(KEYS.td),
+      element(KEYS.th),
       MarkdownPlugin,
     ],
     selection: input.selection,
@@ -34,7 +74,8 @@ const createTestEditor = (input: SlateEditor) =>
 
 describe('getMarkdown', () => {
   describe('tableCellWithId', () => {
-    it('use CellRef placeholder in table and Cell blocks after', () => {
+    it('use CellRef placeholder in table and Cell blocks after', async () => {
+      const { getMarkdown } = await import('./getMarkdown');
       const input = (
         <editor>
           <htable id="t1">
@@ -88,7 +129,7 @@ describe('getMarkdown', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTestEditor(input);
 
@@ -109,7 +150,8 @@ describe('getMarkdown', () => {
       expect(result).toContain('| 工程师 |');
     });
 
-    it('handle single cell selection', () => {
+    it('handle single cell selection', async () => {
+      const { getMarkdown } = await import('./getMarkdown');
       const input = (
         <editor>
           <htable id="t1">
@@ -127,7 +169,7 @@ describe('getMarkdown', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTestEditor(input);
 
@@ -145,7 +187,8 @@ describe('getMarkdown', () => {
       expect(result).not.toContain('<CellRef id="t1_r1_c2"');
     });
 
-    it('handle cells with multiple paragraphs (multi-block support)', () => {
+    it('handle cells with multiple paragraphs (multi-block support)', async () => {
+      const { getMarkdown } = await import('./getMarkdown');
       const input = (
         <editor>
           <htable id="t1">
@@ -163,7 +206,7 @@ describe('getMarkdown', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = createTestEditor(input);
 

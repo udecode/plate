@@ -303,7 +303,6 @@ const resolvePluginMethods = (editor: BaseEditor, plugin: any) => {
         const context = {
           ...(getEditorPlugin(editor, plugin) as any),
           api: (plugin.api as any)[plugin.key],
-          editorApi: editor.api,
         };
         const newExtensions = extension(context);
 
@@ -312,7 +311,6 @@ const resolvePluginMethods = (editor: BaseEditor, plugin: any) => {
         // Handle APIs - Editor-wide API
         const context = {
           ...(getEditorPlugin(editor, plugin) as any),
-          editorApi: editor.api,
         };
         const newExtensions = extension(context);
 

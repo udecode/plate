@@ -1,145 +1,111 @@
-import type { OverrideEditor, PlateEditor } from 'platejs/react';
+import type { ExtendPlateEditorExtension } from '@platejs/core/react';
 
-import { serializeInlineMd } from '@platejs/markdown';
-import {
-  type Operation,
-  type SlateEditor,
-  type TRange,
-  RangeApi,
-} from 'platejs';
+import { type Range, defineStateField, RangeApi } from '@platejs/plite';
 
 import type { CopilotPluginConfig } from './CopilotPlugin';
 
 import { withoutAbort } from './utils/withoutAbort';
 
-type CopilotBatch = PlateEditor['history']['undos'][number] & {
-  shouldAbort: boolean;
+export type CopilotSuggestionState = {
+  id: string | null;
+  text: string | null;
 };
 
-const getPatchString = (editor: SlateEditor, operations: Operation[]) => {
-  let string = '';
+export const copilotSuggestionField = defineStateField<CopilotSuggestionState>({
+  key: 'copilot.suggestion',
+  collab: 'local',
+  history: 'push',
+  initial: () => ({ id: null, text: null }),
+});
 
-  for (const operation of operations) {
-    if (operation.type === 'insert_node') {
-      const node = operation.node;
-      const text = serializeInlineMd(editor, { value: [node] });
-      string += text;
-    } else if (operation.type === 'insert_text') {
-      string += operation.text;
-    }
-  }
+const isCopilotSuggestionState = (
+  value: unknown
+): value is CopilotSuggestionState =>
+  typeof value === 'object' &&
+  value !== null &&
+  'id' in value &&
+  (typeof value.id === 'string' || value.id === null) &&
+  'text' in value &&
+  (typeof value.text === 'string' || value.text === null);
 
-  return string;
-};
-
-export const withCopilot: OverrideEditor<CopilotPluginConfig> = ({
+export const withCopilot: ExtendPlateEditorExtension<CopilotPluginConfig> = ({
   api,
   editor,
   getOptions,
-  setOption,
-  tf: { apply, insertText, redo, setSelection, undo, writeHistory },
+  setOptions,
 }) => {
-  let prevSelection: TRange | null = null;
+  let prevSelection: Range | null = null;
+
+  const rejectSuggestionMirror = () => {
+    if (!getOptions().suggestionText?.length) return;
+
+    api.stop();
+    setOptions({
+      completion: null,
+      suggestionNodeId: null,
+      suggestionText: null,
+    });
+  };
 
   return {
-    transforms: {
-      apply(operation) {
-        const { shouldAbort } = getOptions();
+    onCommit({ commit }) {
+      const patch = commit.statePatches.find(
+        (statePatch) => statePatch.key === copilotSuggestionField.key
+      );
 
-        if (shouldAbort) {
-          api.copilot.reject();
+      if (patch && 'value' in patch && isCopilotSuggestionState(patch.value)) {
+        setOptions({
+          suggestionNodeId: patch.value.id,
+          suggestionText: patch.value.text,
+        });
+      }
+
+      if (!commit.operations.some(({ type }) => type === 'set_selection')) {
+        return;
+      }
+
+      const selection = editor.read.selection();
+      const autoTriggerQuery = getOptions().autoTriggerQuery;
+
+      if (
+        selection &&
+        (!prevSelection || !RangeApi.equals(prevSelection, selection)) &&
+        autoTriggerQuery?.({ editor }) &&
+        editor.read.view.isFocused()
+      ) {
+        void api.triggerSuggestion();
+      }
+
+      prevSelection = selection;
+    },
+    operations: {
+      apply({ next, operation }) {
+        if (getOptions().shouldAbort) {
+          rejectSuggestionMirror();
         }
 
-        apply(operation);
+        next(operation);
       },
-      insertText(text, options) {
+    },
+    transforms: {
+      insertText({ next, options, text, tx }) {
         const suggestionText = getOptions().suggestionText;
 
         // When using IME input, it's possible to enter two characters at once.
         if (suggestionText?.startsWith(text)) {
-          withoutAbort(editor, () => {
-            editor.tf.withoutMerging(() => {
-              const newText = suggestionText?.slice(text.length);
-              setOption('suggestionText', newText);
-              insertText(text);
+          return withoutAbort(editor, () => {
+            const newText = suggestionText.slice(text.length);
+            const suggestionNodeId = getOptions().suggestionNodeId;
+
+            tx.setField(copilotSuggestionField, {
+              id: suggestionNodeId ?? null,
+              text: newText,
             });
+            return next({ options, text });
           });
-
-          return;
         }
 
-        insertText(text, options);
-      },
-
-      redo() {
-        if (!getOptions().suggestionText) return redo();
-
-        const topRedo = editor.history.redos.at(-1) as CopilotBatch;
-        const prevSuggestion = getOptions().suggestionText;
-
-        if (topRedo && topRedo.shouldAbort === false && prevSuggestion) {
-          withoutAbort(editor, () => {
-            const shouldRemoveText = getPatchString(editor, topRedo.operations);
-
-            const newText = prevSuggestion.slice(shouldRemoveText.length);
-            setOption('suggestionText', newText);
-
-            redo();
-          });
-
-          return;
-        }
-
-        return redo();
-      },
-
-      setSelection(props) {
-        setSelection(props);
-
-        if (
-          editor.selection &&
-          (!prevSelection ||
-            !RangeApi.equals(prevSelection, editor.selection)) &&
-          getOptions().autoTriggerQuery!({ editor }) &&
-          editor.api.isFocused()
-        ) {
-          void api.copilot.triggerSuggestion();
-        }
-
-        prevSelection = editor.selection;
-      },
-
-      undo() {
-        if (!getOptions().suggestionText) return undo();
-
-        const lastUndos = editor.history.undos.at(-1) as CopilotBatch;
-        const oldText = getOptions().suggestionText;
-
-        if (lastUndos && lastUndos.shouldAbort === false && oldText) {
-          withoutAbort(editor, () => {
-            const shouldInsertText = getPatchString(
-              editor,
-              lastUndos.operations
-            );
-
-            const newText = shouldInsertText + oldText;
-            setOption('suggestionText', newText);
-
-            undo();
-          });
-
-          return;
-        }
-
-        return undo();
-      },
-
-      writeHistory(stacks, batch) {
-        if (!getOptions().isLoading) {
-          batch.shouldAbort = getOptions().shouldAbort;
-        }
-
-        return writeHistory(stacks, batch);
+        return next({ options, text });
       },
     },
   };

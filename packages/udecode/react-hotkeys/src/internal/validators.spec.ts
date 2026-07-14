@@ -32,8 +32,8 @@ describe('validators', () => {
     const event = createKeyboardEvent();
     const hotkey = { keys: ['a'] };
 
-    maybePreventDefault(event, hotkey as any, true);
-    maybePreventDefault(event, hotkey as any, () => true);
+    maybePreventDefault(event, hotkey, true);
+    maybePreventDefault(event, hotkey, () => true);
 
     expect(event.preventDefault).toHaveBeenCalledTimes(2);
   });
@@ -43,17 +43,17 @@ describe('validators', () => {
       target: document.createElement('input'),
     });
 
-    expect(isHotkeyEnabled(inputEvent, { keys: ['a'] } as any)).toBe(true);
-    expect(
-      isHotkeyEnabled(inputEvent, { keys: ['a'] } as any, () => false)
-    ).toBe(false);
+    expect(isHotkeyEnabled(inputEvent, { keys: ['a'] })).toBe(true);
+    expect(isHotkeyEnabled(inputEvent, { keys: ['a'] }, () => false)).toBe(
+      false
+    );
     expect(isKeyboardEventTriggeredByInput(inputEvent)).toBe(true);
     expect(isHotkeyEnabledOnTag(inputEvent, ['textarea'])).toBe(false);
     expect(isHotkeyEnabledOnTag(inputEvent, true)).toBe(true);
   });
 
   it('warns and falls back open when scopes are configured without a provider', () => {
-    const warnSpy = spyOn(console, 'warn') as any;
+    const warnSpy = spyOn(console, 'warn');
 
     warnSpy.mockImplementation(() => {});
 
@@ -77,7 +77,7 @@ describe('validators', () => {
           meta: false,
           shift: false,
           useKey: true,
-        } as any
+        }
       )
     ).toBe(true);
 
@@ -91,7 +91,7 @@ describe('validators', () => {
           meta: false,
           mod: true,
           shift: false,
-        } as any
+        }
       )
     ).toBe(true);
 
@@ -104,7 +104,7 @@ describe('validators', () => {
           keys: ['a'],
           meta: false,
           shift: false,
-        } as any,
+        },
         true
       )
     ).toBe(true);
@@ -118,7 +118,7 @@ describe('validators', () => {
         keys: ['a', 'b'],
         meta: false,
         shift: false,
-      } as any)
+      })
     ).toBe(true);
     expect(
       isHotkeyMatchingKeyboardEvent(createKeyboardEvent({ code: 'KeyC' }), {
@@ -127,7 +127,7 @@ describe('validators', () => {
         keys: ['a', 'b'],
         meta: false,
         shift: false,
-      } as any)
+      })
     ).toBe(false);
   });
 });

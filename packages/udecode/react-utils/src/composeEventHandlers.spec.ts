@@ -14,7 +14,7 @@ describe('composeEventHandlers', () => {
       }
     );
 
-    handler(event as any);
+    handler(event);
 
     expect(calls).toEqual(['original', 'ours']);
   });
@@ -33,7 +33,7 @@ describe('composeEventHandlers', () => {
       }
     );
 
-    handler(event as any);
+    handler(event);
 
     expect(calls).toEqual(['original']);
   });
@@ -53,7 +53,7 @@ describe('composeEventHandlers', () => {
       { checkForDefaultPrevented: false }
     );
 
-    handler(event as any);
+    handler(event);
 
     expect(calls).toEqual(['original', 'ours']);
   });

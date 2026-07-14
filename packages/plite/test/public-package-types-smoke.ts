@@ -168,8 +168,10 @@ type _PublicEditorLifecycleMethods = [
   ExpectAssignable<void, ReturnType<typeof editor.update.blocks.reset>>,
   ExpectAssignable<void, ReturnType<typeof editor.update.blocks.toggle>>,
   ExpectAssignable<void, ReturnType<typeof editor.update.blocks.lift>>,
+  ExpectAssignable<void, ReturnType<typeof editor.update.blocks.insertAfter>>,
   ExpectAssignable<void, ReturnType<typeof editor.update.text.insert>>,
   ExpectAssignable<void, ReturnType<typeof editor.update.nodes.insert>>,
+  ExpectAssignable<void, ReturnType<typeof editor.update.nodes.replace>>,
   ExpectAssignable<
     void,
     ReturnType<typeof editor.update.nodes.replaceChildren>

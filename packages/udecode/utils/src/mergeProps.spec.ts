@@ -104,4 +104,37 @@ describe('mergeProps', () => {
 
     expect(calls).toEqual(['blur-base', 'blur-override', 'override']);
   });
+
+  it('passes handler arguments to every composed callback', () => {
+    const values: string[] = [];
+    const props = mergeProps(
+      {
+        onChange: (value: string) => values.push(`base:${value}`),
+      },
+      {
+        onChange: (value: string) => values.push(`override:${value}`),
+      }
+    );
+
+    props.onChange('next');
+
+    expect(values).toEqual(['base:next', 'override:next']);
+  });
+
+  it('composes all function values when handlerQuery is null', () => {
+    const calls: string[] = [];
+    const props = mergeProps(
+      {
+        transform: () => calls.push('base'),
+      },
+      {
+        transform: () => calls.push('override'),
+      },
+      { handlerQuery: null }
+    );
+
+    props.transform();
+
+    expect(calls).toEqual(['base', 'override']);
+  });
 });

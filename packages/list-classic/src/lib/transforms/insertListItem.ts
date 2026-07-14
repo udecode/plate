@@ -1,4 +1,8 @@
-import { type SlateEditor, type TElement, KEYS, PathApi } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import { type Element, PathApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
+
+import type { ListTransaction } from '../BaseListPlugin';
 
 export type InsertListItemOptions = {
   inheritCheckStateOnLineEndBreak?: boolean;
@@ -7,23 +11,26 @@ export type InsertListItemOptions = {
 
 /** Insert list item if selection in li>p. TODO: test */
 export const insertListItem = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: ListTransaction,
   options: InsertListItemOptions = {}
 ): boolean => {
   const liType = editor.getType(KEYS.li);
   const licType = editor.getType(KEYS.lic);
 
-  if (!editor.selection) {
-    return false;
-  }
+  const selection = editor.read.selection();
 
-  const licEntry = editor.api.above({ match: { type: licType } });
+  if (!selection) return false;
+
+  const licEntry = editor.read.nodes.above<Element>({
+    match: { type: licType },
+  });
 
   if (!licEntry) return false;
 
   const [, paragraphPath] = licEntry;
 
-  const listItemEntry = editor.api.parent(paragraphPath);
+  const listItemEntry = editor.read.nodes.parent<Element>(paragraphPath);
 
   if (!listItemEntry) return false;
 
@@ -34,15 +41,13 @@ export const insertListItem = (
   const optionalTasklistProps =
     'checked' in listItemNode ? { checked: false } : undefined;
 
-  let success = false;
-
-  editor.tf.withoutNormalizing(() => {
-    if (!editor.api.isCollapsed()) {
-      editor.tf.delete();
+  {
+    if (!editor.read.selection.isCollapsed()) {
+      tx.text.delete();
     }
 
-    const isStart = editor.api.isStart(editor.selection!.focus, paragraphPath);
-    const isEnd = editor.api.isEmpty(editor.selection, { after: true });
+    const isStart = editor.read.points.isStart(selection.focus, paragraphPath);
+    const isEnd = editor.read.points.isEnd(selection.focus, paragraphPath);
 
     const nextParagraphPath = PathApi.next(paragraphPath);
     const nextListItemPath = PathApi.next(listItemPath);
@@ -53,7 +58,7 @@ export const insertListItem = (
         optionalTasklistProps.checked = listItemNode.checked as boolean;
       }
 
-      editor.tf.insertNodes(
+      tx.nodes.insert(
         {
           children: [{ children: [{ text: '' }], type: licType }],
           ...optionalTasklistProps,
@@ -62,9 +67,7 @@ export const insertListItem = (
         { at: listItemPath }
       );
 
-      success = true;
-
-      return;
+      return true;
     }
     /**
      * If not end, split nodes, wrap a list item on the new paragraph and move
@@ -72,13 +75,13 @@ export const insertListItem = (
      */
     if (isEnd) {
       /** If end, insert a list item after and select it */
-      const marks = editor.api.marks() || {};
+      const marks = editor.read.marks() || {};
 
       if (optionalTasklistProps && options.inheritCheckStateOnLineEndBreak) {
         optionalTasklistProps.checked = listItemNode.checked as boolean;
       }
 
-      editor.tf.insertNodes(
+      tx.nodes.insert(
         {
           children: [{ children: [{ text: '', ...marks }], type: licType }],
           ...optionalTasklistProps,
@@ -86,38 +89,34 @@ export const insertListItem = (
         },
         { at: nextListItemPath }
       );
-      editor.tf.select(nextListItemPath);
+      tx.selection.set(nextListItemPath);
     } else {
-      editor.tf.withoutNormalizing(() => {
-        editor.tf.splitNodes();
-        editor.tf.wrapNodes<TElement>(
-          {
-            children: [],
-            ...optionalTasklistProps,
-            type: liType,
-          },
-          { at: nextParagraphPath }
-        );
-        editor.tf.moveNodes({
-          at: nextParagraphPath,
-          to: nextListItemPath,
-        });
-        editor.tf.select(nextListItemPath);
-        editor.tf.collapse({
-          edge: 'start',
-        });
+      tx.nodes.split();
+      tx.nodes.wrap(
+        {
+          children: [],
+          ...optionalTasklistProps,
+          type: liType,
+        },
+        { at: nextParagraphPath }
+      );
+      tx.nodes.move({
+        at: nextParagraphPath,
+        to: nextListItemPath,
+      });
+      tx.selection.set(nextListItemPath);
+      tx.selection.collapse({
+        edge: 'start',
       });
     }
     /** If there is a list in the list item, move it to the next list item */
     if (listItemNode.children.length > 1) {
-      editor.tf.moveNodes({
+      tx.nodes.move({
         at: nextParagraphPath,
         to: nextListItemPath.concat(1),
       });
     }
 
-    success = true;
-  });
-
-  return success;
+    return true;
+  }
 };

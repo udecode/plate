@@ -13,8 +13,6 @@ import type {
   Text,
   Value,
   EditorUpdateContext,
-  EditorUpdateMethods,
-  EditorUpdateOptions,
   EditorUpdateTransaction,
 } from '@platejs/plite';
 import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
@@ -294,16 +292,10 @@ type HasOwnPluginTx<C extends AnyPluginConfig> = [OwnPluginTx<C>] extends [
     : true;
 
 export type BasePluginContextEditor<C extends AnyPluginConfig = PluginConfig> =
-  {
-    update: (<TTx extends object = {}>(
-      fn: (
-        transaction: EditorUpdateTransaction & InferTx<C> & TTx,
-        context: EditorUpdateContext
-      ) => void,
-      options?: EditorUpdateOptions
-    ) => void) &
-      EditorUpdateMethods;
-  } & BaseEditor;
+  Omit<BaseEditor, 'api' | 'update'> & {
+    readonly api: BaseEditor<Value, never>['api'] & C['api'];
+    update: BaseEditor<Value, C>['update'];
+  };
 
 /** Base interface for non-React Plate editor plugins. */
 export type BasePlugin<C extends AnyPluginConfig = PluginConfig> =

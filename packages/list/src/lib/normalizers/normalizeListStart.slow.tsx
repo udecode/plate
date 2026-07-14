@@ -1,19 +1,18 @@
 /** @jsx jsxt */
 
 import {
-  type BasePlateEditor,
-  type Value,
-  BaseParagraphPlugin,
-  createBasePlateEditor,
-  createEditorPlugin,
-  KEYS,
-} from 'platejs';
+  type BaseEditor,
+  createBaseEditor,
+  createBasePlugin,
+} from '@platejs/core';
+import type { Value } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt } from '@platejs/test-utils';
 import { omit } from 'lodash';
 
-import { getCurrentRuntimeTransforms } from '../../../../core/src/internal/currentRuntimeBridge';
+import { BaseParagraphPlugin } from '../../../../core/src/lib/plugins/paragraph/BaseParagraphPlugin';
 import { listPluginPage } from '../../__tests__/listPluginPage';
 import { BaseListPlugin } from '../BaseListPlugin';
 
@@ -21,7 +20,7 @@ jsxt;
 
 const CUSTOM_H1 = 'heading-one';
 
-const H1Plugin = createEditorPlugin({
+const H1Plugin = createBasePlugin({
   key: KEYS.h1,
 });
 
@@ -29,7 +28,7 @@ const CustomH1Plugin = H1Plugin.extend({
   node: { type: CUSTOM_H1 },
 });
 
-const BlockquotePlugin = createEditorPlugin({
+const BlockquotePlugin = createBasePlugin({
   key: KEYS.blockquote,
 });
 
@@ -46,7 +45,7 @@ const createEditor = ({
   pages?: boolean;
   targetPlugins?: string[];
 }) =>
-  createBasePlateEditor({
+  createBaseEditor({
     plugins: [
       BaseParagraphPlugin,
       headingPlugin,
@@ -141,10 +140,10 @@ const createBlockquoteItem = (
   </hblockquote>
 );
 
-const expectAlreadyNormalized = (editor: BasePlateEditor) => {
-  const before = editor.children;
+const expectAlreadyNormalized = (editor: BaseEditor) => {
+  const before = editor.read.children();
   editor.update.normalize({ force: true });
-  expect(editor.children).toBe(before);
+  expect(editor.read.children()).toBe(before);
 };
 
 describe('normalizeListStart', () => {
@@ -187,7 +186,7 @@ describe('normalizeListStart', () => {
         value: input,
       });
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     it('does not assign listStart to unordered list items', () => {
@@ -203,7 +202,7 @@ describe('normalizeListStart', () => {
         value: input,
       });
 
-      expect(editor.children).toEqual(input);
+      expect(editor.read.children()).toEqual(input);
     });
 
     it('strips previously-assigned listStart from unordered list items', () => {
@@ -222,7 +221,7 @@ describe('normalizeListStart', () => {
         value: input,
       });
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     it('resumes ordered numbering after an unordered interruption', () => {
@@ -245,7 +244,7 @@ describe('normalizeListStart', () => {
         value: input,
       });
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     it('starts paragraph numbering independently after numbered headings', () => {
@@ -269,7 +268,7 @@ describe('normalizeListStart', () => {
         value: input,
       });
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     it('does not resume paragraph numbering across numbered headings', () => {
@@ -291,7 +290,7 @@ describe('normalizeListStart', () => {
         value: input,
       });
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     it('continues paragraph numbering across nested numbered headings', () => {
@@ -313,7 +312,7 @@ describe('normalizeListStart', () => {
         value: input,
       });
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     it('continues paragraph numbering across non-numbered headings', () => {
@@ -337,7 +336,7 @@ describe('normalizeListStart', () => {
         value: input,
       });
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     it('uses configured heading node types for heading sequence boundaries', () => {
@@ -360,7 +359,7 @@ describe('normalizeListStart', () => {
         value: input,
       });
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     it('continues paragraph numbering across non-heading list blocks', () => {
@@ -382,7 +381,7 @@ describe('normalizeListStart', () => {
         value: input,
       });
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     it('honors listRestart on an ordered item following an unordered interruption', () => {
@@ -407,7 +406,7 @@ describe('normalizeListStart', () => {
         value: input,
       });
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     it('removes listStart from the first items', () => {
@@ -434,7 +433,7 @@ describe('normalizeListStart', () => {
         value: input,
       });
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     it('restarts listStart when encountering listRestart', () => {
@@ -461,7 +460,7 @@ describe('normalizeListStart', () => {
         value: input,
       });
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     it('restarts listStart when encountering listRestartPolite at the start of a list', () => {
@@ -496,7 +495,7 @@ describe('normalizeListStart', () => {
         value: input,
       });
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     describe('when configured to continue lists across multiple pages', () => {
@@ -529,7 +528,7 @@ describe('normalizeListStart', () => {
           value: input,
         });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
       });
 
       it('respects listRestart', () => {
@@ -557,7 +556,7 @@ describe('normalizeListStart', () => {
           value: input,
         });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
       });
     });
   });
@@ -585,11 +584,11 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).insertNode(createItem('x'), {
+        editor.update.nodes.insert(createItem('x'), {
           at: [0],
         });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
 
@@ -620,11 +619,11 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ pages: true, value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).insertNode(createItem('x'), {
+        editor.update.nodes.insert(createItem('x'), {
           at: [0, 2],
         });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
 
@@ -649,9 +648,9 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).insertNode(<hp>x</hp>, { at: [3] });
+        editor.update.nodes.insert(<hp>x</hp>, { at: [3] });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
     });
@@ -676,9 +675,9 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).removeNodes({ at: [0] });
+        editor.update.nodes.remove({ at: [0] });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
 
@@ -701,9 +700,9 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).removeNodes({ at: [3] });
+        editor.update.nodes.remove({ at: [3] });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
 
@@ -726,9 +725,9 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).removeNodes({ at: [2] });
+        editor.update.nodes.remove({ at: [2] });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
     });
@@ -758,12 +757,12 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).moveNodes({
+        editor.update.nodes.move({
           at: [0],
           to: [1],
         });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
 
@@ -789,12 +788,12 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).moveNodes({
+        editor.update.nodes.move({
           at: [1],
           to: [0],
         });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
 
@@ -818,12 +817,12 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).moveNodes({
+        editor.update.nodes.move({
           at: [0],
           to: [2],
         });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
 
@@ -847,12 +846,12 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).moveNodes({
+        editor.update.nodes.move({
           at: [3],
           to: [0],
         });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
 
@@ -876,12 +875,12 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).moveNodes({
+        editor.update.nodes.move({
           at: [2],
           to: [0],
         });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
 
@@ -905,12 +904,12 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).moveNodes({
+        editor.update.nodes.move({
           at: [0],
           to: [2],
         });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
     });
@@ -934,12 +933,9 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).setNodes(
-          { indent: 2 },
-          { at: [1] }
-        );
+        editor.update.nodes.set({ indent: 2 }, { at: [1] });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
 
@@ -961,12 +957,9 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).setNodes(
-          { indent: 1 },
-          { at: [1] }
-        );
+        editor.update.nodes.set({ indent: 1 }, { at: [1] });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
 
@@ -991,9 +984,9 @@ describe('normalizeListStart', () => {
         expectAlreadyNormalized(editor);
 
         const itemProps = omit(createItem(''), ['type', 'children']);
-        getCurrentRuntimeTransforms(editor).setNodes(itemProps, { at: [2] });
+        editor.update.nodes.set(itemProps, { at: [2] });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
 
@@ -1017,12 +1010,12 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).setNodes(
+        editor.update.nodes.set(
           { indent: undefined, listStyleType: undefined },
           { at: [2] }
         );
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
     });
@@ -1045,11 +1038,11 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).mergeNodes({
+        editor.update.nodes.merge({
           at: [2],
         });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
 
@@ -1072,11 +1065,11 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).mergeNodes({
+        editor.update.nodes.merge({
           at: [1],
         });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
 
@@ -1099,11 +1092,11 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).mergeNodes({
+        editor.update.nodes.merge({
           at: [2],
         });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
     });
@@ -1128,11 +1121,11 @@ describe('normalizeListStart', () => {
         const editor = createEditor({ value: input });
         expectAlreadyNormalized(editor);
 
-        getCurrentRuntimeTransforms(editor).splitNodes({
+        editor.update.nodes.split({
           at: { offset: 1, path: [2, 0] },
         });
 
-        expect(editor.children).toEqual(output);
+        expect(editor.read.children()).toEqual(output);
         expectAlreadyNormalized(editor);
       });
     });

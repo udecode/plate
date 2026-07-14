@@ -1,9 +1,10 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from 'platejs';
 
 import { someTodoList } from './someTodoList';
 
 const createListEditor = ({ children }: { children: any[] }) =>
-  createSlateEditor({
+  createBaseEditor({
     selection: {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },

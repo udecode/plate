@@ -1,9 +1,7 @@
 import { useEffect, useMemo } from 'react';
 
-import type { SlateEditor } from 'platejs';
-
 import { type DeserializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
-import { useEditorPlugin } from 'platejs/react';
+import { type PlateEditor, useEditorPlugin } from '@platejs/core/react';
 
 import { AIChatPlugin } from '../AIChatPlugin';
 
@@ -14,31 +12,28 @@ import { AIChatPlugin } from '../AIChatPlugin';
  * @returns Deserialized children to pass as `value` prop to PlateStatic
  */
 export const useAIChatEditor = (
-  editor: SlateEditor,
+  editor: PlateEditor,
   content: string,
   { parser }: DeserializeMdOptions = {}
 ) => {
   const { setOption } = useEditorPlugin(AIChatPlugin);
 
   const children = useMemo(
-    () => {
-      const result = editor
-        .getApi(MarkdownPlugin)
-        .markdown.deserialize(content, {
-          memoize: true,
-          parser,
-        });
-      return result;
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [content]
+    () =>
+      editor.plugin(MarkdownPlugin).api.deserialize(content, {
+        memoize: true,
+        parser,
+      }),
+    [content, editor, parser]
   );
 
-  editor.children = children;
-
   useEffect(() => {
+    editor.update.value.replace(
+      { children },
+      { history: 'skip', normalize: false }
+    );
     setOption('aiEditor', editor);
-  }, [editor, setOption]);
+  }, [children, editor, setOption]);
 
   return children;
 };

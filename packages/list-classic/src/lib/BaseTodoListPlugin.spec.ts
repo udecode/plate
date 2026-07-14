@@ -1,10 +1,11 @@
-import { BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { BaseParagraphPlugin, KEYS } from 'platejs';
 
 import { BaseTodoListPlugin } from './BaseTodoListPlugin';
 
 describe('BaseTodoListPlugin', () => {
   it('inserts a new todo item on line break inside a todo item', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseTodoListPlugin],
       selection: {
         anchor: { path: [0, 0], offset: 4 },
@@ -19,9 +20,9 @@ describe('BaseTodoListPlugin', () => {
       ],
     } as any);
 
-    editor.tf.insertBreak();
+    editor.update.break.insert();
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         checked: true,
         children: [{ text: 'task' }],
@@ -33,14 +34,14 @@ describe('BaseTodoListPlugin', () => {
         type: KEYS.listTodoClassic,
       },
     ]);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
     });
   });
 
   it('falls back to the base insertBreak outside todo items', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseTodoListPlugin],
       selection: {
         anchor: { path: [0, 0], offset: 4 },
@@ -49,9 +50,9 @@ describe('BaseTodoListPlugin', () => {
       value: [{ children: [{ text: 'task' }], type: KEYS.p }],
     } as any);
 
-    editor.tf.insertBreak();
+    editor.update.break.insert();
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         children: [{ text: 'task' }],
         type: KEYS.p,
@@ -61,21 +62,26 @@ describe('BaseTodoListPlugin', () => {
         type: KEYS.p,
       },
     ]);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
     });
   });
 
-  it('binds the toggle transform to the todo list type', () => {
-    const editor = createSlateEditor({
+  it('toggles the selected block to the todo list type', () => {
+    const editor = createBaseEditor({
       plugins: [BaseTodoListPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [{ children: [{ text: '' }], type: KEYS.p }],
     } as any);
-    const transforms = editor.getTransforms(BaseTodoListPlugin) as any;
-    const spy = spyOn(editor.tf, 'toggleBlock');
 
-    transforms.action_item.toggle();
+    editor.plugin(BaseTodoListPlugin).update.toggle();
 
-    expect(spy).toHaveBeenCalledWith(editor.getType(KEYS.listTodoClassic));
+    expect(editor.read.children()[0].type).toBe(
+      editor.getType(KEYS.listTodoClassic)
+    );
   });
 });

@@ -1,10 +1,8 @@
 import type { BaseEditor } from '@platejs/core';
-import {
-  type EditorUpdateTransaction,
-  type Element,
-  type NodeInsertNodesOptions,
-  PathApi,
-  RangeApi,
+import type {
+  EditorUpdateTransaction,
+  Element,
+  NodeInsertNodesOptions,
 } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
@@ -27,29 +25,28 @@ export const insertEmptyCodeBlock = (
     insertNodesOptions,
   }: CodeBlockInsertOptions = {}
 ) => {
-  const selection = editor.read.selection();
+  const selection = tx.selection();
 
   if (!selection) return;
-  const block = editor.read.nodes.block({
-    at: editor.read.selection.isExpanded()
-      ? RangeApi.end(selection)
-      : selection,
-  });
+  const block = tx.selection.isCollapsed()
+    ? tx.nodes.block({ at: selection })
+    : undefined;
   const shouldInsertNextBlock =
-    editor.read.selection.isExpanded() ||
-    !block ||
-    !editor.read.nodes.isEmpty(block[0]);
+    tx.selection.isExpanded() || !block || !tx.nodes.isEmpty(block[0]);
+  let codeBlockOptions = insertNodesOptions;
 
   if (shouldInsertNextBlock) {
-    tx.nodes.insert(
+    const { at: _at, ...options } = insertNodesOptions ?? {};
+
+    tx.blocks.insertAfter(
       { children: [{ text: '' }], type: defaultType },
       {
-        at: block ? PathApi.next(block[1]) : [editor.read.children().length],
-        select: true,
         ...insertNodesOptions,
+        select: true,
       }
     );
+    codeBlockOptions = options;
   }
 
-  insertCodeBlock(editor, tx, insertNodesOptions);
+  insertCodeBlock(editor, tx, codeBlockOptions);
 };

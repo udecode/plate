@@ -47,9 +47,8 @@ export const withInsertFragmentTable: OverrideEditor<TableConfig> = ({
               if (cellEntry) {
                 const [, cellPath] = cellEntry;
 
-                editor.tf.replaceNodes(cloneDeep(fragment) as any, {
+                editor.tf.replaceChildren(cloneDeep(fragment), {
                   at: cellPath,
-                  children: true,
                 });
               }
             });
@@ -125,13 +124,10 @@ export const withInsertFragmentTable: OverrideEditor<TableConfig> = ({
 
                   initCell = false;
 
-                  const cellChildren = api.table.getCellChildren!(
-                    cell
-                  ) as TTableCellElement[];
+                  const cellChildren = api.table.getCellChildren!(cell);
 
-                  editor.tf.replaceNodes(cloneDeep(cellChildren as any), {
+                  editor.tf.replaceChildren(cloneDeep(cellChildren), {
                     at: cellPath,
-                    children: true,
                   });
 
                   lastCellPath = [...cellPath];

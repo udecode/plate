@@ -1,4 +1,5 @@
-import { useEditorRef, useReadOnly } from 'platejs/react';
+import { useEditorRef } from '@platejs/core/react';
+import { useEditorReadOnly } from '@platejs/plite-react';
 
 import type { TTodoListItemElement } from '../../lib';
 
@@ -9,7 +10,7 @@ export const useTodoListElementState = ({
 }): any => {
   const editor = useEditorRef();
   const { checked } = element;
-  const readOnly = useReadOnly();
+  const readOnly = useEditorReadOnly();
 
   return {
     checked,
@@ -31,10 +32,7 @@ export const useTodoListElement = (
       onCheckedChange: (value: boolean) => {
         if (readOnly) return;
 
-        editor.tf.setNodes<TTodoListItemElement>(
-          { checked: value },
-          { at: element }
-        );
+        editor.update.nodes.set({ checked: value }, { at: element });
       },
     },
   };

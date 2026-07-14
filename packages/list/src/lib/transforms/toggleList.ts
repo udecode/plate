@@ -1,6 +1,7 @@
-import type { ElementEntryOf, ElementOf, SlateEditor, TElement } from 'platejs';
-
-import { getInjectMatch, KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import { getInjectMatch } from '@platejs/core';
+import { type Element, ElementApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import type { ListOptions } from './indentList';
 
@@ -18,13 +19,10 @@ import { toggleListSet } from './toggleListSet';
 import { toggleListUnset } from './toggleListUnset';
 
 /** Toggle indent list. */
-export const toggleList = <
-  N extends ElementOf<E>,
-  E extends SlateEditor = SlateEditor,
->(
-  editor: E,
+export const toggleList = <N extends Element = Element>(
+  editor: BaseEditor,
   options: ListOptions,
-  getSiblingListOptions?: GetSiblingListOptions<N, E>
+  getSiblingListOptions?: GetSiblingListOptions<N>
 ) => {
   const { listRestart, listRestartPolite, listStyleType } = options;
   const { getSiblingListOptions: pluginGetSiblingListOptions } = editor
@@ -33,7 +31,7 @@ export const toggleList = <
   const mergedGetSiblingListOptions = {
     ...pluginGetSiblingListOptions,
     ...getSiblingListOptions,
-  } as GetSiblingListOptions<ElementOf<E>, E>;
+  } as GetSiblingListOptions<Element>;
 
   /**
    * True - One or more blocks were converted to lists or changed such that they
@@ -44,8 +42,8 @@ export const toggleList = <
    * Null - No action was taken.
    */
   const setList = ((): boolean | null => {
-    if (editor.api.isCollapsed()) {
-      const entry = editor.api.block<TElement>();
+    if (editor.read.selection.isCollapsed()) {
+      const entry = editor.read.nodes.block<Element>();
 
       if (!entry) return null;
       if (toggleListSet(editor, entry, options)) {
@@ -55,38 +53,45 @@ export const toggleList = <
         return false;
       }
 
-      setListSiblingNodes(editor, entry as ElementEntryOf<E>, {
+      setListSiblingNodes(editor, entry, {
         getSiblingListOptions: mergedGetSiblingListOptions,
         listStyleType,
       });
 
       return true;
     }
-    if (editor.api.isExpanded()) {
+    if (editor.read.selection.isExpanded()) {
       const match = getInjectMatch(
         editor,
         editor.getPlugin({ key: KEYS.list })
       );
-      const _entries = editor.api.nodes<TElement>({ block: true, match });
-      const entries = [..._entries];
+      const entries = editor.read.nodes.toArray<Element>({
+        match: (node, path) =>
+          ElementApi.isElement(node) &&
+          editor.read.nodes.isBlock(node) &&
+          match(node, path),
+      });
 
       const eqListStyleType = areEqListStyleType(editor, entries, {
         listStyleType,
       });
 
       if (eqListStyleType) {
-        editor.tf.withoutNormalizing(() => {
+        editor.update.withoutNormalizing(() => {
           entries.forEach((entry) => {
             const [node, path] = entry;
 
             const indent = node[KEYS.indent] as number;
 
-            editor.tf.unsetNodes(KEYS.listType, { at: path });
+            editor.update.nodes.unset(KEYS.listType, { at: path });
 
             if (indent > 1) {
-              editor.tf.setNodes({ [KEYS.indent]: indent - 1 }, { at: path });
+              editor.update.nodes.set(
+                { [KEYS.indent]: indent - 1 },
+                { at: path }
+              );
             } else {
-              editor.tf.unsetNodes([KEYS.indent, KEYS.listChecked], {
+              editor.update.nodes.unset([KEYS.indent, KEYS.listChecked], {
                 at: path,
               });
             }
@@ -113,7 +118,11 @@ export const toggleList = <
   const isRestart = !!listRestart;
 
   if (setList && restartValue) {
-    const atStart = editor.api.start(editor.selection!);
+    const selection = editor.read.selection();
+    if (!selection) return;
+
+    const atStart = editor.read.points.start(selection);
+    if (!atStart) return;
     const entry = getListAbove(editor, { at: atStart });
     if (!entry) return;
 
@@ -137,6 +146,6 @@ export const toggleList = <
 
     const prop = isRestart ? KEYS.listRestart : KEYS.listRestartPolite;
 
-    editor.tf.setNodes({ [prop]: restartValue }, { at: entry[1] });
+    editor.update.nodes.set({ [prop]: restartValue }, { at: entry[1] });
   }
 };

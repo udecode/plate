@@ -1,27 +1,19 @@
-import type { BaseEditor } from '@platejs/core';
-import {
-  PathApi,
-  type EditorUpdateTransaction,
-  type NodeInsertNodesOptions,
-  type NodeProps,
+import type {
+  EditorUpdateTransaction,
+  NodeInsertNodesOptions,
+  NodeProps,
 } from '@platejs/plite';
 
 import type { TCodeDrawingElement } from '../BaseCodeDrawingPlugin';
 
 export const insertCodeDrawing = (
-  editor: BaseEditor,
   tx: EditorUpdateTransaction,
   type: string,
   props: NodeProps<TCodeDrawingElement> = {},
   options: NodeInsertNodesOptions<TCodeDrawingElement> = {}
 ): void => {
   const { data, ...restProps } = props;
-  const currentBlock =
-    options.at === undefined
-      ? editor.read.nodes.block({ at: tx.selection() ?? undefined })
-      : undefined;
-
-  tx.nodes.insert<TCodeDrawingElement>(
+  tx.blocks.insertAfter<TCodeDrawingElement>(
     {
       children: [{ text: '' }],
       type,
@@ -33,11 +25,6 @@ export const insertCodeDrawing = (
       },
       ...restProps,
     },
-    {
-      ...options,
-      at:
-        options.at ??
-        (currentBlock ? PathApi.next(currentBlock[1]) : undefined),
-    }
+    options
   );
 };

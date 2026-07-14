@@ -1,17 +1,19 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import type { Element } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { BaseMentionInputPlugin, BaseMentionPlugin } from './BaseMentionPlugin';
 
 describe('BaseMentionPlugin', () => {
   it('configures mention defaults and inserts markable void mention nodes', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseMentionPlugin],
       selection: {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
       value: [{ children: [{ text: 'hello' }], type: 'p' }],
-    } as any);
+    });
     const plugin = editor.getPlugin(BaseMentionPlugin);
     const inputPlugin = editor.getPlugin(BaseMentionInputPlugin);
 
@@ -33,9 +35,11 @@ describe('BaseMentionPlugin', () => {
       isVoid: true,
     });
 
-    (editor.tf as any).insert.mention({ key: 'u1', value: 'Ada' } as any);
+    editor.update.mention.insert({ key: 'u1', value: 'Ada' });
 
-    const children = (editor.children[0] as any).children;
+    const children = editor.read.nodes.get<Element>([0], {
+      required: true,
+    })[0].children;
 
     expect(children[0]).toEqual({ text: 'he' });
     expect(children[1]).toMatchObject({
@@ -48,7 +52,7 @@ describe('BaseMentionPlugin', () => {
   });
 
   it('deleteBackward removes the adjacent mention atom', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseMentionPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 2] },
@@ -69,24 +73,24 @@ describe('BaseMentionPlugin', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
-    editor.tf.deleteBackward('character');
+    editor.update.text.deleteBackward({ unit: 'character' });
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: 'hi  after' }],
         type: 'p',
       },
     ]);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
   });
 
   it('deleteForward removes the next mention atom', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseMentionPlugin],
       selection: {
         anchor: { offset: 3, path: [0, 0] },
@@ -107,24 +111,24 @@ describe('BaseMentionPlugin', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
-    editor.tf.deleteForward('character');
+    editor.update.text.deleteForward({ unit: 'character' });
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: 'hi  after' }],
         type: 'p',
       },
     ]);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
   });
 
   it('moves right into the mention child so the inline void stays keyboard-accessible', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseMentionPlugin],
       selection: {
         anchor: { offset: 3, path: [0, 0] },
@@ -145,18 +149,18 @@ describe('BaseMentionPlugin', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
-    editor.tf.move({ distance: 1, unit: 'character' });
+    editor.update.selection.move({ distance: 1, unit: 'character' });
 
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 0, path: [0, 1, 0] },
     });
   });
 
   it('moves left into the mention child so the inline void stays keyboard-accessible', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseMentionPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 2] },
@@ -177,11 +181,15 @@ describe('BaseMentionPlugin', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
-    editor.tf.move({ distance: 1, reverse: true, unit: 'character' });
+    editor.update.selection.move({
+      distance: 1,
+      reverse: true,
+      unit: 'character',
+    });
 
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 0, path: [0, 1, 0] },
     });

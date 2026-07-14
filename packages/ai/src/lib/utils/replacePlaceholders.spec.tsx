@@ -1,32 +1,71 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import { MarkdownPlugin } from '@platejs/markdown';
-import {
-  BaseTableCellHeaderPlugin,
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from '@platejs/table';
-import {
-  BaseParagraphPlugin,
-  type SlateEditor,
-  createSlateEditor,
-} from 'platejs';
+import { afterAll, describe, expect, it, mock } from 'bun:test';
 
-import { getMarkdown } from './getMarkdown';
-import { replacePlaceholders } from './replacePlaceholders';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
+import {
+  type BaseEditor,
+  BaseParagraphPlugin,
+  createBaseEditor,
+  createBasePlugin,
+} from '@platejs/core';
+import { MarkdownPlugin } from '@platejs/markdown';
+import { type Element, type ElementEntry } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 jsxt;
 
-const createTestEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const getTableGridAbove = (editor: BaseEditor): ElementEntry[] => {
+  const selection = editor.read.selection();
+  if (!selection) return [];
+
+  const start = editor.read.nodes.above<Element>({
+    at: selection.anchor,
+    match: { type: [KEYS.td, KEYS.th] },
+  });
+  const end = editor.read.nodes.above<Element>({
+    at: selection.focus,
+    match: { type: [KEYS.td, KEYS.th] },
+  });
+  if (!start || !end) return [];
+
+  const tablePath = start[1].slice(0, -2);
+  const startRow = Math.min(start[1].at(-2)!, end[1].at(-2)!);
+  const endRow = Math.max(start[1].at(-2)!, end[1].at(-2)!);
+  const startColumn = Math.min(start[1].at(-1)!, end[1].at(-1)!);
+  const endColumn = Math.max(start[1].at(-1)!, end[1].at(-1)!);
+  const entries: ElementEntry[] = [];
+
+  for (let row = startRow; row <= endRow; row++) {
+    for (let column = startColumn; column <= endColumn; column++) {
+      const entry = editor.read.nodes.get<Element>([...tablePath, row, column]);
+      if (entry) entries.push(entry);
+    }
+  }
+
+  return entries;
+};
+
+mock.module('@platejs/table', () => ({ getTableGridAbove }));
+
+afterAll(() => {
+  mock.restore();
+});
+
+const element = (key: string, isContainer = false) =>
+  createBasePlugin({
+    key,
+    node: { isContainer, isElement: true },
+  });
+
+const createTestEditor = (input: TestEditor) =>
+  createBaseEditor({
     plugins: [
       BaseParagraphPlugin,
-      BaseTablePlugin,
-      BaseTableRowPlugin,
-      BaseTableCellPlugin,
-      BaseTableCellHeaderPlugin,
+      element(KEYS.table, true),
+      element(KEYS.tr),
+      element(KEYS.td),
+      element(KEYS.th),
       MarkdownPlugin,
     ],
     selection: input.selection,
@@ -34,7 +73,9 @@ const createTestEditor = (input: SlateEditor) =>
   });
 
 describe('replacePlaceholders', () => {
-  it('replaces prompt and markdown placeholders using real editor markdown', () => {
+  it('replaces prompt and markdown placeholders using real editor markdown', async () => {
+    const { getMarkdown } = await import('./getMarkdown');
+    const { replacePlaceholders } = await import('./replacePlaceholders');
     const input = (
       <editor>
         <hp>
@@ -44,7 +85,7 @@ describe('replacePlaceholders', () => {
         </hp>
         <hp>After</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
     const editor = createTestEditor(input);
     const expectedBlock = getMarkdown(editor, { type: 'block' });
     const expectedBlockSelection = getMarkdown(editor, {
@@ -75,7 +116,9 @@ describe('replacePlaceholders', () => {
     );
   });
 
-  it('replaces the tableCellWithId placeholder using the table markdown path', () => {
+  it('replaces the tableCellWithId placeholder using the table markdown path', async () => {
+    const { getMarkdown } = await import('./getMarkdown');
+    const { replacePlaceholders } = await import('./replacePlaceholders');
     const input = (
       <editor>
         <htable id="t1">
@@ -93,7 +136,7 @@ describe('replacePlaceholders', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
     const editor = createTestEditor(input);
     const expectedTable = getMarkdown(editor, { type: 'tableCellWithId' });
 
@@ -104,13 +147,14 @@ describe('replacePlaceholders', () => {
     expect(result).toContain('<Cell id="t1_r1_c1">\nContent\n</Cell>');
   });
 
-  it('leaves strings without placeholders unchanged', () => {
+  it('leaves strings without placeholders unchanged', async () => {
+    const { replacePlaceholders } = await import('./replacePlaceholders');
     const editor = createTestEditor(
       (
         <editor>
           <hp>Plain text</hp>
         </editor>
-      ) as any as SlateEditor
+      ) as TestEditor
     );
 
     expect(replacePlaceholders(editor, 'Nothing to replace here.')).toBe(

@@ -135,4 +135,50 @@ describe('useOnClickOutside', () => {
 
     expect(getCallCount()).toBe(1);
   });
+
+  it('calls the latest callback without replacing the ref', () => {
+    let latestValue = '';
+
+    const Harness = ({ value }: { value: string }) => {
+      const ref = useOnClickOutside(() => {
+        latestValue = value;
+      });
+
+      return (
+        <div>
+          <div ref={ref} />
+          <div data-testid="outside" />
+        </div>
+      );
+    };
+
+    const view = render(<Harness value="first" />);
+    view.rerender(<Harness value="second" />);
+    fireEvent.mouseDown(view.getByTestId('outside'));
+
+    expect(latestValue).toBe('second');
+  });
+
+  it('removes listeners after the callback ref detaches', () => {
+    let callCount = 0;
+
+    const Harness = ({ mounted }: { mounted: boolean }) => {
+      const ref = useOnClickOutside(() => {
+        callCount += 1;
+      });
+
+      return (
+        <div>
+          {mounted && <div ref={ref} />}
+          <div data-testid="outside" />
+        </div>
+      );
+    };
+
+    const view = render(<Harness mounted />);
+    view.rerender(<Harness mounted={false} />);
+    fireEvent.mouseDown(view.getByTestId('outside'));
+
+    expect(callCount).toBe(0);
+  });
 });

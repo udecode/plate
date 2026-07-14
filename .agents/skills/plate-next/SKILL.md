@@ -674,9 +674,10 @@ Rules:
   harness dependencies like `@platejs/test-utils` only because specs import
   them unless repo-wide tooling convention or package-local tooling requires
   it.
-- If a reviewed package should not be in `check:core`, record the reason in the
-  plan. Examples: product-only UI package, registry-only package, or package
-  whose failures do not protect Core/Plite substrate.
+- Every completed package review must add its package slug to
+  `reviewedPackageSlugs` in `tooling/scripts/check-core.mjs` before closure.
+  Exclude only a deferred/blocked review or a package whose plan explicitly
+  records why it does not belong in `check:core`.
 - Broad Plate v2 redesign, cross-package migrations, or package-to-package
   fallout are out of scope unless the current package exposes a real blocker
   that cannot be fixed in its owner.
@@ -777,10 +778,10 @@ Do not start `apps/www` or hit `www` routes from Plate Next package review.
 `www` proof is a separate docs/app lane unless the current target is explicitly
 docs, registry UI, examples, or the user asks for that proof.
 
-For Core-adjacent package review, `pnpm check:core` is also required after the
-package is added to `tooling/scripts/check-core.mjs`. Do not close a package
-review that hardens Core/Plite behavior while leaving the shared Core gate blind
-to that package.
+For every completed package review, `pnpm check:core` is required after the
+package is added to `reviewedPackageSlugs` in
+`tooling/scripts/check-core.mjs`. Do not close a package review while leaving
+the shared gate blind to it.
 
 Use focused tests first. Run broader gates only before closing a risky packet.
 If a broader command reports errors in packages outside the named/touched

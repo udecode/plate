@@ -15,7 +15,7 @@ describe('toggleListUnset', () => {
     ).mockImplementation(() => {});
     const unsetNodes = mock();
     const editor = {
-      tf: { unsetNodes },
+      update: { nodes: { unset: unsetNodes } },
     } as any;
 
     expect(
@@ -37,7 +37,7 @@ describe('toggleListUnset', () => {
     ).mockImplementation(() => {});
     const unsetNodes = mock();
     const editor = {
-      tf: { unsetNodes },
+      update: { nodes: { unset: unsetNodes } },
     } as any;
 
     expect(
@@ -61,7 +61,7 @@ describe('toggleListUnset', () => {
 
     expect(
       toggleListUnset(
-        { tf: { unsetNodes } } as any,
+        { update: { nodes: { unset: unsetNodes } } } as any,
         [{ [KEYS.listType]: 'circle' }, [1]] as any,
         { listStyleType: 'disc' }
       )

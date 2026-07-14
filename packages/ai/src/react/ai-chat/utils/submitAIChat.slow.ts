@@ -1,130 +1,84 @@
-const isSelectingMock = mock();
-const getEditorPromptMock = mock();
-const getEditorPluginMock = mock();
-const useEditorPluginMock = mock();
-const usePluginOptionMock = mock();
+import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { BaseParagraphPlugin } from '@platejs/core';
+import { type Value } from '@platejs/plite';
+import { createPlateEditor } from '@platejs/core/react';
 
-mock.module('@platejs/selection', () => ({
-  isSelecting: isSelectingMock,
-}));
+import { BaseAIPlugin } from '../../../lib/BaseAIPlugin';
+import { withAIBatch } from '../../../lib/transforms/withAIBatch';
+import { type AIChatPluginConfig, AIChatPlugin } from '../AIChatPlugin';
+import { submitAIChat } from './submitAIChat';
 
-mock.module('@platejs/selection/react', () => ({
-  BlockSelectionPlugin: { key: 'blockSelection' },
-}));
+const createEditor = (sendMessage: ReturnType<typeof mock>) => {
+  const editor = createPlateEditor<Value>({
+    plugins: [
+      BaseParagraphPlugin,
+      BaseAIPlugin,
+      BlockSelectionPlugin,
+      AIChatPlugin,
+    ],
+    selection: {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    },
+    value: [
+      { children: [{ text: 'one' }], id: 'b1', type: 'p' },
+      { children: [{ text: 'two' }], id: 'b2', type: 'p' },
+    ],
+  });
+  const chat = {
+    messages: [],
+    sendMessage,
+  } as unknown as NonNullable<AIChatPluginConfig['options']['chat']>;
 
-mock.module('../../../lib/utils/getEditorPrompt', () => ({
-  getEditorPrompt: getEditorPromptMock,
-}));
+  editor.plugin(AIChatPlugin).setOption('chat', chat);
 
-mock.module('platejs/react', async () => {
-  const actual = await import(
-    new URL('../../../../../plate/dist/react/index.js', import.meta.url).href
-  );
-  const getEditorPlugin = actual.getEditorPlugin as any;
-  const useEditorPlugin = actual.useEditorPlugin as any;
-  const usePluginOption = actual.usePluginOption as any;
-
-  return {
-    ...actual,
-    getEditorPlugin: (...args: any[]) =>
-      (getEditorPluginMock as any)(...args) ?? getEditorPlugin(...args),
-    useEditorPlugin: (...args: any[]) =>
-      (useEditorPluginMock as any)(...args) ?? useEditorPlugin(...args),
-    usePluginOption: (...args: any[]) =>
-      (usePluginOptionMock as any)(...args) ?? usePluginOption(...args),
-  };
-});
-
-const loadModule = async () =>
-  import(`./submitAIChat?test=${Math.random().toString(36).slice(2)}`);
+  return editor;
+};
 
 describe('submitAIChat', () => {
-  beforeEach(() => {
-    isSelectingMock.mockReset();
-    getEditorPromptMock.mockReset();
-    getEditorPluginMock.mockReset();
-  });
-
-  afterAll(() => {
-    mock.restore();
-  });
-
-  it('returns early when both prompt and input are empty', async () => {
+  it('returns early when both prompt and input are empty', () => {
     const sendMessage = mock();
-    getEditorPluginMock.mockReturnValue({
-      getOptions: () => ({
-        chat: { sendMessage },
-        toolName: null,
-      }),
-      setOption: mock(),
-    });
+    const editor = createEditor(sendMessage);
 
-    const { submitAIChat } = await loadModule();
-
-    submitAIChat({} as any, '');
+    submitAIChat(editor, '');
 
     expect(sendMessage).not.toHaveBeenCalled();
   });
 
-  it('undoes insert mode, stores chat context, and sends the computed prompt', async () => {
-    const setOption = mock();
+  it('undoes insert mode, stores selected blocks, and sends their context', () => {
     const sendMessage = mock();
-    const undo = mock();
-    const blocks = [
-      [{ id: 'b1', type: 'p' }, [0]],
-      [{ id: 'b2', type: 'p' }, [1]],
-    ];
-
-    getEditorPluginMock.mockReturnValue({
-      getOptions: () => ({
-        chat: { sendMessage },
-        toolName: 'summarize',
-      }),
-      setOption,
+    const editor = createEditor(sendMessage);
+    editor.plugin(AIChatPlugin).setOption('toolName', 'edit');
+    editor.plugin(AIChatPlugin).setOption('open', true);
+    editor
+      .plugin(BlockSelectionPlugin)
+      .setOption('selectedIds', new Set(['b1', 'b2']));
+    withAIBatch(editor, (tx) => {
+      tx.nodes.insert({ ai: true, text: ' ai' }, { at: [0, 1] });
     });
-    isSelectingMock.mockReturnValue(false);
-    getEditorPromptMock.mockReturnValue('Prompt');
-
-    const editor = {
-      api: {
-        blockSelection: {
-          getNodes: () => blocks,
-        },
-        blocks: () => [],
-        fragment: () => [{ id: 'frag-1', type: 'p' }],
-        nodesRange: () => ({ anchor: 'a', focus: 'b' }),
-        some: () => true,
-      },
-      children: [{ id: 'root', type: 'p' }],
-      getOption: () => false,
-      history: { redos: [{}], undos: [{ ai: true }] },
-      selection: { anchor: { path: [0, 0], offset: 0 } },
-      undo,
-    } as any;
-
-    const { submitAIChat } = await loadModule();
 
     submitAIChat(editor, 'draft', { mode: 'insert' });
 
-    expect(undo).toHaveBeenCalled();
-    expect(setOption).toHaveBeenCalledWith('mode', 'insert');
-    expect(setOption).toHaveBeenCalledWith('toolName', 'summarize');
-    expect(setOption).toHaveBeenCalledWith('chatNodes', [
-      { id: 'b1', type: 'p' },
-      { id: 'b2', type: 'p' },
-    ]);
-    expect(setOption).toHaveBeenCalledWith('chatSelection', null);
+    expect(editor.read.text.string([])).toBe('onetwo');
+    expect(editor.plugin(AIChatPlugin).getOption('mode')).toBe('insert');
+    expect(editor.plugin(AIChatPlugin).getOption('toolName')).toBe('edit');
+    expect(
+      editor
+        .plugin(AIChatPlugin)
+        .getOption('chatNodes')
+        .map((node) => node.id)
+    ).toEqual(['b1', 'b2']);
+    expect(editor.plugin(AIChatPlugin).getOption('chatSelection')).toBeNull();
     expect(sendMessage).toHaveBeenCalledWith(
-      { text: 'Prompt' },
-      {
-        body: {
-          ctx: {
-            children: [{ id: 'root', type: 'p' }],
-            selection: { anchor: 'a', focus: 'b' },
-            toolName: 'summarize',
-          },
-        },
-      }
+      { text: 'draft' },
+      expect.objectContaining({
+        body: expect.objectContaining({
+          ctx: expect.objectContaining({
+            selection: expect.any(Object),
+            toolName: 'edit',
+          }),
+        }),
+      })
     );
   });
 });

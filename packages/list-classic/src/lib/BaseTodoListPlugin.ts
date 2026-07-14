@@ -1,13 +1,15 @@
-import { type TElement, createSlatePlugin, KEYS } from 'platejs';
+import { createBasePlugin } from '@platejs/core';
+import type { Element } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { getTodoListItemEntry } from './queries';
 import { insertTodoListItem } from './transforms';
 
-export interface TTodoListItemElement extends TElement {
+export interface TTodoListItemElement extends Element {
   checked?: boolean;
 }
 
-export const BaseTodoListPlugin = createSlatePlugin({
+export const BaseTodoListPlugin = createBasePlugin({
   key: KEYS.listTodoClassic,
   node: { isElement: true },
   options: {
@@ -15,30 +17,19 @@ export const BaseTodoListPlugin = createSlatePlugin({
     inheritCheckStateOnLineStartBreak: false,
   },
 })
-  .overrideEditor(({ editor, tf: { insertBreak } }) => ({
+  .extendExtension(({ editor }) => ({
     transforms: {
-      insertBreak() {
-        const insertBreakTodoList = () => {
-          if (!editor.selection) return;
+      insertBreak({ next, tx }) {
+        if (!editor.read.selection()) return next();
 
-          const res = getTodoListItemEntry(editor);
+        const res = getTodoListItemEntry(editor);
 
-          // If selection is in a todo li
-          if (res) {
-            const inserted = insertTodoListItem(editor);
+        if (res && insertTodoListItem(editor, tx)) return true;
 
-            if (inserted) return true;
-          }
-        };
-
-        if (insertBreakTodoList()) return;
-
-        insertBreak();
+        return next();
       },
     },
   }))
-  .extendTransforms(({ editor, type }) => ({
-    toggle: () => {
-      editor.tf.toggleBlock(type);
-    },
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => tx.nodes.toggle(type),
   }));

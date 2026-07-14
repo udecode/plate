@@ -1,37 +1,37 @@
-import { type SlateEditor, getEditorPlugin, KEYS } from 'platejs';
+import type { BaseEditor, InferConfig } from '@platejs/core';
+import type { Value } from '@platejs/plite';
 
-import type { MentionConfig } from './BaseMentionPlugin';
+import { BaseMentionPlugin } from './BaseMentionPlugin';
 import type { TMentionItemBase } from './types';
+
+type MentionEditor = BaseEditor<Value, InferConfig<typeof BaseMentionPlugin>>;
 
 export type MentionOnSelectItem<
   TItem extends TMentionItemBase = TMentionItemBase,
-> = (editor: SlateEditor, item: TItem, search?: string) => void;
+> = (editor: MentionEditor, item: TItem, search?: string) => void;
 
 export const getMentionOnSelectItem =
-  <TItem extends TMentionItemBase = TMentionItemBase>({
-    key = KEYS.mention,
-  }: {
-    key?: string;
-  } = {}): MentionOnSelectItem<TItem> =>
+  <
+    TItem extends TMentionItemBase = TMentionItemBase,
+  >(): MentionOnSelectItem<TItem> =>
   (editor, item, search = '') => {
-    const { getOptions, tf } = getEditorPlugin<MentionConfig>(editor, {
-      key: key as any,
-    });
+    const { getOptions } = editor.plugin(BaseMentionPlugin);
     const { insertSpaceAfterMention } = getOptions();
 
-    tf.insert.mention({ key: item.key, search, value: item.text });
+    editor.update.mention.insert({ key: item.key, search, value: item.text });
 
     // move the selection after the element
-    editor.tf.move({ unit: 'offset' });
+    editor.update.selection.move({ unit: 'offset' });
 
-    const pathAbove = editor.api.block()?.[1];
+    const pathAbove = editor.read.nodes.block()?.[1];
+    const selection = editor.read.selection();
 
     const isBlockEnd =
-      editor.selection &&
+      selection &&
       pathAbove &&
-      editor.api.isEnd(editor.selection.anchor, pathAbove);
+      editor.read.points.isEnd(selection.anchor, pathAbove);
 
     if (isBlockEnd && insertSpaceAfterMention) {
-      editor.tf.insertText(' ');
+      editor.update.text.insert(' ');
     }
   };

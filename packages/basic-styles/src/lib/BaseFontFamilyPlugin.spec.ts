@@ -1,4 +1,4 @@
-import { createBaseEditor, getEditorPlugin } from '@platejs/core';
+import { createBaseEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { BaseFontFamilyPlugin } from './BaseFontFamilyPlugin';
@@ -9,23 +9,20 @@ describe('BaseFontFamilyPlugin', () => {
       plugins: [BaseFontFamilyPlugin],
     });
     const plugin = editor.getPlugin(BaseFontFamilyPlugin);
-    const parse = plugin.parsers!.html!.deserializer!.parse!;
 
     expect(plugin.inject.nodeProps).toMatchObject({
       nodeKey: 'fontFamily',
     });
     expect(
-      parse({
-        ...getEditorPlugin(editor, plugin),
-        element: {
-          style: { fontFamily: '"Fira Code", monospace' },
-        } as HTMLElement,
-        node: {},
-        type: KEYS.fontFamily,
+      editor.api.html.deserialize({
+        element: '<span style="font-family: Fira Code, monospace">text</span>',
       })
-    ).toEqual({
-      [KEYS.fontFamily]: '"Fira Code", monospace',
-    });
+    ).toMatchObject([
+      {
+        [KEYS.fontFamily]: '"Fira Code", monospace',
+        text: 'text',
+      },
+    ]);
   });
 
   it('sets font family through the typed tx group', () => {

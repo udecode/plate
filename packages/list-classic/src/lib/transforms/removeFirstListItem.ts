@@ -1,11 +1,15 @@
-import type { ElementEntry, SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { ElementEntry } from '@platejs/plite';
+
+import type { ListTransaction } from '../BaseListPlugin';
 
 import { isListNested } from '../queries/isListNested';
 import { moveListItemUp } from './moveListItemUp';
 
 /** If list is not nested and if li is not the first child, move li up. */
 export const removeFirstListItem = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: ListTransaction,
   {
     list,
     listItem,
@@ -17,7 +21,7 @@ export const removeFirstListItem = (
   const [, listPath] = list;
 
   if (!isListNested(editor, listPath)) {
-    moveListItemUp(editor, { list, listItem });
+    moveListItemUp(editor, tx, { list, listItem });
 
     return true;
   }

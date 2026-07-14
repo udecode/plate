@@ -1,6 +1,7 @@
 import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test';
+import type { detect } from '@antfu/ni';
 
-const detectMock = mock();
+const detectMock = mock<typeof detect>();
 
 mock.module('@antfu/ni', () => ({
   detect: detectMock,
@@ -32,7 +33,7 @@ describe('getPackageManager', () => {
     detectMock.mockResolvedValueOnce('yarn@berry');
     await expect(getPackageManager('/tmp')).resolves.toBe('yarn');
 
-    detectMock.mockResolvedValueOnce('pnpm@10.0.0');
+    detectMock.mockResolvedValueOnce('pnpm@6');
     await expect(getPackageManager('/tmp')).resolves.toBe('pnpm');
 
     detectMock.mockResolvedValueOnce('bun');
@@ -42,7 +43,7 @@ describe('getPackageManager', () => {
   it('falls back to npm_config_user_agent when detection fails', async () => {
     const { getPackageManager } = await loadModule();
 
-    detectMock.mockResolvedValueOnce(null);
+    detectMock.mockResolvedValueOnce(undefined);
     process.env.npm_config_user_agent = 'pnpm/10.0.0 node/v22.0.0';
 
     await expect(getPackageManager('/tmp')).resolves.toBe('pnpm');
@@ -51,11 +52,11 @@ describe('getPackageManager', () => {
   it('normalizes yarn from the fallback user agent and defaults empty agents to npm', async () => {
     const { getPackageManager } = await loadModule();
 
-    detectMock.mockResolvedValueOnce(null);
+    detectMock.mockResolvedValueOnce(undefined);
     process.env.npm_config_user_agent = 'yarn/4.0.0 npm/? node/v22.0.0';
     await expect(getPackageManager('/tmp')).resolves.toBe('yarn');
 
-    detectMock.mockResolvedValueOnce(null);
+    detectMock.mockResolvedValueOnce(undefined);
     delete process.env.npm_config_user_agent;
     await expect(getPackageManager('/tmp')).resolves.toBe('npm');
   });
@@ -63,7 +64,7 @@ describe('getPackageManager', () => {
   it('returns npm when nothing matches or fallback is disabled', async () => {
     const { getPackageManager } = await loadModule();
 
-    detectMock.mockResolvedValue(null);
+    detectMock.mockResolvedValue(undefined);
     process.env.npm_config_user_agent = 'unknown/1.0.0';
 
     await expect(
@@ -84,7 +85,7 @@ describe('getPackageManager', () => {
       programmatic: false,
     });
 
-    detectMock.mockResolvedValueOnce(null);
+    detectMock.mockResolvedValueOnce(undefined);
     process.env.npm_config_user_agent = 'bun/1.2.0 node/v22.0.0';
 
     await expect(getPackageManager('/tmp')).resolves.toBe('bun');

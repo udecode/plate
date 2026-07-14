@@ -1,7 +1,9 @@
-import type { PlateEditor } from 'platejs/react';
+import type { PlateEditor } from '@platejs/core/react';
 
 import { type DeserializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
-import { type TElement, getPluginType, KEYS, TextApi } from 'platejs';
+import { getPluginType } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
+import { TextApi } from '@platejs/plite';
 
 import { AIChatPlugin } from '../AIChatPlugin';
 import { getChunkTrimmed } from './utils';
@@ -20,16 +22,14 @@ export const streamDeserializeMd = (
 
   if (Array.isArray(value)) return value;
 
-  let blocks: TElement[] = [];
-
-  blocks = editor.getApi(MarkdownPlugin).markdown.deserialize(input, {
+  const blocks = editor.plugin(MarkdownPlugin).api.deserialize(input, {
     ...options,
     preserveEmptyParagraphs: false,
   });
 
   const trimmedData = getChunkTrimmed(data);
 
-  const lastBlock = blocks.at(-1) as TElement | undefined;
+  const lastBlock = blocks.at(-1);
 
   const addNewLine = trimmedData === '\n\n';
   const unshiftNewLine =

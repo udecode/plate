@@ -856,6 +856,12 @@ importers:
 
   packages/ai:
     dependencies:
+      '@platejs/combobox':
+        specifier: workspace:^
+        version: link:../combobox
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/markdown':
         specifier: workspace:^
         version: link:../markdown
@@ -871,6 +877,12 @@ importers:
       '@platejs/table':
         specifier: workspace:^
         version: link:../table
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
+      '@udecode/utils':
+        specifier: workspace:^
+        version: link:../udecode/utils
       fastest-levenshtein:
         specifier: 1.0.16
         version: 1.0.16
@@ -890,9 +902,6 @@ importers:
       ai:
         specifier: ^6.0.0
         version: 6.0.116(zod@4.4.3)
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/basic-nodes:
     dependencies:
@@ -1590,9 +1599,24 @@ importers:
 
   packages/list:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/indent':
         specifier: workspace:^
         version: link:../indent
+      '@platejs/plite':
+        specifier: workspace:^
+        version: link:../plite
+      '@platejs/plite-react':
+        specifier: workspace:^
+        version: link:../plite-react
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
+      '@udecode/utils':
+        specifier: workspace:^
+        version: link:../udecode/utils
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -1606,9 +1630,6 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
       platejs:
         specifier: workspace:^
         version: link:../plate
@@ -1621,6 +1642,9 @@ importers:
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/plite-react':
+        specifier: workspace:^
+        version: link:../plite-react
       '@platejs/utils':
         specifier: workspace:^
         version: link:../utils
@@ -1747,9 +1771,21 @@ importers:
 
   packages/media:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/plite-react':
+        specifier: workspace:^
+        version: link:../plite-react
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
+      '@udecode/utils':
+        specifier: workspace:^
+        version: link:../udecode/utils
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1766,9 +1802,15 @@ importers:
       '@platejs/combobox':
         specifier: workspace:*
         version: link:../combobox
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1959,6 +2001,9 @@ importers:
 
   packages/resizable:
     dependencies:
+      '@platejs/plite-react':
+        specifier: workspace:^
+        version: link:../plite-react
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)

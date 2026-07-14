@@ -1,25 +1,31 @@
-/** biome-ignore-all lint/correctness/useJsxKeyInIterable: biome */
 import React from 'react';
+
+type ProviderEntry =
+  | React.ElementType
+  | readonly [React.ElementType, Record<string, unknown>];
+
+const isProviderWithProps = (
+  provider: ProviderEntry
+): provider is readonly [React.ElementType, Record<string, unknown>] =>
+  Array.isArray(provider);
 
 /**
  * Wrap a component into multiple providers. If there are any props that you
  * want a provider to receive, you can simply pass an array.
  */
 export const withProviders =
-  (...providers: any[]) =>
-  <T,>(WrappedComponent: React.FC<T>) =>
+  (...providers: ProviderEntry[]) =>
+  <T extends object>(WrappedComponent: React.ComponentType<T>) =>
   (props: T) =>
-    providers.reduceRight(
-      (acc, prov) => {
-        let Provider = prov;
+    providers.reduceRight<React.ReactNode>(
+      (children, provider) => {
+        if (isProviderWithProps(provider)) {
+          const [Provider, providerProps] = provider;
 
-        if (Array.isArray(prov)) {
-          [Provider] = prov;
-
-          return <Provider {...prov[1]}>{acc}</Provider>;
+          return React.createElement(Provider, providerProps, children);
         }
 
-        return <Provider>{acc}</Provider>;
+        return React.createElement(provider, undefined, children);
       },
-      <WrappedComponent {...(props as any)} />
+      <WrappedComponent {...props} />
     );

@@ -233,8 +233,8 @@ export type PluginBase<C extends AnyPluginConfig = PluginConfig> = {
 export type PluginBaseContext<C extends AnyPluginConfig = PluginConfig> = {
   /** API owned by the current plugin, without the plugin-key namespace wrapper. */
   api: InferOwnApi<C>;
-  /** Composed root editor API, including APIs from every resolved plugin. */
-  editorApi: C['api'];
+  /** One-shot updates owned by the current plugin, without its key namespace. */
+  update: InferPluginTx<C> extends object ? InferPluginTx<C> : {};
   setOptions: (
     options:
       | ((state: Draft<Partial<InferOptions<C>>>) => void)

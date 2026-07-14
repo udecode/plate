@@ -13,7 +13,7 @@ describe('BaseTextIndentPlugin', () => {
       plugins: [BaseParagraphPlugin, BaseTextIndentPlugin],
     });
     const plugin = editor.getPlugin(BaseTextIndentPlugin);
-    const nodeProps = plugin.inject.nodeProps!;
+    const nodeProps = editor.getInjectProps(BaseTextIndentPlugin);
     const transformNodeValue = nodeProps.transformNodeValue!;
 
     expect(plugin.inject.isBlock).toBe(true);
@@ -42,7 +42,7 @@ describe('BaseTextIndentPlugin', () => {
       plugins: [BaseParagraphPlugin, TextIndentPlugin],
     });
     const plugin = editor.getPlugin(TextIndentPlugin);
-    const nodeProps = plugin.inject.nodeProps!;
+    const nodeProps = editor.getInjectProps(TextIndentPlugin);
 
     expect(
       nodeProps.transformNodeValue!({

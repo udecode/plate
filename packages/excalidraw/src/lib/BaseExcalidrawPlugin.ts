@@ -20,9 +20,9 @@ export interface TExcalidrawElement extends Element {
 export const BaseExcalidrawPlugin = createBasePlugin({
   key: KEYS.excalidraw,
   node: { isElement: true, isVoid: true },
-}).extendTx(({ editor, type }) => (tx) => ({
+}).extendTx(({ type }) => (tx) => ({
   insert: (
     props?: NodeProps<TExcalidrawElement>,
     options?: NodeInsertNodesOptions<TExcalidrawElement>
-  ) => insertExcalidraw(editor, tx, type, props, options),
+  ) => insertExcalidraw(tx, type, props, options),
 }));

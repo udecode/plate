@@ -59,6 +59,17 @@ const replaceChildrenOptions: EditorReplaceChildrenOptions = { at: callout };
 editor.update.nodes.replaceChildren([{ text: 'replacement' }], {
   ...replaceChildrenOptions,
 });
+editor.update.nodes.replace(
+  { type: 'paragraph', children: [{ text: 'replacement' }] },
+  { at: callout, select: true }
+);
+editor.update.nodes.replace(callout, {
+  // @ts-expect-error replace requires an exact path or live node target
+  at: {
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 0 },
+  },
+});
 
 const leaf: TextOf<typeof editor> = { text: 'typed', bold: true };
 const marks: EditorMarksOf<typeof editor> = { code: true };

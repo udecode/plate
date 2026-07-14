@@ -124,6 +124,68 @@ describe('document meta history contract', () => {
     );
   });
 
+  it('merges explicit batches that update document state', () => {
+    const streamState = defineStateField({
+      key: 'document.stream-state',
+      history: 'push',
+      initial: () => 'idle',
+    });
+    const editor = createEditor({
+      extensions: [history(), streamState],
+      initialValue: [paragraph('body')],
+    });
+    const readStreamState = () =>
+      editor.read((state) => state.getField(streamState));
+
+    editor.update((tx) => {
+      tx.history.newBatch();
+      tx.setField(streamState, 'streaming');
+      tx.nodes.insert(paragraph('first'), { at: [1] });
+    });
+    editor.update((tx) => {
+      tx.history.merge();
+      tx.setField(streamState, 'done');
+      tx.nodes.insert(paragraph('second'), { at: [2] });
+    });
+
+    assert.equal(
+      editor.read((state) => state.history.undos().length),
+      1
+    );
+    assert.deepEqual(
+      editor.read((state) => state.history.undos()[0]?.statePatches),
+      [
+        {
+          key: streamState.key,
+          previousValue: 'idle',
+          value: 'done',
+        },
+      ]
+    );
+
+    undo(editor);
+
+    assert.deepEqual(
+      editor.read((state) => state.value()),
+      {
+        children: [paragraph('body')],
+        meta: { [streamState.key]: 'idle' },
+      }
+    );
+    assert.equal(readStreamState(), 'idle');
+
+    redo(editor);
+
+    assert.deepEqual(
+      editor.read((state) => state.value()),
+      {
+        children: [paragraph('body'), paragraph('first'), paragraph('second')],
+        meta: { [streamState.key]: 'done' },
+      }
+    );
+    assert.equal(readStreamState(), 'done');
+  });
+
   it('does not save history-skip state field commits', () => {
     const localPanel = defineStateField({
       key: 'local.panel',

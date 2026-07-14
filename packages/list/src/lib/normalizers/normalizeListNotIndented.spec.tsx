@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BaseIndentPlugin } from '@platejs/indent';
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 
@@ -18,22 +18,22 @@ describe('normalizeList', () => {
             1
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const output = (
         <editor>
           <hp>1</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
         shouldNormalizeEditor: true,
         value: input.children,
       });
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read.children()).toEqual(output.children);
     });
   });
 });

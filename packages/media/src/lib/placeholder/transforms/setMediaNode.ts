@@ -1,4 +1,5 @@
-import type { SetNodesOptions, SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { Node, NodeSetNodesOptions } from '@platejs/plite';
 
 type props = {
   type: string;
@@ -13,7 +14,7 @@ type props = {
 };
 
 export const setMediaNode = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   props: props,
-  options?: SetNodesOptions
-) => editor.tf.setNodes(props, options);
+  options?: NodeSetNodesOptions<Node>
+) => editor.update.nodes.set(props, options);

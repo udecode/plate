@@ -5,6 +5,7 @@ export default defineConfig({
   target: 'esnext',
   fixedExtension: false,
   exports: true,
+  dts: false,
   external: [
     'commander',
     'prompts',

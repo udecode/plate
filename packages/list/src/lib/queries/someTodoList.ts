@@ -1,11 +1,13 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import { ElementApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
-import { KEYS } from 'platejs';
-
-export const someTodoList = (editor: SlateEditor) =>
+export const someTodoList = (editor: BaseEditor) =>
   editor.read.nodes.some({
-    at: editor.selection!,
+    at: editor.read.selection() ?? undefined,
     match: (n) => {
+      if (!ElementApi.isElement(n)) return false;
+
       const list = n[KEYS.listType];
       const isHasProperty = Object.hasOwn(n, KEYS.listChecked);
 

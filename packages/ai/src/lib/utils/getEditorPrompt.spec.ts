@@ -1,32 +1,34 @@
-import * as selectionModule from '@platejs/selection';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { BaseParagraphPlugin } from '@platejs/core';
+import { type Value } from '@platejs/plite';
+import { createPlateEditor } from '@platejs/core/react';
 
 import { getEditorPrompt } from './getEditorPrompt';
 
+const createEditor = () =>
+  createPlateEditor<Value>({
+    plugins: [BaseParagraphPlugin, BlockSelectionPlugin],
+    selection: {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 4, path: [0, 0] },
+    },
+    value: [{ children: [{ text: 'text' }], id: 'block', type: 'p' }],
+  });
+
 describe('getEditorPrompt', () => {
   it('returns plain string prompts unchanged', () => {
-    const isSelectingSpy = spyOn(
-      selectionModule,
-      'isSelecting'
-    ).mockReturnValue(false);
-    const editor = {
-      getOption: mock(() => false),
-    } as any;
+    const editor = createEditor();
 
     expect(getEditorPrompt(editor, { prompt: 'Refine this block' })).toBe(
       'Refine this block'
     );
-
-    isSelectingSpy.mockRestore();
   });
 
   it('passes editor selection state into function prompts', () => {
-    const isSelectingSpy = spyOn(
-      selectionModule,
-      'isSelecting'
-    ).mockReturnValue(true);
-    const editor = {
-      getOption: mock(() => true),
-    } as any;
+    const editor = createEditor();
+    editor
+      .plugin(BlockSelectionPlugin)
+      .setOption('selectedIds', new Set(['block']));
     let received: unknown;
     const prompt = ({
       isBlockSelecting,
@@ -48,18 +50,13 @@ describe('getEditorPrompt', () => {
       isBlockSelecting: true,
       isSelecting: true,
     });
-
-    isSelectingSpy.mockRestore();
   });
 
-  it('prefers blockSelecting over selecting over default in config prompts', () => {
-    const isSelectingSpy = spyOn(
-      selectionModule,
-      'isSelecting'
-    ).mockReturnValue(true);
-    const editor = {
-      getOption: mock(() => true),
-    } as any;
+  it('prefers block selection over text selection', () => {
+    const editor = createEditor();
+    editor
+      .plugin(BlockSelectionPlugin)
+      .setOption('selectedIds', new Set(['block']));
 
     expect(
       getEditorPrompt(editor, {
@@ -70,18 +67,10 @@ describe('getEditorPrompt', () => {
         },
       })
     ).toBe('block prompt');
-
-    isSelectingSpy.mockRestore();
   });
 
   it('falls back to default when a matching branch is missing', () => {
-    const isSelectingSpy = spyOn(
-      selectionModule,
-      'isSelecting'
-    ).mockReturnValue(true);
-    const editor = {
-      getOption: mock(() => false),
-    } as any;
+    const editor = createEditor();
 
     expect(
       getEditorPrompt(editor, {
@@ -90,7 +79,5 @@ describe('getEditorPrompt', () => {
         },
       })
     ).toBe('default prompt');
-
-    isSelectingSpy.mockRestore();
   });
 });

@@ -33,7 +33,7 @@ export type KeyboardModifiers = {
 };
 
 export type Keys =
-  | (({} & string) | keyof typeof Key)[][]
+  | readonly (readonly (({} & string) | keyof typeof Key)[])[]
   | readonly string[]
   | string;
 

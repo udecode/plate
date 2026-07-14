@@ -61,18 +61,12 @@ describe('insertCodeDrawing', () => {
     });
 
     editor.update((tx) => {
-      insertCodeDrawing(
-        editor,
-        tx,
-        editor.getType(CODE_DRAWING_KEY),
-        {
-          data: {
-            code: 'graph TD; A-->B',
-            drawingType: 'Graphviz',
-          },
+      insertCodeDrawing(tx, editor.getType(CODE_DRAWING_KEY), {
+        data: {
+          code: 'graph TD; A-->B',
+          drawingType: 'Graphviz',
         },
-        { at: [1] }
-      );
+      });
     });
 
     expect(editor.read.children()).toMatchObject([

@@ -437,8 +437,7 @@ describe('plite transaction contract', () => {
         assert.deepEqual(targetPath, [1]);
         assert(targetPath);
 
-        transaction.nodes.remove({ at: targetPath });
-        transaction.nodes.insert(
+        transaction.nodes.replace(
           [paragraph('replacement-a'), paragraph('replacement-b')],
           { at: targetPath }
         );

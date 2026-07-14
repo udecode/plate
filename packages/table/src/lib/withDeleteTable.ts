@@ -68,9 +68,8 @@ export const withDeleteTable: OverrideEditor<TableConfig> = ({
         if (cellEntries.length > 1) {
           editor.tf.withoutNormalizing(() => {
             cellEntries.forEach(([, cellPath]) => {
-              editor.tf.replaceNodes(editor.api.create.block(), {
+              editor.tf.replaceChildren([editor.api.create.block()], {
                 at: cellPath,
-                children: true,
               });
             });
 

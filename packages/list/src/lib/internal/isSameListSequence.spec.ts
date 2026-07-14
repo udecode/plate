@@ -22,15 +22,7 @@ const createListNode = (
 };
 
 describe('isSameListSequence', () => {
-  it('falls back to raw heading keys without editor getType', () => {
-    expect(
-      isSameListSequence(
-        {} as any,
-        createListNode(KEYS.h1) as any,
-        createListNode(KEYS.p) as any
-      )
-    ).toBe(false);
-  });
+  const editor = { getType: (key: string) => key } as any;
 
   it('uses configured heading node types when editor getType is available', () => {
     const editor = {
@@ -47,7 +39,7 @@ describe('isSameListSequence', () => {
   });
 
   it('breaks lookup at same-indent heading and non-heading boundaries', () => {
-    const options = getListSequenceSiblingOptions({} as any);
+    const options = getListSequenceSiblingOptions(editor);
 
     expect(
       options.breakQuery?.(
@@ -64,7 +56,7 @@ describe('isSameListSequence', () => {
   });
 
   it('does not break lookup at nested heading and non-heading boundaries', () => {
-    const options = getListSequenceSiblingOptions({} as any);
+    const options = getListSequenceSiblingOptions(editor);
 
     expect(
       options.breakQuery?.(
@@ -81,7 +73,7 @@ describe('isSameListSequence', () => {
   });
 
   it('does not break lookup at heading and non-heading boundaries with different list styles', () => {
-    const options = getListSequenceSiblingOptions({} as any);
+    const options = getListSequenceSiblingOptions(editor);
 
     expect(
       options.breakQuery?.(

@@ -1,18 +1,58 @@
 #!/usr/bin/env node
-import { readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const root = process.cwd();
-const coreDir = join(root, 'packages/core');
-const pliteDir = join(root, 'packages/plite');
-const utilsDir = join(root, 'packages/utils');
-const basicNodesDir = join(root, 'packages/basic-nodes');
-const basicStylesDir = join(root, 'packages/basic-styles');
-const indentDir = join(root, 'packages/indent');
-const selectionDir = join(root, 'packages/selection');
-const diffDir = join(root, 'packages/diff');
-const codeBlockDir = join(root, 'packages/code-block');
+const TEST_FILE_RE = /\.(?:spec|test)\.[cm]?[tj]sx?$/;
+const CONTRACT_FILE_RE = /-contract\.[cm]?[tj]sx?$/;
+
+const basePackageSlugs = ['core', 'plite', 'utils'];
+
+// Every current package with a completed Plate Next package-review plan.
+const reviewedPackageSlugs = [
+  'ai',
+  'basic-nodes',
+  'basic-styles',
+  'callout',
+  'caption',
+  'code-block',
+  'code-drawing',
+  'combobox',
+  'comment',
+  'csv',
+  'cursor',
+  'date',
+  'diff',
+  'dnd',
+  'docx',
+  'docx-io',
+  'emoji',
+  'excalidraw',
+  'find-replace',
+  'floating',
+  'footnote',
+  'indent',
+  'juice',
+  'layout',
+  'link',
+  'list',
+  'list-classic',
+  'markdown',
+  'math',
+  'media',
+  'mention',
+  'resizable',
+  'selection',
+  'slash-command',
+  'suggestion',
+  'tabbable',
+  'tag',
+  'toc',
+  'toggle',
+];
+
+const packageSlugs = [...basePackageSlugs, ...reviewedPackageSlugs];
 
 const testBatchSizeOverride = process.env.CORE_TEST_BATCH_SIZE;
 
@@ -33,62 +73,19 @@ const getTestBatchSize = (fileCount) => {
 const getTestBatchLabel = (fileCount, batchSize) =>
   batchSize >= fileCount ? 'all files' : `batches of ${batchSize}`;
 
-const packageTestTargets = [
-  {
-    name: 'Core',
-    dir: coreDir,
-    roots: ['src'],
+const packageTestTargets = packageSlugs.map((slug) => {
+  const dir = join(root, 'packages', slug);
+  const { name } = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
+
+  return {
+    name,
+    dir,
+    roots: ['src', 'test'].filter((rootName) =>
+      existsSync(join(dir, rootName))
+    ),
     bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
-  },
-  {
-    name: 'Plite',
-    dir: pliteDir,
-    roots: ['src', 'test'],
-    bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
-  },
-  {
-    name: 'Utils',
-    dir: utilsDir,
-    roots: ['src'],
-    bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
-  },
-  {
-    name: 'Basic Nodes',
-    dir: basicNodesDir,
-    roots: ['src'],
-    bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
-  },
-  {
-    name: 'Basic Styles',
-    dir: basicStylesDir,
-    roots: ['src'],
-    bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
-  },
-  {
-    name: 'Indent',
-    dir: indentDir,
-    roots: ['src'],
-    bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
-  },
-  {
-    name: 'Selection',
-    dir: selectionDir,
-    roots: ['src'],
-    bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
-  },
-  {
-    name: 'Diff',
-    dir: diffDir,
-    roots: ['src'],
-    bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
-  },
-  {
-    name: 'Code Block',
-    dir: codeBlockDir,
-    roots: ['src'],
-    bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
-  },
-];
+  };
+});
 
 const run = (label, command, args, options = {}) => {
   console.info(`\n[check:core] ${label}`);
@@ -107,8 +104,10 @@ const run = (label, command, args, options = {}) => {
 const toPosixPath = (path) => path.split(sep).join('/');
 
 const isTestFile = (fileName) =>
-  /\.(?:spec|test)\.[cm]?[tj]sx?$/.test(fileName) ||
-  /-contract\.[cm]?[tj]sx?$/.test(fileName);
+  TEST_FILE_RE.test(fileName) || CONTRACT_FILE_RE.test(fileName);
+
+const hasModuleMock = (file) =>
+  readFileSync(file, 'utf8').includes('mock.module(');
 
 const collectTestFiles = (dir) => {
   const entries = readdirSync(dir, { withFileTypes: true });
@@ -144,6 +143,24 @@ const collectTestInventory = () =>
   }));
 
 const runPackageTests = (target) => {
+  const toRelativeTestPath = (file) =>
+    `./${toPosixPath(relative(target.dir, file))}`;
+  const sharedFiles = target.files
+    .filter((file) => !hasModuleMock(file))
+    .map(toRelativeTestPath);
+  const isolatedFiles = target.files
+    .filter(hasModuleMock)
+    .map(toRelativeTestPath);
+  const batchSize = getTestBatchSize(sharedFiles.length || 1);
+  const batches = [];
+
+  for (let index = 0; index < sharedFiles.length; index += batchSize) {
+    batches.push(sharedFiles.slice(index, index + batchSize));
+  }
+  for (const file of isolatedFiles) {
+    batches.push([file]);
+  }
+
   const files = target.files.map(
     (file) => `./${toPosixPath(relative(target.dir, file))}`
   );
@@ -154,20 +171,15 @@ const runPackageTests = (target) => {
     );
   }
 
-  const batchSize = getTestBatchSize(files.length);
-
   console.info(
     `\n[check:core] ${target.name} tests (${files.length} files, ${getTestBatchLabel(
-      files.length,
+      sharedFiles.length,
       batchSize
-    )})`
+    )}, ${isolatedFiles.length} module-mock files isolated)`
   );
 
-  for (let index = 0; index < files.length; index += batchSize) {
-    const batch = files.slice(index, index + batchSize);
-    const label = `${target.name} test batch ${index / batchSize + 1}/${Math.ceil(
-      files.length / batchSize
-    )}`;
+  for (const [index, batch] of batches.entries()) {
+    const label = `${target.name} test batch ${index + 1}/${batches.length}`;
 
     run(label, 'bun', ['test', ...target.bunArgs, ...batch], {
       cwd: target.dir,
@@ -177,23 +189,12 @@ const runPackageTests = (target) => {
 
 const testInventory = collectTestInventory();
 
-run(
-  'typecheck Core + Plite + Utils + Basic Nodes + Basic Styles + Indent + Selection + Diff + Code Block source and tests',
-  'pnpm',
-  [
-    'turbo',
-    'typecheck',
-    '--filter=./packages/core',
-    '--filter=./packages/plite',
-    '--filter=./packages/utils',
-    '--filter=./packages/basic-nodes',
-    '--filter=./packages/basic-styles',
-    '--filter=./packages/indent',
-    '--filter=./packages/selection',
-    '--filter=./packages/diff',
-    '--filter=./packages/code-block',
-  ]
-);
+run(`typecheck ${packageSlugs.length} Core and reviewed packages`, 'pnpm', [
+  'turbo',
+  'typecheck',
+  '--only',
+  ...packageSlugs.map((slug) => `--filter=./packages/${slug}`),
+]);
 run('type contracts', 'pnpm', [
   'exec',
   'tsc',
@@ -201,18 +202,22 @@ run('type contracts', 'pnpm', [
   'packages/core/tsconfig.type-tests.json',
   '--noEmit',
 ]);
-run('lint Core', 'pnpm', ['--filter', '@platejs/core', 'lint']);
-run('lint Plite', 'pnpm', ['--filter', '@platejs/plite', 'lint']);
-run('lint Utils', 'pnpm', ['--filter', '@platejs/utils', 'lint']);
-run('lint Basic Nodes', 'pnpm', ['--filter', '@platejs/basic-nodes', 'lint']);
-run('lint Basic Styles', 'pnpm', ['--filter', '@platejs/basic-styles', 'lint']);
-run('lint Indent', 'pnpm', ['--filter', '@platejs/indent', 'lint']);
-run('lint Selection', 'pnpm', ['--filter', '@platejs/selection', 'lint']);
-run('lint Diff', 'pnpm', ['--filter', '@platejs/diff', 'lint']);
-run('lint Code Block', 'pnpm', ['--filter', '@platejs/code-block', 'lint']);
+for (const target of packageTestTargets) {
+  run(`lint ${target.name}`, 'pnpm', ['--filter', target.name, 'lint']);
+}
 run('build Plite artifact for Core/Utils runtime tests', 'pnpm', [
   '--filter',
   '@platejs/plite',
+  'build',
+]);
+run('build Core artifact for reviewed package runtime tests', 'pnpm', [
+  '--filter',
+  '@platejs/core',
+  'build',
+]);
+run('build Utils artifact for reviewed package runtime tests', 'pnpm', [
+  '--filter',
+  '@platejs/utils',
   'build',
 ]);
 for (const target of testInventory) {

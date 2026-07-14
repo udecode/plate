@@ -1,4 +1,4 @@
-import { createBaseEditor, getEditorPlugin } from '@platejs/core';
+import { createBaseEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { BaseFontWeightPlugin } from './BaseFontWeightPlugin';
@@ -9,23 +9,20 @@ describe('BaseFontWeightPlugin', () => {
       plugins: [BaseFontWeightPlugin],
     });
     const plugin = editor.getPlugin(BaseFontWeightPlugin);
-    const parse = plugin.parsers!.html!.deserializer!.parse!;
 
     expect(plugin.inject.nodeProps).toMatchObject({
       nodeKey: 'fontWeight',
     });
     expect(
-      parse({
-        ...getEditorPlugin(editor, plugin),
-        element: {
-          style: { fontWeight: '700' },
-        } as HTMLElement,
-        node: {},
-        type: KEYS.fontWeight,
+      editor.api.html.deserialize({
+        element: '<span style="font-weight: 700">text</span>',
       })
-    ).toEqual({
-      [KEYS.fontWeight]: '700',
-    });
+    ).toMatchObject([
+      {
+        [KEYS.fontWeight]: '700',
+        text: 'text',
+      },
+    ]);
   });
 
   it('sets font weight through the typed tx group', () => {

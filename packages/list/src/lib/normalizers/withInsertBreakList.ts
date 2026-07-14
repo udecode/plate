@@ -1,42 +1,40 @@
-import { type OverrideEditor, type TElement, isDefined, KEYS } from 'platejs';
+import type { ExtendPlateEditorExtension } from '@platejs/core';
+import type { Element } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import type { BaseListConfig } from '../BaseListPlugin';
 
-export const withInsertBreakList: OverrideEditor<BaseListConfig> = ({
-  editor,
-  tf: { insertBreak },
-}) => ({
+export const withInsertBreakList: ExtendPlateEditorExtension<
+  BaseListConfig
+> = () => ({
+  priority: 100,
   transforms: {
-    insertBreak() {
-      const nodeEntry = editor.api.above();
+    insertBreak({ next, tx }) {
+      const nodeEntry = tx.nodes.block<Element>();
 
-      if (!nodeEntry) return insertBreak();
+      if (!nodeEntry) return next();
 
       const [node, path] = nodeEntry;
+      const selection = tx.selection();
 
       if (
-        !isDefined(node[KEYS.listType]) ||
         node[KEYS.listType] !== KEYS.listTodo ||
-        editor.api.isExpanded() ||
-        !editor.api.isEnd(editor.selection?.focus, path)
+        !selection ||
+        tx.selection.isExpanded() ||
+        !tx.points.isEnd(selection.focus, path)
       ) {
-        return insertBreak();
+        return next();
       }
 
-      editor.tf.withoutNormalizing(() => {
-        insertBreak();
+      next();
 
-        const newEntry = editor.api.above<TElement>();
+      const newEntry = tx.nodes.above<Element>();
 
-        if (newEntry) {
-          editor.tf.setNodes(
-            {
-              checked: false,
-            },
-            { at: newEntry[1] }
-          );
-        }
-      });
+      if (newEntry) {
+        tx.nodes.set({ checked: false }, { at: newEntry[1] });
+      }
+
+      return true;
     },
   },
 });

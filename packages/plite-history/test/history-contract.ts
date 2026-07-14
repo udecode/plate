@@ -970,6 +970,34 @@ describe('plite-history contract', () => {
     assert.equal(editorString(editor, [0]), 'one!');
   });
 
+  it('discards the redo branch without changing the document', () => {
+    const editor = historyTestEditor();
+
+    replace(editor, [paragraph('one')], {
+      anchor: { path: [0, 0], offset: 3 },
+      focus: { path: [0, 0], offset: 3 },
+    });
+    write(editor, (tx) => {
+      tx.text.insert('!');
+    });
+    undo(editor);
+
+    assert.equal(
+      editor.read((state) => state.history.redos().length),
+      1
+    );
+
+    editor.update((tx) => {
+      tx.history.discardRedo();
+    });
+
+    assert.equal(
+      editor.read((state) => state.history.redos().length),
+      0
+    );
+    assert.equal(editorString(editor, [0]), 'one');
+  });
+
   it('merges contiguous insertText commits into one undo unit', () => {
     const editor = historyTestEditor();
 

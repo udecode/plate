@@ -1,58 +1,41 @@
-import { type Editor, type ElementOf, type TNode, KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { Element } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import type { GetSiblingListOptions } from '../queries/getSiblingList';
 
-const getHeadingType = (editor: Editor, headingKey: string) => {
-  const getType = (editor as any).getType;
-
-  return typeof getType === 'function'
-    ? getType.call(editor, headingKey)
-    : headingKey;
-};
-
-const isHeadingListNode = (editor: Editor, node: TNode) => {
-  const type = (node as any).type;
-
-  return (
-    typeof type === 'string' &&
-    KEYS.heading.some(
-      (headingKey) => type === getHeadingType(editor, headingKey)
-    )
-  );
-};
+const isHeadingListNode = (editor: BaseEditor, node: Element) =>
+  KEYS.heading.some((headingKey) => node.type === editor.getType(headingKey));
 
 export const isSameListSequence = (
-  editor: Editor,
-  siblingNode: TNode,
-  currentNode: TNode
+  editor: BaseEditor,
+  siblingNode: Element,
+  currentNode: Element
 ) =>
-  (siblingNode as any)[KEYS.listType] === (currentNode as any)[KEYS.listType] &&
+  siblingNode[KEYS.listType] === currentNode[KEYS.listType] &&
   isHeadingListNode(editor, siblingNode) ===
     isHeadingListNode(editor, currentNode);
 
 export const isListSequenceBoundary = (
-  editor: Editor,
-  siblingNode: TNode,
-  currentNode: TNode
+  editor: BaseEditor,
+  siblingNode: Element,
+  currentNode: Element
 ) => {
-  const siblingListType = (siblingNode as any)[KEYS.listType];
+  const siblingListType = siblingNode[KEYS.listType];
 
   return (
-    (siblingNode as any)[KEYS.indent] === (currentNode as any)[KEYS.indent] &&
+    siblingNode[KEYS.indent] === currentNode[KEYS.indent] &&
     siblingListType != null &&
-    siblingListType === (currentNode as any)[KEYS.listType] &&
+    siblingListType === currentNode[KEYS.listType] &&
     isHeadingListNode(editor, siblingNode) !==
       isHeadingListNode(editor, currentNode)
   );
 };
 
-export const getListSequenceSiblingOptions = <
-  N extends ElementOf<E>,
-  E extends Editor = Editor,
->(
-  editor: E,
-  options?: Partial<GetSiblingListOptions<N, E>>
-): Partial<GetSiblingListOptions<N, E>> => {
+export const getListSequenceSiblingOptions = <N extends Element = Element>(
+  editor: BaseEditor,
+  options?: Partial<GetSiblingListOptions<N>>
+): Partial<GetSiblingListOptions<N>> => {
   const { breakQuery, query, ...rest } = options ?? {};
 
   return {

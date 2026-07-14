@@ -1,7 +1,8 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
@@ -35,7 +36,7 @@ describe('when there is toListItem sublist', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as SlateEditor;
+  ) as TestEditor;
 
   const output = (
     <editor>
@@ -62,45 +63,61 @@ describe('when there is toListItem sublist', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as SlateEditor;
+  ) as TestEditor;
 
   it('moves sublist items into the existing destination sublist', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       selection: input.selection,
       value: input.children,
     });
 
-    const fromListItem = editor.api.node({ id: '12', at: [] }) as any;
-    const toListItem = editor.api.node({ id: '11', at: [] }) as any;
+    const fromListItem = editor.read.nodes.find({
+      at: [],
+      match: { id: '12' },
+    }) as any;
+    const toListItem = editor.read.nodes.find({
+      at: [],
+      match: { id: '11' },
+    }) as any;
 
     if (fromListItem && toListItem) {
-      moveListItemSublistItemsToListItemSublist(editor, {
-        fromListItem,
-        toListItem,
+      editor.update((tx) => {
+        moveListItemSublistItemsToListItemSublist(editor, tx, {
+          fromListItem,
+          toListItem,
+        });
       });
     }
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('can prepend the moved items when start is true', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       selection: input.selection,
       value: input.children,
     });
 
-    const fromListItem = editor.api.node({ id: '12', at: [] }) as any;
-    const toListItem = editor.api.node({ id: '11', at: [] }) as any;
+    const fromListItem = editor.read.nodes.find({
+      at: [],
+      match: { id: '12' },
+    }) as any;
+    const toListItem = editor.read.nodes.find({
+      at: [],
+      match: { id: '11' },
+    }) as any;
 
     if (fromListItem && toListItem) {
-      moveListItemSublistItemsToListItemSublist(editor, {
-        fromListItem,
-        start: true,
-        toListItem,
+      editor.update((tx) => {
+        moveListItemSublistItemsToListItemSublist(editor, tx, {
+          fromListItem,
+          start: true,
+          toListItem,
+        });
       });
     }
 
-    expect(editor.children).toEqual(
+    expect(editor.read.children()).toEqual(
       (
         <editor>
           <hul id="1">
@@ -151,7 +168,7 @@ describe('when there is no list in toListItem', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as SlateEditor;
+  ) as TestEditor;
 
   const output = (
     <editor>
@@ -172,24 +189,32 @@ describe('when there is no list in toListItem', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as SlateEditor;
+  ) as TestEditor;
 
   it('creates a destination sublist before moving the items', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       selection: input.selection,
       value: input.children,
     });
 
-    const fromListItem = editor.api.node({ id: '12', at: [] }) as any;
-    const toListItem = editor.api.node({ id: '11', at: [] }) as any;
+    const fromListItem = editor.read.nodes.find({
+      at: [],
+      match: { id: '12' },
+    }) as any;
+    const toListItem = editor.read.nodes.find({
+      at: [],
+      match: { id: '11' },
+    }) as any;
 
     if (fromListItem && toListItem) {
-      moveListItemSublistItemsToListItemSublist(editor, {
-        fromListItem,
-        toListItem,
+      editor.update((tx) => {
+        moveListItemSublistItemsToListItemSublist(editor, tx, {
+          fromListItem,
+          toListItem,
+        });
       });
     }
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 });

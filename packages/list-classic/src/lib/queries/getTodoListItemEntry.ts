@@ -1,21 +1,20 @@
+import type { BaseEditor } from '@platejs/core';
 import {
+  type Element,
   type ElementEntry,
+  type Location,
   type Path,
-  type SlateEditor,
-  type TElement,
-  type TLocation,
-  KEYS,
-  NodeApi,
   RangeApi,
-} from 'platejs';
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 /**
  * Returns the nearest li and ul / ol wrapping node entries for a given path
  * (default = selection)
  */
 export const getTodoListItemEntry = (
-  editor: SlateEditor,
-  { at = editor.selection }: { at?: TLocation | null } = {}
+  editor: BaseEditor,
+  { at = editor.read.selection() }: { at?: Location | null } = {}
 ): { list: ElementEntry; listItem: ElementEntry } | undefined => {
   const todoType = editor.getType(KEYS.listTodoClassic);
 
@@ -29,16 +28,16 @@ export const getTodoListItemEntry = (
     _at = at as Path;
   }
   if (_at) {
-    const node = NodeApi.get<TElement>(editor, _at);
+    const node = editor.read.nodes.get<Element>(_at);
 
     if (node) {
-      const listItem = editor.api.above<TElement>({
+      const listItem = editor.read.nodes.above<Element>({
         at: _at,
         match: { type: todoType },
       });
 
       if (listItem) {
-        const list = editor.api.parent<TElement>(listItem[1])!;
+        const list = editor.read.nodes.parent<Element>(listItem[1])!;
 
         return { list, listItem };
       }

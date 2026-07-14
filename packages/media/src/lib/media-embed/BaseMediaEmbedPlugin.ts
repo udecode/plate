@@ -1,4 +1,5 @@
-import { type PluginConfig, createTSlatePlugin, KEYS } from 'platejs';
+import { type PluginConfig, createBasePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import type { MediaPluginOptions } from '../media/index';
 
@@ -10,7 +11,7 @@ export type MediaEmbedConfig = PluginConfig<'media_embed', MediaPluginOptions>;
  * Enables support for embeddable media such as YouTube or Vimeo videos,
  * Instagram posts and tweets or Google Maps.
  */
-export const BaseMediaEmbedPlugin = createTSlatePlugin<MediaEmbedConfig>({
+export const BaseMediaEmbedPlugin = createBasePlugin<MediaEmbedConfig>({
   key: KEYS.mediaEmbed,
   node: { isElement: true, isVoid: true },
   options: {

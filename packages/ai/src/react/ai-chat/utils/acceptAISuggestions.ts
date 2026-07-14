@@ -1,4 +1,4 @@
-import type { PlateEditor } from 'platejs/react';
+import type { PlateEditor } from '@platejs/core/react';
 
 import {
   acceptSuggestion,
@@ -8,14 +8,13 @@ import {
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 
 export const acceptAISuggestions = (editor: PlateEditor) => {
-  const suggestions = editor.getApi(SuggestionPlugin).suggestion.nodes({
+  const suggestionApi = editor.plugin(SuggestionPlugin).api;
+  const suggestions = suggestionApi.nodes({
     transient: true,
   });
 
-  suggestions.forEach(([suggestionNode]: [any, any]) => {
-    const suggestionData = editor
-      .getApi(SuggestionPlugin)
-      .suggestion.suggestionData(suggestionNode);
+  suggestions.forEach(([suggestionNode]) => {
+    const suggestionData = suggestionApi.suggestionData(suggestionNode);
 
     if (!suggestionData) return;
 
@@ -30,9 +29,9 @@ export const acceptAISuggestions = (editor: PlateEditor) => {
     acceptSuggestion(editor, description);
   });
 
-  editor.tf.unsetNodes([getTransientSuggestionKey()], {
+  editor.update.nodes.unset([getTransientSuggestionKey()], {
     at: [],
     mode: 'all',
-    match: (n) => !!n[getTransientSuggestionKey()],
+    match: (node) => Boolean(Reflect.get(node, getTransientSuggestionKey())),
   });
 };

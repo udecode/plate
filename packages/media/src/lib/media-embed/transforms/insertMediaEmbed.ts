@@ -1,32 +1,24 @@
-import type {
-  InsertNodesOptions,
-  SlateEditor,
-  TMediaEmbedElement,
-} from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { NodeInsertNodesOptions } from '@platejs/plite';
+import type { TMediaEmbedElement } from '@platejs/utils';
+import { KEYS } from '@platejs/utils';
 
 import { parseMediaUrl } from '../../media/parseMediaUrl';
 import { parseTwitterUrl } from '../parseTwitterUrl';
 import { parseVideoUrl } from '../parseVideoUrl';
 
 export const insertMediaEmbed = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { url = '' }: Partial<TMediaEmbedElement>,
-  options: InsertNodesOptions = {}
+  options: NodeInsertNodesOptions<TMediaEmbedElement> = {}
 ): void => {
-  if (!editor.selection) return;
+  if (!editor.read.selection() && options.at === undefined) return;
 
-  const selectionParentEntry = editor.api.parent(editor.selection);
-
-  if (!selectionParentEntry) return;
-
-  const [, path] = selectionParentEntry;
   const normalized = parseMediaUrl(url, {
     urlParsers: [parseTwitterUrl, parseVideoUrl],
   });
 
-  editor.tf.insertNodes<TMediaEmbedElement>(
+  editor.update.blocks.insertAfter(
     {
       children: [{ text: '' }],
       id: normalized?.id,
@@ -35,10 +27,6 @@ export const insertMediaEmbed = (
       type: editor.getType(KEYS.mediaEmbed),
       url: normalized?.url ?? url,
     },
-    {
-      at: path,
-      nextBlock: true,
-      ...(options as any),
-    }
+    options
   );
 };

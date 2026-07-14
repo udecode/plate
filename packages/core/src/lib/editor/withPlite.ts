@@ -46,6 +46,8 @@ import { deserializeHtml } from '../plugins/html';
 type PluginLookupInput = AnyBasePlugin | WithRequiredKey<BasePluginInput>;
 type PluginContextLookupInput = PluginLookupInput | string;
 
+export type EditorValueInput<V extends Value> = V | Readonly<V>;
+
 const normalizeBaseInitialValue = <V extends Value>(
   editor: BaseEditor,
   value: unknown
@@ -83,7 +85,13 @@ const initializeBaseEditor = <V extends Value>(
     onReady?: (ctx: { editor: BaseEditor; isAsync: boolean; value: V }) => void;
     selection?: Selection;
     shouldNormalizeEditor?: boolean;
-    value?: ((editor: BaseEditor) => Promise<V> | V) | V | string | null;
+    value?:
+      | ((
+          editor: BaseEditor
+        ) => EditorValueInput<V> | Promise<EditorValueInput<V>>)
+      | EditorValueInput<V>
+      | string
+      | null;
   }
 ) => {
   const applyValue = (nextValueInput: unknown, isAsync = false) => {
@@ -436,8 +444,12 @@ export type ExtendBaseEditorOptions<
      * @default [{ type: 'p'; children: [{ text: '' }] }]
      */
     value?:
-      | ((editor: BaseEditor) => Promise<NoInfer<V>> | NoInfer<V>)
-      | NoInfer<V>
+      | ((
+          editor: BaseEditor
+        ) =>
+          | EditorValueInput<NoInfer<V>>
+          | Promise<EditorValueInput<NoInfer<V>>>)
+      | EditorValueInput<NoInfer<V>>
       | string
       | null;
     /** Function to configure the root plugin */

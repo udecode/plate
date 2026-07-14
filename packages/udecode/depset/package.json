@@ -13,7 +13,7 @@
     "npm",
     "bun"
   ],
-  "homepage": "https://github.com/udecode/plate/packages/udecode/depset/README.md",
+  "homepage": "https://github.com/udecode/plate/tree/main/packages/udecode/depset#readme",
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
@@ -34,12 +34,13 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "tsdown --log-level warn",
+    "build": "tsdown --log-level warn && tsc -p tsconfig.build.json",
     "build:watch": "tsdown --watch",
     "lint": "plate-pkg p:lint",
     "lint:fix": "plate-pkg p:lint:fix",
     "clean": "plate-pkg p:clean",
     "start": "node dist/index.js",
+    "test": "plate-pkg p:test",
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {

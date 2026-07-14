@@ -1,24 +1,24 @@
 import React from 'react';
 
-import type { SlateRenderElementProps } from 'platejs/static';
-
 import {
   type PluginConfig,
-  type TElement,
-  type TListElement,
-  createTSlatePlugin,
-  isDefined,
+  createBasePlugin,
   isHtmlBlockElement,
-  KEYS,
   postCleanHtml,
   traverseHtmlElements,
-} from 'platejs';
+} from '@platejs/core';
+import type { Element } from '@platejs/plite';
+import { KEYS, type TListElement } from '@platejs/utils';
+import { isDefined } from '@udecode/utils';
+import type { SlateRenderElementProps } from 'platejs/static';
 
 import type { GetSiblingListOptions } from './queries/getSiblingList';
 import type { ListStyleType } from './types';
 
 import { isOrderedList } from './queries';
 import { withList } from './withList';
+import { withNormalizeList } from './withNormalizeList';
+import { withInsertBreakList } from './normalizers';
 
 /**
  * All list items are normalized to have a listStart prop indicating their
@@ -36,13 +36,13 @@ import { withList } from './withList';
 export type BaseListConfig = PluginConfig<
   'list',
   {
-    getSiblingListOptions?: GetSiblingListOptions<TElement>;
+    getSiblingListOptions?: GetSiblingListOptions<Element>;
     /** Map html element to list style type. */
     getListStyleType?: (element: HTMLElement) => ListStyleType;
   }
 >;
 
-export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
+export const BaseListPlugin = createBasePlugin<BaseListConfig>({
   key: KEYS.list,
   inject: {
     plugins: {
@@ -55,13 +55,13 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
             // First pass: flatten nested UL/OL that are inside LI elements
             // We need to move them to be siblings of their parent LI
             const lisWithNestedLists: {
-              li: Element;
-              nestedLists: Element[];
+              li: globalThis.Element;
+              nestedLists: globalThis.Element[];
             }[] = [];
 
             traverseHtmlElements(body, (element) => {
               if (element.tagName === 'LI') {
-                const nestedLists: Element[] = [];
+                const nestedLists: globalThis.Element[] = [];
                 // Find nested UL/OL elements
                 Array.from(element.children).forEach((child) => {
                   if (child.tagName === 'UL' || child.tagName === 'OL') {
@@ -95,11 +95,11 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
                 const { childNodes } = element;
 
                 // Process li children and flatten block elements
-                const liChildren: Node[] = [];
+                const liChildren: globalThis.Node[] = [];
 
                 childNodes.forEach((child) => {
                   if (child.nodeType === Node.ELEMENT_NODE) {
-                    const childElement = child as Element;
+                    const childElement = child as globalThis.Element;
                     if (isHtmlBlockElement(childElement)) {
                       // Replace block elements (e.g. p) with their children
                       liChildren.push(...childElement.childNodes);
@@ -219,7 +219,10 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
     },
     match: ({ node }) => isDefined(node[KEYS.listType]),
   },
-}).overrideEditor(withList);
+})
+  .extendExtension('behavior', withList)
+  .extendExtension(withNormalizeList)
+  .extendExtension(withInsertBreakList);
 
 function List(props: SlateRenderElementProps) {
   const { listStart, listStyleType } = props.element as TListElement;

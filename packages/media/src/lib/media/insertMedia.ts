@@ -1,10 +1,12 @@
-import type { InsertNodesOptions, SlateEditor } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { NodeInsertNodesOptions } from '@platejs/plite';
+import type { TImageElement, TMediaEmbedElement } from '@platejs/utils';
+import { KEYS } from '@platejs/utils';
 
 import { insertImage, insertMediaEmbed } from '../..';
 
-export interface InsertMediaOptions extends InsertNodesOptions {
+export interface InsertMediaOptions
+  extends NodeInsertNodesOptions<TImageElement | TMediaEmbedElement> {
   /**
    * Default onClick is getting the image url by calling this promise before
    * inserting the image.
@@ -14,8 +16,8 @@ export interface InsertMediaOptions extends InsertNodesOptions {
   getUrl?: () => Promise<string>;
 }
 
-export const insertMedia = async <E extends SlateEditor>(
-  editor: E,
+export const insertMedia = async (
+  editor: BaseEditor,
   {
     getUrl,
     type = editor.getType(KEYS.img),

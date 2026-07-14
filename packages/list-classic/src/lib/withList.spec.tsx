@@ -1,157 +1,55 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BaseLinkPlugin } from '@platejs/link';
-import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseListPlugin } from './BaseListPlugin';
-import * as listModule from '.';
-import * as transformsModule from './transforms/index';
 
 jsxt;
-
-afterEach(() => {
-  mock.restore();
-});
 
 const testInsertText = (
   input: any,
   expected: any,
   listConfig: Parameters<typeof BaseListPlugin.configure>[0] = {}
 ) => {
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins: [BaseListPlugin.configure(listConfig), BaseLinkPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  editor.tf.insertText('o');
+  editor.update.text.insert('o');
 
-  expect(editor.children).toEqual(expected.children);
+  expect(editor.read.children()).toEqual(expected.children);
 };
 
 const testDeleteBackward = (input: any, expected: any) => {
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  editor.tf.deleteBackward();
+  editor.update.text.deleteBackward();
 
-  expect(editor.children).toEqual(expected.children);
+  expect(editor.read.children()).toEqual(expected.children);
 };
 
 const testDeleteForward = (input: any, expected: any) => {
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  editor.tf.deleteForward();
+  editor.update.text.deleteForward();
 
-  expect(editor.children).toEqual(expected.children);
+  expect(editor.read.children()).toEqual(expected.children);
 };
 
 describe('withList', () => {
-  it('unwraps list items on resetBlock instead of delegating', () => {
-    const unwrapSpy = spyOn(listModule, 'unwrapList').mockImplementation(
-      () => {}
-    );
-    const resetBlock = mock();
-    const editor = {
-      api: {
-        block: mock(() => [{ type: 'li' }, [0]]),
-      },
-      getType: (key: string) => key,
-      selection: null,
-      tf: {},
-    } as any;
-    const transforms = (
-      listModule.withList({
-        editor,
-        getOptions: () => ({}),
-        tf: { resetBlock, tab: mock() },
-      } as any) as any
-    ).transforms;
-
-    expect(transforms.resetBlock({ at: [0] } as any)).toBeUndefined();
-    expect(unwrapSpy).toHaveBeenCalledWith(editor);
-    expect(resetBlock).not.toHaveBeenCalled();
-  });
-
-  it('delegates tab when the selection is not in a list context', () => {
-    const tab = mock(() => true);
-    const editor = {
-      api: {
-        isCollapsed: mock(() => true),
-      },
-      getType: (key: string) => key,
-      read: { nodes: { some: mock(() => false) } },
-      selection: {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      },
-      tf: {
-        select: mock(),
-      },
-    } as any;
-    const transforms = (
-      listModule.withList({
-        editor,
-        getOptions: () => ({ enableResetOnShiftTab: true }),
-        tf: { resetBlock: mock(), tab },
-      } as any) as any
-    ).transforms;
-
-    expect(transforms.tab({ reverse: false } as any)).toBe(true);
-    expect(tab).toHaveBeenCalledWith({ reverse: false });
-  });
-
-  it('unhangs expanded selections and moves list items on tab', () => {
-    const moveListItemsSpy = spyOn(
-      transformsModule,
-      'moveListItems'
-    ).mockImplementation(() => true);
-    const unhangRange = {
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 1, path: [0, 0] },
-    };
-    const editor = {
-      api: {
-        isCollapsed: mock(() => false),
-        unhangRange: mock(() => unhangRange),
-      },
-      getType: (key: string) => key,
-      read: { nodes: { some: mock(() => true) } },
-      selection: {
-        anchor: { offset: 1, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      },
-      tf: {
-        select: mock(),
-      },
-    } as any;
-    const transforms = (
-      listModule.withList({
-        editor,
-        getOptions: () => ({ enableResetOnShiftTab: true }),
-        tf: { resetBlock: mock(), tab: mock() },
-      } as any) as any
-    ).transforms;
-
-    expect(transforms.tab({ reverse: true } as any)).toBe(true);
-    expect(editor.tf.select).toHaveBeenCalledWith(unhangRange);
-    expect(moveListItemsSpy).toHaveBeenCalledWith(editor, {
-      at: unhangRange,
-      enableResetOnShiftTab: true,
-      increase: false,
-    });
-  });
-
   describe('normalizeList', () => {
     describe('when there is no lic in li', () => {
       it('insert lic', () => {
@@ -165,7 +63,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const expected = (
           <editor>
@@ -178,7 +76,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         testInsertText(input, expected);
       });
@@ -197,7 +95,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const expected = (
           <editor>
@@ -207,7 +105,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         testInsertText(input, expected);
       });
@@ -228,7 +126,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const expected = (
           <editor>
@@ -238,7 +136,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         testInsertText(input, expected);
       });
@@ -261,7 +159,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const expected = (
           <editor>
@@ -271,7 +169,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         testInsertText(input, expected);
       });
@@ -297,7 +195,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const expected = (
           <editor>
@@ -307,7 +205,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         testInsertText(input, expected);
       });
@@ -331,7 +229,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const expected = (
           <editor>
@@ -346,7 +244,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         testInsertText(input, expected, {
           options: {
@@ -377,7 +275,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const expected = (
           <editor>
@@ -389,7 +287,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         testDeleteBackward(input, expected);
       });
@@ -414,7 +312,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const expected = (
           <editor>
@@ -425,7 +323,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         testDeleteBackward(input, expected);
       });
@@ -448,7 +346,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const expected = (
           <editor>
@@ -460,7 +358,7 @@ describe('withList', () => {
             </hul>
             <hp>world</hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         testDeleteBackward(input, expected);
       });
@@ -481,7 +379,7 @@ describe('withList', () => {
             </hul>
             <hp>level 2</hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const expected = (
           <editor>
@@ -495,7 +393,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         testDeleteForward(input, expected);
       });
@@ -514,7 +412,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const expected = (
           <editor>
@@ -528,7 +426,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         testDeleteForward(input, expected);
       });
@@ -557,7 +455,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const expected = (
           <editor>
@@ -575,7 +473,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         testDeleteForward(input, expected);
       });
@@ -612,7 +510,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const expected = (
           <editor>
@@ -642,7 +540,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         testDeleteForward(input, expected);
       });

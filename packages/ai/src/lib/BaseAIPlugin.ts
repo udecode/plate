@@ -1,11 +1,7 @@
-import {
-  type OmitFirst,
-  type PluginConfig,
-  type SlateEditor,
-  bindFirst,
-  createTSlatePlugin,
-  KEYS,
-} from 'platejs';
+import type { Descendant, Location, Path } from '@platejs/plite';
+import type { OmitFirst } from '@udecode/utils';
+import { type PluginConfig, createBasePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import {
   acceptAIPreview,
@@ -17,10 +13,10 @@ import {
 import { removeAIMarks, undoAI } from './transforms';
 import { insertAINodes } from './transforms/insertAINodes';
 import { removeAINodes } from './transforms/removeAINodes';
+import { aiBatchField } from './transforms/withAIBatch';
 
 export type BaseAIPluginConfig = PluginConfig<
   'ai',
-  {},
   {},
   {
     ai: {
@@ -34,31 +30,33 @@ export type BaseAIPluginConfig = PluginConfig<
       discardPreview: OmitFirst<typeof discardAIPreview>;
       /** Report whether an AI preview rollback point is active. */
       hasPreview: OmitFirst<typeof hasAIPreview>;
-      insertNodes: OmitFirst<typeof insertAINodes>;
-      removeMarks: OmitFirst<typeof removeAIMarks>;
-      removeNodes: OmitFirst<typeof removeAINodes>;
       undo: OmitFirst<typeof undoAI>;
+    };
+  },
+  {
+    ai: {
+      insertNodes: (nodes: Descendant[], options?: { target?: Path }) => void;
+      removeMarks: (options?: { at?: Location }) => void;
+      removeNodes: (options?: { at?: Path }) => void;
     };
   }
 >;
 
-const getAITransforms = (editor: SlateEditor) => ({
-  acceptPreview: bindFirst(acceptAIPreview, editor),
-  beginPreview: bindFirst(beginAIPreview, editor),
-  cancelPreview: bindFirst(cancelAIPreview, editor),
-  discardPreview: bindFirst(discardAIPreview, editor),
-  hasPreview: bindFirst(hasAIPreview, editor),
-  insertNodes: bindFirst(insertAINodes, editor),
-  removeMarks: bindFirst(removeAIMarks, editor),
-  removeNodes: bindFirst(removeAINodes, editor),
-  undo: bindFirst(undoAI, editor),
-});
-
-export const BaseAIPlugin = createTSlatePlugin<BaseAIPluginConfig>({
+export const BaseAIPlugin = createBasePlugin<BaseAIPluginConfig>({
   key: KEYS.ai,
   node: { isDecoration: false, isLeaf: true },
 })
-  .extendTransforms(({ editor }) => getAITransforms(editor))
-  .extendEditorTransforms<BaseAIPluginConfig['transforms']>(({ editor }) => ({
-    ai: getAITransforms(editor),
+  .extendExtension(aiBatchField)
+  .extendApi<BaseAIPluginConfig['api']['ai']>(({ editor }) => ({
+    acceptPreview: (value) => acceptAIPreview(editor, value),
+    beginPreview: (options) => beginAIPreview(editor, options),
+    cancelPreview: () => cancelAIPreview(editor),
+    discardPreview: () => discardAIPreview(editor),
+    hasPreview: () => hasAIPreview(editor),
+    undo: () => undoAI(editor),
+  }))
+  .extendTx(({ editor }) => (tx) => ({
+    insertNodes: (nodes, options) => insertAINodes(editor, tx, nodes, options),
+    removeMarks: (options) => removeAIMarks(editor, tx, options),
+    removeNodes: (options) => removeAINodes(editor, tx, options),
   }));

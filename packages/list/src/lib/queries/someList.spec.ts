@@ -1,4 +1,5 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from 'platejs';
 
 import { someList } from './someList';
 
@@ -12,7 +13,7 @@ const createListEditor = ({
     focus: { offset: number; path: number[] };
   };
 }) =>
-  createSlateEditor({
+  createBaseEditor({
     selection,
     value: children as any,
   });

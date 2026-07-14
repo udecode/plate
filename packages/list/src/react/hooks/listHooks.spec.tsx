@@ -10,7 +10,14 @@ const toggleListMock = mock();
 mock.module('platejs/react', () => ({
   useEditorRef: useEditorRefMock,
   useEditorSelector: useEditorSelectorMock,
-  useReadOnly: useReadOnlyMock,
+}));
+
+mock.module('@platejs/core/react', () => ({
+  useEditorRef: useEditorRefMock,
+}));
+
+mock.module('@platejs/plite-react', () => ({
+  useEditorReadOnly: useReadOnlyMock,
 }));
 
 mock.module('../../index', () => ({
@@ -72,7 +79,7 @@ describe('list hooks', () => {
 
     useEditorRefMock.mockReturnValue({
       read: { nodes: { path: () => [0] } },
-      tf: { setNodes },
+      update: { nodes: { set: setNodes } },
     });
     useReadOnlyMock.mockReturnValue(false);
 

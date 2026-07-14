@@ -1,13 +1,15 @@
 import React from 'react';
 
 import { renderHook } from '@testing-library/react';
+import * as actualCoreReact from '@platejs/core/react';
 
 const useEditorRefMock = mock();
 const usePlateValueMock = mock();
 const usePluginOptionMock = mock();
 const useIsomorphicLayoutEffectMock = mock((effect: () => void) => effect());
 
-mock.module('@platejs/core/react', async () => ({
+mock.module('@platejs/core/react', () => ({
+  ...actualCoreReact,
   useEditorRef: useEditorRefMock,
   usePlateValue: usePlateValueMock,
   usePluginOption: usePluginOptionMock,

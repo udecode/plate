@@ -1,13 +1,9 @@
-import type { PlateEditor } from 'platejs/react';
+import type { PlateEditor } from '@platejs/core/react';
 
 import { type SerializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
-import {
-  type Descendant,
-  ElementApi,
-  getPluginKey,
-  KEYS,
-  TextApi,
-} from 'platejs';
+import { type Descendant, ElementApi, TextApi } from '@platejs/plite';
+import { getPluginKey } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import {
   getChunkTrimmed,
@@ -23,7 +19,7 @@ const trimEndHeading = (
   editor: PlateEditor,
   value: Descendant[]
 ): { trimmedText: string; value: Descendant[] } => {
-  const headingKeys = new Set([
+  const headingKeys = new Set<string>([
     KEYS.h1,
     KEYS.h2,
     KEYS.h3,
@@ -35,15 +31,13 @@ const trimEndHeading = (
 
   if (
     lastBlock &&
-    headingKeys.has(
-      (getPluginKey(editor, lastBlock.type as string) ?? lastBlock.type) as any
-    ) &&
-    ElementApi.isElement(lastBlock)
+    ElementApi.isElement(lastBlock) &&
+    headingKeys.has(getPluginKey(editor, lastBlock.type) ?? lastBlock.type)
   ) {
     const lastTextNode = lastBlock.children.at(-1);
 
     if (TextApi.isText(lastTextNode)) {
-      const trimmedText = getChunkTrimmed(lastTextNode?.text as string);
+      const trimmedText = getChunkTrimmed(lastTextNode.text);
 
       // Create a new lastBlock with immutable operations
       const newChildren = [
@@ -112,13 +106,13 @@ export const streamSerializeMd = (
   const { value: optionsValue, ...restOptions } = options;
   const { value: trimmedValue } = trimEndHeading(
     editor,
-    optionsValue ?? editor.children
+    optionsValue ?? [...editor.read.children()]
   );
   const { hasLineBreaks, value } = escapeEmbeddedTextLineBreaks(trimmedValue);
 
   let result = '';
 
-  result = editor.getApi(MarkdownPlugin).markdown.serialize({
+  result = editor.plugin(MarkdownPlugin).api.serialize({
     value,
     ...restOptions,
   });

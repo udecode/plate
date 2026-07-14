@@ -1,18 +1,13 @@
-import {
-  type ExtendConfig,
-  type InsertNodesOptions,
-  bindFirst,
-  KEYS,
-  NodeApi,
-} from 'platejs';
-import { toTPlatePlugin } from 'platejs/react';
+import type { ExtendConfig } from '@platejs/core';
+import { toPlatePlugin } from '@platejs/core/react';
+import { NodeApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import type { AllowedFileType } from './internal/mimes';
 import type { MediaItemConfig, UploadError } from './type';
 
 import { type PlaceholderConfig, BasePlaceholderPlugin } from '../../lib';
-import { insertMedia } from './transforms/insertMedia';
-import { isHistoryMarking } from './utils/history';
+import { type InsertMediaOptions, insertMedia } from './transforms/insertMedia';
 
 export type PlaceholderApi = {
   addUploadingFile: (id: string, file: File) => void;
@@ -21,12 +16,14 @@ export type PlaceholderApi = {
 };
 
 export type PlaceholderTransforms = {
-  insertMedia: (files: FileList, options?: InsertNodesOptions) => void;
+  placeholder: {
+    insertMedia: (files: FileList, options?: InsertMediaOptions) => void;
+  };
 };
 
 export type UploadConfig = Partial<Record<AllowedFileType, MediaItemConfig>>;
 
-export const PlaceholderPlugin = toTPlatePlugin<
+export const PlaceholderPlugin = toPlatePlugin<
   ExtendConfig<
     PlaceholderConfig,
     {
@@ -39,8 +36,10 @@ export const PlaceholderPlugin = toTPlatePlugin<
       // Whether multiple files of the same type can be uploaded.
       multiple?: boolean;
     },
-    { placeholder: PlaceholderApi }
-  >
+    { placeholder: PlaceholderApi },
+    PlaceholderTransforms
+  >,
+  PlaceholderConfig
 >(BasePlaceholderPlugin, {
   options: {
     disableEmptyPlaceholder: false,
@@ -89,28 +88,9 @@ export const PlaceholderPlugin = toTPlatePlugin<
     uploadingFiles: {},
   },
 })
-  .overrideEditor(({ editor, tf: { writeHistory } }) => ({
-    transforms: {
-      writeHistory(stack, batch) {
-        if (isHistoryMarking(editor)) {
-          const newBatch = {
-            ...batch,
-            [KEYS.placeholder]: true,
-          };
-
-          writeHistory(stack, newBatch);
-
-          return;
-        }
-
-        return writeHistory(stack, batch);
-      },
-    },
-  }))
-  .extendEditorTransforms(({ editor }) => ({
-    insert: {
-      media: bindFirst(insertMedia, editor),
-    },
+  .extendTx(({ editor }) => () => ({
+    insertMedia: (files: FileList, options?: InsertMediaOptions) =>
+      insertMedia(editor, files, options),
   }))
   .extendApi(({ getOption, setOption }) => ({
     addUploadingFile: (id: string, file: File) => {
@@ -136,7 +116,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
   }))
   .extend(({ getOption }) => ({
     handlers: {
-      onDrop: ({ editor, event, tf }) => {
+      onDrop: ({ editor, event }) => {
         // using DnD plugin by default
         if (!getOption('disableFileDrop')) return;
 
@@ -153,15 +133,15 @@ export const PlaceholderPlugin = toTPlatePlugin<
          * drop location. Find the location from the event and upload the files
          * at that location.
          */
-        const at = editor.api.findEventRange(event);
+        const at = editor.api.dom.resolveEventRange(event);
 
         if (!at) return false;
 
-        tf.insert.media(files);
+        insertMedia(editor, files);
 
         return true;
       },
-      onPaste: ({ editor, event, tf }) => {
+      onPaste: ({ editor, event }) => {
         const { files, types } = event.clipboardData;
         const TEXT_HTML = 'text/html';
 
@@ -171,19 +151,21 @@ export const PlaceholderPlugin = toTPlatePlugin<
           event.stopPropagation();
 
           let inserted = false;
-          const ancestor = editor.api.block({ highest: true });
+          const ancestor = editor.read.nodes.block();
 
           if (ancestor) {
             const [node, path] = ancestor;
 
             if (NodeApi.string(node).length === 0) {
-              editor.tf.removeNodes({ at: path });
-              tf.insert.media(files, { at: path, nextBlock: false });
+              editor.update.nodes.remove({ at: path });
+              insertMedia(editor, files, { at: path });
               inserted = true;
             }
           }
           if (!inserted) {
-            tf.insert.media(files, { nextBlock: false });
+            insertMedia(editor, files, {
+              at: editor.read.nodes.block()?.[1],
+            });
           }
 
           return true;

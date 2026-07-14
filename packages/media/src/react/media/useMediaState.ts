@@ -1,13 +1,16 @@
 import React from 'react';
 
-import { type TMediaElement, type TResizableElement, KEYS } from 'platejs';
 import {
-  useEditorRef,
-  useElement,
-  useFocused,
-  useReadOnly,
-  useSelected,
-} from 'platejs/react';
+  useEditorFocused,
+  useEditorReadOnly,
+  useElementSelected,
+} from '@platejs/plite-react';
+import {
+  type TMediaElement,
+  type TResizableElement,
+  KEYS,
+} from '@platejs/utils';
+import { useEditorRef, useElement } from 'platejs/react';
 
 import { VIDEO_PROVIDERS } from '../../lib/media-embed';
 import {
@@ -22,9 +25,9 @@ export const useMediaState = ({
 } = {}) => {
   const editor = useEditorRef();
   const element = useElement<TMediaElement & TResizableElement>();
-  const focused = useFocused();
-  const selected = useSelected();
-  const readOnly = useReadOnly();
+  const focused = useEditorFocused();
+  const selected = useElementSelected();
+  const readOnly = useEditorReadOnly();
 
   const { id, align, isUpload, name, type, url } = element;
 

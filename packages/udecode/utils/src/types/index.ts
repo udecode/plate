@@ -4,7 +4,5 @@
 
 export * from './AnyObject';
 export * from './Deep';
-export * from './FunctionProperties';
 export * from './Nullable';
-export * from './WithOptional';
 export * from './types';

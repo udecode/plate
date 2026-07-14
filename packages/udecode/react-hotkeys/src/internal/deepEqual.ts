@@ -1,9 +1,14 @@
-export default function deepEqual(x: any, y: any): boolean {
-  return x && y && typeof x === 'object' && typeof y === 'object'
-    ? Object.keys(x).length === Object.keys(y).length &&
-        Object.keys(x).reduce(
-          (isEqual, key) => isEqual && deepEqual(x[key], y[key]),
-          true
-        )
-    : x === y;
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+export default function deepEqual(x: unknown, y: unknown): boolean {
+  if (!isRecord(x) || !isRecord(y)) return x === y;
+
+  const keys = Object.keys(x);
+
+  return (
+    keys.length === Object.keys(y).length &&
+    keys.every((key) => key in y && deepEqual(x[key], y[key]))
+  );
 }

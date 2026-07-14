@@ -1,36 +1,35 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import { createEditor, createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { moveListItemsToList } from './moveListItemsToList';
 
 jsxt;
 
-const input = createEditor(
-  (
-    <editor>
-      <hul id="1">
-        <hli>
-          <hp>1</hp>
-        </hli>
-      </hul>
-      <hul>
-        <hli id="2">
-          <hp>2</hp>
-          <hul>
-            <hli>
-              <hp>21</hp>
-            </hli>
-            <hli>
-              <hp>22</hp>
-            </hli>
-          </hul>
-        </hli>
-      </hul>
-    </editor>
-  ) as any
-);
+const input = (
+  <editor>
+    <hul id="1">
+      <hli>
+        <hp>1</hp>
+      </hli>
+    </hul>
+    <hul>
+      <hli id="2">
+        <hp>2</hp>
+        <hul>
+          <hli>
+            <hp>21</hp>
+          </hli>
+          <hli>
+            <hp>22</hp>
+          </hli>
+        </hul>
+      </hli>
+    </hul>
+  </editor>
+) as TestEditor;
 
 const output = (
   <editor>
@@ -54,17 +53,25 @@ const output = (
 ) as any;
 
 it('moves sublist items into the target list', () => {
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     selection: input.selection,
     value: input.children,
   });
 
-  const fromListItem = editor.api.node({ id: '2', at: [] }) as any;
-  const toList = editor.api.node({ id: '1', at: [] }) as any;
+  const fromListItem = editor.read.nodes.find({
+    at: [],
+    match: { id: '2' },
+  }) as any;
+  const toList = editor.read.nodes.find({
+    at: [],
+    match: { id: '1' },
+  }) as any;
 
   if (fromListItem && toList) {
-    moveListItemsToList(editor, { fromListItem, toList });
+    editor.update((tx) => {
+      moveListItemsToList(editor, tx, { fromListItem, toList });
+    });
   }
 
-  expect(editor.children).toEqual(output.children);
+  expect(editor.read.children()).toEqual(output.children);
 });

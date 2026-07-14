@@ -4,7 +4,7 @@ const getOriginalFetch = () => fetch;
 export type CallCompletionApiOptions = {
   prompt: string;
   api?: string;
-  body?: Record<string, any>;
+  body?: Record<string, unknown>;
   credentials?: RequestCredentials | undefined;
   fetch?: ReturnType<typeof getOriginalFetch> | undefined;
   headers?: HeadersInit | undefined;
@@ -77,13 +77,44 @@ export async function callCompletionApi({
       throw new Error('The response body is empty.');
     }
 
-    const { text } = await res.json();
+    let text = '';
 
-    if (!text) {
-      throw new Error('The response does not contain a text field.');
+    if (res.headers.get('content-type')?.includes('application/json')) {
+      const payload: unknown = await res.json();
+
+      if (
+        typeof payload === 'object' &&
+        payload !== null &&
+        'text' in payload &&
+        typeof payload.text === 'string'
+      ) {
+        text = payload.text;
+        setCompletion(text);
+      }
+    } else {
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        text += decoder.decode(value, { stream: true });
+        setCompletion(text);
+      }
+
+      const tail = decoder.decode();
+
+      if (tail) {
+        text += tail;
+        setCompletion(text);
+      }
     }
 
-    setCompletion(text);
+    if (!text) {
+      throw new Error('The response does not contain completion text.');
+    }
 
     if (onFinish) {
       onFinish(prompt, text);
@@ -91,10 +122,10 @@ export async function callCompletionApi({
 
     setAbortController(null);
 
-    return text as string;
+    return text;
   } catch (error) {
     // Ignore abort errors as they are expected.
-    if ((error as any).name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       setAbortController(null);
 
       return null;
@@ -103,7 +134,7 @@ export async function callCompletionApi({
       onError(error);
     }
 
-    setError(error as Error);
+    setError(error instanceof Error ? error : new Error(String(error)));
   } finally {
     setLoading(false);
   }

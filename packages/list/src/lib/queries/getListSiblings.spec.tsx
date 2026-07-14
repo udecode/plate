@@ -1,12 +1,11 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
 import {
-  type Descendant,
-  type SlateEditor,
-  type TElement,
-  createEditor,
-} from 'platejs';
+  createEditorFromFixture,
+  jsxt,
+  type TestEditor,
+} from '@platejs/test-utils';
+import { type Descendant, type Element } from 'platejs';
 
 import { getListSiblings } from './getListSiblings';
 
@@ -27,13 +26,13 @@ describe('getListSiblings', () => {
             1
           </hp>
         </fragment>
-      ) as any as Descendant[];
+      ) as any as Element[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.read.nodes.block<Element>();
 
       const siblings = getListSiblings(editor, entry!);
 
@@ -89,13 +88,13 @@ describe('getListSiblings', () => {
             23
           </hp>
         </fragment>
-      ) as any as Descendant[];
+      ) as any as Element[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
+      const editor = createEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
       );
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.read.nodes.block<Element>();
 
       const siblings = getListSiblings(editor, entry!);
 

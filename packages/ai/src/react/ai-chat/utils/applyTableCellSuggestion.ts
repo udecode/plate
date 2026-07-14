@@ -1,6 +1,7 @@
 import { deserializeMd } from '@platejs/markdown';
 import { diffToSuggestions } from '@platejs/suggestion';
-import type { SlateEditor, TElement } from 'platejs';
+import type { Element } from '@platejs/plite';
+import type { PlateEditor } from '@platejs/core/react';
 
 import {
   withoutSuggestionAndComments,
@@ -18,13 +19,13 @@ export type TableCellUpdate = {
  * the cell's children with suggestion-marked nodes.
  */
 export const applyTableCellSuggestion = (
-  editor: SlateEditor,
+  editor: PlateEditor,
   cellUpdate: TableCellUpdate
 ) => {
   const { content, id } = cellUpdate;
 
   // Find the cell by id
-  const cellEntry = editor.api.node({
+  const cellEntry = editor.read.nodes.find<Element>({
     at: [],
     match: { id },
   });
@@ -34,7 +35,7 @@ export const applyTableCellSuggestion = (
     return;
   }
 
-  const [cell, cellPath] = cellEntry as [TElement, number[]];
+  const [cell, cellPath] = cellEntry;
 
   // Get original cell children (without suggestion marks)
   const originalChildren = withoutSuggestionAndComments(cell.children);
@@ -51,8 +52,5 @@ export const applyTableCellSuggestion = (
   const transientDiffNodes = withTransient(diffNodes);
 
   // Replace cell children with diff nodes
-  editor.tf.replaceNodes(transientDiffNodes, {
-    at: cellPath,
-    children: true,
-  });
+  editor.update.nodes.replaceChildren(transientDiffNodes, { at: cellPath });
 };

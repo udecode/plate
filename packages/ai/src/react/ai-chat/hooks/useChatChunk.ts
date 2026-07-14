@@ -1,12 +1,10 @@
 import { useEffect, useRef } from 'react';
 
-import type { TText } from 'platejs';
+import type { Text } from '@platejs/plite';
 
-import { KEYS } from 'platejs';
-import { usePluginOption } from 'platejs/react';
+import { usePluginOption } from '@platejs/core/react';
 
-import type { AIChatPluginConfig } from '../AIChatPlugin';
-
+import { AIChatPlugin } from '../AIChatPlugin';
 import { useLastAssistantMessage } from '../utils/getLastAssistantMessage';
 
 export const useChatChunk = ({
@@ -16,15 +14,12 @@ export const useChatChunk = ({
   onChunk: (chunk: {
     chunk: string;
     isFirst: boolean;
-    nodes: TText[];
+    nodes: Text[];
     text: string;
   }) => void;
   onFinish?: ({ content }: { content: string }) => void;
 }) => {
-  const { status } = usePluginOption(
-    { key: KEYS.aiChat } as AIChatPluginConfig,
-    'chat'
-  );
+  const status = usePluginOption(AIChatPlugin, 'chat')?.status;
   const isLoading = status === 'streaming' || status === 'submitted';
 
   const content = useLastAssistantMessage()?.parts.find(
@@ -33,41 +28,51 @@ export const useChatChunk = ({
 
   const insertedTextRef = useRef<string>('');
   const prevIsLoadingRef = useRef(isLoading);
+  const prevContentRef = useRef(isLoading ? '' : (content ?? ''));
+  const onChunkRef = useRef(onChunk);
+  const onFinishRef = useRef(onFinish);
 
   useEffect(() => {
-    if (!isLoading) {
+    onChunkRef.current = onChunk;
+    onFinishRef.current = onFinish;
+  }, [onChunk, onFinish]);
+
+  useEffect(() => {
+    const wasLoading = prevIsLoadingRef.current;
+    const previousContent = prevContentRef.current;
+    const nextContent = content ?? '';
+
+    if (!wasLoading && isLoading) {
       insertedTextRef.current = '';
     }
-    if (prevIsLoadingRef.current && !isLoading) {
-      onFinish?.({ content: content ?? '' });
-    }
+    const contentChanged = nextContent !== previousContent;
+    const chunk =
+      nextContent && contentChanged && (wasLoading || isLoading)
+        ? nextContent.slice(insertedTextRef.current.length)
+        : '';
 
-    prevIsLoadingRef.current = isLoading;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]);
-
-  useEffect(() => {
-    if (!content) {
-      return;
-    }
-
-    const chunk = content.slice(insertedTextRef.current.length);
-
-    const nodes: TText[] = [];
+    const nodes: Text[] = [];
 
     if (chunk) {
       const isFirst = insertedTextRef.current === '';
 
       nodes.push({ text: chunk });
-      onChunk({
+      onChunkRef.current({
         chunk,
         isFirst,
         nodes,
-        text: content,
+        text: nextContent,
       });
     }
 
-    insertedTextRef.current = content;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [content]);
+    if (nextContent && contentChanged) {
+      insertedTextRef.current = nextContent;
+    }
+    if (wasLoading && !isLoading) {
+      onFinishRef.current?.({ content: nextContent });
+    }
+
+    prevContentRef.current = nextContent;
+    prevIsLoadingRef.current = isLoading;
+  }, [content, isLoading]);
 };

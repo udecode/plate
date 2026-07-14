@@ -1,4 +1,5 @@
 import { createPlateEditor, pipeHandler } from '@platejs/core/react';
+import { KEYS } from '@platejs/utils';
 
 import { PlaceholderPlugin } from './PlaceholderPlugin';
 
@@ -30,17 +31,42 @@ const runOnDrop = (disableFileDrop: boolean) => {
 };
 
 describe('PlaceholderPlugin', () => {
-  it('handles file drops by default', () => {
+  it('defers file drops to DnD by default', () => {
     const { preventDefault, stopPropagation } = runOnDrop(false);
+
+    expect(preventDefault).not.toHaveBeenCalled();
+    expect(stopPropagation).not.toHaveBeenCalled();
+  });
+
+  it('handles file drops when DnD file dropping is disabled', () => {
+    const { preventDefault, stopPropagation } = runOnDrop(true);
 
     expect(preventDefault).toHaveBeenCalled();
     expect(stopPropagation).toHaveBeenCalled();
   });
 
-  it('skips file drops when disabled', () => {
-    const { preventDefault, stopPropagation } = runOnDrop(true);
+  it('replaces an empty block with a pasted file placeholder', () => {
+    const editor = createPlateEditor({
+      plugins: [PlaceholderPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+    const event = {
+      clipboardData: {
+        files: [new File(['image'], 'image.png', { type: 'image/png' })],
+        types: [],
+      },
+      preventDefault: mock(),
+      stopPropagation: mock(),
+    } as unknown as React.ClipboardEvent;
 
-    expect(preventDefault).not.toHaveBeenCalled();
-    expect(stopPropagation).not.toHaveBeenCalled();
+    pipeHandler(editor, { handlerKey: 'onPaste' })?.(event);
+
+    expect(editor.read.children()).toMatchObject([
+      { children: [{ text: '' }], type: KEYS.placeholder },
+    ]);
   });
 });

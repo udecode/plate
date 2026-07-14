@@ -4,7 +4,12 @@ import {
 } from './internals/hyperscript';
 import { createText } from './internals/creators';
 
-export { createEditor, type TestEditor } from './internals/creators';
+export {
+  createEditor,
+  createEditorFromFixture,
+  type TestEditor,
+  type TestEditorFixture,
+} from './internals/creators';
 export { createHyperscript };
 
 declare global {

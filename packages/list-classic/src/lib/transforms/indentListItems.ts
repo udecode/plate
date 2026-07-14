@@ -1,7 +1,8 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { ListTransaction } from '../BaseListPlugin';
 
 import { moveListItems } from './moveListItems';
 
-export const indentListItems = (editor: SlateEditor) => {
-  moveListItems(editor, { increase: true });
+export const indentListItems = (editor: BaseEditor, tx: ListTransaction) => {
+  moveListItems(editor, tx, { increase: true });
 };

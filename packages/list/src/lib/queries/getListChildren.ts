@@ -1,25 +1,23 @@
-import type { Editor, ElementEntryOf, ElementOf, NodeEntry } from 'platejs';
-
-import { isDefined, KEYS, NodeApi, PathApi } from 'platejs';
+import type { Editor, Element, NodeEntry } from '@platejs/plite';
+import { PathApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
+import { isDefined } from '@udecode/utils';
 
 /**
  * Get all list items that are children of the current list item (have bigger
  * indent). Stops when encountering an item with equal or lower indent.
  */
-export const getListChildren = <
-  N extends ElementOf<E>,
-  E extends Editor = Editor,
->(
-  editor: E,
-  entry: ElementEntryOf<E>
+export const getListChildren = <N extends Element = Element>(
+  editor: Editor,
+  entry: NodeEntry<Element>
 ): NodeEntry<N>[] => {
   const children: NodeEntry<N>[] = [];
   const [node, path] = entry;
 
-  const parentIndent = (node as any)[KEYS.indent] as number;
+  const parentIndent = node[KEYS.indent];
 
   // If no indent or not a list item, return empty
-  if (!isDefined(parentIndent) || !isDefined((node as any)[KEYS.listType])) {
+  if (typeof parentIndent !== 'number' || !isDefined(node[KEYS.listType])) {
     return children;
   }
 
@@ -29,16 +27,13 @@ export const getListChildren = <
     const nextPath = PathApi.next(currentPath);
     if (!nextPath) break;
 
-    const nextNode = NodeApi.get<N>(editor, nextPath);
+    const nextNode = editor.read.nodes.get<N>(nextPath)?.[0];
     if (!nextNode) break;
 
-    const nextIndent = (nextNode as any)[KEYS.indent] as number;
+    const nextIndent = nextNode[KEYS.indent];
 
     // Stop if we hit a non-list item or item with equal/lower indent
-    if (
-      !isDefined(nextIndent) ||
-      !isDefined((nextNode as any)[KEYS.listType])
-    ) {
+    if (typeof nextIndent !== 'number' || !isDefined(nextNode[KEYS.listType])) {
       break;
     }
 

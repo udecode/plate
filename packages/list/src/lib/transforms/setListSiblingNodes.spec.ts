@@ -27,8 +27,8 @@ describe('setListSiblingNodes', () => {
     ).mockImplementation(() => {});
     const unsetNodes = mock();
     const editor = {
-      tf: {
-        unsetNodes,
+      update: {
+        nodes: { unset: unsetNodes },
         withoutNormalizing: (fn: () => void) => fn(),
       },
     } as any;
@@ -72,8 +72,8 @@ describe('setListSiblingNodes', () => {
     ).mockImplementation(() => {});
     const unsetNodes = mock();
     const editor = {
-      tf: {
-        unsetNodes,
+      update: {
+        nodes: { unset: unsetNodes },
         withoutNormalizing: (fn: () => void) => fn(),
       },
     } as any;

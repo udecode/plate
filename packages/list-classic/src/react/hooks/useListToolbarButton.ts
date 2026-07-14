@@ -1,5 +1,5 @@
-import { KEYS } from 'platejs';
-import { useEditorRef, useEditorSelector } from 'platejs/react';
+import { KEYS } from '@platejs/utils';
+import { useEditorRef, useEditorSelector } from '@platejs/core/react';
 
 import { ListPlugin } from '../ListPlugin';
 
@@ -8,7 +8,7 @@ export const useListToolbarButtonState = ({
 } = {}) => {
   const pressed = useEditorSelector(
     (editor) =>
-      !!editor.selection &&
+      !!editor.read.selection() &&
       editor.read.nodes.some({ match: { type: editor.getType(nodeType) } }),
     [nodeType]
   );
@@ -23,13 +23,14 @@ export const useListToolbarButton = (
   state: ReturnType<typeof useListToolbarButtonState>
 ) => {
   const editor = useEditorRef();
-  const tf = editor.getTransforms(ListPlugin);
 
   return {
     props: {
       pressed: state.pressed,
       onClick: () => {
-        tf.toggle.list({ type: state.nodeType });
+        editor.plugin(ListPlugin).update.toggle.list({
+          type: state.nodeType,
+        });
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();

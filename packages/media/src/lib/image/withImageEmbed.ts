@@ -1,4 +1,4 @@
-import type { OverrideEditor } from 'platejs';
+import type { ExtendPlateEditorExtension } from '@platejs/core';
 
 import type { ImageConfig } from './BaseImagePlugin';
 
@@ -6,15 +6,14 @@ import { insertImage } from './transforms/insertImage';
 import { isImageUrl } from './utils/isImageUrl';
 
 /** If inserted text is image url, insert image instead. */
-export const withImageEmbed: OverrideEditor<ImageConfig> = ({
+export const withImageEmbed: ExtendPlateEditorExtension<ImageConfig> = ({
   editor,
   getOptions,
-  tf: { insertData },
 }) => ({
-  transforms: {
-    insertData(dataTransfer) {
+  clipboard: {
+    insertData(dataTransfer, { next }) {
       if (getOptions().disableEmbedInsert) {
-        return insertData(dataTransfer);
+        return next(dataTransfer);
       }
 
       const text = dataTransfer.getData('text/plain');
@@ -22,10 +21,10 @@ export const withImageEmbed: OverrideEditor<ImageConfig> = ({
       if (isImageUrl(text)) {
         insertImage(editor, text);
 
-        return;
+        return true;
       }
 
-      insertData(dataTransfer);
+      return next(dataTransfer);
     },
   },
 });

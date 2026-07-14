@@ -1,4 +1,4 @@
-import { createBaseEditor, getEditorPlugin } from '@platejs/core';
+import { createBaseEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { BaseFontColorPlugin } from './BaseFontColorPlugin';
@@ -9,24 +9,21 @@ describe('BaseFontColorPlugin', () => {
       plugins: [BaseFontColorPlugin],
     });
     const plugin = editor.getPlugin(BaseFontColorPlugin);
-    const parse = plugin.parsers!.html!.deserializer!.parse!;
 
     expect(plugin.inject.nodeProps).toMatchObject({
       defaultNodeValue: 'black',
       nodeKey: 'color',
     });
     expect(
-      parse({
-        ...getEditorPlugin(editor, plugin),
-        element: {
-          style: { color: 'rgb(255, 0, 0)' },
-        } as HTMLElement,
-        node: {},
-        type: KEYS.color,
+      editor.api.html.deserialize({
+        element: '<span style="color: rgb(255, 0, 0)">text</span>',
       })
-    ).toEqual({
-      [KEYS.color]: 'rgb(255, 0, 0)',
-    });
+    ).toMatchObject([
+      {
+        [KEYS.color]: 'rgb(255, 0, 0)',
+        text: 'text',
+      },
+    ]);
   });
 
   it('sets font color through the typed tx group', () => {

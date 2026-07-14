@@ -1,17 +1,15 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
-import type { NodeEntry } from 'platejs';
+import type { NodeEntry } from '@platejs/plite';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { useEditorPlugin, usePluginOption } from 'platejs/react';
+import { useEditorPlugin, usePluginOption } from '@platejs/core/react';
 
 import { AIChatPlugin } from '../AIChatPlugin';
 
 export type UseEditorChatOptions = {
-  // @deprecated not used
-  chat?: any;
   onOpenBlockSelection?: (blocks: NodeEntry[]) => void;
   onOpenChange?: (open: boolean) => void;
   onOpenCursor?: () => void;
@@ -26,35 +24,50 @@ export const useEditorChat = ({
 }: UseEditorChatOptions) => {
   const { editor } = useEditorPlugin(AIChatPlugin);
   const open = usePluginOption(AIChatPlugin, 'open');
+  const callbacksRef = useRef({
+    onOpenBlockSelection,
+    onOpenChange,
+    onOpenCursor,
+    onOpenSelection,
+  });
 
   useEffect(() => {
+    callbacksRef.current = {
+      onOpenBlockSelection,
+      onOpenChange,
+      onOpenCursor,
+      onOpenSelection,
+    };
+  }, [onOpenBlockSelection, onOpenChange, onOpenCursor, onOpenSelection]);
+
+  useEffect(() => {
+    const {
+      onOpenBlockSelection,
+      onOpenChange,
+      onOpenCursor,
+      onOpenSelection,
+    } = callbacksRef.current;
+
     onOpenChange?.(open);
 
-    if (open) {
-      if (onOpenBlockSelection) {
-        const blockSelectionApi =
-          editor.getApi(BlockSelectionPlugin).blockSelection;
-        const isBlockSelecting = editor
-          .plugin(BlockSelectionPlugin)
-          .getOption('isSelectingSome');
+    if (!open) return;
 
-        if (isBlockSelecting) {
-          onOpenBlockSelection(blockSelectionApi.getNodes());
+    if (onOpenBlockSelection) {
+      const blockSelection = editor.plugin(BlockSelectionPlugin);
 
-          return;
-        }
-      }
-      if (onOpenCursor && editor.api.isCollapsed()) {
-        onOpenCursor();
-
-        return;
-      }
-      if (onOpenSelection && editor.api.isExpanded()) {
-        onOpenSelection();
+      if (blockSelection.getOption('isSelectingSome')) {
+        onOpenBlockSelection(blockSelection.api.getNodes({}));
 
         return;
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (onOpenCursor && editor.read.selection.isCollapsed()) {
+      onOpenCursor();
+
+      return;
+    }
+    if (onOpenSelection && editor.read.selection.isExpanded()) {
+      onOpenSelection();
+    }
   }, [open]);
 };

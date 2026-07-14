@@ -1,4 +1,5 @@
-import { type OverrideEditor, KEYS } from 'platejs';
+import type { ExtendPlateEditorExtension } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import type { ListConfig } from './BaseListPlugin';
 
@@ -6,54 +7,46 @@ import { getListItemEntry } from './queries/getListItemEntry';
 import { insertListItem } from './transforms/insertListItem';
 import { moveListItemUp } from './transforms/moveListItemUp';
 
-export const withInsertBreakList: OverrideEditor<ListConfig> = ({
+export const withInsertBreakList: ExtendPlateEditorExtension<ListConfig> = ({
   editor,
   getOptions,
-  tf: { insertBreak },
 }) => ({
+  priority: 100,
   transforms: {
-    insertBreak() {
-      const insertBreakList = () => {
-        if (!editor.selection) return;
+    insertBreak({ next, tx }) {
+      if (!editor.read.selection()) return next();
 
-        const res = getListItemEntry(editor, {});
-        let moved: boolean | undefined;
+      const res = getListItemEntry(editor, {});
 
-        // If selection is in a li
-        if (res) {
-          const { list, listItem } = res;
+      if (res) {
+        const block = editor.read.nodes.block();
 
-          // If selected li is empty, move it up.
-          if (editor.api.isEmpty(editor.selection, { block: true })) {
-            moved = moveListItemUp(editor, {
-              list,
-              listItem,
-            });
+        if (
+          block &&
+          editor.read.nodes.isEmpty(block[0]) &&
+          moveListItemUp(editor, tx, res)
+        )
+          return true;
+      }
 
-            if (moved) return true;
-          }
-        }
+      const listItem = editor.read.nodes.above({
+        match: { type: editor.getType(KEYS.li) },
+      });
 
-        const block = editor.api.block({
-          match: { type: editor.getType(KEYS.li) },
-        });
-        if (block && editor.api.isEmpty(editor.selection, { block: true })) {
-          const didReset = editor.tf.resetBlock({ at: block[1] });
+      if (listItem && editor.read.text.string(listItem[1]) === '') {
+        tx.nodes.replace(
+          {
+            children: [{ text: '' }],
+            type: editor.getType(KEYS.p),
+          },
+          { at: listItem[1], select: true }
+        );
+        return true;
+      }
 
-          if (didReset) return true;
-        }
+      if (insertListItem(editor, tx, getOptions())) return true;
 
-        /** If selection is in li > p, insert li. */
-        if (!moved) {
-          const inserted = insertListItem(editor, getOptions());
-
-          if (inserted) return true;
-        }
-      };
-
-      if (insertBreakList()) return;
-
-      insertBreak();
+      return next();
     },
   },
 });

@@ -1,15 +1,16 @@
+import type { BaseEditor } from '@platejs/core';
+import type { ExtendPlateEditorExtension } from '@platejs/core';
 import {
-  type EditorTransforms,
-  type ElementEntry,
-  type OverrideEditor,
-  type SlateEditor,
-  type TElement,
-  KEYS,
-  NodeApi,
+  type Descendant,
+  type Element,
+  type NodeEntry,
+  type TextUnit,
   PathApi,
-} from 'platejs';
+  TextApi,
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
-import type { ListConfig } from './BaseListPlugin';
+import type { ListConfig, ListTransaction } from './BaseListPlugin';
 
 import {
   getListItemEntry,
@@ -24,8 +25,15 @@ import {
   removeListItem,
 } from './transforms/index';
 
-const selectionIsNotInAListHandler = (editor: SlateEditor): boolean => {
-  const pointAfterSelection = editor.api.after(editor.selection!.focus);
+const selectionIsNotInAListHandler = (
+  editor: BaseEditor,
+  tx: ListTransaction
+): boolean => {
+  const selection = editor.read.selection();
+
+  if (!selection) return false;
+
+  const pointAfterSelection = editor.read.points.after(selection.focus);
 
   if (pointAfterSelection) {
     // there is a block after it
@@ -36,13 +44,13 @@ const selectionIsNotInAListHandler = (editor: SlateEditor): boolean => {
     if (nextSiblingListRes) {
       // the next block is a list
       const { listItem } = nextSiblingListRes;
-      const parentBlockEntity = editor.api.block({
-        at: editor.selection!.anchor,
+      const parentBlockEntity = editor.read.nodes.block({
+        at: selection.anchor,
       });
 
-      if (!editor.api.string(parentBlockEntity![1])) {
+      if (parentBlockEntity && !editor.read.text.string(parentBlockEntity[1])) {
         // the selected block is empty
-        editor.tf.removeNodes();
+        tx.nodes.remove();
 
         return true;
       }
@@ -52,7 +60,7 @@ const selectionIsNotInAListHandler = (editor: SlateEditor): boolean => {
           at: [...listItem[1], 1, 0, 0],
         });
 
-        moveListItemUp(editor, sublistRes!);
+        if (sublistRes) moveListItemUp(editor, tx, sublistRes);
       }
     }
   }
@@ -61,17 +69,101 @@ const selectionIsNotInAListHandler = (editor: SlateEditor): boolean => {
 };
 
 const selectionIsInAListHandler = (
-  editor: SlateEditor,
-  res: { list: ElementEntry; listItem: ElementEntry },
-  defaultDelete: EditorTransforms['deleteBackward'],
+  editor: BaseEditor,
+  tx: ListTransaction,
+  res: { list: NodeEntry<Element>; listItem: NodeEntry<Element> },
+  defaultDelete: (unit?: TextUnit) => boolean,
   unit: 'block' | 'character' | 'line' | 'word' = 'character'
 ): boolean => {
-  const { listItem } = res;
+  const { list, listItem } = res;
+
+  const mergeContent = (from: Element, to: NodeEntry<Element>) => {
+    const children = structuredClone(to[0].children) as Descendant[];
+
+    for (const child of from.children as Descendant[]) {
+      const previous = children.at(-1);
+
+      if (
+        previous &&
+        TextApi.isText(previous) &&
+        TextApi.isText(child) &&
+        TextApi.equals(previous, child, { loose: true })
+      ) {
+        previous.text += child.text;
+      } else {
+        children.push(structuredClone(child));
+      }
+    }
+
+    tx.nodes.replaceChildren(children, { at: to[1] });
+  };
+
+  const currentContent = editor.read.nodes.get<Element>([...listItem[1], 0]);
+  const currentSublist = editor.read.nodes.get<Element>([...listItem[1], 1]);
+
+  if (currentContent && currentSublist) {
+    const firstChild = editor.read.nodes.get<Element>([
+      ...currentSublist[1],
+      0,
+    ]);
+    const firstChildContent = firstChild
+      ? editor.read.nodes.get<Element>([...firstChild[1], 0])
+      : undefined;
+
+    if (firstChild && firstChildContent) {
+      mergeContent(firstChildContent[0], currentContent);
+
+      const childSublist = editor.read.nodes.get<Element>([
+        ...firstChild[1],
+        1,
+      ]);
+      const replacements = [
+        ...((childSublist?.[0].children ?? []) as Element[]),
+        ...(currentSublist[0].children.slice(1) as Element[]),
+      ];
+
+      if (replacements.length > 0) {
+        tx.nodes.replaceChildren(replacements, { at: currentSublist[1] });
+      } else {
+        tx.nodes.remove({ at: currentSublist[1] });
+      }
+
+      return true;
+    }
+  }
+
+  if (currentContent) {
+    const pointAfterListItem = editor.read.points.after(listItem[1]);
+    const nextItem = pointAfterListItem
+      ? getListItemEntry(editor, { at: pointAfterListItem })
+      : undefined;
+    const nextContent = nextItem
+      ? editor.read.nodes.get<Element>([...nextItem.listItem[1], 0])
+      : undefined;
+    const nextSublist = nextItem
+      ? editor.read.nodes.get<Element>([...nextItem.listItem[1], 1])
+      : undefined;
+
+    if (
+      nextItem &&
+      nextContent &&
+      nextSublist &&
+      !PathApi.equals(list[1], nextItem.list[1])
+    ) {
+      mergeContent(nextContent[0], currentContent);
+      tx.nodes.insert(nextSublist[0].children as Element[], {
+        at: [...list[1], listItem[1].at(-1)! + 1],
+      });
+      tx.nodes.remove({ at: nextItem.listItem[1] });
+
+      return true;
+    }
+  }
 
   // if it has no children
   if (!hasListChild(editor, listItem[0])) {
     const liType = editor.getType(KEYS.li);
-    const _nodes = editor.api.nodes({
+    const _nodes = editor.read.nodes.entries({
       at: listItem[1],
       mode: 'lowest',
       match: (node, path) => {
@@ -79,9 +171,10 @@ const selectionIsInAListHandler = (
           return false;
         }
 
-        const isNodeLi = (node as TElement).type === liType;
+        const isNodeLi = (node as Element).type === liType;
         const isSiblingOfNodeLi =
-          NodeApi.get<TElement>(editor, PathApi.next(path))?.type === liType;
+          editor.read.nodes.get<Element>(PathApi.next(path))?.[0].type ===
+          liType;
 
         return isNodeLi && isSiblingOfNodeLi;
       },
@@ -90,7 +183,7 @@ const selectionIsInAListHandler = (
 
     if (!liWithSiblings) {
       // there are no more list item in the list
-      const pointAfterListItem = editor.api.after(listItem[1]);
+      const pointAfterListItem = editor.read.points.after(listItem[1]);
 
       if (pointAfterListItem) {
         // there is a block after it
@@ -102,7 +195,7 @@ const selectionIsInAListHandler = (
           // it is a list so we merge the lists
           const listRoot = getListRoot(editor, listItem[1]);
 
-          moveListItemsToList(editor, {
+          moveListItemsToList(editor, tx, {
             deleteFromList: true,
             fromList: nextSiblingListRes.list,
             toList: listRoot,
@@ -115,17 +208,17 @@ const selectionIsInAListHandler = (
       return false;
     }
 
-    const siblingListItem = editor.api.node<TElement>(
+    const siblingListItem = editor.read.nodes.get<Element>(
       PathApi.next(liWithSiblings)
     );
 
     if (!siblingListItem) return false;
 
-    const siblingList = editor.api.parent<TElement>(siblingListItem[1]);
+    const siblingList = editor.read.nodes.parent<Element>(siblingListItem[1]);
 
     if (
       siblingList &&
-      removeListItem(editor, {
+      removeListItem(editor, tx, {
         list: siblingList,
         listItem: siblingListItem,
         reverse: false,
@@ -134,12 +227,16 @@ const selectionIsInAListHandler = (
       return true;
     }
 
-    const pointAfterListItem = editor.api.after(editor.selection!.focus);
+    const selection = editor.read.selection();
+
+    if (!selection) return false;
+
+    const pointAfterListItem = editor.read.points.after(selection.focus);
 
     if (
       !pointAfterListItem ||
       !isAcrossListItems(editor, {
-        anchor: editor.selection!.anchor,
+        anchor: selection.anchor,
         focus: pointAfterListItem,
       })
     ) {
@@ -148,7 +245,7 @@ const selectionIsInAListHandler = (
 
     // get closest lic ancestor of next selectable
     const licType = editor.getType(KEYS.lic);
-    const _licNodes = editor.api.nodes<TElement>({
+    const _licNodes = editor.read.nodes.entries<Element>({
       at: pointAfterListItem.path,
       mode: 'lowest',
       match: { type: licType },
@@ -161,31 +258,31 @@ const selectionIsInAListHandler = (
     // manually run default delete
     defaultDelete(unit);
 
-    const leftoverListItem = editor.api.node<TElement>(
+    const leftoverListItem = editor.read.nodes.get<Element>(
       PathApi.parent(nextSelectableLic[1])
     )!;
 
     if (leftoverListItem && leftoverListItem[0].children.length === 0) {
       // remove the leftover empty list item
-      editor.tf.removeNodes({ at: leftoverListItem[1] });
+      tx.nodes.remove({ at: leftoverListItem[1] });
     }
 
     return true;
   }
 
   // if it has children
-  const nestedList = editor.api.node<TElement>(
+  const nestedList = editor.read.nodes.get<Element>(
     PathApi.next([...listItem[1], 0])
   );
 
   if (!nestedList) return false;
 
-  const nestedListItem = Array.from(
-    NodeApi.children<TElement>(editor, nestedList[1])
-  )[0];
+  const nestedListItem = editor.read.nodes.get<Element>([...nestedList[1], 0]);
+
+  if (!nestedListItem) return false;
 
   if (
-    removeFirstListItem(editor, {
+    removeFirstListItem(editor, tx, {
       list: nestedList,
       listItem: nestedListItem,
     })
@@ -193,7 +290,7 @@ const selectionIsInAListHandler = (
     return true;
   }
   if (
-    removeListItem(editor, {
+    removeListItem(editor, tx, {
       list: nestedList,
       listItem: nestedListItem,
     })
@@ -204,45 +301,39 @@ const selectionIsInAListHandler = (
   return false;
 };
 
-export const withDeleteForwardList: OverrideEditor<ListConfig> = ({
+export const withDeleteForwardList: ExtendPlateEditorExtension<ListConfig> = ({
   editor,
-  tf: { deleteForward },
 }) => ({
+  priority: 100,
   transforms: {
-    deleteForward(unit) {
-      const deleteForwardList = () => {
-        let skipDefaultDelete = false;
+    deleteForward({ next, tx, unit }) {
+      const selection = editor.read.selection();
 
-        if (!editor?.selection) {
-          return skipDefaultDelete;
-        }
-        if (!editor.api.isAt({ end: true })) {
-          return skipDefaultDelete;
-        }
+      if (!selection || !editor.read.selection.isAtBlockEnd()) {
+        return next({ unit });
+      }
 
-        editor.tf.withoutNormalizing(() => {
-          const res = getListItemEntry(editor, {});
+      const res = getListItemEntry(editor, {});
 
-          if (!res) {
-            skipDefaultDelete = selectionIsNotInAListHandler(editor);
+      if (!res) {
+        return selectionIsNotInAListHandler(editor, tx) || next({ unit });
+      }
 
-            return;
-          }
+      let delegated = false;
+      const handled = selectionIsInAListHandler(
+        editor,
+        tx,
+        res,
+        (nextUnit) => {
+          delegated = true;
+          return next({ unit: nextUnit ?? unit });
+        },
+        unit
+      );
 
-          skipDefaultDelete = selectionIsInAListHandler(
-            editor,
-            res,
-            deleteForward,
-            unit
-          );
-        });
+      if (handled || delegated) return true;
 
-        return skipDefaultDelete;
-      };
-
-      if (deleteForwardList()) return;
-
-      deleteForward(unit);
+      return next({ unit });
     },
   },
 });

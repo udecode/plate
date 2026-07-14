@@ -1,20 +1,15 @@
 import { Slot } from '@radix-ui/react-slot';
 import React from 'react';
 
-export const createSlotComponent = <
-  T extends React.ElementType,
-  P extends React.ComponentPropsWithoutRef<T>,
->(
-  element: T
-) =>
+export const createSlotComponent = <T extends React.ElementType>(element: T) =>
   React.forwardRef<
-    any,
+    React.ComponentRef<T>,
     {
       as?: React.ElementType;
       asChild?: boolean;
-    } & P
+    } & React.ComponentPropsWithoutRef<T>
   >(({ as, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : (as as T) || element;
+    const Comp = asChild ? Slot : (as ?? element);
 
     return <Comp ref={ref} {...props} />;
   });

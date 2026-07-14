@@ -1,109 +1,130 @@
 import { deserializeMd } from '@platejs/markdown';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
+import {
+  BlockSelectionPlugin,
+  CursorOverlayPlugin,
+} from '@platejs/selection/react';
 import {
   diffToSuggestions,
   getTransientSuggestionKey,
   SkipSuggestionDeletes,
 } from '@platejs/suggestion';
-import {
-  type Descendant,
-  type SlateEditor,
-  type TElement,
-  type TIdElement,
-  type TSuggestionData,
-  type TSuggestionElement,
-  ElementApi,
-  KEYS,
-  nanoid,
-  TextApi,
-} from 'platejs';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
+import { type Descendant, ElementApi, TextApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
+import { nanoid } from '@platejs/core';
+import type { PlateEditor } from '@platejs/core/react';
 
+import { withAIBatch } from '../../../lib/transforms/withAIBatch';
 import { AIChatPlugin } from '../AIChatPlugin';
 import {
   getTableCellChildren as withoutTable,
   isSingleCellTable,
 } from './nestedContainerUtils';
 
-export const applyAISuggestions = (editor: SlateEditor, content: string) => {
+export const applyAISuggestions = (
+  editor: PlateEditor,
+  content: string,
+  { split }: { split?: boolean } = {}
+) => {
   /** Conflict with block selection */
-  editor
-    .getApi({ key: KEYS.cursorOverlay })
-    ?.cursorOverlay?.removeCursor('selection');
+  editor.plugin(CursorOverlayPlugin).api.removeCursor('selection');
 
   const { chatNodes } = editor.plugin(AIChatPlugin).getOptions();
+  const aiChat = editor.plugin(AIChatPlugin);
 
   // Use chatNodes.length to determine if we're in multi-block edit mode
   // instead of checking current selection state (which may have changed)
   if (chatNodes.length > 1) {
-    const setReplaceIds = (ids: string[]) => {
-      editor.plugin(AIChatPlugin).setOption('_replaceIds', ids);
-    };
+    const setReplaceIds = (ids: string[]) =>
+      aiChat.setOption('_replaceIds', ids);
 
-    if (editor.plugin(AIChatPlugin).getOption('_replaceIds').length === 0) {
+    if (aiChat.getOption('_replaceIds').length === 0) {
       setReplaceIds(chatNodes.map((node) => node.id as string));
     }
 
     const diffNodes = getDiffNodes(editor, content);
+    const replaceIds = aiChat.getOption('_replaceIds');
 
-    const replaceNodes = Array.from(
-      editor.api.nodes<TIdElement>({
-        at: [],
-        match: (n: TIdElement) =>
-          ElementApi.isElement(n) &&
-          editor.plugin(AIChatPlugin).getOption('_replaceIds').includes(n.id),
-      })
+    const replaceNodes = editor.read.nodes.toArray<
+      Extract<Descendant, { children: unknown }>
+    >({
+      at: [],
+      match: (node) =>
+        ElementApi.isElement(node) &&
+        typeof node.id === 'string' &&
+        replaceIds.includes(node.id),
+    });
+    const suggestionApi = editor.plugin(SuggestionPlugin).api;
+
+    withAIBatch(
+      editor,
+      (tx) => {
+        replaceNodes.toReversed().forEach(([node, path], reverseIndex) => {
+          const index = replaceNodes.length - reverseIndex - 1;
+          const diffNode = diffNodes[index];
+
+          if (!diffNode) {
+            tx.nodes.remove({ at: path });
+
+            return;
+          }
+
+          const replacement =
+            index === replaceNodes.length - 1 &&
+            diffNodes.length > replaceNodes.length
+              ? diffNodes.slice(index)
+              : [diffNode];
+          const isSameString =
+            SkipSuggestionDeletes(editor, node) ===
+            SkipSuggestionDeletes(editor, diffNode);
+          const isSameSuggestion =
+            ElementApi.isElement(diffNode) &&
+            suggestionApi.suggestionData(node)?.type ===
+              suggestionApi.suggestionData(diffNode)?.type;
+
+          if (
+            replacement.length === 1 &&
+            isSameString &&
+            isSameSuggestion &&
+            node.id === diffNode.id
+          ) {
+            return;
+          }
+
+          tx.nodes.replace(replacement, { at: path });
+        });
+      },
+      { split }
     );
 
-    replaceNodes.forEach(([node, path], index) => {
-      const replaceNode = node as unknown as TSuggestionElement;
-      const diffNode = diffNodes[index] as unknown as TSuggestionElement;
+    const diffIds = diffNodes.flatMap((node) => {
+      if (!ElementApi.isElement(node) || typeof node.id !== 'string') return [];
 
-      const isSameString =
-        SkipSuggestionDeletes(editor, replaceNode) ===
-        SkipSuggestionDeletes(editor, diffNode);
-
-      const isSameSuggestion =
-        (replaceNode.suggestion as TSuggestionData | undefined)?.type ===
-        (diffNode.suggestion as TSuggestionData | undefined)?.type;
-
-      if (
-        index === replaceNodes.length - 1 &&
-        diffNodes.length > replaceNodes.length
-      ) {
-        editor.tf.replaceNodes(diffNodes.slice(index), {
-          at: path,
-        });
-      }
-      // Performance optimization
-      if (isSameString && isSameSuggestion && node.id === diffNode.id) {
-        return;
-      }
-
-      editor.tf.replaceNodes(diffNode, {
-        at: path,
-      });
+      return node.id;
     });
 
-    editor
-      .getApi(BlockSelectionPlugin)
-      .blockSelection.set(diffNodes.map((node) => node.id as string));
-    setReplaceIds(diffNodes.map((node) => node.id as string));
+    editor.plugin(BlockSelectionPlugin).api.set(diffIds);
+    setReplaceIds(diffIds);
   } else {
     const diffNodes = getDiffNodes(editor, content);
 
-    editor.tf.insertFragment(diffNodes);
+    withAIBatch(
+      editor,
+      (tx) => {
+        tx.fragment.insert(diffNodes);
 
-    const nodes = Array.from(
-      editor.api.nodes({
-        at: [],
-        mode: 'lowest',
-        match: (n) => TextApi.isText(n) && !!n[getTransientSuggestionKey()],
-      })
+        const nodes = tx.nodes.toArray({
+          at: [],
+          mode: 'lowest',
+          match: (node) =>
+            TextApi.isText(node) && !!node[getTransientSuggestionKey()],
+        });
+        const range = tx.ranges.fromEntries(nodes);
+
+        if (range) tx.selection.set(range);
+      },
+      { split }
     );
-
-    const range = editor.api.nodesRange(nodes);
-
-    editor.tf.setSelection(range!);
 
     return;
   }
@@ -116,7 +137,7 @@ const withProps = (
   diffNodes.map((node, index) => {
     if (!ElementApi.isElement(node)) return node;
 
-    const originalNode = chatNodes?.[index] as TElement | undefined;
+    const originalNode = chatNodes[index];
 
     return {
       ...node,
@@ -155,18 +176,18 @@ export const withoutSuggestionAndComments = (
     }
     if (ElementApi.isElement(node)) {
       if (node[KEYS.suggestion]) {
-        const nodeWithoutSuggestion: any = {};
+        const nodeWithoutSuggestion = {
+          ...node,
+          children: withoutSuggestionAndComments(node.children),
+        };
 
-        Object.keys(node).forEach((key) => {
-          if (key !== KEYS.suggestion && !key.startsWith(KEYS.suggestion)) {
-            nodeWithoutSuggestion[key] = node[key];
+        Object.keys(nodeWithoutSuggestion).forEach((key) => {
+          if (key === KEYS.suggestion || key.startsWith(KEYS.suggestion)) {
+            Reflect.deleteProperty(nodeWithoutSuggestion, key);
           }
         });
 
-        return {
-          ...nodeWithoutSuggestion,
-          children: withoutSuggestionAndComments(node.children),
-        };
+        return nodeWithoutSuggestion;
       }
 
       return {
@@ -178,7 +199,7 @@ export const withoutSuggestionAndComments = (
     return node;
   });
 
-const getDiffNodes = (editor: SlateEditor, aiContent: string) => {
+const getDiffNodes = (editor: PlateEditor, aiContent: string) => {
   /** Original document nodes */
   const rawChatNodes = editor.plugin(AIChatPlugin).getOption('chatNodes');
 

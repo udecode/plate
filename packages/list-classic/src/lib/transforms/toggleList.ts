@@ -1,182 +1,176 @@
+import type { BaseEditor } from '@platejs/core';
 import {
-  type SlateEditor,
-  type TElement,
+  type Element,
   ElementApi,
-  KEYS,
   NodeApi,
+  PathApi,
   RangeApi,
-} from 'platejs';
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
-import { BaseListPlugin } from '../BaseListPlugin';
-import {
-  getListItemEntry,
-  getListTypes,
-  getPropsIfTaskList,
-} from '../queries/index';
+import type { ListConfig, ListTransaction } from '../BaseListPlugin';
+import { getListItemEntry, getListTypes, getPropsIfTaskList } from '../queries';
 import { unwrapList } from './unwrapList';
 
 type ToggleListOptions = { type: string; checked?: boolean };
 
 const _toggleList = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: ListTransaction,
   { checked = false, type }: ToggleListOptions
-) =>
-  editor.tf.withoutNormalizing(() => {
-    if (!editor.selection) {
+) => {
+  const selection = editor.read.selection();
+
+  if (!selection) return;
+
+  const { validLiChildrenTypes } = editor
+    .plugin<ListConfig>(KEYS.listClassic)
+    .getOptions();
+  const startBlock = editor.read.nodes.block({ at: RangeApi.start(selection) });
+  const endBlock = editor.read.nodes.block({ at: RangeApi.end(selection) });
+  const acrossBlocks =
+    startBlock && endBlock && !PathApi.equals(startBlock[1], endBlock[1]);
+
+  if (editor.read.selection.isCollapsed() || !acrossBlocks) {
+    const res = getListItemEntry(editor);
+
+    if (res) {
+      if (res.list[0].type === type) {
+        unwrapList(editor, tx);
+      } else {
+        tx.nodes.set(
+          { type },
+          {
+            at: selection,
+            match: { type: getListTypes(editor) },
+            mode: 'lowest',
+          }
+        );
+      }
+
       return;
     }
 
-    const { validLiChildrenTypes } = editor.plugin(BaseListPlugin).getOptions();
+    tx.nodes.wrap({ children: [], type });
 
-    if (editor.api.isCollapsed() || !editor.api.isAt({ blocks: true })) {
-      // selection is collapsed
-      const res = getListItemEntry(editor);
+    const nodes = Array.from(
+      editor.read.nodes.entries({ match: { type: editor.getType(KEYS.p) } })
+    );
+    const blockAbove = editor.read.nodes.block({
+      match: { type: validLiChildrenTypes },
+    });
 
-      if (res) {
-        const { list } = res;
+    if (!blockAbove) {
+      tx.nodes.set({ type: editor.getType(KEYS.lic) });
+    }
 
-        if (list[0].type === type) {
-          unwrapList(editor);
-        } else {
-          editor.tf.setNodes(
-            { type },
-              {
-                at: editor.selection,
-                mode: 'lowest',
-                match: { type: getListTypes(editor) },
-            }
-          );
-        }
-      } else {
-        const list = { children: [], type };
-        editor.tf.wrapNodes<TElement>(list);
-
-        const _nodes = editor.api.nodes({
-          match: { type: editor.getType(KEYS.p) },
-        });
-        const nodes = Array.from(_nodes);
-
-        const blockAbove = editor.api.block({
-          match: { type: validLiChildrenTypes },
-        });
-
-        if (!blockAbove) {
-          editor.tf.setNodes({
-            type: editor.getType(KEYS.lic),
-          });
-        }
-
-        const listItem = {
+    for (const [, path] of nodes) {
+      tx.nodes.wrap(
+        {
           children: [],
           ...getPropsIfTaskList(editor, type, { checked }),
           type: editor.getType(KEYS.li),
-        };
-
-        for (const [, path] of nodes) {
-          editor.tf.wrapNodes<TElement>(listItem, {
-            at: path,
-          });
-        }
-      }
-    } else {
-      // selection is a range
-
-      const [startPoint, endPoint] = RangeApi.edges(editor.selection!);
-      const commonEntry = NodeApi.common<TElement>(
-        editor,
-        startPoint.path,
-        endPoint.path
-      )!;
-
-      if (
-        getListTypes(editor).includes(commonEntry[0].type) ||
-        (commonEntry[0] as TElement).type === editor.getType(KEYS.li)
-      ) {
-        if ((commonEntry[0] as TElement).type === type) {
-          unwrapList(editor);
-        } else {
-          const startList = editor.api.node({
-            at: RangeApi.start(editor.selection),
-            match: { type: getListTypes(editor) },
-            mode: 'lowest',
-          });
-          const endList = editor.api.node({
-            at: RangeApi.end(editor.selection),
-            match: { type: getListTypes(editor) },
-            mode: 'lowest',
-          });
-          const rangeLength = Math.min(
-            startList![1].length,
-            endList![1].length
-          );
-
-          editor.tf.setNodes(
-            { type },
-            {
-              at: editor.selection,
-              mode: 'all',
-              match: (n, path) =>
-                ElementApi.isElement(n) &&
-                getListTypes(editor).includes(n.type) &&
-                path.length >= rangeLength,
-            }
-          );
-        }
-      } else {
-        const rootPathLength = commonEntry[1].length;
-        const _nodes = editor.api.nodes<TElement>({
-          mode: 'all',
-        });
-        const nodes = Array.from(_nodes).filter(
-          ([, path]) => path.length === rootPathLength + 1
-        );
-
-        nodes.forEach((n) => {
-          if (getListTypes(editor).includes(n[0].type)) {
-            editor.tf.setNodes(
-              { type },
-              {
-                at: n[1],
-                mode: 'all',
-                match: { type: getListTypes(editor) },
-              }
-            );
-          } else {
-            if (!validLiChildrenTypes?.includes(n[0].type)) {
-              editor.tf.setNodes(
-                { type: editor.getType(KEYS.lic) },
-                { at: n[1] }
-              );
-            }
-
-            const listItem = {
-              children: [],
-              ...getPropsIfTaskList(editor, type, { checked }),
-              type: editor.getType(KEYS.li),
-            };
-            editor.tf.wrapNodes<TElement>(listItem, {
-              at: n[1],
-            });
-
-            const list = { children: [], type };
-            editor.tf.wrapNodes<TElement>(list, { at: n[1] });
-          }
-        });
-      }
+        },
+        { at: path }
+      );
     }
-  });
 
-export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
-  _toggleList(editor, { type });
+    return;
+  }
 
-export const toggleBulletedList = (editor: SlateEditor) =>
-  toggleList(editor, { type: editor.getType(KEYS.ulClassic) });
+  const [startPoint, endPoint] = RangeApi.edges(selection);
+  const commonEntry = NodeApi.common(editor, startPoint.path, endPoint.path);
 
-export const toggleTaskList = (editor: SlateEditor, defaultChecked = false) =>
-  _toggleList(editor, {
+  if (!commonEntry) return;
+
+  if (
+    ElementApi.isElement(commonEntry[0]) &&
+    (getListTypes(editor).includes(commonEntry[0].type) ||
+      commonEntry[0].type === editor.getType(KEYS.li))
+  ) {
+    if (commonEntry[0].type === type) {
+      unwrapList(editor, tx);
+      return;
+    }
+
+    const startList = editor.read.nodes.find({
+      at: RangeApi.start(selection),
+      match: { type: getListTypes(editor) },
+      mode: 'lowest',
+    });
+    const endList = editor.read.nodes.find({
+      at: RangeApi.end(selection),
+      match: { type: getListTypes(editor) },
+      mode: 'lowest',
+    });
+
+    if (!startList || !endList) return;
+
+    const rangeLength = Math.min(startList[1].length, endList[1].length);
+
+    tx.nodes.set(
+      { type },
+      {
+        at: selection,
+        match: (node, path) =>
+          ElementApi.isElement(node) &&
+          getListTypes(editor).includes(node.type) &&
+          path.length >= rangeLength,
+        mode: 'all',
+      }
+    );
+
+    return;
+  }
+
+  const rootPathLength = commonEntry[1].length;
+  const nodes = Array.from(
+    editor.read.nodes.entries<Element>({ mode: 'all' })
+  ).filter(([, path]) => path.length === rootPathLength + 1);
+
+  for (const [node, path] of nodes) {
+    if (getListTypes(editor).includes(node.type)) {
+      tx.nodes.set(
+        { type },
+        { at: path, match: { type: getListTypes(editor) }, mode: 'all' }
+      );
+      continue;
+    }
+
+    if (!validLiChildrenTypes?.includes(node.type)) {
+      tx.nodes.set({ type: editor.getType(KEYS.lic) }, { at: path });
+    }
+
+    tx.nodes.wrap(
+      {
+        children: [],
+        ...getPropsIfTaskList(editor, type, { checked }),
+        type: editor.getType(KEYS.li),
+      },
+      { at: path }
+    );
+    tx.nodes.wrap({ children: [], type }, { at: path });
+  }
+};
+
+export const toggleList = (
+  editor: BaseEditor,
+  tx: ListTransaction,
+  { type }: { type: string }
+) => _toggleList(editor, tx, { type });
+
+export const toggleBulletedList = (editor: BaseEditor, tx: ListTransaction) =>
+  toggleList(editor, tx, { type: editor.getType(KEYS.ulClassic) });
+
+export const toggleTaskList = (
+  editor: BaseEditor,
+  tx: ListTransaction,
+  defaultChecked = false
+) =>
+  _toggleList(editor, tx, {
     checked: defaultChecked,
     type: editor.getType(KEYS.taskList),
   });
 
-export const toggleNumberedList = (editor: SlateEditor) =>
-  toggleList(editor, { type: editor.getType(KEYS.olClassic) });
+export const toggleNumberedList = (editor: BaseEditor, tx: ListTransaction) =>
+  toggleList(editor, tx, { type: editor.getType(KEYS.olClassic) });

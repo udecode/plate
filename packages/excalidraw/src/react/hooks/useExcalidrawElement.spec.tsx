@@ -22,6 +22,10 @@ mock.module('@platejs/plite-react', () => ({
   useEditorReadOnly: useEditorReadOnlyMock,
 }));
 
+mock.module('@excalidraw/excalidraw', () => ({
+  Excalidraw: () => null,
+}));
+
 describe('useExcalidrawElement', () => {
   beforeEach(() => {
     useEditorRefMock.mockReset();

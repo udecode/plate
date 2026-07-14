@@ -1,24 +1,22 @@
 import {
   type Editor,
-  type ElementEntryOf,
-  type ElementOf,
+  type Element,
   type NodeEntry,
-  NodeApi,
   PathApi,
-} from 'platejs';
+} from '@platejs/plite';
 
 import { type GetSiblingListOptions, getSiblingList } from './getSiblingList';
 
 /** Get the next indent list. */
-export const getNextList = <N extends ElementOf<E>, E extends Editor = Editor>(
-  editor: E,
-  entry: ElementEntryOf<E>,
-  options?: Partial<GetSiblingListOptions<N, E>>
+export const getNextList = <N extends Element = Element>(
+  editor: Editor,
+  entry: NodeEntry<Element>,
+  options?: Partial<GetSiblingListOptions<N>>
 ): NodeEntry<N> | undefined =>
   getSiblingList(editor, entry, {
     getNextEntry: ([, currPath]) => {
       const nextPath = PathApi.next(currPath);
-      const nextNode = NodeApi.get<N>(editor, nextPath);
+      const nextNode = editor.read.nodes.get<N>(nextPath)?.[0];
 
       if (!nextNode) return;
 

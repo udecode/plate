@@ -1,6 +1,6 @@
-import type { Editor, ElementEntryOf, ElementOf } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { Element, NodeEntry } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import type { GetSiblingListOptions } from '../queries/getSiblingList';
 
@@ -9,33 +9,30 @@ import { ListStyleType } from '../types';
 import { setIndentTodoNode, setListNode } from './setListNode';
 
 /** Set indent list to entry + siblings. */
-export const setListSiblingNodes = <
-  N extends ElementOf<E>,
-  E extends Editor = Editor,
->(
-  editor: E,
-  entry: ElementEntryOf<E>,
+export const setListSiblingNodes = <N extends Element = Element>(
+  editor: BaseEditor,
+  entry: NodeEntry<Element>,
   {
     getSiblingListOptions,
     listStyleType = ListStyleType.Disc,
   }: {
-    getSiblingListOptions?: GetSiblingListOptions<N, E>;
+    getSiblingListOptions?: GetSiblingListOptions<N>;
     listStyleType?: string;
   }
 ) => {
-  editor.tf.withoutNormalizing(() => {
+  editor.update.withoutNormalizing(() => {
     const siblings = getListSiblings(editor, entry, getSiblingListOptions);
 
     siblings.forEach(([node, path]) => {
       if (listStyleType === KEYS.listTodo) {
-        editor.tf.unsetNodes(KEYS.listType, { at: path });
+        editor.update.nodes.unset(KEYS.listType, { at: path });
         setIndentTodoNode(editor, {
           at: path,
           indent: node[KEYS.indent] as number,
           listStyleType,
         });
       } else {
-        editor.tf.unsetNodes(KEYS.listChecked, { at: path });
+        editor.update.nodes.unset(KEYS.listChecked, { at: path });
         setListNode(editor, {
           at: path,
           indent: node[KEYS.indent] as number,

@@ -1,42 +1,44 @@
+import type { ExtendPlateEditorExtension } from '@platejs/core';
 import {
   type Ancestor,
-  type AncestorEntry,
   type Descendant,
-  type DescendantEntry,
   type ElementEntry,
-  type OverrideEditor,
+  type NodeEntry,
   type Path,
-  type TElement,
-  type TText,
+  type Element,
   ElementApi,
-  KEYS,
   NodeApi,
   PathApi,
-} from 'platejs';
+  PointApi,
+  RangeApi,
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import type { ListConfig } from './BaseListPlugin';
 
 import { getPropsIfTaskListLiNode, isListRoot } from './queries';
 
-export const withInsertFragmentList: OverrideEditor<ListConfig> = ({
+export const withInsertFragmentList: ExtendPlateEditorExtension<ListConfig> = ({
   editor,
-  tf: { insertFragment },
 }) => {
   const listItemType = editor.getType(KEYS.li);
   const listItemContentType = editor.getType(KEYS.lic);
 
   const getFirstAncestorOfType = (
     root: Descendant,
-    entry: DescendantEntry,
+    entry: NodeEntry<Descendant>,
     type: string
-  ): AncestorEntry => {
+  ): NodeEntry<Ancestor> => {
     let ancestor: Path = PathApi.parent(entry[1]);
 
-    while (NodeApi.get<TElement>(root, ancestor)!.type !== type) {
+    while (true) {
+      const node = NodeApi.get(root, ancestor);
+
+      if (ElementApi.isElement(node) && node.type === type) break;
       ancestor = PathApi.parent(ancestor);
     }
 
-    return [NodeApi.get<Ancestor>(root, ancestor)!, ancestor];
+    return [NodeApi.get(root, ancestor) as Ancestor, ancestor];
   };
 
   const findListItemsWithContent = (first: Descendant): Descendant[] => {
@@ -45,8 +47,9 @@ export const withInsertFragmentList: OverrideEditor<ListConfig> = ({
 
     while (
       isListRoot(editor, node) ||
-      (node.type === listItemType &&
-        (node.children as TElement[])[0].type !== listItemContentType)
+      (ElementApi.isElement(node) &&
+        node.type === listItemType &&
+        (node.children as Element[])[0].type !== listItemContentType)
     ) {
       prev = node;
       [node] = node.children as Descendant[];
@@ -62,9 +65,9 @@ export const withInsertFragmentList: OverrideEditor<ListConfig> = ({
    * @returns If argument is not a list root, returns it, otherwise returns ul[]
    *   or li[].
    */
-  const trimList = (listRoot: Descendant): TElement[] => {
+  const trimList = (listRoot: Descendant): Element[] => {
     if (!isListRoot(editor, listRoot)) {
-      return [listRoot as TElement];
+      return [listRoot as Element];
     }
 
     const _texts = NodeApi.texts(listRoot);
@@ -92,14 +95,47 @@ export const withInsertFragmentList: OverrideEditor<ListConfig> = ({
   const wrapNodeIntoListItem = (
     node: Descendant,
     props?: Record<string, any>
-  ): TElement =>
-    node.type === listItemType
-      ? (node as TElement)
+  ): Element =>
+    ElementApi.isElement(node) && node.type === listItemType
+      ? (node as Element)
       : ({
           children: [node],
           ...props,
           type: listItemType,
-        } as TElement);
+        } as Element);
+
+  const sliceElementAtPoint = (
+    element: Element,
+    relativePath: Path,
+    offset: number,
+    side: 'after' | 'before'
+  ): Element => {
+    const sliceNode = (node: Descendant, path: Path): Descendant => {
+      if (NodeApi.isText(node)) {
+        return {
+          ...node,
+          text:
+            side === 'before'
+              ? node.text.slice(0, offset)
+              : node.text.slice(offset),
+        };
+      }
+
+      const [index, ...rest] = path;
+
+      if (index === undefined) return structuredClone(node);
+
+      const edgeChild = sliceNode(node.children[index] as Descendant, rest);
+      const children =
+        side === 'before'
+          ? [...node.children.slice(0, index), edgeChild]
+          : [edgeChild, ...node.children.slice(index + 1)];
+
+      return { ...node, children } as Element;
+    };
+
+    return sliceNode(element, relativePath) as Element;
+  };
 
   /**
    * Checks if the fragment only consists of a single LIC in which case it is
@@ -121,12 +157,9 @@ export const withInsertFragmentList: OverrideEditor<ListConfig> = ({
 
   const getTextAndListItemNodes = (
     fragment: Descendant[],
-    liEntry: ElementEntry,
-    licEntry: ElementEntry
+    liEntry: NodeEntry<Element>,
+    isEmptyNode: boolean
   ) => {
-    const [, liPath] = liEntry;
-    const [licNode, licPath] = licEntry;
-    const isEmptyNode = !NodeApi.string(licNode);
     const [first, ...rest] = fragment.flatMap(trimList).map((v) =>
       wrapNodeIntoListItem(
         v,
@@ -136,119 +169,187 @@ export const withInsertFragmentList: OverrideEditor<ListConfig> = ({
         })
       )
     );
-    let textNode: TText;
-    let listItemNodes: TElement[];
+    let sublists: Element[] = [];
+    let textNodes: Descendant[];
+    let listItemNodes: Element[];
 
     if (isListRoot(editor, fragment[0])) {
       if (isSingleLic(fragment)) {
-        textNode = first as any;
-        listItemNodes = rest as TElement[];
+        textNodes = (first.children[0] as Element).children as Descendant[];
+        listItemNodes = rest as Element[];
       } else if (isEmptyNode) {
-        // FIXME: is there a more direct way to set this?
-        const li = NodeApi.get(editor, liPath);
-        const [, ...currentSublists] = li!.children as TElement[];
-        const [newLic, ...newSublists] = first.children as TElement[];
-        editor.tf.insertNodes(newLic, {
-          at: PathApi.next(licPath),
-          select: true,
-        });
-        editor.tf.removeNodes({
-          at: licPath,
-        });
-
-        if (newSublists?.length) {
-          if (currentSublists?.length) {
-            // TODO: any better way to compile the path where the LIs of the newly inserted element will be inserted?
-            const path = [...liPath, 1, 0];
-            editor.tf.insertNodes(newSublists[0].children as TElement[], {
-              at: path,
-              select: true,
-            });
-          } else {
-            editor.tf.insertNodes(newSublists, {
-              at: PathApi.next(licPath),
-              select: true,
-            });
-          }
-        }
-
-        textNode = { text: '' };
-        listItemNodes = rest as TElement[];
+        const [newLic, ...newSublists] = first.children as Element[];
+        sublists = newSublists;
+        textNodes = newLic.children as Descendant[];
+        listItemNodes = rest as Element[];
       } else {
-        textNode = { text: '' };
-        listItemNodes = [first as TElement, ...(rest as TElement[])];
+        textNodes = [{ text: '' }];
+        listItemNodes = [first as Element, ...(rest as Element[])];
       }
     } else {
-      textNode = first as any;
-      listItemNodes = rest as TElement[];
+      textNodes = (first.children[0] as Element).children as Descendant[];
+      listItemNodes = rest as Element[];
     }
 
-    return { listItemNodes, textNode };
+    return { listItemNodes, sublists, textNodes };
   };
 
   return {
     transforms: {
-      insertFragment(fragment) {
-        let liEntry = editor.api.node<TElement>({
+      insertFragment({ fragment, next, tx }) {
+        const selection = editor.read.selection();
+        const insertionPoint = selection
+          ? RangeApi.edges(selection)[0]
+          : undefined;
+        const liEntry = editor.read.nodes.above<Element>({
+          at: insertionPoint,
           match: { type: listItemType },
           mode: 'lowest',
         });
 
         // not inserting into a list item, delegate to other plugins
         if (!liEntry) {
-          return insertFragment(
-            isListRoot(editor, fragment[0])
+          return next({
+            fragment: isListRoot(editor, fragment[0])
               ? [{ text: '' }, ...fragment]
-              : fragment
-          );
+              : fragment,
+          });
         }
 
-        // delete selection (if necessary) so that it can check if needs to insert into an empty block
-        insertFragment([{ text: '' }] as any);
-
-        // refetch to find the currently selected LI after the deletion above is performed
-        liEntry = editor.api.node<TElement>({
-          match: { type: listItemType },
-          mode: 'lowest',
-        });
-
-        // Check again if liEntry is undefined after the deletion above.
-        // This prevents unexpected behavior when pasting while a list is highlighted
-        if (!liEntry) {
-          return insertFragment(
-            isListRoot(editor, fragment[0])
-              ? [{ text: '' }, ...fragment]
-              : fragment
-          );
+        if (
+          selection &&
+          RangeApi.isExpanded(selection) &&
+          !isListRoot(editor, fragment[0])
+        ) {
+          return next({ fragment });
         }
 
-        const licEntry = editor.api.node<TElement>({
+        if (
+          selection &&
+          RangeApi.isExpanded(selection) &&
+          isListRoot(editor, fragment[0])
+        ) {
+          const [start, end] = RangeApi.edges(selection);
+          const startLi = editor.read.nodes.above<Element>({
+            at: start,
+            match: { type: listItemType },
+            mode: 'lowest',
+          });
+          const endLi = editor.read.nodes.above<Element>({
+            at: end,
+            match: { type: listItemType },
+            mode: 'lowest',
+          });
+          const startList = startLi
+            ? editor.read.nodes.parent<Element>(startLi[1])
+            : undefined;
+
+          if (
+            startLi &&
+            endLi &&
+            startList &&
+            startLi[1].at(-1) !== endLi[1].at(-1) &&
+            PathApi.equals(startList[1], PathApi.parent(endLi[1]))
+          ) {
+            const prefix = sliceElementAtPoint(
+              startLi[0],
+              start.path.slice(startLi[1].length),
+              start.offset,
+              'before'
+            );
+            const suffix = sliceElementAtPoint(
+              endLi[0],
+              end.path.slice(endLi[1].length),
+              end.offset,
+              'after'
+            );
+            const pastedItems = fragment.flatMap(trimList);
+            const replacements = [
+              ...(NodeApi.string(prefix) ? [prefix] : []),
+              ...pastedItems,
+              ...(NodeApi.string(suffix) ? [suffix] : []),
+            ];
+            const pastedEndIndex =
+              startLi[1].at(-1)! +
+              (NodeApi.string(prefix) ? 1 : 0) +
+              pastedItems.length -
+              1;
+            const [lastText, lastPath] = NodeApi.last(pastedItems.at(-1)!, []);
+            const point = {
+              offset: NodeApi.string(lastText).length,
+              path: [...startList[1], pastedEndIndex, ...lastPath],
+            };
+
+            tx.nodes.replaceChildren(replacements, {
+              at: startList[1],
+              count: endLi[1].at(-1)! - startLi[1].at(-1)! + 1,
+              index: startLi[1].at(-1)!,
+              newSelection: { anchor: point, focus: point },
+            });
+
+            return true;
+          }
+        }
+
+        const licEntry = editor.read.nodes.above<Element>({
           match: { type: listItemContentType },
           mode: 'lowest',
         });
 
         if (!licEntry) {
-          return insertFragment(
-            isListRoot(editor, fragment[0])
-              ? [{ text: '' }, ...fragment]
-              : fragment
-          );
+          return true;
         }
 
-        const { listItemNodes, textNode } = getTextAndListItemNodes(
+        const licStart = editor.read.points.start(licEntry[1]);
+        const licEnd = editor.read.points.end(licEntry[1]);
+        const [selectionStart, selectionEnd] = selection
+          ? RangeApi.edges(selection)
+          : [];
+        const isEmptyNode =
+          !NodeApi.string(licEntry[0]) ||
+          (!!licStart &&
+            !!licEnd &&
+            !!selectionStart &&
+            !!selectionEnd &&
+            PointApi.compare(selectionStart, licStart) <= 0 &&
+            PointApi.compare(selectionEnd, licEnd) >= 0);
+        const { listItemNodes, sublists, textNodes } = getTextAndListItemNodes(
           fragment,
           liEntry!,
-          licEntry
+          isEmptyNode
         );
 
-        insertFragment<TText>([textNode]); // insert text if needed
+        next({ fragment: textNodes });
 
-        const [, liPath] = liEntry!;
+        const nextLiEntry = editor.read.nodes.get<Element>(liEntry[1]);
 
-        return editor.tf.insertNodes(listItemNodes, {
+        if (!nextLiEntry) return true;
+
+        const [, liPath] = nextLiEntry;
+
+        if (sublists.length > 0) {
+          const li = editor.read.nodes.get<Element>(liPath)?.[0];
+          const currentSublist = li?.children[1];
+
+          if (ElementApi.isElement(currentSublist)) {
+            tx.nodes.insert(sublists[0].children as Element[], {
+              at: [...liPath, 1, 0],
+              select: true,
+            });
+          } else {
+            tx.nodes.insert(sublists, {
+              at: [...liPath, 1],
+              select: true,
+            });
+          }
+        }
+
+        tx.nodes.insert(listItemNodes, {
           at: PathApi.next(liPath),
           select: true,
         });
+
+        return true;
       },
     },
   };

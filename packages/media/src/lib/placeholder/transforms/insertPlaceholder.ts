@@ -1,44 +1,48 @@
 import type {
-  InsertNodesOptions,
-  SlateEditor,
-  TPlaceholderElement,
-} from 'platejs';
-
-import { KEYS } from 'platejs';
+  EditorUpdateTransaction,
+  NodeInsertNodesOptions,
+} from '@platejs/plite';
+import type { TPlaceholderElement } from '@platejs/utils';
+import { KEYS } from '@platejs/utils';
 
 export const insertPlaceholder = (
-  editor: SlateEditor,
+  tx: EditorUpdateTransaction,
   mediaType: string,
-  options?: InsertNodesOptions
+  type: string,
+  options?: NodeInsertNodesOptions<TPlaceholderElement>
 ) => {
-  editor.tf.withoutNormalizing(() =>
-    editor.tf.insertNodes<TPlaceholderElement>(
+  tx.withoutNormalizing(() =>
+    tx.nodes.insert<TPlaceholderElement>(
       {
         children: [{ text: '' }],
         mediaType,
-        type: editor.getType(KEYS.placeholder),
+        type,
       },
-      options as any
+      options
     )
   );
 };
 
 export const insertImagePlaceholder = (
-  editor: SlateEditor,
-  options?: InsertNodesOptions
-) => insertPlaceholder(editor, KEYS.img, options);
+  tx: EditorUpdateTransaction,
+  type: string,
+  options?: NodeInsertNodesOptions<TPlaceholderElement>
+) => insertPlaceholder(tx, KEYS.img, type, options);
 
 export const insertVideoPlaceholder = (
-  editor: SlateEditor,
-  options?: InsertNodesOptions
-) => insertPlaceholder(editor, KEYS.video, options);
+  tx: EditorUpdateTransaction,
+  type: string,
+  options?: NodeInsertNodesOptions<TPlaceholderElement>
+) => insertPlaceholder(tx, KEYS.video, type, options);
 
 export const insertAudioPlaceholder = (
-  editor: SlateEditor,
-  options?: InsertNodesOptions
-) => insertPlaceholder(editor, KEYS.audio, options);
+  tx: EditorUpdateTransaction,
+  type: string,
+  options?: NodeInsertNodesOptions<TPlaceholderElement>
+) => insertPlaceholder(tx, KEYS.audio, type, options);
 
 export const insertFilePlaceholder = (
-  editor: SlateEditor,
-  options?: InsertNodesOptions
-) => insertPlaceholder(editor, KEYS.file, options);
+  tx: EditorUpdateTransaction,
+  type: string,
+  options?: NodeInsertNodesOptions<TPlaceholderElement>
+) => insertPlaceholder(tx, KEYS.file, type, options);

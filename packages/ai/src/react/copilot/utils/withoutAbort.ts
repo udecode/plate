@@ -1,9 +1,16 @@
-import type { PlateEditor } from 'platejs/react';
+import type { PlateEditor } from '@platejs/core/react';
 
-import { CopilotPlugin } from '..';
+import { KEYS } from '@platejs/utils';
 
-export const withoutAbort = (editor: PlateEditor, fn: () => void) => {
-  editor.plugin(CopilotPlugin).setOption('shouldAbort', false);
-  fn();
-  editor.plugin(CopilotPlugin).setOption('shouldAbort', true);
+import type { CopilotPluginConfig } from '../CopilotPlugin';
+
+export const withoutAbort = <T>(editor: PlateEditor, fn: () => T): T => {
+  const copilot = editor.plugin<CopilotPluginConfig>(KEYS.copilot);
+
+  copilot.setOption('shouldAbort', false);
+  try {
+    return fn();
+  } finally {
+    copilot.setOption('shouldAbort', true);
+  }
 };

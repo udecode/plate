@@ -2,11 +2,8 @@ import React from 'react';
 
 import type { Nullable } from 'platejs';
 
-import {
-  createAtomStore,
-  createPrimitiveComponent,
-  useReadOnly,
-} from 'platejs/react';
+import { createAtomStore, createPrimitiveComponent } from 'platejs/react';
+import { useEditorReadOnly } from '@platejs/plite-react';
 
 import type { ResizeDirection, ResizeEvent } from '../types';
 
@@ -49,7 +46,7 @@ export const useResizeHandleState = ({
   onResize: onResizeProp,
   onTouchStart,
 }: ResizeHandleOptions) => {
-  const readOnly = useReadOnly();
+  const readOnly = useEditorReadOnly();
   const onResizeStore = useResizeHandleValue('onResize');
   const onResize = onResizeProp ?? onResizeStore;
 

@@ -1,25 +1,17 @@
-import type { PlateEditor } from 'platejs/react';
+import type { PlateEditor } from '@platejs/core/react';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import cloneDeep from 'lodash/cloneDeep.js';
-import {
-  type NodeEntry,
-  KEYS,
-  PathApi,
-  RangeApi,
-  type SlateEditor,
-  type TIdElement,
-} from 'platejs';
+import { PathApi } from '@platejs/plite';
 
 import { BaseAIPlugin } from '../../../lib/BaseAIPlugin';
-import { withAIBatch } from '../../../lib/transforms/withAIBatch';
-import { type AIChatPluginConfig, AIChatPlugin } from '../AIChatPlugin';
+import { AIChatPlugin } from '../AIChatPlugin';
 import { acceptAISuggestions } from '../utils';
 import { createFormattedBlocks } from './replaceSelectionAIChat';
 
 export const insertBelowAIChat = (
   editor: PlateEditor,
-  sourceEditor: SlateEditor,
+  sourceEditor: PlateEditor,
   { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
 ) => {
   const { toolName } = editor.plugin(AIChatPlugin).getOptions();
@@ -27,67 +19,52 @@ export const insertBelowAIChat = (
   if (toolName === 'generate')
     return insertBelowGenerate(editor, sourceEditor, { format });
 
-  const selectedBlocks: NodeEntry<TIdElement>[] = editor
-    .getApi(BlockSelectionPlugin)
-    .blockSelection.getNodes();
+  const blockSelection = editor.plugin(BlockSelectionPlugin);
+  const selectedBlocks = blockSelection.api.getNodes({});
+  const selectedIds = blockSelection.getOption('selectedIds');
+  const nodes = cloneDeep(selectedBlocks.map(([node]) => node));
 
-  const selectedIds = editor
-    .plugin(BlockSelectionPlugin)
-    .getOptions().selectedIds;
-
-  editor.getTransforms(BaseAIPlugin).ai.undo();
-
-  const insertBlocksAndSelect =
-    editor.getTransforms(BlockSelectionPlugin).blockSelection
-      .insertBlocksAndSelect;
+  editor.plugin(BaseAIPlugin).api.undo();
 
   if (!selectedIds || selectedIds.size === 0) return;
 
-  const lastBlock = selectedBlocks.at(-1);
+  const lastBlock = blockSelection.api.getNodes({}).at(-1);
 
   if (!lastBlock) return;
 
   const nextPath = PathApi.next(lastBlock[1]);
 
-  const nodes = selectedBlocks.map((block) => block[0]);
-
-  insertBlocksAndSelect(nodes, {
+  blockSelection.update.insertBlocksAndSelect(nodes, {
     at: nextPath,
-    insertedCallback: () => {
-      withAIBatch(editor, () => {
-        acceptAISuggestions(editor);
-      });
-    },
   });
+  acceptAISuggestions(editor);
 
-  editor.getApi(AIChatPlugin).aiChat.hide({ focus: false });
+  editor.plugin(AIChatPlugin).api.hide({ focus: false });
 };
 
 export const insertBelowGenerate = (
   editor: PlateEditor,
-  sourceEditor: SlateEditor,
+  sourceEditor: PlateEditor,
   { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
 ) => {
-  if (!sourceEditor || sourceEditor.api.isEmpty()) return;
+  const sourceChildren = [...sourceEditor.read.children()];
 
-  const isBlockSelecting = editor
-    .plugin(BlockSelectionPlugin)
-    .getOption('isSelectingSome');
+  if (
+    sourceChildren.length === 0 ||
+    sourceChildren.every((node) => sourceEditor.read.nodes.isEmpty(node))
+  ) {
+    return;
+  }
 
-  editor.getApi<AIChatPluginConfig>({ key: KEYS.ai }).aiChat.hide();
+  const blockSelection = editor.plugin(BlockSelectionPlugin);
+  const isBlockSelecting = blockSelection.getOption('isSelectingSome');
 
-  const insertBlocksAndSelect =
-    editor.getTransforms(BlockSelectionPlugin).blockSelection
-      .insertBlocksAndSelect;
+  editor.plugin(AIChatPlugin).api.hide();
 
   if (isBlockSelecting) {
-    const selectedBlocks = editor
-      .getApi(BlockSelectionPlugin)
-      .blockSelection.getNodes();
+    const selectedBlocks = blockSelection.api.getNodes({});
 
-    const selectedIds = editor
-      .plugin(BlockSelectionPlugin)
-      .getOptions().selectedIds;
+    const selectedIds = blockSelection.getOption('selectedIds');
 
     if (!selectedIds || selectedIds.size === 0) return;
 
@@ -98,7 +75,7 @@ export const insertBelowGenerate = (
     const nextPath = PathApi.next(lastBlock[1]);
 
     if (format === 'none') {
-      insertBlocksAndSelect(cloneDeep(sourceEditor.children), {
+      blockSelection.update.insertBlocksAndSelect(cloneDeep(sourceChildren), {
         at: nextPath,
       });
 
@@ -106,28 +83,34 @@ export const insertBelowGenerate = (
     }
 
     const formattedBlocks = createFormattedBlocks({
-      blocks: cloneDeep(sourceEditor.children),
+      blocks: cloneDeep(sourceChildren),
       format,
       sourceBlock: lastBlock,
     });
 
     if (!formattedBlocks) return;
 
-    insertBlocksAndSelect(formattedBlocks, {
+    blockSelection.update.insertBlocksAndSelect(formattedBlocks, {
       at: nextPath,
     });
   } else {
-    const [, end] = RangeApi.edges(editor.selection!);
+    const selection = editor.read.selection();
+
+    if (!selection) return;
+
+    const edges = editor.read.ranges.edges(selection);
+
+    if (!edges) return;
+
+    const [, end] = edges;
     const endPath = [end.path[0]];
-    const currentBlock = editor.api.node({
+    const currentBlock = editor.read.nodes.block({
       at: endPath,
-      block: true,
-      mode: 'lowest',
     });
 
     if (!currentBlock) return;
     if (format === 'none') {
-      insertBlocksAndSelect(cloneDeep(sourceEditor.children), {
+      blockSelection.update.insertBlocksAndSelect(cloneDeep(sourceChildren), {
         at: PathApi.next(endPath),
       });
 
@@ -135,14 +118,14 @@ export const insertBelowGenerate = (
     }
 
     const formattedBlocks = createFormattedBlocks({
-      blocks: cloneDeep(sourceEditor.children),
+      blocks: cloneDeep(sourceChildren),
       format,
       sourceBlock: currentBlock,
     });
 
     if (!formattedBlocks) return;
 
-    insertBlocksAndSelect(formattedBlocks, {
+    blockSelection.update.insertBlocksAndSelect(formattedBlocks, {
       at: PathApi.next(endPath),
     });
   }

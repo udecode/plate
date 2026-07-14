@@ -18,7 +18,7 @@ export const setListNode = (
 ) => {
   const newIndent = indent || indent + 1;
 
-  editor.tf.setNodes(
+  editor.update.nodes.set(
     {
       [KEYS.indent]: newIndent,
       [KEYS.listType]: listStyleType,
@@ -41,7 +41,7 @@ export const setIndentTodoNode = (
 ) => {
   const newIndent = indent || indent + 1;
 
-  editor.tf.setNodes(
+  editor.update.nodes.set(
     {
       [KEYS.indent]: newIndent,
       [KEYS.listChecked]: false,

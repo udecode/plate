@@ -1,19 +1,17 @@
-import type { OverrideEditor } from 'platejs/react';
+import type { ExtendPlateEditorExtension } from '@platejs/core/react';
 
-import { ElementApi, KEYS } from 'platejs';
+import { ElementApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
-import { BaseAIPlugin } from '../../lib/BaseAIPlugin';
-import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
+import { removeAIMarks } from '../../lib/transforms/removeAIMarks';
+import type { AIChatPluginConfig } from './AIChatPlugin';
 
-export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
+export const withAIChat: ExtendPlateEditorExtension<AIChatPluginConfig> = ({
   api,
   editor,
   getOptions,
-  tf: { insertText, normalizeNode },
   type,
 }) => {
-  const ai = editor.getTransforms(BaseAIPlugin).ai;
-
   const matchesTrigger = (text: string) => {
     const { trigger } = getOptions();
 
@@ -28,47 +26,10 @@ export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
   };
 
   return {
-    transforms: {
-      insertText(text, options) {
-        const { triggerPreviousCharPattern, triggerQuery } = getOptions();
-
-        const fn = () => {
-          if (
-            !editor.selection ||
-            !matchesTrigger(text) ||
-            (triggerQuery && !triggerQuery(editor))
-          ) {
-            return;
-          }
-
-          // Make sure an input is created at the beginning of line or after a whitespace
-          const previousChar = editor.api.string(
-            editor.api.range('before', editor.selection)
-          );
-
-          const matchesPreviousCharPattern =
-            triggerPreviousCharPattern?.test(previousChar);
-
-          if (!matchesPreviousCharPattern) return;
-
-          const nodeEntry = editor.api.block({ highest: true });
-
-          if (!nodeEntry || !editor.api.isEmpty(nodeEntry[0])) return;
-
-          api.aiChat.show();
-
-          return true;
-        };
-
-        if (fn()) return;
-
-        return insertText(text, options);
-      },
-      normalizeNode(entry) {
-        const [node, path] = entry;
-
-        if (node[KEYS.ai] && !getOptions().open) {
-          ai.removeMarks({ at: path });
+    normalizers: {
+      node({ entry: [node, path], next, tx }) {
+        if (Reflect.get(node, KEYS.ai) && !getOptions().open) {
+          removeAIMarks(editor, tx, { at: path });
 
           return;
         }
@@ -78,12 +39,54 @@ export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
           node.type === type &&
           !getOptions().open
         ) {
-          editor.getTransforms(AIChatPlugin).aiChat.removeAnchor({ at: path });
+          tx.nodes.remove({ at: path });
 
           return;
         }
 
-        return normalizeNode(entry);
+        next();
+      },
+    },
+    transforms: {
+      insertText({ next, options, text, tx }) {
+        const { triggerPreviousCharPattern, triggerQuery } = getOptions();
+        const selection = tx.selection();
+
+        const fn = () => {
+          if (
+            !selection ||
+            !matchesTrigger(text) ||
+            (triggerQuery && !triggerQuery(editor))
+          ) {
+            return;
+          }
+
+          // Make sure an input is created at the beginning of line or after a whitespace
+          const before = tx.points.before(selection);
+          const previousChar = before
+            ? tx.text.string({
+                anchor: before,
+                focus: selection.anchor,
+              })
+            : '';
+
+          const matchesPreviousCharPattern =
+            triggerPreviousCharPattern?.test(previousChar);
+
+          if (!matchesPreviousCharPattern) return;
+
+          const nodeEntry = tx.nodes.block({ mode: 'highest' });
+
+          if (!nodeEntry || !tx.nodes.isEmpty(nodeEntry[0])) return;
+
+          api.show();
+
+          return true;
+        };
+
+        if (fn()) return true;
+
+        return next({ options, text });
       },
     },
   };

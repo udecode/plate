@@ -1,10 +1,12 @@
+import type { BaseEditor } from '@platejs/core';
 import {
+  type Element,
   type ElementEntry,
-  type SlateEditor,
-  type TElement,
-  match,
+  ElementApi,
   PathApi,
-} from 'platejs';
+} from '@platejs/plite';
+
+import type { ListTransaction } from '../BaseListPlugin';
 
 import { getListTypes } from '../queries/index';
 
@@ -14,7 +16,8 @@ export type MoveListItemDownOptions = {
 };
 
 export const moveListItemDown = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: ListTransaction,
   { list, listItem }: MoveListItemDownOptions
 ) => {
   let moved = false;
@@ -29,35 +32,36 @@ export const moveListItemDown = (
   }
 
   // Previous sibling is the new parent
-  const previousSiblingItem = editor.api.node(previousListItemPath);
+  const previousSiblingItem = editor.read.nodes.get(previousListItemPath);
 
   if (previousSiblingItem) {
     const [previousNode, previousPath] = previousSiblingItem;
 
-    const sublist = (previousNode.children as TElement[]).find((n) =>
-      match(n, [], { type: getListTypes(editor) })
+    if (!ElementApi.isElement(previousNode)) return;
+
+    const sublist = previousNode.children.find(
+      (node): node is Element =>
+        ElementApi.isElement(node) && getListTypes(editor).includes(node.type)
     );
     const newPath = previousPath.concat(
       sublist ? [1, sublist.children.length] : [1]
     );
 
-    editor.tf.withoutNormalizing(() => {
-      if (!sublist) {
-        // Create new sublist
-        editor.tf.wrapNodes<TElement>(
-          { children: [], type: listNode.type },
-          { at: listItemPath }
-        );
-      }
+    if (!sublist) {
+      // Create new sublist
+      tx.nodes.wrap(
+        { children: [], type: listNode.type },
+        { at: listItemPath }
+      );
+    }
 
-      // Move the current item to the sublist
-      editor.tf.moveNodes({
-        at: listItemPath,
-        to: newPath,
-      });
-
-      moved = true;
+    // Move the current item to the sublist
+    tx.nodes.move({
+      at: listItemPath,
+      to: newPath,
     });
+
+    moved = true;
   }
 
   return moved;

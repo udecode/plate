@@ -9,8 +9,8 @@ const emailLintRE = /mailto:([^?\\]+)/;
 const localhostDomainRE = /^localhost[\d:?]*(?:[^\d:?]\S*)?$/;
 const nonLocalhostDomainRE = /^[^\s.]+\.\S{2,}$/;
 
-/** Loosely validate a URL `string`. */
-export const isUrl = (string: any) => {
+/** Loosely validate whether a value is a URL string. */
+export const isUrl = (string: unknown) => {
   if (typeof string !== 'string') {
     return false;
   }

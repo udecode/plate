@@ -185,6 +185,97 @@ describe('editor methods', () => {
     });
   });
 
+  it('replaces one node with many as one logical replace_children operation', () => {
+    const editor = setupEditor();
+    const operationCount = editorGetOperations(editor).length;
+
+    editor.update.nodes.replace(
+      [paragraph('replacement-a'), paragraph('replacement-b')],
+      { at: [1], select: true }
+    );
+
+    const selection = {
+      anchor: { path: [2, 0], offset: 13 },
+      focus: { path: [2, 0], offset: 13 },
+    };
+
+    assert.deepEqual(editorGetChildren(editor), [
+      paragraph('one'),
+      paragraph('replacement-a'),
+      paragraph('replacement-b'),
+    ]);
+    assert.equal(editorGetOperations(editor).length, operationCount + 1);
+    assert.deepEqual(editorGetOperations(editor).at(-1), {
+      children: [paragraph('two')],
+      index: 1,
+      newChildren: [paragraph('replacement-a'), paragraph('replacement-b')],
+      newSelection: selection,
+      path: [],
+      root: 'main',
+      selection: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      },
+      type: 'replace_children',
+    });
+  });
+
+  it('replaces a live node target and ignores a detached target', () => {
+    const editor = setupEditor();
+    const target = editorGetChildren(editor)[1] as Element;
+
+    editor.update((tx) => {
+      tx.nodes.replace(paragraph('replacement'), { at: target });
+    });
+
+    assert.deepEqual(editorGetChildren(editor), [
+      paragraph('one'),
+      paragraph('replacement'),
+    ]);
+
+    editor.update.nodes.replace(paragraph('wrong'), {
+      at: paragraph('detached'),
+    });
+
+    assert.deepEqual(editorGetChildren(editor), [
+      paragraph('one'),
+      paragraph('replacement'),
+    ]);
+  });
+
+  it('replaces one node with zero nodes', () => {
+    const editor = setupEditor();
+
+    editor.update.nodes.replace([], { at: [1] });
+
+    assert.deepEqual(editorGetChildren(editor), [paragraph('one')]);
+    assert.deepEqual(editorGetOperations(editor).at(-1), {
+      children: [paragraph('two')],
+      index: 1,
+      newChildren: [],
+      newSelection: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      },
+      path: [],
+      root: 'main',
+      selection: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      },
+      type: 'replace_children',
+    });
+  });
+
+  it('rejects replacing the editor root', () => {
+    const editor = setupEditor();
+
+    assert.throws(
+      () => editor.update.nodes.replace(paragraph('wrong'), { at: [] }),
+      /Cannot replace the editor root/
+    );
+  });
+
   it('remaps replaceChildren selection when a selected node is reused', () => {
     const editor = createEditor();
     const selection = {

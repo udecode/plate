@@ -1,16 +1,21 @@
 import cloneDeep from 'lodash/cloneDeep.js';
+import type { BaseEditor } from '@platejs/core';
 import {
+  type Descendant,
+  type EditorUpdateTransaction,
+  type Element,
   ElementApi,
-  KEYS,
-  type SlateEditor,
-  type TRange,
+  type Range,
   type Value,
-  getPluginType,
-} from 'platejs';
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
+import { getPluginType } from '@platejs/core';
+
+import { withAIBatch } from './withAIBatch';
 
 type AIPreviewState = {
   originalBlocks: Value;
-  selectionBefore: TRange | null;
+  selectionBefore: Range | null;
 };
 
 type BeginAIPreviewOptions = {
@@ -27,21 +32,21 @@ type PreviewRange =
 
 export const AI_PREVIEW_KEY = 'aiPreview';
 
-const AI_STREAM_SNAPSHOT = new WeakMap<SlateEditor, AIPreviewState>();
+const AI_STREAM_SNAPSHOT = new WeakMap<BaseEditor, AIPreviewState>();
 
-const clearAIPreview = (editor: SlateEditor) => {
+const clearAIPreview = (editor: BaseEditor) => {
   AI_STREAM_SNAPSHOT.delete(editor);
 };
 
-const getAIPreview = (editor: SlateEditor) => AI_STREAM_SNAPSHOT.get(editor);
+const getAIPreview = (editor: BaseEditor) => AI_STREAM_SNAPSHOT.get(editor);
 
-const getAIPreviewRange = (editor: SlateEditor): PreviewRange => {
+const getAIPreviewRange = (editor: BaseEditor): PreviewRange => {
   let closed = false;
   let end = -1;
   let invalid = false;
   let start = -1;
 
-  editor.children.forEach((node: any, index) => {
+  editor.read.children().forEach((node, index) => {
     if (!node?.[AI_PREVIEW_KEY]) {
       if (start !== -1) {
         closed = true;
@@ -72,91 +77,91 @@ const getAIPreviewRange = (editor: SlateEditor): PreviewRange => {
   };
 };
 
-const removeAIPreviewAnchor = (editor: SlateEditor) => {
+const removeAIPreviewAnchor = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction
+) => {
   const aiChatType = getPluginType(editor, KEYS.aiChat);
 
-  editor.tf.removeNodes({
+  tx.nodes.remove({
     at: [],
     match: { type: aiChatType },
   });
 };
 
 const restoreAIPreviewSelection = (
-  editor: SlateEditor,
-  selection: TRange | null
+  tx: EditorUpdateTransaction,
+  selection: Range | null
 ) => {
   if (selection) {
-    editor.tf.select(cloneDeep(selection));
+    tx.selection.set(cloneDeep(selection));
 
     return;
   }
 
-  editor.tf.deselect();
-};
-
-const removePreviewRange = (
-  editor: SlateEditor,
-  range: Extract<PreviewRange, { kind: 'range' }>
-) => {
-  for (let index = range.end; index >= range.start; index--) {
-    editor.tf.removeNodes({ at: [index] });
-  }
+  tx.selection.clear();
 };
 
 const replacePreviewRange = (
-  editor: SlateEditor,
+  tx: EditorUpdateTransaction,
   range: Extract<PreviewRange, { kind: 'range' }>,
   blocks: Value
 ) => {
-  removePreviewRange(editor, range);
-
-  if (blocks.length === 0) return;
-
-  editor.tf.insertNodes(cloneDeep(blocks), { at: [range.start] });
+  tx.nodes.replaceChildren(cloneDeep(blocks), {
+    at: [],
+    count: range.end - range.start + 1,
+    index: range.start,
+  });
 };
 
 const cloneAcceptedPreviewBlocks = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   range: Extract<PreviewRange, { kind: 'range' }>
 ) => {
   const aiType = getPluginType(editor, KEYS.ai);
-  const blocks = cloneDeep(editor.children.slice(range.start, range.end + 1));
+  const blocks = cloneDeep(
+    editor.read.children().slice(range.start, range.end + 1)
+  );
 
-  const stripNode = (node: any): any => {
-    if (ElementApi.isElement(node)) {
-      const { [AI_PREVIEW_KEY]: _preview, children, ...rest } = node;
+  function stripElement(node: Element): Element {
+    const { [AI_PREVIEW_KEY]: _preview, children, ...rest } = node;
 
-      return {
-        ...rest,
-        children: children.map(stripNode),
-      };
-    }
+    return {
+      ...rest,
+      children: children.map(stripNode),
+    };
+  }
 
-    const { [aiType]: _ai, ...rest } = node;
+  function stripNode(node: Descendant): Descendant {
+    if (ElementApi.isElement(node)) return stripElement(node);
+
+    const rest = { ...node };
+
+    Reflect.deleteProperty(rest, aiType);
 
     return rest;
-  };
+  }
 
-  return blocks.map(stripNode);
+  return blocks.map(stripElement);
 };
 
 export const beginAIPreview = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { originalBlocks = [] }: BeginAIPreviewOptions = {}
 ) => {
   if (getAIPreview(editor)) return false;
 
   AI_STREAM_SNAPSHOT.set(editor, {
     originalBlocks: cloneDeep(originalBlocks),
-    selectionBefore: cloneDeep(editor.selection),
+    selectionBefore: cloneDeep(editor.read.selection()),
   });
 
   return true;
 };
 
-export const hasAIPreview = (editor: SlateEditor) => !!getAIPreview(editor);
+export const hasAIPreview = (editor: BaseEditor) => !!getAIPreview(editor);
 
-export const cancelAIPreview = (editor: SlateEditor) => {
+export const cancelAIPreview = (editor: BaseEditor) => {
   const preview = getAIPreview(editor);
 
   if (!preview) return false;
@@ -165,13 +170,13 @@ export const cancelAIPreview = (editor: SlateEditor) => {
 
   if (range.kind === 'invalid') return false;
 
-  editor.tf.withoutSaving(() => {
+  editor.update.history.skip((tx) => {
     if (range.kind === 'range') {
-      replacePreviewRange(editor, range, preview.originalBlocks);
+      replacePreviewRange(tx, range, preview.originalBlocks);
     }
 
-    removeAIPreviewAnchor(editor);
-    restoreAIPreviewSelection(editor, preview.selectionBefore);
+    removeAIPreviewAnchor(editor, tx);
+    restoreAIPreviewSelection(tx, preview.selectionBefore);
   });
 
   clearAIPreview(editor);
@@ -179,7 +184,7 @@ export const cancelAIPreview = (editor: SlateEditor) => {
   return true;
 };
 
-export const discardAIPreview = (editor: SlateEditor) => {
+export const discardAIPreview = (editor: BaseEditor) => {
   if (!getAIPreview(editor)) return false;
 
   clearAIPreview(editor);
@@ -187,7 +192,7 @@ export const discardAIPreview = (editor: SlateEditor) => {
   return true;
 };
 
-export const acceptAIPreview = (editor: SlateEditor, _value?: Value) => {
+export const acceptAIPreview = (editor: BaseEditor, _value?: Value) => {
   const preview = getAIPreview(editor);
 
   if (!preview) return false;
@@ -199,36 +204,26 @@ export const acceptAIPreview = (editor: SlateEditor, _value?: Value) => {
   if (range.kind === 'range') {
     const acceptedBlocks = cloneAcceptedPreviewBlocks(editor, range);
 
-    editor.tf.withoutSaving(() => {
-      replacePreviewRange(editor, range, preview.originalBlocks);
-      removeAIPreviewAnchor(editor);
-      restoreAIPreviewSelection(editor, preview.selectionBefore);
+    editor.update.history.skip((tx) => {
+      replacePreviewRange(tx, range, preview.originalBlocks);
+      removeAIPreviewAnchor(editor, tx);
+      restoreAIPreviewSelection(tx, preview.selectionBefore);
     });
 
-    editor.tf.withNewBatch(() => {
-      if (preview.originalBlocks.length > 0) {
-        for (
-          let index = preview.originalBlocks.length - 1;
-          index >= 0;
-          index--
-        ) {
-          editor.tf.removeNodes({ at: [range.start + index] });
-        }
-      }
-
-      if (acceptedBlocks.length > 0) {
-        editor.tf.insertNodes(acceptedBlocks, { at: [range.start] });
-      }
-    });
-
-    const lastBatch = editor.history?.undos.at(-1);
-
-    if (lastBatch) {
-      lastBatch.selectionBefore = cloneDeep(preview.selectionBefore);
-    }
+    withAIBatch(
+      editor,
+      (tx) => {
+        tx.nodes.replaceChildren(acceptedBlocks, {
+          at: [],
+          count: preview.originalBlocks.length,
+          index: range.start,
+        });
+      },
+      { split: true }
+    );
   } else {
-    editor.tf.withoutSaving(() => {
-      removeAIPreviewAnchor(editor);
+    editor.update.history.skip((tx) => {
+      removeAIPreviewAnchor(editor, tx);
     });
   }
 

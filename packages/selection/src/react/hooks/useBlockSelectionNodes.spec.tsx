@@ -1,9 +1,11 @@
 import { renderHook } from '@testing-library/react';
+import * as actualCoreReact from '@platejs/core/react';
 
 const useEditorRefMock = mock();
 const usePluginOptionMock = mock();
 
-mock.module('@platejs/core/react', async () => ({
+mock.module('@platejs/core/react', () => ({
+  ...actualCoreReact,
   useEditorRef: useEditorRefMock,
   usePluginOption: usePluginOptionMock,
 }));

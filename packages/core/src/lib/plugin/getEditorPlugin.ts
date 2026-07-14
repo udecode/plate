@@ -45,7 +45,6 @@ export function getEditorPlugin(
 
   return {
     api: getApi(),
-    editorApi: editor.api,
     editor,
     plugin: plugin as any,
     setOption: ((key: keyof InferOptions<AnyPluginConfig>, value: unknown) => {
@@ -101,5 +100,7 @@ export function getEditorPlugin(
 
       return store.get('state');
     }) as any,
+    update:
+      (editor.update as unknown as Record<string, unknown>)[plugin.key] ?? {},
   };
 }

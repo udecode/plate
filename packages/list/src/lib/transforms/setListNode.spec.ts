@@ -1,10 +1,11 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from 'platejs';
 
 import { ListStyleType } from '../types';
 import { setIndentTodoNode, setListNode } from './setListNode';
 
 const createTransformEditor = (children: any[]) =>
-  createSlateEditor({
+  createBaseEditor({
     value: children,
   });
 
@@ -19,7 +20,7 @@ describe('setListNode', () => {
 
     setListNode(editor, { at: [0] });
 
-    expect(editor.children[0]).toMatchObject({
+    expect(editor.read.children()[0]).toMatchObject({
       [KEYS.indent]: 1,
       [KEYS.listType]: ListStyleType.Disc,
       type: KEYS.p,
@@ -40,7 +41,7 @@ describe('setListNode', () => {
       listStyleType: 'decimal',
     });
 
-    expect(editor.children[0]).toMatchObject({
+    expect(editor.read.children()[0]).toMatchObject({
       [KEYS.indent]: 3,
       [KEYS.listType]: 'decimal',
       type: KEYS.p,
@@ -59,7 +60,7 @@ describe('setIndentTodoNode', () => {
 
     setIndentTodoNode(editor, { at: [0] });
 
-    expect(editor.children[0]).toMatchObject({
+    expect(editor.read.children()[0]).toMatchObject({
       [KEYS.indent]: 1,
       [KEYS.listChecked]: false,
       [KEYS.listType]: KEYS.listTodo,
@@ -80,7 +81,7 @@ describe('setIndentTodoNode', () => {
       indent: 2,
     });
 
-    expect(editor.children[0]).toMatchObject({
+    expect(editor.read.children()[0]).toMatchObject({
       [KEYS.indent]: 2,
       [KEYS.listChecked]: false,
       [KEYS.listType]: KEYS.listTodo,

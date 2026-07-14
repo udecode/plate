@@ -1,27 +1,29 @@
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
 import * as mediaModule from '../..';
 import { insertMedia } from './insertMedia';
 
 describe('insertMedia', () => {
-  let insertImageSpy: ReturnType<typeof spyOn> | undefined;
-  let insertMediaEmbedSpy: ReturnType<typeof spyOn> | undefined;
-  let promptSpy: ReturnType<typeof spyOn> | undefined;
+  let restoreInsertImage: (() => void) | undefined;
+  let restoreInsertMediaEmbed: (() => void) | undefined;
+  let restorePrompt: (() => void) | undefined;
 
   afterEach(() => {
-    insertImageSpy?.mockRestore();
-    insertMediaEmbedSpy?.mockRestore();
-    promptSpy?.mockRestore();
+    restoreInsertImage?.();
+    restoreInsertMediaEmbed?.();
+    restorePrompt?.();
   });
 
   it('inserts an image when getUrl resolves and the target type is image', async () => {
-    insertImageSpy = spyOn(mediaModule, 'insertImage').mockImplementation(
+    const insertImageSpy = spyOn(mediaModule, 'insertImage').mockImplementation(
       () => {}
     );
-    insertMediaEmbedSpy = spyOn(
+    const insertMediaEmbedSpy = spyOn(
       mediaModule,
       'insertMediaEmbed'
     ).mockImplementation(() => {});
+    restoreInsertImage = () => insertImageSpy.mockRestore();
+    restoreInsertMediaEmbed = () => insertMediaEmbedSpy.mockRestore();
     const editor = {
       getType: (key: string) => key,
     } as any;
@@ -40,13 +42,15 @@ describe('insertMedia', () => {
   });
 
   it('inserts an embed when the requested type is not image', async () => {
-    insertImageSpy = spyOn(mediaModule, 'insertImage').mockImplementation(
+    const insertImageSpy = spyOn(mediaModule, 'insertImage').mockImplementation(
       () => {}
     );
-    insertMediaEmbedSpy = spyOn(
+    const insertMediaEmbedSpy = spyOn(
       mediaModule,
       'insertMediaEmbed'
     ).mockImplementation(() => {});
+    restoreInsertImage = () => insertImageSpy.mockRestore();
+    restoreInsertMediaEmbed = () => insertMediaEmbedSpy.mockRestore();
     const editor = {
       getType: (key: string) => key,
     } as any;
@@ -65,10 +69,12 @@ describe('insertMedia', () => {
   });
 
   it('prompts for a url when getUrl is missing and stops when the user cancels', async () => {
-    insertImageSpy = spyOn(mediaModule, 'insertImage').mockImplementation(
+    const insertImageSpy = spyOn(mediaModule, 'insertImage').mockImplementation(
       () => {}
     );
-    promptSpy = spyOn(window, 'prompt').mockReturnValue('');
+    const promptSpy = spyOn(window, 'prompt').mockReturnValue('');
+    restoreInsertImage = () => insertImageSpy.mockRestore();
+    restorePrompt = () => promptSpy.mockRestore();
     const editor = {
       getType: (key: string) => key,
     } as any;

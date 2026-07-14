@@ -1,8 +1,10 @@
 /** @jsx jsxt */
 
+import { createBaseEditor } from '@platejs/core';
+
 import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor, KEYS } from 'platejs';
+import { KEYS } from 'platejs';
 
 import { BaseListPlugin } from './BaseListPlugin';
 import { BulletedListRules } from './BulletedListRules';
@@ -13,7 +15,7 @@ jsxt;
 
 describe('BaseListPlugin input rules', () => {
   it('stays literal until markdown groups are explicitly enabled', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: {
         anchor: { offset: 1, path: [0, 0] },
@@ -22,9 +24,9 @@ describe('BaseListPlugin input rules', () => {
       value: [{ children: [{ text: '-hello' }], type: 'p' }],
     } as any);
 
-    editor.tf.insertText(' ');
+    editor.update.text.insert(' ');
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       { children: [{ text: '- hello' }], type: 'p' },
     ]);
   });
@@ -47,7 +49,7 @@ describe('BaseListPlugin input rules', () => {
       title: 'formats ordered shorthand',
     },
   ])('$title', ({ input, selection, title }) => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseListPlugin.configure({
           inputRules: [
@@ -64,9 +66,9 @@ describe('BaseListPlugin input rules', () => {
       value: input,
     } as any);
 
-    editor.tf.insertText(' ');
+    editor.update.text.insert(' ');
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         children: [
           {
@@ -114,7 +116,7 @@ describe('BaseListPlugin input rules', () => {
       title: 'formats checked task shorthand',
     },
   ])('$title', ({ checked, input, selection }) => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseListPlugin.configure({
           inputRules: [
@@ -131,9 +133,9 @@ describe('BaseListPlugin input rules', () => {
       value: input,
     } as any);
 
-    editor.tf.insertText(' ');
+    editor.update.text.insert(' ');
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         children: [
           {
@@ -148,7 +150,7 @@ describe('BaseListPlugin input rules', () => {
   });
 
   it('keeps list shorthand literal inside code blocks', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseCodeBlockPlugin,
         BaseListPlugin.configure({
@@ -179,9 +181,9 @@ describe('BaseListPlugin input rules', () => {
       ],
     } as any);
 
-    editor.tf.insertText(' ');
+    editor.update.text.insert(' ');
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         children: [
           {

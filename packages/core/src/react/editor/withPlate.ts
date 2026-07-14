@@ -12,6 +12,7 @@ import {
   type BaseExtendBaseEditorOptions,
   type CorePlugin,
   type ExtendBaseEditorOptions,
+  type EditorValueInput,
   type PluginConfig,
   extendBaseEditor,
 } from '../../lib';
@@ -97,8 +98,10 @@ export type ExtendPlateEditorOptions<
     //   >;
     // };
     value?:
-      | ((editor: PlateEditor) => Promise<NoInfer<V>> | NoInfer<V>)
-      | V
+      | ((
+          editor: PlateEditor
+        ) => EditorValueInput<V> | Promise<EditorValueInput<V>>)
+      | EditorValueInput<V>
       | string;
     plugins?: TPlugins;
     rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;

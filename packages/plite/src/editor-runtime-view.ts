@@ -607,6 +607,10 @@ const withViewTransaction = <V extends Value>(
         runImplicitSelectionMutation(options, () =>
           transaction.blocks.duplicate(options)
         ),
+      insertAfter: (nodes, options) =>
+        runImplicitSelectionMutation(options, () =>
+          transaction.blocks.insertAfter(nodes, options)
+        ),
       lift: (options) =>
         runImplicitSelectionMutation(options, () =>
           transaction.blocks.lift(options)
@@ -686,6 +690,10 @@ const withViewTransaction = <V extends Value>(
       remove: (options) =>
         runImplicitSelectionMutation(options, () =>
           transaction.nodes.remove(options)
+        ),
+      replace: (nodes, options) =>
+        runImplicitSelectionMutation({ at: options.at }, () =>
+          transaction.nodes.replace(nodes, options)
         ),
       replaceChildren: (children, options) =>
         runImplicitSelectionMutation({ at: options.at }, () =>

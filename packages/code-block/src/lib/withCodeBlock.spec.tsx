@@ -81,7 +81,7 @@ describe('insert break', () => {
       editor.update.break.insert();
 
       expect(editor.read.children()).toEqual(output.children);
-      expect(editor.read.selection()).toEqual(output.selection);
+      expect(output.selection).toEqual(editor.read.selection());
     });
 
     it('keeps leading whitespace when splitting inside indentation', () => {
@@ -114,7 +114,7 @@ describe('insert break', () => {
       editor.update.break.insert();
 
       expect(editor.read.children()).toEqual(output.children);
-      expect(editor.read.selection()).toEqual(output.selection);
+      expect(output.selection).toEqual(editor.read.selection());
     });
   });
 });
@@ -169,7 +169,7 @@ describe('deleteBackward', () => {
     editor.update.text.deleteBackward();
 
     expect(editor.read.children()).toEqual(input.children);
-    expect(editor.read.selection()).toEqual(input.selection);
+    expect(input.selection).toEqual(editor.read.selection());
   });
 
   it('merges an empty non-first code line into the previous line', () => {
@@ -200,7 +200,7 @@ describe('deleteBackward', () => {
     editor.update.text.deleteBackward();
 
     expect(editor.read.children()).toEqual(output.children);
-    expect(editor.read.selection()).toEqual(output.selection);
+    expect(output.selection).toEqual(editor.read.selection());
   });
 
   it('unwraps an empty code block to a plain paragraph', () => {
@@ -227,7 +227,7 @@ describe('deleteBackward', () => {
     editor.update.text.deleteBackward();
 
     expect(editor.read.children()).toEqual(output.children);
-    expect(editor.read.selection()).toEqual(output.selection);
+    expect(output.selection).toEqual(editor.read.selection());
   });
 });
 
@@ -281,7 +281,7 @@ describe('selectAll', () => {
       'mod+a'
     );
     expect(editor.update.code_block.selectAll()).toBe(false);
-    expect(editor.read.selection()).toEqual(input.selection);
+    expect(input.selection).toEqual(editor.read.selection());
   });
 });
 
@@ -383,6 +383,6 @@ describe('tab', () => {
 
     expect(editor.update.code_block.tab()).toBe(true);
     expect(editor.read.children()).toEqual(output.children);
-    expect(editor.read.selection()).toEqual(output.selection);
+    expect(output.selection).toEqual(editor.read.selection());
   });
 });

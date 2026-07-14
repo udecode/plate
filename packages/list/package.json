@@ -40,14 +40,18 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
+    "@platejs/core": "workspace:^",
     "@platejs/indent": "workspace:^",
+    "@platejs/plite": "workspace:^",
+    "@platejs/plite-react": "workspace:^",
+    "@platejs/utils": "workspace:^",
+    "@udecode/utils": "workspace:^",
     "clsx": "^2.1.1",
     "lodash": "^4.17.23",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
-    "@platejs/plite": "workspace:^",
     "platejs": "workspace:^"
   },
   "peerDependencies": {

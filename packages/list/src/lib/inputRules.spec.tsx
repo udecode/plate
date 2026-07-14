@@ -1,8 +1,10 @@
 /** @jsx jsxt */
 
+import { createBaseEditor } from '@platejs/core';
+
 import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt } from '@platejs/test-utils';
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS } from 'platejs';
 
 import { BaseListPlugin } from './BaseListPlugin';
 import { BulletedListRules } from './BulletedListRules';
@@ -13,7 +15,7 @@ jsxt;
 
 describe('list input rules', () => {
   const createEditor = (text: string, offset = text.length) =>
-    createSlateEditor({
+    createBaseEditor({
       plugins: [
         BaseIndentPlugin,
         BaseListPlugin.configure({
@@ -35,15 +37,15 @@ describe('list input rules', () => {
   it('creates a bullet list item when markdown group is enabled', () => {
     const editor = createEditor('-', 1);
 
-    editor.tf.insertText(' ');
+    editor.update.text.insert(' ');
 
-    expect(editor.children[0]).toMatchObject({
+    expect(editor.read.children()[0]).toMatchObject({
       children: [{ text: '' }],
       indent: 1,
       listStyleType: 'disc',
       type: 'p',
     });
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -52,9 +54,9 @@ describe('list input rules', () => {
   it('creates an ordered list item from markdown shorthand', () => {
     const editor = createEditor('3.', 2);
 
-    editor.tf.insertText(' ');
+    editor.update.text.insert(' ');
 
-    expect(editor.children[0]).toMatchObject({
+    expect(editor.read.children()[0]).toMatchObject({
       children: [{ text: '' }],
       indent: 1,
       listStart: 3,
@@ -62,7 +64,7 @@ describe('list input rules', () => {
       listStyleType: 'decimal',
       type: 'p',
     });
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -71,16 +73,16 @@ describe('list input rules', () => {
   it('creates a checked todo item from [x]', () => {
     const editor = createEditor('[x]', 3);
 
-    editor.tf.insertText(' ');
+    editor.update.text.insert(' ');
 
-    expect(editor.children[0]).toMatchObject({
+    expect(editor.read.children()[0]).toMatchObject({
       checked: true,
       children: [{ text: '' }],
       indent: 1,
       listStyleType: KEYS.listTodo,
       type: 'p',
     });
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });

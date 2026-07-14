@@ -96,6 +96,7 @@ export type {
   EditorRead,
   EditorReadMethods,
   EditorReplaceChildrenOptions,
+  EditorReplaceNodeOptions,
   EditorRuntime,
   EditorRuntimeOptions,
   EditorSelectionBlockOptions,

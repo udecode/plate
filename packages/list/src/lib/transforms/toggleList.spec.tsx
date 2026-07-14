@@ -1,14 +1,11 @@
 /** @jsx jsxt */
 
-import {
-  type SlateEditor,
-  createSlateEditor,
-  createTSlatePlugin,
-  KEYS,
-} from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+
+import { createBasePlugin, KEYS } from 'platejs';
 
 import { BaseIndentPlugin } from '@platejs/indent';
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { listPluginPage } from '../../__tests__/listPluginPage';
 import { BaseListPlugin } from '../BaseListPlugin';
@@ -18,7 +15,7 @@ jsxt;
 
 const CUSTOM_H1 = 'heading-one';
 
-const H1Plugin = createTSlatePlugin({
+const H1Plugin = createBasePlugin({
   key: KEYS.h1,
 });
 
@@ -26,7 +23,7 @@ const CustomH1Plugin = H1Plugin.extend({
   node: { type: CUSTOM_H1 },
 });
 
-const BlockquotePlugin = createTSlatePlugin({
+const BlockquotePlugin = createBasePlugin({
   key: KEYS.blockquote,
 });
 
@@ -65,11 +62,11 @@ const getToggledEditor = ({
   options,
   plugins = [BaseListPlugin, BaseIndentPlugin],
 }: {
-  input: SlateEditor;
+  input: TestEditor;
   options: Parameters<typeof toggleList>[1];
   plugins?: any[];
 }) => {
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins,
     selection: input.selection,
     value: input.children,
@@ -90,7 +87,7 @@ describe('toggleList', () => {
               1<cursor />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const output = (
           <editor>
@@ -98,14 +95,14 @@ describe('toggleList', () => {
               1<cursor />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const editor = getToggledEditor({
           input,
           options: { listStyleType: 'disc' },
         });
 
-        expect(editor.children).toEqual(output.children);
+        expect(editor.read.children()).toEqual(output.children);
       });
 
       describe('when indent is not set', () => {
@@ -116,7 +113,7 @@ describe('toggleList', () => {
                 1<cursor />
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const output = (
             <editor>
@@ -124,14 +121,14 @@ describe('toggleList', () => {
                 1<cursor />
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const editor = getToggledEditor({
             input,
             options: { listStyleType: 'disc' },
           });
 
-          expect(editor.children).toEqual(output.children);
+          expect(editor.read.children()).toEqual(output.children);
         });
       });
     });
@@ -144,7 +141,7 @@ describe('toggleList', () => {
               1<cursor />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const output = (
           <editor>
@@ -152,14 +149,14 @@ describe('toggleList', () => {
               1<cursor />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const editor = getToggledEditor({
           input,
           options: { listStyleType: 'disc' },
         });
 
-        expect(editor.children).toEqual(output.children);
+        expect(editor.read.children()).toEqual(output.children);
       });
     });
 
@@ -196,7 +193,7 @@ describe('toggleList', () => {
               21
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const output = (
           <editor>
@@ -229,14 +226,14 @@ describe('toggleList', () => {
               21
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const editor = getToggledEditor({
           input,
           options: { listStyleType: 'decimal' },
         });
 
-        expect(editor.children).toEqual(output.children);
+        expect(editor.read.children()).toEqual(output.children);
       });
     });
 
@@ -254,7 +251,7 @@ describe('toggleList', () => {
               <cursor />3
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const output = (
           <editor>
@@ -273,14 +270,14 @@ describe('toggleList', () => {
               3
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const editor = getToggledEditor({
           input,
           options: { listRestart: 5, listStyleType: 'decimal' },
         });
 
-        expect(editor.children).toEqual(output.children);
+        expect(editor.read.children()).toEqual(output.children);
       });
     });
 
@@ -293,7 +290,7 @@ describe('toggleList', () => {
                 <cursor />1
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const output = (
             <editor>
@@ -306,7 +303,7 @@ describe('toggleList', () => {
                 1
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const editor = getToggledEditor({
             input,
@@ -316,7 +313,7 @@ describe('toggleList', () => {
             },
           });
 
-          expect(editor.children).toEqual(output.children);
+          expect(editor.read.children()).toEqual(output.children);
         });
 
         it('adds listRestartPolite after a numbered heading', () => {
@@ -337,7 +334,7 @@ describe('toggleList', () => {
                 <cursor />3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const output = (
             <editor>
@@ -361,7 +358,7 @@ describe('toggleList', () => {
                 3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const editor = getToggledEditor({
             input,
@@ -372,7 +369,7 @@ describe('toggleList', () => {
             plugins: headingListPlugins,
           });
 
-          expect(editor.children).toEqual(output.children);
+          expect(editor.read.children()).toEqual(output.children);
         });
 
         it('adds listRestartPolite after a numbered heading with an earlier paragraph list', () => {
@@ -388,7 +385,7 @@ describe('toggleList', () => {
                 <cursor />3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const output = (
             <editor>
@@ -407,7 +404,7 @@ describe('toggleList', () => {
                 3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const editor = getToggledEditor({
             input,
@@ -418,7 +415,7 @@ describe('toggleList', () => {
             plugins: headingListPlugins,
           });
 
-          expect(editor.children).toEqual(output.children);
+          expect(editor.read.children()).toEqual(output.children);
         });
 
         it('adds listRestartPolite after a configured heading node type', () => {
@@ -439,7 +436,7 @@ describe('toggleList', () => {
                 <cursor />3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const output = (
             <editor>
@@ -463,7 +460,7 @@ describe('toggleList', () => {
                 3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const editor = getToggledEditor({
             input,
@@ -474,7 +471,7 @@ describe('toggleList', () => {
             plugins: customHeadingListPlugins,
           });
 
-          expect(editor.children).toEqual(output.children);
+          expect(editor.read.children()).toEqual(output.children);
         });
       });
 
@@ -492,7 +489,7 @@ describe('toggleList', () => {
                 <cursor />3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const output = (
             <editor>
@@ -506,7 +503,7 @@ describe('toggleList', () => {
                 3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const editor = getToggledEditor({
             input,
@@ -516,7 +513,7 @@ describe('toggleList', () => {
             },
           });
 
-          expect(editor.children).toEqual(output.children);
+          expect(editor.read.children()).toEqual(output.children);
         });
 
         it('does not add listRestartPolite after a nested numbered heading', () => {
@@ -532,7 +529,7 @@ describe('toggleList', () => {
                 <cursor />2
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const output = (
             <editor>
@@ -546,7 +543,7 @@ describe('toggleList', () => {
                 2
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const editor = getToggledEditor({
             input,
@@ -557,7 +554,7 @@ describe('toggleList', () => {
             plugins: headingListPlugins,
           });
 
-          expect(editor.children).toEqual(output.children);
+          expect(editor.read.children()).toEqual(output.children);
         });
 
         it('does not add listRestartPolite after non-numbered headings', () => {
@@ -576,7 +573,7 @@ describe('toggleList', () => {
                 <cursor />2
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const output = (
             <editor>
@@ -593,7 +590,7 @@ describe('toggleList', () => {
                 2
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const editor = getToggledEditor({
             input,
@@ -604,7 +601,7 @@ describe('toggleList', () => {
             plugins: headingListPlugins,
           });
 
-          expect(editor.children).toEqual(output.children);
+          expect(editor.read.children()).toEqual(output.children);
         });
 
         it('does not add listRestartPolite after a numbered blockquote', () => {
@@ -617,7 +614,7 @@ describe('toggleList', () => {
                 <cursor />2
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const output = (
             <editor>
@@ -628,7 +625,7 @@ describe('toggleList', () => {
                 2
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const editor = getToggledEditor({
             input,
@@ -639,7 +636,7 @@ describe('toggleList', () => {
             plugins: headingListPlugins,
           });
 
-          expect(editor.children).toEqual(output.children);
+          expect(editor.read.children()).toEqual(output.children);
         });
       });
     });
@@ -660,7 +657,7 @@ describe('toggleList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const output = (
           <editor>
@@ -676,14 +673,14 @@ describe('toggleList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const editor = getToggledEditor({
           input,
           options: { listStyleType: 'disc' },
         });
 
-        expect(editor.children).toEqual(output.children);
+        expect(editor.read.children()).toEqual(output.children);
       });
     });
 
@@ -701,7 +698,7 @@ describe('toggleList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const output = (
           <editor>
@@ -717,14 +714,14 @@ describe('toggleList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const editor = getToggledEditor({
           input,
           options: { listStyleType: 'decimal' },
         });
 
-        expect(editor.children).toEqual(output.children);
+        expect(editor.read.children()).toEqual(output.children);
       });
     });
 
@@ -744,7 +741,7 @@ describe('toggleList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const output = (
           <editor>
@@ -758,14 +755,14 @@ describe('toggleList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const editor = getToggledEditor({
           input,
           options: { listStyleType: 'disc' },
         });
 
-        expect(editor.children).toEqual(output.children);
+        expect(editor.read.children()).toEqual(output.children);
       });
     });
 
@@ -785,7 +782,7 @@ describe('toggleList', () => {
               </hp>
             </element>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const output = (
           <editor>
@@ -801,7 +798,7 @@ describe('toggleList', () => {
               </hp>
             </element>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const editor = getToggledEditor({
           input,
@@ -809,7 +806,7 @@ describe('toggleList', () => {
           plugins: [listPluginPage, BaseIndentPlugin],
         });
 
-        expect(editor.children).toEqual(output.children);
+        expect(editor.read.children()).toEqual(output.children);
       });
     });
 
@@ -831,7 +828,7 @@ describe('toggleList', () => {
               5<focus />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const output = (
           <editor>
@@ -856,14 +853,14 @@ describe('toggleList', () => {
               5
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as TestEditor;
 
         const editor = getToggledEditor({
           input,
           options: { listRestart: 5, listStyleType: 'decimal' },
         });
 
-        expect(editor.children).toEqual(output.children);
+        expect(editor.read.children()).toEqual(output.children);
       });
     });
 
@@ -880,7 +877,7 @@ describe('toggleList', () => {
                 3<focus />
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const output = (
             <editor>
@@ -899,7 +896,7 @@ describe('toggleList', () => {
                 3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const editor = getToggledEditor({
             input,
@@ -909,7 +906,7 @@ describe('toggleList', () => {
             },
           });
 
-          expect(editor.children).toEqual(output.children);
+          expect(editor.read.children()).toEqual(output.children);
         });
       });
 
@@ -931,7 +928,7 @@ describe('toggleList', () => {
                 5<focus />
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const output = (
             <editor>
@@ -951,7 +948,7 @@ describe('toggleList', () => {
                 5
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as TestEditor;
 
           const editor = getToggledEditor({
             input,
@@ -961,7 +958,7 @@ describe('toggleList', () => {
             },
           });
 
-          expect(editor.children).toEqual(output.children);
+          expect(editor.read.children()).toEqual(output.children);
         });
       });
     });

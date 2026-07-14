@@ -1,4 +1,7 @@
-import { KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
+
+import { BasePlaceholderPlugin } from '../BasePlaceholderPlugin';
 
 import {
   insertAudioPlaceholder,
@@ -9,50 +12,37 @@ import {
 } from './insertPlaceholder';
 
 describe('insertPlaceholder', () => {
-  it('wraps placeholder insertion in withoutNormalizing', () => {
-    const insertNodes = mock();
-    const withoutNormalizing = mock((fn: () => void) => fn());
-    const editor = {
-      getType: (key: string) => key,
-      tf: {
-        insertNodes,
-        withoutNormalizing,
-      },
-    } as any;
+  it('inserts a placeholder through the transaction boundary', () => {
+    const editor = createBaseEditor({
+      plugins: [BasePlaceholderPlugin],
+      value: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
 
-    insertPlaceholder(editor, KEYS.img, { at: [0] });
-
-    expect(withoutNormalizing).toHaveBeenCalledTimes(1);
-    expect(insertNodes).toHaveBeenCalledWith(
-      {
-        children: [{ text: '' }],
-        mediaType: KEYS.img,
-        type: KEYS.placeholder,
-      },
-      { at: [0] }
+    editor.update((tx) =>
+      insertPlaceholder(tx, KEYS.img, KEYS.placeholder, { at: [1] })
     );
+
+    expect(editor.read.children()[1]).toEqual({
+      children: [{ text: '' }],
+      mediaType: KEYS.img,
+      type: KEYS.placeholder,
+    });
   });
 
   it('uses the expected media type helpers', () => {
-    const insertNodes = mock();
-    const editor = {
-      getType: (key: string) => key,
-      tf: {
-        insertNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
-    } as any;
+    const editor = createBaseEditor({ plugins: [BasePlaceholderPlugin] });
 
-    insertImagePlaceholder(editor);
-    insertVideoPlaceholder(editor);
-    insertAudioPlaceholder(editor);
-    insertFilePlaceholder(editor);
+    editor.update((tx) => {
+      insertImagePlaceholder(tx, KEYS.placeholder, { at: [0] });
+      insertVideoPlaceholder(tx, KEYS.placeholder, { at: [1] });
+      insertAudioPlaceholder(tx, KEYS.placeholder, { at: [2] });
+      insertFilePlaceholder(tx, KEYS.placeholder, { at: [3] });
+    });
 
-    expect(insertNodes.mock.calls.map((call) => call[0].mediaType)).toEqual([
-      KEYS.img,
-      KEYS.video,
-      KEYS.audio,
-      KEYS.file,
-    ]);
+    expect(
+      editor.read
+        .children()
+        .map((node) => ('mediaType' in node ? node.mediaType : undefined))
+    ).toEqual([KEYS.img, KEYS.video, KEYS.audio, KEYS.file]);
   });
 });

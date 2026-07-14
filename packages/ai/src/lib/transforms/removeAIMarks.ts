@@ -1,13 +1,17 @@
-import { type SlateEditor, type TLocation, getPluginType, KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { EditorUpdateTransaction, Location } from '@platejs/plite';
+import { getPluginType } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 export const removeAIMarks = (
-  editor: SlateEditor,
-  { at = [] }: { at?: TLocation } = {}
+  editor: BaseEditor,
+  tx: Pick<EditorUpdateTransaction, 'nodes'>,
+  { at = [] }: { at?: Location } = {}
 ) => {
   const nodeType = getPluginType(editor, KEYS.ai);
 
-  editor.tf.unsetNodes(nodeType, {
+  tx.nodes.unset(nodeType, {
     at,
-    match: (n) => (n as any)[nodeType],
+    match: (node) => Boolean(Reflect.get(node, nodeType)),
   });
 };

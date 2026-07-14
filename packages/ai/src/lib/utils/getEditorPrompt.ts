@@ -1,5 +1,6 @@
 import { isSelecting } from '@platejs/selection';
-import { type SlateEditor, KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 export type EditorPrompt =
   | ((params: EditorPromptParams) => string)
@@ -7,7 +8,7 @@ export type EditorPrompt =
   | string;
 
 export type EditorPromptParams = {
-  editor: SlateEditor;
+  editor: BaseEditor;
   isBlockSelecting: boolean;
   isSelecting: boolean;
 };
@@ -34,7 +35,7 @@ const createPromptFromConfig = (
 };
 
 export const getEditorPrompt = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   {
     prompt = '',
   }: {

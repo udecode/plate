@@ -88,9 +88,8 @@ const explicitFactoryEnabled: boolean =
 const explicitFactoryPortalEnabled: boolean = createdPlateEditor
   .plugin(ExplicitFactoryPlugin)
   .api.isEnabled();
-const explicitFactoryPortalRootEnabled: boolean = createdPlateEditor
-  .plugin(ExplicitFactoryPlugin)
-  .editorApi.explicitFactory.isEnabled();
+const explicitFactoryPortalRootEnabled: boolean =
+  createdPlateEditor.api.explicitFactory.isEnabled();
 const toolbarFloating: boolean = createdPlateEditor
   .plugin(ToolbarPlugin)
   .getOptions().floating;

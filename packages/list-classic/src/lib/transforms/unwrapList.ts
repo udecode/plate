@@ -1,24 +1,70 @@
-import {
-  type Path,
-  type SlateEditor,
-  ElementApi,
-  KEYS,
-  NodeApi,
-} from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import { type Element, type Path, ElementApi, NodeApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
+
+import type { ListTransaction } from '../BaseListPlugin';
 
 import { getListTypes } from '../queries/index';
 
-export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
+export const unwrapList = (
+  editor: BaseEditor,
+  tx: ListTransaction,
+  { at }: { at?: Path } = {}
+) => {
+  const selection = editor.read.selection();
+  const selectedListItem =
+    !at && selection && editor.read.selection.isCollapsed()
+      ? editor.read.nodes.above<Element>({
+          at: selection.focus,
+          match: { type: editor.getType(KEYS.li) },
+          mode: 'lowest',
+        })
+      : undefined;
+
+  if (selectedListItem && selectedListItem[1].at(-1) === 0) {
+    const list = editor.read.nodes.parent<Element>(selectedListItem[1]);
+    const content = editor.read.nodes.get<Element>([...selectedListItem[1], 0]);
+    const sublist = editor.read.nodes.get<Element>([...selectedListItem[1], 1]);
+
+    if (list && content && sublist && list[0].children.length > 1) {
+      const paragraph = {
+        ...content[0],
+        type: editor.getType(KEYS.p),
+      };
+      const nextList = {
+        ...list[0],
+        children: [...sublist[0].children, ...list[0].children.slice(1)],
+      };
+      const paragraphPath = list[1];
+      const point = {
+        offset: selection!.focus.offset,
+        path: [
+          ...paragraphPath,
+          ...selection!.focus.path.slice(content[1].length),
+        ],
+      };
+
+      tx.nodes.replace([paragraph, nextList], { at: list[1] });
+      tx.selection.set({ anchor: point, focus: point });
+
+      return;
+    }
+  }
+
   const ancestorListTypeCheck = () => {
-    if (editor.api.above({ at, match: { type: getListTypes(editor) } })) {
+    if (
+      editor.read.nodes.above({ at, match: { type: getListTypes(editor) } })
+    ) {
       return true;
     }
     // The selection's common node might be a list type
-    if (!at && editor.selection) {
+    const selection = editor.read.selection();
+
+    if (!at && selection) {
       const commonNode = NodeApi.common(
         editor,
-        editor.selection.anchor.path,
-        editor.selection.focus.path
+        selection.anchor.path,
+        selection.focus.path
       )!;
 
       if (
@@ -32,28 +78,28 @@ export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
     return false;
   };
 
-  editor.tf.withoutNormalizing(() => {
+  const unwrap = () => {
     do {
-      // const licEntry = editor.api.block({
+      // const licEntry = editor.read.nodes.block({
       //   at,
       //   match: { type: editor.getType(BaseListItemContentPlugin) },
       // });
 
       // Allow other LIC types
       // if (licEntry) {
-      //   editor.tf.setNodes(
+      //   editor.update.nodes.set(
       //     { type: editor.getType(BaseParagraphPlugin) },
       //     { at }
       //   );
       // }
 
-      editor.tf.unwrapNodes({
+      tx.nodes.unwrap({
         at,
         match: { type: editor.getType(KEYS.li) },
         split: true,
       });
 
-      editor.tf.unwrapNodes({
+      tx.nodes.unwrap({
         at,
         match: {
           type: getListTypes(editor),
@@ -61,5 +107,11 @@ export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
         split: true,
       });
     } while (ancestorListTypeCheck());
-  });
+  };
+
+  if (tx.withoutNormalizing) {
+    tx.withoutNormalizing(unwrap);
+  } else {
+    unwrap();
+  }
 };

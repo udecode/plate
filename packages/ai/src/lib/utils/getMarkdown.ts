@@ -1,12 +1,12 @@
 import { serializeMd } from '@platejs/markdown';
 import { getTableGridAbove } from '@platejs/table';
+import type { BaseEditor } from '@platejs/core';
+import { type Element, ElementApi } from '@platejs/plite';
 import {
-  type SlateEditor,
-  type TElement,
   type TTableCellElement,
   type TTableElement,
   KEYS,
-} from 'platejs';
+} from '@platejs/utils';
 
 import type { MarkdownType } from './replacePlaceholders';
 
@@ -15,13 +15,13 @@ import type { MarkdownType } from './replacePlaceholders';
  * joined with <br/>.
  */
 const serializeCellContent = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   cell: TTableCellElement
 ): string => {
   const parts: string[] = [];
 
   for (const child of cell.children) {
-    const md = serializeMd(editor, { value: [child as TElement] }).trim();
+    const md = serializeMd(editor, { value: [child] }).trim();
     if (md) {
       parts.push(md);
     }
@@ -35,7 +35,7 @@ const serializeCellContent = (
  * Returns the table markdown and a map of cell IDs to their cells.
  */
 const serializeTableWithCellRefs = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   table: TTableElement,
   selectedCellIds: Set<string>
 ): {
@@ -89,14 +89,14 @@ const serializeTableWithCellRefs = (
  * table markdown structure.
  */
 const serializeCellBlocks = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   cells: Array<{ cell: TTableCellElement; id: string }>
 ): string => {
   const blocks: string[] = [];
 
   for (const { cell, id } of cells) {
     const content = serializeMd(editor, {
-      value: cell.children as TElement[],
+      value: cell.children,
     }).trim();
 
     blocks.push(`<Cell id="${id}">\n${content}\n</Cell>`);
@@ -107,7 +107,7 @@ const serializeCellBlocks = (
 
 // Internal
 export const getMarkdown = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   {
     type,
   }: {
@@ -121,7 +121,13 @@ export const getMarkdown = (
   }
 
   if (type === 'block' || type === 'blockWithBlockId') {
-    const blocks = editor.api.blocks({ mode: 'lowest' }).map(([node]) => node);
+    const blocks = editor.read.nodes
+      .toArray<Element>({
+        match: (node) =>
+          ElementApi.isElement(node) && editor.read.schema.isBlock(node),
+        mode: 'lowest',
+      })
+      .map(([node]) => node);
 
     return serializeMd(editor, {
       value: blocks,
@@ -130,10 +136,10 @@ export const getMarkdown = (
   }
 
   if (type === 'blockSelection' || type === 'blockSelectionWithBlockId') {
-    const fragment = editor.api.fragment<TElement>();
+    const fragment = editor.read.fragment();
 
     // Remove any block formatting
-    if (fragment.length === 1) {
+    if (fragment.length === 1 && ElementApi.isElement(fragment[0])) {
       const modifiedFragment = [
         {
           children: fragment[0].children,
@@ -173,8 +179,7 @@ export const getMarkdown = (
     }
 
     // Get the table containing the selection
-    const tableEntry = editor.api.block({
-      at: editor.selection!,
+    const tableEntry = editor.read.nodes.block<TTableElement>({
       match: { type: KEYS.table },
     });
 
@@ -182,7 +187,7 @@ export const getMarkdown = (
       return '';
     }
 
-    const table = tableEntry[0] as TTableElement;
+    const table = tableEntry[0];
 
     // Serialize table with CellRef placeholders
     const { selectedCells, tableMarkdown } = serializeTableWithCellRefs(

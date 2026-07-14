@@ -1,8 +1,4 @@
-import {
-  BaseParagraphPlugin,
-  createBaseEditor,
-  getEditorPlugin,
-} from '@platejs/core';
+import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { BaseTextAlignPlugin } from './BaseTextAlignPlugin';
@@ -28,25 +24,18 @@ describe('BaseTextAlignPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseTextAlignPlugin],
     });
-    const plugin = editor.getPlugin(BaseTextAlignPlugin);
-    const targetPlugin = plugin.inject.targetPluginToInject!({
-      ...getEditorPlugin(editor, plugin),
-      targetPlugin: KEYS.p,
-    });
-    const parse = targetPlugin.parsers!.html!.deserializer!.parse!;
-    const node: Record<string, unknown> = {};
 
-    parse({
-      ...getEditorPlugin(editor, plugin),
-      element: {
-        style: { textAlign: 'center' },
-      } as HTMLElement,
-      node,
-    });
-
-    expect(node).toEqual({
-      [editor.getType(KEYS.textAlign)]: 'center',
-    });
+    expect(
+      editor.api.html.deserialize({
+        element: '<p style="text-align: center">text</p>',
+      })
+    ).toMatchObject([
+      {
+        [editor.getType(KEYS.textAlign)]: 'center',
+        children: [{ text: 'text' }],
+        type: KEYS.p,
+      },
+    ]);
   });
 
   it('applies and clears text alignment through the typed tx group', () => {

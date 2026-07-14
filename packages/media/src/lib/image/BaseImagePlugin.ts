@@ -1,9 +1,5 @@
-import {
-  type PluginConfig,
-  bindFirst,
-  createTSlatePlugin,
-  KEYS,
-} from 'platejs';
+import { type PluginConfig, createBasePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import type { MediaPluginOptions } from '../media';
 
@@ -30,7 +26,7 @@ export type ImageConfig = PluginConfig<
 >;
 
 /** Enables support for images. */
-export const BaseImagePlugin = createTSlatePlugin<ImageConfig>({
+export const BaseImagePlugin = createBasePlugin<ImageConfig>({
   key: KEYS.img,
   node: {
     dangerouslyAllowAttributes: ['alt', 'width', 'height'],
@@ -53,10 +49,8 @@ export const BaseImagePlugin = createTSlatePlugin<ImageConfig>({
     },
   },
 })
-  .overrideEditor(withImageUpload)
-  .overrideEditor(withImageEmbed)
-  .extendEditorTransforms(({ editor }) => ({
-    insert: {
-      imageFromFiles: bindFirst(insertImageFromFiles, editor),
-    },
+  .extendExtension(withImageUpload)
+  .extendExtension(withImageEmbed)
+  .extendTx(({ editor }) => () => ({
+    imageFromFiles: (files: FileList) => insertImageFromFiles(editor, files),
   }));

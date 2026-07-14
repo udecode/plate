@@ -2,27 +2,26 @@ import type { UseChatHelpers } from '@ai-sdk/react';
 import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
-import {
-  type EditorNodesOptions,
-  type NodeEntry,
-  type OmitFirst,
-  type Path,
-  type PluginConfig,
-  type SlateEditor,
-  type TIdElement,
-  type TRange,
-  bindFirst,
-  getPluginType,
-  KEYS,
-} from 'platejs';
-import { createTPlatePlugin } from 'platejs/react';
+import type {
+  Element,
+  EditorNodesOptions,
+  NodeEntry,
+  Path,
+  Range,
+} from '@platejs/plite';
+import type { OmitFirst } from '@udecode/utils';
+import { type PluginConfig, getPluginType } from '@platejs/core';
+import { type TIdElement, KEYS } from '@platejs/utils';
+import { type PlateEditor, createPlatePlugin } from '@platejs/core/react';
 
-import type { AIBatch } from '../../lib';
 import { BaseAIPlugin } from '../../lib/BaseAIPlugin';
 import type { AIMode, AIToolName } from '../../lib/types';
 import type { ChatMessage } from './internal/types';
 
-import { removeAnchorAIChat } from './transforms';
+import {
+  type RemoveAnchorAIChatOptions,
+  removeAnchorAIChat,
+} from './transforms';
 import { acceptAIChat } from './transforms/acceptAIChat';
 import { insertBelowAIChat } from './transforms/insertBelowAIChat';
 import { replaceSelectionAIChat } from './transforms/replaceSelectionAIChat';
@@ -39,12 +38,10 @@ export type AIChatPluginConfig = PluginConfig<
     _mdxName: string | null;
     _replaceIds: string[];
     /** @private The Editor used to generate the AI response. */
-    aiEditor: SlateEditor | null;
-    chat: UseChatHelpers<ChatMessage>;
+    aiEditor: PlateEditor | null;
+    chat: UseChatHelpers<ChatMessage> | null;
     chatNodes: TIdElement[];
-    chatSelection: TRange | null;
-    /** @deprecated Use api.aiChat.node({streaming:true}) instead */
-    experimental_lastTextId: string | null;
+    chatSelection: Range | null;
     /**
      * Specifies how the assistant message is handled:
      *
@@ -60,28 +57,31 @@ export type AIChatPluginConfig = PluginConfig<
   } & TriggerComboboxPluginOptions,
   {
     aiChat: {
+      accept: OmitFirst<typeof acceptAIChat>;
       reset: OmitFirst<typeof resetAIChat>;
       submit: OmitFirst<typeof submitAIChat>;
       hide: (options?: { focus?: boolean; undo?: boolean }) => void;
+      insertBelow: OmitFirst<typeof insertBelowAIChat>;
       node: (
-        options?: EditorNodesOptions & { anchor?: boolean; streaming?: boolean }
-      ) => NodeEntry | undefined;
+        options?: EditorNodesOptions<Element> & {
+          anchor?: boolean;
+          streaming?: boolean;
+        }
+      ) => NodeEntry<Element> | undefined;
       reload: () => void;
+      replaceSelection: OmitFirst<typeof replaceSelectionAIChat>;
       show: () => void;
       stop: () => void;
     };
   },
   {
     aiChat: {
-      accept: OmitFirst<typeof acceptAIChat>;
-      insertBelow: OmitFirst<typeof insertBelowAIChat>;
-      replaceSelection: OmitFirst<typeof replaceSelectionAIChat>;
-      removeAnchor: (options?: EditorNodesOptions) => void;
+      removeAnchor: (options?: RemoveAnchorAIChatOptions) => void;
     };
   }
 >;
 
-export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
+export const AIChatPlugin = createPlatePlugin<AIChatPluginConfig>({
   key: KEYS.aiChat,
   dependencies: ['ai'],
   node: {
@@ -93,10 +93,9 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     _mdxName: null,
     _replaceIds: [],
     aiEditor: null,
-    chat: { messages: [] } as unknown as UseChatHelpers<ChatMessage>,
+    chat: null,
     chatNodes: [],
     chatSelection: null,
-    experimental_lastTextId: null,
     mode: 'insert',
     open: false,
     streaming: false,
@@ -105,127 +104,112 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     triggerPreviousCharPattern: /^\s?$/,
   },
 })
-  .overrideEditor(withAIChat)
-  .extendApi<
-    Pick<
-      AIChatPluginConfig['api']['aiChat'],
-      'node' | 'reset' | 'stop' | 'submit'
-    >
-  >(({ editor, getOption, getOptions, setOption, type }) => ({
-    reset: bindFirst(resetAIChat, editor),
-    submit: bindFirst(submitAIChat, editor),
-    node: (options = {}) => {
-      const { anchor = false, streaming = false, ...rest } = options;
+  .extendExtension(withAIChat)
+  .extendApi<AIChatPluginConfig['api']['aiChat']>(
+    ({ editor, getOption, getOptions, setOption, type }) => ({
+      accept: () => acceptAIChat(editor),
+      hide: ({ focus = true, undo = true } = {}) => {
+        resetAIChat(editor, { undo });
+        setOption('open', false);
 
-      if (anchor) {
-        return editor.api.node({
-          at: [],
-          match: { type },
-          ...rest,
-        });
-      }
-
-      if (streaming) {
-        if (!getOption('streaming')) return;
-
-        const path = getOption('_blockPath');
-        if (!path) return;
-
-        return editor.api.node({
-          at: path,
-          mode: 'lowest',
-          reverse: true,
-          match: (t) => !!t[getPluginType(editor, KEYS.ai)],
-          ...rest,
-        });
-      }
-
-      return editor.api.node({
-        match: (n) => n[getPluginType(editor, KEYS.ai)],
-        ...rest,
-      });
-    },
-    reload: () => {
-      const { chat, chatNodes, chatSelection } = getOptions();
-
-      editor.getTransforms(BaseAIPlugin).ai.undo();
-
-      if (chatSelection) {
-        editor.tf.setSelection(chatSelection);
-      } else {
-        editor
-          .getApi(BlockSelectionPlugin)
-          .blockSelection.set(chatNodes.map((node) => node.id as string));
-      }
-
-      const blocks = editor
-        .getApi(BlockSelectionPlugin)
-        .blockSelection.getNodes();
-
-      const selection =
-        blocks.length > 0 ? editor.api.nodesRange(blocks) : editor.selection;
-
-      const ctx = {
-        children: editor.children,
-        selection: selection ?? null,
-        toolName: getOption('toolName'),
-      };
-
-      void chat.regenerate?.({
-        body: {
-          ctx,
-        },
-      });
-    },
-    stop: () => {
-      setOption('streaming', false);
-      setOption('_blockChunks', '');
-      setOption('_blockPath', null);
-      setOption('_mdxName', null);
-      getOptions().chat.stop?.();
-    },
-  }))
-  .extendApi(({ api, editor, getOptions, setOption, tf }) => ({
-    hide: ({
-      focus = true,
-      undo = true,
-    }: {
-      focus?: boolean;
-      undo?: boolean;
-    } = {}) => {
-      api.aiChat.reset({ undo });
-
-      setOption('open', false);
-
-      if (focus) {
-        if (editor.plugin(BlockSelectionPlugin).getOption('isSelectingSome')) {
-          editor.getApi(BlockSelectionPlugin).blockSelection.focus();
-        } else {
-          editor.tf.focus();
+        if (focus) {
+          if (
+            editor.plugin(BlockSelectionPlugin).getOption('isSelectingSome')
+          ) {
+            editor.plugin(BlockSelectionPlugin).api.focus();
+          } else {
+            editor.api.dom.focus();
+          }
         }
-      }
 
-      const lastBatch = editor.history.undos.at(-1) as AIBatch;
+        editor.update((tx) => {
+          tx.history.skip();
+          tx.aiChat.removeAnchor();
+        });
+      },
+      insertBelow: (sourceEditor, options) =>
+        insertBelowAIChat(editor, sourceEditor, options),
+      node: (options = {}) => {
+        const { anchor = false, streaming = false, ...rest } = options;
 
-      if (lastBatch?.ai) {
-        lastBatch.ai = undefined;
-      }
+        if (anchor) {
+          return editor.read.nodes.find<Element>({
+            at: [],
+            match: { type },
+            ...rest,
+          });
+        }
 
-      tf.aiChat.removeAnchor();
-    },
-    show: () => {
-      api.aiChat.reset();
+        const aiType = getPluginType(editor, KEYS.ai);
 
-      setOption('toolName', null);
+        if (streaming) {
+          if (!getOption('streaming')) return;
 
-      getOptions().chat.setMessages?.([]);
+          const path = getOption('_blockPath');
+          if (!path) return;
 
-      setOption('open', true);
-    },
-  }))
-  .extendTransforms(({ editor }) => ({
-    accept: bindFirst(acceptAIChat, editor),
-    insertBelow: bindFirst(insertBelowAIChat, editor),
-    removeAnchor: bindFirst(removeAnchorAIChat, editor),
-    replaceSelection: bindFirst(replaceSelectionAIChat, editor),
+          return editor.read.nodes.find<Element>({
+            at: path,
+            mode: 'lowest',
+            reverse: true,
+            match: (node) => Boolean(Reflect.get(node, aiType)),
+            ...rest,
+          });
+        }
+
+        return editor.read.nodes.find<Element>({
+          match: (node) => Boolean(Reflect.get(node, aiType)),
+          ...rest,
+        });
+      },
+      reload: () => {
+        const { chat, chatNodes, chatSelection } = getOptions();
+
+        editor.plugin(BaseAIPlugin).api.undo();
+
+        if (chatSelection) {
+          editor.update.selection.set(chatSelection);
+        } else {
+          editor
+            .plugin(BlockSelectionPlugin)
+            .api.set(chatNodes.map((node) => node.id));
+        }
+
+        const blocks = editor.plugin(BlockSelectionPlugin).api.getNodes({});
+        const selection =
+          blocks.length > 0
+            ? editor.read.ranges.fromEntries(blocks)
+            : editor.read.selection();
+
+        void chat?.regenerate?.({
+          body: {
+            ctx: {
+              children: editor.read.children(),
+              selection: selection ?? null,
+              toolName: getOption('toolName'),
+            },
+          },
+        });
+      },
+      replaceSelection: (sourceEditor, options) =>
+        replaceSelectionAIChat(editor, sourceEditor, options),
+      reset: (options) => resetAIChat(editor, options),
+      show: () => {
+        resetAIChat(editor);
+        setOption('toolName', null);
+        getOptions().chat?.setMessages?.([]);
+        setOption('open', true);
+      },
+      stop: () => {
+        setOption('streaming', false);
+        setOption('_blockChunks', '');
+        setOption('_blockPath', null);
+        setOption('_mdxName', null);
+        getOptions().chat?.stop?.();
+      },
+      submit: (input, options) => submitAIChat(editor, input, options),
+    })
+  )
+  .extendTx(({ editor }) => (tx) => ({
+    removeAnchor: (options) => removeAnchorAIChat(editor, tx, options),
   }));

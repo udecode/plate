@@ -1,10 +1,8 @@
 import {
   type DependencyList,
   type RefCallback,
-  useCallback,
   useEffect,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -14,7 +12,6 @@ import {
   pushToCurrentlyPressedKeys,
   removeFromCurrentlyPressedKeys,
 } from './isHotkeyPressed';
-import type { Key } from './key';
 import { mapKey, parseHotkey, parseKeysHookInput } from './parseHotkeys';
 import type {
   HotkeyCallback,
@@ -23,7 +20,6 @@ import type {
   OptionsOrDependencyArray,
   RefType,
 } from './types';
-import useDeepEqualMemo from './useDeepEqualMemo';
 import {
   isHotkeyEnabled,
   isHotkeyEnabledOnTag,
@@ -42,66 +38,100 @@ const stopPropagation = (e: KeyboardEvent): void => {
 const useSafeLayoutEffect =
   typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
+function isDependencyList(
+  value: OptionsOrDependencyArray | undefined
+): value is DependencyList {
+  return Array.isArray(value);
+}
+
+function isKeyCombinationList(
+  keys: Exclude<Keys, string>
+): keys is Extract<Keys, readonly (readonly string[])[]> {
+  return keys.length > 0 && keys.every((key) => Array.isArray(key));
+}
+
+function normalizeKeys(keys: Keys, options: Options | undefined): string {
+  if (typeof keys === 'string') return keys;
+
+  if (isKeyCombinationList(keys)) {
+    return keys
+      .map((combination) => combination.join(options?.splitKey ?? '+'))
+      .join(options?.delimiter ?? ',');
+  }
+
+  return keys.join(options?.delimiter ?? ',');
+}
+
+function dependenciesChanged(
+  previous: DependencyList | undefined,
+  next: DependencyList
+) {
+  return (
+    previous === undefined ||
+    previous.length !== next.length ||
+    next.some((value, index) => !Object.is(value, previous[index]))
+  );
+}
+
 export default function useHotkeys<T extends HTMLElement>(
   keys: Keys,
   callback: HotkeyCallback,
   options?: OptionsOrDependencyArray,
   dependencies?: OptionsOrDependencyArray
-) {
+): RefCallback<T> {
   const [ref, setRef] = useState<RefType<T>>(null);
   const hasTriggeredRef = useRef(false);
 
-  const _options: Options | undefined = Array.isArray(options)
-    ? Array.isArray(dependencies)
+  const resolvedOptions = isDependencyList(options)
+    ? isDependencyList(dependencies)
       ? undefined
-      : (dependencies as Options)
-    : (options as Options);
-
-  const _keys = useMemo(() => {
-    if (Array.isArray(keys) && keys.length > 0 && Array.isArray(keys[0])) {
-      // Handle Keys[][] case
-      return (keys as (keyof typeof Key)[][])
-        .map((keyCombo) =>
-          keyCombo.map((k) => k.toString()).join(_options?.splitKey || '+')
-        )
-        .join(_options?.delimiter || ',');
-    }
-    if (Array.isArray(keys)) {
-      return keys.join(_options?.delimiter || ',');
-    }
-
-    return keys as string;
-  }, [keys, _options?.splitKey, _options?.delimiter]);
-
-  const _deps: DependencyList | undefined = Array.isArray(options)
+      : dependencies
+    : options;
+  const resolvedDependencies = isDependencyList(options)
     ? options
-    : Array.isArray(dependencies)
+    : isDependencyList(dependencies)
       ? dependencies
       : undefined;
+  const normalizedKeys = normalizeKeys(keys, resolvedOptions);
+  const callbackRef = useRef(callback);
+  const dependenciesRef = useRef<DependencyList | undefined>(undefined);
+  const optionsRef = useRef(resolvedOptions);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const memoisedCB = useCallback(callback, _deps ?? []);
-  const cbRef = useRef<HotkeyCallback>(memoisedCB);
+  useSafeLayoutEffect(() => {
+    optionsRef.current = resolvedOptions;
 
-  cbRef.current = _deps ? memoisedCB : callback;
+    if (
+      !resolvedDependencies ||
+      dependenciesChanged(dependenciesRef.current, resolvedDependencies)
+    ) {
+      callbackRef.current = callback;
+    }
+    dependenciesRef.current = resolvedDependencies;
+  });
 
-  const memoisedOptions = useDeepEqualMemo(_options);
-
+  const description = resolvedOptions?.description;
+  const delimiter = resolvedOptions?.delimiter;
+  const explicitlyDisabled = resolvedOptions?.enabled === false;
+  const scopesKey = JSON.stringify(resolvedOptions?.scopes);
+  const splitKey = resolvedOptions?.splitKey;
+  const targetDocument = resolvedOptions?.document;
+  const useKey = resolvedOptions?.useKey;
   const { activeScopes } = useHotkeysContext();
   const proxy = useBoundHotkeysProxy();
 
   useSafeLayoutEffect(() => {
-    if (
-      memoisedOptions?.enabled === false ||
-      !isScopeActive(activeScopes, memoisedOptions?.scopes)
-    ) {
+    const options = optionsRef.current;
+
+    if (explicitlyDisabled || !isScopeActive(activeScopes, options?.scopes)) {
       return;
     }
 
     const listener = (e: KeyboardEvent, isKeyUp = false) => {
+      const currentOptions = optionsRef.current;
+
       if (
         isKeyboardEventTriggeredByInput(e) &&
-        !isHotkeyEnabledOnTag(e, memoisedOptions?.enableOnFormTags)
+        !isHotkeyEnabledOnTag(e, currentOptions?.enableOnFormTags)
       ) {
         return;
       }
@@ -121,58 +151,61 @@ export default function useHotkeys<T extends HTMLElement>(
         }
       }
       if (
-        (e.target as HTMLElement)?.isContentEditable &&
-        !memoisedOptions?.enableOnContentEditable
+        e.target instanceof HTMLElement &&
+        e.target.isContentEditable &&
+        !currentOptions?.enableOnContentEditable
       ) {
         return;
       }
 
-      parseKeysHookInput(_keys, memoisedOptions?.delimiter).forEach((key) => {
-        const hotkey = parseHotkey(
-          key,
-          memoisedOptions?.splitKey,
-          memoisedOptions?.useKey
-        );
+      parseKeysHookInput(normalizedKeys, currentOptions?.delimiter).forEach(
+        (key) => {
+          const hotkey = parseHotkey(
+            key,
+            currentOptions?.splitKey,
+            currentOptions?.useKey
+          );
 
-        if (
-          isHotkeyMatchingKeyboardEvent(
-            e,
-            hotkey,
-            memoisedOptions?.ignoreModifiers
-          ) ||
-          hotkey.keys?.includes('*')
-        ) {
-          // DIFF+
           if (
-            (memoisedOptions?.ignoreEventWhenPrevented ?? true) &&
-            e.defaultPrevented
+            isHotkeyMatchingKeyboardEvent(
+              e,
+              hotkey,
+              currentOptions?.ignoreModifiers
+            ) ||
+            hotkey.keys?.includes('*')
           ) {
-            // Skip the handler if the event's default action has been prevented
-            return;
-          }
-          if (memoisedOptions?.ignoreEventWhen?.(e)) {
-            return;
-          }
-          if (isKeyUp && hasTriggeredRef.current) {
-            return;
-          }
-          if (!isHotkeyEnabled(e, hotkey, memoisedOptions?.enabled)) {
-            stopPropagation(e);
+            // DIFF+
+            if (
+              (currentOptions?.ignoreEventWhenPrevented ?? true) &&
+              e.defaultPrevented
+            ) {
+              // Skip the handler if the event's default action has been prevented
+              return;
+            }
+            if (currentOptions?.ignoreEventWhen?.(e)) {
+              return;
+            }
+            if (isKeyUp && hasTriggeredRef.current) {
+              return;
+            }
+            if (!isHotkeyEnabled(e, hotkey, currentOptions?.enabled)) {
+              stopPropagation(e);
 
-            return;
-          }
+              return;
+            }
 
-          // Execute the user callback for that hotkey
-          cbRef.current(e, hotkey);
+            // Execute the user callback for that hotkey
+            callbackRef.current(e, hotkey);
 
-          // DIFF: after callback
-          maybePreventDefault(e, hotkey, memoisedOptions?.preventDefault);
+            // DIFF: after callback
+            maybePreventDefault(e, hotkey, currentOptions?.preventDefault);
 
-          if (!isKeyUp) {
-            hasTriggeredRef.current = true;
+            if (!isKeyUp) {
+              hasTriggeredRef.current = true;
+            }
           }
         }
-      });
+      );
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -184,9 +217,9 @@ export default function useHotkeys<T extends HTMLElement>(
       pushToCurrentlyPressedKeys(mapKey(event.code));
 
       if (
-        (memoisedOptions?.keydown === undefined &&
-          memoisedOptions?.keyup !== true) ||
-        memoisedOptions?.keydown
+        (optionsRef.current?.keydown === undefined &&
+          optionsRef.current?.keyup !== true) ||
+        optionsRef.current?.keydown
       ) {
         listener(event);
       }
@@ -202,50 +235,51 @@ export default function useHotkeys<T extends HTMLElement>(
 
       hasTriggeredRef.current = false;
 
-      if (memoisedOptions?.keyup) {
+      if (optionsRef.current?.keyup) {
         listener(event, true);
       }
     };
 
-    const domNode = ref || _options?.document || document;
+    const domNode = ref ?? targetDocument ?? document;
+    const handleKeyDownEvent: EventListener = (event) => {
+      if (event instanceof KeyboardEvent) handleKeyDown(event);
+    };
+    const handleKeyUpEvent: EventListener = (event) => {
+      if (event instanceof KeyboardEvent) handleKeyUp(event);
+    };
 
-    domNode.addEventListener('keyup', handleKeyUp as any);
-    domNode.addEventListener('keydown', handleKeyDown as any);
+    domNode.addEventListener('keyup', handleKeyUpEvent);
+    domNode.addEventListener('keydown', handleKeyDownEvent);
 
     if (proxy) {
-      for (const key of parseKeysHookInput(_keys, memoisedOptions?.delimiter)) {
-        proxy.addHotkey(
-          parseHotkey(
-            key,
-            memoisedOptions?.splitKey,
-            memoisedOptions?.useKey,
-            memoisedOptions?.description
-          )
-        );
+      for (const key of parseKeysHookInput(normalizedKeys, delimiter)) {
+        proxy.addHotkey(parseHotkey(key, splitKey, useKey, description));
       }
     }
 
     return () => {
-      domNode.removeEventListener('keyup', handleKeyUp as any);
-      domNode.removeEventListener('keydown', handleKeyDown as any);
+      domNode.removeEventListener('keyup', handleKeyUpEvent);
+      domNode.removeEventListener('keydown', handleKeyDownEvent);
 
       if (proxy) {
-        for (const key of parseKeysHookInput(
-          _keys,
-          memoisedOptions?.delimiter
-        )) {
-          proxy.removeHotkey(
-            parseHotkey(
-              key,
-              memoisedOptions?.splitKey,
-              memoisedOptions?.useKey,
-              memoisedOptions?.description
-            )
-          );
+        for (const key of parseKeysHookInput(normalizedKeys, delimiter)) {
+          proxy.removeHotkey(parseHotkey(key, splitKey, useKey, description));
         }
       }
     };
-  }, [ref, _keys, memoisedOptions, activeScopes]);
+  }, [
+    activeScopes,
+    delimiter,
+    description,
+    explicitlyDisabled,
+    normalizedKeys,
+    proxy,
+    ref,
+    scopesKey,
+    splitKey,
+    targetDocument,
+    useKey,
+  ]);
 
-  return setRef as RefCallback<T>;
+  return setRef;
 }

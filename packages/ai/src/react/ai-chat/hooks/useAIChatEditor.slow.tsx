@@ -1,76 +1,34 @@
+import React from 'react';
+
 import { renderHook } from '@testing-library/react';
+import { MarkdownPlugin } from '@platejs/markdown';
+import { BaseParagraphPlugin } from '@platejs/core';
+import { Plate, createPlateEditor } from '@platejs/core/react';
 
-const useEditorPluginMock = mock();
-const getEditorPluginMock = mock();
-const usePluginOptionMock = mock();
-
-mock.module('@platejs/markdown', () => ({
-  MarkdownPlugin: { key: 'markdown' },
-  deserializeMd: mock(),
-}));
-
-mock.module('../AIChatPlugin', () => ({
-  AIChatPlugin: { key: 'aiChat' },
-}));
-
-mock.module('platejs/react', async () => {
-  const actual = await import(
-    new URL('../../../../../plate/dist/react/index.js', import.meta.url).href
-  );
-  const getEditorPlugin = actual.getEditorPlugin as any;
-  const useEditorPlugin = actual.useEditorPlugin as any;
-  const usePluginOption = actual.usePluginOption as any;
-
-  return {
-    ...actual,
-    getEditorPlugin: (...args: any[]) =>
-      (getEditorPluginMock as any)(...args) ?? getEditorPlugin(...args),
-    useEditorPlugin: (...args: any[]) =>
-      (useEditorPluginMock as any)(...args) ?? useEditorPlugin(...args),
-    usePluginOption: (...args: any[]) =>
-      (usePluginOptionMock as any)(...args) ?? usePluginOption(...args),
-  };
-});
-
-const loadModule = async () =>
-  import(`./useAIChatEditor?test=${Math.random().toString(36).slice(2)}`);
+import { BaseAIPlugin } from '../../../lib/BaseAIPlugin';
+import { AIChatPlugin } from '../AIChatPlugin';
+import { useAIChatEditor } from './useAIChatEditor';
 
 describe('useAIChatEditor', () => {
-  beforeEach(() => {
-    getEditorPluginMock.mockReset();
-    useEditorPluginMock.mockReset();
-    usePluginOptionMock.mockReset();
-  });
-
-  afterAll(() => {
-    mock.restore();
-  });
-
-  it('deserializes markdown with memoization, writes editor children, and registers the ai editor', async () => {
-    const setOption = mock();
-    const deserialize = mock(() => [{ type: 'p', children: [{ text: 'hi' }] }]);
-
-    useEditorPluginMock.mockReturnValue({ setOption });
-
-    const editor = {
-      api: {
-        markdown: {
-          deserialize,
-        },
-      },
-      children: [],
-    } as any;
-
-    const { useAIChatEditor } = await loadModule();
-    const { result } = renderHook(() =>
-      useAIChatEditor(editor, '# hi', { parser: 'parser' as any })
+  it('deserializes markdown, writes editor children, and registers the editor', () => {
+    const primaryEditor = createPlateEditor({
+      plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+    });
+    const editor = createPlateEditor({
+      plugins: [BaseParagraphPlugin, MarkdownPlugin],
+    });
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <Plate editor={primaryEditor}>{children}</Plate>
     );
 
-    expect(deserialize).toHaveBeenCalledWith('# hi', {
-      memoize: true,
-      parser: 'parser',
+    const { result } = renderHook(() => useAIChatEditor(editor, '# hi'), {
+      wrapper,
     });
-    expect(editor.children).toEqual(result.current);
-    expect(setOption).toHaveBeenCalledWith('aiEditor', editor);
+
+    expect(editor.read.children()).toEqual(result.current);
+    expect(editor.read.text.string([])).toBe('hi');
+    expect(primaryEditor.plugin(AIChatPlugin).getOption('aiEditor')).toBe(
+      editor
+    );
   });
 });

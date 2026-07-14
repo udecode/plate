@@ -1,23 +1,26 @@
-import { type TPlaceholderElement, KEYS } from 'platejs';
+import {
+  useEditorFocused,
+  useEditorReadOnly,
+  useElementSelected,
+} from '@platejs/plite-react';
+import type { TPlaceholderElement } from '@platejs/utils';
+import { KEYS } from '@platejs/utils';
 import {
   useEditorRef,
   useEditorSelector,
   useElement,
-  useFocused,
-  useReadOnly,
-  useSelected,
-} from 'platejs/react';
+} from '@platejs/core/react';
 
 import { usePlaceholderSet, usePlaceholderValue } from '../placeholderStore';
 
 export const usePlaceholderPopoverState = (): any => {
   const editor = useEditorRef();
-  const readOnly = useReadOnly();
-  const selected = useSelected();
-  const focused = useFocused();
+  const readOnly = useEditorReadOnly();
+  const selected = useElementSelected();
+  const focused = useEditorFocused();
 
   const selectionCollapsed = useEditorSelector(
-    (editor) => !editor.api.isExpanded(),
+    (editor) => editor.read.selection.isCollapsed(),
     []
   );
 

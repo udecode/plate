@@ -1,4 +1,5 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseAudioPlugin } from './BaseAudioPlugin';
 import { BaseFilePlugin } from './BaseFilePlugin';
@@ -8,9 +9,9 @@ import { BaseMediaEmbedPlugin } from './media-embed/BaseMediaEmbedPlugin';
 
 describe('Base media plugin contracts', () => {
   it('configures file nodes as void elements', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseFilePlugin],
-    } as any);
+    });
 
     expect(editor.getPlugin({ key: KEYS.file }).node).toMatchObject({
       isElement: true,
@@ -19,9 +20,9 @@ describe('Base media plugin contracts', () => {
   });
 
   it('configures audio nodes as void elements', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseAudioPlugin],
-    } as any);
+    });
 
     expect(editor.getPlugin({ key: KEYS.audio }).node).toMatchObject({
       isElement: true,
@@ -30,9 +31,9 @@ describe('Base media plugin contracts', () => {
   });
 
   it('configures video nodes as void elements with width and height passthrough', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseVideoPlugin],
-    } as any);
+    });
 
     expect(editor.getPlugin({ key: KEYS.video }).node).toMatchObject({
       dangerouslyAllowAttributes: ['width', 'height'],
@@ -41,40 +42,41 @@ describe('Base media plugin contracts', () => {
     });
   });
 
-  it.each([
-    ['file', BaseFilePlugin, KEYS.file],
-    ['audio', BaseAudioPlugin, KEYS.audio],
-    ['video', BaseVideoPlugin, KEYS.video],
-    ['img', BaseImagePlugin, KEYS.img],
-    ['media_embed', BaseMediaEmbedPlugin, KEYS.mediaEmbed],
-  ])('deleteBackward from the next block selects the %s node instead of deleting through it', (_label, plugin, type) => {
-    const editor = createSlateEditor({
-      plugins: [plugin],
-      selection: {
-        anchor: { offset: 0, path: [1, 0] },
-        focus: { offset: 0, path: [1, 0] },
-      },
-      value: [
-        {
-          children: [{ text: '' }],
-          type,
-          ...(type === KEYS.mediaEmbed || type === KEYS.img
-            ? { url: 'https://platejs.org/example' }
-            : {}),
-        },
-        {
-          children: [{ text: 'after' }],
-          type: KEYS.p,
-        },
-      ],
-    } as any);
+  it('selects every media void when deleting backward from the next block', () => {
+    const rows = [
+      [BaseFilePlugin, KEYS.file],
+      [BaseAudioPlugin, KEYS.audio],
+      [BaseVideoPlugin, KEYS.video],
+      [BaseImagePlugin, KEYS.img],
+      [BaseMediaEmbedPlugin, KEYS.mediaEmbed],
+    ] as const;
 
-    editor.tf.deleteBackward('character');
+    for (const [plugin, type] of rows) {
+      const editor = createBaseEditor({
+        plugins: [plugin],
+        selection: {
+          anchor: { offset: 0, path: [1, 0] },
+          focus: { offset: 0, path: [1, 0] },
+        },
+        value: [
+          {
+            children: [{ text: '' }],
+            type,
+            ...(type === KEYS.mediaEmbed || type === KEYS.img
+              ? { url: 'https://platejs.org/example' }
+              : {}),
+          },
+          { children: [{ text: 'after' }], type: KEYS.p },
+        ],
+      });
 
-    expect(editor.children).toHaveLength(2);
-    expect(editor.selection).toEqual({
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 0, path: [0, 0] },
-    });
+      editor.update.text.deleteBackward({ unit: 'character' });
+
+      expect(editor.read.children()).toHaveLength(2);
+      expect(editor.read.selection()).toEqual({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      });
+    }
   });
 });

@@ -35,7 +35,8 @@ export function isHotkeyEnabledOnTag(
   { target }: KeyboardEvent,
   enabledOnTags: readonly FormTags[] | boolean = false
 ): boolean {
-  const targetTagName = target && (target as HTMLElement).tagName;
+  const targetTagName =
+    target instanceof HTMLElement ? target.tagName : undefined;
 
   if (isReadonlyArray(enabledOnTags)) {
     return Boolean(

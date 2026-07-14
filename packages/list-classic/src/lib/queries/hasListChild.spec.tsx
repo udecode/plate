@@ -1,7 +1,8 @@
 /** @jsx jsxt */
 
+import { createBaseEditor } from '@platejs/core';
+
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
 
 import { hasListChild } from './hasListChild';
 
@@ -46,11 +47,11 @@ it.each([
     title: 'returns false when the list item has no nested list',
   },
 ])('$title', ({ expected, input }) => {
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     selection: input.selection,
     value: input.children,
   });
-  const listItem = editor.api.node({ at: [], id: '2' });
+  const listItem = editor.read.nodes.find({ at: [], match: { id: '2' } });
 
   expect(hasListChild(editor, listItem?.[0] as any)).toBe(expected);
 });

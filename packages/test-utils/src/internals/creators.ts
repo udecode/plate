@@ -10,6 +10,7 @@ import {
   type Selection,
   type Text,
   TextApi,
+  createEditor as createPliteEditor,
 } from '@platejs/plite';
 
 import {
@@ -22,10 +23,18 @@ import {
   Token,
 } from './tokens';
 
-export type TestEditor = Editor & {
+export type TestEditorFixture = {
   children: Element[];
-  selection: Selection;
+  selection?: Selection | null;
 };
+
+export type TestEditor = Editor & TestEditorFixture;
+
+export const createEditorFromFixture = (fixture: TestEditorFixture) =>
+  createPliteEditor({
+    initialSelection: fixture.selection,
+    initialValue: fixture.children.length > 0 ? fixture.children : undefined,
+  });
 
 const STRINGS = new WeakSet<Text>();
 

@@ -13,7 +13,7 @@ describe('BaseIndentPlugin', () => {
       plugins: [BaseParagraphPlugin, BaseIndentPlugin],
     });
     const plugin = editor.getPlugin(BaseIndentPlugin);
-    const nodeProps = plugin.inject.nodeProps!;
+    const nodeProps = editor.getInjectProps(BaseIndentPlugin);
 
     expect(editor.plugin(BaseIndentPlugin).getOptions()).toEqual({
       offset: 24,

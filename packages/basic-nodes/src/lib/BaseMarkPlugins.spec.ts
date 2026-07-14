@@ -1,8 +1,5 @@
-import {
-  type AnyBasePlugin,
-  createBaseEditor,
-  getEditorPlugin,
-} from '@platejs/core';
+import { createBaseEditor } from '@platejs/core';
+import { NodeApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import {
@@ -13,20 +10,25 @@ import {
   BaseUnderlinePlugin,
 } from './index';
 
-const getDeserializerQuery = (plugin: AnyBasePlugin) => {
+type MarkPlugin =
+  | typeof BaseBoldPlugin
+  | typeof BaseCodePlugin
+  | typeof BaseItalicPlugin
+  | typeof BaseStrikethroughPlugin
+  | typeof BaseUnderlinePlugin;
+
+const getDeserializerQuery = (plugin: MarkPlugin) => {
   const editor = createBaseEditor({
     plugins: [plugin],
   });
-  const resolvedPlugin = editor.getPlugin(plugin);
-  const query = resolvedPlugin.parsers.html?.deserializer?.query;
 
-  if (!query) {
-    throw new Error(`Missing HTML query for ${plugin.key}`);
-  }
+  return (element: HTMLElement) => {
+    const fragment = editor.api.html.deserialize({ element });
 
-  const pluginContext = getEditorPlugin(editor, resolvedPlugin);
-
-  return (element: HTMLElement) => query({ ...pluginContext, element });
+    return Array.from(NodeApi.texts({ children: fragment, type: 'root' })).some(
+      ([text]) => text[plugin.key]
+    );
+  };
 };
 
 const parseElement = (html: string) => {
@@ -35,18 +37,6 @@ const parseElement = (html: string) => {
 
   if (!(element instanceof HTMLElement)) {
     throw new Error(`Expected HTMLElement for ${html}`);
-  }
-
-  return element;
-};
-
-const queryElement = (html: string, selector: string) => {
-  const element = new DOMParser()
-    .parseFromString(html, 'text/html')
-    .querySelector(selector);
-
-  if (!(element instanceof HTMLElement)) {
-    throw new Error(`Expected HTMLElement for ${selector}`);
   }
 
   return element;
@@ -87,14 +77,13 @@ describe('BaseMarkPlugins', () => {
   it('skips inline code parsing inside pre blocks and paragraphs styled as code', () => {
     const query = getDeserializerQuery(BaseCodePlugin);
 
-    expect(
-      query(queryElement('<pre><code>const a = 1;</code></pre>', 'code'))
-    ).toBe(false);
+    expect(query(parseElement('<pre><code>const a = 1;</code></pre>'))).toBe(
+      false
+    );
     expect(
       query(
-        queryElement(
-          '<p style="font-family: Consolas"><code>const b = 2;</code></p>',
-          'code'
+        parseElement(
+          '<p style="font-family: Consolas"><code>const b = 2;</code></p>'
         )
       )
     ).toBe(false);

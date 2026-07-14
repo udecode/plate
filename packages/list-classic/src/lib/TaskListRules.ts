@@ -1,10 +1,10 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
 
 import { createRuleFactory, KEYS } from 'platejs';
 
 import { toggleTaskList } from './transforms';
 
-const isListInputBlocked = (editor: SlateEditor) =>
+const isListInputBlocked = (editor: BaseEditor) =>
   editor.read.nodes.some({
     match: {
       type: [editor.getType(KEYS.codeBlock)],
@@ -18,9 +18,9 @@ export const TaskListRules = {
     enabled: ({ editor }) => !isListInputBlocked(editor),
     trigger: ' ',
     match: ({ checked }) => (checked ? '[x]' : '[]'),
-    apply: ({ editor, checked }, match) => {
-      editor.tf.delete({ at: match.range });
-      toggleTaskList(editor, checked);
+    apply: ({ editor, checked, tx }, match) => {
+      tx.text.delete({ at: match.range });
+      toggleTaskList(editor, tx, checked);
 
       return true;
     },

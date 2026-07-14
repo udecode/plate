@@ -1,9 +1,9 @@
-import { type PlateEditor, usePluginOption } from 'platejs/react';
+import { type PlateEditor, usePluginOption } from '@platejs/core/react';
 
 import { AIChatPlugin } from '../AIChatPlugin';
 
 export function getLastAssistantMessage(editor: PlateEditor) {
-  const messages = editor.plugin(AIChatPlugin).getOptions().chat.messages;
+  const messages = editor.plugin(AIChatPlugin).getOptions().chat?.messages;
 
   return messages?.findLast((message) => message.role === 'assistant');
 }
@@ -14,5 +14,5 @@ export function useLastAssistantMessage() {
 
   if (toolName === 'comment') return;
 
-  return chat.messages?.findLast((message) => message.role === 'assistant');
+  return chat?.messages?.findLast((message) => message.role === 'assistant');
 }

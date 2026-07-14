@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'bun:test';
 
-import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin } from '@platejs/core';
+import { createPlateEditor } from '@platejs/core/react';
 
 import { BaseAIPlugin } from '../../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';
 
 describe('AIChatPlugin', () => {
   it('clears internal streaming state when stop is called', () => {
-    const editor = createSlateEditor({
+    const editor = createPlateEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
       value: [{ children: [{ text: 'x' }], type: 'p' }],
     });
@@ -17,11 +18,39 @@ describe('AIChatPlugin', () => {
     editor.plugin(AIChatPlugin).setOption('_blockPath', [0]);
     editor.plugin(AIChatPlugin).setOption('_mdxName', 'foo');
 
-    editor.getApi(AIChatPlugin).aiChat.stop();
+    editor.plugin(AIChatPlugin).api.stop();
 
     expect(editor.plugin(AIChatPlugin).getOption('streaming')).toBe(false);
     expect(editor.plugin(AIChatPlugin).getOption('_blockChunks')).toBe('');
     expect(editor.plugin(AIChatPlugin).getOption('_blockPath')).toBeNull();
     expect(editor.plugin(AIChatPlugin).getOption('_mdxName')).toBeNull();
+  });
+
+  it('matches the selection updated earlier in the active transaction', () => {
+    const editor = createPlateEditor({
+      plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+      selection: {
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      },
+      value: [
+        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: 'occupied' }], type: 'p' },
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      });
+      tx.text.insert(' ');
+    });
+
+    expect(editor.plugin(AIChatPlugin).getOption('open')).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '' }], type: 'p' },
+      { children: [{ text: 'occupied' }], type: 'p' },
+    ]);
   });
 });

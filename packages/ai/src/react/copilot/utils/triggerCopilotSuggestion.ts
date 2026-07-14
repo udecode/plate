@@ -1,40 +1,36 @@
-import { KEYS } from 'platejs';
-import { type PlateEditor, getEditorPlugin } from 'platejs/react';
+import { KEYS } from '@platejs/utils';
+import type { PlateEditor } from '@platejs/core/react';
 
 import type { CopilotPluginConfig } from '../CopilotPlugin';
 
 import { callCompletionApi } from './callCompletionApi';
 
 export const triggerCopilotSuggestion = async (editor: PlateEditor) => {
-  const { api, getOptions, setOption } = getEditorPlugin<CopilotPluginConfig>(
-    editor,
-    {
-      key: KEYS.copilot,
-    }
+  const { api, getOptions, setOption } = editor.plugin<CopilotPluginConfig>(
+    KEYS.copilot
   );
 
   const { completeOptions, getPrompt, isLoading, triggerQuery } = getOptions();
+  const chatStatus = editor.plugin({ key: KEYS.aiChat }).getOptions()
+    .chat?.status;
 
-  if (
-    isLoading ||
-    editor.plugin({ key: KEYS.aiChat }).getOptions().chat?.isLoading
-  ) {
+  if (isLoading || chatStatus === 'submitted' || chatStatus === 'streaming') {
     return false;
   }
-  if (!triggerQuery!({ editor })) return false;
+  if (!triggerQuery?.({ editor })) return false;
 
   // if (query && !queryEditor(editor, query)) return;
 
-  const prompt = getPrompt!({ editor });
+  const prompt = getPrompt?.({ editor });
 
-  if (prompt.length === 0) return false;
+  if (!prompt) return false;
 
-  api.copilot.stop();
+  api.stop();
 
   await callCompletionApi({
     prompt,
     onFinish: (_, completion) => {
-      api.copilot.setBlockSuggestion({ text: completion });
+      api.setBlockSuggestion({ text: completion });
     },
     ...completeOptions,
     setAbortController: (controller) =>

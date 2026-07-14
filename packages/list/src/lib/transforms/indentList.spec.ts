@@ -1,51 +1,61 @@
-import * as indentModule from '@platejs/indent';
-import { KEYS } from 'platejs';
+import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
+import { BaseIndentPlugin } from '@platejs/indent';
+import { KEYS } from '@platejs/utils';
 
 import { indentList, indentTodo } from './indentList';
+import { outdentList } from './outdentList';
 
 describe('indentList helpers', () => {
-  afterEach(() => {
-    mock.restore();
-  });
+  const createEditor = (element: Record<string, unknown>) =>
+    createBaseEditor({
+      plugins: [BaseParagraphPlugin, BaseIndentPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [{ children: [{ text: '' }], type: KEYS.p, ...element }],
+    });
 
-  it('configures setIndent for standard lists', () => {
-    const spy = spyOn(indentModule, 'setIndent').mockImplementation(() => {});
-    const editor = {} as any;
+  it('indents standard list blocks', () => {
+    const editor = createEditor({});
 
     indentList(editor, {
       at: [0],
-      listRestart: 5,
       listStyleType: 'square',
     });
 
-    expect(spy).toHaveBeenCalledTimes(1);
-
-    const [, options] = spy.mock.calls[0];
-
-    expect(options.at).toEqual([0]);
-    expect(options.listRestart).toBe(5);
-    expect(options.offset).toBe(1);
-    expect(options.setNodesProps()).toEqual({
+    expect(editor.read.children()[0]).toMatchObject({
+      [KEYS.indent]: 1,
       [KEYS.listType]: 'square',
     });
   });
 
-  it('configures setIndent for todo lists with unchecked state', () => {
-    const spy = spyOn(indentModule, 'setIndent').mockImplementation(() => {});
-    const editor = {} as any;
+  it('indents todo blocks with unchecked state', () => {
+    const editor = createEditor({});
 
     indentTodo(editor, {
       listStyleType: KEYS.listTodo,
     });
 
-    expect(spy).toHaveBeenCalledTimes(1);
-
-    const [, options] = spy.mock.calls[0];
-
-    expect(options.offset).toBe(1);
-    expect(options.setNodesProps()).toEqual({
+    expect(editor.read.children()[0]).toMatchObject({
+      [KEYS.indent]: 1,
       [KEYS.listChecked]: false,
       [KEYS.listType]: KEYS.listTodo,
+    });
+  });
+
+  it('outdents list blocks and removes list metadata at zero', () => {
+    const editor = createEditor({
+      [KEYS.indent]: 1,
+      [KEYS.listChecked]: false,
+      [KEYS.listType]: KEYS.listTodo,
+    });
+
+    outdentList(editor);
+
+    expect(editor.read.children()[0]).toEqual({
+      children: [{ text: '' }],
+      type: KEYS.p,
     });
   });
 });

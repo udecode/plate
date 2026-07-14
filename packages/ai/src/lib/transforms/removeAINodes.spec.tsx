@@ -1,10 +1,11 @@
-import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
 
+import { BaseAIPlugin } from '../BaseAIPlugin';
 import { removeAINodes } from './removeAINodes';
 
 describe('removeAINodes', () => {
   it('removes only text nodes marked with ai', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin],
       value: [
         {
@@ -14,9 +15,9 @@ describe('removeAINodes', () => {
       ],
     });
 
-    removeAINodes(editor);
+    editor.update((tx) => removeAINodes(editor, tx));
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         type: 'p',
         children: [{ text: ' two' }],
@@ -24,8 +25,8 @@ describe('removeAINodes', () => {
     ]);
   });
 
-  it('respects the at filter and leaves ai nodes outside it untouched', () => {
-    const editor = createSlateEditor({
+  it('removes only the explicit matching target', () => {
+    const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin],
       value: [
         { type: 'p', children: [{ ai: true, text: 'one' }] },
@@ -33,11 +34,27 @@ describe('removeAINodes', () => {
       ],
     });
 
-    removeAINodes(editor, { at: [1] });
+    editor.update((tx) => removeAINodes(editor, tx, { at: [1, 0] }));
 
-    expect(editor.children as any).toEqual([
+    expect(editor.read.children()).toEqual([
       { type: 'p', children: [{ ai: true, text: 'one' }] },
       { type: 'p', children: [{ text: '' }] },
+    ]);
+  });
+
+  it('removes AI nodes inserted earlier in the active transaction', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, BaseAIPlugin],
+      value: [{ type: 'p', children: [{ text: 'one' }] }],
+    });
+
+    editor.update((tx) => {
+      tx.nodes.insert({ ai: true, text: ' AI' }, { at: [0, 1] });
+      tx.ai.removeNodes();
+    });
+
+    expect(editor.read.children()).toEqual([
+      { type: 'p', children: [{ text: 'one' }] },
     ]);
   });
 });

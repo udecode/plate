@@ -1,10 +1,12 @@
+import type { BaseEditor } from '@platejs/core';
 import {
+  type Element,
   type ElementEntry,
   type Path,
-  type SlateEditor,
-  NodeApi,
-  PathApi,
-} from 'platejs';
+  ElementApi,
+} from '@platejs/plite';
+
+import type { ListTransaction } from '../BaseListPlugin';
 
 import { getListTypes } from '../queries/getListTypes';
 
@@ -39,7 +41,8 @@ export type MergeListItemIntoListOptions = {
  * `fromList` is defined).
  */
 export const moveListItemsToList = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: ListTransaction,
   {
     deleteFromList = true,
     fromList,
@@ -53,51 +56,54 @@ export const moveListItemsToList = (
   let fromListPath: Path | undefined;
   let moved: boolean | void = false;
 
-  editor.tf.withoutNormalizing(() => {
-    if (fromListItem) {
-      const fromListItemSublist = editor.api.descendant({
-        at: fromListItem[1],
-        match: {
-          type: getListTypes(editor),
-        },
-      });
+  if (fromListItem) {
+    const sublistIndex = fromListItem[0].children.findIndex(
+      (node) =>
+        ElementApi.isElement(node) && getListTypes(editor).includes(node.type)
+    );
 
-      if (!fromListItemSublist) return;
+    if (sublistIndex === -1) return;
 
-      fromListPath = fromListItemSublist?.[1];
-    } else if (fromList) {
-      fromListPath = fromList[1];
+    fromListPath = fromListItem[1].concat(sublistIndex);
+  } else if (fromList) {
+    fromListPath = fromList[1];
+  } else {
+    return;
+  }
+
+  let to: Path | null = null;
+
+  if (_to) to = _to;
+  if (toList) {
+    if (toListIndex === null) {
+      to = toList[1].concat([toList[0].children.length]);
     } else {
-      return;
+      to = toList[1].concat([toListIndex]);
     }
+  }
+  if (!to) return;
 
-    let to: Path | null = null;
+  const fromListNode = editor.read.nodes.get<Element>(fromListPath)?.[0];
 
-    if (_to) to = _to;
-    if (toList) {
-      if (toListIndex === null) {
-        const lastChildPath = NodeApi.lastChild(editor, toList[1])?.[1];
-        to = lastChildPath
-          ? PathApi.next(lastChildPath)
-          : toList[1].concat([0]);
-      } else {
-        to = toList[1].concat([toListIndex]);
-      }
-    }
-    if (!to) return;
+  if (!fromListNode) return;
 
-    moved = editor.tf.moveNodes({
-      at: fromListPath,
-      children: true,
-      fromIndex: fromStartIndex,
-      to,
-    });
+  const childRefs = fromListNode.children
+    .map((_, index) => fromListPath!.concat(index))
+    .slice(fromStartIndex)
+    .map((path) => tx.refs.path(path));
 
-    // Remove the empty list
-    if (deleteFromList) {
-      editor.tf.delete({ at: fromListPath });
-    }
-  });
+  for (const ref of childRefs.reverse()) {
+    const at = ref.unref();
+
+    if (at) tx.nodes.move({ at, to });
+  }
+
+  moved = childRefs.length > 0;
+
+  // Remove the empty list
+  if (deleteFromList) {
+    tx.nodes.remove({ at: fromListPath });
+  }
 
   return moved;
 };

@@ -1,4 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
+import { pipeDecorate } from '@platejs/core/static';
 import type { DecoratedRange, Element } from '@platejs/plite';
 import { createDataTransfer } from '@platejs/test-utils';
 import { KEYS } from '@platejs/utils';
@@ -26,29 +27,21 @@ describe('BaseCodeBlockPlugin', () => {
         },
       ],
     });
-    const plugin = editorWithCodeLine.getPlugin(BaseCodeBlockPlugin);
-    const query = plugin.inject.plugins?.[KEYS.html]?.parser?.query!;
     const editorWithoutCodeLine = createBaseEditor({
       plugins: [BaseCodeBlockPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
       value: [{ children: [{ text: '' }], type: 'p' }],
     });
-    const parserOptions = {
-      data: '',
-      dataTransfer: createDataTransfer(new Map()),
-      mimeType: 'text/html',
-    };
+    const html = new Map([['text/html', '<p>pasted</p>']]);
 
     expect(
-      query({
-        ...editorWithCodeLine.plugin(BaseCodeBlockPlugin),
-        ...parserOptions,
-      })
+      editorWithCodeLine.api.clipboard.insertData(createDataTransfer(html))
     ).toBe(false);
     expect(
-      query({
-        ...editorWithoutCodeLine.plugin(BaseCodeBlockPlugin),
-        ...parserOptions,
-      })
+      editorWithoutCodeLine.api.clipboard.insertData(createDataTransfer(html))
     ).toBe(true);
 
     expect(editorWithCodeLine.update.code_block.toggle).toEqual(
@@ -70,9 +63,7 @@ describe('BaseCodeBlockPlugin', () => {
         BaseCodeLinePlugin,
       ],
     });
-    const plugin = editor.getPlugin(BaseCodeBlockPlugin);
-    const context = editor.plugin(BaseCodeBlockPlugin);
-    const decorate = plugin.decorate;
+    const decorate = pipeDecorate(editor);
 
     if (!decorate) throw new Error('Expected code block decorate callback');
     const codeLine = {
@@ -90,28 +81,13 @@ describe('BaseCodeBlockPlugin', () => {
       },
     ] satisfies DecoratedRange[];
 
-    expect(
-      decorate({
-        ...context,
-        entry: [codeBlock, [0]],
-      })
-    ).toEqual([]);
+    expect(decorate([codeBlock, [0]])).toEqual([]);
     expect(setDecorationsSpy).toHaveBeenCalledWith(editor, [codeBlock, [0]]);
 
     decorationsModule.CODE_LINE_TO_DECORATIONS.set(codeLine, ranges);
 
-    expect(
-      decorate({
-        ...context,
-        entry: [codeLine, [0, 0]],
-      })
-    ).toEqual(ranges);
-    expect(
-      decorate({
-        ...context,
-        entry: [{ children: [], type: 'p' }, [1]],
-      })
-    ).toEqual([]);
+    expect(decorate([codeLine, [0, 0]])).toEqual(ranges);
+    expect(decorate([{ children: [], type: 'p' }, [1]])).toEqual([]);
   });
 
   it('clears cached decorations when the language changes without React', () => {

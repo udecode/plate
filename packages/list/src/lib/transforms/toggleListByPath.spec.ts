@@ -1,9 +1,10 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
+import { KEYS } from 'platejs';
 
 import { toggleListByPath, toggleListByPathUnSet } from './toggleListByPath';
 
 const createTransformEditor = (children: any[]) =>
-  createSlateEditor({
+  createBaseEditor({
     value: children,
   });
 
@@ -16,9 +17,9 @@ describe('toggleListByPath', () => {
       },
     ]);
 
-    toggleListByPath(editor, [editor.children[0], [0]], 'decimal');
+    toggleListByPath(editor, [editor.read.children()[0], [0]], 'decimal');
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         [KEYS.indent]: 1,
         [KEYS.listChecked]: false,
@@ -38,9 +39,9 @@ describe('toggleListByPath', () => {
       },
     ]);
 
-    toggleListByPath(editor, [editor.children[0], [0]], 'circle');
+    toggleListByPath(editor, [editor.read.children()[0], [0]], 'circle');
 
-    expect(editor.children[0]).toMatchObject({
+    expect(editor.read.children()[0]).toMatchObject({
       [KEYS.indent]: 3,
       [KEYS.listChecked]: false,
       [KEYS.listType]: 'circle',
@@ -59,9 +60,9 @@ describe('toggleListByPath', () => {
       },
     ]);
 
-    toggleListByPathUnSet(editor, [editor.children[0], [0]]);
+    toggleListByPathUnSet(editor, [editor.read.children()[0], [0]]);
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
         children: [{ text: 'Item' }],
         type: KEYS.p,

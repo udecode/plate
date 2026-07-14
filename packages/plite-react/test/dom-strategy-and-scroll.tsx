@@ -291,8 +291,7 @@ test('Editable domStrategy partial-DOM updates coverage when the hidden tail run
 
   await act(async () => {
     editor.update((tx) => {
-      tx.nodes.remove({ at: [7] });
-      tx.nodes.insert(
+      tx.nodes.replace(
         {
           type: 'paragraph',
           children: [{ text: 'replacement tail' }],

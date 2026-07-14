@@ -3,17 +3,8 @@ import ReactDOM from 'react-dom';
 
 export type PortalBodyProps = { children: React.ReactNode; element?: Element };
 
-export const PortalBody: ({
-  children,
-  element,
-}: PortalBodyProps) => React.ReactPortal = ({
-  children,
-  element,
-}: PortalBodyProps) => {
-  const container =
-    element || typeof window !== 'undefined' ? document.body : undefined;
+export const PortalBody = ({ children, element }: PortalBodyProps) => {
+  if (typeof document === 'undefined') return children;
 
-  if (!container) return children as any;
-
-  return ReactDOM.createPortal(children, element || document.body);
+  return ReactDOM.createPortal(children, element ?? document.body);
 };

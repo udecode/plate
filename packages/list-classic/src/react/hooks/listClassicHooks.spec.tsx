@@ -1,21 +1,21 @@
 import { renderHook } from '@testing-library/react';
-import * as actualPlatejs from 'platejs';
-import * as actualPlatejsReact from 'platejs/react';
+import * as actualCoreReact from '@platejs/core/react';
+import * as actualPliteReact from '@platejs/plite-react';
+import { KEYS } from '@platejs/utils';
 
 const useEditorRefMock = mock();
 const useEditorSelectorMock = mock();
-const useReadOnlyMock = mock();
+const useEditorReadOnlyMock = mock();
 
-mock.module('platejs', () => ({
-  ...actualPlatejs,
-  KEYS: { ...actualPlatejs.KEYS, ulClassic: 'ulClassic' },
-}));
-
-mock.module('platejs/react', () => ({
-  ...actualPlatejsReact,
+mock.module('@platejs/core/react', () => ({
+  ...actualCoreReact,
   useEditorRef: useEditorRefMock,
   useEditorSelector: useEditorSelectorMock,
-  useReadOnly: useReadOnlyMock,
+}));
+
+mock.module('@platejs/plite-react', () => ({
+  ...actualPliteReact,
+  useEditorReadOnly: useEditorReadOnlyMock,
 }));
 
 mock.module('../ListPlugin', () => ({
@@ -26,7 +26,7 @@ describe('list-classic hooks', () => {
   beforeEach(() => {
     useEditorRefMock.mockReset();
     useEditorSelectorMock.mockReset();
-    useReadOnlyMock.mockReset();
+    useEditorReadOnlyMock.mockReset();
   });
 
   afterAll(() => {
@@ -42,17 +42,17 @@ describe('list-classic hooks', () => {
     useEditorSelectorMock.mockImplementation((selector: any) =>
       selector({
         read: {
+          selection: () => ({}),
           nodes: {
             some: () => true,
           },
         },
         getType: (type: string) => type,
-        selection: {},
       })
     );
     useEditorRefMock.mockReturnValue({
-      getTransforms: () => ({
-        toggle: { list: listToggle },
+      plugin: () => ({
+        update: { toggle: { list: listToggle } },
       }),
     });
 
@@ -65,7 +65,7 @@ describe('list-classic hooks', () => {
     result.current.props.onClick();
 
     expect(result.current.props.pressed).toBe(true);
-    expect(listToggle).toHaveBeenCalledWith({ type: 'ulClassic' });
+    expect(listToggle).toHaveBeenCalledWith({ type: KEYS.ulClassic });
   });
 
   it('toggles classic todo items by element reference when editable', async () => {
@@ -76,9 +76,9 @@ describe('list-classic hooks', () => {
     const element = { checked: false, id: 'todo-1' };
 
     useEditorRefMock.mockReturnValue({
-      tf: { setNodes },
+      update: { nodes: { set: setNodes } },
     });
-    useReadOnlyMock.mockReturnValue(false);
+    useEditorReadOnlyMock.mockReturnValue(false);
 
     const { result } = renderHook(() => {
       const state = useTodoListElementState({ element } as any);

@@ -96,9 +96,7 @@ type PlateEditorRuntime = {
 type PlatePluginRuntime<P extends AnyPluginConfig = AnyPluginConfig> = {
   plugins: BaseEditorPlugins<P>;
   plugin: GetBasePluginContext;
-  getInjectProps: <C extends AnyPluginConfig = PluginConfig>(
-    plugin: WithRequiredKey<C>
-  ) => InjectNodeProps<C>;
+  getInjectProps: GetInjectProps;
   getOptionsStore: <C extends AnyPluginConfig>(
     plugin: WithRequiredKey<C>
   ) => TStateApi<
@@ -121,6 +119,13 @@ type GetBasePlugin = {
 };
 
 type PluginWithConfig = { readonly __config: AnyPluginConfig; key: string };
+
+type GetInjectProps = {
+  <P extends PluginWithConfig>(plugin: P): InjectNodeProps<InferConfig<P>>;
+  <C extends AnyPluginConfig = PluginConfig>(
+    plugin: WithRequiredKey<C>
+  ): InjectNodeProps<C>;
+};
 
 type GetBasePluginContext = {
   <P extends PluginWithConfig>(plugin: P): BasePluginContext<InferConfig<P>>;

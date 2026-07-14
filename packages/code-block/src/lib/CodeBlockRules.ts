@@ -19,8 +19,7 @@ export const CodeBlockRules = {
     enabled: ({ editor }) => !isCodeBlockInputBlocked(editor),
     priority: 100,
     apply: ({ editor, tx }, match) => {
-      tx.nodes.remove({ at: match.path });
-      tx.nodes.insert(
+      tx.nodes.replace(
         {
           children: [
             {
@@ -33,7 +32,7 @@ export const CodeBlockRules = {
         { at: match.path }
       );
 
-      const start = editor.read.points.start([...match.path, 0]);
+      const start = tx.points.start([...match.path, 0]);
 
       if (start) {
         tx.selection.set(start);

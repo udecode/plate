@@ -1,25 +1,29 @@
-import type { History, SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { EditorUpdateTransaction } from '@platejs/plite';
+import { defineStateField } from '@platejs/plite';
 
-export type AIBatch = History['undos'][number] & { ai?: boolean };
+export const aiBatchField = defineStateField({
+  key: 'ai.batch',
+  collab: 'local',
+  history: 'push',
+  initial: 0,
+});
 
 export const withAIBatch = (
-  editor: SlateEditor,
-  fn: () => void,
+  editor: BaseEditor,
+  fn: (tx: EditorUpdateTransaction) => void,
   {
     split,
   }: {
     split?: boolean;
   } = {}
 ) => {
-  if (split) {
-    editor.tf.withNewBatch(fn);
-  } else {
-    editor.tf.withMerging(fn);
-  }
+  const write = split
+    ? editor.update.history.newBatch
+    : editor.update.history.merge;
 
-  const lastBatch = editor.history.undos?.at(-1) as AIBatch | undefined;
-
-  if (lastBatch) {
-    lastBatch.ai = true;
-  }
+  write((tx) => {
+    tx.setField(aiBatchField, (batch) => batch + 1);
+    fn(tx);
+  });
 };

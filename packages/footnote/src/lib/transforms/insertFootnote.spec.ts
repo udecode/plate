@@ -193,7 +193,7 @@ describe('insertFootnote', () => {
       ]),
     });
     expect(editor.read.value().children).toHaveLength(5);
-    expect(editor.read.value().children[4]).toMatchObject({
+    expect(editor.read.nodes.get([4])?.[0]).toMatchObject({
       identifier: '2',
       type: 'footnoteDefinition',
     });

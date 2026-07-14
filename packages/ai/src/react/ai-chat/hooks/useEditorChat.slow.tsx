@@ -1,79 +1,52 @@
+import React from 'react';
+
 import { renderHook } from '@testing-library/react';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { BaseParagraphPlugin } from '@platejs/core';
+import { Plate, createPlateEditor } from '@platejs/core/react';
 
-const useEditorPluginMock = mock();
-const usePluginOptionMock = mock();
-const getEditorPluginMock = mock();
-
-mock.module('../AIChatPlugin', () => ({
-  AIChatPlugin: { key: 'aiChat' },
-}));
-
-mock.module('platejs/react', async () => {
-  const actual = await import(
-    new URL('../../../../../plate/dist/react/index.js', import.meta.url).href
-  );
-  const getEditorPlugin = actual.getEditorPlugin as any;
-  const useEditorPlugin = actual.useEditorPlugin as any;
-  const usePluginOption = actual.usePluginOption as any;
-
-  return {
-    ...actual,
-    getEditorPlugin: (...args: any[]) =>
-      (getEditorPluginMock as any)(...args) ?? getEditorPlugin(...args),
-    useEditorPlugin: (...args: any[]) =>
-      (useEditorPluginMock as any)(...args) ?? useEditorPlugin(...args),
-    usePluginOption: (...args: any[]) =>
-      (usePluginOptionMock as any)(...args) ?? usePluginOption(...args),
-  };
-});
-
-mock.module('@platejs/selection/react', () => ({
-  BlockSelectionPlugin: { key: 'blockSelection' },
-}));
-
-const loadModule = async () =>
-  import(`./useEditorChat?test=${Math.random().toString(36).slice(2)}`);
+import { BaseAIPlugin } from '../../../lib/BaseAIPlugin';
+import { AIChatPlugin } from '../AIChatPlugin';
+import { useEditorChat } from './useEditorChat';
 
 describe('useEditorChat', () => {
-  beforeEach(() => {
-    getEditorPluginMock.mockReset();
-    useEditorPluginMock.mockReset();
-    usePluginOptionMock.mockReset();
-  });
-
-  afterAll(() => {
-    mock.restore();
-  });
-
-  it('routes open state to block selection callbacks before cursor or text selection', async () => {
+  it('routes open state to selected blocks before cursor or text selection', () => {
     const onOpenBlockSelection = mock();
     const onOpenCursor = mock();
     const onOpenSelection = mock();
-
-    usePluginOptionMock.mockReturnValue(true);
-    useEditorPluginMock.mockReturnValue({
-      editor: {
-        api: {
-          blockSelection: {
-            getNodes: () => [[{ id: 'b1' }, [0]]],
-          },
-          isCollapsed: () => true,
-          isExpanded: () => false,
-        },
-        getOption: () => true,
-      },
+    const editor = createPlateEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        BaseAIPlugin,
+        BlockSelectionPlugin,
+        AIChatPlugin,
+      ],
+      value: [
+        { children: [{ text: 'one' }], id: 'b1', type: 'p' },
+        { children: [{ text: 'two' }], id: 'b2', type: 'p' },
+      ],
     });
-
-    const { useEditorChat } = await loadModule();
-    renderHook(() =>
-      useEditorChat({
-        onOpenBlockSelection,
-        onOpenCursor,
-        onOpenSelection,
-      })
+    editor
+      .plugin(BlockSelectionPlugin)
+      .setOption('selectedIds', new Set(['b1']));
+    editor.plugin(AIChatPlugin).setOption('open', true);
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <Plate editor={editor}>{children}</Plate>
     );
 
-    expect(onOpenBlockSelection).toHaveBeenCalledWith([[{ id: 'b1' }, [0]]]);
+    renderHook(
+      () =>
+        useEditorChat({
+          onOpenBlockSelection,
+          onOpenCursor,
+          onOpenSelection,
+        }),
+      { wrapper }
+    );
+
+    expect(onOpenBlockSelection).toHaveBeenCalledWith([
+      [{ children: [{ text: 'one' }], id: 'b1', type: 'p' }, [0]],
+    ]);
     expect(onOpenCursor).not.toHaveBeenCalled();
     expect(onOpenSelection).not.toHaveBeenCalled();
   });

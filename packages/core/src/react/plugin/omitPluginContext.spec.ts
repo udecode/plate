@@ -5,7 +5,6 @@ describe('omitPluginContext (plate)', () => {
     const ctx = {
       api: { remove: true },
       editor: { id: 'editor' },
-      editorApi: { remove: true },
       extra: 'kept',
       getOption: () => 'option',
       getOptions: () => ({ value: 1 }),
@@ -14,6 +13,7 @@ describe('omitPluginContext (plate)', () => {
       setOption: () => {},
       setOptions: () => {},
       type: 'plugin',
+      update: () => {},
     };
 
     expect(omitPluginContext(ctx as any)).toEqual({
@@ -21,7 +21,6 @@ describe('omitPluginContext (plate)', () => {
       nested: { value: 2 },
     });
     expect(ctx).toHaveProperty('api');
-    expect(ctx).toHaveProperty('editorApi');
     expect(ctx).toHaveProperty('plugin');
   });
 });

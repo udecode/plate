@@ -163,8 +163,7 @@ export const shouldMergeExplicitBatch = (
 
   if (
     saveableOperations.length === 0 ||
-    previousSaveableOperations.length === 0 ||
-    previousBatch.statePatches.length > 0
+    previousSaveableOperations.length === 0
   ) {
     return false;
   }

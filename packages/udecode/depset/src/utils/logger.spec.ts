@@ -1,14 +1,22 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+  type Mock,
+} from 'bun:test';
 
 import { highlighter, logger } from './logger';
 
 describe('logger', () => {
   const originalLog = console.log;
-  let logMock: ReturnType<typeof mock>;
+  let logMock: Mock<(...args: unknown[]) => void>;
 
   beforeEach(() => {
-    logMock = mock(() => {});
-    console.log = logMock as typeof console.log;
+    logMock = mock((..._args: unknown[]) => {});
+    console.log = logMock;
   });
 
   afterEach(() => {

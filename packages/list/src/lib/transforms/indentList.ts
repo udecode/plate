@@ -1,12 +1,12 @@
-import type { SlateEditor, TLocation } from 'platejs';
-
-import { setIndent } from '@platejs/indent';
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import { BaseIndentPlugin } from '@platejs/indent';
+import type { Location } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { ListStyleType } from '../types';
 
 export type ListOptions = {
-  at?: TLocation;
+  at?: Location;
   listRestart?: number;
   listRestartPolite?: number;
   listStyleType?: ListStyleType | string;
@@ -14,28 +14,28 @@ export type ListOptions = {
 
 /** Increase the indentation of the selected blocks. */
 export const indentList = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { listStyleType = ListStyleType.Disc, ...options }: ListOptions = {}
 ) => {
-  setIndent(editor, {
+  editor.plugin(BaseIndentPlugin).update.set({
+    nodes: { at: options.at },
     offset: 1,
-    setNodesProps: () => ({
+    setNodeProps: () => ({
       [KEYS.listType]: listStyleType,
     }),
-    ...options,
   });
 };
 
 export const indentTodo = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   { listStyleType = ListStyleType.Disc, ...options }: ListOptions = {}
 ) => {
-  setIndent(editor, {
+  editor.plugin(BaseIndentPlugin).update.set({
+    nodes: { at: options.at },
     offset: 1,
-    setNodesProps: () => ({
+    setNodeProps: () => ({
       [KEYS.listChecked]: false,
       [KEYS.listType]: listStyleType,
     }),
-    ...options,
   });
 };

@@ -5,6 +5,36 @@ import React from 'react';
 import { createSlotComponent } from './createSlotComponent';
 import { useComposedRef } from './useComposedRef';
 
+type DataAttributes = {
+  [key: `data-${string}`]: unknown;
+};
+
+type PrimitiveHookProps<P> = Partial<P> &
+  Partial<DataAttributes> & {
+    className?: string;
+    style?: React.CSSProperties;
+  };
+
+type PrimitiveHookResult<HookProps, Ref> = {
+  hidden?: boolean;
+  props?: HookProps;
+  ref?: React.Ref<Ref>;
+};
+
+type PrimitiveConfig<Options, State, HookProps, Ref> =
+  | {
+      propsHook?: (state: State) => PrimitiveHookResult<HookProps, Ref>;
+      stateHook: (options: Options) => State;
+    }
+  | {
+      propsHook?: () => PrimitiveHookResult<HookProps, Ref>;
+      stateHook?: never;
+    };
+
+type PrimitiveOptionsProp<Options> = undefined extends Options
+  ? { options?: Options }
+  : { options: Options };
+
 /**
  * Primitive component factory. It uses hooks for managing state and props, and
  * forwards references to child components. Component props:
@@ -36,32 +66,31 @@ export const createPrimitiveComponent = <
 >(
   element: T
 ) => {
-  const Comp = createSlotComponent<T, P>(element);
+  const Comp = createSlotComponent(element);
 
-  return <SH extends (options: any) => any, PH extends (state: any) => any>({
-    propsHook,
-    stateHook,
-  }: {
-    propsHook?: PH;
-    stateHook?: SH;
-  } = {}) =>
+  return <Options, State, HookProps extends PrimitiveHookProps<P>>(
+    config: PrimitiveConfig<
+      Options,
+      State,
+      HookProps,
+      React.ComponentRef<T>
+    > = {}
+  ) =>
     React.forwardRef<
-      any,
-      {
+      React.ComponentRef<T>,
+      PrimitiveOptionsProp<Options> & {
         as?: React.ElementType;
         asChild?: boolean;
         className?: string;
-        options?: Parameters<SH>[0];
-        state?: Parameters<PH>[0];
+        state?: State;
         style?: React.CSSProperties;
-        setProps?: (hookProps: NonNullable<ReturnType<PH>['props']>) => P;
+        setProps?: (hookProps: HookProps) => PrimitiveHookProps<P>;
       } & P
     >(
       (
         {
           asChild,
           className: classNameProp,
-          getClassName,
           options,
           setProps,
           state: stateProp,
@@ -70,18 +99,12 @@ export const createPrimitiveComponent = <
         },
         ref
       ) => {
-        const state = isDefined(stateProp)
-          ? stateProp
-          : stateHook
-            ? stateHook(options as any)
-            : undefined;
-        const {
-          hidden,
-          props: hookProps,
-          ref: hookRef,
-        } = propsHook
-          ? propsHook(state)
-          : { hidden: false, props: {}, ref: null };
+        const hookResult = config.stateHook
+          ? config.propsHook?.(
+              isDefined(stateProp) ? stateProp : config.stateHook(options)
+            )
+          : config.propsHook?.();
+        const { hidden, props: hookProps, ref: hookRef } = hookResult ?? {};
 
         const _ref = useComposedRef(ref, hookRef);
         const className =
@@ -93,7 +116,7 @@ export const createPrimitiveComponent = <
             ? { ...hookProps?.style, ...styleProp }
             : undefined;
 
-        if (!asChild && hidden) return null;
+        if (hidden) return null;
 
         return (
           <Comp
@@ -103,7 +126,7 @@ export const createPrimitiveComponent = <
             className={className}
             style={style}
             {...props}
-            {...(setProps?.(hookProps ?? {}) ?? {})}
+            {...(hookProps ? setProps?.(hookProps) : undefined)}
           />
         );
       }

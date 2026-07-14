@@ -29,6 +29,6 @@ describe('createPrimitiveElement', () => {
 
     const { getByTestId } = render(<Input ref={ref} data-testid="input" />);
 
-    expect(ref.current).toBe(getByTestId('input') as HTMLInputElement);
+    expect(ref.current === getByTestId('input')).toBe(true);
   });
 });

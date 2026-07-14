@@ -7,9 +7,11 @@ import { withProps } from './withProps';
 /**
  * Set default `className` with `cn`.
  */
-export function withCn<T extends React.ComponentType<any>>(
-  Component: T,
+export function withCn<T extends React.ElementType>(
+  Component: 'className' extends keyof React.ComponentPropsWithoutRef<T>
+    ? T
+    : never,
   ...inputs: CxOptions
 ) {
-  return withProps(Component, { className: cn(inputs) } as any);
+  return withProps<T>(Component, { className: cn(inputs) });
 }

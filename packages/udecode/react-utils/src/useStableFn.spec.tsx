@@ -3,7 +3,7 @@ import { renderHook } from '@testing-library/react';
 import { useStableFn } from './useStableFn';
 
 describe('useStableFn', () => {
-  it('keeps the callback identity stable when deps do not change', () => {
+  it('keeps the callback identity stable across rerenders', () => {
     const { result, rerender } = renderHook(
       ({ dep, value }) => useStableFn(() => value, [dep]),
       {
@@ -31,7 +31,7 @@ describe('useStableFn', () => {
     expect(result.current()).toBe('two');
   });
 
-  it('changes the callback identity only when deps change', () => {
+  it('changes the callback identity only when dependencies change', () => {
     const { result, rerender } = renderHook(
       ({ dep, value }) => useStableFn(() => value, [dep]),
       {

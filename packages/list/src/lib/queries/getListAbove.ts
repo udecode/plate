@@ -1,17 +1,19 @@
 import {
-  type Editor,
   type EditorAboveOptions,
-  type ElementOf,
+  type Editor,
+  type Element,
   type NodeEntry,
-  isDefined,
-  KEYS,
-} from 'platejs';
+  ElementApi,
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
+import { isDefined } from '@udecode/utils';
 
-export const getListAbove = <N extends ElementOf<E>, E extends Editor = Editor>(
-  editor: E,
-  options?: Omit<EditorAboveOptions, 'match'>
+export const getListAbove = <N extends Element = Element>(
+  editor: Editor,
+  options?: Omit<EditorAboveOptions<N>, 'match'>
 ): NodeEntry<N> | undefined =>
-  editor.api.above({
+  editor.read.nodes.above<N>({
     ...options,
-    match: (node) => isDefined(node[KEYS.listType]),
+    match: (node) =>
+      ElementApi.isElement(node) && isDefined(node[KEYS.listType]),
   });

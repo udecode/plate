@@ -1,29 +1,32 @@
 import { deserializeInlineMd } from '@platejs/markdown';
-import { KEYS } from 'platejs';
-import { type PlateEditor, getEditorPlugin } from 'platejs/react';
+import type { EditorUpdateTransaction } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
+import type { PlateEditor } from '@platejs/core/react';
 
 import type { CopilotPluginConfig } from '../CopilotPlugin';
+import { copilotSuggestionField } from '../withCopilot';
 
 import { withoutAbort } from '../utils';
 
-export const acceptCopilotNextWord = (editor: PlateEditor) => {
-  const { api, getOptions } = getEditorPlugin<CopilotPluginConfig>(editor, {
-    key: KEYS.copilot,
-  });
+export const acceptCopilotNextWord = (
+  editor: PlateEditor,
+  tx: EditorUpdateTransaction
+) => {
+  const { getOptions } = editor.plugin<CopilotPluginConfig>(KEYS.copilot);
 
-  const { getNextWord, suggestionText } = getOptions();
+  const { getNextWord, suggestionNodeId, suggestionText } = getOptions();
 
-  if (!suggestionText?.length) {
+  if (!getNextWord || !suggestionText?.length) {
     return false;
   }
 
-  const { firstWord, remainingText } = getNextWord!({ text: suggestionText });
-
-  api.copilot.setBlockSuggestion({
-    text: remainingText,
-  });
+  const { firstWord, remainingText } = getNextWord({ text: suggestionText });
 
   withoutAbort(editor, () => {
-    editor.tf.insertFragment(deserializeInlineMd(editor, firstWord));
+    tx.setField(copilotSuggestionField, {
+      id: suggestionNodeId ?? null,
+      text: remainingText,
+    });
+    tx.fragment.insert(deserializeInlineMd(editor, firstWord));
   });
 };

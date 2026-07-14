@@ -1,62 +1,83 @@
-import { withAIBatch } from './withAIBatch';
+import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
+
+import { BaseAIPlugin } from '../BaseAIPlugin';
+import { aiBatchField, withAIBatch } from './withAIBatch';
+
+const createEditor = () =>
+  createBaseEditor({
+    plugins: [BaseParagraphPlugin, BaseAIPlugin],
+    selection: {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    },
+    value: [{ children: [{ text: '' }], type: 'p' }],
+  });
 
 describe('withAIBatch', () => {
-  it('uses withMerging by default and tags the last undo batch', () => {
-    const batch = {};
-    let called = false;
-    const fn = () => {
-      called = true;
-    };
-    const withMerging = mock((cb: () => void) => cb());
-    const withNewBatch = mock(() => {});
-    const editor = {
-      history: { undos: [batch] },
-      tf: { withMerging, withNewBatch },
-    } as any;
+  it('tags a merged AI write with state tracked by history', () => {
+    const editor = createEditor();
 
-    withAIBatch(editor, fn);
+    withAIBatch(editor, (tx) => {
+      tx.text.insert('ai');
+    });
 
-    expect(withMerging).toHaveBeenCalledTimes(1);
-    expect(withNewBatch).not.toHaveBeenCalled();
-    expect(called).toBe(true);
-    expect(batch).toMatchObject({ ai: true });
+    const [batch] = editor.read.history.undos();
+
+    expect(editor.read.text.string([])).toBe('ai');
+    expect(batch?.statePatches).toContainEqual(
+      expect.objectContaining({ key: aiBatchField.key })
+    );
   });
 
-  it('uses withNewBatch when split is true', () => {
-    const batch = {};
-    let called = false;
-    const fn = () => {
-      called = true;
-    };
-    const withMerging = mock(() => {});
-    const withNewBatch = mock((cb: () => void) => cb());
-    const editor = {
-      history: { undos: [batch] },
-      tf: { withMerging, withNewBatch },
-    } as any;
+  it('starts a fresh batch when split is true', () => {
+    const editor = createEditor();
 
-    withAIBatch(editor, fn, { split: true });
+    editor.update.text.insert('before');
+    withAIBatch(
+      editor,
+      (tx) => {
+        tx.text.insert(' ai');
+      },
+      { split: true }
+    );
 
-    expect(withNewBatch).toHaveBeenCalledTimes(1);
-    expect(withMerging).not.toHaveBeenCalled();
-    expect(called).toBe(true);
-    expect(batch).toMatchObject({ ai: true });
+    expect(editor.read.history.undos()).toHaveLength(2);
+
+    editor.update.history.undo();
+
+    expect(editor.read.text.string([])).toBe('before');
   });
 
-  it('is a safe no-op when no undo batch exists yet', () => {
-    let called = false;
-    const fn = () => {
-      called = true;
-    };
-    const withMerging = mock((cb: () => void) => cb());
-    const editor = {
-      history: { undos: [] },
-      tf: { withMerging, withNewBatch: mock(() => {}) },
-    } as any;
+  it('records an AI batch even when the callback has no document writes', () => {
+    const editor = createEditor();
 
-    expect(() => withAIBatch(editor, fn)).not.toThrow();
-    expect(withMerging).toHaveBeenCalledTimes(1);
-    expect(called).toBe(true);
-    expect(editor.history.undos).toEqual([]);
+    withAIBatch(editor, () => {});
+
+    expect(editor.read.history.undos()).toHaveLength(1);
+    expect(editor.read.history.undos()[0]?.statePatches).toContainEqual(
+      expect.objectContaining({ key: aiBatchField.key })
+    );
+  });
+
+  it('merges consecutive AI chunks into one undo batch', () => {
+    const editor = createEditor();
+
+    withAIBatch(
+      editor,
+      (tx) => {
+        tx.nodes.insert({ ai: true, text: 'first' }, { at: [0, 1] });
+      },
+      { split: true }
+    );
+    withAIBatch(editor, (tx) => {
+      tx.nodes.insert({ ai: true, text: ' second' }, { at: [0, 1] });
+    });
+
+    expect(editor.read.text.string([])).toBe('first second');
+    expect(editor.read.history.undos()).toHaveLength(1);
+
+    editor.update.history.undo();
+
+    expect(editor.read.text.string([])).toBe('');
   });
 });

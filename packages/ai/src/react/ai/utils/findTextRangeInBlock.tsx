@@ -1,5 +1,5 @@
 import { distance } from 'fastest-levenshtein';
-import { type NodeEntry, type Path, type Range, NodeApi } from 'platejs';
+import { type NodeEntry, type Path, type Range, NodeApi } from '@platejs/plite';
 
 function maxAllowedDistance(len: number): number {
   if (len <= 2) return 0;

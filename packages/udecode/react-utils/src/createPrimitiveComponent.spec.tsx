@@ -36,20 +36,18 @@ describe('createPrimitiveComponent', () => {
       <Button
         className="from-prop"
         options={{ active: true }}
-        setProps={(hookProps) =>
-          ({
-            'data-hook-class': String(
-              String(hookProps.className).includes('from-hook')
-            ),
-          }) as any
-        }
+        setProps={(hookProps) => ({
+          'data-hook-class': String(
+            String(hookProps.className).includes('from-hook')
+          ),
+        })}
         style={{ color: 'blue', margin: '2px' }}
       >
         Click
       </Button>
     );
 
-    const button = getByRole('button', { name: 'Click' }) as HTMLButtonElement;
+    const button = getByRole('button', { name: 'Click' });
 
     expect(stateHookCalls).toEqual([{ active: true }]);
     expect(propsHookCalls).toEqual([{ active: true }]);
@@ -60,7 +58,7 @@ describe('createPrimitiveComponent', () => {
     expect(button.style.padding).toBe('1px');
     expect(button.getAttribute('data-active')).toBe('true');
     expect(button.getAttribute('data-hook-class')).toBe('true');
-    expect(hookRefCalls).toContain(button);
+    expect(hookRefCalls.some((node) => node === button)).toBe(true);
   });
 
   it('bypasses stateHook when an explicit state prop is provided', () => {
@@ -101,6 +99,20 @@ describe('createPrimitiveComponent', () => {
     expect(container.firstChild).toBeNull();
   });
 
+  it('returns null when an asChild primitive is hidden', () => {
+    const HiddenSlot = createPrimitiveComponent('div')({
+      propsHook: () => ({ hidden: true, props: {} }),
+    });
+
+    const { container } = render(
+      <HiddenSlot asChild>
+        <button>Hidden</button>
+      </HiddenSlot>
+    );
+
+    expect(container.firstChild).toBeNull();
+  });
+
   it('forwards refs to both the hook ref and the external ref', () => {
     const hookRef = React.createRef<HTMLButtonElement>();
     const externalRef = React.createRef<HTMLButtonElement>();
@@ -110,9 +122,9 @@ describe('createPrimitiveComponent', () => {
 
     const { getByRole } = render(<Button ref={externalRef}>Click</Button>);
 
-    const button = getByRole('button', { name: 'Click' }) as HTMLButtonElement;
+    const button = getByRole('button', { name: 'Click' });
 
-    expect(hookRef.current).toBe(button);
-    expect(externalRef.current).toBe(button);
+    expect(hookRef.current === button).toBe(true);
+    expect(externalRef.current === button).toBe(true);
   });
 });

@@ -1,10 +1,10 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
 
 import { createRuleFactory, KEYS } from 'platejs';
 
 import { toggleList } from './transforms';
 
-const isListInputBlocked = (editor: SlateEditor) =>
+const isListInputBlocked = (editor: BaseEditor) =>
   editor.read.nodes.some({
     match: {
       type: [editor.getType(KEYS.codeBlock)],
@@ -25,7 +25,7 @@ export const OrderedListRules = {
       start: Number((match as RegExpMatchArray)[1]),
     }),
     apply: ({ editor }, match) => {
-      editor.tf.delete({ at: match.range });
+      editor.update.text.delete({ at: match.range });
       toggleList(editor, {
         listRestartPolite: match.start || 1,
         listStyleType: KEYS.ol,

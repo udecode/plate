@@ -1,13 +1,13 @@
 import { renderHook } from '@testing-library/react';
+import * as actualCoreReact from '@platejs/core/react';
 import * as actualPlatejs from 'platejs';
-import * as actualPlatejsReact from 'platejs/react';
 
 const useEditorRefMock = mock();
 const useEditorSelectorMock = mock();
 const useElementMock = mock();
-const useFocusedMock = mock();
-const useReadOnlyMock = mock();
-const useSelectedMock = mock();
+const useEditorFocusedMock = mock();
+const useEditorReadOnlyMock = mock();
+const useElementSelectedMock = mock();
 const usePlaceholderSetMock = mock();
 const usePlaceholderValueMock = mock();
 
@@ -16,14 +16,17 @@ mock.module('platejs', () => ({
   KEYS: { ...actualPlatejs.KEYS, placeholder: 'placeholder' },
 }));
 
-mock.module('platejs/react', () => ({
-  ...actualPlatejsReact,
+mock.module('@platejs/plite-react', () => ({
+  useEditorFocused: useEditorFocusedMock,
+  useEditorReadOnly: useEditorReadOnlyMock,
+  useElementSelected: useElementSelectedMock,
+}));
+
+mock.module('@platejs/core/react', () => ({
+  ...actualCoreReact,
   useEditorRef: useEditorRefMock,
   useEditorSelector: useEditorSelectorMock,
   useElement: useElementMock,
-  useFocused: useFocusedMock,
-  useReadOnly: useReadOnlyMock,
-  useSelected: useSelectedMock,
 }));
 
 mock.module('../placeholderStore', () => ({
@@ -36,9 +39,9 @@ describe('usePlaceholderPopoverState', () => {
     useEditorRefMock.mockReset();
     useEditorSelectorMock.mockReset();
     useElementMock.mockReset();
-    useFocusedMock.mockReset();
-    useReadOnlyMock.mockReset();
-    useSelectedMock.mockReset();
+    useEditorFocusedMock.mockReset();
+    useEditorReadOnlyMock.mockReset();
+    useElementSelectedMock.mockReset();
     usePlaceholderSetMock.mockReset();
     usePlaceholderValueMock.mockReset();
   });
@@ -58,9 +61,9 @@ describe('usePlaceholderPopoverState', () => {
     useEditorRefMock.mockReturnValue({ id: 'editor' });
     useEditorSelectorMock.mockReturnValue(true);
     useElementMock.mockReturnValue({ id: 'ph-1', mediaType: 'image' });
-    useFocusedMock.mockReturnValue(true);
-    useReadOnlyMock.mockReturnValue(false);
-    useSelectedMock.mockReturnValue(true);
+    useEditorFocusedMock.mockReturnValue(true);
+    useEditorReadOnlyMock.mockReturnValue(false);
+    useElementSelectedMock.mockReturnValue(true);
     usePlaceholderSetMock
       .mockReturnValueOnce(setProgresses)
       .mockReturnValueOnce(setUploading)

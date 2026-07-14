@@ -1,4 +1,12 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+  type Mock,
+} from 'bun:test';
 
 import { ZodError } from 'zod';
 
@@ -6,20 +14,23 @@ import { highlighter, logger } from './logger';
 import { handleError } from './handle-error';
 
 describe('handleError', () => {
+  const exitError = new Error('process.exit');
   const originalExit = process.exit;
   const originalBreak = logger.break;
   const originalError = logger.error;
-  let breakMock: ReturnType<typeof mock>;
-  let errorMock: ReturnType<typeof mock>;
-  let exitMock: ReturnType<typeof mock>;
+  let breakMock: Mock<typeof logger.break>;
+  let errorMock: Mock<typeof logger.error>;
+  let exitMock: Mock<typeof process.exit>;
 
   beforeEach(() => {
     breakMock = mock(() => {});
-    errorMock = mock(() => {});
-    logger.break = breakMock as typeof logger.break;
-    logger.error = errorMock as typeof logger.error;
-    exitMock = mock(() => undefined as never);
-    process.exit = exitMock as unknown as typeof process.exit;
+    errorMock = mock((..._args: unknown[]) => {});
+    logger.break = breakMock;
+    logger.error = errorMock;
+    exitMock = mock((_code?: string | number | null): never => {
+      throw exitError;
+    });
+    process.exit = exitMock;
   });
 
   afterEach(() => {
@@ -29,7 +40,7 @@ describe('handleError', () => {
   });
 
   it('prints the generic header and string errors before exiting', () => {
-    handleError('bad input');
+    expect(() => handleError('bad input')).toThrow(exitError);
 
     expect(errorMock).toHaveBeenNthCalledWith(
       1,
@@ -54,7 +65,7 @@ describe('handleError', () => {
       },
     ]);
 
-    handleError(error);
+    expect(() => handleError(error)).toThrow(exitError);
 
     expect(errorMock).toHaveBeenNthCalledWith(2, 'Validation failed:');
     expect(errorMock).toHaveBeenNthCalledWith(
@@ -65,7 +76,7 @@ describe('handleError', () => {
   });
 
   it('prints error.message for Error instances', () => {
-    handleError(new Error('boom'));
+    expect(() => handleError(new Error('boom'))).toThrow(exitError);
 
     expect(errorMock).toHaveBeenNthCalledWith(2, 'boom');
     expect(exitMock).toHaveBeenCalledWith(1);

@@ -1,11 +1,9 @@
-import {
-  type EditorNodesOptions,
-  type Path,
-  type PathRef,
-  type SlateEditor,
-  KEYS,
-  PathApi,
-} from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { EditorNodesOptions } from '@platejs/plite';
+import { type Element, type Path, type PathRef, PathApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
+
+import type { ListTransaction } from '../BaseListPlugin';
 
 import { isListNested } from '../queries/isListNested';
 import { moveListItemDown } from './moveListItemDown';
@@ -13,20 +11,21 @@ import { moveListItemUp } from './moveListItemUp';
 import { removeFirstListItem } from './removeFirstListItem';
 
 export type MoveListItemsOptions = {
-  at?: EditorNodesOptions['at'];
+  at?: EditorNodesOptions<Element>['at'];
   enableResetOnShiftTab?: boolean;
   increase?: boolean;
 };
 
 export const moveListItems = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: ListTransaction,
   {
-    at = editor.selection ?? undefined,
+    at = editor.read.selection() ?? undefined,
     enableResetOnShiftTab,
     increase = true,
   }: MoveListItemsOptions = {}
 ) => {
-  const _nodes = editor.api.nodes({
+  const _nodes = editor.read.nodes.entries({
     at,
     match: {
       type: editor.getType(KEYS.lic),
@@ -54,7 +53,7 @@ export const moveListItems = (
 
     if (!isAncestor) {
       highestLicPaths.push(licPath);
-      highestLicPathRefs.push(editor.update.refs.path(licPath));
+      highestLicPathRefs.push(tx.refs.path(licPath));
     }
   });
 
@@ -62,7 +61,7 @@ export const moveListItems = (
     ? highestLicPathRefs
     : highestLicPathRefs.reverse();
 
-  return editor.tf.withoutNormalizing(() => {
+  {
     let moved = false;
 
     licPathRefsToMove.forEach((licPathRef) => {
@@ -70,38 +69,38 @@ export const moveListItems = (
 
       if (!licPath) return;
 
-      const listItem = editor.api.parent(licPath);
+      const listItem = editor.read.nodes.parent(licPath);
 
       if (!listItem) return;
 
-      const parentList = editor.api.parent(listItem[1]);
+      const parentList = editor.read.nodes.parent(listItem[1]);
 
       if (!parentList) return;
 
-      let _moved: any;
+      let itemMoved = false;
 
       if (increase) {
-        _moved = moveListItemDown(editor, {
-          list: parentList as any,
-          listItem: listItem as any,
+        itemMoved = !!moveListItemDown(editor, tx, {
+          list: parentList as [Element, Path],
+          listItem: listItem as [Element, Path],
         });
       } else if (isListNested(editor, parentList[1])) {
         // un-indent a sub-list item
-        _moved = moveListItemUp(editor, {
-          list: parentList as any,
-          listItem: listItem as any,
+        itemMoved = !!moveListItemUp(editor, tx, {
+          list: parentList as [Element, Path],
+          listItem: listItem as [Element, Path],
         });
       } else if (enableResetOnShiftTab) {
         // unindenting a top level list item, effectively breaking apart the list.
-        _moved = removeFirstListItem(editor, {
-          list: parentList as any,
-          listItem: listItem as any,
+        itemMoved = removeFirstListItem(editor, tx, {
+          list: parentList as [Element, Path],
+          listItem: listItem as [Element, Path],
         });
       }
 
-      moved = _moved || moved;
+      moved = itemMoved || moved;
     });
 
     return moved;
-  });
+  }
 };

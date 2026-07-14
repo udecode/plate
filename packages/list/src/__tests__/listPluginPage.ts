@@ -1,4 +1,4 @@
-import { type TElement, NodeApi, PathApi } from 'platejs';
+import { type Element, PathApi } from '@platejs/plite';
 
 import { type GetSiblingListOptions, BaseListPlugin } from '../lib';
 
@@ -7,11 +7,12 @@ export const listPluginPage = BaseListPlugin.extend(({ editor }) => ({
     getSiblingListOptions: {
       getNextEntry: ([, path]: any) => {
         const nextPath = PathApi.next(path);
-        const nextNode = NodeApi.get<TElement>(editor, nextPath);
+        const nextNode = editor.read.nodes.get<Element>(nextPath)?.[0];
 
         if (!nextNode) {
           const nextPagePath = [path[0] + 1];
-          const nextPageNode = NodeApi.get<TElement>(editor, nextPagePath);
+          const nextPageNode =
+            editor.read.nodes.get<Element>(nextPagePath)?.[0];
 
           if (!nextPageNode) return;
 
@@ -21,14 +22,16 @@ export const listPluginPage = BaseListPlugin.extend(({ editor }) => ({
         return [nextNode, nextPath];
       },
       getPreviousEntry: ([, path]: any) => {
-        const prevPath = PathApi.previous(path);
+        const prevPath = PathApi.hasPrevious(path)
+          ? PathApi.previous(path)
+          : undefined;
 
         if (!prevPath) {
           if (path[0] === 0) return;
 
           const prevPagePath = [path[0] - 1];
 
-          const node = NodeApi.get<TElement>(editor, prevPagePath);
+          const node = editor.read.nodes.get<Element>(prevPagePath)?.[0];
 
           if (!node) return;
 
@@ -37,12 +40,12 @@ export const listPluginPage = BaseListPlugin.extend(({ editor }) => ({
           return [lastNode, prevPagePath.concat(node.children.length - 1)];
         }
 
-        const prevNode = NodeApi.get(editor, prevPath);
+        const prevNode = editor.read.nodes.get<Element>(prevPath)?.[0];
 
         if (!prevNode) return;
 
         return [prevNode, prevPath];
       },
-    } as GetSiblingListOptions<TElement>,
+    } as GetSiblingListOptions<Element>,
   },
 }));

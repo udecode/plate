@@ -1,88 +1,122 @@
+import type { BaseEditor, ExtendPlateEditorExtension } from '@platejs/core';
 import {
-  type OverrideEditor,
-  type SlateEditor,
-  type TRange,
-  deleteMerge,
-  KEYS,
-} from 'platejs';
+  type Descendant,
+  type Element,
+  type Range,
+  NodeApi,
+  PathApi,
+  TextApi,
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import type { ListConfig } from './BaseListPlugin';
 
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
-import { hasListChild } from './queries/index';
+import { hasListChild } from './queries';
 import { isAcrossListItems } from './queries/isAcrossListItems';
 
-const getLiStart = (editor: SlateEditor) => {
-  const start = editor.api.start(editor.selection as TRange);
+const getLiStart = (editor: BaseEditor, selection: Range) => {
+  const start = editor.read.points.start(selection);
 
-  return editor.api.above({
-    at: start,
-    match: { type: editor.getType(KEYS.li) },
-  });
+  return start
+    ? editor.read.nodes.above({
+        at: start,
+        match: { type: editor.getType(KEYS.li) },
+      })
+    : undefined;
 };
 
-export const withDeleteFragmentList: OverrideEditor<ListConfig> = ({
+export const withDeleteFragmentList: ExtendPlateEditorExtension<ListConfig> = ({
   editor,
-  tf: { deleteFragment },
 }) => ({
+  priority: 100,
   transforms: {
-    deleteFragment(direction) {
-      const deleteFragmentList = () => {
-        let deleted = false;
+    deleteFragment({ next, options, tx }) {
+      const selection = editor.read.selection();
 
-        editor.tf.withoutNormalizing(() => {
-          // Selection should be across list items
-          if (!isAcrossListItems(editor)) return;
+      if (!selection || !isAcrossListItems(editor)) return next({ options });
 
-          /**
-           * Check if the end li can be deleted (if it has no sublist). Store
-           * the path ref to delete it after deleteMerge.
-           */
-          const end = editor.api.end(editor.selection as TRange);
-          const liEnd = editor.api.above({
+      const end = editor.read.points.end(selection);
+      const liEnd = end
+        ? editor.read.nodes.above<Element>({
             at: end,
             match: { type: editor.getType(KEYS.li) },
-          });
-          const liEndCanBeDeleted = liEnd && !hasListChild(editor, liEnd[0]);
-          const liEndPathRef = liEndCanBeDeleted
-            ? editor.update.refs.path(liEnd![1])
-            : undefined;
+          })
+        : undefined;
+      const liStartBeforeDelete = getLiStart(editor, selection);
 
-          // use deleteFragment when selection wrapped around list
-          if (!getLiStart(editor) || !liEnd) {
-            deleted = false;
+      if (!liStartBeforeDelete || !liEnd) return next({ options });
 
-            return;
-          }
+      if (PathApi.isAncestor(liStartBeforeDelete[1], liEnd[1])) {
+        const startContent = editor.read.nodes.get<Element>([
+          ...liStartBeforeDelete[1],
+          0,
+        ]);
+        const endContent = editor.read.nodes.get<Element>([...liEnd[1], 0]);
 
-          /** Delete fragment and move end block children to start block */
-          deleteMerge(editor);
+        if (startContent && endContent) {
+          const children = structuredClone(
+            startContent[0].children
+          ) as Descendant[];
 
-          const liStart = getLiStart(editor);
+          for (const child of endContent[0].children as Descendant[]) {
+            const previous = children.at(-1);
 
-          if (liEndPathRef) {
-            const liEndPath = liEndPathRef.unref()!;
-            const listStart = liStart && editor.api.parent(liStart[1]);
-
-            const deletePath = getHighestEmptyList(editor, {
-              diffListPath: listStart?.[1],
-              liPath: liEndPath,
-            });
-
-            if (deletePath) {
-              editor.tf.removeNodes({ at: deletePath });
+            if (
+              previous &&
+              TextApi.isText(previous) &&
+              TextApi.isText(child) &&
+              TextApi.equals(previous, child, { loose: true })
+            ) {
+              previous.text += child.text;
+            } else {
+              children.push(structuredClone(child));
             }
-
-            deleted = true;
           }
-        });
 
-        return deleted;
-      };
+          const [lastText, lastPath] = NodeApi.last(
+            { ...startContent[0], children },
+            []
+          );
+          const point = {
+            offset: NodeApi.string(lastText).length,
+            path: [...startContent[1], ...lastPath],
+          };
 
-      if (deleteFragmentList()) return;
+          tx.nodes.replaceChildren(children, {
+            at: startContent[1],
+            newSelection: { anchor: point, focus: point },
+          });
+          tx.nodes.remove({ at: PathApi.parent(liEnd[1]) });
 
-      deleteFragment(direction);
+          return true;
+        }
+      }
+
+      const liEndPathRef = !hasListChild(editor, liEnd[0])
+        ? tx.refs.path(liEnd[1])
+        : undefined;
+
+      next({ options });
+
+      if (liEndPathRef) {
+        const liEndPath = liEndPathRef.unref();
+
+        if (liEndPath) {
+          const liStart = getLiStart(editor, editor.read.selection()!);
+          const listStart = liStart
+            ? editor.read.nodes.parent(liStart[1])
+            : undefined;
+          const deletePath = getHighestEmptyList(editor, {
+            diffListPath: listStart?.[1],
+            liPath: liEndPath,
+          });
+
+          if (deletePath) tx.nodes.remove({ at: deletePath });
+        }
+      }
+
+      return true;
     },
   },
 });

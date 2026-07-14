@@ -28,20 +28,19 @@ const HotkeysContext = createContext<HotkeysContextType>({
 
 export const useHotkeysContext = () => useContext(HotkeysContext);
 
-type Props = {
-  children: ReactNode;
-  initiallyActiveScopes?: string[];
-};
-
 export const HotkeysProvider = ({
   children,
   initiallyActiveScopes = ['*'],
-}: Props) => {
+}: {
+  children: ReactNode;
+  initiallyActiveScopes?: string[];
+}) => {
   const [internalActiveScopes, setInternalActiveScopes] = useState(
     initiallyActiveScopes
   );
   const [boundHotkeys, setBoundHotkeys] = useState<Hotkey[]>([]);
 
+  // These callbacks cross a context boundary and feed the listener effect.
   const enableScope = useCallback((scope: string) => {
     setInternalActiveScopes((prev) => {
       if (prev.includes('*')) {

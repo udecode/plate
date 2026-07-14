@@ -1,13 +1,10 @@
 /** @jsx jsxt */
 
+import { createBaseEditor } from '@platejs/core';
+
 import { BaseIndentPlugin } from '@platejs/indent';
-import { jsxt } from '@platejs/test-utils';
-import {
-  type SlateEditor,
-  BaseParagraphPlugin,
-  KEYS,
-  createSlateEditor,
-} from 'platejs';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
+import { BaseParagraphPlugin, KEYS } from 'platejs';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 
@@ -22,7 +19,7 @@ describe('withInsertBreakList', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -38,17 +35,17 @@ describe('withInsertBreakList', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    editor.tf.insertBreak();
+    editor.update.break.insert();
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('behave like a normal break if not a todo line', () => {
@@ -59,7 +56,7 @@ describe('withInsertBreakList', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -70,17 +67,17 @@ describe('withInsertBreakList', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    editor.tf.insertBreak();
+    editor.update.break.insert();
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('behave like a normal break if selection is expanded', () => {
@@ -92,7 +89,7 @@ describe('withInsertBreakList', () => {
           <focus />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -108,16 +105,54 @@ describe('withInsertBreakList', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    editor.tf.insertBreak();
+    editor.update.break.insert();
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
+  });
+
+  it('uses the active transaction selection', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
+      value: [
+        {
+          checked: true,
+          children: [{ text: 'Todo item' }],
+          indent: 1,
+          listStyleType: KEYS.listTodo,
+          type: KEYS.p,
+        },
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.selection.set({ offset: 9, path: [0, 0] });
+      tx.break.insert();
+    });
+
+    expect(editor.read.children()).toEqual([
+      {
+        checked: true,
+        children: [{ text: 'Todo item' }],
+        indent: 1,
+        listStyleType: KEYS.listTodo,
+        type: KEYS.p,
+      },
+      {
+        checked: false,
+        children: [{ text: '' }],
+        indent: 1,
+        listStart: 2,
+        listStyleType: KEYS.listTodo,
+        type: KEYS.p,
+      },
+    ]);
   });
 });

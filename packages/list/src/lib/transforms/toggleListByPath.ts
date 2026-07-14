@@ -1,13 +1,15 @@
-import { type NodeEntry, type SlateEditor, KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { Element, NodeEntry } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 export const toggleListByPath = (
-  editor: SlateEditor,
-  [node, path]: NodeEntry,
+  editor: BaseEditor,
+  [node, path]: NodeEntry<Element>,
   listStyleType: string
 ) => {
-  editor.tf.setNodes(
+  editor.update.nodes.set(
     {
-      [KEYS.indent]: node.indent ?? 1,
+      [KEYS.indent]: node[KEYS.indent] ?? 1,
       // TODO: normalized if not todo remove this property.
       [KEYS.listChecked]: false,
       [KEYS.listType]: listStyleType,
@@ -20,9 +22,9 @@ export const toggleListByPath = (
 };
 
 export const toggleListByPathUnSet = (
-  editor: SlateEditor,
-  [, path]: NodeEntry
+  editor: BaseEditor,
+  [, path]: NodeEntry<Element>
 ) =>
-  editor.tf.unsetNodes([KEYS.listType, KEYS.indent, KEYS.listChecked], {
+  editor.update.nodes.unset([KEYS.listType, KEYS.indent, KEYS.listChecked], {
     at: path,
   });

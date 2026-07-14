@@ -238,7 +238,7 @@ describe('extendEditorApi method', () => {
         method: () => 'plugin1' as string,
         scoped: () => 'scoped1' as string,
       }))
-      .extendEditorApi(({ editorApi, plugin }) => {
+      .extendEditorApi(({ editor, plugin }) => {
         // This should access the current plugin's scoped api method
         const currentScoped = plugin.api.scoped;
 
@@ -247,7 +247,7 @@ describe('extendEditorApi method', () => {
           scoped: () => 'scoped2',
           testMethod: () => {
             // This should access the overridden editor.api.method
-            const editorMethod = editorApi.method();
+            const editorMethod = editor.api.method();
 
             return `${editorMethod}-${currentScoped()}`;
           },
@@ -394,8 +394,8 @@ describe('extendApi method', () => {
       .extendEditorApi(() => ({
         globalMethod: () => 5,
       }))
-      .extendApi(({ editorApi }) => ({
-        pluginMethod: () => editorApi.globalMethod() * 2,
+      .extendApi(({ editor }) => ({
+        pluginMethod: () => editor.api.globalMethod() * 2,
       }));
 
     const editor = createBaseEditor({ plugins: [testPlugin] });

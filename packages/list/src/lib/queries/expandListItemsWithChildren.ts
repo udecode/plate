@@ -1,6 +1,6 @@
-import type { Editor, ElementEntryOf, ElementOf, NodeEntry } from 'platejs';
-
-import { isDefined, KEYS } from 'platejs';
+import type { Editor, Element, NodeEntry } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
+import { isDefined } from '@udecode/utils';
 
 import { getListChildren } from './getListChildren';
 
@@ -12,12 +12,9 @@ import { getListChildren } from './getListChildren';
  * @returns Array of block entries with list items expanded to include their
  *   children
  */
-export const expandListItemsWithChildren = <
-  N extends ElementOf<E>,
-  E extends Editor = Editor,
->(
-  editor: E,
-  entries: ElementEntryOf<E>[]
+export const expandListItemsWithChildren = <N extends Element = Element>(
+  editor: Editor,
+  entries: NodeEntry<Element>[]
 ): NodeEntry<N>[] => {
   const expandedEntries: NodeEntry<N>[] = [];
   const processedIds = new Set<string>();
@@ -38,7 +35,7 @@ export const expandListItemsWithChildren = <
 
     if (isListItem) {
       // Get all children (items with bigger indent)
-      const children = getListChildren<N, E>(editor, entry);
+      const children = getListChildren<N>(editor, entry);
 
       // Add children that aren't already in the selection
       children.forEach((childEntry) => {

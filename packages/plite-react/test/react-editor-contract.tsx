@@ -145,8 +145,7 @@ describe('plite-react DOM capability contract', () => {
 
     await act(async () => {
       editor.update((tx) => {
-        tx.nodes.remove({ at: [0] });
-        tx.nodes.insert(propagatedValue);
+        tx.nodes.replace(propagatedValue, { at: [0] });
         tx.selection.set(expectedSelection);
       });
       editor.api.dom.focus();

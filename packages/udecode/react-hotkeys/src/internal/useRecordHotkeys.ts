@@ -6,6 +6,8 @@ export default function useRecordHotkeys() {
   const [keys, setKeys] = useState(new Set<string>());
   const [isRecording, setIsRecording] = useState(false);
 
+  // Stable identities are required to add/remove the same DOM listener and
+  // expose durable recording controls to consumers.
   const handler = useCallback((event: KeyboardEvent) => {
     if (event.code === undefined) {
       // Synthetic event (e.g., Chrome autofill).  Ignore.

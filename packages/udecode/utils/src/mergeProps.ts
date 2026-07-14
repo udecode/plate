@@ -1,56 +1,66 @@
+type MergePropsOptions = {
+  /** The keys of the handlers to merge. */
+  handlerKeys?: readonly string[];
+  /**
+   * A function that returns true if it's a handler to merge.
+   *
+   * Default: keys having `on` prefix.
+   */
+  handlerQuery?: ((key: string) => boolean) | null;
+};
+
 /** Merge props by composing handlers. */
-export const mergeProps = <T>(
+export function mergeProps<T extends object>(
   props?: T,
   overrideProps?: T,
+  options?: MergePropsOptions
+): T;
+export function mergeProps(
+  props?: object,
+  overrideProps?: object,
   {
     handlerKeys,
     handlerQuery = (key) => key.startsWith('on'),
-  }: {
-    /** The keys of the handlers to merge. */
-    handlerKeys?: string[];
-    /**
-     * A function that returns true if it's a handler to merge.
-     *
-     * Default: keys having `on` prefix.
-     */
-    handlerQuery?: ((key: string) => boolean) | null;
-  } = {}
-): T => {
-  const map = new Map<string, ((...args: unknown[]) => void)[]>();
+  }: MergePropsOptions = {}
+) {
+  const handlersByKey = new Map<string, ((...args: unknown[]) => void)[]>();
+  const mergedProps: Record<string, unknown> = {};
 
-  const acc: any = {};
-
-  const mapProps = (_props?: T) => {
+  const addProps = (_props?: object) => {
     if (!_props) return;
 
-    Object.entries(_props).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(_props)) {
       if (
         (!handlerKeys || handlerKeys.includes(key)) &&
         (!handlerQuery || handlerQuery(key)) &&
         typeof value === 'function'
       ) {
-        if (!map.has(key)) {
-          map.set(key, []);
+        let handlers = handlersByKey.get(key);
+        if (!handlers) {
+          handlers = [];
+          handlersByKey.set(key, handlers);
         }
 
-        map.get(key)?.push(value as any);
+        handlers.push((...args) => {
+          Reflect.apply(value, undefined, args);
+        });
 
-        acc[key] = (...args: unknown[]) => {
-          const fns = map.get(key);
-          if (fns) {
-            for (const fn of fns) {
-              fn(...args);
+        mergedProps[key] = (...args: unknown[]) => {
+          const currentHandlers = handlersByKey.get(key);
+          if (currentHandlers) {
+            for (const handler of currentHandlers) {
+              handler(...args);
             }
           }
         };
       } else {
-        acc[key] = value;
+        mergedProps[key] = value;
       }
-    });
+    }
   };
 
-  mapProps(props);
-  mapProps(overrideProps);
+  addProps(props);
+  addProps(overrideProps);
 
-  return acc;
-};
+  return mergedProps;
+}

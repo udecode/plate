@@ -157,6 +157,43 @@ describe('plite transforms contract', () => {
     ]);
   });
 
+  it('blocks.insertAfter inserts after the target block', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        { type: 'paragraph', children: [{ text: 'one' }] },
+        { type: 'paragraph', children: [{ text: 'two' }] },
+        { type: 'paragraph', children: [{ text: 'three' }] },
+      ],
+      selection: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 3 },
+      },
+      marks: null,
+    });
+
+    const inserted = {
+      type: 'paragraph',
+      children: [{ text: 'inserted' }],
+    };
+    const target = editor.read.nodes.get<Element>([2], { required: true })[0];
+
+    editor.update.blocks.insertAfter(inserted);
+    editor.update.blocks.insertAfter(
+      { type: 'paragraph', children: [{ text: 'after target' }] },
+      { at: target }
+    );
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+      { type: 'paragraph', children: [{ text: 'inserted' }] },
+      { type: 'paragraph', children: [{ text: 'three' }] },
+      { type: 'paragraph', children: [{ text: 'after target' }] },
+    ]);
+  });
+
   it('insertText keeps the selected mark when replacing a marked leaf', () => {
     const editor = createEditor();
 

@@ -1,12 +1,13 @@
+import type { BaseEditor } from '@platejs/core';
 import {
+  type Element,
   type ElementEntry,
   type Path,
-  type SlateEditor,
-  type TElement,
-  KEYS,
-  NodeApi,
   PathApi,
-} from 'platejs';
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
+
+import type { ListTransaction } from '../BaseListPlugin';
 
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
@@ -19,14 +20,15 @@ export type MoveListItemUpOptions = {
 
 /** Move a list item up. */
 export const moveListItemUp = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: ListTransaction,
   { list, listItem }: MoveListItemUpOptions
 ) => {
   const move = () => {
     const [listNode, listPath] = list;
     const [liNode, liPath] = listItem;
 
-    const liParent = editor.api.above<TElement>({
+    const liParent = editor.read.nodes.above<Element>({
       at: listPath,
       match: { type: editor.getType(KEYS.li) },
     });
@@ -41,11 +43,13 @@ export const moveListItemUp = (
       }
 
       const condA = hasListChild(editor, liNode);
-      const condB = !NodeApi.isLastChild(editor, liPath);
+      const listParent = editor.read.nodes.parent<Element>(liPath);
+      const condB =
+        !!listParent && liPath.at(-1)! < listParent[0].children.length - 1;
 
       if (condA || condB) {
         // Insert a new list next to `list`
-        editor.tf.insertNodes(
+        tx.nodes.insert(
           {
             children: [],
             type: listNode.type,
@@ -54,24 +58,24 @@ export const moveListItemUp = (
         );
       }
       if (condA) {
-        const toListNode = NodeApi.get<TElement>(editor, toListPath);
+        const toListNode = editor.read.nodes.get<Element>(toListPath)?.[0];
 
         if (!toListNode) return;
 
         // Move li sub-lis to the new list
-        moveListItemsToList(editor, {
+        moveListItemsToList(editor, tx, {
           fromListItem: listItem,
           toList: [toListNode, toListPath],
         });
       }
       // If there is siblings li, move them to the new list
       if (condB) {
-        const toListNode = NodeApi.get<TElement>(editor, toListPath);
+        const toListNode = editor.read.nodes.get<Element>(toListPath)?.[0];
 
         if (!toListNode) return;
 
         // Move next lis to the new list
-        moveListItemsToList(editor, {
+        moveListItemsToList(editor, tx, {
           deleteFromList: false,
           fromList: list,
           fromStartIndex: liPath.at(-1)! + 1,
@@ -80,7 +84,7 @@ export const moveListItemUp = (
       }
 
       // Finally, unwrap the list
-      unwrapList(editor, { at: liPath.concat(0) });
+      unwrapList(editor, tx, { at: liPath.concat(0) });
 
       return true;
     }
@@ -90,10 +94,12 @@ export const moveListItemUp = (
     const toListPath = liPath.concat([1]);
 
     // If li has next siblings, we need to move them.
-    if (!NodeApi.isLastChild(editor, liPath)) {
+    const listParent = editor.read.nodes.parent<Element>(liPath);
+
+    if (listParent && liPath.at(-1)! < listParent[0].children.length - 1) {
       // If li has no sublist, insert one.
       if (!hasListChild(editor, liNode)) {
-        editor.tf.insertNodes(
+        tx.nodes.insert(
           {
             children: [],
             type: listNode.type,
@@ -102,12 +108,12 @@ export const moveListItemUp = (
         );
       }
 
-      const toListNode = NodeApi.get<TElement>(editor, toListPath);
+      const toListNode = editor.read.nodes.get<Element>(toListPath)?.[0];
 
       if (!toListNode) return;
 
       // Move next siblings to li sublist.
-      moveListItemsToList(editor, {
+      moveListItemsToList(editor, tx, {
         deleteFromList: false,
         fromListItem: liParent,
         fromStartIndex: liPath.at(-1)! + 1,
@@ -118,7 +124,7 @@ export const moveListItemUp = (
     const movedUpLiPath = PathApi.next(liParentPath);
 
     // Move li one level up: next to the li parent.
-    editor.tf.moveNodes({
+    tx.nodes.move({
       at: liPath,
       to: movedUpLiPath,
     });
@@ -126,11 +132,5 @@ export const moveListItemUp = (
     return true;
   };
 
-  let moved: boolean | undefined = false;
-
-  editor.tf.withoutNormalizing(() => {
-    moved = move();
-  });
-
-  return moved;
+  return move();
 };

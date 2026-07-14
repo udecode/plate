@@ -1,12 +1,14 @@
-import type { InsertNodesOptions, SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { NodeInsertNodesOptions } from '@platejs/plite';
+import type { TImageElement } from '@platejs/utils';
 
 import { BaseImagePlugin } from '../BaseImagePlugin';
 import { insertImage } from './insertImage';
 
 export const insertImageFromFiles = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   files: FileList,
-  options: InsertNodesOptions = {}
+  options: NodeInsertNodesOptions<TImageElement> = {}
 ) => {
   for (const file of files) {
     const reader = new FileReader();

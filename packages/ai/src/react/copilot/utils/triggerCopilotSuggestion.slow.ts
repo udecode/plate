@@ -1,93 +1,68 @@
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import { BaseParagraphPlugin } from '@platejs/core';
+import { createPlateEditor } from '@platejs/core/react';
 
-const callCompletionApiMock = mock();
-const getEditorPluginMock = mock();
-const useEditorPluginMock = mock();
-const usePluginOptionMock = mock();
+import { BaseAIPlugin } from '../../../lib/BaseAIPlugin';
+import {
+  type AIChatPluginConfig,
+  AIChatPlugin,
+} from '../../ai-chat/AIChatPlugin';
+import { CopilotPlugin } from '../CopilotPlugin';
+import { triggerCopilotSuggestion } from './triggerCopilotSuggestion';
 
-mock.module('./callCompletionApi', () => ({
-  callCompletionApi: callCompletionApiMock,
-}));
-
-mock.module('platejs/react', () => ({
-  getEditorPlugin: getEditorPluginMock,
-  useEditorPlugin: useEditorPluginMock,
-  usePluginOption: usePluginOptionMock,
-}));
+const createEditor = () =>
+  createPlateEditor({
+    plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin, CopilotPlugin],
+    selection: {
+      anchor: { offset: 4, path: [0, 0] },
+      focus: { offset: 4, path: [0, 0] },
+    },
+    value: [{ children: [{ text: 'one ' }], id: 'b1', type: 'p' }],
+  });
 
 describe('triggerCopilotSuggestion', () => {
-  beforeEach(() => {
-    callCompletionApiMock.mockReset();
-    getEditorPluginMock.mockReset();
+  it('returns false while copilot loading is active', async () => {
+    const editor = createEditor();
+    editor.plugin(CopilotPlugin).setOption('isLoading', true);
+
+    await expect(triggerCopilotSuggestion(editor)).resolves.toBe(false);
   });
 
-  afterAll(() => {
-    mock.restore();
+  it('returns false while AI chat is streaming', async () => {
+    const editor = createEditor();
+    const chat = {
+      status: 'streaming',
+    } as unknown as NonNullable<AIChatPluginConfig['options']['chat']>;
+    editor.plugin(AIChatPlugin).setOption('chat', chat);
+
+    await expect(triggerCopilotSuggestion(editor)).resolves.toBe(false);
   });
 
-  it('returns false while ai chat or copilot loading is active', async () => {
-    const { triggerCopilotSuggestion } = await import(
-      `./triggerCopilotSuggestion?test=${Math.random().toString(36).slice(2)}`
-    );
-
-    getEditorPluginMock.mockReturnValue({
-      getOptions: () => ({
-        isLoading: true,
-      }),
+  it('stores a finished completion as the current block suggestion', async () => {
+    const editor = createEditor();
+    const fetchCompletion = mock(
+      async (_input: RequestInfo | URL, _init?: RequestInit) =>
+        new Response(JSON.stringify({ text: 'Completed' }), {
+          headers: { 'Content-Type': 'application/json' },
+          status: 200,
+        })
+    ) as unknown as typeof fetch;
+    editor.plugin(CopilotPlugin).setOptions({
+      completeOptions: { fetch: fetchCompletion },
+      getPrompt: () => 'Prompt',
+      triggerQuery: () => true,
     });
 
-    await expect(
-      triggerCopilotSuggestion({
-        getOptions: () => ({
-          chat: { isLoading: false },
-        }),
-      } as any)
-    ).resolves.toBe(false);
-  });
+    await triggerCopilotSuggestion(editor);
 
-  it('stops current suggestion work and forwards finished completions into block suggestions', async () => {
-    const { triggerCopilotSuggestion } = await import(
-      `./triggerCopilotSuggestion?test=${Math.random().toString(36).slice(2)}`
+    expect(editor.plugin(CopilotPlugin).getOption('suggestionNodeId')).toBe(
+      'b1'
     );
-    const setOption = mock();
-    const stop = mock();
-    const setBlockSuggestion = mock();
-
-    getEditorPluginMock.mockReturnValue({
-      api: {
-        copilot: { setBlockSuggestion, stop },
-      },
-      getOptions: () => ({
-        completeOptions: { onError: mock() },
-        getPrompt: () => 'Prompt',
-        isLoading: false,
-        triggerQuery: () => true,
-      }),
-      setOption,
-    });
-
-    callCompletionApiMock.mockImplementation(
-      async ({ onFinish, setLoading, setCompletion }: any) => {
-        setLoading(true);
-        setCompletion('');
-        onFinish?.('Prompt', 'Completed');
-        setLoading(false);
-      }
+    expect(editor.plugin(CopilotPlugin).getOption('suggestionText')).toBe(
+      'Completed'
     );
-
-    const editor = {
-      getOptions: () => ({
-        chat: { isLoading: false },
-      }),
-    } as any;
-
-    await expect(triggerCopilotSuggestion(editor)).resolves.toBeUndefined();
-
-    expect(stop).toHaveBeenCalled();
-    expect(setBlockSuggestion).toHaveBeenCalledWith({ text: 'Completed' });
-    expect(callCompletionApiMock).toHaveBeenCalled();
-    expect(setOption).toHaveBeenCalledWith('completion', '');
-    expect(setOption).toHaveBeenCalledWith('isLoading', true);
-    expect(setOption).toHaveBeenCalledWith('isLoading', false);
+    expect(editor.plugin(CopilotPlugin).getOption('completion')).toBe(
+      'Completed'
+    );
+    expect(editor.plugin(CopilotPlugin).getOption('isLoading')).toBe(false);
   });
 });

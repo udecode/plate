@@ -1,85 +1,60 @@
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import React from 'react';
 
-const usePluginOptionMock = mock();
-const getEditorPluginMock = mock();
-const useEditorPluginMock = mock();
+import { act, renderHook } from '@testing-library/react';
+import { BaseParagraphPlugin } from '@platejs/core';
+import { Plate, createPlateEditor } from '@platejs/core/react';
 
-mock.module('../AIChatPlugin', () => ({
-  AIChatPlugin: { key: 'aiChat' },
-}));
+import { BaseAIPlugin } from '../../../lib/BaseAIPlugin';
+import { type AIChatPluginConfig, AIChatPlugin } from '../AIChatPlugin';
+import {
+  getLastAssistantMessage,
+  useLastAssistantMessage,
+} from './getLastAssistantMessage';
 
-mock.module('platejs/react', async () => {
-  const actual = await import(
-    new URL('../../../../../plate/dist/react/index.js', import.meta.url).href
-  );
-  const getEditorPlugin = actual.getEditorPlugin as any;
-  const useEditorPlugin = actual.useEditorPlugin as any;
-  const usePluginOption = actual.usePluginOption as any;
+const messages = [
+  {
+    id: 'user',
+    parts: [{ text: 'a', type: 'text' as const }],
+    role: 'user' as const,
+  },
+  {
+    id: 'assistant',
+    parts: [{ text: 'b', type: 'text' as const }],
+    role: 'assistant' as const,
+  },
+];
 
-  return {
-    ...actual,
-    getEditorPlugin: (...args: any[]) =>
-      (getEditorPluginMock as any)(...args) ?? getEditorPlugin(...args),
-    useEditorPlugin: (...args: any[]) =>
-      (useEditorPluginMock as any)(...args) ?? useEditorPlugin(...args),
-    usePluginOption: (...args: any[]) =>
-      (usePluginOptionMock as any)(...args) ?? usePluginOption(...args),
-  };
-});
+const chat = {
+  messages,
+} as unknown as NonNullable<AIChatPluginConfig['options']['chat']>;
+
+const createEditor = () => {
+  const editor = createPlateEditor({
+    plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+  });
+
+  editor.plugin(AIChatPlugin).setOption('chat', chat);
+
+  return editor;
+};
 
 describe('getLastAssistantMessage', () => {
-  beforeEach(() => {
-    getEditorPluginMock.mockReset();
-    useEditorPluginMock.mockReset();
-    usePluginOptionMock.mockReset();
+  it('returns the last assistant message from editor chat state', () => {
+    expect(getLastAssistantMessage(createEditor())).toEqual(messages[1]);
   });
 
-  afterAll(() => {
-    mock.restore();
-  });
+  it('hides the hook result for the comment tool', () => {
+    const editor = createEditor();
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(Plate, { children, editor });
+    const visible = renderHook(() => useLastAssistantMessage(), { wrapper });
 
-  it('returns the last assistant message from editor chat state', async () => {
-    const { getLastAssistantMessage } = await import(
-      `./getLastAssistantMessage?test=${Math.random().toString(36).slice(2)}`
-    );
+    expect(visible.result.current).toEqual(messages[1]);
 
-    expect(
-      getLastAssistantMessage({
-        getOptions: () => ({
-          chat: {
-            messages: [
-              { role: 'user', text: 'a' },
-              { role: 'assistant', text: 'b' },
-            ],
-          },
-        }),
-      } as any)
-    ).toEqual({ role: 'assistant', text: 'b' });
-  });
-
-  it('returns the last assistant message from plugin options unless toolName is comment', async () => {
-    const { useLastAssistantMessage } = await import(
-      `./getLastAssistantMessage?test=${Math.random().toString(36).slice(2)}`
-    );
-
-    usePluginOptionMock.mockReturnValueOnce(false).mockReturnValueOnce({
-      messages: [
-        { role: 'assistant', text: 'a' },
-        { role: 'assistant', text: 'b' },
-      ],
+    act(() => {
+      editor.plugin(AIChatPlugin).setOption('toolName', 'comment');
     });
 
-    expect(useLastAssistantMessage()).toEqual({
-      role: 'assistant',
-      text: 'b',
-    });
-
-    usePluginOptionMock.mockReset();
-    usePluginOptionMock.mockReturnValueOnce('comment');
-    usePluginOptionMock.mockReturnValueOnce({
-      messages: [{ role: 'assistant' }],
-    });
-
-    expect(useLastAssistantMessage()).toBeUndefined();
+    expect(visible.result.current).toBeUndefined();
   });
 });

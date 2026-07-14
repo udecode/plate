@@ -1,40 +1,43 @@
 import { deserializeMd } from '@platejs/markdown';
 import {
+  type Element,
   type NodeEntry,
   type Range,
-  type SlateEditor,
-  type TElement,
   NodeApi,
-} from 'platejs';
+} from '@platejs/plite';
+import type { PlateEditor } from '@platejs/core/react';
 
 import type { TComment } from '../../ai-chat/internal/types';
 
 import { findTextRangeInBlock } from './findTextRangeInBlock';
 
 export const aiCommentToRange = (
-  editor: SlateEditor,
+  editor: PlateEditor,
   aiComment: TComment
 ): Range | undefined => {
   const { blockId, content } = aiComment;
 
   const contentNodes = deserializeMd(editor, content);
 
-  let firstBlock: NodeEntry<TElement> | undefined;
+  let firstBlock: NodeEntry<Element> | undefined;
 
   const ranges: Range[] = [];
   contentNodes.forEach((node, index) => {
-    let currentBlock: NodeEntry<TElement> | undefined;
+    let currentBlock: NodeEntry<Element> | undefined;
 
     if (index === 0) {
-      firstBlock = editor.api.node<TElement>({ id: blockId, at: [] });
+      firstBlock = editor.read.nodes.find<Element>({
+        at: [],
+        match: { id: blockId },
+      });
       currentBlock = firstBlock;
     } else {
       if (!firstBlock) return;
 
-      const [_, firstBlockPath] = firstBlock;
+      const [, firstBlockPath] = firstBlock;
 
       const blockPath = [firstBlockPath[0] + index];
-      currentBlock = editor.api.node(blockPath);
+      currentBlock = editor.read.nodes.get<Element>(blockPath);
     }
 
     if (!currentBlock) return;
@@ -53,7 +56,9 @@ export const aiCommentToRange = (
 
   if (ranges.length > 1) {
     const startRange = ranges[0];
-    const endRange = ranges.at(-1)!;
+    const endRange = ranges.at(-1);
+
+    if (!endRange) return;
 
     return {
       anchor: startRange.anchor,

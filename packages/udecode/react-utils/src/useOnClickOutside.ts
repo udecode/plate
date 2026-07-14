@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
+
 const canUsePassiveEvents = (): boolean => {
   if (
     typeof window === 'undefined' ||
@@ -30,29 +32,30 @@ export type UseOnClickOutsideCallback<T extends Event = Event> = (
 export type UseOnClickOutsideOptions = {
   detectIFrame?: boolean;
   disabled?: boolean;
-  eventTypes?: string[];
+  eventTypes?: readonly string[];
   excludeScrollbar?: boolean;
   ignoreClass?: string[] | string;
   refs?: Refs;
 };
 
-export type UseOnClickOutsideReturn = (element: El | null) => void;
+export type UseOnClickOutsideReturn = React.RefCallback<El>;
 
 type El = HTMLElement;
 
-type Refs = React.RefObject<El | null>[];
+type Refs = readonly React.RefObject<El | null>[];
 
-const checkClass = (el: HTMLElement, cl: string): boolean =>
+const checkClass = (el: Element, cl: string): boolean =>
   el.classList?.contains(cl);
 
-const hasIgnoreClass = (e: any, ignoreClass: string[] | string): boolean => {
-  let el = e.target || e;
+const hasIgnoreClass = (
+  target: EventTarget | null,
+  ignoreClass: readonly string[]
+): boolean => {
+  let el = target instanceof Element ? target : null;
 
   while (el) {
-    if (Array.isArray(ignoreClass)) {
-      if (ignoreClass.some((c) => checkClass(el, c))) return true;
-    } else if (checkClass(el, ignoreClass)) {
-      return true;
+    for (const className of ignoreClass) {
+      if (checkClass(el, className)) return true;
     }
 
     el = el.parentElement;
@@ -65,7 +68,7 @@ const clickedOnScrollbar = (e: MouseEvent): boolean =>
   document.documentElement.clientWidth <= e.clientX ||
   document.documentElement.clientHeight <= e.clientY;
 
-const getEventOptions = (type: string): { passive: boolean } | boolean =>
+const getEventOptions = (type: string): AddEventListenerOptions | boolean =>
   type.includes('touch') && canUsePassiveEvents() ? { passive: true } : false;
 
 export const useOnClickOutside = (
@@ -79,89 +82,95 @@ export const useOnClickOutside = (
     refs: refsOpt,
   }: UseOnClickOutsideOptions = {}
 ): UseOnClickOutsideReturn => {
-  const [refsState, setRefsState] = React.useState<Refs>([]);
+  const [element, setElement] = React.useState<El | null>(null);
   const callbackRef = React.useRef(callback);
-  callbackRef.current = callback;
 
-  const ref: UseOnClickOutsideReturn = React.useCallback(
-    (el) => setRefsState((prevState) => [...prevState, { current: el }]),
+  useIsomorphicLayoutEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
+
+  const ref = React.useCallback(
+    (nextElement: El | null) => setElement(nextElement),
     []
   );
+  const eventTypesKey = eventTypes.join('\u0000');
 
-  React.useEffect(
-    () => {
-      if (!refsOpt?.length && refsState.length === 0) return;
+  React.useEffect(() => {
+    if (!refsOpt?.length && !element) return;
 
-      const getEls = () => {
-        const els: El[] = [];
-        for (const { current } of refsOpt || refsState) {
-          if (current) {
-            els.push(current);
-          }
+    const getEls = () => {
+      if (!refsOpt) return element ? [element] : [];
+
+      const elements: El[] = [];
+      for (const { current } of refsOpt) {
+        if (current) {
+          elements.push(current);
         }
+      }
 
-        return els;
-      };
+      return elements;
+    };
+    const ignoreClasses = Array.isArray(ignoreClass)
+      ? ignoreClass
+      : [ignoreClass];
 
-      const handler = (e: any) => {
+    const handler = (event: Event) => {
+      const target = event.target;
+
+      if (!(target instanceof Node)) return;
+
+      if (
+        !hasIgnoreClass(target, ignoreClasses) &&
+        !(
+          excludeScrollbar &&
+          event instanceof MouseEvent &&
+          clickedOnScrollbar(event)
+        ) &&
+        getEls().every((current) => !current.contains(target))
+      ) {
+        callbackRef.current(event);
+      }
+    };
+
+    const blurHandler = (event: FocusEvent) =>
+      // Firefox updates document.activeElement in the next event loop.
+      setTimeout(() => {
+        const { activeElement } = document;
+
         if (
-          !hasIgnoreClass(e, ignoreClass) &&
-          !(excludeScrollbar && clickedOnScrollbar(e)) &&
-          getEls().every((el) => !el.contains(e.target))
-        )
-          callbackRef.current(e);
-      };
-
-      const blurHandler = (e: FocusEvent) =>
-        // On firefox the iframe becomes document.activeElement in the next event loop
-        setTimeout(() => {
-          const { activeElement } = document;
-
-          if (
-            activeElement?.tagName === 'IFRAME' &&
-            !hasIgnoreClass(activeElement, ignoreClass) &&
-            !getEls().includes(activeElement as HTMLIFrameElement)
-          )
-            callbackRef.current(e);
-        }, 0);
-
-      const removeEventListener = () => {
-        for (const type of eventTypes) {
-          document.removeEventListener(
-            type,
-            handler,
-            getEventOptions(type) as any
-          );
+          activeElement instanceof HTMLIFrameElement &&
+          !hasIgnoreClass(activeElement, ignoreClasses) &&
+          !getEls().includes(activeElement)
+        ) {
+          callbackRef.current(event);
         }
+      }, 0);
 
-        if (detectIFrame) window.removeEventListener('blur', blurHandler);
-      };
+    if (disabled) return;
 
-      if (disabled) {
-        removeEventListener();
+    const activeEventTypes = eventTypesKey.split('\u0000');
+    for (const type of activeEventTypes) {
+      document.addEventListener(type, handler, getEventOptions(type));
+    }
 
-        return;
+    if (detectIFrame) window.addEventListener('blur', blurHandler);
+
+    return () => {
+      for (const type of activeEventTypes) {
+        document.removeEventListener(type, handler, false);
       }
 
-      for (const type of eventTypes) {
-        document.addEventListener(type, handler, getEventOptions(type));
-      }
-
-      if (detectIFrame) window.addEventListener('blur', blurHandler);
-
-      return () => removeEventListener();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      refsState,
-      ignoreClass,
-      excludeScrollbar,
-      disabled,
-      detectIFrame,
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      JSON.stringify(eventTypes),
-    ]
-  );
+      if (detectIFrame) window.removeEventListener('blur', blurHandler);
+    };
+  }, [
+    detectIFrame,
+    disabled,
+    element,
+    eventTypesKey,
+    excludeScrollbar,
+    ignoreClass,
+    refsOpt,
+  ]);
 
   return ref;
 };

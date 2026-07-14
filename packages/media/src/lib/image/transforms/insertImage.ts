@@ -1,11 +1,12 @@
-import type { InsertNodesOptions, SlateEditor, TImageElement } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { NodeInsertNodesOptions } from '@platejs/plite';
+import type { TImageElement } from '@platejs/utils';
+import { KEYS } from '@platejs/utils';
 
 export const insertImage = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   url: ArrayBuffer | string,
-  options: InsertNodesOptions = {}
+  options: NodeInsertNodesOptions<TImageElement> = {}
 ) => {
   const text = { text: '' };
   const image: TImageElement = {
@@ -13,8 +14,5 @@ export const insertImage = (
     type: editor.getType(KEYS.img),
     url: url as any,
   };
-  editor.tf.insertNodes<TImageElement>(image, {
-    nextBlock: true,
-    ...(options as any),
-  });
+  editor.update.blocks.insertAfter(image, options);
 };

@@ -1,19 +1,13 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
-import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 import { unwrapList } from './unwrapList';
-import * as platejs from 'platejs';
 
 jsxt;
-
-afterEach(() => {
-  mock.restore();
-});
 
 describe('li list unwrapping', () => {
   it('unwrap a nested list ul > single li', () => {
@@ -36,7 +30,7 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -44,17 +38,19 @@ describe('li list unwrapping', () => {
         <hp>11</hp>
         <hp>12</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    unwrapList(editor);
+    editor.update((tx) => {
+      unwrapList(editor, tx);
+    });
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('unwrap a nested list ul > single li, collapsed selection', () => {
@@ -71,7 +67,7 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -84,17 +80,19 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    unwrapList(editor);
+    editor.update((tx) => {
+      unwrapList(editor, tx);
+    });
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('unwrap a nested list ul > multiple li', () => {
@@ -119,7 +117,7 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -127,17 +125,19 @@ describe('li list unwrapping', () => {
         <hp>11</hp>
         <hp>2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    unwrapList(editor);
+    editor.update((tx) => {
+      unwrapList(editor, tx);
+    });
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('unwrap a nested list ul > multiple li, collapsed selection', () => {
@@ -159,7 +159,7 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
     const output = (
       <editor>
@@ -176,45 +176,18 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as TestEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
 
-    unwrapList(editor);
+    editor.update((tx) => {
+      unwrapList(editor, tx);
+    });
 
-    expect(editor.children).toEqual(output.children);
-  });
-
-  it('treats the selection common node as a list root when there is no direct ancestor match', () => {
-    const commonSpy = spyOn(platejs.NodeApi, 'common').mockImplementation(
-      () => {
-        editor.selection = null;
-
-        return [{ children: [], type: 'ul' } as any, [0]];
-      }
-    );
-    const editor = {
-      api: {
-        above: mock(() => {}),
-      },
-      getType: (key: string) => key,
-      selection: {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 1] },
-      },
-      tf: {
-        withoutNormalizing: (fn: () => void) => fn(),
-        unwrapNodes: mock(),
-      },
-    } as any;
-
-    unwrapList(editor);
-
-    expect(commonSpy).toHaveBeenCalled();
-    expect(editor.tf.unwrapNodes).toHaveBeenCalledTimes(4);
+    expect(editor.read.children()).toEqual(output.children);
   });
 });

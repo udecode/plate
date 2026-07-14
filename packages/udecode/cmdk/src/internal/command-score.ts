@@ -52,14 +52,14 @@ const COUNT_GAPS_REGEXP = /["#&(+./@[\\_{]/g,
   IS_SPACE_REGEXP = /[\s-]/;
 
 function commandScoreInner(
-  string: any,
-  abbreviation: any,
-  lowerString: any,
-  lowerAbbreviation: any,
-  stringIndex: any,
-  abbreviationIndex: any,
-  memoizedResults: any
-) {
+  string: string,
+  abbreviation: string,
+  lowerString: string,
+  lowerAbbreviation: string,
+  stringIndex: number,
+  abbreviationIndex: number,
+  memoizedResults: Record<string, number>
+): number {
   if (abbreviationIndex === abbreviation.length) {
     if (stringIndex === string.length) {
       return SCORE_CONTINUE_MATCH;
@@ -78,7 +78,10 @@ function commandScoreInner(
   let index = lowerString.indexOf(abbreviationChar, stringIndex);
   let highScore = 0;
 
-  let score: any, spaceBreaks: any, transposedScore: any, wordBreaks: any;
+  let score = 0;
+  let spaceBreaks: RegExpMatchArray | null;
+  let transposedScore: number;
+  let wordBreaks: RegExpMatchArray | null;
 
   while (index >= 0) {
     score = commandScoreInner(

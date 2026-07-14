@@ -6,6 +6,7 @@ import {
   type Text,
   TextApi,
 } from '..';
+import { hasEditorRuntime } from '../core/editor-runtime';
 import { formatDebugValue } from '../utils/format-debug-value';
 import { modifyChildren, modifyLeaf, removeChildren } from '../utils/modify';
 import type { Editor as EditorType, Value } from './editor';
@@ -383,8 +384,12 @@ export interface NodeInterface {
   ) => Generator<NodeEntry<Text>, void, undefined>;
 }
 
-const getAncestorChildren = (node: Ancestor): Descendant[] =>
-  NodeApi.isEditor(node) ? editorGetChildren(node) : node.children;
+const getAncestorChildren = (node: Ancestor): Descendant[] => {
+  if (hasEditorRuntime(node)) return editorGetChildren(node);
+  if (NodeApi.isEditor(node)) return [...node.read.children()];
+
+  return node.children;
+};
 
 const getWholeTopLevelChildFragment = (
   root: Ancestor,
@@ -424,10 +429,7 @@ const getWholeTopLevelChildFragment = (
 
 const getTextRangeChildren = (
   node: Ancestor | NodeTextRangeRoot
-): Descendant[] =>
-  NodeApi.isEditor(node as Node)
-    ? editorGetChildren(node as Editor)
-    : (node as Element | NodeTextRangeRoot).children;
+): Descendant[] => getAncestorChildren(node as Ancestor);
 
 const getStringMatches = (
   text: string,

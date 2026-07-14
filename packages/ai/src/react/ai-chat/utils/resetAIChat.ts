@@ -1,5 +1,5 @@
-import { KEYS } from 'platejs';
-import { type PlateEditor, getEditorPlugin } from 'platejs/react';
+import { KEYS } from '@platejs/utils';
+import { type PlateEditor, getEditorPlugin } from '@platejs/core/react';
 
 import { BaseAIPlugin } from '../../../lib/BaseAIPlugin';
 import type { AIChatPluginConfig } from '../AIChatPlugin';
@@ -15,11 +15,11 @@ export const resetAIChat = (
     }
   );
 
-  api.aiChat.stop();
+  api.stop();
 
   const chat = getOptions().chat;
 
-  if (chat.messages && chat.messages.length > 0) {
+  if (chat?.messages && chat.messages.length > 0) {
     chat.setMessages?.([]);
   }
 
@@ -31,8 +31,8 @@ export const resetAIChat = (
   });
 
   if (undo) {
-    editor.getTransforms(BaseAIPlugin).ai.undo();
+    editor.plugin(BaseAIPlugin).api.undo();
   } else {
-    editor.getTransforms(BaseAIPlugin).ai.discardPreview();
+    editor.plugin(BaseAIPlugin).api.discardPreview();
   }
 };

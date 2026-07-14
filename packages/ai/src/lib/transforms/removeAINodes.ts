@@ -1,11 +1,20 @@
-import { type Path, type SlateEditor, TextApi } from 'platejs';
+import { type BaseEditor, getPluginType } from '@platejs/core';
+import {
+  type EditorUpdateTransaction,
+  type Path,
+  TextApi,
+} from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 export const removeAINodes = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: Pick<EditorUpdateTransaction, 'nodes'>,
   { at = [] }: { at?: Path } = {}
 ) => {
-  editor.tf.removeNodes({
+  const aiType = getPluginType(editor, KEYS.ai);
+
+  tx.nodes.remove({
     at,
-    match: (n) => TextApi.isText(n) && !!(n as any).ai,
+    match: (node) => TextApi.isText(node) && Boolean(Reflect.get(node, aiType)),
   });
 };

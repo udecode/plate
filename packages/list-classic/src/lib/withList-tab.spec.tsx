@@ -1,7 +1,8 @@
 /** @jsx jsxt */
 
+import { createBaseEditor } from '@platejs/core';
+
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
 
 import { BaseListPlugin } from './BaseListPlugin';
 
@@ -51,14 +52,14 @@ it('indent single list item (start of item)', () => {
     </editor>
   ) as any;
 
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  editor.tf.tab({ reverse: false });
-  expect(editor.children).toEqual(output.children);
+  editor.update.listClassic.tab();
+  expect(editor.read.children()).toEqual(output.children);
 });
 
 /*
@@ -105,14 +106,14 @@ it('indent single list item (end of item)', () => {
     </editor>
   ) as any;
 
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  editor.tf.tab({ reverse: false });
-  expect(editor.children).toEqual(output.children);
+  editor.update.listClassic.tab();
+  expect(editor.read.children()).toEqual(output.children);
 });
 
 /*
@@ -173,14 +174,14 @@ it('indent multiple list items (start/end)', () => {
     </editor>
   ) as any;
 
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  editor.tf.tab({ reverse: false });
-  expect(editor.children).toEqual(output.children);
+  editor.update.listClassic.tab();
+  expect(editor.read.children()).toEqual(output.children);
 });
 
 /*
@@ -241,14 +242,14 @@ it('un-indent multiple list items (start/end)', () => {
     </editor>
   ) as any;
 
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  editor.tf.tab({ reverse: true });
-  expect(editor.children).toEqual(output.children);
+  editor.update.listClassic.untab();
+  expect(editor.read.children()).toEqual(output.children);
 });
 
 /*
@@ -311,14 +312,14 @@ it('un-indent multiple list items (start/out)', () => {
     </editor>
   ) as any;
 
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  editor.tf.tab({ reverse: true });
-  expect(editor.children).toEqual(output.children);
+  editor.update.listClassic.untab();
+  expect(editor.read.children()).toEqual(output.children);
 });
 
 it('unhang before indentation', () => {
@@ -374,14 +375,14 @@ it('unhang before indentation', () => {
     </editor>
   ) as any;
 
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  editor.tf.tab({ reverse: false });
-  expect(editor.children).toEqual(output.children);
+  editor.update.listClassic.tab();
+  expect(editor.read.children()).toEqual(output.children);
 });
 
 it('does not not adjust selection length when unhanging ranges', () => {
@@ -394,20 +395,20 @@ it('does not not adjust selection length when unhanging ranges', () => {
       </hp>
     </editor>
   ) as any;
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  const selectionBefore = editor.selection;
+  const selectionBefore = editor.read.selection();
 
-  editor.tf.tab({ reverse: false });
-  expect(editor.selection).toEqual(selectionBefore);
+  editor.update.listClassic.tab();
+  expect(editor.read.selection()).toEqual(selectionBefore);
 
   // Do the same with shift tab.
-  editor.tf.tab({ reverse: true });
-  expect(editor.selection).toEqual(selectionBefore);
+  editor.update.listClassic.untab();
+  expect(editor.read.selection()).toEqual(selectionBefore);
 });
 
 it('convert top-level list item into body upon unindent if enableResetOnShiftTab is true', () => {
@@ -448,7 +449,7 @@ it('convert top-level list item into body upon unindent if enableResetOnShiftTab
     </editor>
   ) as any;
 
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins: [
       BaseListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
     ],
@@ -456,8 +457,8 @@ it('convert top-level list item into body upon unindent if enableResetOnShiftTab
     value: input.children,
   });
 
-  editor.tf.tab({ reverse: true });
-  expect(editor.children).toEqual(output.children);
+  editor.update.listClassic.untab();
+  expect(editor.read.children()).toEqual(output.children);
 });
 
 it('convert top-level (first) list item into body upon unindent if enableResetOnShiftTab is true', () => {
@@ -496,7 +497,7 @@ it('convert top-level (first) list item into body upon unindent if enableResetOn
     </editor>
   ) as any;
 
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins: [
       BaseListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
     ],
@@ -504,8 +505,8 @@ it('convert top-level (first) list item into body upon unindent if enableResetOn
     value: input.children,
   });
 
-  editor.tf.tab({ reverse: true });
-  expect(editor.children).toEqual(output.children);
+  editor.update.listClassic.untab();
+  expect(editor.read.children()).toEqual(output.children);
 });
 
 it('convert top-level (last) list item into body upon unindent if enableResetOnShiftTab is true', () => {
@@ -544,7 +545,7 @@ it('convert top-level (last) list item into body upon unindent if enableResetOnS
     </editor>
   ) as any;
 
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins: [
       BaseListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
     ],
@@ -552,8 +553,8 @@ it('convert top-level (last) list item into body upon unindent if enableResetOnS
     value: input.children,
   });
 
-  editor.tf.tab({ reverse: true });
-  expect(editor.children).toEqual(output.children);
+  editor.update.listClassic.untab();
+  expect(editor.read.children()).toEqual(output.children);
 });
 
 it('does not convert top-level list item into body upon unindent if enableResetOnShiftTab is false', () => {
@@ -595,12 +596,12 @@ it('does not convert top-level list item into body upon unindent if enableResetO
     </editor>
   ) as any;
 
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  editor.tf.tab({ reverse: true });
-  expect(editor.children).toEqual(output.children);
+  editor.update.listClassic.untab();
+  expect(editor.read.children()).toEqual(output.children);
 });

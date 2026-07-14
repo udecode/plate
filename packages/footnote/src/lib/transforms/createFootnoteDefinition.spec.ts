@@ -37,7 +37,7 @@ describe('createFootnoteDefinition', () => {
     expect(
       editor.update.footnote.createDefinition({ identifier: '1' })
     ).toEqual([2]);
-    expect(editor.read.value().children[2]).toMatchObject({
+    expect(editor.read.nodes.get([2])?.[0]).toMatchObject({
       children: [{ children: [{ text: '' }], type: KEYS.p }],
       identifier: '1',
       type: 'footnoteDefinition',
@@ -101,7 +101,7 @@ describe('createFootnoteDefinition', () => {
         identifier: '2',
       })
     ).toEqual([1]);
-    expect(editor.read.value().children[1]).toMatchObject({
+    expect(editor.read.nodes.get([1])?.[0]).toMatchObject({
       children: [{ children: [{ text: '' }], type: KEYS.p }],
       identifier: '2',
       type: 'footnoteDefinition',

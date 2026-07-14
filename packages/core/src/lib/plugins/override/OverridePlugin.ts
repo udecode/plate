@@ -450,6 +450,7 @@ export const OverridePlugin = createBasePlugin({
     if (!hasDeleteBehavior) return;
 
     return {
+      priority: -100,
       transforms: {
         deleteBackward({ next, tx, unit }) {
           const selection = editor.read.selection();

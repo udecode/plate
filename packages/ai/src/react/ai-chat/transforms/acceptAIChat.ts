@@ -1,16 +1,18 @@
-import { ElementApi, KEYS, type Point } from 'platejs';
-import type { PlateEditor } from 'platejs/react';
+import { type Point, ElementApi } from '@platejs/plite';
+import type { PlateEditor } from '@platejs/core/react';
 
 import { BaseAIPlugin } from '../../../lib/BaseAIPlugin';
 import { AI_PREVIEW_KEY } from '../../../lib/transforms/aiStreamSnapshot';
+import { removeAIMarks } from '../../../lib/transforms/removeAIMarks';
 import { withAIBatch } from '../../../lib/transforms/withAIBatch';
-import { type AIChatPluginConfig, AIChatPlugin } from '../AIChatPlugin';
+import { AIChatPlugin } from '../AIChatPlugin';
 import { acceptAISuggestions } from '../utils/acceptAISuggestions';
+import { removeAnchorAIChat } from './removeAnchorAIChat';
 
 const getAcceptedInsertFocusPoint = (editor: PlateEditor): Point | null => {
   let endIndex: number | null = null;
 
-  editor.children.forEach((node: any, index) => {
+  editor.read.children().forEach((node, index) => {
     if (ElementApi.isElement(node) && node[AI_PREVIEW_KEY]) {
       endIndex = index;
     }
@@ -18,33 +20,31 @@ const getAcceptedInsertFocusPoint = (editor: PlateEditor): Point | null => {
 
   if (endIndex === null) return null;
 
-  return editor.api.end([endIndex]) ?? null;
+  return editor.read.points.end([endIndex]) ?? null;
 };
 
 export const acceptAIChat = (editor: PlateEditor) => {
   const mode = editor.plugin(AIChatPlugin).getOption('mode');
 
   if (mode === 'insert') {
-    const ai = editor.getTransforms(BaseAIPlugin).ai;
-    const api = editor.getApi<AIChatPluginConfig>({ key: KEYS.ai });
+    const ai = editor.plugin(BaseAIPlugin).api;
     const focusPoint = getAcceptedInsertFocusPoint(editor);
 
     if (!ai.acceptPreview()) {
-      withAIBatch(editor, () => {
-        editor.tf.unsetNodes(AI_PREVIEW_KEY, {
+      withAIBatch(editor, (tx) => {
+        tx.nodes.unset(AI_PREVIEW_KEY, {
           at: [],
-          match: (node) =>
-            ElementApi.isElement(node) && !!(node as any)[AI_PREVIEW_KEY],
+          match: (node) => ElementApi.isElement(node) && !!node[AI_PREVIEW_KEY],
         });
-        ai.removeMarks();
-        editor.getTransforms(AIChatPlugin).aiChat.removeAnchor();
+        removeAIMarks(editor, tx);
+        removeAnchorAIChat(editor, tx);
       });
     }
 
-    api.aiChat.hide();
-    editor.tf.focus();
+    editor.plugin(AIChatPlugin).api.hide();
+    editor.api.dom.focus();
     if (focusPoint) {
-      editor.tf.select({
+      editor.update.selection.set({
         anchor: focusPoint,
         focus: focusPoint,
       });
@@ -52,10 +52,8 @@ export const acceptAIChat = (editor: PlateEditor) => {
   }
 
   if (mode === 'chat') {
-    withAIBatch(editor, () => {
-      acceptAISuggestions(editor);
-    });
+    acceptAISuggestions(editor);
 
-    editor.getApi(AIChatPlugin).aiChat.hide();
+    editor.plugin(AIChatPlugin).api.hide();
   }
 };

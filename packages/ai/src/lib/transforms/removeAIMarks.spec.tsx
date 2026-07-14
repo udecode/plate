@@ -1,11 +1,11 @@
-import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
 
 import { BaseAIPlugin } from '../BaseAIPlugin';
 import { removeAIMarks } from './removeAIMarks';
 
 describe('removeAIMarks', () => {
   it('unsets only ai marks and leaves other marks alone', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin],
       value: [
         {
@@ -18,18 +18,21 @@ describe('removeAIMarks', () => {
       ],
     });
 
-    removeAIMarks(editor);
+    editor.update((tx) => removeAIMarks(editor, tx));
 
-    expect(editor.children).toEqual([
+    expect(editor.read.children()).toEqual([
       {
-        children: [{ bold: true, text: 'one two' }],
+        children: [
+          { bold: true, text: 'one' },
+          { bold: true, text: ' two' },
+        ],
         type: 'p',
       },
     ]);
   });
 
   it('respects the at filter', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin],
       value: [
         { type: 'p', children: [{ ai: true, text: 'one' }] },
@@ -37,9 +40,9 @@ describe('removeAIMarks', () => {
       ],
     });
 
-    removeAIMarks(editor, { at: [1] });
+    editor.update((tx) => removeAIMarks(editor, tx, { at: [1] }));
 
-    expect(editor.children as any).toEqual([
+    expect(editor.read.children()).toEqual([
       { type: 'p', children: [{ ai: true, text: 'one' }] },
       { type: 'p', children: [{ text: 'two' }] },
     ]);

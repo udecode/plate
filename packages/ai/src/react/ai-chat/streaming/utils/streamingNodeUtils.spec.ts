@@ -1,23 +1,34 @@
-describe('ai chat streaming node utils', () => {
-  it('marks restarted lists only when previous list context is absent', async () => {
-    const { getListNode } = await import(
-      `./getListNode?test=${Math.random().toString(36).slice(2)}`
-    );
+import { type Element } from '@platejs/plite';
+import { BaseParagraphPlugin } from '@platejs/core';
+import { createPlateEditor } from '@platejs/core/react';
 
-    const editor = {
-      api: {
-        previous: () => {},
-      },
-      selection: { focus: { path: [0, 0], offset: 0 } },
-    } as any;
+import { getListNode } from './getListNode';
+import { isSameNode } from './isSameNode';
+import { nodesWithProps } from './nodesWithProps';
+
+const createEditor = () =>
+  createPlateEditor({
+    plugins: [BaseParagraphPlugin],
+    selection: {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    },
+    value: [{ children: [{ text: '' }], type: 'p' }],
+  });
+
+describe('ai chat streaming node utils', () => {
+  it('marks restarted lists only when previous list context is absent', () => {
+    const editor = createEditor();
 
     expect(
       getListNode(editor, {
+        children: [{ text: '' }],
         listStart: 3,
         listStyleType: 'decimal',
         type: 'p',
-      } as any)
+      })
     ).toEqual({
+      children: [{ text: '' }],
       listRestartPolite: 3,
       listStart: 3,
       listStyleType: 'decimal',
@@ -25,42 +36,25 @@ describe('ai chat streaming node utils', () => {
     });
   });
 
-  it('compares paragraph list style types before falling back to plain types', async () => {
-    const { isSameNode } = await import(
-      `./isSameNode?test=${Math.random().toString(36).slice(2)}`
-    );
+  it('compares paragraph list styles before falling back to types', () => {
+    const editor = createEditor();
+    const disc = {
+      children: [{ text: '' }],
+      listStyleType: 'disc',
+      type: 'p',
+    } satisfies Element;
 
-    const editor = {
-      getType: () => 'p',
-    } as any;
-
+    expect(isSameNode(editor, disc, disc)).toBe(true);
     expect(
-      isSameNode(
-        editor,
-        { listStyleType: 'disc', type: 'p' } as any,
-        { listStyleType: 'disc', type: 'p' } as any
-      )
-    ).toBe(true);
-    expect(
-      isSameNode(
-        editor,
-        { listStyleType: 'disc', type: 'p' } as any,
-        { listStyleType: 'decimal', type: 'p' } as any
-      )
+      isSameNode(editor, disc, {
+        ...disc,
+        listStyleType: 'decimal',
+      })
     ).toBe(false);
   });
 
-  it('merges element and text props while preserving text content', async () => {
-    const { nodesWithProps } = await import(
-      `./nodesWithProps?test=${Math.random().toString(36).slice(2)}`
-    );
-
-    const editor = {
-      api: {
-        previous: () => {},
-      },
-      selection: { focus: { path: [0, 0], offset: 0 } },
-    } as any;
+  it('merges element and text props while preserving text content', () => {
+    const editor = createEditor();
 
     expect(
       nodesWithProps(
@@ -71,17 +65,17 @@ describe('ai chat streaming node utils', () => {
             listStart: 2,
             listStyleType: 'decimal',
             type: 'p',
-          } as any,
+          },
         ],
         {
           elementProps: { foo: 'bar' },
           textProps: { bold: true },
-        } as any
+        }
       )
     ).toEqual([
       {
-        foo: 'bar',
         children: [{ bold: true, text: 'leaf' }],
+        foo: 'bar',
         listRestartPolite: 2,
         listStart: 2,
         listStyleType: 'decimal',

@@ -39,7 +39,6 @@ describe('getEditorPlugin', () => {
 
     expect(context).toMatchObject({
       api: {},
-      editorApi: editor.api,
       editor,
       plugin: expect.objectContaining({
         key: 'test',
@@ -102,7 +101,6 @@ describe('getEditorPlugin', () => {
 
     expect(context).toMatchObject({
       api: {},
-      editorApi: editor.api,
       editor,
       plugin: expect.objectContaining({
         key: 'test',
@@ -125,7 +123,6 @@ describe('getEditorPlugin', () => {
 
     expect(context).toMatchObject({
       api: {},
-      editorApi: editor.api,
       editor,
       plugin: expect.objectContaining({
         key: 'unresolved',
@@ -153,8 +150,22 @@ describe('getEditorPlugin', () => {
 
     expect(context.api.editorMethod()).toBe('editor');
     expect(context.api.pluginMethod()).toBe('plugin');
-    expect(context.editorApi.editorMethod()).toBe('editor');
-    expect(context.editorApi.methodPlugin.pluginMethod()).toBe('plugin');
+    expect(typedEditor.api.editorMethod()).toBe('editor');
+    expect(typedEditor.api.methodPlugin.pluginMethod()).toBe('plugin');
     expect((context.api as any).methodPlugin).toBeUndefined();
+  });
+
+  it('exposes plugin-owned updates without their key namespace', () => {
+    let mode: 'edit' | 'view' = 'view';
+    const plugin = createBasePlugin({ key: 'command' }).extendTx(() => () => ({
+      setMode: (nextMode: 'edit' | 'view') => {
+        mode = nextMode;
+      },
+    }));
+    const typedEditor = createBaseEditor({ plugins: [plugin] });
+
+    typedEditor.plugin(plugin).update.setMode('edit');
+
+    expect(mode).toBe('edit');
   });
 });

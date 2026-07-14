@@ -1,9 +1,9 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
 
 import { KEYS } from 'platejs';
 
-export const someList = (editor: SlateEditor, type: string[] | string) =>
-  !!editor.selection &&
+export const someList = (editor: BaseEditor, type: string[] | string) =>
+  !!editor.read.selection() &&
   editor.read.nodes.some({
     match: (n: any) => {
       const isHasProperty = Object.hasOwn(n, KEYS.listChecked);

@@ -1,6 +1,6 @@
-import type { Editor, NodeEntry } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import type { Element, NodeEntry } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { ListStyleType } from '../types';
 import { setIndentTodoNode, setListNode } from './setListNode';
@@ -10,15 +10,15 @@ import { setIndentTodoNode, setListNode } from './setListNode';
  * defined.
  */
 export const setListNodes = (
-  editor: Editor,
-  entries: NodeEntry[],
+  editor: BaseEditor,
+  entries: NodeEntry<Element>[],
   {
     listStyleType = ListStyleType.Disc,
   }: {
     listStyleType?: string;
   }
 ) => {
-  editor.tf.withoutNormalizing(() => {
+  editor.update.withoutNormalizing(() => {
     entries.forEach((entry) => {
       const [node, path] = entry;
 
@@ -29,7 +29,7 @@ export const setListNodes = (
           : indent + 1;
 
       if (listStyleType === 'todo') {
-        editor.tf.unsetNodes(KEYS.listType, { at: path });
+        editor.update.nodes.unset(KEYS.listType, { at: path });
         setIndentTodoNode(editor, {
           at: path,
           indent,
@@ -39,7 +39,7 @@ export const setListNodes = (
         return;
       }
 
-      editor.tf.unsetNodes(KEYS.listChecked, { at: path });
+      editor.update.nodes.unset(KEYS.listChecked, { at: path });
       setListNode(editor, {
         at: path,
         indent,

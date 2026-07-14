@@ -1,4 +1,4 @@
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
 
 import { getMarkdown } from './getMarkdown';
 
@@ -12,7 +12,7 @@ export type MarkdownType =
   | 'tableCellWithId';
 
 export const replacePlaceholders = (
-  editor: SlateEditor,
+  editor: BaseEditor,
   text: string,
   {
     prompt,

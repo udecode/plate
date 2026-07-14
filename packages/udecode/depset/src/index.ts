@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { exec, execSync } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -16,8 +16,16 @@ import { spinner as createSpinner } from './utils/spinner';
 process.on('SIGINT', () => process.exit(0));
 process.on('SIGTERM', () => process.exit(0));
 
-const execPromise = promisify(exec);
+const execFilePromise = promisify(execFile);
 const VERSION_PREFIX_REGEX = /^\D*/;
+
+const PackageJsonSchema = z
+  .object({
+    dependencies: z.record(z.string()).optional(),
+    devDependencies: z.record(z.string()).optional(),
+  })
+  .passthrough();
+const NpmVersionsSchema = z.union([z.string(), z.array(z.string())]);
 
 const DepSyncOptionsSchema = z.object({
   packageSpecifier: z.string().min(1, 'Package specifier is required.'),
@@ -25,16 +33,24 @@ const DepSyncOptionsSchema = z.object({
   install: z.boolean().default(false),
   yes: z.boolean().default(false),
   cwd: z.string().default(process.cwd()),
-  silent: z.boolean().default(false), // Added for global silent control
-  latest: z.boolean().optional(), // Added for --latest flag
+  silent: z.boolean().default(false),
 });
 
 type DepSyncOptions = z.infer<typeof DepSyncOptionsSchema>;
+type PackageJson = z.infer<typeof PackageJsonSchema>;
+
+const CliOptionsSchema = z.object({
+  cwd: z.string(),
+  install: z.boolean(),
+  latest: z.boolean(),
+  silent: z.boolean(),
+  yes: z.boolean(),
+});
 
 async function getPackageJson(
   cwd: string,
   options: Pick<DepSyncOptions, 'silent'>
-): Promise<any> {
+): Promise<PackageJson> {
   const targetPath = path.join(cwd, './package.json');
   const sp = createSpinner(`Reading package.json from ${targetPath}`, {
     silent: options.silent,
@@ -42,11 +58,10 @@ async function getPackageJson(
   try {
     const fileContent = await fs.readFile(targetPath, 'utf8');
     sp?.succeed('Successfully read package.json');
-    return JSON.parse(fileContent);
+    return PackageJsonSchema.parse(JSON.parse(fileContent));
   } catch (error) {
     sp?.fail(`Error reading package.json at ${targetPath}`);
-    handleError(error); // handleError will exit
-    return null; // Should not be reached
+    return handleError(error);
   }
 }
 
@@ -56,12 +71,15 @@ async function fetchPackageVersion(
 ): Promise<string | null> {
   try {
     const versionSpecifier = targetVersionString
-      ? `${pkg}@"<=${targetVersionString}"`
+      ? `${pkg}@<=${targetVersionString}`
       : pkg;
-    const { stdout } = await execPromise(
-      `npm view ${versionSpecifier} version --json`
-    );
-    const versions = JSON.parse(stdout);
+    const { stdout } = await execFilePromise('npm', [
+      'view',
+      versionSpecifier,
+      'version',
+      '--json',
+    ]);
+    const versions = NpmVersionsSchema.parse(JSON.parse(stdout));
     const latestMatchingVersion = Array.isArray(versions)
       ? versions.at(-1)
       : versions;
@@ -70,15 +88,15 @@ async function fetchPackageVersion(
       return latestMatchingVersion.trim();
     }
     return null;
-  } catch (error: any) {
-    logger.error(error.message);
+  } catch (error) {
+    logger.error(error instanceof Error ? error.message : String(error));
     return null;
   }
 }
 
 async function fetchPackageVersions(
   packagesToFetch: string[],
-  currentPackageJson: any,
+  currentPackageJson: PackageJson,
   options: DepSyncOptions
 ): Promise<Map<string, { currentVersion: string; version: string }>> {
   const specifierDisplay = options.packageSpecifier
@@ -106,22 +124,19 @@ async function fetchPackageVersions(
           ''
         ) ||
         'Not installed';
-      return [pkg, { currentVersion, version }];
+      return [pkg, { currentVersion, version }] as const;
     }
     return null;
   });
 
   const results = await Promise.all(versionPromises);
-  const versionMap = new Map<
-    string,
-    { currentVersion: string; version: string }
-  >(results.filter(Boolean) as any);
+  const versionMap = new Map(results.filter((result) => result !== null));
   sp?.succeed('Finished fetching package versions.');
   return versionMap;
 }
 
 async function preparePackageUpdates(
-  currentPackageJson: any,
+  currentPackageJson: PackageJson,
   versionMap: Map<string, { currentVersion: string; version: string }>
 ): Promise<{
   updatedPackages: Array<{
@@ -136,7 +151,7 @@ async function preparePackageUpdates(
     currentVersion: string;
     newVersion: string;
   }> = [];
-  const newPackageJson = JSON.parse(JSON.stringify(currentPackageJson)); // Deep clone
+  const newPackageJson = structuredClone(currentPackageJson);
 
   for (const [name, versions] of Array.from(versionMap.entries())) {
     let changed = false;
@@ -212,11 +227,10 @@ async function runSync(options: DepSyncOptions) {
   }
 
   const currentPackageJson = await getPackageJson(options.cwd, options);
-  if (!currentPackageJson) return; // Error handled in getPackageJson
 
   const allDependencies = {
-    ...(currentPackageJson.dependencies || {}),
-    ...(currentPackageJson.devDependencies || {}),
+    ...(currentPackageJson.dependencies ?? {}),
+    ...(currentPackageJson.devDependencies ?? {}),
   };
 
   const packagesToFetch = Object.keys(allDependencies).filter(packageFilterFn);
@@ -252,12 +266,6 @@ async function runSync(options: DepSyncOptions) {
     );
     return;
   }
-  if (versionMap.size === 0 && packagesToFetch.length === 0) {
-    // This case is already handled by the packagesToFetch.length === 0 check above, but good for clarity
-    mainSpinner.info('No packages matched the specifier.');
-    return;
-  }
-
   const { updatedPackages, newPackageJsonString } = await preparePackageUpdates(
     currentPackageJson,
     versionMap
@@ -279,7 +287,7 @@ async function runSync(options: DepSyncOptions) {
         message: 'Apply these changes to package.json?',
         initial: true,
       });
-      proceed = confirmUpdate;
+      proceed = confirmUpdate === true;
     }
 
     if (proceed) {
@@ -295,19 +303,11 @@ async function runSync(options: DepSyncOptions) {
       } catch (error) {
         writeSpinner?.fail('Error writing to package.json.');
         handleError(error);
-        return;
       }
 
       // Decide whether to run install
-      let shouldRunInstall = false;
-      if (options.install) {
-        // --install flag IS present
-        shouldRunInstall = true;
-      } else if (options.yes) {
-        // --install flag IS NOT present, but --yes IS present
-        shouldRunInstall = true;
-      } else {
-        // --install is NOT present, --yes is NOT present
+      let shouldRunInstall = options.install;
+      if (!options.install && !options.yes) {
         const { confirmInstall } = await prompts({
           type: 'confirm',
           name: 'confirmInstall',
@@ -315,7 +315,7 @@ async function runSync(options: DepSyncOptions) {
             'Run package manager install command to apply these changes?',
           initial: true,
         });
-        shouldRunInstall = confirmInstall;
+        shouldRunInstall = z.boolean().parse(confirmInstall);
       }
 
       if (shouldRunInstall) {
@@ -326,15 +326,14 @@ async function runSync(options: DepSyncOptions) {
           { silent: options.silent }
         )?.start();
         try {
-          execSync(installCommand, {
+          execFileSync(pm, ['install'], {
             cwd: options.cwd,
             stdio: options.silent ? 'pipe' : 'inherit',
           });
           installSpinner?.succeed(`Successfully ran \`${installCommand}\``);
         } catch (error) {
           installSpinner?.fail(`Error running \`${installCommand}\``);
-          handleError(error); // Will exit
-          return;
+          handleError(error);
         }
       } else if (
         updatedPackages.length > 0 &&
@@ -352,7 +351,6 @@ async function runSync(options: DepSyncOptions) {
     }
   } else {
     logger.success('All specified packages are already up to date.');
-    // Removed redundant logging here as installation prompting is handled above or not applicable
   }
   logger.break();
 }
@@ -393,79 +391,88 @@ async function main() {
       '-L, --latest',
       'Use the latest version, skip version prompt',
       false
-    ) // Added --latest option
-    .action(async (packageSpecifierArg, targetVersionArg, cliOpts) => {
-      try {
-        let pkgSpec = packageSpecifierArg;
-        let targetVer = targetVersionArg;
+    )
+    .action(
+      async (
+        packageSpecifierArg: string | undefined,
+        targetVersionArg: string | undefined,
+        rawCliOptions: unknown
+      ) => {
+        try {
+          const cliOpts = CliOptionsSchema.parse(rawCliOptions);
+          let pkgSpec = packageSpecifierArg;
+          let targetVer = targetVersionArg;
 
-        if (!pkgSpec && !cliOpts.yes) {
-          const response = await prompts({
-            type: 'text',
-            name: 'packageSpecifier',
-            message: 'Enter the package name or pattern to synchronize:',
-            validate: (value) =>
-              value && value.trim().length > 0
-                ? true
-                : 'Package specifier cannot be empty.',
-          });
-          if (!response.packageSpecifier) {
-            logger.warn('Package specifier is required. Exiting.');
-            return;
+          if (!pkgSpec && !cliOpts.yes) {
+            const response = await prompts({
+              type: 'text',
+              name: 'packageSpecifier',
+              message: 'Enter the package name or pattern to synchronize:',
+              validate: (value) =>
+                value && value.trim().length > 0
+                  ? true
+                  : 'Package specifier cannot be empty.',
+            });
+            if (!response.packageSpecifier) {
+              logger.warn('Package specifier is required. Exiting.');
+              return;
+            }
+            pkgSpec = z.string().parse(response.packageSpecifier);
+          } else if (!pkgSpec && cliOpts.yes) {
+            logger.error('Error: package-specifier is required.');
+            process.exit(1);
           }
-          pkgSpec = response.packageSpecifier;
-        } else if (!pkgSpec && cliOpts.yes) {
-          logger.error('Error: package-specifier is required.');
-          process.exit(1);
-        }
 
-        if (!targetVer && !cliOpts.yes && !cliOpts.latest) {
-          // Skip if --latest is used
-          const versionResponse = await prompts({
-            type: 'text',
-            name: 'targetVersion',
-            message:
-              'Enter the target version (e.g., "1.2.3", or leave blank for latest):',
-          });
-          targetVer = versionResponse.targetVersion || undefined;
-        } else if (cliOpts.latest) {
-          targetVer = undefined; // Ensure targetVer is undefined if --latest is used
-        }
+          if (!targetVer && !cliOpts.yes && !cliOpts.latest) {
+            // Skip if --latest is used
+            const versionResponse = await prompts({
+              type: 'text',
+              name: 'targetVersion',
+              message:
+                'Enter the target version (e.g., "1.2.3", or leave blank for latest):',
+            });
+            targetVer = z
+              .string()
+              .optional()
+              .parse(versionResponse.targetVersion || undefined);
+          } else if (cliOpts.latest) {
+            targetVer = undefined; // Ensure targetVer is undefined if --latest is used
+          }
 
-        // Merge CLI options with defaults from schema for parsing
-        const rawOptions = {
-          packageSpecifier: pkgSpec,
-          targetVersion: targetVer,
-          install: cliOpts.install,
-          yes: cliOpts.yes,
-          cwd: cliOpts.cwd,
-          silent: cliOpts.silent,
-          latest: cliOpts.latest, // Added latest to rawOptions
-        };
-        const options = DepSyncOptionsSchema.parse(rawOptions);
-        if (options.silent) {
-          // Suppress non-error console logs if silent is true
-          logger.info = () => {};
-          logger.success = () => {};
-          logger.warn = () => {};
-          logger.log = () => {};
-          logger.break = () => {};
-        }
-        await runSync(options);
-      } catch (error) {
-        // Ensure logger still works for handleError even if silenced
-        const originalLogger = { ...logger };
-        if (cliOpts.silent) {
-          logger.error = console.error; // Fallback for errors
-          logger.break = () => console.log('');
-        }
-        handleError(error);
-        // Restore logger if it was modified
-        if (cliOpts.silent) {
-          Object.assign(logger, originalLogger);
+          // Merge CLI options with defaults from schema for parsing
+          const rawOptions = {
+            packageSpecifier: pkgSpec,
+            targetVersion: targetVer,
+            install: cliOpts.install,
+            yes: cliOpts.yes,
+            cwd: cliOpts.cwd,
+            silent: cliOpts.silent,
+          };
+          const options = DepSyncOptionsSchema.parse(rawOptions);
+          if (options.silent) {
+            // Suppress non-error console logs if silent is true
+            logger.info = () => {};
+            logger.success = () => {};
+            logger.warn = () => {};
+            logger.log = () => {};
+            logger.break = () => {};
+          }
+          await runSync(options);
+        } catch (error) {
+          const silent =
+            typeof rawCliOptions === 'object' &&
+            rawCliOptions !== null &&
+            'silent' in rawCliOptions &&
+            rawCliOptions.silent === true;
+
+          if (silent) {
+            logger.error = console.error;
+            logger.break = () => console.log('');
+          }
+          handleError(error);
         }
       }
-    });
+    );
 
   await program.parseAsync(process.argv);
 }

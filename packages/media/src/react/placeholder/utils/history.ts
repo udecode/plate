@@ -1,57 +1,42 @@
-import type { TElement } from 'platejs';
+import { ElementApi, type Element } from '@platejs/plite';
 import type { PlateEditor } from 'platejs/react';
 
-import { KEYS } from 'platejs';
-
-const historyMarks = new WeakMap<PlateEditor, boolean>();
-
-export const withHistoryMark = (editor: PlateEditor, fn: () => void) => {
-  const prev = isHistoryMarking(editor);
-  historyMarks.set(editor, true);
-  fn();
-  historyMarks.set(editor, prev);
-};
-
-export const isHistoryMarking = (editor: PlateEditor): boolean =>
-  historyMarks.get(editor) ?? false;
-
-export const updateUploadHistory = (editor: PlateEditor, node: TElement) => {
-  const index = editor.history.undos.findLastIndex(
-    (batch: any) =>
-      batch[KEYS.placeholder] &&
-      batch.operations.some(
-        (operation: any) =>
-          operation.type === 'insert_node' &&
-          operation.node.id === node.placeholderId
-      )
+export const updateUploadHistory = (editor: PlateEditor, node: Element) => {
+  const undos = editor.read.history.undos();
+  const index = undos.findLastIndex((batch) =>
+    batch.operations.some(
+      (operation) =>
+        operation.type === 'insert_node' &&
+        ElementApi.isElement(operation.node) &&
+        operation.node.id === node.placeholderId
+    )
   );
 
   if (index < 0) return;
 
-  const batch = editor.history.undos[index];
+  const batch = undos[index];
 
-  const newOperations: any[] = [];
+  if (!batch) return;
 
-  for (const operation of batch.operations) {
+  const newOperations = batch.operations.map((operation) => {
     if (
-      (operation.type === 'insert_node' && (operation.node as any)).id ===
-      node.placeholderId
+      operation.type === 'insert_node' &&
+      ElementApi.isElement(operation.node) &&
+      operation.node.id === node.placeholderId
     ) {
-      newOperations.push({
+      return {
         ...operation,
         node,
-      });
-
-      continue;
+      };
     }
 
-    newOperations.push(operation);
-  }
+    return operation;
+  });
 
   const newBatch = {
     ...batch,
     operations: newOperations,
   };
 
-  editor.history.undos[index] = newBatch;
+  batch.operations.splice(0, batch.operations.length, ...newBatch.operations);
 };

@@ -1,7 +1,9 @@
 /** @jsx jsxt */
 
+import { createBaseEditor } from '@platejs/core';
+
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor, KEYS } from 'platejs';
+import { KEYS } from 'platejs';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 import { normalizeNestedList } from './normalizeNestedList';
@@ -10,15 +12,21 @@ jsxt;
 
 describe('normalizeNestedList', () => {
   it('returns false when the parent is not a list', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
-    const entry = editor.api.node([0])!;
+    const entry = editor.read.nodes.get([0])!;
 
-    expect(normalizeNestedList(editor, { nestedListItem: entry as any })).toBe(
-      false
-    );
+    let result = true;
+
+    editor.update((tx) => {
+      result = !!normalizeNestedList(editor, tx, {
+        nestedListItem: entry as any,
+      });
+    });
+
+    expect(result).toBe(false);
   });
 
   it('returns false when the nested list has no previous list item sibling', () => {
@@ -33,15 +41,21 @@ describe('normalizeNestedList', () => {
         </hul>
       </editor>
     ) as any;
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       value: input.children,
     });
-    const entry = editor.api.node([0, 0])!;
+    const entry = editor.read.nodes.get([0, 0])!;
 
-    expect(normalizeNestedList(editor, { nestedListItem: entry as any })).toBe(
-      false
-    );
+    let result = true;
+
+    editor.update((tx) => {
+      result = !!normalizeNestedList(editor, tx, {
+        nestedListItem: entry as any,
+      });
+    });
+
+    expect(result).toBe(false);
   });
 
   it('moves a directly nested list under the previous list item', () => {
@@ -59,16 +73,22 @@ describe('normalizeNestedList', () => {
         </hul>
       </editor>
     ) as any;
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       value: input.children,
     });
-    const entry = editor.api.node([0, 1])!;
+    const entry = editor.read.nodes.get([0, 1])!;
 
-    expect(normalizeNestedList(editor, { nestedListItem: entry as any })).toBe(
-      true
-    );
-    expect(editor.children).toEqual([
+    let result = false;
+
+    editor.update((tx) => {
+      result = !!normalizeNestedList(editor, tx, {
+        nestedListItem: entry as any,
+      });
+    });
+
+    expect(result).toBe(true);
+    expect(editor.read.children()).toEqual([
       {
         children: [
           {

@@ -1,8 +1,10 @@
 /** @jsx jsxt */
 
+import { createBaseEditor } from '@platejs/core';
+
 import { BaseImagePlugin } from '@platejs/media';
-import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, KEYS, createSlateEditor } from 'platejs';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
+import { KEYS } from 'platejs';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 import { toggleList, toggleTaskList } from './toggleList';
@@ -10,18 +12,20 @@ import { toggleList, toggleTaskList } from './toggleList';
 jsxt;
 
 const runToggleList = (
-  input: SlateEditor,
+  input: TestEditor,
   plugins: any[] = [BaseListPlugin],
   type: string = KEYS.ulClassic
 ) => {
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins,
     selection: input.selection,
     value: input.children,
   });
 
-  toggleList(editor, {
-    type: editor.getType(type),
+  editor.update((tx) => {
+    toggleList(editor, tx, {
+      type: editor.getType(type),
+    });
   });
 
   return editor;
@@ -29,16 +33,18 @@ const runToggleList = (
 
 describe('toggleList', () => {
   it('does nothing when the editor has no selection', () => {
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       value: [{ children: [{ text: 'plain' }], type: KEYS.p }],
     });
 
-    const before = JSON.stringify(editor.children);
+    const before = JSON.stringify(editor.read.children());
 
-    toggleList(editor, { type: editor.getType(KEYS.ulClassic) });
+    editor.update((tx) => {
+      toggleList(editor, tx, { type: editor.getType(KEYS.ulClassic) });
+    });
 
-    expect(JSON.stringify(editor.children)).toBe(before);
+    expect(JSON.stringify(editor.read.children())).toBe(before);
   });
 
   describe('turning paragraphs into lists', () => {
@@ -49,11 +55,11 @@ describe('toggleList', () => {
             1<cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = runToggleList(input);
 
-      expect(editor.children).toEqual(
+      expect(editor.read.children()).toEqual(
         (
           <editor>
             <hul>
@@ -80,11 +86,11 @@ describe('toggleList', () => {
             <focus />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = runToggleList(input);
 
-      expect(editor.children).toEqual(
+      expect(editor.read.children()).toEqual(
         (
           <editor>
             <hul>
@@ -115,7 +121,7 @@ describe('toggleList', () => {
             </htext>
           </himg>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = runToggleList(input, [
         BaseListPlugin.configure({
@@ -125,7 +131,7 @@ describe('toggleList', () => {
         }),
       ]);
 
-      expect(editor.children).toEqual(
+      expect(editor.read.children()).toEqual(
         (
           <editor>
             <hul>
@@ -148,16 +154,18 @@ describe('toggleList', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
-      const editor = createSlateEditor({
+      ) as TestEditor;
+      const editor = createBaseEditor({
         plugins: [BaseListPlugin],
         selection: input.selection,
         value: input.children,
       });
 
-      toggleTaskList(editor, true);
+      editor.update((tx) => {
+        toggleTaskList(editor, tx, true);
+      });
 
-      expect(editor.children).toMatchObject([
+      expect(editor.read.children()).toMatchObject([
         {
           children: [
             {
@@ -192,11 +200,11 @@ describe('toggleList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = runToggleList(input);
 
-      expect(editor.children).toEqual(
+      expect(editor.read.children()).toEqual(
         (
           <editor>
             <hp>1</hp>
@@ -225,11 +233,11 @@ describe('toggleList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = runToggleList(input);
 
-      expect(editor.children).toEqual(
+      expect(editor.read.children()).toEqual(
         (
           <editor>
             <hul>
@@ -267,11 +275,11 @@ describe('toggleList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = runToggleList(input, [BaseListPlugin], KEYS.olClassic);
 
-      expect(editor.children).toEqual(
+      expect(editor.read.children()).toEqual(
         (
           <editor>
             <hul>
@@ -305,11 +313,11 @@ describe('toggleList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = runToggleList(input, [BaseListPlugin], KEYS.olClassic);
 
-      expect(editor.children).toEqual(
+      expect(editor.read.children()).toEqual(
         (
           <editor>
             <hol>
@@ -345,11 +353,11 @@ describe('toggleList', () => {
             <focus />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as TestEditor;
 
       const editor = runToggleList(input, [BaseListPlugin], KEYS.olClassic);
 
-      expect(editor.children).toEqual(
+      expect(editor.read.children()).toEqual(
         (
           <editor>
             <hol>

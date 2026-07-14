@@ -10,17 +10,20 @@ import {
 
 const useEditorRefMock = mock();
 const useElementMock = mock();
-const useFocusedMock = mock();
-const useReadOnlyMock = mock();
-const useSelectedMock = mock();
+const useEditorFocusedMock = mock();
+const useEditorReadOnlyMock = mock();
+const useElementSelectedMock = mock();
+
+mock.module('@platejs/plite-react', () => ({
+  useEditorFocused: useEditorFocusedMock,
+  useEditorReadOnly: useEditorReadOnlyMock,
+  useElementSelected: useElementSelectedMock,
+}));
 
 mock.module('platejs/react', () => ({
   ...actualPlatejsReact,
   useEditorRef: useEditorRefMock,
   useElement: useElementMock,
-  useFocused: useFocusedMock,
-  useReadOnly: useReadOnlyMock,
-  useSelected: useSelectedMock,
 }));
 
 describe('parseMediaUrl', () => {
@@ -101,9 +104,9 @@ describe('useMediaState', () => {
       getType: (key: string) => key,
     });
     useElementMock.mockReturnValue(element);
-    useFocusedMock.mockReturnValue(false);
-    useReadOnlyMock.mockReturnValue(false);
-    useSelectedMock.mockReturnValue(false);
+    useEditorFocusedMock.mockReturnValue(false);
+    useEditorReadOnlyMock.mockReturnValue(false);
+    useElementSelectedMock.mockReturnValue(false);
 
     const { result } = renderHook(() => useMediaState({ urlParsers }));
 
@@ -113,9 +116,9 @@ describe('useMediaState', () => {
   beforeEach(() => {
     useEditorRefMock.mockReset();
     useElementMock.mockReset();
-    useFocusedMock.mockReset();
-    useReadOnlyMock.mockReset();
-    useSelectedMock.mockReset();
+    useEditorFocusedMock.mockReset();
+    useEditorReadOnlyMock.mockReset();
+    useElementSelectedMock.mockReset();
   });
 
   afterAll(() => {

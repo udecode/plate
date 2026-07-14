@@ -1,38 +1,44 @@
-import { type SlateEditor, KEYS, PathApi } from 'platejs';
+import type { BaseEditor } from '@platejs/core';
+import { type Element, PathApi } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { BaseTodoListPlugin } from '../BaseTodoListPlugin';
+import type { ListTransaction } from '../BaseListPlugin';
 
 /** Insert todo list item if selection in li>p. TODO: test */
-export const insertTodoListItem = (editor: SlateEditor): boolean => {
+export const insertTodoListItem = (
+  editor: BaseEditor,
+  tx: ListTransaction
+): boolean => {
   const { inheritCheckStateOnLineEndBreak, inheritCheckStateOnLineStartBreak } =
     editor.plugin(BaseTodoListPlugin).getOptions();
   const todoType = editor.getType(KEYS.listTodoClassic);
 
-  if (!editor.selection) {
-    return false;
-  }
+  const selection = editor.read.selection();
 
-  const todoEntry = editor.api.above({ match: { type: todoType } });
+  if (!selection) return false;
+
+  const todoEntry = editor.read.nodes.above<Element>({
+    match: { type: todoType },
+  });
 
   if (!todoEntry) return false;
 
   const [todo, paragraphPath] = todoEntry;
 
-  let success = false;
-
-  editor.tf.withoutNormalizing(() => {
-    if (!editor.api.isCollapsed()) {
-      editor.tf.delete();
+  {
+    if (!editor.read.selection.isCollapsed()) {
+      tx.text.delete();
     }
 
-    const isStart = editor.api.isStart(editor.selection!.focus, paragraphPath);
-    const isEnd = editor.api.isEmpty(editor.selection, { after: true });
+    const isStart = editor.read.points.isStart(selection.focus, paragraphPath);
+    const isEnd = editor.read.points.isEnd(selection.focus, paragraphPath);
 
     const nextParagraphPath = PathApi.next(paragraphPath);
 
     /** If start, insert a list item before */
     if (isStart) {
-      editor.tf.insertNodes(
+      tx.nodes.insert(
         {
           checked: inheritCheckStateOnLineStartBreak ? todo.checked : false,
           children: [{ text: '' }],
@@ -41,15 +47,13 @@ export const insertTodoListItem = (editor: SlateEditor): boolean => {
         { at: paragraphPath }
       );
 
-      success = true;
-
-      return;
+      return true;
     }
     /** If not end, split the nodes */
     if (isEnd) {
       /** If end, insert a list item after and select it */
-      const marks = editor.api.marks() || {};
-      editor.tf.insertNodes(
+      const marks = editor.read.marks() || {};
+      tx.nodes.insert(
         {
           checked: inheritCheckStateOnLineEndBreak ? todo.checked : false,
           children: [{ text: '', ...marks }],
@@ -57,15 +61,11 @@ export const insertTodoListItem = (editor: SlateEditor): boolean => {
         },
         { at: nextParagraphPath }
       );
-      editor.tf.select(nextParagraphPath);
+      tx.selection.set(nextParagraphPath);
     } else {
-      editor.tf.withoutNormalizing(() => {
-        editor.tf.splitNodes();
-      });
+      tx.nodes.split();
     }
 
-    success = true;
-  });
-
-  return success;
+    return true;
+  }
 };

@@ -1,33 +1,36 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { BaseImagePlugin } from './BaseImagePlugin';
 
 jsxt;
 
 describe('withImageUpload', () => {
-  let warnSpy: ReturnType<typeof spyOn>;
+  let restoreWarn: (() => void) | undefined;
 
   afterEach(() => {
-    warnSpy?.mockRestore();
+    restoreWarn?.();
   });
 
   const suppressInsertDataOverrideWarning = () => {
     const originalWarn = console.warn;
 
-    warnSpy = spyOn(console, 'warn').mockImplementation((message, ...args) => {
-      if (
-        typeof message === 'string' &&
-        message.includes('[OVERRIDE_MISSING]') &&
-        message.includes('editor.insertData()')
-      ) {
-        return;
-      }
+    const warnSpy = spyOn(console, 'warn').mockImplementation(
+      (message, ...args) => {
+        if (
+          typeof message === 'string' &&
+          message.includes('[OVERRIDE_MISSING]') &&
+          message.includes('editor.insertData()')
+        ) {
+          return;
+        }
 
-      originalWarn(message, ...args);
-    });
+        originalWarn(message, ...args);
+      }
+    );
+    restoreWarn = () => warnSpy.mockRestore();
   };
 
   describe('when inserting a png image', () => {
@@ -46,7 +49,7 @@ describe('withImageUpload', () => {
     it('ignores image files without changing the editor', () => {
       suppressInsertDataOverrideWarning();
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [BaseImagePlugin],
         selection: input.selection,
         value: input.children,
@@ -60,9 +63,9 @@ describe('withImageUpload', () => {
         ],
         getData: () => '',
       };
-      editor.tf.insertData(data as any);
+      editor.api.clipboard.insertData(data as unknown as DataTransfer);
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read.children()).toEqual(output.children);
     });
   });
 
@@ -86,7 +89,7 @@ describe('withImageUpload', () => {
         <fragment>image.png</fragment>
       );
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [BaseImagePlugin],
         selection: input.selection,
         value: input.children,
@@ -95,9 +98,9 @@ describe('withImageUpload', () => {
       const data = {
         getData: () => '',
       };
-      editor.tf.insertData(data as any);
+      editor.api.clipboard.insertData(data as unknown as DataTransfer);
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read.children()).toEqual(output.children);
 
       jsonParseSpy.mockRestore();
     });
@@ -119,7 +122,7 @@ describe('withImageUpload', () => {
     it('ignores non-image files without changing the editor', () => {
       suppressInsertDataOverrideWarning();
 
-      const editor = createSlateEditor({
+      const editor = createBaseEditor({
         plugins: [BaseImagePlugin],
         selection: input.selection,
         value: input.children,
@@ -129,9 +132,9 @@ describe('withImageUpload', () => {
         files: [new File(['test'], 'not-an-image')],
         getData: () => '',
       };
-      editor.tf.insertData(data as any);
+      editor.api.clipboard.insertData(data as unknown as DataTransfer);
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read.children()).toEqual(output.children);
     });
   });
 });

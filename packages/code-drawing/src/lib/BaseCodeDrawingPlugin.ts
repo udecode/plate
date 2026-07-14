@@ -18,9 +18,9 @@ export interface TCodeDrawingElement extends Element {
 export const BaseCodeDrawingPlugin = createBasePlugin({
   key: CODE_DRAWING_KEY,
   node: { isElement: true, isVoid: true },
-}).extendTx(({ editor, type }) => (tx) => ({
+}).extendTx(({ type }) => (tx) => ({
   insert: (
     props?: NodeProps<TCodeDrawingElement>,
     options?: NodeInsertNodesOptions<TCodeDrawingElement>
-  ) => insertCodeDrawing(editor, tx, type, props, options),
+  ) => insertCodeDrawing(tx, type, props, options),
 }));

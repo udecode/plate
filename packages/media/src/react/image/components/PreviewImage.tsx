@@ -34,7 +34,7 @@ export const usePreviewImage = () => {
         cursor: isZoomIn ? 'zoom-in' : 'zoom-out',
         transform: `scale(${scale}) translate(${`${translate.x}px`}, ${`${translate.y}px`})`,
       },
-      onClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+      onClick: (e: React.MouseEvent<HTMLImageElement>) => {
         e.stopPropagation();
         if (isZoomIn) {
           zoomIn();

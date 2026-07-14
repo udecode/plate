@@ -1,5 +1,5 @@
 export type SanitizeUrlOptions = {
-  allowedSchemes?: string[];
+  allowedSchemes?: readonly string[];
   permitInvalid?: boolean;
 };
 

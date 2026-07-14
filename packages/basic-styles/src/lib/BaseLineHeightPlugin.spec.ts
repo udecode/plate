@@ -1,8 +1,4 @@
-import {
-  BaseParagraphPlugin,
-  createBaseEditor,
-  getEditorPlugin,
-} from '@platejs/core';
+import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { BaseLineHeightPlugin } from './BaseLineHeightPlugin';
@@ -27,24 +23,18 @@ describe('BaseLineHeightPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
     });
-    const plugin = editor.getPlugin(BaseLineHeightPlugin);
-    const targetPlugin = plugin.inject.targetPluginToInject!({
-      ...getEditorPlugin(editor, plugin),
-      targetPlugin: KEYS.p,
-    });
-    const parse = targetPlugin.parsers!.html!.deserializer!.parse!;
 
     expect(
-      parse({
-        ...getEditorPlugin(editor, plugin),
-        element: {
-          style: { lineHeight: '2' },
-        } as HTMLElement,
-        node: {},
+      editor.api.html.deserialize({
+        element: '<p style="line-height: 2">text</p>',
       })
-    ).toEqual({
-      [editor.getType(KEYS.lineHeight)]: '2',
-    });
+    ).toMatchObject([
+      {
+        [editor.getType(KEYS.lineHeight)]: '2',
+        children: [{ text: 'text' }],
+        type: KEYS.p,
+      },
+    ]);
   });
 
   it('applies and clears line height through the typed tx group', () => {

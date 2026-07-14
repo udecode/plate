@@ -6,17 +6,17 @@ export const omitPluginContext = <T extends BasePluginContext<AnyPluginConfig>>(
   const {
     api,
     editor,
-    editorApi,
     getOption,
     getOptions,
     plugin,
     setOption,
     setOptions,
     type,
+    update,
     ...rest
   } = ctx;
 
-  void editorApi;
+  void update;
 
   return rest;
 };

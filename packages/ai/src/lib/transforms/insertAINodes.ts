@@ -1,7 +1,10 @@
-import type { Descendant, Path, SlateEditor } from 'platejs';
+import { type BaseEditor, getPluginType } from '@platejs/core';
+import type { Descendant, EditorUpdateTransaction, Path } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 export const insertAINodes = (
-  editor: SlateEditor,
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   nodes: Descendant[],
   {
     target,
@@ -9,18 +12,24 @@ export const insertAINodes = (
     target?: Path;
   } = {}
 ) => {
-  if (!target && !editor.selection?.focus.path) return;
+  const selection = tx.selection();
+  const at = target ?? selection?.focus.path;
 
+  if (!at) return;
+
+  const point = tx.points.end(at);
+
+  if (!point) return;
+
+  const aiType = getPluginType(editor, KEYS.ai);
   const aiNodes = nodes.map((node) => ({
     ...node,
-    ai: true,
+    [aiType]: true,
   }));
 
-  editor.tf.withoutNormalizing(() => {
-    editor.tf.insertNodes(aiNodes, {
-      at: editor.api.end(target || editor.selection!.focus.path),
-      select: true,
-    });
-    editor.tf.collapse({ edge: 'end' });
+  tx.nodes.insert(aiNodes, {
+    at: point,
+    select: true,
   });
+  tx.selection.collapse({ edge: 'end' });
 };

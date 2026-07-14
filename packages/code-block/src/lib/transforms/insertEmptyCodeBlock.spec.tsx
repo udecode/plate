@@ -75,6 +75,42 @@ describe('insert empty code block', () => {
     expect(editor.read.children()).toEqual(output.children);
   });
 
+  it('converts the inserted block when targeting an explicit block', () => {
+    const input = (
+      <editor>
+        <hp>
+          test
+          <cursor />
+        </hp>
+      </editor>
+    ) as TestEditor;
+
+    const output = (
+      <editor>
+        <hp>test</hp>
+        <hcodeblock>
+          <hcodeline>
+            <cursor />
+          </hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as TestEditor;
+
+    const editor = createBaseEditor({
+      plugins: [CodeBlockPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+
+    editor.update((tx) => {
+      insertEmptyCodeBlock(editor, tx, {
+        insertNodesOptions: { at: [0], select: false },
+      });
+    });
+
+    expect(editor.read.children()).toEqual(output.children);
+  });
+
   it('insert empty code block below expanded selection', () => {
     const input = (
       <editor>
