@@ -27,74 +27,68 @@ export const deleteColumn = (
 
   if (!tableEntry) return;
 
-  tx.withoutNormalizing(({ tx }) => {
-    if (!disableMerge) {
-      deleteTableMergeColumn(editor, tx);
+  if (!disableMerge) {
+    deleteTableMergeColumn(editor, tx);
 
-      return;
-    }
-    if (editor.read.selection.isExpanded())
-      return deleteColumnWhenExpanded(editor, tx, tableEntry);
+    return;
+  }
+  if (editor.read.selection.isExpanded())
+    return deleteColumnWhenExpanded(editor, tx, tableEntry);
 
-    const tdEntry = editor.read.nodes.above({
-      match: { type: getCellTypes(editor) },
-    });
-    const trEntry = editor.read.nodes.above<TTableRowElement>({
-      match: { type: editor.getType(KEYS.tr) },
-    });
-
-    if (tdEntry && trEntry && getTableColumnCount(tableEntry[0]) <= 1) {
-      tx.nodes.remove({ at: tableEntry[1] });
-
-      return;
-    }
-
-    if (
-      tdEntry &&
-      trEntry &&
-      tableEntry &&
-      // Cannot delete the last cell
-      trEntry[0].children.length > 1
-    ) {
-      const [tableNode, tablePath] = tableEntry;
-
-      const tdPath = tdEntry[1];
-      const colIndex = tdPath.at(-1)!;
-
-      const pathToDelete = tdPath.slice();
-      const replacePathPos = pathToDelete.length - 2;
-
-      tableNode.children.forEach((row, rowIdx) => {
-        const rowElement = row as TTableRowElement;
-
-        pathToDelete[replacePathPos] = rowIdx;
-
-        // for tables containing rows of different lengths
-        // - don't delete if only one cell in row
-        // - don't delete if row doesn't have this cell
-        if (
-          rowElement.children.length === 1 ||
-          colIndex > rowElement.children.length - 1
-        )
-          return;
-
-        tx.nodes.remove({ at: pathToDelete });
-      });
-
-      const { colSizes } = tableNode;
-
-      if (colSizes) {
-        const newColSizes = [...colSizes];
-        newColSizes.splice(colIndex, 1);
-
-        tx.nodes.set<TTableElement>(
-          { colSizes: newColSizes },
-          { at: tablePath }
-        );
-      }
-    }
+  const tdEntry = editor.read.nodes.above({
+    match: { type: getCellTypes(editor) },
+  });
+  const trEntry = editor.read.nodes.above<TTableRowElement>({
+    match: { type: editor.getType(KEYS.tr) },
   });
 
+  if (tdEntry && trEntry && getTableColumnCount(tableEntry[0]) <= 1) {
+    tx.nodes.remove({ at: tableEntry[1] });
+
+    return;
+  }
+
+  if (
+    tdEntry &&
+    trEntry &&
+    tableEntry &&
+    // Cannot delete the last cell
+    trEntry[0].children.length > 1
+  ) {
+    const [tableNode, tablePath] = tableEntry;
+
+    const tdPath = tdEntry[1];
+    const colIndex = tdPath.at(-1)!;
+
+    const pathToDelete = tdPath.slice();
+    const replacePathPos = pathToDelete.length - 2;
+
+    tableNode.children.forEach((row, rowIdx) => {
+      const rowElement = row as TTableRowElement;
+
+      pathToDelete[replacePathPos] = rowIdx;
+
+      // for tables containing rows of different lengths
+      // - don't delete if only one cell in row
+      // - don't delete if row doesn't have this cell
+      if (
+        rowElement.children.length === 1 ||
+        colIndex > rowElement.children.length - 1
+      )
+        return;
+
+      tx.nodes.remove({ at: pathToDelete });
+    });
+
+    const { colSizes } = tableNode;
+
+    if (colSizes) {
+      const newColSizes = [...colSizes];
+      newColSizes.splice(colIndex, 1);
+
+      tx.nodes.set<TTableElement>({ colSizes: newColSizes }, { at: tablePath });
+    }
+  }
   // computeCellIndices(editor, {
   //   tableNode: tableEntry[0],
   // });

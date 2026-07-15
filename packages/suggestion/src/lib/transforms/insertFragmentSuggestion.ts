@@ -67,7 +67,5 @@ export const insertFragmentSuggestionWithTx = (
     };
   });
 
-  editor.plugin(BaseSuggestionPlugin).api.withoutSuggestions(() => {
-    insertFragment();
-  });
+  editor.plugin(BaseSuggestionPlugin).api.untracked(insertFragment);
 };

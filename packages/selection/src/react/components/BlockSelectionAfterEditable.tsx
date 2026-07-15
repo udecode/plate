@@ -43,7 +43,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
       const firstPath = entries[0]![1];
 
-      editor.update.withoutNormalizing(({ tx }) => {
+      editor.update((tx) => {
         for (const [node, path] of [...entries].reverse()) {
           tx.nodes.remove({
             at: path,

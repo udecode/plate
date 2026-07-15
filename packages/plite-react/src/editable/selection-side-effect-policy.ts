@@ -6,26 +6,17 @@ const getLastCommit = (editor: ReactRuntimeEditor) =>
 export const shouldSkipSelectionScroll = (editor: ReactRuntimeEditor) => {
   const commit = getLastCommit(editor);
 
-  return Boolean(
-    commit?.tags.includes('skip-scroll-into-view') ||
-      commit?.metadata.selection?.scroll === false
-  );
+  return Boolean(commit?.tags.includes('skip-scroll-into-view'));
 };
 
 export const shouldSkipDOMSelection = (editor: ReactRuntimeEditor) => {
   const commit = getLastCommit(editor);
 
-  return Boolean(
-    commit?.tags.includes('skip-dom-selection') ||
-      commit?.metadata.selection?.dom === 'preserve'
-  );
+  return Boolean(commit?.tags.includes('skip-dom-selection'));
 };
 
 export const shouldSkipSelectionFocus = (editor: ReactRuntimeEditor) => {
   const commit = getLastCommit(editor);
 
-  return Boolean(
-    commit?.tags.includes('skip-selection-focus') ||
-      commit?.metadata.selection?.focus === false
-  );
+  return Boolean(commit?.tags.includes('skip-selection-focus'));
 };

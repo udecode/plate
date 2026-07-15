@@ -167,13 +167,11 @@ export const BaseBlockquotePlugin = createBasePlugin({
 
       if (blocks.length === 0) return false;
 
-      tx.withoutNormalizing(() => {
-        for (const [, path] of blocks) {
-          tx.blocks.lift({
-            at: path,
-          });
-        }
-      });
+      for (const [, path] of blocks) {
+        tx.blocks.lift({
+          at: path,
+        });
+      }
 
       return true;
     },

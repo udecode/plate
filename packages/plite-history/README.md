@@ -31,19 +31,16 @@ const editor = usePliteEditor({
 })
 ```
 
-Read history through `state.history`, write through `tx.history`, and use
-`editor.update.history.*` for a single controlled update.
+Read history through `state.history`, replay it through
+`editor.update.history.*`, and choose update history intent with a policy-first
+`editor.update` call.
 
 ```ts
 const undoCount = editor.read((state) => state.history().undos.length)
 
-editor.update((tx) => {
-  tx.history.undo()
-})
+editor.update.history.undo()
 
-editor.update.history.skip((tx) => {
-  tx.text.insert('draft')
-})
+editor.update({ history: 'skip' }).text.insert('draft')
 ```
 
 Use `History.isHistory(value)` when library code needs to validate an unknown

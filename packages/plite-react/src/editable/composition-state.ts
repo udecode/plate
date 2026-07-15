@@ -21,7 +21,7 @@ import {
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import type { EditableCompositionStateSetter } from './input-controller';
-import { getNativeTextInputHistoryMetadata } from './input-history';
+import { updateNativeTextInput } from './input-history';
 import type { EditableInputController } from './input-state';
 import type { Editor } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
@@ -149,7 +149,8 @@ export const commitChromeCompositionEndFallback = ({
     writeRuntimeMarks(editor, placeholderMarks);
   }
 
-  editor.update(
+  updateNativeTextInput(
+    editor,
     (tx) => {
       if (
         target &&
@@ -165,9 +166,7 @@ export const commitChromeCompositionEndFallback = ({
 
       tx.text.insert(text, target ? { at: target } : undefined);
     },
-    mergeWithCompositionPredelete
-      ? { metadata: { history: { mode: 'merge' } } }
-      : { metadata: getNativeTextInputHistoryMetadata(editor) }
+    { merge: mergeWithCompositionPredelete }
   );
   removeUnmanagedCompositionTextNodes({ editor, rootElement, text });
 

@@ -713,7 +713,7 @@ Current implemented shape:
 - Covered transform families: marks, text/delete/fragment/break insertion,
   node transforms, and selection transforms.
 - Explicitly excluded from transform middleware: `bookmark`, `normalize`,
-  `setNormalizing`, and `withoutNormalizing`.
+  and `setNormalizing`.
 - Transform middleware runs through keyed internal command registration and
   defaults through the transform registry without exposing public command slots.
 - `next()` forwards current args unchanged, and `next(overrides)` shallow-merges

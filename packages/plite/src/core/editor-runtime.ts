@@ -28,13 +28,13 @@ import type {
   EditorStateView,
   EditorStaticApi,
   EditorUpdateContext,
-  EditorUpdateOptions,
   EditorUpdateTransaction,
   RuntimeId,
   Selection,
   SnapshotListener,
   Value,
 } from '../interfaces/editor';
+import type { InternalEditorUpdateOptions } from './update-policy';
 
 type BindEditorMethod<T> = T extends (
   editor: Editor,
@@ -124,7 +124,7 @@ export type InternalEditorTransactionRuntime<V extends Value = Value> = {
       transaction: EditorUpdateTransaction<V>,
       context: EditorUpdateContext<Editor<V>>
     ) => void,
-    options?: EditorUpdateOptions
+    options?: InternalEditorUpdateOptions
   ) => void;
 };
 

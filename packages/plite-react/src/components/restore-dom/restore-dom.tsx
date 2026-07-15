@@ -1,3 +1,4 @@
+// biome-ignore-all lint/style/useReactFunctionComponents: Error boundaries require a class component.
 import React, {
   Component,
   type ComponentType,

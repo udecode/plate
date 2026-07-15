@@ -1,9 +1,12 @@
 import type { BaseEditor } from '@platejs/core';
-import type { Element, NodeEntry } from '@platejs/plite';
+import type {
+  EditorUpdateTransaction,
+  Element,
+  NodeEntry,
+} from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { ListStyleType } from '../types';
-import { setIndentTodoNode, setListNode } from './setListNode';
 
 /**
  * Set indent list to the given entries. Add indent if listStyleType was not
@@ -18,33 +21,48 @@ export const setListNodes = (
     listStyleType?: string;
   }
 ) => {
-  editor.update.withoutNormalizing(() => {
-    entries.forEach((entry) => {
-      const [node, path] = entry;
+  editor.update((tx) => setListNodesWithTx(tx, entries, { listStyleType }));
+};
 
-      let indent = (node[KEYS.indent] as number) ?? 0;
-      indent =
-        node[KEYS.listType] || Object.hasOwn(node, KEYS.listChecked)
-          ? indent
-          : indent + 1;
+export const setListNodesWithTx = (
+  tx: Pick<EditorUpdateTransaction, 'nodes'>,
+  entries: NodeEntry<Element>[],
+  {
+    listStyleType = ListStyleType.Disc,
+  }: {
+    listStyleType?: string;
+  }
+) => {
+  entries.forEach((entry) => {
+    const [node, path] = entry;
 
-      if (listStyleType === 'todo') {
-        editor.update.nodes.unset(KEYS.listType, { at: path });
-        setIndentTodoNode(editor, {
-          at: path,
-          indent,
-          listStyleType,
-        });
+    let indent = (node[KEYS.indent] as number) ?? 0;
+    indent =
+      node[KEYS.listType] || Object.hasOwn(node, KEYS.listChecked)
+        ? indent
+        : indent + 1;
 
-        return;
-      }
+    if (listStyleType === 'todo') {
+      tx.nodes.unset(KEYS.listType, { at: path });
+      tx.nodes.set(
+        {
+          [KEYS.indent]: indent || indent + 1,
+          [KEYS.listChecked]: false,
+          [KEYS.listType]: listStyleType,
+        },
+        { at: path }
+      );
 
-      editor.update.nodes.unset(KEYS.listChecked, { at: path });
-      setListNode(editor, {
-        at: path,
-        indent,
-        listStyleType,
-      });
-    });
+      return;
+    }
+
+    tx.nodes.unset(KEYS.listChecked, { at: path });
+    tx.nodes.set(
+      {
+        [KEYS.indent]: indent || indent + 1,
+        [KEYS.listType]: listStyleType,
+      },
+      { at: path }
+    );
   });
 };

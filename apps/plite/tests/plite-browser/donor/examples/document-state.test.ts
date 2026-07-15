@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
+import type { EditorUpdatePolicy } from '@platejs/plite';
 
 import {
   openExample,
@@ -16,6 +17,8 @@ const bodyStartSelection = {
   focus: { path: [0, 0], offset: 'The '.length },
 };
 const focusMutationPrefix = 'Focus mutation: ';
+const historicCommitTags = 'history-skip,historic';
+const remoteStateCommitTags = 'collaboration,remote-state,history-skip';
 const focusMutationSelection = {
   anchor: { path: [0, 0], offset: `${focusMutationPrefix}The `.length },
   focus: { path: [0, 0], offset: `${focusMutationPrefix}The `.length },
@@ -135,7 +138,7 @@ test.describe('document state example', () => {
           __pliteBrowserHandle?: {
             applyOperations: (
               operations: readonly Record<string, unknown>[],
-              options?: Record<string, unknown>
+              policy?: EditorUpdatePolicy
             ) => void;
           };
         }
@@ -156,12 +159,14 @@ test.describe('document state example', () => {
           },
         ],
         {
-          metadata: {
-            collab: { origin: 'remote', saveToHistory: false },
-            history: { mode: 'skip' },
-            selection: { dom: 'preserve', focus: false, scroll: false },
-          },
-          tag: ['collaboration', 'remote-content'],
+          history: 'skip',
+          tags: [
+            'collaboration',
+            'remote-content',
+            'skip-dom-selection',
+            'skip-selection-focus',
+            'skip-scroll-into-view',
+          ],
         }
       );
     });
@@ -200,7 +205,7 @@ test.describe('document state example', () => {
         __pliteBrowserHandle?: {
           applyOperations: (
             operations: readonly Record<string, unknown>[],
-            options?: Record<string, unknown>
+            policy?: EditorUpdatePolicy
           ) => void;
         };
       };
@@ -225,11 +230,13 @@ test.describe('document state example', () => {
               },
             ],
             {
-              metadata: {
-                history: { mode: 'skip' },
-                selection: { dom: 'preserve', focus: false, scroll: false },
-              },
-              tag: ['focus-mutation'],
+              history: 'skip',
+              tags: [
+                'focus-mutation',
+                'skip-dom-selection',
+                'skip-selection-focus',
+                'skip-scroll-into-view',
+              ],
             }
           );
         },
@@ -302,7 +309,7 @@ test.describe('document state example', () => {
     await expect(titleInput).toBeFocused();
     await expect(titleInput).toHaveValue('Q2 Planning Brief');
     await expect(commitStatus).toContainText('state:document.title');
-    await expect(commitStatus).toContainText('tags:historic');
+    await expect(commitStatus).toContainText(historicCommitTags);
     await expect(editor.root).toContainText('nodes.p');
     await expect(editor.root).not.toBeFocused();
     await expect(page.locator('body')).not.toContainText('Could not set focus');
@@ -341,14 +348,14 @@ test.describe('document state example', () => {
     await expect(titleInput).toBeFocused();
     await expect(titleInput).toHaveValue('Q2 Planning Brief');
     await expect(commitStatus).toContainText('state:document.title');
-    await expect(commitStatus).toContainText('tags:historic');
+    await expect(commitStatus).toContainText(historicCommitTags);
 
     await page.keyboard.press(`${modifier}+Shift+Z`);
 
     await expect(titleInput).toBeFocused();
     await expect(titleInput).toHaveValue('Q2 Planning Briefp');
     await expect(commitStatus).toContainText('state:document.title');
-    await expect(commitStatus).toContainText('tags:historic');
+    await expect(commitStatus).toContainText(historicCommitTags);
     await expect(editor.root).toContainText('nodes.p');
     await expect(editor.root).not.toBeFocused();
     await expect(page.locator('body')).not.toContainText('Could not set focus');
@@ -388,7 +395,7 @@ test.describe('document state example', () => {
     await expect(titleInput).toHaveValue('Q2 Planning Brief');
     await expect(editor.root).toContainText('nodes.p');
     await expect(commitStatus).toContainText('state:document.title');
-    await expect(commitStatus).toContainText('tags:historic');
+    await expect(commitStatus).toContainText(historicCommitTags);
 
     await page.keyboard.press(`${modifier}+Z`);
 
@@ -398,7 +405,7 @@ test.describe('document state example', () => {
     await expect(editor.root).not.toBeFocused();
     await expect.poll(() => editor.get.modelText()).not.toContain('nodes.p');
     await expect(commitStatus).toContainText('ops:remove_text');
-    await expect(commitStatus).toContainText('tags:historic');
+    await expect(commitStatus).toContainText(historicCommitTags);
     await expect(page.locator('body')).not.toContainText('Could not set focus');
     expect(pageErrors).toEqual([]);
   });
@@ -578,7 +585,7 @@ test.describe('document state example', () => {
 
     await expect(titleInput).toHaveValue('Remote Q2 Brief');
     await expect(titleStatus).toHaveText('title:Remote Q2 Brief');
-    await expect(commitStatus).toContainText('tags:collaboration,remote-state');
+    await expect(commitStatus).toContainText(remoteStateCommitTags);
     await editor.assert.text(
       'Draft: The body is still normal Plite content.Title changes never need invisible nodes.'
     );

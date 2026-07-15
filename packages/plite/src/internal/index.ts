@@ -101,7 +101,6 @@ export {
   unwrapNodes,
   update,
   void,
-  withoutNormalizing,
   wrapNodes,
 } from '../interfaces/editor';
 
@@ -123,6 +122,7 @@ export {
   applyOperation,
   applyStatePatches,
   getCachedFullRootReplaceTopLevelRuntimeIds,
+  getActiveEditorTransaction,
   getCurrentMarks as getEditorCurrentMarks,
   getCurrentSelectionRoot as getEditorSelectionRoot,
   getEditorDefaultBlockType,
@@ -155,8 +155,4 @@ export {
 export { projectRangeInSnapshot } from '../range-projection';
 export { formatDebugValue } from '../utils/format-debug-value';
 export { isObject } from '../utils/is-object';
-export {
-  getOperationRoot,
-  getRangeRoot,
-  MAIN_ROOT_KEY,
-} from './root-location';
+export { getOperationRoot, getRangeRoot, MAIN_ROOT_KEY } from './root-location';

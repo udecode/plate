@@ -18,11 +18,7 @@ export const withAIBatch = (
     split?: boolean;
   } = {}
 ) => {
-  const write = split
-    ? editor.update.history.newBatch
-    : editor.update.history.merge;
-
-  write((tx) => {
+  editor.update({ history: split ? 'new-batch' : 'merge' }, (tx) => {
     tx.setField(aiBatchField, (batch) => batch + 1);
     fn(tx);
   });

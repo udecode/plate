@@ -95,7 +95,7 @@ describe('editor.update afterCommit', () => {
     assert.equal(editorString(editor, []), 'one');
   });
 
-  it('collects nested update effects on the outer commit in registration order', () => {
+  it('runs update effects in registration order', () => {
     const editor = seedEditor();
     const events: string[] = [];
 
@@ -106,13 +106,10 @@ describe('editor.update afterCommit', () => {
 
       tx.text.insert('!');
 
-      editor.update((nestedTx, { afterCommit }) => {
-        afterCommit(() => {
-          events.push('inner');
-        });
-
-        nestedTx.text.insert('?');
+      afterCommit(() => {
+        events.push('middle');
       });
+      tx.text.insert('?');
 
       afterCommit(() => {
         events.push('outer-after');
@@ -120,7 +117,7 @@ describe('editor.update afterCommit', () => {
     });
 
     assert.equal(editorString(editor, []), 'one!?');
-    assert.deepEqual(events, ['outer-before', 'inner', 'outer-after']);
+    assert.deepEqual(events, ['outer-before', 'middle', 'outer-after']);
   });
 
   it('keeps each effect snapshot tied to the commit even when an earlier effect updates again', () => {

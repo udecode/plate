@@ -38,21 +38,21 @@ describe('useEquationInput', () => {
     const { useEquationInput } = await import(
       `./useEquationInput?test=${Math.random().toString(36).slice(2)}`
     );
-    const mergeMetadata = mock();
+    const addTag = mock();
     const select = mock();
     const setNodes = mock();
     const update = mock(
       (
         callback: (tx: {
-          metadata: { merge: typeof mergeMetadata };
           nodes: { set: typeof setNodes };
           selection: { set: typeof select };
+          tags: { add: typeof addTag };
         }) => void
       ) =>
         callback({
-          metadata: { merge: mergeMetadata },
           nodes: { set: setNodes },
           selection: { set: select },
+          tags: { add: addTag },
         })
     );
     const onClose = mock();
@@ -106,9 +106,8 @@ describe('useEquationInput', () => {
 
     act(() => result.current.onDismiss());
 
-    expect(mergeMetadata).toHaveBeenCalledWith({
-      history: { mode: 'merge' },
-    });
+    expect(addTag).toHaveBeenCalledWith('history-merge');
+    expect(addTag).toHaveBeenCalledWith('focus');
     expect(setNodes).toHaveBeenCalledWith(
       { texExpression: 'x+2' },
       { at: { texExpression: 'x+1', type: 'equation' } }

@@ -13,6 +13,8 @@ import {
   PointApi,
   type Range,
   RangeApi,
+  txOnly,
+  type TxOnlyMethod,
   type Value,
 } from '@platejs/plite';
 import {
@@ -54,22 +56,19 @@ export type HistoryStateApi<V extends Value = Value> = (() => History<V>) & {
   undos: () => readonly Batch<V>[];
 };
 
-export type HistoryControlTx<V extends Value = Value> = {
-  (): void;
-  <T>(fn: (tx: EditorUpdateTransaction<V>) => T): T;
-};
+export type HistoryControlTx = TxOnlyMethod<() => void>;
 
-export type HistoryTxApi<V extends Value = Value> = {
+export type HistoryTxApi<_V extends Value = Value> = {
   /** Permanently discard the redo branch without changing the document. */
   discardRedo: () => void;
   /** Merge this transaction into the previous compatible undo batch. */
-  merge: HistoryControlTx<V>;
+  merge: HistoryControlTx;
   /** Make this transaction start a fresh undo batch. */
-  newBatch: HistoryControlTx<V>;
+  newBatch: HistoryControlTx;
   /** Redo the next history batch inside the current transaction. */
   redo: () => void;
   /** Do not save this transaction to history. */
-  skip: HistoryControlTx<V>;
+  skip: HistoryControlTx;
   /** Undo the previous history batch inside the current transaction. */
   undo: () => void;
 };
@@ -93,17 +92,20 @@ type HistoryMode = 'merge' | 'push' | 'skip';
 const createHistoryControl = <V extends Value>(
   tx: EditorUpdateTransaction<V>,
   mode: HistoryMode
-): HistoryControlTx<V> =>
-  ((fn?: (tx: EditorUpdateTransaction<V>) => unknown) => {
-    tx.metadata.merge({ history: { mode } });
-
-    if (fn) {
-      return fn(tx);
-    }
-  }) as HistoryControlTx<V>;
+): HistoryControlTx =>
+  txOnly(() => {
+    tx.tags.add(
+      mode === 'push'
+        ? 'history-push'
+        : mode === 'merge'
+          ? 'history-merge'
+          : 'history-skip'
+    );
+  });
 
 const runHistoricUpdate = <V extends Value>(
   editor: Editor<V>,
+  tx: EditorUpdateTransaction<V>,
   batch: Batch<V>,
   fn: (tx: EditorUpdateTransaction<V>) => void
 ) => {
@@ -112,25 +114,22 @@ const runHistoricUpdate = <V extends Value>(
   const preserveSelection =
     stateOnly || shouldPreserveHistoricDOMSelection(editor, batch);
 
-  editor.update(fn, {
-    metadata: {
-      history: { mode: 'skip' },
-      ...(preserveSelection
-        ? {
-            selection: {
-              dom: 'preserve',
-              focus: false,
-              scroll: false,
-            },
-          }
-        : {}),
-    },
-    skipNormalize: true,
-    tag: 'historic',
-  });
+  tx.tags.add('history-skip');
+  tx.tags.add('historic');
+
+  if (preserveSelection) {
+    tx.tags.add('skip-dom-selection');
+    tx.tags.add('skip-selection-focus');
+    tx.tags.add('skip-scroll-into-view');
+  }
+
+  fn(tx);
 };
 
-const applyRedo = <V extends Value>(editor: Editor<V>) => {
+const applyRedo = <V extends Value>(
+  editor: Editor<V>,
+  tx: EditorUpdateTransaction<V>
+) => {
   const history = getHistory(editor);
   const batch = history.redos.at(-1);
 
@@ -139,7 +138,7 @@ const applyRedo = <V extends Value>(editor: Editor<V>) => {
   }
   const root = getEditorOperationRoot(editor);
 
-  runHistoricUpdate(editor, batch, (tx) => {
+  runHistoricUpdate(editor, tx, batch, (tx) => {
     const operations = filterHistoricSelectionOperations(
       batch.operations,
       root
@@ -156,7 +155,10 @@ const applyRedo = <V extends Value>(editor: Editor<V>) => {
   writeHistory(editor, 'undos', batch);
 };
 
-const applyUndo = <V extends Value>(editor: Editor<V>) => {
+const applyUndo = <V extends Value>(
+  editor: Editor<V>,
+  tx: EditorUpdateTransaction<V>
+) => {
   const history = getHistory(editor);
   const batch = history.undos.at(-1);
 
@@ -165,7 +167,7 @@ const applyUndo = <V extends Value>(editor: Editor<V>) => {
   }
   const root = getEditorOperationRoot(editor);
 
-  runHistoricUpdate(editor, batch, (tx) => {
+  runHistoricUpdate(editor, tx, batch, (tx) => {
     const inverseOps = batch.operations.map(OperationApi.inverse).reverse();
     const undoOperations = filterHistoricUndoOperations(inverseOps, root);
     const operations = undoOperations.filter(
@@ -245,14 +247,14 @@ const createHistoryExtension = <
           newBatch: createHistoryControl(tx, 'push'),
           redo() {
             executeCommand(editor, { type: 'history_redo' }, () => {
-              applyRedo(editor);
+              applyRedo(editor, tx);
               return true;
             });
           },
           skip: createHistoryControl(tx, 'skip'),
           undo() {
             executeCommand(editor, { type: 'history_undo' }, () => {
-              applyUndo(editor);
+              applyUndo(editor, tx);
               return true;
             });
           },
@@ -298,7 +300,7 @@ const createHistoryExtension = <
               getEditorSelectionRoot(editor),
               committedOps,
               committedStatePatches,
-              change.metadata
+              change.tags
             );
 
             if (!preparedBatch) {
@@ -309,18 +311,14 @@ const createHistoryExtension = <
 
             if (lastBatch == null) {
               merge = false;
-            } else if (change?.metadata.history?.mode === 'push') {
+            } else if (change.tags.includes('history-push')) {
               merge = false;
-            } else if (change?.metadata.history?.mode === 'merge') {
+            } else if (change.tags.includes('history-merge')) {
               merge = shouldMergeExplicitBatch(
                 preparedBatch.operations,
                 lastBatch,
-                change.metadata
+                change.tags.includes('native-text-input')
               );
-            } else if (change?.tags.includes('history-push')) {
-              merge = false;
-            } else if (change?.tags.includes('history-merge')) {
-              merge = true;
             } else if (preparedBatch.statePatches.length > 0) {
               merge = false;
             } else {
@@ -594,7 +592,7 @@ const prepareHistoryBatch = <V extends Value>(
   selectionBeforeRoot: string | undefined,
   operations: readonly Operation<V>[],
   statePatches: readonly EditorStatePatch[],
-  metadata: EditorCommit['metadata']
+  tags: EditorCommit['tags']
 ): Batch<V> | null => {
   const firstSaveableIndex = operations.findIndex(shouldSaveHistoryOperation);
   const getBatchSelectionBeforeRoot = (selection: Range | null) =>
@@ -632,7 +630,7 @@ const prepareHistoryBatch = <V extends Value>(
     getBatchSelectionBeforeRoot(batchSelectionBefore);
   const textBurstSelectionBefore = getTextBurstSelectionBefore({
     firstSaveableIndex,
-    isNativeTextInput: metadata.origin?.kind === 'native-text-input',
+    isNativeTextInput: tags.includes('native-text-input'),
     operations,
     selectionBefore,
     selectionBeforeRoot,
@@ -675,18 +673,7 @@ const shouldSaveCommit = (
   operations: readonly Operation[],
   statePatches: readonly EditorStatePatch[]
 ): boolean => {
-  if (change?.metadata.history?.mode === 'skip') {
-    return false;
-  }
-
-  if (change?.metadata.collab?.saveToHistory === false) {
-    return false;
-  }
-
-  if (
-    change?.metadata.collab?.origin === 'remote' &&
-    change.metadata.collab.saveToHistory !== true
-  ) {
+  if (change?.tags.includes('history-skip')) {
     return false;
   }
 

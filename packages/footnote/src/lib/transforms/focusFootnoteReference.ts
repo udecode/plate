@@ -52,7 +52,7 @@ export const focusFootnoteReference = (
     index?: number;
   }
 ) => {
-  const reference = getFootnoteReferences(editor, { identifier })[index];
+  const reference = getFootnoteReferences(editor, { identifier }, tx)[index];
 
   if (!reference) return false;
 

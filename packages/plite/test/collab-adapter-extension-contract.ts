@@ -10,7 +10,7 @@ import {
   createEditor,
   type Element,
   defineEditorExtension,
-  type EditorUpdateOptions,
+  type EditorUpdatePolicy,
   type EditorUpdateTransaction,
   type Operation,
 } from '@platejs/plite';
@@ -22,14 +22,18 @@ const paragraph = (text: string): Element => ({
 
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
-const remoteCollabOptions = {
-  metadata: {
-    collab: { origin: 'remote', saveToHistory: false },
-    history: { mode: 'skip' },
-    selection: { dom: 'preserve', focus: false, scroll: false },
-  },
-  tag: ['collaboration', 'remote-import'],
-} satisfies EditorUpdateOptions;
+const remoteCollabTags = [
+  'collaboration',
+  'remote-import',
+  'history-skip',
+  'skip-dom-selection',
+  'skip-selection-focus',
+  'skip-scroll-into-view',
+] as const;
+
+const remoteCollabPolicy = {
+  tags: remoteCollabTags,
+} satisfies EditorUpdatePolicy;
 
 const createSeededEditor = () => {
   const editor = createEditor();
@@ -95,9 +99,12 @@ const createFakeCollabAdapterExtension = () => {
           return adapterState.get().exports;
         },
         importRemote(operations) {
-          context.editor.update((tx: EditorUpdateTransaction) => {
-            tx.operations.replay(clone(operations));
-          }, remoteCollabOptions);
+          context.editor.update(
+            remoteCollabPolicy,
+            (tx: EditorUpdateTransaction) => {
+              tx.operations.replay(clone(operations));
+            }
+          );
           setAdapterState((state) => ({
             ...state,
             remoteImports: state.remoteImports + 1,
@@ -138,10 +145,6 @@ const createFakeCollabAdapterExtension = () => {
           if (commit.tags.includes('collaboration')) {
             return;
           }
-          if (commit.metadata.collab?.origin === 'remote') {
-            return;
-          }
-
           setAdapterState({
             exports: [...state.exports, clone(commit.operations)],
           });
@@ -163,13 +166,15 @@ const createFakeCollabAdapterExtension = () => {
 const insertTextAtEnd = (
   editor: ReturnType<typeof createSeededEditor>,
   text: string,
-  options?: EditorUpdateOptions
+  policy?: Pick<EditorUpdatePolicy, 'tags'>
 ) => {
-  editor.update((tx) => {
+  const insert = (tx: EditorUpdateTransaction) => {
     tx.text.insert(text, {
       at: { path: [0, 0], offset: editorString(editor, [0]).length },
     });
-  }, options);
+  };
+
+  policy ? editor.update(policy, insert) : editor.update(insert);
 };
 
 describe('collab adapter extension contract', () => {
@@ -204,16 +209,8 @@ describe('collab adapter extension contract', () => {
     assert.equal(editorString(editor, []), 'one!?');
     assert.equal(adapter.exports().length, 1);
     assert.equal(adapter.remoteImports(), 1);
-    assert.deepEqual(editorGetLastCommit(editor)?.tags, [
-      'collaboration',
-      'remote-import',
-    ]);
-    assert.deepEqual(
-      editorGetLastCommit(editor)?.metadata,
-      remoteCollabOptions.metadata
-    );
-
-    insertTextAtEnd(editor, '#', { tag: 'skip-collab' });
+    assert.deepEqual(editorGetLastCommit(editor)?.tags, remoteCollabTags);
+    insertTextAtEnd(editor, '#', { tags: 'skip-collab' });
     assert.equal(editorString(editor, []), 'one!?#');
     assert.equal(adapter.exports().length, 1);
 

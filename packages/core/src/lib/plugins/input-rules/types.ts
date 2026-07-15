@@ -45,12 +45,13 @@ export type InsertBreakInputRuleContext<
 
 export type InsertDataInputRuleContext<
   TEditor extends BaseEditor = BaseEditor,
-> = SelectionInputRuleContext<TEditor> & {
-  cause: 'insertData';
-  data: DataTransfer;
-  insertData: (data: DataTransfer) => void;
-  text: string | null;
-};
+> = SelectionInputRuleContext<TEditor> &
+  TransformInputRuleContext<TEditor> & {
+    cause: 'insertData';
+    data: DataTransfer;
+    insertData: (data: DataTransfer) => void;
+    text: string | null;
+  };
 
 export type InsertTextInputRuleContext<
   TEditor extends BaseEditor = BaseEditor,

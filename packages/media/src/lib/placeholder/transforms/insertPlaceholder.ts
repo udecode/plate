@@ -10,18 +10,15 @@ export const insertPlaceholder = (
   mediaType: string,
   type: string,
   options?: NodeInsertNodesOptions<TPlaceholderElement>
-) => {
-  tx.withoutNormalizing(() =>
-    tx.nodes.insert<TPlaceholderElement>(
-      {
-        children: [{ text: '' }],
-        mediaType,
-        type,
-      },
-      options
-    )
+) =>
+  tx.nodes.insert<TPlaceholderElement>(
+    {
+      children: [{ text: '' }],
+      mediaType,
+      type,
+    },
+    options
   );
-};
 
 export const insertImagePlaceholder = (
   tx: EditorUpdateTransaction,

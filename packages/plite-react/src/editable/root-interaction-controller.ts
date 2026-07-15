@@ -848,18 +848,9 @@ const applyModelDragSelection = ({
         )
       : null
   );
-  editor.update(
-    (tx) => {
-      tx.selection.set(rootedRange);
-    },
-    {
-      metadata: {
-        selection: {
-          scroll: false,
-        },
-      },
-    }
-  );
+  editor.update({ tags: 'skip-scroll-into-view' }, (tx) => {
+    tx.selection.set(rootedRange);
+  });
   selectionBridge?.syncDOMSelectionToEditor({ preserveScroll: true });
 };
 

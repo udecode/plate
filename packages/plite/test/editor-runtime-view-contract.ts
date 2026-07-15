@@ -296,7 +296,7 @@ describe('editor runtime/view contract', () => {
     );
   });
 
-  it('passes root-scoped afterCommit snapshots for nested root-bound view updates', () => {
+  it('passes root-scoped afterCommit snapshots for root-bound view updates', () => {
     const runtime = createEditorRuntime({
       initialValue: {
         children: [paragraph('body')],
@@ -317,22 +317,22 @@ describe('editor runtime/view contract', () => {
       headerTx.text.insert('!', {
         at: { path: [0, 0], offset: 6 },
       });
+    });
 
-      mainEditor.update((mainTx, { afterCommit }) => {
-        afterCommit(({ snapshot }) => {
-          snapshots.push(`main:${getSnapshotText(snapshot.children)}`);
-        });
+    mainEditor.update((mainTx, { afterCommit }) => {
+      afterCommit(({ snapshot }) => {
+        snapshots.push(`main:${getSnapshotText(snapshot.children)}`);
+      });
 
-        mainTx.text.insert('!', {
-          at: { path: [0, 0], offset: 4 },
-        });
+      mainTx.text.insert('!', {
+        at: { path: [0, 0], offset: 4 },
       });
     });
 
     assert.deepEqual(snapshots, ['header:header!', 'main:body!']);
   });
 
-  it('keeps afterCommit bound to the context root when registered during a nested update', () => {
+  it('keeps afterCommit bound to its root after a sibling root commits', () => {
     const runtime = createEditorRuntime({
       initialValue: {
         children: [paragraph('body')],
@@ -345,19 +345,23 @@ describe('editor runtime/view contract', () => {
       (children[0]?.children[0] as { text: string }).text;
     let snapshotText = '';
 
-    headerEditor.update((_headerTx, context) => {
-      mainEditor.update((mainTx) => {
-        context.afterCommit(({ snapshot }) => {
-          snapshotText = getSnapshotText(snapshot.children);
-        });
-
-        mainTx.text.insert('!', {
-          at: { path: [0, 0], offset: 4 },
-        });
+    mainEditor.update((mainTx) => {
+      mainTx.text.insert('!', {
+        at: { path: [0, 0], offset: 4 },
       });
     });
 
-    assert.equal(snapshotText, 'header');
+    headerEditor.update((headerTx, { afterCommit }) => {
+      afterCommit(({ snapshot }) => {
+        snapshotText = getSnapshotText(snapshot.children);
+      });
+
+      headerTx.text.insert('!', {
+        at: { path: [0, 0], offset: 6 },
+      });
+    });
+
+    assert.equal(snapshotText, 'header!');
   });
 
   it('keeps main-root view afterCommit selection from the committed snapshot', () => {

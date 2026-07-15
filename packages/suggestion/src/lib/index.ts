@@ -5,6 +5,7 @@
 export * from './BaseSuggestionPlugin';
 export * from './diffToSuggestions';
 export * from './types';
+export * from './update-policy';
 export * from './withSuggestion';
 export * from './queries/index';
 export * from './transforms/index';

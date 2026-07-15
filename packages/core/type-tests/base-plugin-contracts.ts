@@ -195,9 +195,9 @@ extendedFullConfigTx.extendConfig.extraTx('tx');
 basePlateEditor.api.setVariant('info');
 basePlateEditor.api.setVariant('warning');
 inlineHistoryEditor.update((tx) => tx.history.undo());
-inlineHistoryEditor.update.history.skip(() => {});
+inlineHistoryEditor.update({ history: 'skip' }, () => {});
 coreHistoryEditor.update((tx) => tx.history.redo());
-coreHistoryEditor.update.history.merge(() => {});
+coreHistoryEditor.update({ history: 'merge' }, () => {});
 
 void boldEnabled;
 void boldHotkey;

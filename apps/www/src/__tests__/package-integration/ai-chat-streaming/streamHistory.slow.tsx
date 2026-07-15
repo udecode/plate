@@ -26,7 +26,7 @@ const streamPreview = (chunks: string[]) => {
         : [],
   });
 
-  editor.update.history.skip((tx) => {
+  editor.update({ history: 'skip' }, (tx) => {
     tx.nodes.insert(
       {
         children: [{ text: '' }],

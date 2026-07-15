@@ -30,7 +30,7 @@ export const insertFootnote = (
 
   if (!selection && options.at === undefined) return;
 
-  const nextIdentifier = identifier ?? getNextFootnoteIdentifier(editor);
+  const nextIdentifier = identifier ?? getNextFootnoteIdentifier(editor, tx);
   const fragment =
     selection && tx.selection.isExpanded()
       ? tx.fragment({ at: selection })
@@ -50,14 +50,12 @@ export const insertFootnote = (
     }
   }
 
-  tx.withoutNormalizing(({ tx }) => {
-    tx.nodes.insert(reference, options);
+  tx.nodes.insert(reference, options);
 
-    createFootnoteDefinition(editor, tx, {
-      focus: false,
-      fragment,
-      identifier: nextIdentifier,
-    });
+  createFootnoteDefinition(editor, tx, {
+    focus: false,
+    fragment,
+    identifier: nextIdentifier,
   });
 
   if (shouldFocusDefinition) {

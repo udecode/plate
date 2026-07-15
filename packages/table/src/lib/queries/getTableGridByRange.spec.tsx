@@ -1,13 +1,20 @@
 /** @jsx jsxt */
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import { type Element } from '@platejs/plite';
+import { type Element, ElementApi, NodeApi } from '@platejs/plite';
 import { createPlateEditor } from '@platejs/core/react';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { getTableGridAbove } from './getTableGridAbove';
 
 jsxt;
+
+const getTableShape = (table: Element) => ({
+  rows: table.children.map((row) =>
+    ElementApi.isElement(row) ? row.children.map(NodeApi.string) : []
+  ),
+  type: table.type,
+});
 
 // https://github.com/udecode/editor-protocol/issues/12
 describe('getTableGridByRange', () => {
@@ -36,7 +43,7 @@ describe('getTableGridByRange', () => {
             <htd>1</htd>
           </htr>
         </htable>
-      ) as Element[];
+      ) as Element;
 
       const editor = createPlateEditor({
         nodeId: true,
@@ -47,7 +54,7 @@ describe('getTableGridByRange', () => {
 
       const table = getTableGridAbove(editor)[0][0];
 
-      expect(table).toMatchObject(output);
+      expect(getTableShape(table)).toEqual(getTableShape(output));
     });
   });
 
@@ -99,7 +106,7 @@ describe('getTableGridByRange', () => {
 
       const table = getTableGridAbove(editor)[0][0];
 
-      expect(table).toMatchObject(output);
+      expect(getTableShape(table)).toEqual(getTableShape(output));
     });
   });
 
@@ -149,7 +156,7 @@ describe('getTableGridByRange', () => {
 
       const table = getTableGridAbove(editor)[0][0];
 
-      expect(table).toMatchObject(output);
+      expect(getTableShape(table)).toEqual(getTableShape(output));
     });
   });
 
@@ -202,7 +209,7 @@ describe('getTableGridByRange', () => {
 
       const table = getTableGridAbove(editor)[0][0];
 
-      expect(table).toMatchObject(output);
+      expect(getTableShape(table)).toEqual(getTableShape(output));
     });
   });
 
@@ -256,7 +263,7 @@ describe('getTableGridByRange', () => {
 
       const table = getTableGridAbove(editor)[0][0];
 
-      expect(table).toMatchObject(output);
+      expect(getTableShape(table)).toEqual(getTableShape(output));
     });
   });
 
@@ -310,7 +317,7 @@ describe('getTableGridByRange', () => {
 
       const table = getTableGridAbove(editor)[0][0];
 
-      expect(table).toMatchObject(output);
+      expect(getTableShape(table)).toEqual(getTableShape(output));
     });
   });
 
@@ -364,7 +371,7 @@ describe('getTableGridByRange', () => {
 
       const table = getTableGridAbove(editor)[0][0];
 
-      expect(table).toMatchObject(output);
+      expect(getTableShape(table)).toEqual(getTableShape(output));
     });
   });
 
@@ -418,7 +425,7 @@ describe('getTableGridByRange', () => {
 
       const table = getTableGridAbove(editor)[0][0];
 
-      expect(table).toMatchObject(output);
+      expect(getTableShape(table)).toEqual(getTableShape(output));
     });
   });
 });

@@ -22,16 +22,20 @@ export const normalizeDuplicateFootnoteDefinition = (
   const definitionType = editor.getType(KEYS.footnoteDefinition);
 
   if (node.type !== definitionType) return false;
-  if (!isDuplicateFootnoteDefinition(editor, { path })) return false;
+  if (!isDuplicateFootnoteDefinition(editor, { path }, tx)) return false;
 
-  const nextIdentifier = identifier ?? getNextFootnoteIdentifier(editor);
+  const nextIdentifier = identifier ?? getNextFootnoteIdentifier(editor, tx);
 
   if (!nextIdentifier) return false;
   if (
     nextIdentifier !== node.identifier &&
-    getFootnoteDefinitionsByIdentifier(editor, {
-      identifier: nextIdentifier,
-    }).length > 0
+    getFootnoteDefinitionsByIdentifier(
+      editor,
+      {
+        identifier: nextIdentifier,
+      },
+      tx
+    ).length > 0
   ) {
     return false;
   }

@@ -2,7 +2,7 @@ import type { BaseEditor } from '@platejs/core';
 
 import { createRuleFactory, KEYS } from 'platejs';
 
-import { toggleList } from './transforms';
+import { toggleListWithTx } from './transforms';
 
 const isListInputBlocked = (editor: BaseEditor) =>
   editor.read.nodes.some({
@@ -18,9 +18,9 @@ export const BulletedListRules = {
     enabled: ({ editor }) => !isListInputBlocked(editor),
     trigger: ' ',
     match: ({ variant }) => variant,
-    apply: ({ editor }, match) => {
-      editor.update.text.delete({ at: match.range });
-      toggleList(editor, {
+    apply: ({ editor, tx }, match) => {
+      tx.text.delete({ at: match.range });
+      toggleListWithTx(editor, tx, {
         listStyleType: KEYS.ul,
       });
 

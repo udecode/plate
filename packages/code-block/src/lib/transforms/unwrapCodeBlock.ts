@@ -17,28 +17,23 @@ export const unwrapCodeBlock = (
   const codeBlockType = editor.getType(KEYS.codeBlock);
   const defaultType = editor.getType(KEYS.p);
 
-  tx.withoutNormalizing(() => {
-    const codeBlockEntries = editor.read.nodes.entries<Element>({
-      at,
-      match: { type: codeBlockType },
+  const codeBlockEntries = editor.read.nodes.entries<Element>({
+    at,
+    match: { type: codeBlockType },
+  });
+
+  const reversedCodeBlockEntries = Array.from(codeBlockEntries).reverse();
+
+  for (const [codeBlock, codeBlockPath] of reversedCodeBlockEntries) {
+    codeBlock.children.forEach((child, index) => {
+      if (!ElementApi.isElement(child)) return;
+
+      tx.nodes.set({ type: defaultType }, { at: codeBlockPath.concat(index) });
     });
 
-    const reversedCodeBlockEntries = Array.from(codeBlockEntries).reverse();
-
-    for (const [codeBlock, codeBlockPath] of reversedCodeBlockEntries) {
-      codeBlock.children.forEach((child, index) => {
-        if (!ElementApi.isElement(child)) return;
-
-        tx.nodes.set(
-          { type: defaultType },
-          { at: codeBlockPath.concat(index) }
-        );
-      });
-
-      tx.nodes.unwrap({
-        at: codeBlockPath,
-        match: { type: codeBlockType },
-      });
-    }
-  });
+    tx.nodes.unwrap({
+      at: codeBlockPath,
+      match: { type: codeBlockType },
+    });
+  }
 };

@@ -1,6 +1,10 @@
 import type { BaseEditor } from '@platejs/core';
 import { getInjectMatch } from '@platejs/core';
-import { type Element, ElementApi } from '@platejs/plite';
+import {
+  type EditorUpdateTransaction,
+  type Element,
+  ElementApi,
+} from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import type { ListOptions } from './indentList';
@@ -13,14 +17,22 @@ import {
 } from '../queries';
 import { getListSequenceSiblingOptions } from '../internal/isSameListSequence';
 import { areEqListStyleType } from '../queries/areEqListStyleType';
-import { setListNodes } from './setListNodes';
-import { setListSiblingNodes } from './setListSiblingNodes';
-import { toggleListSet } from './toggleListSet';
-import { toggleListUnset } from './toggleListUnset';
+import { setListNodesWithTx } from './setListNodes';
+import { setListSiblingNodesWithTx } from './setListSiblingNodes';
 
 /** Toggle indent list. */
 export const toggleList = <N extends Element = Element>(
   editor: BaseEditor,
+  options: ListOptions,
+  getSiblingListOptions?: GetSiblingListOptions<N>
+) =>
+  editor.update((tx) =>
+    toggleListWithTx(editor, tx, options, getSiblingListOptions)
+  );
+
+export const toggleListWithTx = <N extends Element = Element>(
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
   options: ListOptions,
   getSiblingListOptions?: GetSiblingListOptions<N>
 ) => {
@@ -46,14 +58,41 @@ export const toggleList = <N extends Element = Element>(
       const entry = editor.read.nodes.block<Element>();
 
       if (!entry) return null;
-      if (toggleListSet(editor, entry, options)) {
+      const [node, path] = entry;
+      const indent = Number(node[KEYS.indent] ?? 0);
+      const isTodo = listStyleType === KEYS.listTodo;
+
+      if (!Object.hasOwn(node, KEYS.listChecked) && !node[KEYS.listType]) {
+        tx.nodes.set(
+          {
+            [KEYS.indent]: indent + 1,
+            ...(isTodo ? { [KEYS.listChecked]: false } : {}),
+            [KEYS.listType]: listStyleType,
+          },
+          { at: path }
+        );
+
         return true;
       }
-      if (toggleListUnset(editor, entry, { listStyleType })) {
+
+      if (
+        (isTodo && Object.hasOwn(node, KEYS.listChecked)) ||
+        listStyleType === node[KEYS.listType]
+      ) {
+        tx.nodes.unset(isTodo ? KEYS.listChecked : KEYS.listType, { at: path });
+
+        if (indent > 1) {
+          tx.nodes.set({ [KEYS.indent]: indent - 1 }, { at: path });
+        } else {
+          tx.nodes.unset([KEYS.indent, KEYS.listChecked, KEYS.listType], {
+            at: path,
+          });
+        }
+
         return false;
       }
 
-      setListSiblingNodes(editor, entry, {
+      setListSiblingNodesWithTx(editor, tx, entry, {
         getSiblingListOptions: mergedGetSiblingListOptions,
         listStyleType,
       });
@@ -77,36 +116,31 @@ export const toggleList = <N extends Element = Element>(
       });
 
       if (eqListStyleType) {
-        editor.update.withoutNormalizing(() => {
-          entries.forEach((entry) => {
-            const [node, path] = entry;
+        entries.forEach((entry) => {
+          const [node, path] = entry;
 
-            const indent = node[KEYS.indent] as number;
+          const indent = node[KEYS.indent] as number;
 
-            editor.update.nodes.unset(KEYS.listType, { at: path });
+          tx.nodes.unset(KEYS.listType, { at: path });
 
-            if (indent > 1) {
-              editor.update.nodes.set(
-                { [KEYS.indent]: indent - 1 },
-                { at: path }
-              );
-            } else {
-              editor.update.nodes.unset([KEYS.indent, KEYS.listChecked], {
-                at: path,
-              });
-            }
-            // setListNode(editor, {
-            //   listStyleType,
-            //   indent: node[KEYS.indent],
-            //   at: path,
-            // });
-          });
+          if (indent > 1) {
+            tx.nodes.set({ [KEYS.indent]: indent - 1 }, { at: path });
+          } else {
+            tx.nodes.unset([KEYS.indent, KEYS.listChecked], {
+              at: path,
+            });
+          }
+          // setListNode(editor, {
+          //   listStyleType,
+          //   indent: node[KEYS.indent],
+          //   at: path,
+          // });
         });
 
         return false;
       }
 
-      setListNodes(editor, entries, { listStyleType });
+      setListNodesWithTx(tx, entries, { listStyleType });
       return true;
     }
 
@@ -146,6 +180,6 @@ export const toggleList = <N extends Element = Element>(
 
     const prop = isRestart ? KEYS.listRestart : KEYS.listRestartPolite;
 
-    editor.update.nodes.set({ [prop]: restartValue }, { at: entry[1] });
+    tx.nodes.set({ [prop]: restartValue }, { at: entry[1] });
   }
 };

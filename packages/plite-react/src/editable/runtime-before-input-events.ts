@@ -437,7 +437,6 @@ export const useRuntimeBeforeInputEvents = ({
                 applyModelOwnedBeforeInputOperation({
                   command: decision.command,
                   data,
-                  deferredOperations,
                   editor: targetEditor,
                   inputType: type,
                   native: false,
@@ -656,7 +655,6 @@ export const useRuntimeBeforeInputEvents = ({
                 applyModelOwnedBeforeInputOperation({
                   command: decision.command,
                   data,
-                  deferredOperations,
                   editor,
                   inputType: type,
                   native,
@@ -721,7 +719,6 @@ export const useRuntimeBeforeInputEvents = ({
       const request = applyModelOwnedBeforeInputOperation({
         command: { inputType: 'insertText', kind: 'insert-text', text },
         data: text,
-        deferredOperations,
         editor,
         inputType: 'insertText',
         native: false,

@@ -1,5 +1,5 @@
 import {
-  type EditorUpdateOptions,
+  type EditorUpdatePolicyFor,
   type Operation,
   type Path,
   type Range,
@@ -54,7 +54,7 @@ import {
 export type PliteBrowserHandle = {
   applyOperations: (
     operations: readonly Operation[],
-    options?: EditorUpdateOptions
+    policy?: EditorUpdatePolicyFor<ReactRuntimeEditor>
   ) => void;
   createRangeRef: (
     selection: Range,
@@ -288,10 +288,16 @@ export const attachPliteBrowserHandle = ({
   };
 
   const handle: PliteBrowserHandle = {
-    applyOperations: (operations, options) => {
-      editor.update((tx) => {
-        tx.operations.replay(operations, options);
-      });
+    applyOperations: (operations, policy) => {
+      if (policy) {
+        editor.update(policy, (tx) => {
+          tx.operations.replay(operations);
+        });
+      } else {
+        editor.update((tx) => {
+          tx.operations.replay(operations);
+        });
+      }
       forceRender();
     },
     createRangeRef: (selection, affinity) => {

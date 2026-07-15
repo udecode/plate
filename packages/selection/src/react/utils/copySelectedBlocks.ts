@@ -21,7 +21,7 @@ const writeSelectedBlocksToDataTransfer = (
   let textPlain = '';
   const div = document.createElement('div');
 
-  editor.update.withoutNormalizing(({ tx }) => {
+  editor.update((tx) => {
     selectedEntries.forEach(([, path]) => {
       const entry = editor.read.nodes.get(path);
 

@@ -5,6 +5,7 @@ import { describe, it } from 'node:test';
 import type {
   Descendant,
   Element,
+  EditorUpdateTransaction,
   Selection,
   Editor as EditorType,
 } from '@platejs/plite';
@@ -82,10 +83,9 @@ const getVisibleState = (editor: EditorType) => {
 
 const write = (
   editor: EditorType,
-  fn: Parameters<EditorType['update']>[0],
-  options?: Parameters<EditorType['update']>[1]
+  fn: (tx: EditorUpdateTransaction) => void
 ) => {
-  editor.update(fn, options);
+  editor.update(fn);
 };
 
 describe('plite-history contract', () => {
@@ -168,36 +168,30 @@ describe('plite-history contract', () => {
 
     replace(editor, [paragraph('Condico uredo ante arca umbra.')], null);
 
-    write(
-      editor,
-      (tx) => {
-        for (let offset = 1; offset <= 10; offset++) {
-          tx.selection.set({
-            anchor: { path: [0, 0], offset },
-            focus: { path: [0, 0], offset },
-          });
-        }
-
-        tx.text.insert('XXXXXXXXXX', {
-          at: { path: [0, 0], offset: 1 },
-        });
+    editor.update({ tags: 'native-text-input' }, (tx) => {
+      for (let offset = 1; offset <= 10; offset++) {
         tx.selection.set({
-          anchor: { path: [0, 0], offset: 11 },
-          focus: { path: [0, 0], offset: 11 },
+          anchor: { path: [0, 0], offset },
+          focus: { path: [0, 0], offset },
         });
-        tx.selection.set({
-          anchor: { path: [0, 0], offset: 10 },
-          focus: { path: [0, 0], offset: 10 },
-        });
-        tx.selection.set({
-          anchor: { path: [0, 0], offset: 11 },
-          focus: { path: [0, 0], offset: 11 },
-        });
-      },
-      {
-        metadata: { origin: { kind: 'native-text-input' } },
       }
-    );
+
+      tx.text.insert('XXXXXXXXXX', {
+        at: { path: [0, 0], offset: 1 },
+      });
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 11 },
+        focus: { path: [0, 0], offset: 11 },
+      });
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 10 },
+        focus: { path: [0, 0], offset: 10 },
+      });
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 11 },
+        focus: { path: [0, 0], offset: 11 },
+      });
+    });
     undo(editor);
 
     assert.deepEqual(getVisibleState(editor), {
@@ -217,33 +211,27 @@ describe('plite-history contract', () => {
       focus: { path: [0, 0], offset: 5 },
     });
 
-    write(
-      editor,
-      (tx) => {
-        tx.operations.replay([
-          {
-            offset: 1,
-            path: [0, 0],
-            text: 'XXXXXXXXXX',
-            type: 'insert_text',
+    editor.update({ tags: 'native-text-input' }, (tx) => {
+      tx.operations.replay([
+        {
+          offset: 1,
+          path: [0, 0],
+          text: 'XXXXXXXXXX',
+          type: 'insert_text',
+        },
+        {
+          newProperties: {
+            anchor: { path: [0, 0], offset: 11 },
+            focus: { path: [0, 0], offset: 11 },
           },
-          {
-            newProperties: {
-              anchor: { path: [0, 0], offset: 11 },
-              focus: { path: [0, 0], offset: 11 },
-            },
-            properties: {
-              anchor: { path: [0, 0], offset: 15 },
-              focus: { path: [0, 0], offset: 15 },
-            },
-            type: 'set_selection',
+          properties: {
+            anchor: { path: [0, 0], offset: 15 },
+            focus: { path: [0, 0], offset: 15 },
           },
-        ]);
-      },
-      {
-        metadata: { origin: { kind: 'native-text-input' } },
-      }
-    );
+          type: 'set_selection',
+        },
+      ]);
+    });
     undo(editor);
 
     assert.deepEqual(getVisibleState(editor), {
@@ -428,7 +416,7 @@ describe('plite-history contract', () => {
     );
   });
 
-  it('does not let explicit merge metadata merge text batches across roots', () => {
+  it('does not let explicit merge policy merge text batches across roots', () => {
     const editor = createEditor({
       extensions: [history()],
       initialValue: {
@@ -442,19 +430,16 @@ describe('plite-history contract', () => {
         at: { offset: 1, path: [0, 0], root: 'footer' },
       });
     });
-    editor.update(
-      (tx) => {
-        tx.text.insert('2', {
-          at: { offset: 1, path: [0, 0], root: 'header' },
-        });
-      },
-      { metadata: { history: { mode: 'merge' } } }
-    );
+    editor.update({ history: 'merge' }, (tx) => {
+      tx.text.insert('2', {
+        at: { offset: 1, path: [0, 0], root: 'header' },
+      });
+    });
 
     assert.equal(getHistory(editor).undos.length, 2);
   });
 
-  it('lets explicit merge metadata merge same-root non-text batches', () => {
+  it('lets explicit merge policy merge same-root non-text batches', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('alpha')], null);
@@ -463,12 +448,9 @@ describe('plite-history contract', () => {
     write(editor, (tx) => {
       tx.nodes.insert(paragraph('beta'), { at: [1] });
     });
-    editor.update(
-      (tx) => {
-        tx.nodes.insert(paragraph('gamma'), { at: [2] });
-      },
-      { metadata: { history: { mode: 'merge' } } }
-    );
+    editor.update({ history: 'merge' }, (tx) => {
+      tx.nodes.insert(paragraph('gamma'), { at: [2] });
+    });
 
     assert.equal(getHistory(editor).undos.length, 1);
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -482,7 +464,7 @@ describe('plite-history contract', () => {
     assert.deepEqual(getVisibleState(editor), before);
   });
 
-  it('does not let native merge metadata merge same-node caret jumps', () => {
+  it('does not let native merge policy merge same-node caret jumps', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('abcd')], {
@@ -490,27 +472,16 @@ describe('plite-history contract', () => {
       focus: { path: [0, 0], offset: 1 },
     });
 
-    editor.update(
-      (tx) => {
-        tx.text.insert('X', {
-          at: { offset: 1, path: [0, 0] },
-        });
-      },
-      { metadata: { origin: { kind: 'native-text-input' } } }
-    );
-    editor.update(
-      (tx) => {
-        tx.text.insert('Y', {
-          at: { offset: 4, path: [0, 0] },
-        });
-      },
-      {
-        metadata: {
-          history: { mode: 'merge' },
-          origin: { kind: 'native-text-input' },
-        },
-      }
-    );
+    editor.update({ tags: 'native-text-input' }, (tx) => {
+      tx.text.insert('X', {
+        at: { offset: 1, path: [0, 0] },
+      });
+    });
+    editor.update({ history: 'merge', tags: 'native-text-input' }, (tx) => {
+      tx.text.insert('Y', {
+        at: { offset: 4, path: [0, 0] },
+      });
+    });
 
     assert.equal(getHistory(editor).undos.length, 2);
 
@@ -718,6 +689,9 @@ describe('plite-history contract', () => {
     });
 
     editor.update(
+      {
+        tags: ['collaboration', 'remote-insert', 'history-skip'],
+      },
       (tx) => {
         tx.operations.replay([
           {
@@ -726,10 +700,6 @@ describe('plite-history contract', () => {
             node: paragraph('remote'),
           },
         ]);
-      },
-      {
-        metadata: { collab: { origin: 'remote', saveToHistory: false } },
-        tag: ['collaboration', 'remote-insert'],
       }
     );
 
@@ -785,7 +755,7 @@ describe('plite-history contract', () => {
       ]);
     });
 
-    headerEditor.update.history.skip((tx) => {
+    headerEditor.update({ history: 'skip' }, (tx) => {
       tx.operations.replay([
         {
           node: paragraph('remote'),
@@ -823,7 +793,7 @@ describe('plite-history contract', () => {
     );
   });
 
-  it('rebases saved undo batches across local editor.update.history.skip document edits', () => {
+  it('rebases saved undo batches across local history-skip document edits', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('abcdef')], {
@@ -835,7 +805,7 @@ describe('plite-history contract', () => {
       tx.text.insert('X');
     });
 
-    editor.update.history.skip((tx) => {
+    editor.update({ history: 'skip' }, (tx) => {
       tx.text.insert('Y', { at: { path: [0, 0], offset: 0 } });
     });
 
@@ -852,7 +822,7 @@ describe('plite-history contract', () => {
     assert.equal(editorString(editor, [0]), 'Yabcdef');
   });
 
-  it('drops saved undo batches deleted by local editor.update.history.skip edits', () => {
+  it('drops saved undo batches deleted by local history-skip edits', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('ab')], {
@@ -867,7 +837,7 @@ describe('plite-history contract', () => {
     assert.equal(editorString(editor, [0]), 'aXb');
     assert.equal(getHistory(editor).undos.length, 1);
 
-    editor.update.history.skip((tx) => {
+    editor.update({ history: 'skip' }, (tx) => {
       tx.text.delete({
         at: {
           anchor: { path: [0, 0], offset: 0 },
@@ -886,7 +856,7 @@ describe('plite-history contract', () => {
     assert.equal(getHistory(editor).redos.length, 0);
   });
 
-  it('rebases saved non-main split positions across editor.update.history.skip text edits', () => {
+  it('rebases saved non-main split positions across history-skip text edits', () => {
     const editor = createEditor({
       extensions: [history()],
       initialValue: {
@@ -907,7 +877,7 @@ describe('plite-history contract', () => {
       ]);
     });
 
-    editor.update.history.skip((tx) => {
+    editor.update({ history: 'skip' }, (tx) => {
       tx.text.insert('Y', {
         at: { offset: 0, path: [0, 0], root: 'header' },
       });
@@ -1089,7 +1059,7 @@ describe('plite-history contract', () => {
     assert.deepEqual(getVisibleState(editor), before);
   });
 
-  it('uses update metadata to push, merge, and skip history batches', () => {
+  it('uses update policy to push, merge, and skip history batches', () => {
     const pushEditor = historyTestEditor();
 
     replace(pushEditor, [paragraph('')], {
@@ -1100,12 +1070,9 @@ describe('plite-history contract', () => {
     pushEditor.update((tx) => {
       tx.text.insert('a');
     });
-    pushEditor.update(
-      (tx) => {
-        tx.text.insert('b');
-      },
-      { metadata: { history: { mode: 'push' } } }
-    );
+    pushEditor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('b');
+    });
 
     assert.equal(getHistory(pushEditor).undos.length, 2);
 
@@ -1119,16 +1086,13 @@ describe('plite-history contract', () => {
     mergeEditor.update((tx) => {
       tx.text.insert('a');
     });
-    mergeEditor.update(
-      (tx) => {
-        tx.selection.set({
-          anchor: { path: [0, 0], offset: 0 },
-          focus: { path: [0, 0], offset: 0 },
-        });
-        tx.text.insert('b');
-      },
-      { metadata: { history: { mode: 'merge' } } }
-    );
+    mergeEditor.update({ history: 'merge' }, (tx) => {
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      });
+      tx.text.insert('b');
+    });
 
     assert.equal(getHistory(mergeEditor).undos.length, 1);
 
@@ -1139,17 +1103,14 @@ describe('plite-history contract', () => {
       focus: { path: [0, 0], offset: 0 },
     });
 
-    skipEditor.update(
-      (tx) => {
-        tx.text.insert('a');
-      },
-      { metadata: { history: { mode: 'skip' } } }
-    );
+    skipEditor.update({ history: 'skip' }, (tx) => {
+      tx.text.insert('a');
+    });
 
     assert.equal(getHistory(skipEditor).undos.length, 0);
   });
 
-  it('lets transaction metadata skip history for the active update', () => {
+  it('lets transaction control skip history for the active update', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('')], {
@@ -1158,7 +1119,7 @@ describe('plite-history contract', () => {
     });
 
     editor.update((tx) => {
-      tx.metadata.merge({ history: { mode: 'skip' } });
+      tx.history.skip();
       tx.text.insert('a');
     });
 
@@ -1523,12 +1484,9 @@ describe('plite-history contract', () => {
     write(editor, (tx) => {
       tx.text.insert('す');
     });
-    editor.update(
-      (tx) => {
-        tx.text.insert('し');
-      },
-      { metadata: { history: { mode: 'merge' } }, tag: 'composition' }
-    );
+    editor.update({ history: 'merge', tags: 'composition' }, (tx) => {
+      tx.text.insert('し');
+    });
 
     assert.equal(getHistory(editor).undos.length, 1);
     assert.equal(editorString(editor, [0]), 'This is すしeditable');
@@ -1547,13 +1505,10 @@ describe('plite-history contract', () => {
     });
     const before = getVisibleState(editor);
 
-    editor.update(
-      (tx) => {
-        tx.text.insert('す');
-        tx.text.delete({ reverse: true });
-      },
-      { metadata: { history: { mode: 'skip' } }, tag: 'composition-cancel' }
-    );
+    editor.update({ history: 'skip', tags: 'composition-cancel' }, (tx) => {
+      tx.text.insert('す');
+      tx.text.delete({ reverse: true });
+    });
 
     assert.equal(getHistory(editor).undos.length, 0);
     assert.deepEqual(getVisibleState(editor), before);

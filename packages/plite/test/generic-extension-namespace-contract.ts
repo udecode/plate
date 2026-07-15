@@ -227,10 +227,10 @@ defineEditorExtension<CustomEditor>()({
   name: 'middleware-context-typing',
   clipboard: {
     insertData(_data, context) {
-      context.state.selection();
+      context.tx.selection();
 
-      // @ts-expect-error clipboard middleware gets state, not tx
-      context.tx;
+      // @ts-expect-error clipboard middleware reads through its transaction
+      context.state;
 
       return context.next();
     },
@@ -286,8 +286,6 @@ defineEditorExtension<CustomEditor>()({
 
       // @ts-expect-error normalizer tx cannot recursively normalize
       tx.normalize();
-      // @ts-expect-error normalizer tx cannot disable normalizing
-      tx.withoutNormalizing(() => {});
       // @ts-expect-error normalizer tx cannot replay arbitrary operations
       tx.operations.replay([]);
       // @ts-expect-error normalizer tx cannot replace the whole value

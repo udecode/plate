@@ -34,6 +34,10 @@ const createCopyEditor = (entries: NodeEntry<TIdElement>[]) => {
     clear: mock(),
     set: mock(),
   };
+  const update = Object.assign(
+    (fn: (tx: { selection: typeof selection }) => void) => fn({ selection }),
+    { selection }
+  );
 
   return {
     api: {
@@ -75,15 +79,7 @@ const createCopyEditor = (entries: NodeEntry<TIdElement>[]) => {
       }),
     },
     setOption: mock(),
-    update: {
-      selection,
-      withoutNormalizing: (fn: (context: { tx: unknown }) => void) =>
-        fn({
-          tx: {
-            selection,
-          },
-        }),
-    },
+    update,
   } as any;
 };
 

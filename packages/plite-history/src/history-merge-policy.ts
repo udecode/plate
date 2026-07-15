@@ -1,9 +1,4 @@
-import {
-  type EditorCommit,
-  type Operation,
-  PathApi,
-  RangeApi,
-} from '@platejs/plite';
+import { type Operation, PathApi, RangeApi } from '@platejs/plite';
 import { getOperationRoot, MAIN_ROOT_KEY } from '@platejs/plite/internal';
 import type { Batch } from './history';
 
@@ -150,7 +145,7 @@ export const shouldMergeBatch = (
 export const shouldMergeExplicitBatch = (
   operations: readonly Operation[],
   previousBatch: Batch,
-  metadata: EditorCommit['metadata']
+  isNativeTextInput: boolean
 ): boolean => {
   if (shouldMergeBatch(operations, previousBatch)) {
     return true;
@@ -182,7 +177,7 @@ export const shouldMergeExplicitBatch = (
     return false;
   }
 
-  if (metadata.origin?.kind !== 'native-text-input') {
+  if (!isNativeTextInput) {
     return true;
   }
 

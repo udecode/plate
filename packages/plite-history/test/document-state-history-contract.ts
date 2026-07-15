@@ -266,19 +266,16 @@ describe('document meta history contract', () => {
     editor.update((tx) => {
       tx.setField(previewReplacement, 'Accepted body');
     });
-    editor.update(
-      (tx) => {
-        tx.setField(previewReplacement, null);
-        tx.text.delete({
-          at: {
-            anchor: { path: [0, 0], offset: 0 },
-            focus: { path: [0, 0], offset: 'Original body'.length },
-          },
-        });
-        tx.text.insert('Accepted body');
-      },
-      { metadata: { history: { mode: 'push' } }, tag: 'preview-accept' }
-    );
+    editor.update({ history: 'new-batch', tags: 'preview-accept' }, (tx) => {
+      tx.setField(previewReplacement, null);
+      tx.text.delete({
+        at: {
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 'Original body'.length },
+        },
+      });
+      tx.text.insert('Accepted body');
+    });
 
     assert.equal(readPreview(), null);
     assert.equal(readText(), 'Accepted body');
@@ -489,11 +486,13 @@ describe('document meta history contract', () => {
       currentSelection
     );
     assert.deepEqual(undoCommit?.operations, []);
-    assert.deepEqual(undoCommit?.metadata.selection, {
-      dom: 'preserve',
-      focus: false,
-      scroll: false,
-    });
+    assert.deepEqual(undoCommit?.tags, [
+      'history-skip',
+      'historic',
+      'skip-dom-selection',
+      'skip-selection-focus',
+      'skip-scroll-into-view',
+    ]);
   });
 
   it('undoes and redoes root-scoped edits while rebasing rootless refs', () => {

@@ -460,16 +460,14 @@ describe('model input strategy', () => {
       defineEditorExtension({
         name: 'markdown-shortcut-transform',
         transforms: {
-          insertText({ editor, next, text }) {
+          insertText({ next, text, tx }) {
             if (text === ' ') {
-              editor.update((tx) => {
-                tx.selection.set({
-                  anchor: { path: [0, 0], offset: 0 },
-                  focus: { path: [0, 0], offset: 1 },
-                });
-                tx.text.delete();
-                tx.nodes.set({ type: 'list-item' });
+              tx.selection.set({
+                anchor: { path: [0, 0], offset: 0 },
+                focus: { path: [0, 0], offset: 1 },
               });
+              tx.text.delete();
+              tx.nodes.set({ type: 'list-item' });
               return true;
             }
 

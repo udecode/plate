@@ -24,25 +24,25 @@ export const addMarkSuggestion = (
   key: string,
   value: any
 ) => {
-  editor.plugin(BaseSuggestionPlugin).api.withoutSuggestions(() => {
-    const { id, createdAt } = getAddMarkProps();
+  const { id, createdAt } = getAddMarkProps();
 
-    const match = (n: Node) => {
-      if (!TextApi.isText(n)) return false;
-      // if the node is already marked as a suggestion, we don't want to remove it unless it's a removeMark suggestion
-      if (n[KEYS.suggestion]) {
-        const data = getInlineSuggestionData(n);
+  const match = (n: Node) => {
+    if (!TextApi.isText(n)) return false;
+    // if the node is already marked as a suggestion, we don't want to remove it unless it's a removeMark suggestion
+    if (n[KEYS.suggestion]) {
+      const data = getInlineSuggestionData(n);
 
-        if (data?.type === 'update') {
-          return true;
-        }
-
-        return false;
+      if (data?.type === 'update') {
+        return true;
       }
 
-      return true;
-    };
+      return false;
+    }
 
+    return true;
+  };
+
+  editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
     tx.nodes.set(
       {
         [key]: value,

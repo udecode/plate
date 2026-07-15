@@ -19,42 +19,40 @@ export const input = (
   </editor>
 );
 export const run = (editor) => {
-  editor.withoutNormalizing(() => {
-    const operations = [
-      {
-        type: 'split_node',
-        path: [0, 1],
-        position: 0,
-        properties: { inline: true },
-      },
-      {
-        type: 'split_node',
-        path: [0],
-        position: 1,
-        properties: {},
-      },
-      {
-        type: 'split_node',
-        path: [2, 1, 0],
-        position: 0,
-        properties: {},
-      },
-      {
-        type: 'split_node',
-        path: [2, 1],
-        position: 0,
-        properties: { inline: true },
-      },
-      {
-        type: 'split_node',
-        path: [2],
-        position: 1,
-        properties: {},
-      },
-      { type: 'insert_node', path: [2, 1], node: { text: '' } },
-    ];
-    editor.operations.replay(operations);
-  });
+  const operations = [
+    {
+      type: 'split_node',
+      path: [0, 1],
+      position: 0,
+      properties: { inline: true },
+    },
+    {
+      type: 'split_node',
+      path: [0],
+      position: 1,
+      properties: {},
+    },
+    {
+      type: 'split_node',
+      path: [2, 1, 0],
+      position: 0,
+      properties: {},
+    },
+    {
+      type: 'split_node',
+      path: [2, 1],
+      position: 0,
+      properties: { inline: true },
+    },
+    {
+      type: 'split_node',
+      path: [2],
+      position: 1,
+      properties: {},
+    },
+    { type: 'insert_node', path: [2, 1], node: { text: '' } },
+  ];
+  editor.operations.replay(operations);
 };
 export const output = (
   <editor>

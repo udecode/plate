@@ -1,9 +1,10 @@
+// biome-ignore-all lint/performance/useTopLevelRegex: Test-local source assertion.
 import { act, render } from '@testing-library/react';
 import { StrictMode } from 'react';
 import type React from 'react';
 import {
   type Descendant,
-  type EditorUpdateOptions,
+  type EditorUpdateTransaction,
   NodeApi,
 } from '@platejs/plite';
 import {
@@ -16,6 +17,7 @@ import {
   Editable,
   EditableElement,
   Plite,
+  PliteReactUpdatePolicy,
   type PliteDecorationSource,
   usePliteDecorationSource,
   usePliteRangeDecorationSource,
@@ -43,15 +45,6 @@ const TestEditorSurface = ({
     <Editable {...props} />
   </Plite>
 );
-
-const remoteSelectionOptions = {
-  metadata: {
-    collab: { origin: 'remote', saveToHistory: false },
-    history: { mode: 'skip' },
-    selection: { dom: 'preserve', focus: false, scroll: false },
-  },
-  tag: ['collaboration', 'skip-scroll-into-view', 'skip-selection-focus'],
-} satisfies EditorUpdateOptions;
 
 describe('plite-react app-owned customization', () => {
   test('usePliteDecorationSource owns source lifecycle while reading latest options', async () => {
@@ -374,19 +367,21 @@ describe('plite-react app-owned customization', () => {
 
   test('Editable supports app-owned markdown shortcuts', async () => {
     const editor = createReactEditor();
-    const applyShortcut = (type: 'block-quote' | 'list-item', at: number[]) => {
-      editor.update((tx) => {
-        if (type === 'list-item') {
-          tx.nodes.set({ type: 'list-item' }, { at });
-          tx.nodes.wrap({
-            type: 'bulleted-list',
-            children: [],
-          } as never);
-          return;
-        }
+    const applyShortcut = (
+      tx: EditorUpdateTransaction,
+      type: 'block-quote' | 'list-item',
+      at: number[]
+    ) => {
+      if (type === 'list-item') {
+        tx.nodes.set({ type: 'list-item' }, { at });
+        tx.nodes.wrap({
+          type: 'bulleted-list',
+          children: [],
+        } as never);
+        return;
+      }
 
-        tx.nodes.set({ type } as never, { at });
-      });
+      tx.nodes.set({ type } as never, { at });
     };
 
     editorReplace(editor, {
@@ -432,7 +427,7 @@ describe('plite-react app-owned customization', () => {
           focus: { path: [0, 0], offset: 1 },
         });
         tx.text.delete();
-        applyShortcut('block-quote', [0]);
+        applyShortcut(tx, 'block-quote', [0]);
       });
     });
 
@@ -457,7 +452,7 @@ describe('plite-react app-owned customization', () => {
           focus: { path: [0, 0], offset: 1 },
         });
         tx.text.delete();
-        applyShortcut('list-item', [0]);
+        applyShortcut(tx, 'list-item', [0]);
       });
     });
 
@@ -613,12 +608,12 @@ describe('plite-react app-owned customization', () => {
     );
 
     await act(async () => {
-      editor.update((tx) => {
+      editor.update(PliteReactUpdatePolicy.preserveSelection, (tx) => {
         tx.selection.set({
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 4 },
         });
-      }, remoteSelectionOptions);
+      });
     });
 
     expect(seen).toEqual([]);

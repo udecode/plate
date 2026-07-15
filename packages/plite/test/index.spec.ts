@@ -20,7 +20,6 @@ import {
   isEditor as editorIsEditor,
   normalize as editorNormalize,
   replace as editorReplace,
-  withoutNormalizing as editorWithoutNormalizing,
 } from '@platejs/plite/internal';
 import { getEditorRuntime } from '@platejs/plite/internal';
 import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
@@ -144,11 +143,9 @@ describe('@platejs/plite', () => {
     const editor = withTest(input);
 
     runEditorTransaction(editor, (transaction) => {
-      editorWithoutNormalizing(editor, () => {
-        for (const op of operations) {
-          transaction.apply(op);
-        }
-      });
+      for (const op of operations) {
+        transaction.apply(op);
+      }
     });
 
     const snapshot = editorGetSnapshot(editor);

@@ -6,11 +6,16 @@ import type {
   EditorUpdate,
   EditorUpdateContext,
   EditorUpdateMethods,
-  EditorUpdateOptions,
+  EditorUpdatePolicy,
   EditorUpdateTransaction,
-  EditorValueReplaceOptions,
   Value,
 } from '../interfaces';
+import { isTxOnlyMethod } from './tx-only';
+import {
+  compileEditorUpdatePolicy,
+  type CompiledEditorUpdatePolicy,
+  EMPTY_EDITOR_UPDATE_POLICY,
+} from './update-policy';
 
 type RunEditorRead<V extends Value, TExtensions extends readonly unknown[]> = <
   T,
@@ -26,8 +31,29 @@ type RunEditorUpdate<
     transaction: EditorUpdateTransaction<V, TExtensions>,
     context: EditorUpdateContext<Editor<V, TExtensions>>
   ) => void,
-  options?: EditorUpdateOptions
+  policy: CompiledEditorUpdatePolicy
 ) => void;
+
+type EditorUpdateApiOptions = {
+  hasTxGroup?: (groupName: string) => boolean;
+};
+
+const assertHistoryCapability = (options: EditorUpdateApiOptions) => {
+  if (!options.hasTxGroup?.('history')) {
+    throw new Error(
+      'Editor update history policy requires the history extension.'
+    );
+  }
+};
+
+const assertUpdatePolicy = (
+  policy: EditorUpdatePolicy,
+  options: EditorUpdateApiOptions
+) => {
+  if (policy.history) {
+    assertHistoryCapability(options);
+  }
+};
 
 const readExtensionProperty = <
   V extends Value,
@@ -69,47 +95,44 @@ const ignoredDynamicPropertyNames = new Set([
   'valueOf',
 ]);
 
-const toValueReplaceUpdateOptions = (
-  options?: EditorValueReplaceOptions
-): EditorUpdateOptions | undefined => {
-  if (!options) return;
-
-  const { history, metadata, normalize, tag } = options;
-
-  return {
-    metadata: history
-      ? {
-          ...metadata,
-          history: {
-            ...metadata?.history,
-            mode: history,
-          },
-        }
-      : metadata,
-    skipNormalize: normalize === undefined ? undefined : !normalize,
-    tag,
-  };
-};
-
 const createUpdateExtensionPath = <
   V extends Value,
   TExtensions extends readonly unknown[],
 >(
-  update: EditorUpdate<V, TExtensions>,
+  runUpdate: (
+    fn: (
+      transaction: EditorUpdateTransaction<V, TExtensions>,
+      context: EditorUpdateContext<Editor<V, TExtensions>>
+    ) => void
+  ) => void,
   groupName: string,
+  pathCache: Map<string, unknown>,
   path: readonly string[] = []
-): unknown =>
-  new Proxy(() => {}, {
+): unknown => {
+  const cacheKey = JSON.stringify([groupName, ...path]);
+  const existing = pathCache.get(cacheKey);
+
+  if (existing) {
+    return existing;
+  }
+
+  const extensionPath = new Proxy(() => {}, {
     apply(_target, _thisArg, args) {
       let result: unknown;
 
-      update((tx) => {
+      runUpdate((tx) => {
         const group = (tx as Record<string, unknown>)[groupName];
         const method = resolvePath(group, path);
 
         if (typeof method !== 'function') {
           throw new Error(
             `Editor update group "${groupName}" method "${path.join('.')}" is not installed.`
+          );
+        }
+
+        if (isTxOnlyMethod(method)) {
+          throw new Error(
+            `Editor update group "${groupName}" method "${path.join('.')}" is transaction-only.`
           );
         }
 
@@ -121,9 +144,17 @@ const createUpdateExtensionPath = <
     get(_target, key) {
       if (typeof key !== 'string') return;
 
-      return createUpdateExtensionPath(update, groupName, [...path, key]);
+      return createUpdateExtensionPath(runUpdate, groupName, pathCache, [
+        ...path,
+        key,
+      ]);
     },
   });
+
+  pathCache.set(cacheKey, extensionPath);
+
+  return extensionPath;
+};
 
 export const createEditorReadApi = <
   V extends Value,
@@ -259,93 +290,221 @@ export const createEditorUpdateApi = <
   V extends Value,
   TExtensions extends readonly unknown[],
 >(
-  runUpdate: RunEditorUpdate<V, TExtensions>
+  runUpdate: RunEditorUpdate<V, TExtensions>,
+  apiOptions: EditorUpdateApiOptions = {}
 ): EditorUpdate<V, TExtensions> => {
-  const update = ((
-    fn: (
-      transaction: EditorUpdateTransaction<V, TExtensions>,
-      context: EditorUpdateContext<Editor<V, TExtensions>>
-    ) => void,
-    options?: EditorUpdateOptions
-  ): void => runUpdate(fn, options)) as EditorUpdate<V, TExtensions>;
+  type UpdateCallback = (
+    transaction: EditorUpdateTransaction<V, TExtensions>,
+    context: EditorUpdateContext<Editor<V, TExtensions>>
+  ) => void;
 
-  const createGroup = <TGroup extends keyof EditorUpdateMethods<V>>(
-    groupName: TGroup
-  ): EditorUpdateMethods<V>[TGroup] =>
-    new Proxy(
-      {},
-      {
-        get(_target, key) {
-          if (typeof key !== 'string') return;
+  const historyFacades = new Map<
+    NonNullable<EditorUpdatePolicy['history']>,
+    EditorUpdateMethods<V, TExtensions>
+  >();
+  const taggedFacades = new WeakMap<
+    object,
+    EditorUpdateMethods<V, TExtensions>
+  >();
+  let defaultFacade!: EditorUpdate<V, TExtensions>;
 
-          return (...args: unknown[]) => {
-            let result: unknown;
+  const getConfiguredFacade = (
+    policy: EditorUpdatePolicy
+  ): EditorUpdateMethods<V, TExtensions> => {
+    assertUpdatePolicy(policy, apiOptions);
 
-            update((tx) => {
-              result = (
-                tx[groupName] as Record<string, (...args: unknown[]) => unknown>
-              )[key]!(...args);
-            });
+    if (!policy.history && policy.tags === undefined) {
+      return defaultFacade;
+    }
 
-            return result;
-          };
-        },
+    if (policy.history && policy.tags === undefined) {
+      const existing = historyFacades.get(policy.history);
+
+      if (existing) {
+        return existing;
       }
-    ) as EditorUpdateMethods<V>[TGroup];
 
-  const methods = {
-    blocks: createGroup('blocks'),
-    break: createGroup('break'),
-    fragment: createGroup('fragment'),
-    marks: createGroup('marks'),
-    nodes: createGroup('nodes'),
-    normalize: ((...args) =>
-      update((tx) =>
-        tx.normalize(...args)
-      )) as EditorUpdateMethods<V>['normalize'],
-    operations: createGroup('operations'),
-    refs: createGroup('refs'),
-    roots: createGroup('roots'),
-    selection: createGroup('selection'),
-    setField: ((...args) =>
-      update((tx) =>
-        tx.setField(...args)
-      )) as EditorUpdateMethods<V>['setField'],
-    statePatches: createGroup('statePatches'),
-    text: createGroup('text'),
-    value: Object.freeze({
-      replace: (input, options) =>
-        update((tx) => {
-          tx.value.replace(input);
-        }, toValueReplaceUpdateOptions(options)),
-    }) as EditorUpdateMethods<V>['value'],
-    withoutNormalizing: ((...args) =>
-      update((tx) =>
-        tx.withoutNormalizing(...args)
-      )) as EditorUpdateMethods<V>['withoutNormalizing'],
-  } satisfies EditorUpdateMethods<V>;
+      const facade = createFacade(compileEditorUpdatePolicy(policy), true);
+      historyFacades.set(policy.history, facade);
 
-  const updateApi = Object.assign(update, methods);
+      return facade;
+    }
 
-  return new Proxy(updateApi, {
-    get(target, groupName, receiver) {
-      if (typeof groupName !== 'string') {
-        return Reflect.get(target, groupName, receiver);
+    const existing = taggedFacades.get(policy);
+
+    if (existing) {
+      return existing;
+    }
+
+    const facade = createFacade(
+      compileEditorUpdatePolicy(policy),
+      policy.history !== undefined
+    );
+    taggedFacades.set(policy, facade);
+
+    return facade;
+  };
+
+  const createFacade = (
+    compiledPolicy?: CompiledEditorUpdatePolicy,
+    requiresHistory = false
+  ): EditorUpdate<V, TExtensions> => {
+    const propertyCache = new Map<string, unknown>();
+    const extensionPathCache = new Map<string, unknown>();
+    const invoke = (fn: UpdateCallback) => {
+      if (requiresHistory) {
+        assertHistoryCapability(apiOptions);
       }
-      if (groupName in target || groupName === 'then') {
-        return Reflect.get(target, groupName, receiver);
+
+      runUpdate(fn, compiledPolicy ?? EMPTY_EDITOR_UPDATE_POLICY);
+    };
+    const update = ((
+      policyOrFn: EditorUpdatePolicy | UpdateCallback,
+      fn?: UpdateCallback
+    ): EditorUpdateMethods<V, TExtensions> | void => {
+      if (typeof policyOrFn === 'function') {
+        if (fn !== undefined) {
+          throw new Error(
+            'editor.update callback options were removed; pass policy first'
+          );
+        }
+
+        invoke(policyOrFn);
+        return;
       }
+
+      assertUpdatePolicy(policyOrFn, apiOptions);
+
+      if (fn) {
+        runUpdate(fn, compileEditorUpdatePolicy(policyOrFn));
+        return;
+      }
+
+      return getConfiguredFacade(policyOrFn);
+    }) as EditorUpdate<V, TExtensions>;
+
+    const createGroup = <TGroup extends keyof EditorUpdateMethods<V>>(
+      groupName: TGroup
+    ): EditorUpdateMethods<V>[TGroup] => {
+      const methodCache = new Map<string, (...args: unknown[]) => unknown>();
 
       return new Proxy(
         {},
         {
-          get(_groupTarget, methodName) {
-            if (typeof methodName !== 'string') return;
+          get(_target, key) {
+            if (typeof key !== 'string') return;
 
-            return createUpdateExtensionPath(update, groupName, [methodName]);
+            const existing = methodCache.get(key);
+
+            if (existing) {
+              return existing;
+            }
+
+            const method = (...args: unknown[]) => {
+              let result: unknown;
+
+              invoke((tx) => {
+                result = (
+                  tx[groupName] as Record<
+                    string,
+                    (...args: unknown[]) => unknown
+                  >
+                )[key]!(...args);
+              });
+
+              return result;
+            };
+
+            methodCache.set(key, method);
+
+            return method;
           },
         }
-      );
-    },
-  }) as EditorUpdate<V, TExtensions>;
+      ) as EditorUpdateMethods<V>[TGroup];
+    };
+
+    const getUpdateProperty = (property: string): unknown => {
+      const existing = propertyCache.get(property);
+
+      if (existing) {
+        return existing;
+      }
+
+      let value: unknown;
+
+      switch (property) {
+        case 'blocks':
+        case 'break':
+        case 'fragment':
+        case 'marks':
+        case 'nodes':
+        case 'operations':
+        case 'refs':
+        case 'roots':
+        case 'selection':
+        case 'statePatches':
+        case 'text': {
+          value = createGroup(property);
+          break;
+        }
+        case 'normalize': {
+          value = (...args: Parameters<EditorUpdateMethods<V>['normalize']>) =>
+            invoke((tx) => tx.normalize(...args));
+          break;
+        }
+        case 'setField': {
+          value = (...args: Parameters<EditorUpdateMethods<V>['setField']>) =>
+            invoke((tx) => tx.setField(...args));
+          break;
+        }
+        case 'value': {
+          value = Object.freeze({
+            replace: (
+              input: Parameters<EditorUpdateMethods<V>['value']['replace']>[0]
+            ) => invoke((tx) => tx.value.replace(input)),
+          }) as EditorUpdateMethods<V>['value'];
+          break;
+        }
+        default: {
+          value = new Proxy(
+            {},
+            {
+              get(_target, methodName) {
+                if (typeof methodName !== 'string') return;
+
+                return createUpdateExtensionPath(
+                  invoke,
+                  property,
+                  extensionPathCache,
+                  [methodName]
+                );
+              },
+            }
+          );
+        }
+      }
+
+      propertyCache.set(property, value);
+
+      return value;
+    };
+
+    return new Proxy(update, {
+      get(target, property, receiver) {
+        if (typeof property !== 'string' || property in target) {
+          return Reflect.get(target, property, receiver);
+        }
+        if (ignoredDynamicPropertyNames.has(property)) {
+          return Reflect.get(target, property, receiver);
+        }
+        if (property === 'then') return;
+
+        return getUpdateProperty(property);
+      },
+    }) as EditorUpdate<V, TExtensions>;
+  };
+
+  defaultFacade = createFacade();
+
+  return defaultFacade;
 };

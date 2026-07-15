@@ -214,7 +214,7 @@ export const addSelection = (editor: BaseEditor) => {
 
   const [start, end] = RangeApi.edges(selection);
 
-  editor.update.withoutNormalizing(({ tx }) => {
+  editor.update((tx) => {
     tx.text.insert(SELECTION_END, {
       at: end,
     });

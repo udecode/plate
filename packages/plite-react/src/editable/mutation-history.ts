@@ -6,6 +6,7 @@ import {
   writePliteViewSelection,
 } from '../view-selection';
 import type { Editor } from './runtime-editor-api';
+import { getEditorRuntime } from './runtime-editor-api';
 
 const EDITOR_TO_HISTORY_FOCUS_ROOT = new WeakMap<Editor, RootKey | null>();
 
@@ -63,7 +64,7 @@ export const applyModelOwnedHistoryIntent = ({
 
   writePliteViewSelection(editor, viewSelectionAfterHistory ?? null);
   try {
-    editor.update(
+    getEditorRuntime(editor).update(
       (tx) => {
         const history = (
           tx as {

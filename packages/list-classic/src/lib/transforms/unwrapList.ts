@@ -109,9 +109,5 @@ export const unwrapList = (
     } while (ancestorListTypeCheck());
   };
 
-  if (tx.withoutNormalizing) {
-    tx.withoutNormalizing(unwrap);
-  } else {
-    unwrap();
-  }
+  unwrap();
 };

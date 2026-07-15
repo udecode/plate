@@ -1,15 +1,12 @@
 import { type KeyboardEvent, useCallback, useMemo } from 'react';
-import type {
-  EditorStateView,
-  EditorUpdateOptions,
-  RootKey,
-} from '@platejs/plite';
+import type { EditorStateView, RootKey } from '@platejs/plite';
 import { resolveHistoryFocusEditor } from '../editable/history-focus';
 import {
   getHistoryDirectionFromNativeEvent,
   type HistoryDirection,
 } from '../editable/history-keyboard';
 import { failInvariant } from '../editable/runtime-editor-api';
+import { getEditorRuntime } from '../editable/runtime-editor-api';
 import {
   getOperationRoot,
   MAIN_ROOT_KEY,
@@ -27,6 +24,7 @@ import {
   usePliteRootEditor,
   usePliteRuntimeState,
 } from './use-plite-runtime';
+import { PLITE_REACT_PRESERVE_SELECTION_TAGS } from '../update-policy';
 
 /** Focus behavior after undo or redo commands. */
 export type PliteHistoryFocusPolicy = 'none' | 'preserve' | 'restore-root';
@@ -142,23 +140,6 @@ const selectHistoryAvailability = (state: unknown): HistoryAvailability => {
   };
 };
 
-const getHistoryUpdateOptions = (
-  focus: PliteHistoryFocusPolicy
-): EditorUpdateOptions => ({
-  ...(focus === 'preserve'
-    ? {
-        metadata: {
-          selection: {
-            dom: 'preserve',
-            focus: false,
-            scroll: false,
-          },
-        },
-      }
-    : null),
-  skipNormalize: true,
-});
-
 /**
  * Create undo/redo commands and keyboard handling for the active or fixed root.
  *
@@ -214,14 +195,23 @@ export function usePliteHistory({
 
       writePliteViewSelection(editor, viewSelectionAfterHistory ?? null);
       try {
-        editor.update((tx) => {
-          if (!hasHistoryCommands(tx)) {
-            return;
-          }
+        getEditorRuntime(editor).update(
+          (tx) => {
+            if (!hasHistoryCommands(tx)) {
+              return;
+            }
 
-          tx.history[direction]();
-          applied = true;
-        }, getHistoryUpdateOptions(focusPolicy));
+            tx.history[direction]();
+            applied = true;
+          },
+          {
+            skipNormalize: true,
+            tags:
+              focusPolicy === 'preserve'
+                ? PLITE_REACT_PRESERVE_SELECTION_TAGS
+                : undefined,
+          }
+        );
       } catch (error) {
         writePliteViewSelection(editor, previousViewSelection);
         throw error;

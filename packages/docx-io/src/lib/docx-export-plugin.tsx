@@ -249,8 +249,7 @@ export type DocxExportOptions = DocxExportOperationOptions &
 export type DocxExportPluginConfig = PluginConfig<
   'docxExport',
   DocxExportPluginOptions,
-  { docxExport: DocxExportApiMethods },
-  { docxExport: DocxExportTransformMethods }
+  { docxExport: DocxExportApiMethods }
 >;
 
 // =============================================================================
@@ -270,19 +269,6 @@ export type DocxExportApiMethods = {
   download: (blob: Blob, filename: string) => void;
 
   /**
-   * Convert editor content to a DOCX blob.
-   *
-   * @param options - Export options (orientation, margins, styles, etc.)
-   * @returns A Promise that resolves to a Blob containing the DOCX file
-   */
-  exportToBlob: (options?: DocxExportOperationOptions) => Promise<Blob>;
-};
-
-/**
- * Transaction methods for the docxExport namespace on `editor.update`.
- */
-export type DocxExportTransformMethods = {
-  /**
    * Export and download the editor content as a DOCX file.
    *
    * @param filename - The filename for the download
@@ -292,6 +278,14 @@ export type DocxExportTransformMethods = {
     filename: string,
     options?: DocxExportOperationOptions
   ) => Promise<void>;
+
+  /**
+   * Convert editor content to a DOCX blob.
+   *
+   * @param options - Export options (orientation, margins, styles, etc.)
+   * @returns A Promise that resolves to a Blob containing the DOCX file
+   */
+  exportToBlob: (options?: DocxExportOperationOptions) => Promise<Blob>;
 };
 
 // =============================================================================
@@ -594,8 +588,8 @@ export async function exportEditorToDocx(
  * // Download the blob:
  * editor.api.docxExport.download(blob, 'my-document');
  *
- * // Or use the transform for export + download in one call:
- * await editor.update.docxExport.exportAndDownload('my-document', {
+ * // Or export and download in one call:
+ * await editor.api.docxExport.exportAndDownload('my-document', {
  *   orientation: 'landscape',
  * });
  * ```
@@ -620,36 +614,34 @@ export const DocxExportPlugin = createBasePlugin<DocxExportPluginConfig>({
       | React.ComponentType<PlateStaticProps>
       | undefined,
   },
-})
-  .extendEditorApi(({ editor, getOptions, plugin }) => ({
-    docxExport: {
-      download: (blob: Blob, filename: string): void => {
-        downloadDocx(blob, filename);
-      },
-      exportToBlob: async (
-        options: DocxExportOperationOptions = {}
-      ): Promise<Blob> => {
-        const pluginOptions = getOptions();
-
-        return exportToDocxInternal({
-          ...options,
-          components: plugin.override.components,
-          editorPlugins: pluginOptions.editorPlugins,
-          editorStaticComponent: pluginOptions.editorStaticComponent,
-          value: [...editor.read.children()],
-        });
-      },
+}).extendEditorApi(({ editor, getOptions, plugin }) => ({
+  docxExport: {
+    download: (blob: Blob, filename: string): void => {
+      downloadDocx(blob, filename);
     },
-  }))
-  .extendTx(({ api }) => () => ({
     exportAndDownload: async (
       filename: string,
       options: DocxExportOperationOptions = {}
     ): Promise<void> => {
-      const blob = await api.exportToBlob(options);
-      api.download(blob, filename);
+      const blob = await editor.api.docxExport.exportToBlob(options);
+
+      editor.api.docxExport.download(blob, filename);
     },
-  }));
+    exportToBlob: async (
+      options: DocxExportOperationOptions = {}
+    ): Promise<Blob> => {
+      const pluginOptions = getOptions();
+
+      return exportToDocxInternal({
+        ...options,
+        components: plugin.override.components,
+        editorPlugins: pluginOptions.editorPlugins,
+        editorStaticComponent: pluginOptions.editorStaticComponent,
+        value: [...editor.read.children()],
+      });
+    },
+  },
+}));
 
 // =============================================================================
 // Re-exports

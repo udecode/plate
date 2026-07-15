@@ -20,7 +20,6 @@ import {
   pointRef as editorPointRef,
   unhangRange as editorUnhangRange,
   void as editorVoid,
-  withoutNormalizing as editorWithoutNormalizing,
 } from '../interfaces/editor';
 import type { Editor } from '../interfaces/editor';
 import type { Element } from '../interfaces/element';
@@ -710,339 +709,339 @@ const applyInsertFragment: TextMutationMethods['insertFragment'] = (
       }
     }
 
-    editorWithoutNormalizing(editor, () => {
-      const transforms = getEditorTransformRegistry(editor);
-      const { batchDirty = true } = options;
-      let at = tx.resolveTarget({ at: options.at });
+    const transforms = getEditorTransformRegistry(editor);
+    const { batchDirty = true } = options;
+    let at = tx.resolveTarget({ at: options.at });
 
-      if (!fragment.length) {
+    if (!fragment.length) {
+      return;
+    }
+
+    if (!at && options.at === undefined && tx.getModelSelection() == null) {
+      at = getDefaultInsertLocation(editor);
+    }
+
+    if (!at) {
+      return;
+    }
+
+    if (LocationApi.isRange(at)) {
+      if (!hanging) {
+        at = editorUnhangRange(editor, at, { voids });
+      }
+
+      const topLevelStructuralBlockReplacement =
+        getTopLevelStructuralBlockFragmentReplacement(editor, at, fragment);
+
+      if (topLevelStructuralBlockReplacement) {
+        applyReplaceChildren({
+          children: topLevelStructuralBlockReplacement.previousChildren,
+          index: topLevelStructuralBlockReplacement.index,
+          newChildren: topLevelStructuralBlockReplacement.children,
+          newSelection: topLevelStructuralBlockReplacement.selection,
+          path: [],
+          selection: tx.getModelSelection(),
+          type: 'replace_children',
+        });
         return;
       }
 
-      if (!at && options.at === undefined && tx.getModelSelection() == null) {
-        at = getDefaultInsertLocation(editor);
-      }
+      const replacement = getSingleEmptyBlockFragmentReplacement(
+        editor,
+        at,
+        fragment
+      );
 
-      if (!at) {
+      if (replacement) {
+        applyReplaceChildren({
+          children: replacement.previousChildren,
+          index: 0,
+          newChildren: replacement.children,
+          newSelection: replacement.selection,
+          path: [],
+          selection: tx.getModelSelection(),
+          type: 'replace_children',
+        });
         return;
       }
 
-      if (LocationApi.isRange(at)) {
-        if (!hanging) {
-          at = editorUnhangRange(editor, at, { voids });
-        }
+      const emptyTextBlockReplacement =
+        getEmptyTopLevelTextBlockFragmentReplacement(editor, at, fragment);
 
-        const topLevelStructuralBlockReplacement =
-          getTopLevelStructuralBlockFragmentReplacement(editor, at, fragment);
-
-        if (topLevelStructuralBlockReplacement) {
-          applyReplaceChildren({
-            children: topLevelStructuralBlockReplacement.previousChildren,
-            index: topLevelStructuralBlockReplacement.index,
-            newChildren: topLevelStructuralBlockReplacement.children,
-            newSelection: topLevelStructuralBlockReplacement.selection,
-            path: [],
-            selection: tx.getModelSelection(),
-            type: 'replace_children',
-          });
-          return;
-        }
-
-        const replacement = getSingleEmptyBlockFragmentReplacement(
-          editor,
-          at,
-          fragment
-        );
-
-        if (replacement) {
-          applyReplaceChildren({
-            children: replacement.previousChildren,
-            index: 0,
-            newChildren: replacement.children,
-            newSelection: replacement.selection,
-            path: [],
-            selection: tx.getModelSelection(),
-            type: 'replace_children',
-          });
-          return;
-        }
-
-        const emptyTextBlockReplacement =
-          getEmptyTopLevelTextBlockFragmentReplacement(editor, at, fragment);
-
-        if (emptyTextBlockReplacement) {
-          applyReplaceChildren({
-            children: emptyTextBlockReplacement.previousChildren,
-            index: emptyTextBlockReplacement.index,
-            newChildren: emptyTextBlockReplacement.children,
-            newSelection: emptyTextBlockReplacement.selection,
-            path: [],
-            selection: tx.getModelSelection(),
-            type: 'replace_children',
-          });
-          return;
-        }
-
-        const textBlockReplacement = getSingleTextBlockFragmentReplacement(
-          editor,
-          at,
-          fragment
-        );
-
-        if (textBlockReplacement) {
-          applyReplaceChildren({
-            children: textBlockReplacement.previousChildren,
-            index: 0,
-            newChildren: textBlockReplacement.newChildren,
-            newSelection: textBlockReplacement.selection,
-            path: textBlockReplacement.path,
-            selection: tx.getModelSelection(),
-            type: 'replace_children',
-          });
-          return;
-        }
-
-        if (isFullDocumentRange(editor, at)) {
-          const editorChildren = editorGetChildren(editor);
-
-          applyReplaceChildren({
-            children: editorChildren,
-            index: 0,
-            newChildren: fragment as Value,
-            newSelection: getFragmentEndSelection(fragment),
-            path: [],
-            selection: tx.getModelSelection(),
-            type: 'replace_children',
-          });
-          return;
-        }
-
-        const topLevelTextBlockReplacement =
-          getTopLevelTextBlockFragmentReplacement(editor, at, fragment);
-
-        if (topLevelTextBlockReplacement) {
-          applyReplaceChildren({
-            children: topLevelTextBlockReplacement.previousChildren,
-            index: topLevelTextBlockReplacement.index,
-            newChildren: topLevelTextBlockReplacement.children,
-            newSelection: topLevelTextBlockReplacement.selection,
-            path: [],
-            selection: tx.getModelSelection(),
-            type: 'replace_children',
-          });
-          return;
-        }
-
-        const nestedTextBlockReplacement =
-          getNestedTextBlockFragmentReplacement(editor, at, fragment);
-
-        if (nestedTextBlockReplacement) {
-          applyReplaceChildren({
-            children: nestedTextBlockReplacement.previousChildren,
-            index: nestedTextBlockReplacement.index,
-            newChildren: nestedTextBlockReplacement.children,
-            newSelection: nestedTextBlockReplacement.selection,
-            path: nestedTextBlockReplacement.path,
-            selection: tx.getModelSelection(),
-            type: 'replace_children',
-          });
-          return;
-        }
-
-        const topLevelBlockReplacement = getTopLevelBlockFragmentReplacement(
-          editor,
-          at,
-          fragment
-        );
-
-        if (topLevelBlockReplacement) {
-          applyReplaceChildren({
-            children: topLevelBlockReplacement.previousChildren,
-            index: topLevelBlockReplacement.index,
-            newChildren: topLevelBlockReplacement.children,
-            newSelection: topLevelBlockReplacement.selection,
-            path: [],
-            selection: tx.getModelSelection(),
-            type: 'replace_children',
-          });
-          return;
-        }
-
-        if (RangeApi.isCollapsed(at)) {
-          at = at.anchor;
-        } else {
-          const [, end] = RangeApi.edges(at);
-
-          if (!voids && editorVoid(editor, { at: end })) {
-            return;
-          }
-
-          const pointRef = editorPointRef(editor, end);
-          transforms.delete({ at });
-          at = pointRef.unref()!;
-        }
-      } else if (LocationApi.isPath(at)) {
-        at = editorPoint(editor, at, { edge: 'start' });
-      }
-
-      if (!voids && editorVoid(editor, { at })) {
+      if (emptyTextBlockReplacement) {
+        applyReplaceChildren({
+          children: emptyTextBlockReplacement.previousChildren,
+          index: emptyTextBlockReplacement.index,
+          newChildren: emptyTextBlockReplacement.children,
+          newSelection: emptyTextBlockReplacement.selection,
+          path: [],
+          selection: tx.getModelSelection(),
+          type: 'replace_children',
+        });
         return;
       }
 
-      // If the insert point is at the edge of an inline node, move it outside
-      // instead since it will need to be split otherwise.
-      const inlineElementMatch = editorAbove(editor, {
+      const textBlockReplacement = getSingleTextBlockFragmentReplacement(
+        editor,
         at,
-        match: (n) => NodeApi.isElement(n) && editorIsInline(editor, n),
-        mode: 'highest',
-        voids,
-      });
+        fragment
+      );
 
-      if (inlineElementMatch) {
-        const [, inlinePath] = inlineElementMatch;
-
-        if (editorIsEnd(editor, at, inlinePath)) {
-          const after = editorAfter(editor, inlinePath)!;
-          at = after;
-        } else if (editorIsStart(editor, at, inlinePath)) {
-          const before = editorBefore(editor, inlinePath)!;
-          at = before;
-        }
+      if (textBlockReplacement) {
+        applyReplaceChildren({
+          children: textBlockReplacement.previousChildren,
+          index: 0,
+          newChildren: textBlockReplacement.newChildren,
+          newSelection: textBlockReplacement.selection,
+          path: textBlockReplacement.path,
+          selection: tx.getModelSelection(),
+          type: 'replace_children',
+        });
+        return;
       }
 
-      const blockMatch = editorAbove(editor, {
-        match: (n) => NodeApi.isElement(n) && editorIsBlock(editor, n),
-        at,
-        voids,
-      })!;
-      const [, blockPath] = blockMatch;
-      const isBlockStart = editorIsStart(editor, at, blockPath);
-      const isBlockEnd = editorIsEnd(editor, at, blockPath);
-      const isBlockEmpty = isBlockStart && isBlockEnd;
-      const fragmentRoot = { children: fragment } as Ancestor;
-      const [, firstLeafPath] = NodeApi.first(fragmentRoot, []);
-      const [, lastLeafPath] = NodeApi.last(fragmentRoot, []);
-      const [onlyFragmentNode] = fragment;
-      const preserveEmptyTargetBlock =
-        isBlockEmpty &&
-        fragment.length === 1 &&
-        isTextBlockElement(editor, onlyFragmentNode);
-      const { ends, middles, starts } = getFragmentInsertionParts(
-        editor,
-        fragment,
-        {
-          firstLeafPath,
-          isBlockEmpty,
-          isBlockEnd,
-          isBlockStart,
-          lastLeafPath,
-          preserveEmptyTargetBlock,
-        }
-      );
+      if (isFullDocumentRange(editor, at)) {
+        const editorChildren = editorGetChildren(editor);
 
-      const [inlineMatch] = getNodes(editor, {
-        at,
-        match: (n) =>
-          NodeApi.isText(n) ||
-          (NodeApi.isElement(n) && editorIsInline(editor, n)),
-        mode: 'highest',
-        voids,
-      })!;
-
-      const [, inlinePath] = inlineMatch;
-      const isInlineStart = editorIsStart(editor, at, inlinePath);
-      const isInlineEnd = editorIsEnd(editor, at, inlinePath);
-
-      const middleRef = editorPathRef(
-        editor,
-        isBlockEnd && !ends.length ? PathApi.next(blockPath) : blockPath
-      );
-
-      const endRef = editorPathRef(
-        editor,
-        isInlineEnd ? PathApi.next(inlinePath) : inlinePath
-      );
-
-      // If the fragment contains inlines in multiple distinct blocks, split the
-      // destination block.
-      const splitBlock = ends.length > 0;
-
-      transforms.splitNodes({
-        at,
-        match: (n) =>
-          splitBlock
-            ? NodeApi.isElement(n) && editorIsBlock(editor, n)
-            : NodeApi.isText(n) ||
-              (NodeApi.isElement(n) && editorIsInline(editor, n)),
-        mode: splitBlock ? 'lowest' : 'highest',
-        always:
-          splitBlock &&
-          (!isBlockStart || starts.length > 0) &&
-          (!isBlockEnd || ends.length > 0),
-        voids,
-      });
-
-      const startRef = editorPathRef(
-        editor,
-        !isInlineStart || (isInlineStart && isInlineEnd)
-          ? PathApi.next(inlinePath)
-          : inlinePath
-      );
-
-      transforms.insertNodes(starts, {
-        at: startRef.current!,
-        match: (n) =>
-          NodeApi.isText(n) ||
-          (NodeApi.isElement(n) && editorIsInline(editor, n)),
-        mode: 'highest',
-        voids,
-        batchDirty,
-      });
-
-      if (isBlockEmpty && !starts.length && middles.length && !ends.length) {
-        transforms.delete({ at: blockPath, voids });
+        applyReplaceChildren({
+          children: editorChildren,
+          index: 0,
+          newChildren: fragment as Value,
+          newSelection: getFragmentEndSelection(fragment),
+          path: [],
+          selection: tx.getModelSelection(),
+          type: 'replace_children',
+        });
+        return;
       }
 
-      transforms.insertNodes(middles, {
-        at: middleRef.current!,
-        match: (n) => NodeApi.isElement(n) && editorIsBlock(editor, n),
-        mode: 'lowest',
-        voids,
-        batchDirty,
-      });
+      const topLevelTextBlockReplacement =
+        getTopLevelTextBlockFragmentReplacement(editor, at, fragment);
 
-      transforms.insertNodes(ends, {
-        at: endRef.current!,
-        match: (n) =>
-          NodeApi.isText(n) ||
-          (NodeApi.isElement(n) && editorIsInline(editor, n)),
-        mode: 'highest',
-        voids,
-        batchDirty,
-      });
-
-      if (!options.at) {
-        let path: Path | undefined;
-
-        if (ends.length > 0 && endRef.current) {
-          path = PathApi.previous(endRef.current);
-        } else if (middles.length > 0 && middleRef.current) {
-          path = PathApi.previous(middleRef.current);
-        } else if (startRef.current) {
-          path = PathApi.previous(startRef.current);
-        }
-
-        if (path) {
-          const end = editorPoint(editor, path, { edge: 'end' });
-          transforms.select(end);
-        }
+      if (topLevelTextBlockReplacement) {
+        applyReplaceChildren({
+          children: topLevelTextBlockReplacement.previousChildren,
+          index: topLevelTextBlockReplacement.index,
+          newChildren: topLevelTextBlockReplacement.children,
+          newSelection: topLevelTextBlockReplacement.selection,
+          path: [],
+          selection: tx.getModelSelection(),
+          type: 'replace_children',
+        });
+        return;
       }
 
-      startRef.unref();
-      middleRef.unref();
-      endRef.unref();
+      const nestedTextBlockReplacement = getNestedTextBlockFragmentReplacement(
+        editor,
+        at,
+        fragment
+      );
+
+      if (nestedTextBlockReplacement) {
+        applyReplaceChildren({
+          children: nestedTextBlockReplacement.previousChildren,
+          index: nestedTextBlockReplacement.index,
+          newChildren: nestedTextBlockReplacement.children,
+          newSelection: nestedTextBlockReplacement.selection,
+          path: nestedTextBlockReplacement.path,
+          selection: tx.getModelSelection(),
+          type: 'replace_children',
+        });
+        return;
+      }
+
+      const topLevelBlockReplacement = getTopLevelBlockFragmentReplacement(
+        editor,
+        at,
+        fragment
+      );
+
+      if (topLevelBlockReplacement) {
+        applyReplaceChildren({
+          children: topLevelBlockReplacement.previousChildren,
+          index: topLevelBlockReplacement.index,
+          newChildren: topLevelBlockReplacement.children,
+          newSelection: topLevelBlockReplacement.selection,
+          path: [],
+          selection: tx.getModelSelection(),
+          type: 'replace_children',
+        });
+        return;
+      }
+
+      if (RangeApi.isCollapsed(at)) {
+        at = at.anchor;
+      } else {
+        const [, end] = RangeApi.edges(at);
+
+        if (!voids && editorVoid(editor, { at: end })) {
+          return;
+        }
+
+        const pointRef = editorPointRef(editor, end);
+        transforms.delete({ at });
+        at = pointRef.unref()!;
+      }
+    } else if (LocationApi.isPath(at)) {
+      at = editorPoint(editor, at, { edge: 'start' });
+    }
+
+    if (!voids && editorVoid(editor, { at })) {
+      return;
+    }
+
+    // If the insert point is at the edge of an inline node, move it outside
+    // instead since it will need to be split otherwise.
+    const inlineElementMatch = editorAbove(editor, {
+      at,
+      match: (n) => NodeApi.isElement(n) && editorIsInline(editor, n),
+      mode: 'highest',
+      voids,
     });
 
+    if (inlineElementMatch) {
+      const [, inlinePath] = inlineElementMatch;
+
+      if (editorIsEnd(editor, at, inlinePath)) {
+        const after = editorAfter(editor, inlinePath)!;
+        at = after;
+      } else if (editorIsStart(editor, at, inlinePath)) {
+        const before = editorBefore(editor, inlinePath)!;
+        at = before;
+      }
+    }
+
+    const blockMatch = editorAbove(editor, {
+      match: (n) => NodeApi.isElement(n) && editorIsBlock(editor, n),
+      at,
+      voids,
+    })!;
+    const [, blockPath] = blockMatch;
+    const isBlockStart = editorIsStart(editor, at, blockPath);
+    const isBlockEnd = editorIsEnd(editor, at, blockPath);
+    const isBlockEmpty = isBlockStart && isBlockEnd;
+    const fragmentRoot = { children: fragment } as Ancestor;
+    const [, firstLeafPath] = NodeApi.first(fragmentRoot, []);
+    const [, lastLeafPath] = NodeApi.last(fragmentRoot, []);
+    const [onlyFragmentNode] = fragment;
+    const preserveEmptyTargetBlock =
+      isBlockEmpty &&
+      fragment.length === 1 &&
+      isTextBlockElement(editor, onlyFragmentNode);
+    const { ends, middles, starts } = getFragmentInsertionParts(
+      editor,
+      fragment,
+      {
+        firstLeafPath,
+        isBlockEmpty,
+        isBlockEnd,
+        isBlockStart,
+        lastLeafPath,
+        preserveEmptyTargetBlock,
+      }
+    );
+
+    const [inlineMatch] = getNodes(editor, {
+      at,
+      match: (n) =>
+        NodeApi.isText(n) ||
+        (NodeApi.isElement(n) && editorIsInline(editor, n)),
+      mode: 'highest',
+      voids,
+    })!;
+
+    const [, inlinePath] = inlineMatch;
+    const isInlineStart = editorIsStart(editor, at, inlinePath);
+    const isInlineEnd = editorIsEnd(editor, at, inlinePath);
+
+    const middleRef = editorPathRef(
+      editor,
+      isBlockEnd && !ends.length ? PathApi.next(blockPath) : blockPath
+    );
+
+    const endRef = editorPathRef(
+      editor,
+      isInlineEnd ? PathApi.next(inlinePath) : inlinePath
+    );
+
+    // If the fragment contains inlines in multiple distinct blocks, split the
+    // destination block.
+    const splitBlock = ends.length > 0;
+
+    transforms.splitNodes({
+      at,
+      match: (n) =>
+        splitBlock
+          ? NodeApi.isElement(n) && editorIsBlock(editor, n)
+          : NodeApi.isText(n) ||
+            (NodeApi.isElement(n) && editorIsInline(editor, n)),
+      mode: splitBlock ? 'lowest' : 'highest',
+      always:
+        splitBlock &&
+        (!isBlockStart || starts.length > 0) &&
+        (!isBlockEnd || ends.length > 0),
+      voids,
+    });
+
+    const startRef = editorPathRef(
+      editor,
+      !isInlineStart || (isInlineStart && isInlineEnd)
+        ? PathApi.next(inlinePath)
+        : inlinePath
+    );
+
+    transforms.insertNodes(starts, {
+      at: startRef.current!,
+      match: (n) =>
+        NodeApi.isText(n) ||
+        (NodeApi.isElement(n) && editorIsInline(editor, n)),
+      mode: 'highest',
+      voids,
+      batchDirty,
+    });
+
+    if (isBlockEmpty && !starts.length && middles.length && !ends.length) {
+      transforms.delete({ at: blockPath, voids });
+    }
+
+    transforms.insertNodes(middles, {
+      at: middleRef.current!,
+      match: (n) => NodeApi.isElement(n) && editorIsBlock(editor, n),
+      mode: 'lowest',
+      voids,
+      batchDirty,
+    });
+
+    transforms.insertNodes(ends, {
+      at: endRef.current!,
+      match: (n) =>
+        NodeApi.isText(n) ||
+        (NodeApi.isElement(n) && editorIsInline(editor, n)),
+      mode: 'highest',
+      voids,
+      batchDirty,
+    });
+
+    if (!options.at) {
+      let path: Path | undefined;
+
+      if (ends.length > 0 && endRef.current) {
+        path = PathApi.previous(endRef.current);
+      } else if (middles.length > 0 && middleRef.current) {
+        path = PathApi.previous(middleRef.current);
+      } else if (startRef.current) {
+        path = PathApi.previous(startRef.current);
+      }
+
+      if (path) {
+        const end = editorPoint(editor, path, { edge: 'end' });
+        transforms.select(end);
+      }
+    }
+
+    startRef.unref();
+    middleRef.unref();
+    endRef.unref();
     if (
       !usedReplaceChildrenFastPath &&
       getOperationCount(editor) > operationCount

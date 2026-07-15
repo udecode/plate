@@ -12,6 +12,7 @@ import {
   createContext,
   Fragment,
   type KeyboardEvent,
+  type ReactNode,
   type RefObject,
   useCallback,
   useContext,
@@ -972,7 +973,7 @@ const renderTableChildrenWindow = ({
   ranges: readonly { end: number; start: number }[];
   rowCount: number;
 }) => {
-  const renderedChildren = [];
+  const renderedChildren: ReactNode[] = [];
   let nextIndex = 0;
 
   for (const range of ranges) {
@@ -1975,7 +1976,7 @@ const PaginationSurface = ({
                 },
               };
             },
-            filter: ({ block, line }) =>
+            filter: ({ line }) =>
               !isFlowProjectedType(
                 snapshot.blocks[line.blockIndex]?.element.type
               ),

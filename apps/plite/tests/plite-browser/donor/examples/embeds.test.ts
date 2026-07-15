@@ -1,3 +1,4 @@
+// biome-ignore-all lint/correctness/noUnusedFunctionParameters: Donor rows preserve the shared cross-browser fixture signature.
 import { expect, test } from '@playwright/test';
 import {
   installPliteReactRenderProfiler,

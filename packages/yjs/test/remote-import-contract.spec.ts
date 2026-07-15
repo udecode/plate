@@ -6,9 +6,11 @@ import {
   type Operation,
   type Editor as BasePlateEditor,
 } from '@platejs/plite';
+import { YjsUpdatePolicy } from '../src';
 
 import {
   clearYjsTrace,
+  createSeededYjsHistoryPeers,
   createSeededYjsPeers,
   getPeerTopLevelTexts,
   getYjsTrace,
@@ -57,6 +59,20 @@ const recordRemoteImportCommits = (
 };
 
 describe('@platejs/yjs remote import contract', () => {
+  it('exports one deeply frozen remote policy', () => {
+    assert.equal(Object.isFrozen(YjsUpdatePolicy), true);
+    assert.equal(Object.isFrozen(YjsUpdatePolicy.remote), true);
+    assert.equal(Object.isFrozen(YjsUpdatePolicy.remote.tags), true);
+    assert.deepEqual(YjsUpdatePolicy.remote.tags, [
+      'collaboration',
+      'remote-yjs-import',
+      'history-skip',
+      'skip-dom-selection',
+      'skip-selection-focus',
+      'skip-scroll-into-view',
+    ]);
+  });
+
   it('imports remote Yjs updates through one full replace commit today', () => {
     const [source, target] = createSeededYjsPeers({
       children: largeValue(),
@@ -79,7 +95,7 @@ describe('@platejs/yjs remote import contract', () => {
     assert.deepEqual(remoteImportCommits, [
       {
         operationTypes: [],
-        tags: ['collaboration', 'remote-yjs-import'],
+        tags: YjsUpdatePolicy.remote.tags,
       },
     ]);
     assert.deepEqual(getYjsTrace(target), [
@@ -89,6 +105,40 @@ describe('@platejs/yjs remote import contract', () => {
         mode: 'remote-reconcile',
       },
     ]);
+  });
+
+  it('keeps remote imports out of installed History and preserves local undo', () => {
+    const [source, target] = createSeededYjsHistoryPeers({
+      children: [paragraph('one')],
+      clientIds: ['source', 'target'],
+    });
+
+    assert(source);
+    assert(target);
+
+    source.editor.update.text.insert('!', {
+      at: { path: [0, 0], offset: 3 },
+    });
+    syncConnectedPeers([source, target]);
+
+    assert.equal(getPeerTopLevelTexts(target)[0], 'one!');
+    assert.equal(
+      target.editor.read((state) => state.history.undos().length),
+      0
+    );
+
+    target.editor.update.text.insert('?', {
+      at: { path: [0, 0], offset: 4 },
+    });
+    assert.equal(
+      target.editor.read((state) => state.history.undos().length),
+      1
+    );
+
+    target.editor.update((tx) => {
+      tx.history.undo();
+    });
+    assert.equal(getPeerTopLevelTexts(target)[0], 'one!');
   });
 
   it('converges a large remote document after distributed text edits', () => {

@@ -35,12 +35,9 @@ describe('read/update contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    editor.update(
-      (tx) => {
-        tx.text.insert('!');
-      },
-      { tag: ['history-push', 'paste'] }
-    );
+    editor.update({ tags: ['history-push', 'paste'] }, (tx) => {
+      tx.text.insert('!');
+    });
 
     assert.equal(
       editor.read((state) => state.text.string([])),

@@ -1,5 +1,6 @@
 import { createBaseEditor } from '@platejs/core';
 import type { Selection, Value } from '@platejs/plite';
+import { createDataTransfer } from '@platejs/test-utils';
 import type { TLinkElement } from '@platejs/utils';
 
 import type { BaseLinkConfig } from './BaseLinkPlugin';
@@ -36,7 +37,7 @@ const createEditor = ({
   });
 
 const paste = (editor: ReturnType<typeof createEditor>, text: string) => {
-  const data = new DataTransfer();
+  const data = createDataTransfer();
 
   data.setData('text/plain', text);
   editor.api.clipboard.insertData(data);

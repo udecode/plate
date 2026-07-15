@@ -23,7 +23,7 @@ import {
   getCurrentEditableEventFrame,
   recordEditableKernelTrace,
 } from './editing-kernel';
-import { getNativeTextInputHistoryMetadata } from './input-history';
+import { updateNativeTextInput } from './input-history';
 import type { EditableInputController } from './input-state';
 import { readRuntimeText } from './runtime-live-state';
 import { readRuntimeSelection } from './runtime-selection-state';
@@ -532,23 +532,20 @@ export const createDOMRepairQueue = ({
             }
           }
         }
-        editor.update(
-          (tx) => {
-            tx.text.insert(insert.text, {
-              at: shouldReplaceExpandedSelection
-                ? expandedReplacementRange
-                : { path, offset: insert.offset },
-            });
+        updateNativeTextInput(editor, (tx) => {
+          tx.text.insert(insert.text, {
+            at: shouldReplaceExpandedSelection
+              ? expandedReplacementRange
+              : { path, offset: insert.offset },
+          });
 
-            if (shouldMoveSelection) {
-              tx.selection.set({
-                anchor: { path, offset: nextOffset },
-                focus: { path, offset: nextOffset },
-              });
-            }
-          },
-          { metadata: getNativeTextInputHistoryMetadata(editor) }
-        );
+          if (shouldMoveSelection) {
+            tx.selection.set({
+              anchor: { path, offset: nextOffset },
+              focus: { path, offset: nextOffset },
+            });
+          }
+        });
 
         if (shouldRepairCaretAfterTextInsert) {
           scheduleTextInsertCaretRepair();

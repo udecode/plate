@@ -113,6 +113,7 @@ const VideoElement = ({ element }: RenderVoidProps<VideoElementType>) => {
           className="plite-embeds-video-iframe"
           frameBorder="0"
           src={`${safeUrl}?title=0&byline=0&portrait=0`}
+          title="Embedded video"
         />
       </div>
       <UrlInput

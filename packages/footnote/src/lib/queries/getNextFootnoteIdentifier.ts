@@ -1,12 +1,16 @@
 import type { BaseEditor } from '@platejs/core';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 
 import { ensureFootnoteRegistry } from '../registry';
 
 const NUMERIC_IDENTIFIER_REGEX = /^\d+$/;
 
-export const getNextFootnoteIdentifier = (editor: BaseEditor) => {
+export const getNextFootnoteIdentifier = (
+  editor: BaseEditor,
+  tx?: EditorUpdateTransaction
+) => {
   const used = new Set<number>();
-  const registry = ensureFootnoteRegistry(editor);
+  const registry = ensureFootnoteRegistry(editor, tx);
 
   for (const identifier of registry.definitionsByIdentifier.keys()) {
     if (NUMERIC_IDENTIFIER_REGEX.test(identifier)) {

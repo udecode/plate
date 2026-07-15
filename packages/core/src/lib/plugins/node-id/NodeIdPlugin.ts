@@ -466,7 +466,7 @@ export const NodeIdPlugin = createBasePlugin<NodeIdConfig>({
       const applyUpdates = () => {
         if (updates.length === 0) return;
 
-        tx.metadata.merge({ history: { mode: 'skip' } });
+        tx.tags.add('history-skip');
 
         for (const { at, props } of updates) {
           tx.nodes.set(props, { at });

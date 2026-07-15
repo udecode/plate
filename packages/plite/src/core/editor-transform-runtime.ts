@@ -12,7 +12,6 @@ import {
   removeMark,
   setNormalizing,
   toggleMark,
-  withoutNormalizing,
 } from '../editor';
 import type {
   DescendantIn,
@@ -376,7 +375,6 @@ export const createEditorTransformRegistry = <V extends Value>(
       runMiddleware('unwrapNodes', { options }, (args) =>
         unwrapNodes(getRuntimeEditor(), args.options)
       ),
-    withoutNormalizing: bind(withoutNormalizing),
     wrapNodes: (element, options) =>
       runMiddleware('wrapNodes', { element, options }, (args) =>
         wrapNodes(getRuntimeEditor(), args.element, args.options)

@@ -1204,11 +1204,9 @@ describe('PliteRuntime provider contract', () => {
       });
     });
     await act(async () => {
-      headerEditor.update(() => {
-        headerEditor.api.clipboard.insertData(
-          clipboard as unknown as DataTransfer
-        );
-      });
+      headerEditor.api.clipboard.insertData(
+        clipboard as unknown as DataTransfer
+      );
     });
 
     expect(screen.getByLabelText('Header editor')).toHaveTextContent('header!');

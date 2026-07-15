@@ -6,6 +6,7 @@ import {
   type Operation,
   type PointRef,
   type RangeRef,
+  type Range,
   type Value,
   NodeApi,
   PathApi,
@@ -78,7 +79,7 @@ const applyWithChangeTracking = <E extends Editor<Value>>(
   op: Operation<Value>
 ) => {
   if (!state.recordingOperations) {
-    tx.operations.replay([op], { normalize: false });
+    tx.operations.replay([op]);
     return;
   }
 
@@ -111,7 +112,7 @@ const applyWithChangeTracking = <E extends Editor<Value>>(
       }
 
       default: {
-        tx.operations.replay([op], { normalize: false });
+        tx.operations.replay([op]);
       }
     }
   });
@@ -125,7 +126,7 @@ const applyInsertText = <E extends Editor<Value>>(
 ) => {
   const node = NodeApi.get(editor, op.path) as Text;
 
-  tx.operations.replay([op], { normalize: false });
+  tx.operations.replay([op]);
 
   const startPoint = { offset: op.offset, path: op.path };
   const endPoint = { offset: op.offset + op.text.length, path: op.path };
@@ -149,7 +150,7 @@ const applyRemoveText = <E extends Editor<Value>>(
 ) => {
   const node = NodeApi.get(editor, op.path) as Text;
 
-  tx.operations.replay([op], { normalize: false });
+  tx.operations.replay([op]);
 
   const point = { offset: op.offset, path: op.path };
   const pointRef = tx.refs.point(point, {
@@ -178,7 +179,7 @@ const applyMergeNode = <E extends Editor<Value>>(
   const prevNode = NodeApi.get(editor, prevNodePath) as Text;
   const newProperties = NodeApi.extractProps(prevNode);
 
-  tx.operations.replay([op], { normalize: false });
+  tx.operations.replay([op]);
 
   const startPoint = { offset: prevNode.text.length, path: prevNodePath };
   const endPoint = editor.read.points.end(prevNodePath);
@@ -207,7 +208,7 @@ const applySplitNode = <E extends Editor<Value>>(
   const properties = NodeApi.extractProps(oldNode);
   const newProperties = op.properties;
 
-  tx.operations.replay([op], { normalize: false });
+  tx.operations.replay([op]);
 
   const newNodePath = PathApi.next(op.path);
   const newNodeRange = editor.read.ranges.get(newNodePath);
@@ -231,15 +232,12 @@ const applySetNode = <E extends Editor<Value>>(
   tx: EditorUpdateTransaction<Value>,
   op: SetNodeOperation
 ) => {
-  tx.operations.replay(
-    [
-      {
-        ...op,
-        newProperties: objectWithoutUndefined(op.newProperties),
-      },
-    ],
-    { normalize: false }
-  );
+  tx.operations.replay([
+    {
+      ...op,
+      newProperties: objectWithoutUndefined(op.newProperties),
+    },
+  ]);
 
   const range = editor.read.ranges.get(op.path);
 
@@ -263,7 +261,23 @@ const commitChangesToDiffs = <E extends Editor<Value>>(
   { getDeleteProps, getInsertProps, getUpdateProps }: ComputeDiffOptions
 ) => {
   withoutRecordingOperations(state, () => {
-    const flatUpdates = flattenPropsChanges(state).reverse();
+    const resolvedRanges = new Map(
+      [...state.propsChanges, ...state.insertedTexts].map(({ rangeRef }) => [
+        rangeRef,
+        rangeRef.unref(),
+      ])
+    );
+    const insertedRangeRefs = new Map(
+      state.insertedTexts.map(({ rangeRef }) => {
+        const range = resolvedRanges.get(rangeRef);
+
+        return [
+          rangeRef,
+          range ? tx.refs.range(range, { affinity: rangeRef.affinity }) : null,
+        ];
+      })
+    );
+    const flatUpdates = flattenPropsChanges(state, resolvedRanges).reverse();
 
     // Reverse the array to prevent path changes
     flatUpdates.forEach(({ newProperties, properties, range }) => {
@@ -277,7 +291,7 @@ const commitChangesToDiffs = <E extends Editor<Value>>(
     });
 
     state.insertedTexts.forEach(({ node, rangeRef }) => {
-      const range = rangeRef.unref();
+      const range = insertedRangeRefs.get(rangeRef)?.unref();
 
       if (range) {
         tx.nodes.set(getInsertProps(node), {
@@ -304,7 +318,10 @@ const commitChangesToDiffs = <E extends Editor<Value>>(
   });
 };
 
-const flattenPropsChanges = (state: ChangeTrackingState) => {
+const flattenPropsChanges = (
+  state: ChangeTrackingState,
+  resolvedRanges: Map<RangeRef, Range | null>
+) => {
   const propChangeRangeRefs = state.propsChanges.map(
     ({ rangeRef }) => rangeRef
   );
@@ -321,7 +338,7 @@ const flattenPropsChanges = (state: ChangeTrackingState) => {
     ...propChangeRangeRefs,
     ...insertedTextRangeRefs,
   ].flatMap((rangeRef) => {
-    const range = rangeRef.current;
+    const range = resolvedRanges.get(rangeRef);
 
     if (!range) return [];
 
@@ -352,7 +369,7 @@ const flattenPropsChanges = (state: ChangeTrackingState) => {
       changes: T[]
     ) =>
       changes.filter(({ rangeRef }) => {
-        const range = rangeRef.current;
+        const range = resolvedRanges.get(rangeRef);
 
         if (!range) return false;
 
@@ -404,10 +421,6 @@ const flattenPropsChanges = (state: ChangeTrackingState) => {
       range: flatRange,
     };
   });
-
-  for (const rangeRef of propChangeRangeRefs) {
-    rangeRef.unref();
-  }
 
   return flatUpdates.filter(Boolean) as Exclude<
     (typeof flatUpdates)[number],

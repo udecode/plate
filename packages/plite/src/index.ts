@@ -2,6 +2,8 @@ export { defineEditorExtension } from './core/editor-extension';
 export { elementProperty } from './core/element-property';
 export { setEditorReadOnly } from './core/public-state';
 export { defineStateField } from './core/state-field';
+export { txOnly } from './core/tx-only';
+export type { TxOnlyMethod } from './core/tx-only';
 export { createEditor } from './create-editor';
 export { createEditorRuntime, createEditorView } from './editor-runtime-view';
 export {
@@ -42,7 +44,6 @@ export type {
   EditorClipboardInsertDataCapability,
   EditorClipboardInsertDataContext,
   EditorClipboardMiddlewareMap,
-  EditorCollaborationUpdateMetadata,
   EditorCommit,
   EditorCommitClass,
   EditorCommitCommand,
@@ -77,7 +78,6 @@ export type {
   EditorExtensionTypeProvider,
   EditorExtensionTypes,
   EditorFragmentReadOptions,
-  EditorHistoryUpdateMetadata,
   EditorIsEditorOptions,
   EditorMarks,
   EditorMarksOf,
@@ -85,7 +85,6 @@ export type {
   EditorOperationApplyContext,
   EditorOperationApplyHandler,
   EditorOperationDirtinessOptions,
-  EditorOperationReplayOptions,
   EditorNodesOptions,
   EditorPublicTransformMiddlewareKey,
   EditorQueryGroup,
@@ -102,7 +101,6 @@ export type {
   EditorSelectionBlockOptions,
   EditorSelectionTargetOptions,
   EditorSchemaApi,
-  EditorSelectionUpdateMetadata,
   EditorSnapshot,
   EditorStateField,
   EditorStateFragmentApi,
@@ -125,13 +123,13 @@ export type {
   EditorTransactionBreakApi,
   EditorTransactionFragmentApi,
   EditorTransactionMarksApi,
-  EditorTransactionMetadataApi,
   EditorTransactionNodesApi,
   EditorTransactionOperationsApi,
   EditorTransactionRefsApi,
   EditorTransactionRootsApi,
   EditorTransactionSelectionApi,
   EditorTransactionStatePatchesApi,
+  EditorTransactionTagsApi,
   EditorTransactionTextApi,
   EditorTransactionValueApi,
   EditorTransformApi,
@@ -140,10 +138,10 @@ export type {
   EditorTransformMiddlewareMap,
   EditorTransformNext,
   EditorUpdateContext,
-  EditorUpdateMetadata,
   EditorUpdate,
   EditorUpdateMethods,
-  EditorUpdateOptions,
+  EditorUpdatePolicy,
+  EditorUpdatePolicyFor,
   EditorUpdateTag,
   EditorUpdateTagInput,
   EditorUpdateTransaction,

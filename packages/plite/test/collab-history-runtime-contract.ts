@@ -14,7 +14,12 @@ import {
 
 import { history } from '@platejs/plite-history';
 
-import { createEditor, type Element, type Operation } from '@platejs/plite';
+import {
+  createEditor,
+  type EditorUpdatePolicy,
+  type Element,
+  type Operation,
+} from '@platejs/plite';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -69,26 +74,19 @@ const historyUndoCount = (editor: HistoryCollabEditor) =>
 const firstUndoOperations = (editor: HistoryCollabEditor) =>
   editor.read((state) => state.history.undos()[0]?.operations);
 
-const remoteReplayMetadata = {
-  collab: { origin: 'remote', saveToHistory: false },
-  history: { mode: 'skip' },
-  selection: { dom: 'preserve' },
-} as const;
+const remoteReplayPolicy = (tag: string) =>
+  ({
+    tags: ['collaboration', tag, 'skip-dom-selection', 'history-skip'],
+  }) satisfies EditorUpdatePolicy;
 
 const replayRemoteCommit = (
   editor: CollabEditor,
   commit: CollabCommit,
   tag: string
 ) => {
-  editor.update(
-    (tx) => {
-      tx.operations.replay(commit.operations);
-    },
-    {
-      metadata: remoteReplayMetadata,
-      tag: ['collaboration', tag],
-    }
-  );
+  editor.update(remoteReplayPolicy(tag), (tx) => {
+    tx.operations.replay(commit.operations);
+  });
 };
 
 describe('collab and history runtime contract', () => {
@@ -124,13 +122,10 @@ describe('collab and history runtime contract', () => {
       extensionCommits.push(commit);
     });
 
-    editor.update(
-      (tx) => {
-        tx.text.insert('a');
-        tx.text.insert('b');
-      },
-      { tag: 'collab-local' }
-    );
+    editor.update({ tags: 'collab-local' }, (tx) => {
+      tx.text.insert('a');
+      tx.text.insert('b');
+    });
 
     unsubscribeSubscribe();
     unsubscribeCommit();
@@ -179,7 +174,7 @@ describe('collab and history runtime contract', () => {
     );
   });
 
-  it('replays local operations remotely with deterministic snapshot and metadata', () => {
+  it('replays local operations remotely with deterministic snapshot tags', () => {
     const source = createCollabEditor();
     const remote = createCollabEditor();
     const remoteCommits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] =
@@ -190,19 +185,17 @@ describe('collab and history runtime contract', () => {
       }
     });
 
-    source.update(
-      (tx) => {
-        tx.text.insert('!');
-      },
-      { tag: 'local-edit' }
-    );
+    source.update({ tags: 'local-edit' }, (tx) => {
+      tx.text.insert('!');
+    });
 
     const sourceCommit = editorGetLastCommit(source);
 
     assert(sourceCommit);
 
     remote.update((tx) => {
-      tx.operations.replay(sourceCommit.operations, { tag: 'remote-import' });
+      tx.tags.add('remote-import');
+      tx.operations.replay(sourceCommit.operations);
     });
     unsubscribe();
 
@@ -223,19 +216,17 @@ describe('collab and history runtime contract', () => {
     const source = createCollabEditor();
     const remote = createCollabEditor();
 
-    source.update(
-      (tx) => {
-        tx.text.insert('0');
-      },
-      { tag: 'local-zero' }
-    );
+    source.update({ tags: 'local-zero' }, (tx) => {
+      tx.text.insert('0');
+    });
 
     const operations = JSON.parse(
       JSON.stringify(lastCommit(source).operations)
     ) as Operation[];
 
     remote.update((tx) => {
-      tx.operations.replay(operations, { tag: 'remote-zero' });
+      tx.tags.add('remote-zero');
+      tx.operations.replay(operations);
     });
 
     assert.deepEqual(
@@ -245,44 +236,31 @@ describe('collab and history runtime contract', () => {
     assert.deepEqual(editorGetSnapshot(remote).children[0], paragraph('one0'));
   });
 
-  it('uses typed remote collaboration metadata to skip local undo history', () => {
+  it('uses remote collaboration policy to skip local undo history', () => {
     const source = createCollabEditor();
     const remote = createHistoryCollabEditor();
 
-    source.update(
-      (tx) => {
-        tx.text.insert('!');
-      },
-      { tag: 'local-edit' }
-    );
+    source.update({ tags: 'local-edit' }, (tx) => {
+      tx.text.insert('!');
+    });
 
     const sourceCommit = editorGetLastCommit(source);
 
     assert(sourceCommit);
 
-    remote.update(
-      (tx) => {
-        tx.operations.replay(sourceCommit.operations);
-      },
-      {
-        metadata: {
-          collab: { origin: 'remote', saveToHistory: false },
-          history: { mode: 'skip' },
-          selection: { dom: 'preserve' },
-        },
-        tag: ['collaboration', 'remote-import'],
-      }
-    );
+    remote.update(remoteReplayPolicy('remote-import'), (tx) => {
+      tx.operations.replay(sourceCommit.operations);
+    });
 
     const remoteCommit = editorGetLastCommit(remote);
 
     assert(remoteCommit);
-    assert.deepEqual(remoteCommit.tags, ['collaboration', 'remote-import']);
-    assert.deepEqual(remoteCommit.metadata.collab, {
-      origin: 'remote',
-      saveToHistory: false,
-    });
-    assert.deepEqual(remoteCommit.metadata.history, { mode: 'skip' });
+    assert.deepEqual(remoteCommit.tags, [
+      'collaboration',
+      'remote-import',
+      'skip-dom-selection',
+      'history-skip',
+    ]);
     assert.equal(historyUndoCount(remote), 0);
     assert.deepEqual(
       editorGetSnapshot(remote).children,
@@ -323,18 +301,15 @@ describe('collab and history runtime contract', () => {
       assert.equal(historyUndoCount(source), 1);
       assert.equal(historyUndoCount(peerB), 0);
       assert.equal(historyUndoCount(peerC), 0);
-      assert.deepEqual(lastCommit(peerB).metadata, remoteReplayMetadata);
-      assert.deepEqual(lastCommit(peerC).metadata, remoteReplayMetadata);
+      assert(lastCommit(peerB).tags.includes('history-skip'));
+      assert(lastCommit(peerC).tags.includes('history-skip'));
     };
 
     assertThreePeerConvergence({
       edit(source) {
-        source.update(
-          (tx) => {
-            tx.text.insert('!');
-          },
-          { tag: ['local-edit', 'text'] }
-        );
+        source.update({ tags: ['local-edit', 'text'] }, (tx) => {
+          tx.text.insert('!');
+        });
       },
       expectedChildren: [
         paragraph('one!'),
@@ -355,12 +330,9 @@ describe('collab and history runtime contract', () => {
           },
         });
 
-        source.update(
-          (tx) => {
-            tx.marks.add('bold', true);
-          },
-          { tag: ['local-edit', 'mark'] }
-        );
+        source.update({ tags: ['local-edit', 'mark'] }, (tx) => {
+          tx.marks.add('bold', true);
+        });
       },
       expectedChildren: [
         paragraph('one'),
@@ -375,17 +347,14 @@ describe('collab and history runtime contract', () => {
 
     assertThreePeerConvergence({
       edit(source) {
-        source.update(
-          (tx) => {
-            tx.text.delete({
-              at: {
-                anchor: { path: [0, 0], offset: 0 },
-                focus: { path: [1, 0], offset: 'two'.length },
-              },
-            });
-          },
-          { tag: ['local-edit', 'delete'] }
-        );
+        source.update({ tags: ['local-edit', 'delete'] }, (tx) => {
+          tx.text.delete({
+            at: {
+              anchor: { path: [0, 0], offset: 0 },
+              focus: { path: [1, 0], offset: 'two'.length },
+            },
+          });
+        });
       },
       expectedChildren: [paragraph('three')],
       tag: 'delete',
@@ -393,12 +362,9 @@ describe('collab and history runtime contract', () => {
 
     assertThreePeerConvergence({
       edit(source) {
-        source.update(
-          (tx) => {
-            tx.nodes.move({ at: [2], to: [0] });
-          },
-          { tag: ['local-edit', 'move'] }
-        );
+        source.update({ tags: ['local-edit', 'move'] }, (tx) => {
+          tx.nodes.move({ at: [2], to: [0] });
+        });
       },
       expectedChildren: [
         paragraph('three'),
@@ -422,26 +388,23 @@ describe('collab and history runtime contract', () => {
       marks: null,
     });
 
-    source.update(
-      (tx) => {
-        tx.fragment.insert([
-          {
-            type: 'bulleted-list',
-            children: [
-              {
-                type: 'list-item',
-                children: [{ text: 'one' }],
-              },
-              {
-                type: 'list-item',
-                children: [{ text: 'two' }],
-              },
-            ],
-          },
-        ]);
-      },
-      { tag: ['local-edit', 'collab-export'] }
-    );
+    source.update({ tags: ['local-edit', 'collab-export'] }, (tx) => {
+      tx.fragment.insert([
+        {
+          type: 'bulleted-list',
+          children: [
+            {
+              type: 'list-item',
+              children: [{ text: 'one' }],
+            },
+            {
+              type: 'list-item',
+              children: [{ text: 'two' }],
+            },
+          ],
+        },
+      ]);
+    });
 
     const sourceCommit = editorGetLastCommit(source);
 
@@ -451,19 +414,9 @@ describe('collab and history runtime contract', () => {
       ['replace_children']
     );
 
-    remote.update(
-      (tx) => {
-        tx.operations.replay(sourceCommit.operations);
-      },
-      {
-        metadata: {
-          collab: { origin: 'remote', saveToHistory: false },
-          history: { mode: 'skip' },
-          selection: { dom: 'preserve' },
-        },
-        tag: ['collaboration', 'remote-import'],
-      }
-    );
+    remote.update(remoteReplayPolicy('remote-import'), (tx) => {
+      tx.operations.replay(sourceCommit.operations);
+    });
 
     const remoteCommit = editorGetLastCommit(remote);
 
@@ -511,7 +464,7 @@ describe('collab and history runtime contract', () => {
     assert.deepEqual(editorGetSnapshot(editor).selection, before.selection);
   });
 
-  it('undoes selected text replacement while collaboration metadata is present', () => {
+  it('undoes selected text replacement while collaboration tags are present', () => {
     const editor = createHistoryCollabEditor();
 
     editorReplace(editor, {
@@ -523,12 +476,9 @@ describe('collab and history runtime contract', () => {
       marks: null,
     });
 
-    editor.update(
-      (tx) => {
-        tx.text.insert('test');
-      },
-      { tag: ['local-edit', 'collab-active'] }
-    );
+    editor.update({ tags: ['local-edit', 'collab-active'] }, (tx) => {
+      tx.text.insert('test');
+    });
 
     assert.equal(editorString(editor, []), 'hello test');
     assert.equal(historyUndoCount(editor), 1);
@@ -547,29 +497,20 @@ describe('collab and history runtime contract', () => {
   it('rebases local undo and redo batches across remote text commits', () => {
     const editor = createHistoryCollabEditor();
 
-    editor.update(
-      (tx) => {
-        tx.text.insert('!');
-      },
-      { tag: ['local-edit', 'history'] }
-    );
+    editor.update({ tags: ['local-edit', 'history'] }, (tx) => {
+      tx.text.insert('!');
+    });
 
-    editor.update(
-      (tx) => {
-        tx.operations.replay([
-          {
-            type: 'insert_text',
-            path: [0, 0],
-            offset: 0,
-            text: '?',
-          },
-        ]);
-      },
-      {
-        metadata: remoteReplayMetadata,
-        tag: ['collaboration', 'remote-prefix'],
-      }
-    );
+    editor.update(remoteReplayPolicy('remote-prefix'), (tx) => {
+      tx.operations.replay([
+        {
+          type: 'insert_text',
+          path: [0, 0],
+          offset: 0,
+          text: '?',
+        },
+      ]);
+    });
 
     assert.equal(editorString(editor, [0]), '?one!');
     const firstUndoOperation = firstUndoOperations(editor)?.[0];
@@ -607,17 +548,15 @@ describe('collab and history runtime contract', () => {
     });
 
     remote.update((tx) => {
-      tx.operations.replay(
-        [
-          {
-            type: 'insert_text',
-            path: [1, 0],
-            offset: 0,
-            text: '!',
-          },
-        ],
-        { tag: 'remote-import' }
-      );
+      tx.tags.add('remote-import');
+      tx.operations.replay([
+        {
+          type: 'insert_text',
+          path: [1, 0],
+          offset: 0,
+          text: '!',
+        },
+      ]);
     });
 
     const commit = editorGetLastCommit(remote);
@@ -654,7 +593,8 @@ describe('collab and history runtime contract', () => {
     );
 
     removeEditor.update((tx) => {
-      tx.operations.replay([removeOperation], { tag: 'remote-remove' });
+      tx.tags.add('remote-remove');
+      tx.operations.replay([removeOperation]);
     });
 
     const removeCommit = editorGetLastCommit(removeEditor);
@@ -678,7 +618,8 @@ describe('collab and history runtime contract', () => {
     assert.equal(JSON.stringify(moveOperation).includes(movedBlockId), false);
 
     moveEditor.update((tx) => {
-      tx.operations.replay([moveOperation], { tag: 'remote-move' });
+      tx.tags.add('remote-move');
+      tx.operations.replay([moveOperation]);
     });
 
     const moveCommit = editorGetLastCommit(moveEditor);

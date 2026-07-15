@@ -92,7 +92,7 @@ describe('plite-history integrity contract', () => {
     assert.deepEqual(getVisibleState(editor), before);
   });
 
-  it('editor.update.history.newBatch(fn) starts a fresh batch for the transaction', () => {
+  it('history new-batch policy starts a fresh batch for the transaction', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
@@ -104,7 +104,7 @@ describe('plite-history integrity contract', () => {
       tx.text.insert('a');
     });
 
-    editor.update.history.newBatch((tx) => {
+    editor.update({ history: 'new-batch' }, (tx) => {
       tx.text.insert('b');
       tx.text.insert('c');
     });
@@ -146,7 +146,7 @@ describe('plite-history integrity contract', () => {
     assert.equal(getText(editor), 'one');
   });
 
-  it('editor.update.history.skip(fn) suppresses history recording', () => {
+  it('history skip policy suppresses history recording', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
@@ -154,7 +154,7 @@ describe('plite-history integrity contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    editor.update.history.skip((tx) => {
+    editor.update({ history: 'skip' }, (tx) => {
       tx.text.insert('a');
     });
 
@@ -328,7 +328,7 @@ describe('plite-history integrity contract', () => {
     ]);
   });
 
-  it('exposes insertText transaction commit metadata to history', () => {
+  it('exposes insertText transaction commit data to history', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {

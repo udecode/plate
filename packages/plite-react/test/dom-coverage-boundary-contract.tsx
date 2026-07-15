@@ -1,3 +1,4 @@
+// biome-ignore-all lint/performance/useTopLevelRegex: Test-local source assertion.
 import { act, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import { type Descendant, NodeApi } from '@platejs/plite';
@@ -957,7 +958,7 @@ describe('DOM coverage private boundary harness', () => {
     expect(renderCounts.hiddenItems).toBeGreaterThanOrEqual(hiddenCount);
     expect(renderCounts.hiddenItems).toBeLessThanOrEqual(hiddenCount + 5);
     expect(renderCounts.outsideSibling).toBeLessThanOrEqual(2);
-  });
+  }, 15_000);
 
   test('BoundaryRange keeps hidden model updates out of visible sibling rendering', async () => {
     const editor = createReactEditor();

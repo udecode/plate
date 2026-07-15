@@ -72,6 +72,7 @@ const LIST_TEXT_BOUNDARY_TAGS = new Set(['DIV']);
 const ELEMENT_ALIGN_VALUES = new Set(['center', 'justify', 'left', 'right']);
 const CODE_LINE_BOUNDARY_TAGS = new Set(['DIV', 'P']);
 const CODE_WHITE_SPACE_VALUES = new Set(['pre', 'pre-wrap', 'break-spaces']);
+const CSS_FONT_SIZE_PATTERN = /^\d+(\.\d+)?(px|pt|em|rem|%)$/i;
 
 const hasTextAttributes = (attrs: TextAttributes) =>
   Object.keys(attrs).length > 0;
@@ -79,7 +80,7 @@ const hasTextAttributes = (attrs: TextAttributes) =>
 const normalizeFontSize = (fontSize: string) => {
   const value = fontSize.trim();
 
-  return /^\d+(\.\d+)?(px|pt|em|rem|%)$/i.test(value) ? value : undefined;
+  return CSS_FONT_SIZE_PATTERN.test(value) ? value : undefined;
 };
 
 const normalizeCssColor = (color: string) => {
@@ -633,40 +634,35 @@ export const deserialize = (
   return children;
 };
 
-const insertHtmlData = (editor: CustomEditor, data: DataTransfer) => {
-  const html = data.getData('text/html');
-
-  if (!html) {
-    return false;
-  }
-
-  const hasPlainText = Array.from(data.types).includes('text/plain');
-  const text = hasPlainText ? data.getData('text/plain') : '';
-
-  // Prediction/autocorrect paste can carry plain text as identical or wrapper-only HTML.
-  if (isPlainTextClipboardHtml(html, text)) {
-    return false;
-  }
-
-  const parsed = new DOMParser().parseFromString(html, 'text/html');
-  const deserialized = deserialize(getCommentBoundedFragmentRoot(parsed.body));
-  const fragment = (
-    Array.isArray(deserialized)
-      ? deserialized
-      : deserialized == null
-        ? []
-        : [deserialized]
-  ).filter(isDescendant);
-  editor.update.fragment.insert(fragment);
-  return true;
-};
-
 export const html = () =>
   defineEditorExtension<CustomEditor>()({
     name: 'paste-html',
     clipboard: {
-      insertData(data, { editor, next }) {
-        return insertHtmlData(editor, data) || next();
+      insertData(data, { next, tx }) {
+        const html = data.getData('text/html');
+
+        if (!html) return next();
+
+        const hasPlainText = Array.from(data.types).includes('text/plain');
+        const text = hasPlainText ? data.getData('text/plain') : '';
+
+        // Prediction/autocorrect paste can carry plain text as identical or wrapper-only HTML.
+        if (isPlainTextClipboardHtml(html, text)) return next();
+
+        const parsed = new DOMParser().parseFromString(html, 'text/html');
+        const deserialized = deserialize(
+          getCommentBoundedFragmentRoot(parsed.body)
+        );
+        const fragment = (
+          Array.isArray(deserialized)
+            ? deserialized
+            : deserialized == null
+              ? []
+              : [deserialized]
+        ).filter(isDescendant);
+
+        tx.fragment.insert(fragment);
+        return true;
       },
     },
     elements: [

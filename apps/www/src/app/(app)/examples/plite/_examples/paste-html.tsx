@@ -217,6 +217,7 @@ const ImageElement = ({ element }: RenderVoidProps<ImageElementType>) => {
 
   return (
     <img
+      alt=""
       className={cn(
         'plite-paste-html-image',
         selected && focused && 'is-selected'

@@ -2,7 +2,7 @@ import type { BaseEditor } from '@platejs/core';
 
 import { createRuleFactory, KEYS } from 'platejs';
 
-import { toggleList } from './transforms';
+import { toggleListWithTx } from './transforms';
 
 const isListInputBlocked = (editor: BaseEditor) =>
   editor.read.nodes.some({
@@ -18,12 +18,12 @@ export const TaskListRules = {
     enabled: ({ editor }) => !isListInputBlocked(editor),
     trigger: ' ',
     match: ({ checked }) => (checked ? '[x]' : '[]'),
-    apply: ({ editor, checked }, match) => {
-      editor.update.text.delete({ at: match.range });
-      toggleList(editor, {
+    apply: ({ editor, checked, tx }, match) => {
+      tx.text.delete({ at: match.range });
+      toggleListWithTx(editor, tx, {
         listStyleType: KEYS.listTodo,
       });
-      editor.update.nodes.set({
+      tx.nodes.set({
         checked,
         listStyleType: KEYS.listTodo,
       });

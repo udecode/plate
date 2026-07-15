@@ -1,5 +1,6 @@
 import type { BaseEditor } from '@platejs/core';
 import {
+  type EditorUpdateTransaction,
   ElementApi,
   type NodeEntry,
   NodeApi,
@@ -51,7 +52,13 @@ const getRegistry = (editor: BaseEditor) => {
   return registry;
 };
 
-const rebuildRegistry = (editor: BaseEditor, registry: FootnoteRegistry) => {
+type FootnoteRegistryTransaction = Pick<EditorUpdateTransaction, 'refs'>;
+
+const rebuildRegistry = (
+  editor: BaseEditor,
+  registry: FootnoteRegistry,
+  tx?: FootnoteRegistryTransaction
+) => {
   cleanupRegistry(registry);
 
   const definitionType = editor.getType(KEYS.footnoteDefinition);
@@ -65,7 +72,7 @@ const rebuildRegistry = (editor: BaseEditor, registry: FootnoteRegistry) => {
 
     if (!identifier) continue;
 
-    const ref = editor.update.refs.path(path);
+    const ref = tx ? tx.refs.path(path) : editor.update.refs.path(path);
 
     if (node.type === definitionType) {
       const refs = registry.definitionsByIdentifier.get(identifier) ?? [];
@@ -136,11 +143,14 @@ export const shouldInvalidateFootnoteRegistry = (
   return false;
 };
 
-export const ensureFootnoteRegistry = (editor: BaseEditor) => {
+export const ensureFootnoteRegistry = (
+  editor: BaseEditor,
+  tx?: FootnoteRegistryTransaction
+) => {
   const registry = getRegistry(editor);
 
   if (registry.dirty) {
-    rebuildRegistry(editor, registry);
+    rebuildRegistry(editor, registry, tx);
   }
 
   return registry;
@@ -148,18 +158,20 @@ export const ensureFootnoteRegistry = (editor: BaseEditor) => {
 
 export const getRegistryDefinition = (
   editor: BaseEditor,
-  { identifier }: { identifier: string }
+  { identifier }: { identifier: string },
+  tx?: FootnoteRegistryTransaction
 ) => {
-  const definitions = getRegistryDefinitions(editor, { identifier });
+  const definitions = getRegistryDefinitions(editor, { identifier }, tx);
 
   return definitions[0];
 };
 
 export const getRegistryReferences = (
   editor: BaseEditor,
-  { identifier }: { identifier: string }
+  { identifier }: { identifier: string },
+  tx?: FootnoteRegistryTransaction
 ) => {
-  const registry = ensureFootnoteRegistry(editor);
+  const registry = ensureFootnoteRegistry(editor, tx);
   const refs = registry.referencesByIdentifier.get(identifier) ?? [];
   const liveEntries: NodeEntry<TFootnoteElement>[] = [];
   const liveRefs: PathRef[] = [];
@@ -191,9 +203,10 @@ export const getRegistryReferences = (
 
 export const getRegistryDefinitions = (
   editor: BaseEditor,
-  { identifier }: { identifier: string }
+  { identifier }: { identifier: string },
+  tx?: FootnoteRegistryTransaction
 ) => {
-  const registry = ensureFootnoteRegistry(editor);
+  const registry = ensureFootnoteRegistry(editor, tx);
   const refs = registry.definitionsByIdentifier.get(identifier) ?? [];
   const liveEntries: NodeEntry<TFootnoteElement>[] = [];
   const liveRefs: PathRef[] = [];

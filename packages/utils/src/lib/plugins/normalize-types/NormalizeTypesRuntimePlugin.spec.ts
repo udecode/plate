@@ -68,8 +68,6 @@ describe('NormalizeTypesPlugin Plite runtime', () => {
       value: [{ children: [{ text: 'x' }], type: 'p' }],
     });
 
-    editor.update.normalize({ force: true });
-
     expect(errors).toHaveLength(1);
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'x' }], type: 'p' },

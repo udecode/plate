@@ -42,11 +42,18 @@ donor checkout as proof after the transplant.
 
 ## Plite API Direction
 
-- Plite uses `editor.read(fn)` and `editor.update(fn, options?)` as the
-  public lifecycle.
+- Plite uses `editor.read(fn)`, direct `editor.update.group.method(...)`,
+  configured `editor.update(policy).group.method(...)`, and atomic
+  `editor.update(policy?, fn)` as the public lifecycle.
 - `state` is the normal read view; `tx` is the normal write view and can read
   transaction-local state.
-- Extension namespaces add named groups to `editor`, `state`, and `tx`.
+- Extension namespaces add named groups to `state`, `tx`, and the direct update
+  surface. Use `txOnly(...)` for controls that require an active transaction.
+- Public update policy is semantic and narrow: history behavior plus ordered
+  tags. Raw provenance and normalization authority stay internal to runtime and
+  adapter owners.
+- Public updates are synchronous and cannot nest. Helpers inside an update use
+  the active `tx`.
 - The primary document root is implicit in public API and docs. Do not expose a
   public `main` root key, config option, or example. Explicit roots are only for
   additional roots.

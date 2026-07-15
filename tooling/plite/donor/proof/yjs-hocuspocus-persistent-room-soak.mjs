@@ -1,5 +1,7 @@
 #!/usr/bin/env bun
 
+// biome-ignore-all lint/suspicious/noConsole: Long-running proof reports issues and progress.
+
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import net from 'node:net';

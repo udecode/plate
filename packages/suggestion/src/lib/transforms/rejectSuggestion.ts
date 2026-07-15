@@ -9,6 +9,7 @@ import {
 import type { TResolvedSuggestion } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { SuggestionUpdatePolicy } from '../update-policy';
 import {
   getInlineSuggestionData,
   getSuggestionKey,
@@ -19,7 +20,7 @@ export const rejectSuggestion = (
   editor: BaseEditor,
   description: TResolvedSuggestion
 ) => {
-  editor.update((tx) => {
+  editor.update(SuggestionUpdatePolicy.skip, (tx) => {
     const suggestionApi = editor.plugin(BaseSuggestionPlugin).api;
     const inlineInsertElementEntries = editor.read.nodes.toArray({
       at: [],

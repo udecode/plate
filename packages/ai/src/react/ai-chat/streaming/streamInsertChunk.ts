@@ -16,6 +16,7 @@ import { isSameNode } from './utils/isSameNode';
 import { nodesWithProps } from './utils/nodesWithProps';
 
 export type SteamInsertChunkOptions = {
+  autoScroll?: boolean;
   elementProps?: Record<string, unknown>;
   textProps?: Record<string, unknown>;
 };
@@ -75,14 +76,22 @@ export function streamInsertChunk(
       const insertPath = startInEmptyParagraph ? path : PathApi.next(path);
       const insertedBlocks = nodesWithProps(editor, blocks, insertOptions);
 
-      editor.update.history.skip((tx) => {
-        if (startInEmptyParagraph) {
-          tx.nodes.replace(insertedBlocks, {
-            at: path,
-            select: true,
-          });
+      editor.update({ history: 'skip' }, (tx) => {
+        const insertBlocks = () => {
+          if (startInEmptyParagraph) {
+            tx.nodes.replace(insertedBlocks, {
+              at: path,
+              select: true,
+            });
+          } else {
+            tx.blocks.insertAfter(insertedBlocks, { at: path, select: true });
+          }
+        };
+
+        if (options.autoScroll) {
+          tx.dom.autoScroll(insertBlocks);
         } else {
-          tx.blocks.insertAfter(insertedBlocks, { at: path, select: true });
+          insertBlocks();
         }
       });
 
@@ -126,88 +135,96 @@ export function streamInsertChunk(
     let nextBlockChunks = _blockChunks;
     let nextBlockPath = _blockPath;
 
-    editor.update.history.skip((tx) => {
-      if (tempBlocks.length === 1) {
-        const currentBlock = tx.nodes.get<Element>(_blockPath)?.[0];
+    editor.update({ history: 'skip' }, (tx) => {
+      const updateBlocks = () => {
+        if (tempBlocks.length === 1) {
+          const currentBlock = tx.nodes.get<Element>(_blockPath)?.[0];
 
-        if (!currentBlock) return;
+          if (!currentBlock) return;
 
-        if (isSameNode(editor, currentBlock, tempBlocks[0])) {
-          const chunkNodes = streamDeserializeInlineMd(editor, chunk);
-          const endPoint = tx.points.end(_blockPath);
+          if (isSameNode(editor, currentBlock, tempBlocks[0])) {
+            const chunkNodes = streamDeserializeInlineMd(editor, chunk);
+            const endPoint = tx.points.end(_blockPath);
 
-          if (!endPoint) return;
+            if (!endPoint) return;
 
-          tx.nodes.insert(nodesWithProps(editor, chunkNodes, insertOptions), {
-            at: endPoint,
-            select: true,
-          });
+            tx.nodes.insert(nodesWithProps(editor, chunkNodes, insertOptions), {
+              at: endPoint,
+              select: true,
+            });
 
-          const updatedBlock = tx.nodes.get<Element>(_blockPath);
+            const updatedBlock = tx.nodes.get<Element>(_blockPath);
 
-          if (!updatedBlock) return;
+            if (!updatedBlock) return;
 
-          const serializedBlock = streamSerializeMd(
-            editor,
-            { value: [updatedBlock[0]] },
-            tempBlockChunks
-          );
-          const blockText = NodeApi.string(tempBlocks[0]);
-
-          if (
-            serializedBlock === tempBlockChunks &&
-            blockText === serializedBlock
-          ) {
-            nextBlockChunks = tempBlockChunks;
-          } else {
-            tx.nodes.replace(
-              nodesWithProps(editor, [tempBlocks[0]], insertOptions),
-              { at: _blockPath, select: true }
+            const serializedBlock = streamSerializeMd(
+              editor,
+              { value: [updatedBlock[0]] },
+              tempBlockChunks
             );
+            const blockText = NodeApi.string(tempBlocks[0]);
 
-            const replacement = streamSerializeMd(
+            if (
+              serializedBlock === tempBlockChunks &&
+              blockText === serializedBlock
+            ) {
+              nextBlockChunks = tempBlockChunks;
+            } else {
+              tx.nodes.replace(
+                nodesWithProps(editor, [tempBlocks[0]], insertOptions),
+                { at: _blockPath, select: true }
+              );
+
+              const replacement = streamSerializeMd(
+                editor,
+                { value: [tempBlocks[0]] },
+                tempBlockChunks
+              );
+
+              nextBlockChunks =
+                tempBlocks[0].type === getPluginType(editor, KEYS.codeBlock) ||
+                tempBlocks[0].type === getPluginType(editor, KEYS.table) ||
+                tempBlocks[0].type === getPluginType(editor, KEYS.equation)
+                  ? tempBlockChunks
+                  : replacement;
+            }
+          } else {
+            nextBlockChunks = streamSerializeMd(
               editor,
               { value: [tempBlocks[0]] },
               tempBlockChunks
             );
-
-            nextBlockChunks =
-              tempBlocks[0].type === getPluginType(editor, KEYS.codeBlock) ||
-              tempBlocks[0].type === getPluginType(editor, KEYS.table) ||
-              tempBlocks[0].type === getPluginType(editor, KEYS.equation)
-                ? tempBlockChunks
-                : replacement;
+            tx.nodes.replace(
+              nodesWithProps(editor, [tempBlocks[0]], insertOptions),
+              { at: _blockPath, select: true }
+            );
           }
-        } else {
-          nextBlockChunks = streamSerializeMd(
-            editor,
-            { value: [tempBlocks[0]] },
-            tempBlockChunks
-          );
-          tx.nodes.replace(
-            nodesWithProps(editor, [tempBlocks[0]], insertOptions),
-            { at: _blockPath, select: true }
-          );
+
+          return;
         }
 
-        return;
+        tx.nodes.replace(nodesWithProps(editor, tempBlocks, insertOptions), {
+          at: _blockPath,
+          select: true,
+        });
+
+        nextBlockPath = getNextPath(_blockPath, tempBlocks.length - 1);
+        const endBlock = tx.nodes.get<Element>(nextBlockPath);
+
+        if (!endBlock) return;
+
+        nextBlockChunks = streamSerializeMd(
+          editor,
+          { value: [endBlock[0]] },
+          tempBlockChunks
+        );
+      };
+
+      if (options.autoScroll) {
+        tx.dom.autoScroll(updateBlocks);
+      } else {
+        updateBlocks();
       }
-
-      tx.nodes.replace(nodesWithProps(editor, tempBlocks, insertOptions), {
-        at: _blockPath,
-        select: true,
-      });
-
-      nextBlockPath = getNextPath(_blockPath, tempBlocks.length - 1);
-      const endBlock = tx.nodes.get<Element>(nextBlockPath);
-
-      if (!endBlock) return;
-
-      nextBlockChunks = streamSerializeMd(
-        editor,
-        { value: [endBlock[0]] },
-        tempBlockChunks
-      );
     });
 
     editor.plugin(AIChatPlugin).setOptions({

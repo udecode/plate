@@ -619,8 +619,10 @@ describe('root interaction controller', () => {
             }),
           },
         }),
-      update: (writer: (tx: unknown) => void) => {
-        writer({
+      update: (policyOrWriter: unknown, writer?: (tx: unknown) => void) => {
+        const update = writer ?? (policyOrWriter as (tx: unknown) => void);
+
+        update({
           selection: {
             set: (range: unknown) => {
               selection = range;
@@ -746,8 +748,10 @@ describe('root interaction controller', () => {
             }),
           },
         }),
-      update: (writer: (tx: unknown) => void) => {
-        writer({
+      update: (policyOrWriter: unknown, writer?: (tx: unknown) => void) => {
+        const update = writer ?? (policyOrWriter as (tx: unknown) => void);
+
+        update({
           selection: {
             set: (range: unknown) => {
               selection = range;

@@ -1,5 +1,6 @@
-import type { EditorUpdateMetadata } from '@platejs/plite';
+import type { EditorUpdateTag, EditorUpdateTransaction } from '@platejs/plite';
 import type { Editor } from './runtime-editor-api';
+import { getEditorRuntime } from './runtime-editor-api';
 
 type NativeTextInputLocation = {
   path: readonly number[];
@@ -26,10 +27,10 @@ const getCurrentSelectionLocation = (
   return selection?.anchor;
 };
 
-export const getNativeTextInputHistoryMetadata = (
+export const getNativeTextInputUpdateTags = (
   editor: Editor,
   location = getCurrentSelectionLocation(editor)
-): EditorUpdateMetadata => {
+): readonly EditorUpdateTag[] => {
   const currentTime = now();
   const currentKey = getLocationKey(location);
   const previous = EDITOR_TO_LAST_NATIVE_TEXT_INPUT.get(editor);
@@ -40,24 +41,29 @@ export const getNativeTextInputHistoryMetadata = (
   });
 
   if (previous === undefined) {
-    return { origin: { kind: 'native-text-input' } };
+    return ['native-text-input'];
   }
 
   if (previous.key !== currentKey) {
-    return {
-      history: { mode: 'push' },
-      origin: { kind: 'native-text-input' },
-    };
+    return ['native-text-input', 'history-push'];
   }
 
-  return {
-    history: {
-      mode:
-        currentTime - previous.time >
-        NATIVE_TEXT_INPUT_HISTORY_MERGE_INTERVAL_MS
-          ? 'push'
-          : 'merge',
-    },
-    origin: { kind: 'native-text-input' },
-  };
+  return [
+    'native-text-input',
+    currentTime - previous.time > NATIVE_TEXT_INPUT_HISTORY_MERGE_INTERVAL_MS
+      ? 'history-push'
+      : 'history-merge',
+  ];
+};
+
+export const updateNativeTextInput = (
+  editor: Editor,
+  update: (tx: EditorUpdateTransaction) => void,
+  options: { merge?: boolean } = {}
+) => {
+  getEditorRuntime(editor).update(update, {
+    tags: options.merge
+      ? ['native-text-input', 'history-merge']
+      : getNativeTextInputUpdateTags(editor),
+  });
 };

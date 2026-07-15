@@ -13,7 +13,7 @@ import {
   createEditor,
   type Element,
   defineStateField,
-  type EditorUpdateOptions,
+  type EditorUpdatePolicy,
   type EditorUpdateTag,
 } from '@platejs/plite';
 
@@ -41,12 +41,9 @@ describe('commit metadata contract', () => {
     assert(blockRuntimeId);
     assert(textRuntimeId);
 
-    editor.update(
-      (tx) => {
-        tx.text.insert('!');
-      },
-      { tag: ['history-push', 'paste'] }
-    );
+    editor.update({ tags: ['history-push', 'paste'] }, (tx) => {
+      tx.text.insert('!');
+    });
 
     const commit = editorGetLastCommit(editor);
 
@@ -97,7 +94,7 @@ describe('commit metadata contract', () => {
       'skip-dom-selection',
       'app-specific-import',
     ] satisfies EditorUpdateTag[];
-    const options = { tag: tags } satisfies EditorUpdateOptions;
+    const policy = { tags } satisfies EditorUpdatePolicy;
 
     editorReplace(editor, {
       children: [paragraph('one')],
@@ -107,93 +104,11 @@ describe('commit metadata contract', () => {
       },
     });
 
-    editor.update((tx) => {
+    editor.update(policy, (tx) => {
       tx.text.insert('!');
-    }, options);
+    });
 
     assert.deepEqual(editorGetLastCommit(editor)?.tags, tags);
-  });
-
-  it('captures typed update metadata on commits', () => {
-    const editor = createEditor();
-    const options = {
-      metadata: {
-        collab: { origin: 'remote', saveToHistory: false },
-        history: { mode: 'skip' },
-        origin: { kind: 'yjs', clientId: 'reader-1' },
-        selection: { dom: 'preserve', focus: false, scroll: false },
-      },
-      tag: ['collaboration', 'remote-import'],
-    } satisfies EditorUpdateOptions;
-
-    editorReplace(editor, {
-      children: [paragraph('one')],
-      selection: {
-        anchor: { path: [0, 0], offset: 3 },
-        focus: { path: [0, 0], offset: 3 },
-      },
-    });
-
-    editor.update((tx) => {
-      tx.text.insert('!');
-    }, options);
-
-    const commit = editorGetLastCommit(editor);
-
-    assert(commit);
-    assert.deepEqual(commit.tags, ['collaboration', 'remote-import']);
-    assert.deepEqual(commit.metadata, options.metadata);
-    assert.equal(Object.isFrozen(commit.metadata), true);
-    assert.equal(Object.isFrozen(commit.metadata.collab), true);
-    assert.equal(Object.isFrozen(commit.metadata.history), true);
-    assert.equal(Object.isFrozen(commit.metadata.selection), true);
-  });
-
-  it('lets transactions merge commit metadata during an update', () => {
-    const editor = createEditor();
-
-    editorReplace(editor, {
-      children: [paragraph('one')],
-      selection: {
-        anchor: { path: [0, 0], offset: 3 },
-        focus: { path: [0, 0], offset: 3 },
-      },
-    });
-
-    editor.update(
-      (tx) => {
-        tx.metadata.merge({
-          history: { mode: 'skip' },
-          selection: { focus: false },
-        });
-        tx.metadata.merge({
-          origin: { kind: 'node-id' },
-          selection: { scroll: false },
-        });
-        tx.text.insert('!');
-      },
-      {
-        metadata: {
-          collab: { origin: 'local' },
-          selection: { dom: 'preserve', focus: true },
-        },
-        tag: ['provenance-local'],
-      }
-    );
-
-    const commit = editorGetLastCommit(editor);
-
-    assert(commit);
-    assert.deepEqual(commit.tags, ['provenance-local']);
-    assert.deepEqual(commit.metadata, {
-      collab: { origin: 'local' },
-      history: { mode: 'skip' },
-      origin: { kind: 'node-id' },
-      selection: { dom: 'preserve', focus: false, scroll: false },
-    });
-    assert.equal(Object.isFrozen(commit.metadata), true);
-    assert.equal(Object.isFrozen(commit.metadata.history), true);
-    assert.equal(Object.isFrozen(commit.metadata.selection), true);
   });
 
   it('keeps local provenance state available without serializing it', () => {
@@ -223,30 +138,18 @@ describe('commit metadata contract', () => {
 
     assert(blockRuntimeId);
 
-    editor.update(
-      (tx) => {
-        tx.setField(localProvenance, {
-          runtimeIds: [blockRuntimeId],
-          source: 'paste-html',
-        });
-        tx.text.insert('!');
-      },
-      {
-        metadata: {
-          origin: { kind: 'clipboard', source: 'paste-html' },
-        },
-        tag: ['paste', 'provenance-local'],
-      }
-    );
+    editor.update({ tags: ['paste', 'provenance-local'] }, (tx) => {
+      tx.setField(localProvenance, {
+        runtimeIds: [blockRuntimeId],
+        source: 'paste-html',
+      });
+      tx.text.insert('!');
+    });
 
     const commit = editorGetLastCommit(editor);
 
     assert(commit);
     assert.deepEqual(commit.tags, ['paste', 'provenance-local']);
-    assert.deepEqual(commit.metadata.origin, {
-      kind: 'clipboard',
-      source: 'paste-html',
-    });
     assert.deepEqual(
       editor.read((state) => state.getField(localProvenance)),
       {

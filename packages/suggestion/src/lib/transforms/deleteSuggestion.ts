@@ -323,7 +323,7 @@ export const deleteSuggestionWithTx = (
           const node = previousAboveNode[0] as TSuggestionElement;
 
           if (node.suggestion.type === 'insert') {
-            suggestionApi.withoutSuggestions(() => {
+            editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
               tx.nodes.unset([KEYS.suggestion], {
                 at: previousAboveNode[1],
               });

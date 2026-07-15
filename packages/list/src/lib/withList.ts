@@ -48,13 +48,23 @@ export const withList: ExtendPlateEditorExtension<BaseListConfig> = ({
     deleteBackward({ next, tx, unit }) {
       const nodeEntry = tx.nodes.block<Element>();
       const selection = tx.selection();
+      const blockStart = nodeEntry ? tx.points.start(nodeEntry[1]) : undefined;
+      const isAtBlockStart =
+        !!nodeEntry &&
+        !!selection &&
+        (tx.points.isStart(selection.anchor, nodeEntry[1]) ||
+          (!!blockStart &&
+            editor.read.text.string({
+              anchor: blockStart,
+              focus: selection.anchor,
+            }) === ''));
 
       if (
         !nodeEntry ||
         !selection ||
         !nodeEntry[0][KEYS.listType] ||
         tx.selection.isExpanded() ||
-        !tx.points.isStart(selection.anchor, nodeEntry[1])
+        !isAtBlockStart
       ) {
         return next({ unit });
       }

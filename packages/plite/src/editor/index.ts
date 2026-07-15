@@ -50,4 +50,3 @@ export * from './should-merge-nodes-remove-prev-node';
 export * from './string';
 export * from './toggle-mark';
 export * from './unhang-range';
-export * from './without-normalizing';

@@ -176,7 +176,7 @@ describe('p /w text + list when selection not in list', () => {
 });
 
 describe('list + list when selection is at the end of the first list', () => {
-  it('merge the two list together', () => {
+  it('merges the next item after adjacent lists normalize', () => {
     const input = (
       <editor>
         <hul>
@@ -208,10 +208,7 @@ describe('list + list when selection is at the end of the first list', () => {
             <hlic>oneone</hlic>
           </hli>
           <hli>
-            <hlic>onetwo</hlic>
-          </hli>
-          <hli>
-            <hlic>twoone</hlic>
+            <hlic>onetwotwoone</hlic>
           </hli>
           <hli>
             <hlic>twotwo</hlic>

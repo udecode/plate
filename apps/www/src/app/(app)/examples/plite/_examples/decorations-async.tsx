@@ -44,21 +44,21 @@ const collectAsyncHighlightDecorations = (
 
   const decorations: PliteDecoration<AsyncHighlightData>[] = [];
   const pattern = /\b(?:here|there)\b/g;
-  let match: RegExpExecArray | null;
+  let match = pattern.exec(node.text);
 
-  while ((match = pattern.exec(node.text))) {
+  while (match) {
     const start = match.index;
     const end = start + match[0].length;
 
-    if (end > decoratedLength) {
-      continue;
+    if (end <= decoratedLength) {
+      decorations.push({
+        data: { asyncHighlight: true },
+        key: `async-highlight:${path.join('.')}:${start}:${end}`,
+        range: createRange(path, start, end),
+      });
     }
 
-    decorations.push({
-      data: { asyncHighlight: true },
-      key: `async-highlight:${path.join('.')}:${start}:${end}`,
-      range: createRange(path, start, end),
-    });
+    match = pattern.exec(node.text);
   }
 
   return decorations;

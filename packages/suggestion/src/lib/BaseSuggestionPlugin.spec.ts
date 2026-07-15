@@ -1,6 +1,7 @@
 import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
+import { SuggestionUpdatePolicy } from './update-policy';
 import { getTransientSuggestionKey } from './utils/getTransientSuggestionKey';
 
 describe('BaseSuggestionPlugin', () => {
@@ -84,11 +85,9 @@ describe('BaseSuggestionPlugin', () => {
     ]);
   });
 
-  it('returns suggestion data and restores isSuggesting after withoutSuggestions', () => {
+  it('returns suggestion data', () => {
     const editor = createEditor();
     const api = editor.plugin(BaseSuggestionPlugin).api;
-
-    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     expect(
       api.suggestionData(editor.read.children()[0].children[0] as any)
@@ -96,15 +95,21 @@ describe('BaseSuggestionPlugin', () => {
     expect(api.suggestionData(editor.read.children()[1] as any)).toEqual(
       blockSuggestion
     );
+  });
 
-    api.withoutSuggestions(() => {
-      expect(
-        editor.plugin(BaseSuggestionPlugin).getOptions().isSuggesting
-      ).toBe(false);
-    });
+  it('bypasses suggestion tracking with the skip policy', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, BaseSuggestionPlugin],
+      value: [{ children: [{ text: 'plain' }], type: 'p' }],
+    } as any);
 
-    expect(editor.plugin(BaseSuggestionPlugin).getOptions().isSuggesting).toBe(
-      true
-    );
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+    editor.update.selection.set({ offset: 5, path: [0, 0] });
+    editor.update(SuggestionUpdatePolicy.skip).text.insert('!');
+
+    expect(editor.read.children()[0].children).toEqual([{ text: 'plain!' }]);
+    expect(Object.isFrozen(SuggestionUpdatePolicy)).toBe(true);
+    expect(Object.isFrozen(SuggestionUpdatePolicy.skip)).toBe(true);
+    expect(Object.isFrozen(SuggestionUpdatePolicy.skip.tags)).toBe(true);
   });
 });

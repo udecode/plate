@@ -51,7 +51,7 @@ export const useEquationInput = ({
 
     editor.update((tx) => {
       if (isInline) {
-        tx.metadata.merge({ history: { mode: 'merge' } });
+        tx.tags.add('history-merge');
       }
 
       tx.nodes.set<TEquationElement>(
@@ -141,7 +141,7 @@ export const useEquationInput = ({
     if (!point) return;
 
     editor.update((tx) => {
-      tx.metadata.merge({ selection: { focus: true } });
+      tx.tags.add('focus');
       tx.selection.set(point);
     });
   }

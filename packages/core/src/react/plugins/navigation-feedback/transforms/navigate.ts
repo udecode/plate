@@ -70,7 +70,8 @@ export const navigate = (
         target,
         variant: flash?.variant,
       },
-      refreshDecorations
+      refreshDecorations,
+      tx
     );
   }
 

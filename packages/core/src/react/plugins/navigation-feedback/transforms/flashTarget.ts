@@ -1,4 +1,5 @@
 import type { BaseEditor } from '../../../../lib/editor';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 import type {
   NavigationFeedbackActiveTarget,
   NavigationFlashTargetOptions,
@@ -74,7 +75,8 @@ export const clearNavigationFeedbackTarget = (
 export const flashTarget = (
   editor: BaseEditor,
   { duration, target, variant = 'navigated' }: NavigationFlashTargetOptions,
-  refreshDecorations: () => void
+  refreshDecorations: () => void,
+  tx?: Pick<EditorUpdateTransaction, 'refs'>
 ) => {
   if (!editor.read.nodes.get(target.path)) return false;
 
@@ -93,7 +95,9 @@ export const flashTarget = (
   const activeTarget = {
     cycle: (pulse % 2) as 0 | 1,
     duration: timeoutMs,
-    pathRef: editor.update.refs.path(target.path),
+    pathRef: tx
+      ? tx.refs.path(target.path)
+      : editor.update.refs.path(target.path),
     pulse,
     type: target.type,
     variant,

@@ -116,7 +116,9 @@ export function transformDiffTexts(
     .map((text) => encodeLineBreaks(text, insertedLineBreakProxyChar));
 
   const changeTracking = withChangeTracking(
-    createEditor<Value>({ initialValue: [{ children: texts, type: 'p' }] }),
+    createEditor<Value>({
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+    }),
     options
   );
   const { editor: nodesEditor } = changeTracking;
@@ -124,7 +126,9 @@ export function transformDiffTexts(
   // Start with the first node in the array, assuming all nodes are to be merged into one
   let node = texts[0];
 
-  nodesEditor.update.withoutNormalizing(({ tx }) => {
+  nodesEditor.update((tx) => {
+    tx.value.replace({ children: [{ children: texts, type: 'p' }] });
+
     if (texts.length > 1) {
       // If there are multiple nodes, merge them into one, adding merge operations
       for (let i = 1; i < texts.length; i++) {
@@ -138,9 +142,7 @@ export function transformDiffTexts(
         node = { ...node, text: node.text + texts[i].text };
       }
     }
-  });
 
-  nodesEditor.update.withoutNormalizing(({ tx }) => {
     // After merging, apply split operations based on the target state (`nextTexts`)
     for (const op of splitTextNodes(node, nextTexts, {
       deletedLineBreakChar: deletedLineBreakProxyChar,
@@ -148,9 +150,7 @@ export function transformDiffTexts(
     })) {
       changeTracking.applyOperation(tx, op);
     }
-  });
 
-  nodesEditor.update.withoutNormalizing(({ tx }) => {
     changeTracking.commitChangesToDiffs(tx);
   });
 

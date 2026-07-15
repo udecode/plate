@@ -3,7 +3,12 @@ import { KEYS } from '@platejs/utils';
 
 import type { BaseCommentConfig } from './BaseCommentPlugin';
 
-import { getCommentCount, getDraftCommentKey, isCommentText } from './utils';
+import {
+  getCommentCount,
+  getDraftCommentKey,
+  getTransientCommentKey,
+  isCommentText,
+} from './utils';
 
 export const withComment: ExtendPlateEditorExtension<
   BaseCommentConfig
@@ -13,6 +18,7 @@ export const withComment: ExtendPlateEditorExtension<
       if (
         isCommentText(node) &&
         !node[getDraftCommentKey()] &&
+        !node[getTransientCommentKey()] &&
         getCommentCount(node) < 1
       ) {
         tx.nodes.unset(KEYS.comment, { at: path });

@@ -1,4 +1,5 @@
 import {
+  type EditorUpdateTransaction,
   type NodeInsertNodesOptions,
   type Path,
   PathApi,
@@ -19,8 +20,9 @@ export type InsertMediaOptions = Omit<
   'at'
 > & { at?: Path };
 
-export const insertMedia = (
+export const insertMediaWithTx = (
   editor: PlateEditor,
+  tx: EditorUpdateTransaction,
   files: File[] | FileList,
   options?: InsertMediaOptions
 ): any => {
@@ -66,13 +68,17 @@ export const insertMedia = (
   let currentAt = options?.at;
 
   if (currentAt === undefined) {
-    const selection = editor.read.selection();
-    const block = selection ? editor.read.nodes.block({ at: selection }) : null;
+    const selection = tx.selection();
+    const block = selection ? tx.nodes.block({ at: selection }) : null;
 
     if (block) currentAt = PathApi.next(block[1]);
   }
 
   const { at: _at, ...restOptions } = options ?? {};
+
+  if (editor.plugin(PlaceholderPlugin).getOption('disableEmptyPlaceholder')) {
+    tx.tags.add('history-push');
+  }
 
   Array.from(files).forEach((file, index) => {
     if (index > 0) {
@@ -83,26 +89,28 @@ export const insertMedia = (
 
     api.addUploadingFile(id, file);
 
-    const insert = () => {
-      editor.update.nodes.insert(
-        {
-          id,
-          children: [{ text: '' }],
-          mediaType: getMediaType(file, uploadConfig)!,
-          type: editor.getType(KEYS.placeholder),
-        },
-        { ...restOptions, at: currentAt }
-      );
-    };
-
-    const disableEmptyPlaceholder = editor
-      .plugin(PlaceholderPlugin)
-      .getOption('disableEmptyPlaceholder');
-
-    if (disableEmptyPlaceholder) {
-      editor.update.history.newBatch(insert);
-    } else {
-      insert();
-    }
+    tx.nodes.insert(
+      {
+        id,
+        children: [{ text: '' }],
+        mediaType: getMediaType(file, uploadConfig)!,
+        type: editor.getType(KEYS.placeholder),
+      },
+      { ...restOptions, at: currentAt }
+    );
   });
+};
+
+export const insertMedia = (
+  editor: PlateEditor,
+  files: File[] | FileList,
+  options?: InsertMediaOptions
+): any => {
+  let result: unknown;
+
+  editor.update((tx) => {
+    result = insertMediaWithTx(editor, tx, files, options);
+  });
+
+  return result;
 };

@@ -326,7 +326,7 @@ test.describe('multi-root document example', () => {
 
     await page.getByRole('button', { name: 'Undo document change' }).click();
     await expect(header).not.toContainText('Alpha ');
-    await expect(commitStatus).toContainText('tags:historic');
+    await expect(commitStatus).toContainText('tags:history-skip,historic');
 
     await page.getByRole('button', { name: 'Redo document change' }).click();
     await expect(header).toContainText('Alpha ');

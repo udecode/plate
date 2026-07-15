@@ -1,6 +1,7 @@
 import {
   NodeApi,
   PathApi,
+  type EditorUpdateTransaction,
   type Point,
   type Range,
   RangeApi,
@@ -68,7 +69,8 @@ export {
 
 type ClipboardInsertDataHandler = (
   editor: RuntimeEditor,
-  data: DataTransfer
+  data: DataTransfer,
+  tx: EditorUpdateTransaction
 ) => boolean;
 
 export const applyModelOwnedDeleteIntent = ({
@@ -186,10 +188,11 @@ const getProjectedClipboardInsertDataHandlers = (editor: RuntimeEditor) =>
 
 const applyProjectedClipboardInsertDataHandlers = (
   editor: RuntimeEditor,
-  data: DataTransfer
+  data: DataTransfer,
+  tx: EditorUpdateTransaction
 ) => {
   for (const handler of getProjectedClipboardInsertDataHandlers(editor)) {
-    if (handler(editor, data)) {
+    if (handler(editor, data, tx)) {
       return true;
     }
   }
@@ -352,7 +355,8 @@ const applyProjectedViewSelectionDataCommand = ({
         handled = withProjectedMutationRoot(
           runtimeEditor,
           target.start.root,
-          () => applyProjectedClipboardInsertDataHandlers(runtimeEditor, data)
+          () =>
+            applyProjectedClipboardInsertDataHandlers(runtimeEditor, data, tx)
         );
 
         if (handled) {
@@ -403,7 +407,7 @@ const applyProjectedViewSelectionDataCommand = ({
       handled = withProjectedMutationRoot(
         runtimeEditor,
         target.start.root,
-        () => applyProjectedClipboardInsertDataHandlers(runtimeEditor, data)
+        () => applyProjectedClipboardInsertDataHandlers(runtimeEditor, data, tx)
       );
 
       if (handled) {
@@ -751,13 +755,11 @@ export const applyEditableCommand = ({
         return true;
       }
 
-      editor.update(() => {
-        (
-          editor.api as unknown as {
-            clipboard: { insertData: (data: DataTransfer) => boolean };
-          }
-        ).clipboard.insertData(command.data);
-      });
+      (
+        editor.api as unknown as {
+          clipboard: { insertData: (data: DataTransfer) => boolean };
+        }
+      ).clipboard.insertData(command.data);
       return true;
 
     case 'insert-text':

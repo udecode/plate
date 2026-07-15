@@ -92,20 +92,17 @@ describe('undoAI', () => {
     const original = structuredClone(editor.read.children()[0]!);
 
     beginAIPreview(editor, { originalBlocks: [original] });
-    editor.update.value.replace(
-      {
-        children: [
-          {
-            [AI_PREVIEW_KEY]: true,
-            children: [{ ai: true, text: 'preview' }],
-            type: 'p',
-          },
-          { children: [{ text: '' }], type: 'aiChat' },
-        ],
-        selection: null,
-      },
-      { history: 'skip', normalize: false }
-    );
+    editor.update({ history: 'skip' }).value.replace({
+      children: [
+        {
+          [AI_PREVIEW_KEY]: true,
+          children: [{ ai: true, text: 'preview' }],
+          type: 'p',
+        },
+        { children: [{ text: '' }], type: 'aiChat' },
+      ],
+      selection: null,
+    });
 
     undoAI(editor);
 

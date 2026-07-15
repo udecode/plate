@@ -71,7 +71,6 @@ const reservedTxGroupNames = new Set([
   ...reservedStateGroupNames,
   'normalize',
   'roots',
-  'withoutNormalizing',
 ]);
 
 export const getExtensionRegistry = <TEditor extends Editor>(

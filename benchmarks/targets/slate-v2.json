@@ -1066,6 +1066,38 @@
       }
     },
     {
+      "id": "core-update-policy-current",
+      "question": "What overhead does configured update policy add to direct updates?",
+      "owner": "slate-v2",
+      "family": "core-current",
+      "kind": "current",
+      "cwd": ".",
+      "command": "bun benchmarks/slate-v2/donor/core/current/update-policy.mjs",
+      "metrics": {
+        "primary": "historyToDefaultP95",
+        "direction": "lower",
+        "unit": "ratio",
+        "printsMetric": false,
+        "upgrade": "Emit benchmark-native METRIC lines when this target joins automated comparison runs."
+      },
+      "correctness": {
+        "command": "pnpm check:plite",
+        "policy": "Policy allocation evidence requires the normal Plite package and browser correctness gate."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/bench-plite-update-policy.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-07-15-plite-update-lifecycle-api.md",
+          "docs/plans/2026-07-15-plite-update-lifecycle-api-execution.md"
+        ]
+      }
+    },
+    {
       "id": "history-retained-memory",
       "question": "How much retained memory does history keep?",
       "owner": "slate-v2",

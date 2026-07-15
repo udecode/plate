@@ -100,15 +100,13 @@ export const tabCodeBlock = (
 
   if (!codeBlock) return false;
 
-  tx.withoutNormalizing(() => {
-    for (const codeLine of codeLines) {
-      if (options.reverse) {
-        outdentCodeLine(editor, tx, { codeBlock, codeLine });
-      } else {
-        indentCodeLine(editor, tx, { codeBlock, codeLine });
-      }
+  for (const codeLine of codeLines) {
+    if (options.reverse) {
+      outdentCodeLine(editor, tx, { codeBlock, codeLine });
+    } else {
+      indentCodeLine(editor, tx, { codeBlock, codeLine });
     }
-  });
+  }
 
   return true;
 };

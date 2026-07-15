@@ -150,18 +150,19 @@ describe('withComponent method', () => {
       plugins: [TxPlugin],
     });
 
-    type Transaction = Parameters<Parameters<typeof editor.update>[0]>[0];
-    type _MissingPluginGroup = Transaction extends { sourcePlugin: unknown }
-      ? never
-      : true;
-    const missingPluginGroup: _MissingPluginGroup = true;
-
     editor.update((tx) => {
+      type Transaction = typeof tx;
+      type _MissingPluginGroup = Transaction extends {
+        sourcePlugin: unknown;
+      }
+        ? never
+        : true;
+      const missingPluginGroup: _MissingPluginGroup = true;
       const length = tx.foreignTx.replace('text');
 
+      void missingPluginGroup;
       return length satisfies number;
     });
-    void missingPluginGroup;
 
     expect(1).toBe(1);
   });

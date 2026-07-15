@@ -9,13 +9,14 @@ import {
 import type { TResolvedSuggestion } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { SuggestionUpdatePolicy } from '../update-policy';
 import { getInlineSuggestionData, getTransientSuggestionKey } from '../utils';
 
 export const acceptSuggestion = (
   editor: BaseEditor,
   description: TResolvedSuggestion
 ) => {
-  editor.update((tx) => {
+  editor.update(SuggestionUpdatePolicy.skip, (tx) => {
     const suggestionApi = editor.plugin(BaseSuggestionPlugin).api;
     const mergeNodes = editor.read.nodes.toArray({
       at: [],

@@ -108,6 +108,46 @@ describe('withSuggestion', () => {
           expect(data?.userId === 'testId').toBeTruthy();
           expect(typeof data?.createdAt === 'number').toBeTruthy();
         });
+
+        it('tracks later inserts in the same transaction', () => {
+          const input = (
+            <editor>
+              <hp>
+                one
+                <cursor />
+              </hp>
+              <hp>two</hp>
+            </editor>
+          ) as any;
+
+          const editor = createBaseEditor({
+            plugins: [suggestionPlugin],
+            selection: input.selection,
+            value: input.children,
+          });
+          editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+
+          editor.update((tx) => {
+            tx.text.insert('a');
+            tx.selection.set({ path: [1, 0], offset: 0 });
+            tx.text.insert('b');
+          });
+
+          const [firstBlock, secondBlock] = editor.read.children();
+          const firstInsert = firstBlock.children.find(
+            (node: any) => node.text === 'a'
+          );
+          const secondInsert = secondBlock.children.find(
+            (node: any) => node.text === 'b'
+          );
+
+          expect(getInlineSuggestionData(firstInsert as any)?.type).toBe(
+            'insert'
+          );
+          expect(getInlineSuggestionData(secondInsert as any)?.type).toBe(
+            'insert'
+          );
+        });
       });
 
       describe('when cursor is in block suggestion', () => {

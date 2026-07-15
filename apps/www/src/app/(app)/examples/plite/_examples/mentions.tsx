@@ -1,7 +1,6 @@
 import { cva } from 'class-variance-authority';
 import {
   type KeyboardEvent,
-  type MouseEvent,
   useCallback,
   useEffect,
   useRef,
@@ -37,6 +36,9 @@ const mentionMenuItemVariants = cva('plite-mentions-menu-item', {
     },
   },
 });
+
+const MENTION_AFTER_PATTERN = /^(\s|$)/;
+const MENTION_BEFORE_PATTERN = /(?:^|\s)@(\w+)$/;
 
 const mentionVariants = cva('plite-mentions-mention', {
   variants: {
@@ -174,12 +176,12 @@ const MentionExample = () => {
             const beforeRange =
               before && state.ranges.get({ anchor: before, focus: start });
             const beforeText = beforeRange && state.text.string(beforeRange);
-            const beforeMatch = beforeText?.match(/(?:^|\s)@(\w+)$/);
+            const beforeMatch = beforeText?.match(MENTION_BEFORE_PATTERN);
             const after = state.points.after(start);
             const afterRange =
               after && state.ranges.get({ anchor: start, focus: after });
             const afterText = afterRange && state.text.string(afterRange);
-            const afterMatch = afterText?.match(/^(\s|$)/);
+            const afterMatch = afterText?.match(MENTION_AFTER_PATTERN);
 
             if (beforeMatch && afterMatch && beforeRange) {
               const mentionStart = {
@@ -224,16 +226,17 @@ const MentionExample = () => {
             ref={ref}
           >
             {chars.map((char, i) => (
-              <div
+              <button
                 className={cn(mentionMenuItemVariants({ active: i === index }))}
                 key={char}
-                onClick={(e: MouseEvent) => {
+                onClick={() => {
                   insertMention(editor, char, target);
                   setTarget(null);
                 }}
+                type="button"
               >
                 {char}
-              </div>
+              </button>
             ))}
           </div>
         </Portal>

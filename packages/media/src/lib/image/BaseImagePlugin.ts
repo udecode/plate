@@ -51,6 +51,6 @@ export const BaseImagePlugin = createBasePlugin<ImageConfig>({
 })
   .extendExtension(withImageUpload)
   .extendExtension(withImageEmbed)
-  .extendTx(({ editor }) => () => ({
+  .extendApi(({ editor }) => ({
     imageFromFiles: (files: FileList) => insertImageFromFiles(editor, files),
   }));

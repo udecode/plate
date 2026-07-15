@@ -42,15 +42,18 @@ editor.update((tx) => {
 editor.update.history.undo();
 editor.update.history.redo();
 editor.update.history.discardRedo();
-editor.update.history.skip((tx) => {
+editor.update({ history: 'skip' }, (tx) => {
   tx.text.insert('b');
 });
-editor.update.history.merge((tx) => {
+editor.update({ history: 'merge' }, (tx) => {
   tx.text.insert('c');
 });
-editor.update.history.newBatch((tx) => {
+editor.update({ history: 'new-batch' }, (tx) => {
   tx.text.insert('d');
 });
+
+// @ts-expect-error history controls only exist on an active transaction
+editor.update.history.skip();
 
 const assertHistoryTypeErrors = () => {
   // @ts-expect-error history stacks are read through state.history

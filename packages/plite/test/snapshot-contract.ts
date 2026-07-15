@@ -49,7 +49,6 @@ import {
   liftNodes as editorLiftNodes,
   unwrapNodes as editorUnwrapNodes,
   unsetNodes as editorUnsetNodes,
-  withoutNormalizing as editorWithoutNormalizing,
   wrapNodes as editorWrapNodes,
 } from '@platejs/plite/internal';
 
@@ -453,7 +452,7 @@ const getBlockTexts = (children: readonly Descendant[]) =>
       .join('');
   });
 
-it('withoutNormalizing suppresses custom normalization until manual normalize', () => {
+it('defers custom normalization until the outer update commits', () => {
   const editor = createEditor();
   let runs = 0;
   const originalNormalizeNode = getEditorRuntime(editor).normalizeNode;
@@ -464,7 +463,7 @@ it('withoutNormalizing suppresses custom normalization until manual normalize', 
     originalNormalizeNode(...args);
   };
 
-  editorWithoutNormalizing(editor, () => {
+  editor.update(() => {
     editorReplace(editor, {
       children: createChildren(),
       selection: null,
@@ -484,7 +483,7 @@ it('withoutNormalizing suppresses custom normalization until manual normalize', 
   assert.equal(runs > 0, true);
 });
 
-it('withoutNormalizing normalizes split dirty paths instead of the full document', () => {
+it('normalizes split dirty paths instead of the full document', () => {
   const editor = createEditor();
   const originalNormalizeNode = getEditorRuntime(editor).normalizeNode;
   const normalizedTopLevelPaths: number[] = [];
@@ -552,20 +551,22 @@ it('mirrors the legacy transforms/normalization/split_node-and-insert_node.tsx o
     marks: null,
   });
 
-  editorWithoutNormalizing(editor, () => {
-    editorSplitNodes(editor, {
+  editor.update((tx) => {
+    tx.nodes.split({
       at: [0],
       position: 1,
     });
-    editorSplitNodes(editor, {
+    tx.nodes.split({
       at: [2],
       position: 1,
     });
-    applyOperation(editor, {
-      type: 'insert_node',
-      path: [2, 1],
-      node: { text: '' },
-    });
+    tx.operations.replay([
+      {
+        type: 'insert_node',
+        path: [2, 1],
+        node: { text: '' },
+      },
+    ]);
   });
 
   assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -2181,12 +2182,14 @@ it('publishes touched runtime ids for collapsed insert_text operations', () => {
   });
 
   editor.update((tx) => {
-    applyOperation(editor, {
-      type: 'insert_text',
-      path: [0, 0],
-      offset: 5,
-      text: '!',
-    });
+    tx.operations.replay([
+      {
+        type: 'insert_text',
+        path: [0, 0],
+        offset: 5,
+        text: '!',
+      },
+    ]);
   });
 
   assert.equal(changes.length, 1);
@@ -2651,7 +2654,7 @@ it('keeps selection null for replayed insert_text just like the transaction path
   });
 
   runEditorTransaction(transactionEditor, (tx) => {
-    applyOperation(transactionEditor, {
+    tx.apply({
       type: 'insert_text',
       path: [0, 0],
       offset: 5,

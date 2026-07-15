@@ -1,4 +1,4 @@
 /** @jsx jsx */
 
 export const input = <fragment />;
-export const output = [];
+export const output: never[] = [];

@@ -33,12 +33,12 @@ export const MultiSelectPlugin = toPlatePlugin(BaseTagPlugin, {
       });
     },
   },
-}).extendExtension(({ editor, type }) => ({
+}).extendExtension(({ type }) => ({
   normalizers: {
     node({ entry: [node, path], next, tx }) {
       if (
         ElementApi.isElementType<TTagElement>(node, type) &&
-        editor.read.nodes.some<TTagElement>({
+        tx.nodes.some<TTagElement>({
           at: [],
           match: (candidate, candidatePath) =>
             ElementApi.isElementType<TTagElement>(candidate, type) &&
@@ -55,12 +55,19 @@ export const MultiSelectPlugin = toPlatePlugin(BaseTagPlugin, {
           node.text.length - node.text.trimStart().length;
 
         if (leadingWhitespace > 0) {
+          const selection = tx.selection();
+          const selectionRef = selection ? tx.refs.range(selection) : null;
+
           tx.text.delete({
             at: {
               anchor: { offset: 0, path },
               focus: { offset: leadingWhitespace, path },
             },
           });
+
+          const nextSelection = selectionRef?.unref();
+
+          if (nextSelection) tx.selection.setRange(nextSelection);
           return;
         }
       }

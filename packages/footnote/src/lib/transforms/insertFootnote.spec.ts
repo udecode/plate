@@ -392,8 +392,8 @@ describe('insertFootnote', () => {
       true
     );
     expect(editor.read.selection()).toEqual({
-      anchor: { offset: 1, path: [0, 0] },
-      focus: { offset: 1, path: [0, 0] },
+      anchor: { offset: 0, path: [0, 2] },
+      focus: { offset: 0, path: [0, 2] },
     });
     expect(editor.api.navigation.activeTarget()).toMatchObject({
       path: [0, 1],
@@ -401,8 +401,8 @@ describe('insertFootnote', () => {
       variant: 'navigated',
     });
     expect(scrollIntoView).toHaveBeenLastCalledWith({
-      offset: 1,
-      path: [0, 0],
+      offset: 0,
+      path: [0, 2],
     });
   });
 

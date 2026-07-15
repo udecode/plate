@@ -439,12 +439,12 @@ describe('plite-dom clipboard boundary', () => {
           defineEditorExtension({
             name: 'product-card-paste',
             clipboard: {
-              insertData(data, { editor, next, state }) {
+              insertData(data, { next, tx }) {
                 const title = data.getData('application/x-product-card-title');
 
                 seen.push(
                   `${title ? 'consume' : 'delegate'}:${
-                    state.selection()?.anchor.offset ?? -1
+                    tx.selection()?.anchor.offset ?? -1
                   }`
                 );
 
@@ -452,9 +452,7 @@ describe('plite-dom clipboard boundary', () => {
                   return next();
                 }
 
-                editor.update((tx) => {
-                  tx.text.insert(`Card: ${title}`);
-                });
+                tx.text.insert(`Card: ${title}`);
                 return true;
               },
             },

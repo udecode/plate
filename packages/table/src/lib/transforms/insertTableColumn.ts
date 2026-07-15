@@ -79,70 +79,68 @@ export const insertTableColumn = (
 
   const currentRowIndex = cellPath.at(-2);
 
-  tx.withoutNormalizing(({ tx }) => {
-    // for each row, insert a new cell
-    tableNode.children.forEach((row, rowIndex) => {
-      const insertCellPath = [...nextCellPath];
+  // for each row, insert a new cell
+  tableNode.children.forEach((row, rowIndex) => {
+    const insertCellPath = [...nextCellPath];
 
-      if (PathApi.isPath(at)) {
-        insertCellPath[at.length - 2] = rowIndex;
-      } else {
-        insertCellPath[cellPath.length - 2] = rowIndex;
-      }
-
-      const isHeaderRow =
-        header === undefined
-          ? (row as Element).children.every(
-              (c) => c.type === editor.getType(KEYS.th)
-            )
-          : header;
-
-      tx.nodes.insert(
-        api.createCell({
-          header: isHeaderRow,
-        }),
-        {
-          at: insertCellPath,
-          select: shouldSelect && rowIndex === currentRowIndex,
-        }
-      );
-    });
-
-    const { colSizes } = tableNode;
-
-    if (colSizes) {
-      let newColSizes = [
-        ...colSizes.slice(0, nextColIndex),
-        0,
-        ...colSizes.slice(nextColIndex),
-      ];
-
-      if (initialTableWidth) {
-        newColSizes[nextColIndex] =
-          colSizes[nextColIndex] ??
-          colSizes[nextColIndex - 1] ??
-          initialTableWidth / colSizes.length;
-
-        const oldTotal = colSizes.reduce((a, b) => a + b, 0);
-        const newTotal = newColSizes.reduce((a, b) => a + b, 0);
-        const maxTotal = Math.max(oldTotal, initialTableWidth);
-
-        if (newTotal > maxTotal) {
-          const factor = maxTotal / newTotal;
-          newColSizes = newColSizes.map((size) =>
-            Math.max(minColumnWidth ?? 0, Math.floor(size * factor))
-          );
-        }
-      }
-
-      tx.nodes.set<TTableElement>(
-        {
-          colSizes: newColSizes,
-        },
-        {
-          at: tablePath,
-        }
-      );
+    if (PathApi.isPath(at)) {
+      insertCellPath[at.length - 2] = rowIndex;
+    } else {
+      insertCellPath[cellPath.length - 2] = rowIndex;
     }
+
+    const isHeaderRow =
+      header === undefined
+        ? (row as Element).children.every(
+            (c) => c.type === editor.getType(KEYS.th)
+          )
+        : header;
+
+    tx.nodes.insert(
+      api.createCell({
+        header: isHeaderRow,
+      }),
+      {
+        at: insertCellPath,
+        select: shouldSelect && rowIndex === currentRowIndex,
+      }
+    );
   });
+
+  const { colSizes } = tableNode;
+
+  if (colSizes) {
+    let newColSizes = [
+      ...colSizes.slice(0, nextColIndex),
+      0,
+      ...colSizes.slice(nextColIndex),
+    ];
+
+    if (initialTableWidth) {
+      newColSizes[nextColIndex] =
+        colSizes[nextColIndex] ??
+        colSizes[nextColIndex - 1] ??
+        initialTableWidth / colSizes.length;
+
+      const oldTotal = colSizes.reduce((a, b) => a + b, 0);
+      const newTotal = newColSizes.reduce((a, b) => a + b, 0);
+      const maxTotal = Math.max(oldTotal, initialTableWidth);
+
+      if (newTotal > maxTotal) {
+        const factor = maxTotal / newTotal;
+        newColSizes = newColSizes.map((size) =>
+          Math.max(minColumnWidth ?? 0, Math.floor(size * factor))
+        );
+      }
+    }
+
+    tx.nodes.set<TTableElement>(
+      {
+        colSizes: newColSizes,
+      },
+      {
+        at: tablePath,
+      }
+    );
+  }
 };

@@ -160,42 +160,40 @@ export const insertTableMergeColumn = (
     }
   });
 
-  tx.withoutNormalizing(({ tx }) => {
-    const { colSizes } = tableNode;
+  const { colSizes } = tableNode;
 
-    if (colSizes) {
-      let newColSizes = [
-        ...colSizes.slice(0, nextColIndex),
-        0,
-        ...colSizes.slice(nextColIndex),
-      ];
+  if (colSizes) {
+    let newColSizes = [
+      ...colSizes.slice(0, nextColIndex),
+      0,
+      ...colSizes.slice(nextColIndex),
+    ];
 
-      if (initialTableWidth) {
-        newColSizes[nextColIndex] =
-          colSizes[nextColIndex] ??
-          colSizes[nextColIndex - 1] ??
-          initialTableWidth / colSizes.length;
+    if (initialTableWidth) {
+      newColSizes[nextColIndex] =
+        colSizes[nextColIndex] ??
+        colSizes[nextColIndex - 1] ??
+        initialTableWidth / colSizes.length;
 
-        const oldTotal = colSizes.reduce((a, b) => a + b, 0);
-        const newTotal = newColSizes.reduce((a, b) => a + b, 0);
-        const maxTotal = Math.max(oldTotal, initialTableWidth);
+      const oldTotal = colSizes.reduce((a, b) => a + b, 0);
+      const newTotal = newColSizes.reduce((a, b) => a + b, 0);
+      const maxTotal = Math.max(oldTotal, initialTableWidth);
 
-        if (newTotal > maxTotal) {
-          const factor = maxTotal / newTotal;
-          newColSizes = newColSizes.map((size) =>
-            Math.max(minColumnWidth ?? 0, Math.floor(size * factor))
-          );
-        }
+      if (newTotal > maxTotal) {
+        const factor = maxTotal / newTotal;
+        newColSizes = newColSizes.map((size) =>
+          Math.max(minColumnWidth ?? 0, Math.floor(size * factor))
+        );
       }
-
-      tx.nodes.set<TTableElement>(
-        {
-          colSizes: newColSizes,
-        },
-        {
-          at: tablePath,
-        }
-      );
     }
-  });
+
+    tx.nodes.set<TTableElement>(
+      {
+        colSizes: newColSizes,
+      },
+      {
+        at: tablePath,
+      }
+    );
+  }
 };

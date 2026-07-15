@@ -243,22 +243,16 @@ const pasteAutolinkRule = createRuleFactory<{}, {}, LinkPasteAutolinkMatch>({
       const { keepSelectedTextOnPaste } = context.editor
         .plugin(BaseLinkPlugin)
         .getOptions();
-      let inserted = false;
-
-      context.editor.update((tx) => {
-        inserted = Boolean(
-          upsertLink(context.editor, tx, {
-            insertTextInLink: true,
-            text: keepSelectedTextOnPaste ? undefined : match.url,
-            url: match.url,
-          })
-        );
+      const inserted = upsertLink(context.editor, context.tx, {
+        insertTextInLink: true,
+        text: keepSelectedTextOnPaste ? undefined : match.url,
+        url: match.url,
       });
 
       if (inserted) return true;
     }
 
-    context.editor.update.text.insert(match.text);
+    context.tx.text.insert(match.text);
 
     return true;
   },

@@ -55,7 +55,9 @@ describe('MultiSelectPlugin', () => {
     });
 
     editor.update((tx) => {
-      tx.text.insert('!', { at: { offset: 7, path: [0, 0] } });
+      const at = tx.points.end([0, 0]);
+
+      if (at) tx.text.insert('!', { at });
     });
     pipeOnChange(editor, [...editor.read.children()]);
     editor.update.normalize({ force: true });

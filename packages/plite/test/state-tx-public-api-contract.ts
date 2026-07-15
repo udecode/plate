@@ -251,27 +251,19 @@ describe('state/tx public API contract', () => {
     });
   });
 
-  it('passes direct replacement options into the owning update', () => {
+  it('applies replacement policy through the owning update facade', () => {
     const editor = createEditor({
       initialValue: [paragraph('one')],
     });
 
-    editor.update.value.replace(
-      {
-        children: [paragraph('two')],
-        selection: 'end',
-      },
-      {
-        history: 'skip',
-        normalize: false,
-        tag: ['external'],
-      }
-    );
+    editor.update({ tags: ['external', 'history-skip'] }).value.replace({
+      children: [paragraph('two')],
+      selection: 'end',
+    });
 
     const commit = editorGetLastCommit(editor);
 
-    assert.deepEqual(commit?.metadata.history, { mode: 'skip' });
-    assert.deepEqual(commit?.tags, ['external']);
+    assert.deepEqual(commit?.tags, ['external', 'history-skip']);
   });
 
   const createSeededEditor = () => {

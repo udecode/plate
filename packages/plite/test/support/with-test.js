@@ -65,7 +65,6 @@ export const createFixtureTransactionApi = (editor, tx) => {
       return tx.children();
     },
     normalize: tx.normalize,
-    withoutNormalizing: tx.withoutNormalizing,
   };
 
   setEditorRuntime(api, runtime);

@@ -198,13 +198,10 @@ describe('editor foundation contract', () => {
       }
     });
 
-    source.update(
-      (tx) => {
-        tx.text.insert('!');
-        tx.nodes.insert(paragraph('four'), { at: [3] });
-      },
-      { tag: ['local-edit', 'collab-export'] }
-    );
+    source.update({ tags: ['local-edit', 'collab-export'] }, (tx) => {
+      tx.text.insert('!');
+      tx.nodes.insert(paragraph('four'), { at: [3] });
+    });
 
     const sourceCommit = editorGetLastCommit(source);
 
@@ -212,7 +209,8 @@ describe('editor foundation contract', () => {
     assert.deepEqual(sourceCommit.tags, ['local-edit', 'collab-export']);
 
     remote.update((tx) => {
-      tx.operations.replay(sourceCommit.operations, { tag: 'remote-import' });
+      tx.tags.add('remote-import');
+      tx.operations.replay(sourceCommit.operations);
     });
     unsubscribe();
 
@@ -242,7 +240,8 @@ describe('editor foundation contract', () => {
     assert.equal(JSON.stringify(removeOperation).includes(removedId), false);
 
     targetEditor.update((tx) => {
-      tx.operations.replay([removeOperation], { tag: 'remote-remove' });
+      tx.tags.add('remote-remove');
+      tx.operations.replay([removeOperation]);
     });
 
     const removeCommit = editorGetLastCommit(targetEditor);

@@ -7,7 +7,7 @@ describe('DocxExportPlugin', () => {
     mock.restore();
   });
 
-  it('exports and downloads through the typed transaction API', async () => {
+  it('exports and downloads through the typed plugin API', async () => {
     const editor = createBaseEditor({
       plugins: [DocxExportPlugin],
       value: [{ children: [{ text: 'Export me' }], type: 'p' }],
@@ -23,7 +23,7 @@ describe('DocxExportPlugin', () => {
       'click'
     ).mockImplementation(() => {});
 
-    await editor.update.docxExport.exportAndDownload('document', {
+    await editor.api.docxExport.exportAndDownload('document', {
       orientation: 'landscape',
     });
 

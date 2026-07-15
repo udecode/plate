@@ -30,12 +30,12 @@ describe('usePlateEditor Plite runtime route', () => {
         plugins: [TxPlugin],
         value,
       });
-      const assertTxInference = (
-        tx: Parameters<Parameters<typeof editor.update>[0]>[0]
-      ) => {
-        tx.txPlugin.replace();
-        // @ts-expect-error plugin tx groups should not degrade to any
-        tx.txPlugin.missing();
+      const assertTxInference = () => {
+        editor.update((tx) => {
+          tx.txPlugin.replace();
+          // @ts-expect-error plugin tx groups should not degrade to any
+          tx.txPlugin.missing();
+        });
       };
 
       expect(assertTxInference).toBeInstanceOf(Function);
@@ -69,12 +69,12 @@ describe('usePlateEditor Plite runtime route', () => {
       plugins: [TxPlugin],
       value,
     });
-    const assertTxInference = (
-      tx: Parameters<Parameters<typeof editor.update>[0]>[0]
-    ) => {
-      tx.txPlugin.replace();
-      // @ts-expect-error plugin tx groups should not degrade to any
-      tx.txPlugin.missing();
+    const assertTxInference = () => {
+      editor.update((tx) => {
+        tx.txPlugin.replace();
+        // @ts-expect-error plugin tx groups should not degrade to any
+        tx.txPlugin.missing();
+      });
     };
 
     expect(assertTxInference).toBeInstanceOf(Function);

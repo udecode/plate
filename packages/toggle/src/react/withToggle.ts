@@ -54,26 +54,22 @@ export const withToggle: ExtendPlateEditorExtension<ToggleConfig> = ({
         ? undefined
         : getLastEntryEnclosedInToggle(editor, toggleId);
 
-      tx.withoutNormalizing(({ tx }) => {
-        next();
+      next();
 
-        if (isOpen) {
-          tx.blocks.toggle(KEYS.toggle);
+      if (isOpen) {
+        tx.blocks.toggle(KEYS.toggle);
 
-          const insertedBlock = tx.nodes.block();
+        const insertedBlock = tx.nodes.block();
 
-          if (insertedBlock) {
-            const indent = insertedBlock[0][KEYS.indent];
+        if (insertedBlock) {
+          const indent = insertedBlock[0][KEYS.indent];
 
-            tx.nodes.set(
-              { [KEYS.indent]: typeof indent === 'number' ? indent + 1 : 1 },
-              { at: insertedBlock[1] }
-            );
-          }
-
-          return;
+          tx.nodes.set(
+            { [KEYS.indent]: typeof indent === 'number' ? indent + 1 : 1 },
+            { at: insertedBlock[1] }
+          );
         }
-
+      } else {
         const insertedBlock = tx.nodes.block();
 
         if (lastEntryEnclosedInToggle && insertedBlock) {
@@ -82,7 +78,7 @@ export const withToggle: ExtendPlateEditorExtension<ToggleConfig> = ({
             to: PathApi.next(lastEntryEnclosedInToggle[1]),
           });
         }
-      });
+      }
 
       return true;
     },

@@ -61,6 +61,46 @@ describe('editor block transforms', () => {
     });
   });
 
+  it('does not nest a blockquote inside an active blockquote', () => {
+    const editor = createEditor({
+      selection: {
+        anchor: { offset: 2, path: [0, 0, 0] },
+        focus: { offset: 2, path: [0, 0, 0] },
+      },
+      value: [
+        {
+          children: [{ children: [{ text: 'two' }], type: 'p' }],
+          type: KEYS.blockquote,
+        },
+      ],
+    });
+
+    setBlockType(editor as any, KEYS.blockquote);
+
+    expect(editor.read.children()).toMatchObject([
+      {
+        children: [{ children: [{ text: 'two' }], type: 'p' }],
+        type: KEYS.blockquote,
+      },
+    ]);
+  });
+
+  it('turns a paragraph into a list inside the owning update', () => {
+    const editor = createEditor();
+
+    setBlockType(editor as any, KEYS.ul);
+
+    expect(editor.read.children()).toMatchObject([
+      { children: [{ text: 'one' }], type: 'p' },
+      {
+        children: [{ text: 'two' }],
+        indent: 1,
+        listStyleType: KEYS.ul,
+        type: KEYS.p,
+      },
+    ]);
+  });
+
   it('selects the inserted blockquote paragraph instead of the previous block', () => {
     const editor = createEditor();
 
@@ -105,6 +145,28 @@ describe('editor block transforms', () => {
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
+  });
+
+  it('inserts a block and removes the empty source in one commit', () => {
+    const editor = createEditor({
+      selection: {
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      },
+      value: [
+        { children: [{ text: 'one' }], type: 'p' },
+        { children: [{ text: '' }], type: 'p' },
+      ],
+    });
+    const version = editor.read.lastCommit()?.version ?? 0;
+
+    insertBlock(editor as any, KEYS.h2);
+
+    expect(editor.read.lastCommit()?.version).toBe(version + 1);
+    expect(editor.read.children()).toMatchObject([
+      { children: [{ text: 'one' }], type: 'p' },
+      { children: [{ text: '' }], type: KEYS.h2 },
+    ]);
   });
 
   it('keeps a code block converted in place from an empty paragraph', () => {

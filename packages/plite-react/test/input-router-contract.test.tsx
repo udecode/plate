@@ -604,7 +604,6 @@ test('deferred native text input repair clears pending selection when root disco
   document.body.append(root);
 
   try {
-    const startedAt = performance.now();
     const { result } = renderHook(() =>
       useEditableDOMInputHandler({
         deferNativeTextInputRepair: true,
@@ -631,7 +630,7 @@ test('deferred native text input repair clears pending selection when root disco
 
     text.nodeValue = 'aXbc';
     root.remove();
-    flushAnimationFrame(() => pendingFrame, startedAt + 48);
+    flushAnimationFrame(() => pendingFrame, performance.now() + 48);
 
     expect(repairDOMInput).not.toHaveBeenCalled();
     expect(inputController.state.pendingNativeTextInputRepairOffset).toBeNull();
@@ -691,7 +690,6 @@ test('deferred native text input repair clears pending state when selection repa
   document.body.append(root);
 
   try {
-    const startedAt = performance.now();
     const { result } = renderHook(() =>
       useEditableDOMInputHandler({
         deferNativeTextInputRepair: true,
@@ -722,7 +720,7 @@ test('deferred native text input repair clears pending state when selection repa
       });
     });
     text.nodeValue = 'aXbc';
-    flushAnimationFrame(() => pendingFrame, startedAt + 48);
+    flushAnimationFrame(() => pendingFrame, performance.now() + 48);
 
     expect(repairDOMInput).toHaveBeenCalledTimes(1);
     expect(editor.read((state) => state.text.string([0]))).toBe('aXbc');
@@ -772,7 +770,6 @@ test('deferred native text input repair coalesces stale in-range DOM input selec
   document.body.append(root);
 
   try {
-    const startedAt = performance.now();
     const { result } = renderHook(() =>
       useEditableDOMInputHandler({
         deferNativeTextInputRepair: true,
@@ -803,7 +800,7 @@ test('deferred native text input repair coalesces stale in-range DOM input selec
     expect(pendingTimeout).toBeTypeOf('function');
     expect(repairDOMInput).not.toHaveBeenCalled();
 
-    flushAnimationFrame(() => pendingFrame, startedAt + 48);
+    flushAnimationFrame(() => pendingFrame, performance.now() + 48);
 
     expect(repairDOMInput).toHaveBeenCalledWith(
       {
@@ -1110,7 +1107,6 @@ test('deferred native text input repair coalesces stale in-range burst selection
   document.body.append(root);
 
   try {
-    const startedAt = performance.now();
     const { result } = renderHook(() =>
       useEditableDOMInputHandler({
         deferNativeTextInputRepair: true,
@@ -1139,7 +1135,7 @@ test('deferred native text input repair coalesces stale in-range burst selection
       '0,0'
     );
 
-    flushAnimationFrame(() => pendingFrame, startedAt + 48);
+    flushAnimationFrame(() => pendingFrame, performance.now() + 48);
 
     expect(repairDOMInput).toHaveBeenCalledWith(
       {
@@ -1199,7 +1195,6 @@ test('deferred native text input repair splits deeply stale DOM input selections
   document.body.append(root);
 
   try {
-    const startedAt = performance.now();
     const { result } = renderHook(() =>
       useEditableDOMInputHandler({
         deferNativeTextInputRepair: true,
@@ -1239,7 +1234,7 @@ test('deferred native text input repair splits deeply stale DOM input selections
     selectTextOffset(text, 5);
     result.current.onDOMInput(createNativeInsertTextEvent('i'));
 
-    flushAnimationFrame(() => pendingFrame, startedAt + 48);
+    flushAnimationFrame(() => pendingFrame, performance.now() + 48);
 
     expect(repairDOMInput).toHaveBeenNthCalledWith(
       1,
@@ -1311,7 +1306,6 @@ test('deferred native text input repair retargets from repaired runtime caret af
   document.body.append(root);
 
   try {
-    const startedAt = performance.now();
     const { result } = renderHook(() =>
       useEditableDOMInputHandler({
         deferNativeTextInputRepair: true,
@@ -1339,7 +1333,7 @@ test('deferred native text input repair retargets from repaired runtime caret af
     text.nodeValue = 'aYXbc';
     selectTextOffset(text, 2);
     result.current.onDOMInput(createNativeInsertTextEvent('Y'));
-    flushAnimationFrame(() => pendingFrame, startedAt + 48);
+    flushAnimationFrame(() => pendingFrame, performance.now() + 48);
 
     expect(repairDOMInput).toHaveBeenNthCalledWith(
       1,
@@ -1535,7 +1529,6 @@ test('deferred native text input repair coalesces projected boundary bursts', ()
   document.body.append(root);
 
   try {
-    const startedAt = performance.now();
     const { result } = renderHook(() =>
       useEditableDOMInputHandler({
         deferNativeTextInputRepair: true,
@@ -1554,7 +1547,7 @@ test('deferred native text input repair coalesces projected boundary bursts', ()
     selectTextOffset(secondText, 2);
     result.current.onDOMInput(createNativeInsertTextEvent('r'));
 
-    flushAnimationFrame(() => pendingFrame, startedAt + 48);
+    flushAnimationFrame(() => pendingFrame, performance.now() + 48);
 
     expect(repairDOMInput).toHaveBeenCalledWith(
       {
@@ -1613,7 +1606,6 @@ test('deferred native text input repair preserves inserts across text targets af
   document.body.append(root);
 
   try {
-    const startedAt = performance.now();
     const { result } = renderHook(() =>
       useEditableDOMInputHandler({
         deferNativeTextInputRepair: true,
@@ -1640,7 +1632,7 @@ test('deferred native text input repair preserves inserts across text targets af
     expect(pendingTimeout).toBeTypeOf('function');
     expect(repairDOMInput).not.toHaveBeenCalled();
 
-    flushAnimationFrame(() => pendingFrame, startedAt + 48);
+    flushAnimationFrame(() => pendingFrame, performance.now() + 48);
 
     expect(repairDOMInput).toHaveBeenNthCalledWith(
       1,
@@ -1705,7 +1697,6 @@ test('deferred native text input repair preserves same-path inserts after the ca
   document.body.append(root);
 
   try {
-    const startedAt = performance.now();
     const { result } = renderHook(() =>
       useEditableDOMInputHandler({
         deferNativeTextInputRepair: true,
@@ -1724,7 +1715,7 @@ test('deferred native text input repair preserves same-path inserts after the ca
     selectTextOffset(text, 2);
     result.current.onDOMInput(createNativeInsertTextEvent('Y'));
 
-    flushAnimationFrame(() => pendingFrame, startedAt + 48);
+    flushAnimationFrame(() => pendingFrame, performance.now() + 48);
 
     expect(repairDOMInput).toHaveBeenNthCalledWith(
       1,
@@ -1787,7 +1778,6 @@ test('deferred native text input repair preserves later same-path inserts before
   document.body.append(root);
 
   try {
-    const startedAt = performance.now();
     const { result } = renderHook(() =>
       useEditableDOMInputHandler({
         deferNativeTextInputRepair: true,
@@ -1806,7 +1796,7 @@ test('deferred native text input repair preserves later same-path inserts before
     selectTextOffset(text, 5);
     result.current.onDOMInput(createNativeInsertTextEvent('Y'));
 
-    flushAnimationFrame(() => pendingFrame, startedAt + 48);
+    flushAnimationFrame(() => pendingFrame, performance.now() + 48);
 
     expect(repairDOMInput).toHaveBeenNthCalledWith(
       1,

@@ -211,6 +211,7 @@ export type {
   PliteSourceDirtinessClass,
   PliteSourceDirtinessContext,
 } from './projection-store';
+export { PliteReactUpdatePolicy } from './update-policy';
 export type {
   PliteResolvedWidget,
   PliteWidget,

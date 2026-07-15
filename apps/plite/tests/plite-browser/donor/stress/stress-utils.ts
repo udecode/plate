@@ -1,3 +1,4 @@
+// biome-ignore-all lint/performance/useTopLevelRegex: Stress artifact paths are normalized once per result.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 

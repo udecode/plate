@@ -2,7 +2,7 @@ import type { BaseEditor } from '@platejs/core';
 
 import { createRuleFactory, KEYS } from 'platejs';
 
-import { toggleList } from './transforms';
+import { toggleListWithTx } from './transforms';
 
 const isListInputBlocked = (editor: BaseEditor) =>
   editor.read.nodes.some({
@@ -24,9 +24,9 @@ export const OrderedListRules = {
     resolveMatch: ({ match }) => ({
       start: Number((match as RegExpMatchArray)[1]),
     }),
-    apply: ({ editor }, match) => {
-      editor.update.text.delete({ at: match.range });
-      toggleList(editor, {
+    apply: ({ editor, tx }, match) => {
+      tx.text.delete({ at: match.range });
+      toggleListWithTx(editor, tx, {
         listRestartPolite: match.start || 1,
         listStyleType: KEYS.ol,
       });

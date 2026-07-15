@@ -5,6 +5,8 @@ import { useMemo, useState } from 'react';
 import {
   createEditor,
   type Descendant,
+  type Editor,
+  type EditorUpdateTransaction,
   NodeApi,
   type Operation,
   type Range,
@@ -46,8 +48,11 @@ type ExampleUndoGroup = {
   size: number;
 };
 
-type PeerCommand = Parameters<YjsEditor['update']['history']['newBatch']>[0];
-type PeerCommandTx = Parameters<PeerCommand>[0];
+type PeerCommandTx =
+  YjsEditor extends Editor<infer V, infer TExtensions>
+    ? EditorUpdateTransaction<V, TExtensions>
+    : never;
+type PeerCommand = (tx: PeerCommandTx) => void;
 
 type KeyboardInputType = 'delete' | 'enter' | 'text';
 
@@ -711,7 +716,7 @@ const runPeerCommand = (
 
   peer.pendingLocalChangeKind = undoable ? 'command' : undefined;
   try {
-    editor.update.history.newBatch(command);
+    editor.update({ history: 'new-batch' }, command);
   } finally {
     peer.pendingLocalChangeKind = previousKind;
   }

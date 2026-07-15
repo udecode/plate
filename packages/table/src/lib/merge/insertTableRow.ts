@@ -162,30 +162,28 @@ export const insertTableMergeRow = (
     }
   });
 
-  tx.withoutNormalizing(({ tx }) => {
-    tx.nodes.insert(
-      {
-        children: newRowChildren,
-        type: editor.getType(KEYS.tr),
-      },
-      {
-        at: nextRowPath,
-        select: false,
-      }
-    );
-
-    if (shouldSelect) {
-      const cellEntry = tx.nodes.find({
-        at: nextRowPath,
-        match: { type: getCellTypes(editor) },
-      });
-
-      if (cellEntry) {
-        const [, nextCellPath] = cellEntry;
-        const point = tx.points.start(nextCellPath);
-
-        if (point) tx.selection.set({ anchor: point, focus: point });
-      }
+  tx.nodes.insert(
+    {
+      children: newRowChildren,
+      type: editor.getType(KEYS.tr),
+    },
+    {
+      at: nextRowPath,
+      select: false,
     }
-  });
+  );
+
+  if (shouldSelect) {
+    const cellEntry = tx.nodes.find({
+      at: nextRowPath,
+      match: { type: getCellTypes(editor) },
+    });
+
+    if (cellEntry) {
+      const [, nextCellPath] = cellEntry;
+      const point = tx.points.start(nextCellPath);
+
+      if (point) tx.selection.set({ anchor: point, focus: point });
+    }
+  }
 };

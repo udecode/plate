@@ -1,52 +1,23 @@
 import type {
   Editor,
   EditorCommitCommand,
-  EditorUpdateMetadata,
-  EditorUpdateOptions,
   EditorUpdateTag,
 } from '../interfaces/editor';
-import { cloneFrozen } from './clone';
+import { reduceEditorUpdateTags } from './update-policy';
 
 const COMMAND_CONTEXT = new WeakMap<Editor, EditorCommitCommand[]>();
 const UPDATE_TAG_CONTEXT = new WeakMap<Editor, EditorUpdateTag[][]>();
 
-export const cloneUpdateMetadata = (
-  metadata: EditorUpdateMetadata = {}
-): EditorUpdateMetadata => cloneFrozen(metadata);
-
-export const mergeUpdateMetadata = (
-  previous: EditorUpdateMetadata,
-  next: EditorUpdateMetadata = {}
-): EditorUpdateMetadata =>
-  cloneUpdateMetadata({
-    ...previous,
-    ...next,
-    collab: next.collab
-      ? { ...previous.collab, ...next.collab }
-      : previous.collab,
-    history: next.history
-      ? { ...previous.history, ...next.history }
-      : previous.history,
-    origin: next.origin ?? previous.origin,
-    selection: next.selection
-      ? { ...previous.selection, ...next.selection }
-      : previous.selection,
-  });
-
-export const normalizeUpdateTags = (tag?: EditorUpdateOptions['tag']) => {
-  if (!tag) {
-    return [];
-  }
-
-  return Array.isArray(tag) ? [...tag] : [tag];
-};
+export { normalizeUpdateTags } from './update-policy';
 
 export const pushUpdateTagContext = (
   editor: Editor,
   tags: readonly EditorUpdateTag[]
 ) => {
   const stack = UPDATE_TAG_CONTEXT.get(editor) ?? [];
-  const nextTags = [...new Set([...(stack.at(-1) ?? []), ...tags])];
+  const nextTags = [
+    ...reduceEditorUpdateTags([...(stack.at(-1) ?? []), ...tags]),
+  ];
   stack.push(nextTags);
   UPDATE_TAG_CONTEXT.set(editor, stack);
 };

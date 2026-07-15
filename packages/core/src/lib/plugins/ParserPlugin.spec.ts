@@ -27,16 +27,12 @@ describe('ParserPlugin', () => {
       plugins: [PlainPlugin],
     });
 
-    let inserted: unknown;
-
-    editor.update(() => {
-      inserted = editor.api.clipboard.insertData({
-        files: [],
-        getData: mock((mimeType: string) =>
-          mimeType === 'text/plain' ? 'hello' : ''
-        ),
-      } as any);
-    });
+    const inserted = editor.api.clipboard.insertData({
+      files: [],
+      getData: mock((mimeType: string) =>
+        mimeType === 'text/plain' ? 'hello' : ''
+      ),
+    } as any);
 
     expect(inserted).toBe(true);
     expect(editor.read.children()).toEqual([
@@ -65,11 +61,7 @@ describe('ParserPlugin', () => {
       ),
     } as any;
 
-    let inserted: unknown;
-
-    editor.update(() => {
-      inserted = editor.api.clipboard.insertData(dataTransfer);
-    });
+    const inserted = editor.api.clipboard.insertData(dataTransfer);
 
     expect(inserted).toBe(true);
     expect(editor.read.children()).toEqual([createParagraph('initialhello')]);

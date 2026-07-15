@@ -4,6 +4,7 @@ import {
   Editable,
   type ReactEditor,
   Plite,
+  PliteReactUpdatePolicy,
   useEditor,
   useEditorState,
   useSetStateField,
@@ -120,20 +121,13 @@ const DocumentStatePanel = () => {
       return;
     }
 
-    editor.update(
-      (tx) => {
-        if (direction === 'undo') {
-          tx.history.undo();
-        } else {
-          tx.history.redo();
-        }
-      },
-      {
-        metadata: {
-          selection: { dom: 'preserve', focus: false, scroll: false },
-        },
+    editor.update(PliteReactUpdatePolicy.preserveSelection, (tx) => {
+      if (direction === 'undo') {
+        tx.history.undo();
+      } else {
+        tx.history.redo();
       }
-    );
+    });
     restoreTitleFocus();
   };
 
@@ -141,6 +135,14 @@ const DocumentStatePanel = () => {
     const previousValue = editor.read.getField(documentTitle);
 
     editor.update(
+      {
+        history: 'skip',
+        tags: [
+          ...PliteReactUpdatePolicy.preserveSelection.tags,
+          'collaboration',
+          'remote-state',
+        ],
+      },
       (tx) => {
         tx.statePatches.replay([
           {
@@ -149,14 +151,6 @@ const DocumentStatePanel = () => {
             value: 'Remote Q2 Brief',
           },
         ]);
-      },
-      {
-        metadata: {
-          collab: { origin: 'remote', saveToHistory: false },
-          history: { mode: 'skip' },
-          selection: { dom: 'preserve', focus: false, scroll: false },
-        },
-        tag: ['collaboration', 'remote-state'],
       }
     );
   };

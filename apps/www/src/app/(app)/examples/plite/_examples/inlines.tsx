@@ -124,11 +124,31 @@ const InlinesExample = () => {
 const inline = () =>
   defineEditorExtension<CustomEditor>()({
     clipboard: {
-      insertData(data, { editor, next }) {
+      insertData(data, { editor, next, tx }) {
         const text = data.getData('text/plain');
 
         if (text && isUrl(text)) {
-          wrapLink(editor, text);
+          if (isLinkActive(editor)) {
+            tx.nodes.unwrap({
+              match: (node) => NodeApi.isElement(node) && node.type === 'link',
+            });
+          }
+
+          const selection = tx.selection();
+          const isCollapsed = selection && RangeApi.isCollapsed(selection);
+          const link: LinkElement = {
+            type: 'link',
+            url: text,
+            children: isCollapsed ? [{ text }] : [],
+          };
+
+          if (isCollapsed) {
+            tx.nodes.insert(link);
+            tx.selection.move({ unit: 'offset' });
+          } else {
+            tx.nodes.wrap(link, { split: true });
+          }
+
           return true;
         }
         return next();
@@ -158,9 +178,10 @@ const inline = () =>
   });
 
 const URL_TEXT_PATTERN = /https?:\/\/[^\s]+/gi;
+const URL_TRAILING_PUNCTUATION_PATTERN = /[.,!?;:]+$/;
 
 const trimUrlPunctuation = (text: string) => {
-  const suffix = text.match(/[.,!?;:]+$/)?.[0] ?? '';
+  const suffix = text.match(URL_TRAILING_PUNCTUATION_PATTERN)?.[0] ?? '';
 
   if (!suffix) {
     return { suffix: '', url: text };
@@ -418,6 +439,7 @@ const EditableButtonComponent = ({
       // Margin is necessary to clearly show the cursor adjacent to the button
       className="plite-inlines-editable-button"
       onClick={(ev) => ev.preventDefault()}
+      role="button"
     >
       <InlineChromiumBugfix />
       {children}
@@ -474,7 +496,7 @@ const AddLinkButton = () => {
     <Button
       active={active}
       onClick={() => {
-        const url = window.prompt('Enter the URL of the link:');
+        const url = window.prompt.bind(window)('Enter the URL of the link:');
         if (!url) return;
 
         if (editor.read.selection()) {

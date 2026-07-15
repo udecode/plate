@@ -43,8 +43,7 @@ export type ListConfig = PluginConfig<
 export type ListTransaction = Pick<
   EditorUpdateTransaction,
   'blocks' | 'fragment' | 'nodes' | 'refs' | 'selection' | 'text'
-> &
-  Partial<Pick<EditorUpdateTransaction, 'withoutNormalizing'>>;
+>;
 
 export const BaseBulletedListPlugin = createBasePlugin({
   key: KEYS.ulClassic,

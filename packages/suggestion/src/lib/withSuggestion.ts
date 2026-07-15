@@ -25,6 +25,7 @@ import { insertFragmentSuggestionWithTx } from './transforms/insertFragmentSugge
 import { insertTextSuggestion } from './transforms/insertTextSuggestion';
 import { removeMarkSuggestion } from './transforms/removeMarkSuggestion';
 import { removeNodesSuggestionWithTx } from './transforms/removeNodesSuggestion';
+import { SUGGESTION_SKIP_TAG } from './update-policy';
 import { getInlineSuggestionData, getSuggestionKeyId } from './utils/index';
 
 const isRangeAcrossBlocks = (editor: BaseEditor, range: Range) => {
@@ -38,56 +39,65 @@ const isRangeAcrossBlocks = (editor: BaseEditor, range: Range) => {
 
 export const withSuggestion: ExtendPlateEditorExtension<
   BaseSuggestionConfig
-> = ({ api, editor, getOptions }) => ({
+> = ({ editor, getOptions }) => ({
   normalizers: {
     node({ entry, next, tx }) {
-      api.withoutSuggestions(() => {
-        const [node, path] = entry;
-        const hasSuggestion = !!(node as Record<string, unknown>)[
-          KEYS.suggestion
-        ];
-        const inlineSuggestion =
-          (ElementApi.isElement(node) && editor.read.schema.isInline(node)) ||
-          TextApi.isText(node);
+      const [node, path] = entry;
+      const hasSuggestion = !!(node as Record<string, unknown>)[
+        KEYS.suggestion
+      ];
+      const inlineSuggestion =
+        (ElementApi.isElement(node) && editor.read.schema.isInline(node)) ||
+        TextApi.isText(node);
 
-        if (
-          hasSuggestion &&
-          inlineSuggestion &&
-          !getSuggestionKeyId(node as Element)
-        ) {
+      if (
+        hasSuggestion &&
+        inlineSuggestion &&
+        !getSuggestionKeyId(node as Element)
+      ) {
+        editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
           tx.nodes.unset([KEYS.suggestion, 'suggestionData'], {
             at: path,
           });
+        });
 
-          return;
-        }
+        return;
+      }
 
-        if (
-          hasSuggestion &&
-          inlineSuggestion &&
-          !getInlineSuggestionData(node as Element)?.userId
-        ) {
-          if (getInlineSuggestionData(node as Element)?.type === 'remove') {
+      if (
+        hasSuggestion &&
+        inlineSuggestion &&
+        !getInlineSuggestionData(node as Element)?.userId
+      ) {
+        if (getInlineSuggestionData(node as Element)?.type === 'remove') {
+          editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
             tx.nodes.unset(
               [KEYS.suggestion, getSuggestionKeyId(node as Element)!],
               {
                 at: path,
               }
             );
-          } else {
+          });
+        } else {
+          editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
             tx.nodes.remove({ at: path });
-          }
-
-          return;
+          });
         }
 
-        next();
-      });
+        return;
+      }
+
+      next();
     },
   },
   transforms: {
     addMark({ key, next, tx, value }) {
-      if (getOptions().isSuggesting && editor.read.selection.isExpanded()) {
+      if (
+        getOptions().isSuggesting &&
+        editor.plugin(BaseSuggestionPlugin).api.isTracking() &&
+        !tx.tags.has(SUGGESTION_SKIP_TAG) &&
+        editor.read.selection.isExpanded()
+      ) {
         addMarkSuggestion(editor, tx, key, value);
         return true;
       }
@@ -104,7 +114,11 @@ export const withSuggestion: ExtendPlateEditorExtension<
         unit: resolvedUnit,
       });
 
-      if (getOptions().isSuggesting) {
+      if (
+        getOptions().isSuggesting &&
+        editor.plugin(BaseSuggestionPlugin).api.isTracking() &&
+        !tx.tags.has(SUGGESTION_SKIP_TAG)
+      ) {
         const node = editor.read.nodes.above<TSuggestionElement>();
 
         if (node?.[0][KEYS.suggestion] && !node[0].suggestion.isLineBreak) {
@@ -143,7 +157,11 @@ export const withSuggestion: ExtendPlateEditorExtension<
 
       if (!selection) return next({ unit: resolvedUnit });
 
-      if (getOptions().isSuggesting) {
+      if (
+        getOptions().isSuggesting &&
+        editor.plugin(BaseSuggestionPlugin).api.isTracking() &&
+        !tx.tags.has(SUGGESTION_SKIP_TAG)
+      ) {
         const pointTarget = editor.read.points.after(selection, {
           unit: resolvedUnit,
         });
@@ -166,7 +184,11 @@ export const withSuggestion: ExtendPlateEditorExtension<
       return next({ unit: resolvedUnit });
     },
     deleteFragment({ next, options, tx }) {
-      if (getOptions().isSuggesting) {
+      if (
+        getOptions().isSuggesting &&
+        editor.plugin(BaseSuggestionPlugin).api.isTracking() &&
+        !tx.tags.has(SUGGESTION_SKIP_TAG)
+      ) {
         deleteFragmentSuggestionWithTx(editor, tx, { reverse: true });
         return true;
       }
@@ -174,7 +196,11 @@ export const withSuggestion: ExtendPlateEditorExtension<
       return next({ options });
     },
     insertBreak({ next, tx }) {
-      if (!getOptions().isSuggesting) {
+      if (
+        !getOptions().isSuggesting ||
+        !editor.plugin(BaseSuggestionPlugin).api.isTracking() ||
+        tx.tags.has(SUGGESTION_SKIP_TAG)
+      ) {
         return next();
       }
 
@@ -197,7 +223,7 @@ export const withSuggestion: ExtendPlateEditorExtension<
 
       const inserted = next();
 
-      tx.metadata.merge({ history: { mode: 'merge' } });
+      tx.tags.add('history-merge');
       tx.nodes.set(
         {
           [KEYS.suggestion]: {
@@ -215,7 +241,11 @@ export const withSuggestion: ExtendPlateEditorExtension<
       return inserted;
     },
     insertFragment({ fragment, next, options, tx }) {
-      if (getOptions().isSuggesting) {
+      if (
+        getOptions().isSuggesting &&
+        editor.plugin(BaseSuggestionPlugin).api.isTracking() &&
+        !tx.tags.has(SUGGESTION_SKIP_TAG)
+      ) {
         insertFragmentSuggestionWithTx(editor, tx, fragment, () =>
           next({ fragment, options })
         );
@@ -224,8 +254,12 @@ export const withSuggestion: ExtendPlateEditorExtension<
 
       return next({ fragment, options });
     },
-    insertNodes({ next, nodes, options }) {
-      if (getOptions().isSuggesting) {
+    insertNodes({ next, nodes, options, tx }) {
+      if (
+        getOptions().isSuggesting &&
+        editor.plugin(BaseSuggestionPlugin).api.isTracking() &&
+        !tx.tags.has(SUGGESTION_SKIP_TAG)
+      ) {
         const nodesArray = Array.isArray(nodes) ? nodes : [nodes];
 
         if (
@@ -233,12 +267,9 @@ export const withSuggestion: ExtendPlateEditorExtension<
             (node) => ElementApi.isElement(node) && node.type === 'slash_input'
           )
         ) {
-          let result = true;
-          api.withoutSuggestions(() => {
-            result = next({ nodes, options });
-          });
-
-          return result;
+          return editor
+            .plugin(BaseSuggestionPlugin)
+            .api.untracked(() => next({ nodes, options }));
         }
 
         const suggestionNodes = nodesArray.map((node) => ({
@@ -258,7 +289,11 @@ export const withSuggestion: ExtendPlateEditorExtension<
       return next({ nodes, options });
     },
     insertText({ next, options, text, tx }) {
-      if (getOptions().isSuggesting) {
+      if (
+        getOptions().isSuggesting &&
+        editor.plugin(BaseSuggestionPlugin).api.isTracking() &&
+        !tx.tags.has(SUGGESTION_SKIP_TAG)
+      ) {
         const node = editor.read.nodes.above<TSuggestionElement>();
 
         if (node?.[0][KEYS.suggestion] && !node[0].suggestion.isLineBreak) {
@@ -272,7 +307,12 @@ export const withSuggestion: ExtendPlateEditorExtension<
       return next({ options, text });
     },
     removeMark({ key, next, tx }) {
-      if (getOptions().isSuggesting && editor.read.selection.isExpanded()) {
+      if (
+        getOptions().isSuggesting &&
+        editor.plugin(BaseSuggestionPlugin).api.isTracking() &&
+        !tx.tags.has(SUGGESTION_SKIP_TAG) &&
+        editor.read.selection.isExpanded()
+      ) {
         removeMarkSuggestion(editor, tx, key);
         return true;
       }
@@ -280,7 +320,11 @@ export const withSuggestion: ExtendPlateEditorExtension<
       return next({ key });
     },
     removeNodes({ next, options, tx }) {
-      if (getOptions().isSuggesting) {
+      if (
+        getOptions().isSuggesting &&
+        editor.plugin(BaseSuggestionPlugin).api.isTracking() &&
+        !tx.tags.has(SUGGESTION_SKIP_TAG)
+      ) {
         const nodes = editor.read.nodes.toArray<Element | Text>(options);
 
         if (
@@ -289,12 +333,9 @@ export const withSuggestion: ExtendPlateEditorExtension<
               ElementApi.isElement(node) && node.type === 'slash_input'
           )
         ) {
-          let result = true;
-          api.withoutSuggestions(() => {
-            result = next({ options });
-          });
-
-          return result;
+          return editor
+            .plugin(BaseSuggestionPlugin)
+            .api.untracked(() => next({ options }));
         }
 
         removeNodesSuggestionWithTx(editor, tx, nodes);

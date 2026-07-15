@@ -11,7 +11,7 @@ import {
   createEditor,
   type Element,
   defineStateField,
-  type EditorUpdateOptions,
+  type EditorUpdatePolicy,
 } from '@platejs/plite';
 
 const paragraph = (text: string): Element => ({
@@ -54,26 +54,27 @@ const historyUndoCount = (
   editor: ReturnType<typeof createDocumentStateEditor>
 ) => editor.read((state) => state.history.undos().length);
 
-const remoteCollabOptions = {
-  metadata: {
-    collab: { origin: 'remote', saveToHistory: false },
-    history: { mode: 'skip' },
-    selection: { dom: 'preserve' },
-  },
-  tag: ['collaboration', 'remote-import'],
-} satisfies EditorUpdateOptions;
+const remoteCollabTags = [
+  'collaboration',
+  'remote-import',
+  'history-skip',
+  'skip-dom-selection',
+  'skip-selection-focus',
+  'skip-scroll-into-view',
+] as const;
+
+const remoteCollabPolicy = {
+  tags: remoteCollabTags,
+} satisfies EditorUpdatePolicy;
 
 describe('collab document meta contract', () => {
   it('replays shared state patches remotely without local undo history', () => {
     const source = createDocumentStateEditor();
     const remote = createDocumentStateEditor();
 
-    source.update(
-      (tx) => {
-        tx.setField(documentTitle, 'Q3 Plan');
-      },
-      { tag: ['local-edit', 'collab-export'] }
-    );
+    source.update({ tags: ['local-edit', 'collab-export'] }, (tx) => {
+      tx.setField(documentTitle, 'Q3 Plan');
+    });
 
     const sourceCommit = editorGetLastCommit(source);
     assert(sourceCommit);
@@ -87,18 +88,17 @@ describe('collab document meta contract', () => {
     ]);
     assert.equal(historyUndoCount(source), 1);
 
-    remote.update((tx) => {
+    remote.update(remoteCollabPolicy, (tx) => {
       tx.operations.replay(sourceCommit.operations);
       tx.statePatches.replay(sourceCommit.statePatches);
-    }, remoteCollabOptions);
+    });
 
     const remoteCommit = editorGetLastCommit(remote);
     assert(remoteCommit);
     assert.equal(readTitle(remote), 'Q3 Plan');
     assert.deepEqual(remoteCommit.operations, []);
     assert.deepEqual(remoteCommit.statePatches, sourceCommit.statePatches);
-    assert.deepEqual(remoteCommit.tags, ['collaboration', 'remote-import']);
-    assert.deepEqual(remoteCommit.metadata, remoteCollabOptions.metadata);
+    assert.deepEqual(remoteCommit.tags, remoteCollabTags);
     assert.equal(historyUndoCount(remote), 0);
     assert.deepEqual(
       remote.read((state) => state.value()),
@@ -109,13 +109,10 @@ describe('collab document meta contract', () => {
   it('exports only shared state patches for collaboration payloads', () => {
     const source = createDocumentStateEditor();
 
-    source.update(
-      (tx) => {
-        tx.setField(documentTitle, 'Q3 Plan');
-        tx.setField(privateNote, 'draft only');
-      },
-      { tag: ['local-edit', 'collab-export'] }
-    );
+    source.update({ tags: ['local-edit', 'collab-export'] }, (tx) => {
+      tx.setField(documentTitle, 'Q3 Plan');
+      tx.setField(privateNote, 'draft only');
+    });
 
     const sourceCommit = editorGetLastCommit(source);
     assert(sourceCommit);

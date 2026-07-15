@@ -17,34 +17,30 @@ export const insertColumnGroup = (
 ) => {
   const width = 100 / columns;
 
-  tx.withoutNormalizing(({ tx }) => {
-    tx.nodes.insert(
-      {
-        children: new Array(columns).fill(null).map(() => ({
-          children: [
-            { children: [{ text: '' }], type: editor.getType(KEYS.p) },
-          ],
-          type: editor.getType(KEYS.column),
-          width: `${width}%`,
-        })),
-        type: editor.getType(KEYS.columnGroup),
-      },
-      options
-    );
+  tx.nodes.insert(
+    {
+      children: new Array(columns).fill(null).map(() => ({
+        children: [{ children: [{ text: '' }], type: editor.getType(KEYS.p) }],
+        type: editor.getType(KEYS.column),
+        width: `${width}%`,
+      })),
+      type: editor.getType(KEYS.columnGroup),
+    },
+    options
+  );
 
-    if (selectProp) {
-      const entry = tx.nodes.find<Element>({
-        at: options.at,
-        match: { type: editor.getType(KEYS.column) },
-      });
+  if (selectProp) {
+    const entry = tx.nodes.find<Element>({
+      at: options.at,
+      match: { type: editor.getType(KEYS.column) },
+    });
 
-      if (!entry) return;
+    if (!entry) return;
 
-      const point = tx.points.start(entry[1]);
+    const point = tx.points.start(entry[1]);
 
-      if (point) {
-        tx.selection.set(point);
-      }
+    if (point) {
+      tx.selection.set(point);
     }
-  });
+  }
 };

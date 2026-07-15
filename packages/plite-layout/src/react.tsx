@@ -634,7 +634,7 @@ export const PagedEditable = ({
     () =>
       snapshot.fragments.some((fragment) =>
         fragment.units?.some(
-          (unit, index, units) => units.length > 1 || unit.kind === 'table-row'
+          (unit, _index, units) => units.length > 1 || unit.kind === 'table-row'
         )
       ),
     [snapshot.fragments]

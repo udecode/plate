@@ -30,6 +30,7 @@ import {
 import { getExtensionRegistry } from './core/extension-registry';
 import {
   getChildren,
+  getActiveEditorTransaction,
   getLastCommit,
   getLiveSelection,
   getOperationDirtiness,
@@ -65,11 +66,11 @@ import type {
   EditorExtensionInput,
   EditorSnapshot,
   EditorUpdateContext,
-  EditorUpdateOptions,
   EditorUpdateTransaction,
   Operation,
   Value,
 } from './interfaces';
+import type { InternalEditorUpdateOptions } from './core/update-policy';
 
 let nextEditorId = 0;
 
@@ -105,19 +106,35 @@ const createClipboardApi = (
         'clipboard.insertData'
       ) ?? []) as EditorClipboardInsertDataCapability[];
 
-      const dispatch = (index: number, data: DataTransfer): boolean => {
+      const dispatch = (
+        index: number,
+        data: DataTransfer,
+        tx: EditorUpdateTransaction
+      ): boolean => {
         const handler = handlers[index];
 
         if (!handler) return getFallback?.()?.(data) === true;
 
         return (
-          handler(editor, data, (nextData = data) =>
-            dispatch(index - 1, nextData)
+          handler(editor, data, tx, (nextData = data) =>
+            dispatch(index - 1, nextData, tx)
           ) === true
         );
       };
 
-      return dispatch(handlers.length - 1, dataTransfer);
+      const activeTx = getActiveEditorTransaction(editor);
+
+      if (activeTx) {
+        return dispatch(handlers.length - 1, dataTransfer, activeTx);
+      }
+
+      let handled = false;
+
+      updateEditor(editor, (tx) => {
+        handled = dispatch(handlers.length - 1, dataTransfer, tx);
+      });
+
+      return handled;
     },
   });
 
@@ -178,7 +195,7 @@ export function createEditor<
         transaction: EditorUpdateTransaction<V>,
         context: EditorUpdateContext<Editor<V>>
       ) => void,
-      options?: EditorUpdateOptions
+      options?: InternalEditorUpdateOptions
     ) =>
       updateEditor(
         editor,
@@ -282,15 +299,20 @@ export function createEditor<
   const read = createEditorReadApi<V, TExtensions>((fn) =>
     readEditor(editor, fn)
   );
-  const update = createEditorUpdateApi<V, TExtensions>((fn, options) =>
-    updateEditor(
-      editor,
-      fn as (
-        transaction: EditorUpdateTransaction<V>,
-        context: EditorUpdateContext<Editor<V>>
-      ) => void,
-      options
-    )
+  const update = createEditorUpdateApi<V, TExtensions>(
+    (fn, policy) =>
+      updateEditor(
+        editor,
+        fn as (
+          transaction: EditorUpdateTransaction<V>,
+          context: EditorUpdateContext<Editor<V>>
+        ) => void,
+        { tags: policy.tags }
+      ),
+    {
+      hasTxGroup: (groupName) =>
+        getExtensionRegistry(editor).txGroups.has(groupName),
+    }
   );
 
   const baseEditor: Editor<V, TExtensions> = {

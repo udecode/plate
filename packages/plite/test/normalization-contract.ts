@@ -74,6 +74,56 @@ describe('plite normalization contract', () => {
     assert.deepEqual(seen.slice(0, 2), ['first', 'second']);
   });
 
+  it('does not normalize halfway through a multi-node unwrap', () => {
+    const editor = createEditor();
+    let sawPartiallyUnwrappedTree = false;
+
+    editor.extend({
+      elements: [{ inline: true, type: 'link' }],
+      name: 'unwrap-normalizer-spy',
+      normalizers: {
+        editor({ next, tx }) {
+          const paragraph = tx.value().children[0];
+
+          if (paragraph && 'children' in paragraph) {
+            const linkCount = paragraph.children.filter(
+              (child) => 'type' in child && child.type === 'link'
+            ).length;
+
+            if (linkCount === 1) {
+              sawPartiallyUnwrappedTree = true;
+            }
+          }
+
+          next();
+        },
+      },
+    });
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { type: 'link', children: [{ text: 'one' }] },
+            { type: 'link', children: [{ text: 'two' }] },
+          ],
+        },
+      ],
+      marks: null,
+      selection: null,
+    });
+    sawPartiallyUnwrappedTree = false;
+
+    editor.update.nodes.unwrap({
+      at: [0],
+      match: (node) => 'type' in node && node.type === 'link',
+      mode: 'all',
+    });
+
+    assert.equal(sawPartiallyUnwrappedTree, false);
+    assert.equal(editor.read.text.string([]), 'onetwo');
+  });
+
   it('routes editor root entries to editor normalizers and non-root entries to node normalizers', () => {
     const editor = createEditor();
     const seen: string[] = [];

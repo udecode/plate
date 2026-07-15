@@ -3,6 +3,7 @@ import { diffToSuggestions } from '@platejs/suggestion';
 import type { Element } from '@platejs/plite';
 import type { PlateEditor } from '@platejs/core/react';
 
+import { withAIBatch } from '../../../lib/transforms/withAIBatch';
 import {
   withoutSuggestionAndComments,
   withTransient,
@@ -51,6 +52,7 @@ export const applyTableCellSuggestion = (
   // Add transient suggestion key to all nodes
   const transientDiffNodes = withTransient(diffNodes);
 
-  // Replace cell children with diff nodes
-  editor.update.nodes.replaceChildren(transientDiffNodes, { at: cellPath });
+  withAIBatch(editor, (tx) => {
+    tx.nodes.replaceChildren(transientDiffNodes, { at: cellPath });
+  });
 };

@@ -6,7 +6,6 @@ import type {
 } from '../interfaces/editor';
 import type { Path } from '../interfaces/path';
 import { cloneValue } from './clone';
-import { cloneUpdateMetadata } from './update-context';
 
 const getTopLevelRange = (
   paths: readonly Path[]
@@ -94,7 +93,6 @@ export const completeCommit = (
     dirtyTopLevelRuntimeIds: freezeRuntimeIds(change.dirtyTopLevelRuntimeIds),
     dirtyStateKeys: Object.freeze([...change.dirtyStateKeys]),
     markDirtyRuntimeIds: freezeRuntimeIds(change.markDirtyRuntimeIds),
-    metadata: cloneUpdateMetadata(change.metadata),
     nodeImpactRuntimeIds:
       change.nodeImpactRuntimeIds == null
         ? null

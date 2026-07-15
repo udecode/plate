@@ -11,7 +11,6 @@ import {
   getLastCommit as editorGetLastCommit,
   getOperations as editorGetOperations,
   getSelection as editorGetSelection,
-  insertText as editorInsertText,
   rangeRefs as editorRangeRefs,
   string as editorString,
 } from '@platejs/plite/internal';
@@ -474,9 +473,9 @@ describe('projected editable commands', () => {
     let insertCount = 0;
     const clipboardExtension = defineEditorExtension({
       clipboard: {
-        insertData(_data, { editor: receivedEditor }) {
+        insertData(_data, { tx }) {
           insertCount++;
-          editorInsertText(receivedEditor, 'H');
+          tx.text.insert('H');
 
           return true;
         },
@@ -511,9 +510,9 @@ describe('projected editable commands', () => {
     let insertCount = 0;
     const clipboardExtension = defineEditorExtension({
       clipboard: {
-        insertData(_data, { editor: receivedEditor }) {
+        insertData(_data, { tx }) {
           insertCount++;
-          editorInsertText(receivedEditor, 'H');
+          tx.text.insert('H');
 
           return true;
         },

@@ -10,7 +10,7 @@ export const ParserPlugin = createBasePlugin({
   key: 'parser',
 }).extendExtension(({ editor }) => ({
   clipboard: {
-    insertData(dataTransfer, { next }) {
+    insertData(dataTransfer, { next, tx }) {
       const inserted = [...editor.runtime.pluginList]
         .reverse()
         .some((plugin) => {
@@ -69,7 +69,7 @@ export const ParserPlugin = createBasePlugin({
 
             if (fragment.length === 0) continue;
 
-            pipeInsertFragment(editor, injectedPlugins, {
+            pipeInsertFragment(editor, tx, injectedPlugins, {
               ...parserOptions,
               data,
               fragment,
@@ -88,7 +88,7 @@ export const ParserPlugin = createBasePlugin({
 
       if (!text) return false;
 
-      editor.update.text.insert(text);
+      tx.text.insert(text);
 
       return true;
     },

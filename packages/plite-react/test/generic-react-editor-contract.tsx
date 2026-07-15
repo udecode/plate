@@ -13,6 +13,7 @@ import {
   type EditorSelectorOptions,
   type ReactEditor,
   react,
+  type StateFieldSetter,
   useEditorSelector,
   usePliteEditor,
 } from '@platejs/plite-react';
@@ -92,10 +93,10 @@ const reactValue: ValueOf<typeof reactEditor> = [
   { type: 'paragraph', children: [{ text: 'one', bold: true }] },
 ];
 
-historyOnlyEditor.update.history.skip(() => {});
+historyOnlyEditor.update({ history: 'skip' }, () => {});
 historyOnlyEditor.read((state) => state.history.undos());
 historyOnlyEditor.update((tx) => tx.history.undo());
-manualReactHistoryEditor.update.history.skip(() => {});
+manualReactHistoryEditor.update({ history: 'skip' }, () => {});
 manualReactHistoryEditor.api.react.isComposing();
 manualReactHistoryEditor.api.dom.focus();
 manualReactHistoryEditor.read((state) => state.history.undos());
@@ -116,7 +117,7 @@ historyReactEditor.update((tx) => {
   tx.history.undo();
 });
 
-historyReactEditor.update.history.skip(() => {});
+historyReactEditor.update({ history: 'skip' }, () => {});
 historyReactEditor.api.dom.focus();
 historyReactEditor.api.clipboard.writeSelection(dataTransfer);
 historyReactEditor.api.react.isFocused();
@@ -131,7 +132,7 @@ defaultHistoryReactEditor.update((tx) => {
   tx.history.undo();
 });
 
-defaultHistoryReactEditor.update.history.skip(() => {});
+defaultHistoryReactEditor.update({ history: 'skip' }, () => {});
 const typedDefaultReactEditor: ReactEditor<CustomValue> =
   defaultHistoryReactEditor;
 const typedNamespaceReactEditor: PliteReact.ReactEditor<CustomValue> =
@@ -145,10 +146,25 @@ const typedNoHistoryReactEditor: ReactEditor<
   readonly [typeof DisabledHistoryExtension]
 > = noHistoryReactEditor;
 
-typedDefaultReactEditor.update.history.skip(() => {});
+const assertStateFieldSetterPolicies = (
+  defaultSetter: StateFieldSetter<string>,
+  noHistorySetter: StateFieldSetter<string, typeof typedNoHistoryReactEditor>
+) => {
+  defaultSetter('title', {
+    history: 'new-batch',
+    tags: 'title-input',
+  });
+
+  // @ts-expect-error disabled History rejects state-field history policy
+  noHistorySetter('title', { history: 'skip' });
+};
+
+void assertStateFieldSetterPolicies;
+
+typedDefaultReactEditor.update({ history: 'skip' }, () => {});
 typedDefaultReactEditor.api.dom.focus();
 typedDefaultReactEditor.api.react.isComposing();
-typedNamespaceReactEditor.update.history.skip(() => {});
+typedNamespaceReactEditor.update({ history: 'skip' }, () => {});
 const customApiResult: 'pong' = typedCustomApiReactEditor.api.customApi.ping();
 
 // @ts-expect-error Plite React no longer exports extension-owned renderer maps
@@ -163,8 +179,8 @@ type _NoEditableCommandContext = PliteReact.EditableCommandContext;
 // @ts-expect-error ReactEditor exposes DOM through api.dom, not root dom
 void typedDefaultReactEditor.dom;
 
-// @ts-expect-error disabled history does not contribute update history helpers
-typedNoHistoryReactEditor.update.history.skip(() => {});
+// @ts-expect-error disabled history does not accept history update policy
+typedNoHistoryReactEditor.update({ history: 'skip' }, () => {});
 
 // @ts-expect-error disabled default history removes state history
 noHistoryReactEditor.read((state) => state.history.undos());
@@ -172,8 +188,8 @@ noHistoryReactEditor.read((state) => state.history.undos());
 // @ts-expect-error disabled default history removes tx history
 noHistoryReactEditor.update((tx) => tx.history.undo());
 
-// @ts-expect-error disabled default history removes update history helpers
-noHistoryReactEditor.update.history.skip(() => {});
+// @ts-expect-error disabled default history rejects history update policy
+noHistoryReactEditor.update({ history: 'skip' }, () => {});
 
 const selectorOptions: EditorSelectorOptions<typeof historyReactEditor> = {
   shouldUpdate: (operations, change) => {
@@ -231,7 +247,7 @@ const HookProbe = () => {
     tx.history.undo();
   });
 
-  hookEditor.update.history.skip(() => {});
+  hookEditor.update({ history: 'skip' }, () => {});
   hookEditor.api.dom.focus();
   hookEditor.api.react.isComposing();
 

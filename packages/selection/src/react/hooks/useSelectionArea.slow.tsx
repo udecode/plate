@@ -54,21 +54,21 @@ describe('useSelectionArea', () => {
 
     useEditorPluginMock.mockReturnValue({
       api: {
-        blockSelection: { clear },
+        clear,
       },
       editor: {
+        id: 'editor',
         api: {
           dom: { blur },
-          isFocused: () => true,
         },
-        meta: { uid: 'editor' },
-        selection: {
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 0, path: [0, 0] },
+        read: {
+          selection: () => ({
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 0, path: [0, 0] },
+          }),
+          view: { isFocused: () => true },
         },
-        update: mock((fn) =>
-          fn({ selection: { clear: clearSelection } } as any)
-        ),
+        update: { selection: { clear: clearSelection } },
       },
       getOption: mock(() => new Set()),
       getOptions: mock(() => ({
@@ -81,6 +81,10 @@ describe('useSelectionArea', () => {
 
     const { useSelectionArea } = await loadModule();
     renderHook(() => useSelectionArea());
+
+    expect(lastSelectionArea!.options).toMatchObject({
+      selectionAreaClass: 'plite-selection-area',
+    });
 
     lastSelectionArea!.handlers.get('beforestart')?.();
     lastSelectionArea!.handlers.get('start')?.({

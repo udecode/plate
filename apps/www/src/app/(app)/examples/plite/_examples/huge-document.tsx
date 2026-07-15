@@ -371,7 +371,7 @@ const Heading = ({
     return <SelectedHeading ref={ref} style={styleProp} {...props} />;
   }
 
-  return <h1 ref={ref} {...props} aria-selected={false} style={styleProp} />;
+  return <h1 ref={ref} {...props} style={styleProp} />;
 };
 
 const SelectedHeading = ({
@@ -383,7 +383,7 @@ const SelectedHeading = ({
 }) => {
   const selected = useElementSelected();
   const style = { ...styleProp, color: selected ? 'green' : undefined };
-  return <h1 ref={ref} {...props} aria-selected={selected} style={style} />;
+  return <h1 ref={ref} {...props} style={style} />;
 };
 
 const Paragraph = 'p';

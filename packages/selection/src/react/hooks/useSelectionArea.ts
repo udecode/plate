@@ -45,7 +45,7 @@ export const useSelectionArea = () => {
       container: `#${editor.id}`,
       document: window.document,
       selectables: `#${editor.id} .plite-selectable`,
-      selectionAreaClass: 'slate-selection-area',
+      selectionAreaClass: 'plite-selection-area',
       ...areaOptions,
     })
       .on('beforestart', () => {

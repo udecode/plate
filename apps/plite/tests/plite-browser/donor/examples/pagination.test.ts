@@ -198,7 +198,7 @@ const getParagraphGapPoint = async (
 const getPaginationTableProof = async (
   root: Awaited<ReturnType<typeof openExample>>['root']
 ) =>
-  root.evaluate((element: HTMLElement) => {
+  root.evaluate((_element: HTMLElement) => {
     const table = document.querySelector(
       '[data-testid="pagination-rich-table"]'
     );
@@ -5574,7 +5574,7 @@ test.describe('pagination example', () => {
           ) => {
             const handle = (element as Record<string, any>)
               .__pliteBrowserHandle;
-            const blockTexts = [];
+            const blockTexts: string[] = [];
 
             for (
               let path = payload.startPath;

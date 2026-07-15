@@ -7,6 +7,7 @@ import {
   type Value,
 } from '@platejs/plite';
 import {
+  replace as replaceEditorSnapshot,
   setEditorDefaultBlockType,
   setEditorMaxLength,
   setEditorReadOnly,
@@ -104,10 +105,10 @@ const initializeBaseEditor = <V extends Value>(
           ? autoSelect
           : null);
 
-    editor.update.value.replace(
-      { children: nextValue, selection: selectionInput },
-      { history: 'skip', normalize: false }
-    );
+    replaceEditorSnapshot(editor, {
+      children: nextValue,
+      selection: selectionInput,
+    });
 
     pipeTransformInitialValue(editor);
 

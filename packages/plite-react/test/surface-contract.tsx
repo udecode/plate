@@ -1,3 +1,5 @@
+// biome-ignore-all lint/performance/noDynamicNamespaceImportAccess: Export-contract tests intentionally inspect namespace keys.
+// biome-ignore-all lint/performance/useTopLevelRegex: Source-contract assertions keep patterns next to their claims.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { act, render } from '@testing-library/react';
@@ -229,6 +231,7 @@ const expectedPliteReactRuntimeRootExports = [
   'PliteElement',
   'PliteLeaf',
   'PlitePlaceholder',
+  'PliteReactUpdatePolicy',
   'PliteRuntime',
   'PliteText',
   'createReactEditor',

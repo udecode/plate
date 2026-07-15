@@ -12,7 +12,7 @@ export const withInsertDataCodeBlock: ExtendPlateEditorExtension<
   CodeBlockConfig
 > = ({ editor, type: codeBlockType }) => ({
   clipboard: {
-    insertData(data, { next }) {
+    insertData(data, { next, tx }) {
       const text = data.getData('text/plain');
       const vscodeDataString = data.getData('vscode-editor-data');
       const codeLineType = editor.getType(KEYS.codeLine);
@@ -34,34 +34,28 @@ export const withInsertDataCodeBlock: ExtendPlateEditorExtension<
               : undefined;
           const lines = text.split('\n');
 
-          editor.update((tx) => {
-            if (isInCodeBlock) {
-              if (lines[0]) {
-                tx.text.insert(lines[0]);
-              }
-
-              if (lines.length > 1) {
-                tx.nodes.insert(
-                  lines
-                    .slice(1)
-                    .map((line) => createCodeLine(codeLineType, line))
-                );
-              }
-
-              return;
+          if (isInCodeBlock) {
+            if (lines[0]) {
+              tx.text.insert(lines[0]);
             }
 
-            tx.nodes.insert(
-              {
-                children: lines.map((line) =>
-                  createCodeLine(codeLineType, line)
-                ),
-                lang: language,
-                type: codeBlockType,
-              },
-              { select: true }
-            );
-          });
+            if (lines.length > 1) {
+              tx.nodes.insert(
+                lines.slice(1).map((line) => createCodeLine(codeLineType, line))
+              );
+            }
+
+            return true;
+          }
+
+          tx.nodes.insert(
+            {
+              children: lines.map((line) => createCodeLine(codeLineType, line)),
+              lang: language,
+              type: codeBlockType,
+            },
+            { select: true }
+          );
 
           return true;
         } catch (_error) {}
@@ -70,17 +64,15 @@ export const withInsertDataCodeBlock: ExtendPlateEditorExtension<
       if (isInCodeBlock && text?.includes('\n')) {
         const lines = text.split('\n');
 
-        editor.update((tx) => {
-          if (lines[0]) {
-            tx.text.insert(lines[0]);
-          }
+        if (lines[0]) {
+          tx.text.insert(lines[0]);
+        }
 
-          if (lines.length > 1) {
-            tx.nodes.insert(
-              lines.slice(1).map((line) => createCodeLine(codeLineType, line))
-            );
-          }
-        });
+        if (lines.length > 1) {
+          tx.nodes.insert(
+            lines.slice(1).map((line) => createCodeLine(codeLineType, line))
+          );
+        }
 
         return true;
       }

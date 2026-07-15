@@ -39,20 +39,17 @@ const installPreview = (
   editor: ReturnType<typeof createEditor>,
   { selection = editor.read.selection() } = {}
 ) => {
-  editor.update.value.replace(
-    {
-      children: [
-        createParagraph('preview', {
-          element: { [AI_PREVIEW_KEY]: true },
-          text: { ai: true },
-        }),
-        { children: [{ text: '' }], type: 'aiChat' },
-        createParagraph('untouched'),
-      ],
-      selection,
-    },
-    { history: 'skip', normalize: false }
-  );
+  editor.update({ history: 'skip' }).value.replace({
+    children: [
+      createParagraph('preview', {
+        element: { [AI_PREVIEW_KEY]: true },
+        text: { ai: true },
+      }),
+      { children: [{ text: '' }], type: 'aiChat' },
+      createParagraph('untouched'),
+    ],
+    selection,
+  });
 };
 
 describe('ai preview transforms', () => {

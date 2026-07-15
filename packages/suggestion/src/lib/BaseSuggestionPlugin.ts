@@ -34,6 +34,8 @@ export type BaseSuggestionConfig = PluginConfig<
   {
     suggestion: {
       dataList: (node: TSuggestionText) => TInlineSuggestionData[];
+      /** Whether suggestion middleware should track the current operation. */
+      isTracking: () => boolean;
       isBlockSuggestion: (node: Node) => node is TSuggestionElement;
       node: (
         options?: EditorNodesOptions<Node> & { id?: string; isText?: boolean }
@@ -45,10 +47,31 @@ export type BaseSuggestionConfig = PluginConfig<
       suggestionData: (
         node: Element | TSuggestionText
       ) => TInlineSuggestionData | TSuggestionElement['suggestion'] | undefined;
-      withoutSuggestions: (fn: () => void) => void;
+      /** Run synchronous operations without recursively creating suggestions. */
+      untracked: <T>(fn: () => T) => T;
     };
   }
 >;
+
+const suggestionUntrackedDepth = new WeakMap<BaseEditor, number>();
+
+const isSuggestionTracking = (editor: BaseEditor) =>
+  (suggestionUntrackedDepth.get(editor) ?? 0) === 0;
+
+const runSuggestionUntracked = <T>(editor: BaseEditor, fn: () => T): T => {
+  const depth = suggestionUntrackedDepth.get(editor) ?? 0;
+  suggestionUntrackedDepth.set(editor, depth + 1);
+
+  try {
+    return fn();
+  } finally {
+    if (depth === 0) {
+      suggestionUntrackedDepth.delete(editor);
+    } else {
+      suggestionUntrackedDepth.set(editor, depth);
+    }
+  }
+};
 
 const hasSuggestionFlag = (node: Node, type: string) =>
   !!(node as Record<string, unknown>)[type];
@@ -68,11 +91,12 @@ export const BaseSuggestionPlugin = createBasePlugin<BaseSuggestionConfig>({
 })
   .extendExtension(withSuggestion)
   .extendApi<Partial<BaseSuggestionConfig['api']['suggestion']>>(
-    ({ api, editor, getOption, setOption, type }) => ({
+    ({ api, editor, type }) => ({
       dataList: (node: TSuggestionText): TInlineSuggestionData[] =>
         Object.keys(node)
           .filter((key) => key.startsWith(`${KEYS.suggestion}_`))
           .map((key) => node[key] as TInlineSuggestionData),
+      isTracking: () => isSuggestionTracking(editor),
       isBlockSuggestion: (node): node is TSuggestionElement =>
         ElementApi.isElement(node) &&
         !editor.read.schema.isInline(node) &&
@@ -141,11 +165,6 @@ export const BaseSuggestionPlugin = createBasePlugin<BaseSuggestionConfig>({
           return node.suggestion;
         }
       },
-      withoutSuggestions: (fn) => {
-        const prev = getOption('isSuggesting');
-        setOption('isSuggesting', false);
-        fn();
-        setOption('isSuggesting', prev);
-      },
+      untracked: (fn) => runSuggestionUntracked(editor, fn),
     })
   );

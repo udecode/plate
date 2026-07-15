@@ -42,11 +42,13 @@ describe('pipeInsertFragment', () => {
 
     const fragment = [{ children: [{ text: 'hello' }], type: 'p' }];
 
-    pipeInsertFragment(editor, [firstPlugin, secondPlugin, thirdPlugin], {
-      data: '',
-      dataTransfer: {} as DataTransfer,
-      fragment,
-      mimeType: 'text/plain',
+    editor.update((tx) => {
+      pipeInsertFragment(editor, tx, [firstPlugin, secondPlugin, thirdPlugin], {
+        data: '',
+        dataTransfer: {} as DataTransfer,
+        fragment,
+        mimeType: 'text/plain',
+      });
     });
 
     expect(calls).toEqual(['first:1', 'second:1']);

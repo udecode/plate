@@ -300,7 +300,7 @@ const richText = () =>
   defineEditorExtension<CustomEditor>()({
     name: 'richtext',
     clipboard: {
-      insertData(data, { editor, next }) {
+      insertData(data, { next, tx }) {
         const html = data.getData('text/html');
 
         if (!html) {
@@ -326,7 +326,7 @@ const richText = () =>
           deserialize(parsed.body)
         );
 
-        editor.update.fragment.insert(fragment);
+        tx.fragment.insert(fragment);
         return true;
       },
     },

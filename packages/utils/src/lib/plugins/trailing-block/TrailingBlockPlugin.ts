@@ -4,6 +4,7 @@ import {
   type BaseEditor,
 } from '@platejs/core';
 import {
+  type EditorUpdateTransaction,
   ElementApi,
   type Node,
   NodeApi,
@@ -17,6 +18,7 @@ import { KEYS } from '../../plate-keys';
 export type TrailingBlockInsertOptions = {
   at: Path;
   insert: () => void;
+  tx: Pick<EditorUpdateTransaction, 'tags'>;
   type: string;
 };
 
@@ -81,6 +83,7 @@ export const TrailingBlockPlugin = createBasePlugin<TrailingBlockConfig>({
             insert(editor, {
               at,
               insert: insertTrailingBlock,
+              tx,
               type: trailingType,
             });
           } else {

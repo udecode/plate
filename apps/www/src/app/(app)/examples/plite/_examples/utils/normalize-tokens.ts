@@ -58,10 +58,11 @@ export const normalizeTokens = (
   const acc = [currentLine];
 
   while (stackIndex > -1) {
-    while (
-      (i = tokenArrIndexStack[stackIndex]++) < tokenArrSizeStack[stackIndex]
-    ) {
-      let content;
+    while (true) {
+      i = tokenArrIndexStack[stackIndex]++;
+      if (i >= tokenArrSizeStack[stackIndex]) break;
+
+      let content: PrismToken['content'] | string;
       let types = typeArrStack[stackIndex];
 
       const tokenArr = tokenArrStack[stackIndex];
@@ -99,7 +100,8 @@ export const normalizeTokens = (
       // Create a new line for each string on a new line
       for (let i = 1; i < newlineCount; i++) {
         normalizeEmptyLines(currentLine);
-        acc.push((currentLine = []));
+        currentLine = [];
+        acc.push(currentLine);
         currentLine.push({ types, content: splitByNewlines[i] });
       }
     }

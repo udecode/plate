@@ -1,8 +1,9 @@
 import type { ExtendPlateEditorExtension } from '@platejs/core';
+import type { TImageElement } from '@platejs/utils';
+import { KEYS } from '@platejs/utils';
 
 import type { ImageConfig } from './BaseImagePlugin';
 
-import { insertImage } from './transforms/insertImage';
 import { isImageUrl } from './utils/isImageUrl';
 
 /** If inserted text is image url, insert image instead. */
@@ -11,7 +12,7 @@ export const withImageEmbed: ExtendPlateEditorExtension<ImageConfig> = ({
   getOptions,
 }) => ({
   clipboard: {
-    insertData(dataTransfer, { next }) {
+    insertData(dataTransfer, { next, tx }) {
       if (getOptions().disableEmbedInsert) {
         return next(dataTransfer);
       }
@@ -19,7 +20,11 @@ export const withImageEmbed: ExtendPlateEditorExtension<ImageConfig> = ({
       const text = dataTransfer.getData('text/plain');
 
       if (isImageUrl(text)) {
-        insertImage(editor, text);
+        tx.blocks.insertAfter({
+          children: [{ text: '' }],
+          type: editor.getType(KEYS.img),
+          url: text,
+        } satisfies TImageElement);
 
         return true;
       }

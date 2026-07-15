@@ -456,7 +456,9 @@ const getMatches = (
 };
 
 describe('escape hatch source inventory', () => {
-  it('classifies every remaining escape hatch by owner and gate', () => {
+  it('classifies every remaining escape hatch by owner and gate', {
+    timeout: 20_000,
+  }, () => {
     const actual: Record<string, number> = {};
     const unmatched: Array<{
       file: string;

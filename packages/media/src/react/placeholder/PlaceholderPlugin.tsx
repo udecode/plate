@@ -7,7 +7,11 @@ import type { AllowedFileType } from './internal/mimes';
 import type { MediaItemConfig, UploadError } from './type';
 
 import { type PlaceholderConfig, BasePlaceholderPlugin } from '../../lib';
-import { type InsertMediaOptions, insertMedia } from './transforms/insertMedia';
+import {
+  type InsertMediaOptions,
+  insertMedia,
+  insertMediaWithTx,
+} from './transforms/insertMedia';
 
 export type PlaceholderApi = {
   addUploadingFile: (id: string, file: File) => void;
@@ -91,9 +95,9 @@ export const PlaceholderPlugin = toPlatePlugin<
     uploadingFiles: {},
   },
 })
-  .extendTx(({ editor }) => () => ({
+  .extendTx(({ editor }) => (tx) => ({
     insertMedia: (files: File[] | FileList, options?: InsertMediaOptions) =>
-      insertMedia(editor, files, options),
+      insertMediaWithTx(editor, tx, files, options),
   }))
   .extendApi(({ getOption, setOption }) => ({
     addUploadingFile: (id: string, file: File) => {
@@ -140,7 +144,7 @@ export const PlaceholderPlugin = toPlatePlugin<
 
         if (!at) return false;
 
-        insertMedia(editor, files);
+        insertMedia(editor, files, { at: at.focus.path });
 
         return true;
       },
@@ -160,8 +164,10 @@ export const PlaceholderPlugin = toPlatePlugin<
             const [node, path] = ancestor;
 
             if (NodeApi.string(node).length === 0) {
-              editor.update.nodes.remove({ at: path });
-              insertMedia(editor, files, { at: path });
+              editor.update((tx) => {
+                tx.nodes.remove({ at: path });
+                insertMediaWithTx(editor, tx, files, { at: path });
+              });
               inserted = true;
             }
           }

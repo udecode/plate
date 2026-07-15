@@ -27,8 +27,8 @@ describe('plite-history package README contract', () => {
     );
     assert.match(readme, /extensions: \[history\(\)\]/);
     assert.match(readme, /state\.history\(\)/);
-    assert.match(readme, /tx\.history\.undo\(\)/);
-    assert.match(readme, /editor\.update\.history\.skip/);
+    assert.match(readme, /editor\.update\.history\.undo\(\)/);
+    assert.match(readme, /editor\.update\(\{ history: 'skip' \}\)/);
     assert.doesNotMatch(readme, /editor\.api\.history/);
     assert.match(readme, /History\.isHistory\(state\.history\(\)\)/);
     assert.match(readme, /History\.isHistory\(value\)/);

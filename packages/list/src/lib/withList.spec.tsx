@@ -363,16 +363,18 @@ describe('keyboard handling', () => {
       const editor = createBaseEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin, InlinePlugin],
         selection: {
-          anchor: { offset: 0, path: [0, 0, 0] },
-          focus: { offset: 0, path: [0, 0, 0] },
+          anchor: { offset: 0, path: [0, 1, 0] },
+          focus: { offset: 0, path: [0, 1, 0] },
         },
         value: [
           {
             children: [
+              { text: '' },
               {
                 children: [{ text: 'One' }],
                 type: 'inline',
               },
+              { text: '' },
             ],
             indent: 2,
             listStyleType: 'disc',
@@ -386,10 +388,12 @@ describe('keyboard handling', () => {
       expect(editor.read.children()).toEqual([
         {
           children: [
+            { text: '' },
             {
               children: [{ text: 'One' }],
               type: 'inline',
             },
+            { text: '' },
           ],
           indent: 1,
           listStyleType: 'disc',

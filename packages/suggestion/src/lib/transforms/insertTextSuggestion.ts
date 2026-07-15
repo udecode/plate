@@ -28,7 +28,7 @@ export const insertTextSuggestion = (
     });
   }
 
-  editor.plugin(BaseSuggestionPlugin).api.withoutSuggestions(() => {
+  editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
     tx.nodes.insert<TSuggestionText>(
       {
         [getSuggestionKey(resId ?? id)]: {

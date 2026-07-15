@@ -130,7 +130,7 @@ export const replaceSelectionAIChat = (
   // If format is 'none' or multiple blocks with 'single',
   // just insert the content as is
   if (format === 'none' || (format === 'single' && selectedBlocks.length > 1)) {
-    editor.update.history.newBatch((tx) => {
+    editor.update({ history: 'new-batch' }, (tx) => {
       removeBlockSelectionNodes(editor, tx);
       insertBlocksAndSelect(editor, tx, cloneDeep(sourceChildren), {
         at: selectedBlocks[0][1],
@@ -154,7 +154,7 @@ export const replaceSelectionAIChat = (
 
   if (!formattedBlocks) return;
 
-  editor.update.history.newBatch((tx) => {
+  editor.update({ history: 'new-batch' }, (tx) => {
     removeBlockSelectionNodes(editor, tx);
     insertBlocksAndSelect(editor, tx, formattedBlocks, {
       at: firstBlockPath,

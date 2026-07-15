@@ -62,6 +62,7 @@ import type {
   TextUnit,
   TextUnitAdjustment,
 } from '../types/types';
+import type { TxOnlyMethod } from '../core/tx-only';
 import type {
   BlockDuplicateOptions,
   NodeInsertNodesOptions,
@@ -204,19 +205,9 @@ export type EditorTransactionValueApi<V extends Value = Value> =
     replace: (input: SnapshotInput<V>) => void;
   };
 
-export type EditorValueReplaceOptions = {
-  history?: EditorHistoryUpdateMetadata['mode'];
-  metadata?: EditorUpdateMetadata;
-  normalize?: boolean;
-  tag?: EditorUpdateTagInput;
-};
-
 export type EditorUpdateValueApi<V extends Value = Value> =
   EditorStateValueApi<V> & {
-    replace: (
-      input: SnapshotInput<V>,
-      options?: EditorValueReplaceOptions
-    ) => void;
+    replace: (input: SnapshotInput<V>) => void;
   };
 
 export type EditorSelectionTargetOptions = {
@@ -286,6 +277,7 @@ export type EditorTransactionMarksApi<V extends Value = Value> =
 export type EditorCanonicalUpdateTag =
   | 'history-push'
   | 'history-merge'
+  | 'history-skip'
   | 'historic'
   | 'paste'
   | 'collaboration'
@@ -293,6 +285,7 @@ export type EditorCanonicalUpdateTag =
   | 'skip-dom-selection'
   | 'skip-scroll-into-view'
   | 'skip-selection-focus'
+  | 'native-text-input'
   | 'focus'
   | 'composition-start'
   | 'composition-end';
@@ -301,38 +294,16 @@ export type EditorUpdateTag = EditorCanonicalUpdateTag | (string & {});
 
 export type EditorUpdateTagInput = EditorUpdateTag | readonly EditorUpdateTag[];
 
-export type EditorHistoryUpdateMetadata = {
-  mode?: 'merge' | 'push' | 'skip';
-};
-
-export type EditorCollaborationUpdateMetadata = {
-  origin?: 'local' | 'remote';
-  saveToHistory?: boolean;
-};
-
-export type EditorSelectionUpdateMetadata = {
-  dom?: 'export-model' | 'preserve';
-  focus?: boolean;
-  scroll?: boolean;
-};
-
-export type EditorUpdateMetadata = {
-  collab?: EditorCollaborationUpdateMetadata;
-  history?: EditorHistoryUpdateMetadata;
-  origin?: { kind: string } & Record<string, unknown>;
-  selection?: EditorSelectionUpdateMetadata;
-};
-
-export type EditorOperationReplayOptions = {
-  normalize?: boolean;
-  tag?: EditorUpdateTagInput;
-};
+/** Semantic policy applied to one editor update. */
+export type EditorUpdatePolicy = Readonly<{
+  /** History behavior. Requires an installed History extension. */
+  history?: 'merge' | 'new-batch' | 'skip';
+  /** Tags applied in input order before the semantic history mode. */
+  tags?: EditorUpdateTagInput;
+}>;
 
 export type EditorTransactionOperationsApi<V extends Value = Value> = {
-  replay: (
-    operations: readonly Operation<V>[],
-    options?: EditorOperationReplayOptions
-  ) => void;
+  replay: (operations: readonly Operation<V>[]) => void;
 };
 
 export type EditorTransactionRootsApi<V extends Value = Value> = {
@@ -345,8 +316,10 @@ export type EditorTransactionStatePatchesApi = {
   replay: (statePatches: readonly EditorStatePatch[]) => void;
 };
 
-export type EditorTransactionMetadataApi = {
-  merge: (metadata: EditorUpdateMetadata) => void;
+/** Inspect and extend the final tag set of the active update. */
+export type EditorTransactionTagsApi = {
+  add: (tag: EditorUpdateTag) => void;
+  has: (tag: EditorUpdateTag) => boolean;
 };
 
 export type EditorStateNodesApi = {
@@ -740,14 +713,6 @@ export type EditorStateView<
   TExtensions extends readonly unknown[] = readonly [],
 > = EditorCoreStateView<V> & EditorInstalledStateGroups<V, TExtensions>;
 
-export type EditorWithoutNormalizingContext<TTx> = {
-  tx: TTx;
-};
-
-export type EditorWithoutNormalizing<TTx> = (
-  fn: (context: EditorWithoutNormalizingContext<TTx>) => void
-) => void;
-
 export type EditorCoreUpdateTransaction<V extends Value = Value> = Omit<
   EditorCoreStateView<V>,
   'marks' | 'nodes' | 'operations' | 'selection' | 'text' | 'value'
@@ -756,7 +721,6 @@ export type EditorCoreUpdateTransaction<V extends Value = Value> = Omit<
   break: EditorTransactionBreakApi;
   fragment: EditorTransactionFragmentApi<V>;
   marks: EditorTransactionMarksApi<V>;
-  metadata: EditorTransactionMetadataApi;
   nodes: EditorTransactionNodesApi<V>;
   normalize: (options?: EditorNormalizeOptions) => void;
   operations: EditorTransactionOperationsApi<V>;
@@ -768,20 +732,15 @@ export type EditorCoreUpdateTransaction<V extends Value = Value> = Omit<
     value: StateFieldValueInput<TValue>
   ) => void;
   statePatches: EditorTransactionStatePatchesApi;
+  tags: EditorTransactionTagsApi;
   text: EditorTransactionTextApi;
   value: EditorTransactionValueApi<V>;
-  withoutNormalizing: EditorWithoutNormalizing<EditorCoreUpdateTransaction<V>>;
 };
 
 export type EditorUpdateTransaction<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-> = Omit<EditorCoreUpdateTransaction<V>, 'withoutNormalizing'> &
-  EditorInstalledTxGroups<V, TExtensions> & {
-    withoutNormalizing: EditorWithoutNormalizing<
-      EditorUpdateTransaction<V, TExtensions>
-    >;
-  };
+> = EditorCoreUpdateTransaction<V> & EditorInstalledTxGroups<V, TExtensions>;
 
 export type EditorReadMethods<
   V extends Value = Value,
@@ -795,9 +754,9 @@ export type EditorRead<
   EditorReadMethods<V, TExtensions>;
 
 type EditorBivariantMethods<T> = {
-  [K in keyof T]: T[K] extends (...args: any[]) => any
-    ? BivariantFunction<T[K]>
-    : T[K];
+  [K in keyof T as T[K] extends TxOnlyMethod<(...args: any[]) => any>
+    ? never
+    : K]: T[K] extends (...args: any[]) => any ? BivariantFunction<T[K]> : T[K];
 };
 
 export type EditorCoreUpdateMethods<V extends Value = Value> = {
@@ -847,9 +806,6 @@ export type EditorCoreUpdateMethods<V extends Value = Value> = {
     >
   >;
   value: EditorBivariantMethods<Pick<EditorUpdateValueApi<V>, 'replace'>>;
-  withoutNormalizing: BivariantFunction<
-    EditorCoreUpdateTransaction<V>['withoutNormalizing']
-  >;
 };
 
 type EditorExtensionUpdateMethods<TGroups> = {
@@ -858,27 +814,42 @@ type EditorExtensionUpdateMethods<TGroups> = {
     : TGroups[K];
 };
 
+type EditorAvailableUpdatePolicy<TTxGroups> = Readonly<
+  Omit<EditorUpdatePolicy, 'history'> &
+    ('history' extends keyof TTxGroups
+      ? Pick<EditorUpdatePolicy, 'history'>
+      : { history?: never })
+>;
+
 export type EditorUpdateMethods<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-> = Omit<EditorCoreUpdateMethods<V>, 'withoutNormalizing'> &
-  EditorExtensionUpdateMethods<EditorInstalledTxGroups<V, TExtensions>> & {
-    withoutNormalizing: BivariantFunction<
-      EditorUpdateTransaction<V, TExtensions>['withoutNormalizing']
-    >;
-  };
+> = EditorCoreUpdateMethods<V> &
+  EditorExtensionUpdateMethods<EditorInstalledTxGroups<V, TExtensions>>;
 
 export type EditorUpdate<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-> = (<TTx extends object = {}>(
-  fn: (
-    transaction: EditorUpdateTransaction<V, TExtensions> & TTx,
-    context: EditorUpdateContext<BaseEditor<V, TExtensions>>
-  ) => void,
-  options?: EditorUpdateOptions
-) => void) &
-  EditorUpdateMethods<V, TExtensions>;
+> = {
+  <TTx extends object = {}>(
+    fn: (
+      transaction: EditorUpdateTransaction<V, TExtensions> & TTx,
+      context: EditorUpdateContext<BaseEditor<V, TExtensions>>
+    ) => void
+  ): void;
+  <TTx extends object = {}>(
+    policy: EditorAvailableUpdatePolicy<
+      EditorInstalledTxGroups<V, TExtensions>
+    >,
+    fn: (
+      transaction: EditorUpdateTransaction<V, TExtensions> & TTx,
+      context: EditorUpdateContext<BaseEditor<V, TExtensions>>
+    ) => void
+  ): void;
+  (
+    policy: EditorAvailableUpdatePolicy<EditorInstalledTxGroups<V, TExtensions>>
+  ): EditorUpdateMethods<V, TExtensions>;
+} & EditorUpdateMethods<V, TExtensions>;
 
 export type EditorUpdateContext<TEditor extends BaseEditor<any, any> = Editor> =
   {
@@ -905,6 +876,15 @@ export interface BaseEditor<
   update: EditorUpdate<V, TExtensions>;
   extend: (extension: EditorExtensionInput<any>) => () => void;
 }
+
+/** Update policy available for a specific editor's installed extensions. */
+export type EditorUpdatePolicyFor<TEditor extends BaseEditor<any, any>> =
+  TEditor extends BaseEditor<
+    infer V,
+    infer TExtensions extends readonly unknown[]
+  >
+    ? EditorAvailableUpdatePolicy<EditorInstalledTxGroups<V, TExtensions>>
+    : never;
 
 export type EditorRuntime<
   V extends Value = Value,
@@ -1045,7 +1025,6 @@ export interface EditorTransformApi<V extends Value = Value> {
     split?: boolean;
     voids?: boolean;
   }) => void;
-  withoutNormalizing: (fn: () => void) => void;
   wrapNodes: <T extends NodeIn<V>, E extends ElementIn<V>>(
     element: E,
     options?: {
@@ -1064,7 +1043,7 @@ export type EditorTransformNext<TArgs extends object> = (
 
 export type EditorPublicTransformMiddlewareKey = Exclude<
   keyof EditorTransformApi,
-  'bookmark' | 'normalize' | 'setNormalizing' | 'withoutNormalizing'
+  'bookmark' | 'normalize' | 'setNormalizing'
 >;
 
 type EmptyTransformMiddlewareArgs = Record<never, never>;
@@ -1509,12 +1488,6 @@ export type EditorCommitSource =
   | 'composition'
   | 'external';
 
-export type EditorUpdateOptions = {
-  metadata?: EditorUpdateMetadata;
-  skipNormalize?: boolean;
-  tag?: EditorUpdateTagInput;
-};
-
 export type EditorOperationDirtinessOptions<V extends Value = Value> = {
   command?: EditorCommitCommand | null;
   marksBefore?: EditorMarks<V> | null;
@@ -1651,6 +1624,7 @@ export type EditorNormalizerTransaction<V extends Value = Value> = Pick<
   | 'nodes'
   | 'refs'
   | 'selection'
+  | 'tags'
   | 'text'
 > & {
   value: EditorStateValueApi<V>;
@@ -1722,7 +1696,7 @@ export type EditorClipboardInsertDataContext<
 > = {
   editor: TEditor;
   next: (data?: DataTransfer) => boolean;
-  state: EditorStateView<ValueOf<TEditor>>;
+  tx: EditorUpdateTransaction<ValueOf<TEditor>>;
 };
 
 export type EditorClipboardMiddlewareMap<
@@ -1747,6 +1721,7 @@ export type EditorClipboardInsertDataCapability<
 > = (
   editor: TEditor,
   data: DataTransfer,
+  tx: EditorUpdateTransaction<ValueOf<TEditor>>,
   next: (data?: DataTransfer) => boolean
 ) => boolean;
 
@@ -2185,7 +2160,6 @@ export type EditorCommit<V extends Value = Value> = {
   marksAfter: EditorMarks<V> | null;
   marksBefore: EditorMarks<V> | null;
   marksChanged: boolean;
-  metadata: Readonly<EditorUpdateMetadata>;
   nodeImpactRuntimeIds: readonly RuntimeId[] | null;
   operations: readonly Operation<V>[];
   previousVersion: number;
@@ -2950,8 +2924,7 @@ export interface EditorStaticApi {
     fn: (
       transaction: EditorUpdateTransaction<V>,
       context: EditorUpdateContext<Editor<V>>
-    ) => void,
-    options?: EditorUpdateOptions
+    ) => void
   ) => void;
 
   /**
@@ -2970,11 +2943,6 @@ export interface EditorStaticApi {
     editor: Editor,
     options?: EditorVoidOptions
   ) => NodeEntry<Element> | undefined;
-
-  /**
-   * Call a function, deferring normalization until after it completes.
-   */
-  withoutNormalizing: (editor: Editor, fn: () => void) => void;
 
   /**
    *  Call a function, Determine whether or not remove the previous node when merge.
@@ -3057,7 +3025,7 @@ const runInternalEditorWriteSkipNormalize = <T>(
   runRootedInternalWrite(
     editor,
     () => {
-      editor.update(
+      getEditorRuntime(editor).update(
         () => {
           result = fn();
         },
@@ -3635,8 +3603,8 @@ const editorInternalApi: EditorInternalApiTable = {
     return getEditorRuntime(editor).subscribeSource(source, listener);
   },
 
-  update(editor, fn, options) {
-    editor.update(fn, options);
+  update(editor, fn) {
+    editor.update(fn);
   },
 
   unhangRange(editor, range, options) {
@@ -3647,11 +3615,6 @@ const editorInternalApi: EditorInternalApiTable = {
     return getEditorRuntime(editor).void(options);
   },
 
-  withoutNormalizing(editor, fn: () => void) {
-    runInternalEditorWrite(editor, () =>
-      getEditorTransformRegistry(editor).withoutNormalizing(fn)
-    );
-  },
   shouldMergeNodesRemovePrevNode: (editor, prevNode, curNode) =>
     getEditorRuntime(editor).shouldMergeNodesRemovePrevNode(prevNode, curNode),
 };
@@ -3755,7 +3718,6 @@ const {
   subscribeSource,
   update,
   unhangRange,
-  withoutNormalizing,
   shouldMergeNodesRemovePrevNode,
 } = editorInternalApi;
 
@@ -3863,7 +3825,6 @@ export {
   unsetNodes,
   update,
   voidEditor as void,
-  withoutNormalizing,
   wrapNodes,
 };
 

@@ -93,20 +93,18 @@ export const BaseIndentPlugin = createBasePlugin<IndentConfig>({
           (!match || match(node, path)),
       });
 
-      tx.withoutNormalizing(({ tx }) => {
-        for (const [node, path] of entries) {
-          const currentIndent = Number(node[nodeKey] ?? 0);
-          const nextIndent = currentIndent + offset;
-          const props = setNodeProps?.({ indent: nextIndent }) ?? {};
+      for (const [node, path] of entries) {
+        const currentIndent = Number(node[nodeKey] ?? 0);
+        const nextIndent = currentIndent + offset;
+        const props = setNodeProps?.({ indent: nextIndent }) ?? {};
 
-          if (nextIndent <= 0) {
-            tx.nodes.unset([nodeKey, ...unsetNodeProps], { at: path });
-            continue;
-          }
-
-          tx.nodes.set({ [nodeKey]: nextIndent, ...props }, { at: path });
+        if (nextIndent <= 0) {
+          tx.nodes.unset([nodeKey, ...unsetNodeProps], { at: path });
+          continue;
         }
-      });
+
+        tx.nodes.set({ [nodeKey]: nextIndent, ...props }, { at: path });
+      }
     };
 
     const increase = (options?: Omit<IndentChangeOptions, 'offset'>) => {

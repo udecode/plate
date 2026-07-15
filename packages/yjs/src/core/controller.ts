@@ -347,7 +347,7 @@ export class YjsController {
       this.shouldRejectUnsafeProviderCommit() ||
       willYjsOperationRequireImport(this.root, operation)
     ) {
-      tx.metadata.merge({ collab: { saveToHistory: false } });
+      tx.tags.add('history-skip');
     }
   }
 
@@ -362,8 +362,7 @@ export class YjsController {
       this.paused ||
       !commit.snapshotChanged ||
       commit.tags.includes('skip-collab') ||
-      commit.tags.includes('collaboration') ||
-      commit.metadata.collab?.origin === 'remote'
+      commit.tags.includes('collaboration')
     );
   }
 

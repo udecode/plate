@@ -30,7 +30,7 @@ const assertPublicRootKey = (root: RootKey | undefined) => {
   }
 };
 
-const toPublicRootOption = (root: RootKey): RootKey | undefined =>
+const _toPublicRootOption = (root: RootKey): RootKey | undefined =>
   root === MAIN_ROOT_KEY ? undefined : root;
 
 export type PlitePagePreset = 'a4' | 'letter';

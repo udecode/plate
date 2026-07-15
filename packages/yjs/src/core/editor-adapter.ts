@@ -1,12 +1,14 @@
 import type {
   Descendant,
   Editor,
+  EditorUpdatePolicy,
   Element,
   Operation,
   Range,
 } from '@platejs/plite';
 import { createEditor, NodeApi, OperationApi } from '@platejs/plite';
 import {
+  getActiveEditorTransaction,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
 } from '@platejs/plite/internal';
@@ -23,19 +25,18 @@ export type YjsEditorAdapter = {
   ) => void;
 };
 
-const remoteImportOptions = {
-  metadata: {
-    collab: { origin: 'remote', saveToHistory: false },
-    history: { mode: 'skip' },
-    selection: { dom: 'preserve', focus: false, scroll: false },
-  },
-  tag: ['collaboration', 'remote-yjs-import'],
-} as const;
-
-const remoteNormalizedImportOptions = {
-  ...remoteImportOptions,
-  skipNormalize: true,
-} as const;
+export const YjsUpdatePolicy = Object.freeze({
+  remote: Object.freeze({
+    tags: Object.freeze([
+      'collaboration',
+      'remote-yjs-import',
+      'history-skip',
+      'skip-dom-selection',
+      'skip-selection-focus',
+      'skip-scroll-into-view',
+    ]),
+  } satisfies EditorUpdatePolicy),
+});
 
 const SELECTION_ROOT_TYPE = 'plite-yjs-selection-root';
 
@@ -78,10 +79,6 @@ const sanitizeImportSelection = (
     ? selection
     : null;
 };
-
-const canSkipRemoteImportNormalize = (
-  children: readonly Descendant[]
-): boolean => children.every((child) => NodeApi.isElement(child));
 
 const isValidImportSelectionPoint = (
   root: Element,
@@ -146,16 +143,21 @@ export const createYjsEditorAdapter = (editor: Editor): YjsEditorAdapter => {
     importing = true;
 
     try {
-      editor.update.value.replace(
-        {
-          children: copyReadonlyArray(children),
-          marks: null,
-          selection: nextSelection,
-        },
-        canSkipRemoteImportNormalize(children)
-          ? remoteNormalizedImportOptions
-          : remoteImportOptions
-      );
+      const value = {
+        children: copyReadonlyArray(children),
+        marks: null,
+        selection: nextSelection,
+      };
+      const activeTx = getActiveEditorTransaction(editor);
+
+      if (activeTx) {
+        for (const tag of YjsUpdatePolicy.remote.tags) {
+          activeTx.tags.add(tag);
+        }
+        activeTx.value.replace(value);
+      } else {
+        editor.update(YjsUpdatePolicy.remote).value.replace(value);
+      }
     } finally {
       importing = false;
     }

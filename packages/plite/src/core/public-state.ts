@@ -43,8 +43,6 @@ import type {
   EditorTransactionSelectionApi,
   EditorToggleMarkOptions,
   EditorUpdateContext,
-  EditorUpdateMetadata,
-  EditorUpdateOptions,
   EditorUpdateTag,
   EditorUpdateTransaction,
   NodeTarget,
@@ -196,16 +194,18 @@ import {
 import { resolveTargetRuntimeImplicitTarget } from './target-runtime';
 import { getEditorTransformRegistry } from './transform-registry';
 import {
-  cloneUpdateMetadata,
   getCommandContext as getCommandContextState,
   getCurrentUpdateTags,
-  mergeUpdateMetadata,
-  normalizeUpdateTags,
   popCommandContext,
   popUpdateTagContext,
   pushCommandContext,
   pushUpdateTagContext,
 } from './update-context';
+import {
+  applyEditorUpdateTag,
+  applyEditorUpdateTags,
+  type InternalEditorUpdateOptions,
+} from './update-policy';
 
 export {
   getCachedFullRootReplaceTopLevelRuntimeIds,
@@ -233,13 +233,13 @@ type TransactionSnapshot = {
   children: readonly Descendant[];
   childrenRoot: string;
   marks: EditorMarks | null;
-  metadata: EditorUpdateMetadata;
   operationStart: number;
   documentState: Record<string, unknown> | undefined;
   rootIndexes: Record<string, RuntimeIndexLike>;
   roots: Record<string, Descendant[]>;
   statePatches: EditorStatePatch[];
   tags: Set<EditorUpdateTag>;
+  token: TransactionToken;
   implicitTarget: Selection;
   implicitTargetResolved: boolean;
   previousIndex: RuntimeIndexLike | null;
@@ -251,6 +251,10 @@ type TransactionSnapshot = {
   selection: Selection;
   selectionRoot: string;
   skipNormalize: boolean;
+};
+
+type TransactionToken = {
+  active: boolean;
 };
 
 type TransactionAfterCommitHandler = {
@@ -281,6 +285,10 @@ const TRANSACTION_CHANGED = new WeakMap<Editor, boolean>();
 const TRANSACTION_APPLY = new WeakMap<Editor, (operation: Operation) => void>();
 const TRANSACTION_SNAPSHOT = new WeakMap<Editor, TransactionSnapshot>();
 const TRANSACTION_VIEW = new WeakMap<Editor, EditorTransaction>();
+const UPDATE_VIEW = new WeakMap<
+  Editor,
+  { token: TransactionToken; view: object }
+>();
 const ACTIVE_CHILDREN_ROOT = new WeakMap<Editor, string>();
 const CURRENT_CHILDREN_ROOT = new WeakMap<Editor, string>();
 const ACTIVE_OPERATION_ROOT = new WeakMap<Editor, string>();
@@ -1101,9 +1109,7 @@ const withUpdateTagContext = <T>(
   const snapshot = TRANSACTION_SNAPSHOT.get(editor);
 
   if (snapshot) {
-    for (const tag of tags) {
-      snapshot.tags.add(tag);
-    }
+    applyEditorUpdateTags(snapshot.tags, tags);
   }
 
   try {
@@ -1299,13 +1305,11 @@ export const getOperationDirtiness = (
     reason = null,
     selectionBefore = getCurrentSelection(editor),
     nextIndex,
-    metadata = {},
     statePatches = [],
     tags = getCurrentUpdateTags(editor),
   }: {
     command?: EditorCommitCommand | null;
     marksBefore?: EditorMarks | null;
-    metadata?: EditorUpdateMetadata;
     nextIndex?: RuntimeIndexLike;
     previousIndex?: RuntimeIndexLike;
     previousVersion?: number;
@@ -1515,7 +1519,6 @@ export const getOperationDirtiness = (
       marksAfter: cloneValue(marksAfter),
       marksBefore: cloneValue(marksBefore),
       marksChanged,
-      metadata: cloneUpdateMetadata(metadata),
       nodeImpactRuntimeIds,
       operations: freezePublicCommitOperations(operations),
       replaceEpoch: classes[0] === 'replace' ? 1 : 0,
@@ -2631,20 +2634,62 @@ const getUpdateContext = <
   });
 };
 
-const mergeActiveUpdateMetadata = (
-  editor: Editor,
-  metadata: EditorUpdateMetadata
-) => {
-  const transactionSnapshot = TRANSACTION_SNAPSHOT.get(editor);
+const assertActiveTransaction = (editor: Editor, token: TransactionToken) => {
+  if (
+    !token.active ||
+    TRANSACTION_SNAPSHOT.get(editor)?.token !== token ||
+    !isInTransaction(editor)
+  ) {
+    throw new Error('editor transaction is no longer active');
+  }
+};
 
-  if (!transactionSnapshot) {
-    throw new Error('tx.metadata.merge can only run during editor.update');
+const guardTransactionValue = (
+  value: unknown,
+  assertActive: () => void,
+  cache: WeakMap<object, object>
+): unknown => {
+  if (
+    (typeof value !== 'object' || value === null) &&
+    typeof value !== 'function'
+  ) {
+    return value;
   }
 
-  transactionSnapshot.metadata = mergeUpdateMetadata(
-    transactionSnapshot.metadata,
-    metadata
-  );
+  const objectValue = value as object;
+  const existing = cache.get(objectValue);
+
+  if (existing) {
+    return existing;
+  }
+
+  const proxyTarget =
+    typeof objectValue === 'function' ? () => {} : Object.create(null);
+  const guarded = new Proxy(proxyTarget, {
+    apply(_target, thisArg, args) {
+      assertActive();
+
+      return Reflect.apply(
+        objectValue as (...args: unknown[]) => unknown,
+        thisArg,
+        args
+      );
+    },
+    get(_target, property) {
+      return guardTransactionValue(
+        Reflect.get(objectValue, property, objectValue),
+        assertActive,
+        cache
+      );
+    },
+    has(_target, property) {
+      return Reflect.has(objectValue, property);
+    },
+  });
+
+  cache.set(objectValue, guarded);
+
+  return guarded;
 };
 
 const getUpdateView = <
@@ -2653,12 +2698,35 @@ const getUpdateView = <
 >(
   editor: Editor<V, TExtensions>
 ): EditorUpdateTransaction<V, TExtensions> => {
+  const transactionSnapshot = TRANSACTION_SNAPSHOT.get(editor);
+
+  if (!transactionSnapshot) {
+    throw new Error('editor transaction is no longer active');
+  }
+
+  const token = transactionSnapshot.token;
+  const existing = UPDATE_VIEW.get(editor);
+
+  if (existing?.token === token) {
+    return existing.view as unknown as EditorUpdateTransaction<V, TExtensions>;
+  }
+
+  const assertActive = () => assertActiveTransaction(editor, token);
+  const runActive = <T>(fn: () => T): T => {
+    assertActive();
+
+    return fn();
+  };
   const state = getStateView(editor);
   const transforms = getEditorTransformRegistry(editor);
   const runMutation = <T>(
     options: { at?: Location } | undefined,
     fn: () => T
-  ) => runWithMutationRoot(editor, getMutationRoot(editor, options), fn);
+  ) => {
+    assertActive();
+
+    return runWithMutationRoot(editor, getMutationRoot(editor, options), fn);
+  };
   const runTargetMutation = <TOptions extends NodeTargetOptions, TResult>(
     options: TOptions | undefined,
     fn: (options: ResolvedNodeTargetOptions<TOptions> | undefined) => TResult
@@ -2669,10 +2737,20 @@ const getUpdateView = <
 
     return runMutation(resolvedOptions, () => fn(resolvedOptions));
   };
-  const runSelectionMutation = <T>(fn: () => T) =>
-    runWithMutationRoot(editor, getMutationRoot(editor), fn);
-  const runLocationMutation = <T>(location: Location, fn: () => T) =>
-    runWithMutationRoot(editor, getLocationMutationRoot(editor, location), fn);
+  const runSelectionMutation = <T>(fn: () => T) => {
+    assertActive();
+
+    return runWithMutationRoot(editor, getMutationRoot(editor), fn);
+  };
+  const runLocationMutation = <T>(location: Location, fn: () => T) => {
+    assertActive();
+
+    return runWithMutationRoot(
+      editor,
+      getLocationMutationRoot(editor, location),
+      fn
+    );
+  };
   const toggleBlock: EditorTransactionBlocksApi<V>['toggle'] = (
     type,
     {
@@ -2761,13 +2839,11 @@ const getUpdateView = <
     );
 
     runMutation({ at: path }, () => {
-      transforms.withoutNormalizing(() => {
-        for (const key of propsToUnset) {
-          transforms.unsetNodes(key, { at: path });
-        }
+      for (const key of propsToUnset) {
+        transforms.unsetNodes(key, { at: path });
+      }
 
-        transforms.setNodes(props, { at: path });
-      });
+      transforms.setNodes(props, { at: path });
     });
   };
   let txRecord!: EditorUpdateTransaction<V, TExtensions>;
@@ -2989,10 +3065,6 @@ const getUpdateView = <
         },
       })
     ),
-    metadata: Object.freeze({
-      merge: (metadata: EditorUpdateMetadata) =>
-        mergeActiveUpdateMetadata(editor, metadata),
-    }),
     nodes: Object.freeze({
       ...state.nodes,
       duplicate: duplicateNodes,
@@ -3037,20 +3109,10 @@ const getUpdateView = <
           transforms.wrapNodes(element, resolvedOptions)
         ),
     }),
-    normalize: (options = {}) => transforms.normalize(options),
+    normalize: (options = {}) => runActive(() => transforms.normalize(options)),
     operations: Object.freeze({
-      replay: (operations, options = {}) => {
-        if (operations.length === 0) {
-          return;
-        }
-
-        withUpdateTagContext(editor, normalizeUpdateTags(options.tag), () => {
-          const snapshot = TRANSACTION_SNAPSHOT.get(editor);
-
-          if (snapshot && options.normalize === false) {
-            snapshot.skipNormalize = true;
-          }
-
+      replay: (operations) =>
+        runActive(() => {
           for (const operation of operations) {
             assertKnownReplayOperation(operation);
             const isInternalOwnedReplay =
@@ -3069,70 +3131,95 @@ const getUpdateView = <
               withReplayOperationDefaultRoot(replayOperation)
             );
           }
-        });
-      },
+        }),
     }),
     refs: Object.freeze<EditorCoreUpdateTransaction['refs']>({
-      path: (path, options) => getEditorRuntime(editor).pathRef(path, options),
+      path: (path, options) =>
+        runActive(() => getEditorRuntime(editor).pathRef(path, options)),
       point: (point, options) =>
-        getEditorRuntime(editor).pointRef(point, options),
+        runActive(() => getEditorRuntime(editor).pointRef(point, options)),
       range: (range, options) =>
-        getEditorRuntime(editor).rangeRef(range, options),
+        runActive(() => getEditorRuntime(editor).rangeRef(range, options)),
     }),
     roots: Object.freeze({
-      create: (root, children) => {
-        requireMutableRoot(root);
-        const roots = getEditorDocumentRoots(editor);
+      create: (root, children) =>
+        runActive(() => {
+          requireMutableRoot(root);
+          const roots = getEditorDocumentRoots(editor);
 
-        if (Object.hasOwn(roots, root)) {
-          throw new Error(`Cannot create existing editor root "${root}".`);
-        }
+          if (Object.hasOwn(roots, root)) {
+            throw new Error(`Cannot create existing editor root "${root}".`);
+          }
 
-        applyOperation(
-          editor,
-          createRootReplaceChildrenOperation(root, [], children, {
-            rootIsPresent: true,
-            rootWasPresent: false,
-          })
-        );
-      },
-      delete: (root) => {
-        requireMutableRoot(root);
-        const roots = getEditorDocumentRoots(editor);
-        const children = roots[root];
+          applyOperation(
+            editor,
+            createRootReplaceChildrenOperation(root, [], children, {
+              rootIsPresent: true,
+              rootWasPresent: false,
+            })
+          );
+        }),
+      delete: (root) =>
+        runActive(() => {
+          requireMutableRoot(root);
+          const roots = getEditorDocumentRoots(editor);
+          const children = roots[root];
 
-        if (!Object.hasOwn(roots, root) || children === undefined) {
-          throw new Error(`Cannot delete missing editor root "${root}".`);
-        }
+          if (!Object.hasOwn(roots, root) || children === undefined) {
+            throw new Error(`Cannot delete missing editor root "${root}".`);
+          }
 
-        applyOperation(
-          editor,
-          createRootReplaceChildrenOperation(root, children, [], {
-            rootIsPresent: false,
-            rootWasPresent: true,
-          })
-        );
-      },
-      replace: (root, children) => {
-        requireMutableRoot(root);
-        const roots = getEditorDocumentRoots(editor);
-        const previousChildren = roots[root];
+          applyOperation(
+            editor,
+            createRootReplaceChildrenOperation(root, children, [], {
+              rootIsPresent: false,
+              rootWasPresent: true,
+            })
+          );
+        }),
+      replace: (root, children) =>
+        runActive(() => {
+          requireMutableRoot(root);
+          const roots = getEditorDocumentRoots(editor);
+          const previousChildren = roots[root];
 
-        if (!Object.hasOwn(roots, root) || previousChildren === undefined) {
-          throw new Error(`Cannot replace missing editor root "${root}".`);
-        }
+          if (!Object.hasOwn(roots, root) || previousChildren === undefined) {
+            throw new Error(`Cannot replace missing editor root "${root}".`);
+          }
 
-        applyOperation(
-          editor,
-          createRootReplaceChildrenOperation(root, previousChildren, children, {
-            rootIsPresent: true,
-            rootWasPresent: true,
-          })
-        );
-      },
+          applyOperation(
+            editor,
+            createRootReplaceChildrenOperation(
+              root,
+              previousChildren,
+              children,
+              {
+                rootIsPresent: true,
+                rootWasPresent: true,
+              }
+            )
+          );
+        }),
     }),
     statePatches: Object.freeze({
-      replay: (statePatches) => applyStatePatches(editor, statePatches, 'redo'),
+      replay: (statePatches) =>
+        runActive(() => applyStatePatches(editor, statePatches, 'redo')),
+    }),
+    tags: Object.freeze({
+      add: (tag: EditorUpdateTag) =>
+        runActive(() => {
+          const snapshot = TRANSACTION_SNAPSHOT.get(editor);
+
+          if (!snapshot) {
+            throw new Error('tx.tags.add can only run during editor.update');
+          }
+
+          applyEditorUpdateTag(snapshot.tags, tag);
+        }),
+      has: (tag: EditorUpdateTag) =>
+        runActive(
+          () => TRANSACTION_SNAPSHOT.get(editor)?.tags.has(tag) ?? false
+        ),
     }),
     selection: Object.freeze(
       Object.assign(() => state.selection(), {
@@ -3177,7 +3264,7 @@ const getUpdateView = <
     setField: <TValue>(
       field: EditorStateField<TValue>,
       value: StateFieldValueInput<TValue>
-    ) => setStateFieldValue(editor, field, value),
+    ) => runActive(() => setStateFieldValue(editor, field, value)),
     text: Object.freeze({
       ...state.text,
       delete: (options = {}) =>
@@ -3199,13 +3286,10 @@ const getUpdateView = <
     }),
     value: Object.freeze(
       Object.assign(() => state.value(), {
-        replace: (input: SnapshotInput<V>) => replaceSnapshot(editor, input),
+        replace: (input: SnapshotInput<V>) =>
+          runActive(() => replaceSnapshot(editor, input)),
       })
     ),
-    withoutNormalizing: (fn) =>
-      transforms.withoutNormalizing(() => {
-        fn({ tx: txRecord });
-      }),
   } satisfies EditorCoreUpdateTransaction<V>;
 
   txRecord = tx as unknown as EditorUpdateTransaction<V, TExtensions>;
@@ -3213,14 +3297,24 @@ const getUpdateView = <
 
   for (const [groupName, registration] of getExtensionRegistry(editor)
     .txGroups) {
-    txExtensionRecord[groupName] = registration.factory(
-      txExtensionRecord as never,
-      editor as never,
-      getUpdateContext(editor) as never
+    txExtensionRecord[groupName] = guardTransactionValue(
+      registration.factory(
+        txExtensionRecord as never,
+        editor as never,
+        getUpdateContext(editor) as never
+      ),
+      assertActive,
+      new WeakMap()
     );
   }
 
-  return Object.freeze(txRecord) as EditorUpdateTransaction<V, TExtensions>;
+  const view = Object.freeze(txRecord) as EditorUpdateTransaction<
+    V,
+    TExtensions
+  >;
+  UPDATE_VIEW.set(editor, { token, view });
+
+  return view;
 };
 
 export const getActiveUpdateView = <
@@ -3238,6 +3332,17 @@ export const getActiveUpdateView = <
   return getUpdateView(editor);
 };
 
+export const getActiveEditorTransaction = <
+  V extends Value,
+  TExtensions extends readonly unknown[] = readonly [],
+>(
+  editor: Editor<V, TExtensions>
+): EditorUpdateTransaction<V, TExtensions> | null => {
+  const owner = getEditorRuntimeOwner(editor) as Editor<V, TExtensions>;
+
+  return isInTransaction(owner) ? getUpdateView(owner) : null;
+};
+
 export const getNormalizerUpdateView = <V extends Value>(
   editor: Editor<V>
 ): EditorNormalizerTransaction<V> => {
@@ -3251,6 +3356,7 @@ export const getNormalizerUpdateView = <V extends Value>(
     nodes: tx.nodes,
     refs: tx.refs,
     selection: tx.selection,
+    tags: tx.tags,
     text: tx.text,
     value: tx.value,
   } satisfies EditorNormalizerTransaction<V>);
@@ -3317,20 +3423,23 @@ export const updateEditor = <
     transaction: EditorUpdateTransaction<V, TExtensions>,
     context: EditorUpdateContext<Editor<V, TExtensions>>
   ) => void,
-  options: EditorUpdateOptions = {}
+  options: InternalEditorUpdateOptions = {}
 ) => {
   if (isExecutingQueryMiddleware(editor)) {
     throw new Error('editor.update cannot be started inside query middleware');
   }
 
-  if (getEditorReadDepth(editor) > 0 && !isInTransaction(editor)) {
+  if (isInTransaction(editor)) {
+    throw new Error('editor.update cannot be nested inside another update');
+  }
+
+  if (getEditorReadDepth(editor) > 0) {
     throw new Error(
       'editor.update cannot be started inside editor.read outside an active update'
     );
   }
 
-  const tags = normalizeUpdateTags(options.tag);
-  const metadata = cloneUpdateMetadata(options.metadata);
+  const tags = options.tags ?? [];
   const root = getActiveOperationRoot(editor);
   const run = () =>
     runEditorTransaction(
@@ -3338,7 +3447,6 @@ export const updateEditor = <
       () => fn(getUpdateView(editor), getUpdateContext(editor)),
       {
         authority: 'update',
-        metadata,
         skipNormalize: options.skipNormalize,
       }
     );
@@ -4415,7 +4523,6 @@ const getTopLevelOrderTouchedRuntimeIds = (
 
 export const buildSnapshotChange = ({
   command = null,
-  metadata = {},
   nextSnapshot,
   operations,
   previousSnapshot,
@@ -4424,7 +4531,6 @@ export const buildSnapshotChange = ({
   tags = [],
 }: {
   command?: EditorCommitCommand | null;
-  metadata?: EditorUpdateMetadata;
   nextSnapshot: EditorSnapshot;
   operations: Operation[];
   previousSnapshot: EditorSnapshot;
@@ -4588,7 +4694,6 @@ export const buildSnapshotChange = ({
         marksAfter: cloneValue(nextSnapshot.marks),
         marksBefore: cloneValue(previousSnapshot.marks),
         marksChanged,
-        metadata: cloneUpdateMetadata(metadata),
         nodeImpactRuntimeIds,
         operations: freezePublicCommitOperations(operations),
         replaceEpoch: classes[0] === 'replace' ? 1 : 0,
@@ -4875,10 +4980,9 @@ const restoreTransactionSnapshot = (
 
 export const runEditorTransaction = (
   editor: Editor,
-  fn: (transaction: EditorTransaction) => void,
+  fn: (transaction: EditorTransaction) => unknown,
   options: {
     authority?: TransactionAuthority;
-    metadata?: EditorUpdateMetadata;
     skipNormalize?: boolean;
   } = {}
 ) => {
@@ -4938,7 +5042,6 @@ export const runEditorTransaction = (
       implicitTarget: null,
       implicitTargetResolved: false,
       marks: previousSnapshot?.marks ?? getCurrentMarks(editor),
-      metadata: cloneUpdateMetadata(options.metadata),
       operationStart: getLiveOperations(editor).length,
       previousIndex,
       previousLiveIndex,
@@ -4952,17 +5055,9 @@ export const runEditorTransaction = (
       skipNormalize: false,
       statePatches: [],
       tags: new Set(getCurrentUpdateTags(editor)),
+      token: { active: true },
     });
     TRANSACTION_CHANGED.set(editor, false);
-  } else if (options.metadata) {
-    const transactionSnapshot = TRANSACTION_SNAPSHOT.get(editor);
-
-    if (transactionSnapshot) {
-      transactionSnapshot.metadata = mergeUpdateMetadata(
-        transactionSnapshot.metadata,
-        options.metadata
-      );
-    }
   }
 
   incrementEditorTransactionDepth(editor, depth);
@@ -4970,7 +5065,17 @@ export const runEditorTransaction = (
   try {
     const transaction = getTransactionView(editor);
     TRANSACTION_APPLY.set(editor, transaction.apply);
-    profileCoreDuration('transaction-callback', () => fn(transaction));
+    const result = profileCoreDuration('transaction-callback', () =>
+      fn(transaction)
+    );
+
+    if (
+      result !== null &&
+      (typeof result === 'object' || typeof result === 'function') &&
+      typeof (result as { then?: unknown }).then === 'function'
+    ) {
+      throw new Error('editor.update callback must be synchronous');
+    }
 
     const operations = getLiveOperations(editor);
     const snapshot = TRANSACTION_SNAPSHOT.get(editor);
@@ -5042,6 +5147,7 @@ export const runEditorTransaction = (
       const snapshot = TRANSACTION_SNAPSHOT.get(editor);
 
       if (snapshot) {
+        snapshot.token.active = false;
         rollbackTransactionOperations(editor, snapshot);
         restoreTransactionSnapshot(editor, snapshot);
       }
@@ -5049,6 +5155,7 @@ export const runEditorTransaction = (
       TRANSACTION_APPLY.delete(editor);
       TRANSACTION_SNAPSHOT.delete(editor);
       TRANSACTION_CHANGED.delete(editor);
+      UPDATE_VIEW.delete(editor);
     }
     throw error;
   } finally {
@@ -5056,6 +5163,9 @@ export const runEditorTransaction = (
 
     if (isOuter) {
       const snapshot = TRANSACTION_SNAPSHOT.get(editor);
+      if (snapshot) {
+        snapshot.token.active = false;
+      }
       const changed =
         (TRANSACTION_CHANGED.get(editor) ?? false) &&
         hasTransactionNetChanges(editor, snapshot);
@@ -5063,6 +5173,7 @@ export const runEditorTransaction = (
       TRANSACTION_APPLY.delete(editor);
       TRANSACTION_SNAPSHOT.delete(editor);
       TRANSACTION_CHANGED.delete(editor);
+      UPDATE_VIEW.delete(editor);
 
       if (changed) {
         profileCoreDuration('publish-range-refs', () =>
@@ -5102,7 +5213,6 @@ export const runEditorTransaction = (
                     reason: snapshot?.reason ?? null,
                     selectionBefore: snapshot?.selection,
                     statePatches: snapshot?.statePatches,
-                    metadata: snapshot?.metadata,
                     tags: snapshot ? [...snapshot.tags] : [],
                   })
                 )
@@ -5180,7 +5290,6 @@ export const runEditorTransaction = (
 
                     return buildSnapshotChange({
                       command: snapshot.command,
-                      metadata: snapshot.metadata,
                       nextSnapshot,
                       operations,
                       previousSnapshot: previousSnapshotForChange,
@@ -5272,7 +5381,6 @@ export const runEditorTransaction = (
                             )
                           : snapshot?.selection,
                       statePatches: snapshot?.statePatches,
-                      metadata: snapshot?.metadata,
                       tags: snapshot ? [...snapshot.tags] : [],
                     });
                   })();

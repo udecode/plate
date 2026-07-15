@@ -35,10 +35,7 @@ export const useAIChatEditor = (
   });
 
   useEffect(() => {
-    editor.update.value.replace(
-      { children },
-      { history: 'skip', normalize: false }
-    );
+    editor.update({ history: 'skip' }).value.replace({ children });
     setOption('aiEditor', editor);
   }, [children, editor, setOption]);
 

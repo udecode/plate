@@ -1,5 +1,7 @@
 import type { KeyboardEvent } from 'react';
 import {
+  type EditorUpdatePolicyFor,
+  type EditorUpdateTransaction,
   type MoveUnit,
   type Point,
   type Range,
@@ -74,13 +76,9 @@ const getBoundarySelectionIds = (
       : []
   );
 
-const largeDocumentVerticalSelectionUpdateOptions = {
-  metadata: {
-    selection: {
-      scroll: false,
-    },
-  },
-} satisfies Parameters<ReactRuntimeEditor['update']>[1];
+const largeDocumentVerticalSelectionUpdatePolicy = {
+  tags: 'skip-scroll-into-view',
+} satisfies EditorUpdatePolicyFor<ReactRuntimeEditor>;
 
 const measureCaretPhase = <T>(id: string, run: () => T): T => {
   if (!globalThis.__PLITE_REACT_RENDER_PROFILER__) {
@@ -289,22 +287,26 @@ const moveSelectionAndRespectBoundaries = ({
   preserveAnchorOnBoundarySkip = false,
   reverse,
   selection,
-  updateOptions,
+  updatePolicy,
   writeViewSelection = false,
   viewSelectionRootElement,
 }: {
   boundarySkipUnit?: MoveUnit;
   editor: ReactRuntimeEditor;
-  move: Parameters<ReactRuntimeEditor['update']>[0];
+  move: (tx: EditorUpdateTransaction) => void;
   preserveAnchorOnBoundarySkip?: boolean;
   reverse: boolean;
   selection: Range | null;
-  updateOptions?: Parameters<ReactRuntimeEditor['update']>[1];
+  updatePolicy?: EditorUpdatePolicyFor<ReactRuntimeEditor>;
   writeViewSelection?: boolean;
   viewSelectionRootElement?: HTMLElement;
 }) => {
   writePliteViewSelection(editor, null);
-  editor.update(move, updateOptions);
+  if (updatePolicy) {
+    editor.update(updatePolicy, move);
+  } else {
+    editor.update(move);
+  }
   restoreSelectionIfMovementEnteredBoundary({
     boundarySkipUnit,
     editor,
@@ -372,9 +374,9 @@ export const applyEditableCaretMovement = ({
       focus: plainVerticalLargeDocumentExtension.target,
     };
     measureCaretPhase('caret.large-document-select', () => {
-      editor.update((tx) => {
+      editor.update(largeDocumentVerticalSelectionUpdatePolicy, (tx) => {
         tx.selection.set(nextSelection);
-      }, largeDocumentVerticalSelectionUpdateOptions);
+      });
     });
     measureCaretPhase('caret.large-document-view-selection', () => {
       writeMainRootViewSelection(editor, nextSelection, event.currentTarget);
@@ -450,8 +452,8 @@ export const applyEditableCaretMovement = ({
       },
       reverse: true,
       selection,
-      updateOptions: plainVerticalLargeDocumentSelection
-        ? largeDocumentVerticalSelectionUpdateOptions
+      updatePolicy: plainVerticalLargeDocumentSelection
+        ? largeDocumentVerticalSelectionUpdatePolicy
         : undefined,
       writeViewSelection: plainVerticalLargeDocumentSelection,
       viewSelectionRootElement: event.currentTarget,
@@ -468,8 +470,8 @@ export const applyEditableCaretMovement = ({
       },
       reverse: false,
       selection,
-      updateOptions: plainVerticalLargeDocumentSelection
-        ? largeDocumentVerticalSelectionUpdateOptions
+      updatePolicy: plainVerticalLargeDocumentSelection
+        ? largeDocumentVerticalSelectionUpdatePolicy
         : undefined,
       writeViewSelection: plainVerticalLargeDocumentSelection,
       viewSelectionRootElement: event.currentTarget,
@@ -492,8 +494,8 @@ export const applyEditableCaretMovement = ({
       preserveAnchorOnBoundarySkip: true,
       reverse: true,
       selection,
-      updateOptions: plainVerticalLargeDocumentSelection
-        ? largeDocumentVerticalSelectionUpdateOptions
+      updatePolicy: plainVerticalLargeDocumentSelection
+        ? largeDocumentVerticalSelectionUpdatePolicy
         : undefined,
       writeViewSelection: plainVerticalLargeDocumentSelection,
       viewSelectionRootElement: event.currentTarget,
@@ -512,8 +514,8 @@ export const applyEditableCaretMovement = ({
       preserveAnchorOnBoundarySkip: true,
       reverse: false,
       selection,
-      updateOptions: plainVerticalLargeDocumentSelection
-        ? largeDocumentVerticalSelectionUpdateOptions
+      updatePolicy: plainVerticalLargeDocumentSelection
+        ? largeDocumentVerticalSelectionUpdatePolicy
         : undefined,
       writeViewSelection: plainVerticalLargeDocumentSelection,
       viewSelectionRootElement: event.currentTarget,

@@ -1,6 +1,7 @@
 import {
   above as editorAbove,
   elementReadOnly as editorElementReadOnly,
+  getActiveEditorTransaction,
   getExtensionRegistry as editorGetExtensionRegistry,
   getSnapshot as editorGetSnapshot,
   isBlock as editorIsBlock,
@@ -615,6 +616,10 @@ export const insertDOMTextData = (
   editor: DOMEditor<any>,
   data: DataTransfer
 ): boolean => {
+  if (getActiveEditorTransaction(editor)) {
+    return insertDOMTextDataInTransaction(editor, data);
+  }
+
   let inserted = false;
 
   editor.update(() => {

@@ -2,9 +2,12 @@ import { useCallback } from 'react';
 import type {
   Editor,
   EditorStateField,
-  EditorUpdateOptions,
+  EditorUpdatePolicyFor,
   StateFieldValueInput,
 } from '@platejs/plite';
+import { withPliteReactPreservedSelection } from '../update-policy';
+import { PliteReactUpdatePolicy } from '../update-policy';
+import type { ReactEditor } from '../plugin/with-react';
 
 import { useEditor } from './use-editor';
 import {
@@ -15,32 +18,20 @@ import {
 /** Selector options for subscribing to one editor state field. */
 export type UseStateFieldValueOptions<
   TValue,
-  TEditor extends Editor<any> = Editor<any>,
+  TEditor extends Editor<any> = ReactEditor<any>,
 > = Pick<
   EditorStateSelectorOptions<TValue, TEditor>,
   'deferred' | 'equalityFn'
 >;
 
 /** Setter returned by `useSetStateField` for one editor state field. */
-export type StateFieldSetter<TValue> = (
+export type StateFieldSetter<
+  TValue,
+  TEditor extends Editor<any> = ReactEditor<any>,
+> = (
   value: StateFieldValueInput<TValue>,
-  options?: EditorUpdateOptions
+  policy?: EditorUpdatePolicyFor<TEditor>
 ) => void;
-
-const getStateFieldSetterOptions = (
-  options: EditorUpdateOptions = {}
-): EditorUpdateOptions => ({
-  ...options,
-  metadata: {
-    ...options.metadata,
-    selection: {
-      dom: 'preserve',
-      focus: false,
-      scroll: false,
-      ...options.metadata?.selection,
-    },
-  },
-});
 
 /**
  * Subscribe to one `defineStateField` value.
@@ -51,7 +42,7 @@ const getStateFieldSetterOptions = (
  */
 export function useStateFieldValue<
   TValue,
-  TEditor extends Editor<any> = Editor<any>,
+  TEditor extends Editor<any> = ReactEditor<any>,
 >(
   field: EditorStateField<TValue>,
   options: UseStateFieldValueOptions<TValue, TEditor> = {}
@@ -69,19 +60,28 @@ export function useStateFieldValue<
  *
  * The setter writes through `editor.update` and preserves DOM selection by
  * default so external controls can update state without stealing focus. Pass
- * update options when a tag or collaboration metadata is needed.
+ * an update policy when history or tags need additional control.
  */
 export function useSetStateField<
   TValue,
-  TEditor extends Editor<any> = Editor<any>,
->(field: EditorStateField<TValue>): StateFieldSetter<TValue> {
+  TEditor extends Editor<any> = ReactEditor<any>,
+>(field: EditorStateField<TValue>): StateFieldSetter<TValue, TEditor> {
   const editor = useEditor<TEditor>();
 
   return useCallback(
-    (value: StateFieldValueInput<TValue>, options?: EditorUpdateOptions) => {
-      editor.update((tx) => {
-        tx.setField(field, value);
-      }, getStateFieldSetterOptions(options));
+    (
+      value: StateFieldValueInput<TValue>,
+      policy?: EditorUpdatePolicyFor<TEditor>
+    ) => {
+      if (policy) {
+        editor.update(withPliteReactPreservedSelection(policy), (tx) => {
+          tx.setField(field, value);
+        });
+      } else {
+        editor.update(PliteReactUpdatePolicy.preserveSelection, (tx) => {
+          tx.setField(field, value);
+        });
+      }
     },
     [editor, field]
   );

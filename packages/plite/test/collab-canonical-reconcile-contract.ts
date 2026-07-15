@@ -16,7 +16,7 @@ import { history } from '@platejs/plite-history';
 import {
   createEditor,
   type Element,
-  type EditorUpdateOptions,
+  type EditorUpdatePolicy,
   type Range,
 } from '@platejs/plite';
 
@@ -25,14 +25,18 @@ const paragraph = (text: string): Element => ({
   children: [{ text }],
 });
 
-const remoteCollabOptions = {
-  metadata: {
-    collab: { origin: 'remote', saveToHistory: false },
-    history: { mode: 'skip' },
-    selection: { dom: 'preserve', focus: false, scroll: false },
-  },
-  tag: ['collaboration', 'remote-canonical-reconcile'],
-} satisfies EditorUpdateOptions;
+const remoteCollabTags = [
+  'collaboration',
+  'remote-canonical-reconcile',
+  'history-skip',
+  'skip-dom-selection',
+  'skip-selection-focus',
+  'skip-scroll-into-view',
+] as const;
+
+const remoteCollabPolicy = {
+  tags: remoteCollabTags,
+} satisfies EditorUpdatePolicy;
 
 const createCollabEditor = () => {
   const editor = createEditor({ extensions: [history()] as const });
@@ -77,13 +81,13 @@ describe('collab canonical remote reconcile contract', () => {
     assert(oldTextRuntimeId);
     commits.length = 0;
 
-    editor.update((tx) => {
+    editor.update(remoteCollabPolicy, (tx) => {
       tx.value.replace({
         children: [paragraph('remote'), paragraph('canonical')],
         marks: null,
         selection: collapsed([1, 0], 'canonical'.length),
       });
-    }, remoteCollabOptions);
+    });
 
     unsubscribe();
 
@@ -93,11 +97,7 @@ describe('collab canonical remote reconcile contract', () => {
     assert.equal(commits.length, 1);
     assert.equal(commits[0], commit);
     assert.deepEqual(commit.classes, ['replace']);
-    assert.deepEqual(commit.tags, [
-      'collaboration',
-      'remote-canonical-reconcile',
-    ]);
-    assert.deepEqual(commit.metadata, remoteCollabOptions.metadata);
+    assert.deepEqual(commit.tags, remoteCollabTags);
     assert.equal(commit.fullDocumentChanged, true);
     assert.equal(commit.rootRuntimeIdsChanged, true);
     assert.equal(
@@ -133,24 +133,20 @@ describe('collab canonical remote reconcile contract', () => {
   it('can intentionally clear model selection during remote canonical reconcile', () => {
     const editor = createCollabEditor();
 
-    editor.update((tx) => {
+    editor.update(remoteCollabPolicy, (tx) => {
       tx.value.replace({
         children: [paragraph('remote')],
         marks: null,
         selection: null,
       });
-    }, remoteCollabOptions);
+    });
 
     const commit = editorGetLastCommit(editor);
 
     assert(commit);
     assert.deepEqual(editorGetSnapshot(editor).selection, null);
     assert.equal(commit.selectionChanged, true);
-    assert.deepEqual(commit.metadata.selection, {
-      dom: 'preserve',
-      focus: false,
-      scroll: false,
-    });
+    assert.deepEqual(commit.tags, remoteCollabTags);
     assert.equal(
       editor.read((state) => state.history.undos().length),
       0

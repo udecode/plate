@@ -30,11 +30,7 @@ import {
   registerTextChangeListener,
   registerTxGroup,
 } from './extension-registry';
-import {
-  getActiveUpdateView,
-  getEditorStateView,
-  getSnapshot,
-} from './public-state';
+import { getActiveUpdateView, getSnapshot } from './public-state';
 import {
   EDITOR_TRANSFORM_MIDDLEWARE_KEYS,
   getTransformCommandType,
@@ -516,11 +512,11 @@ const registerExtensionSlots = <TEditor extends Editor>(
         registerCapability(
           editor,
           'clipboard.insertData',
-          ((_runtimeEditor, data, next = () => false) =>
+          ((_runtimeEditor, data, tx, next = () => false) =>
             slots.clipboard?.insertData?.(data, {
               editor,
               next,
-              state: getEditorStateView(editor),
+              tx,
             }) === true) as EditorClipboardInsertDataCapability<TEditor>
         )
       );

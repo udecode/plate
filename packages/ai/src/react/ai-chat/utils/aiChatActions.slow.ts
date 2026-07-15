@@ -14,7 +14,7 @@ import {
   beginAIPreview,
   hasAIPreview,
 } from '../../../lib/transforms/aiStreamSnapshot';
-import { withAIBatch } from '../../../lib/transforms/withAIBatch';
+import { aiBatchField, withAIBatch } from '../../../lib/transforms/withAIBatch';
 import { type AIChatPluginConfig, AIChatPlugin } from '../AIChatPlugin';
 import { acceptAISuggestions } from './acceptAISuggestions';
 import { applyTableCellSuggestion } from './applyTableCellSuggestion';
@@ -108,6 +108,9 @@ describe('ai chat action utils', () => {
       })
     ).toBe(true);
     expect(editor.read.text.string([])).toContain('ai');
+    expect(editor.read.history.undos()[0]?.statePatches).toContainEqual(
+      expect.objectContaining({ key: aiBatchField.key })
+    );
   });
 
   it('accepts transient insert suggestions and clears their metadata', () => {

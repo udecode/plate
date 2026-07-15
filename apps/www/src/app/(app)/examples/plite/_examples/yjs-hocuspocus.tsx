@@ -16,6 +16,8 @@ import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 import { useEffect, useState } from 'react';
 import {
   type Descendant,
+  type Editor,
+  type EditorUpdateTransaction,
   NodeApi,
   type Operation,
   type Range,
@@ -53,8 +55,11 @@ type PeerDefinition = {
   replacementText: string;
 };
 
-type PeerCommand = Parameters<YjsEditor['update']['history']['newBatch']>[0];
-type PeerCommandTx = Parameters<PeerCommand>[0];
+type PeerCommandTx =
+  YjsEditor extends Editor<infer V, infer TExtensions>
+    ? EditorUpdateTransaction<V, TExtensions>
+    : never;
+type PeerCommand = (tx: PeerCommandTx) => void;
 
 type KeyboardInputType = 'delete' | 'enter' | 'text';
 
@@ -539,7 +544,7 @@ const runPeerCommand = (
   command: PeerCommand
 ) => {
   syncSelectionFromDom(editor);
-  editor.update.history.newBatch(command);
+  editor.update({ history: 'new-batch' }, command);
   editor.api.dom.focus({ retries: 1 });
   editor.update.yjs.sendCursorData({
     color: peer.color,

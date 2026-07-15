@@ -1,7 +1,7 @@
 import {
   createEditor,
   type Descendant,
-  type EditorUpdateOptions,
+  type EditorUpdatePolicy,
   type Operation,
   type Range,
 } from '@platejs/plite';
@@ -32,14 +32,16 @@ const syncedBlock = (bodyRoot: string, copyId: string): Descendant => ({
 
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
-const remoteCollabOptions = {
-  metadata: {
-    collab: { origin: 'remote', saveToHistory: false },
-    history: { mode: 'skip' },
-    selection: { dom: 'preserve', focus: false, scroll: false },
-  },
-  tag: ['collaboration', 'projected-root-lifecycle'],
-} satisfies EditorUpdateOptions;
+const remoteCollabPolicy = {
+  tags: [
+    'collaboration',
+    'projected-root-lifecycle',
+    'history-skip',
+    'skip-dom-selection',
+    'skip-selection-focus',
+    'skip-scroll-into-view',
+  ],
+} satisfies EditorUpdatePolicy;
 
 const initialValue = {
   children: [
@@ -64,9 +66,9 @@ const replayRemote = (
   editor: ReturnType<typeof createProjectedEditor>,
   operations: readonly Operation[]
 ) => {
-  editor.update((tx) => {
+  editor.update(remoteCollabPolicy, (tx) => {
     tx.operations.replay(clone(operations));
-  }, remoteCollabOptions);
+  });
 };
 
 const lastOperations = (editor: ReturnType<typeof createProjectedEditor>) => {

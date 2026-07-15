@@ -422,10 +422,10 @@ describe('extension method hard cut', () => {
     assert.equal(editorString(editor, [0]), 'one!');
   });
 
-  it('extension clipboard middleware receives read-only state without tx', () => {
+  it('extension clipboard middleware receives the owned transaction', () => {
     const editor = createEditor();
     const seenOffsets: number[] = [];
-    let hasTx = true;
+    let hasTx = false;
 
     editorReplace(editor, {
       children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
@@ -442,7 +442,7 @@ describe('extension method hard cut', () => {
         clipboard: {
           insertData(_data, context) {
             hasTx = 'tx' in context;
-            seenOffsets.push(context.state.selection()?.anchor.offset ?? -1);
+            seenOffsets.push(context.tx.selection()?.anchor.offset ?? -1);
 
             return context.next();
           },
@@ -450,20 +450,9 @@ describe('extension method hard cut', () => {
       })
     );
 
-    const [handler] =
-      editorGetExtensionRegistry(editor).capabilities.get(
-        'clipboard.insertData'
-      ) ?? [];
-
-    assert.equal(typeof handler, 'function');
-    assert.equal(
-      (
-        handler as (runtimeEditor: typeof editor, data: DataTransfer) => boolean
-      )(editor, {} as DataTransfer),
-      false
-    );
+    assert.equal(editor.api.clipboard.insertData({} as DataTransfer), false);
     assert.deepEqual(seenOffsets, [2]);
-    assert.equal(hasTx, false);
+    assert.equal(hasTx, true);
   });
 
   it('detects registered transform middleware by key', () => {

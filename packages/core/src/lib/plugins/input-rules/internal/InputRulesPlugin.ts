@@ -128,7 +128,7 @@ export const InputRulesPlugin = createBasePlugin({
   key: 'inputRules',
 }).extendExtension(({ editor }) => ({
   clipboard: {
-    insertData(data, { next }) {
+    insertData(data, { next, tx }) {
       const text = data.getData('text/plain') || null;
       const selectionContext = createSelectionContext({ editor });
       let handled = false;
@@ -142,6 +142,7 @@ export const InputRulesPlugin = createBasePlugin({
           },
           pluginKey: rule.pluginKey,
           text,
+          tx,
           ...selectionContext,
         };
         if (rule.enabled?.(context) === false) continue;

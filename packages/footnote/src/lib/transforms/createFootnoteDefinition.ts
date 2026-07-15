@@ -45,7 +45,7 @@ export const createFootnoteDefinition = (
     identifier,
   }: CreateFootnoteDefinitionOptions
 ) => {
-  const existingDefinition = getFootnoteDefinition(editor, { identifier });
+  const existingDefinition = getFootnoteDefinition(editor, { identifier }, tx);
 
   if (existingDefinition) {
     if (shouldFocusDefinition) {

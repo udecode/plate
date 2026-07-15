@@ -12,7 +12,7 @@ import { history } from '@platejs/plite-history';
 import {
   createEditor,
   type Element,
-  type EditorUpdateOptions,
+  type EditorUpdatePolicy,
   type Operation,
   type Range,
 } from '@platejs/plite';
@@ -24,14 +24,18 @@ const paragraph = (text: string): Element => ({
 
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
-const remoteCollabOptions = {
-  metadata: {
-    collab: { origin: 'remote', saveToHistory: false },
-    history: { mode: 'skip' },
-    selection: { dom: 'preserve', focus: false, scroll: false },
-  },
-  tag: ['collaboration', 'remote-import'],
-} satisfies EditorUpdateOptions;
+const remoteCollabTags = [
+  'collaboration',
+  'remote-import',
+  'history-skip',
+  'skip-dom-selection',
+  'skip-selection-focus',
+  'skip-scroll-into-view',
+] as const;
+
+const remoteCollabPolicy = {
+  tags: remoteCollabTags,
+} satisfies EditorUpdatePolicy;
 
 const createCollabEditor = ({
   children = [paragraph('one')],
@@ -60,21 +64,18 @@ const replayRemote = (
   editor: ReturnType<typeof createCollabEditor>,
   operations: Operation[]
 ) => {
-  editor.update((tx) => {
+  editor.update(remoteCollabPolicy, (tx) => {
     tx.operations.replay(clone(operations));
-  }, remoteCollabOptions);
+  });
 };
 
 const insertLocal = (
   editor: ReturnType<typeof createCollabEditor>,
   text: string
 ) => {
-  editor.update(
-    (tx) => {
-      tx.text.insert(text);
-    },
-    { tag: ['local-edit', 'history'] }
-  );
+  editor.update({ tags: ['local-edit', 'history'] }, (tx) => {
+    tx.text.insert(text);
+  });
 };
 
 const assertSelectionValidOrNull = (
@@ -97,8 +98,7 @@ const assertLastRemoteCommit = (
   const commit = editorGetLastCommit(editor);
 
   assert(commit);
-  assert.deepEqual(commit.tags, ['collaboration', 'remote-import']);
-  assert.deepEqual(commit.metadata, remoteCollabOptions.metadata);
+  assert.deepEqual(commit.tags, remoteCollabTags);
 };
 
 describe('collab remote selection stress contract', () => {

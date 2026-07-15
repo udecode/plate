@@ -52,9 +52,9 @@ describe('deleteTableMergeColumn', () => {
     editor.update.remove.tableColumn();
 
     expect(editor.read.text.string([0])).toBe('1222');
-    expect(editor.read.nodes.toArray({ match: { type: 'td' } })).toHaveLength(
-      2
-    );
+    expect(
+      editor.read.nodes.toArray({ at: [], match: { type: 'td' } })
+    ).toHaveLength(2);
   });
 
   it('shrinks spanning cells and table colSizes when deleting a merged column', () => {
@@ -112,5 +112,46 @@ describe('deleteTableMergeColumn', () => {
         ],
       },
     ]);
+  });
+
+  it('removes every colSize covered by the selected spanning cell', () => {
+    const input = (
+      <editor>
+        <htable colSizes={[40, 50, 60]}>
+          <htr>
+            <htd colSpan={2}>
+              <hp>
+                11
+                <cursor />
+              </hp>
+            </htd>
+            <htd>
+              <hp>13</hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd>
+              <hp>21</hp>
+            </htd>
+            <htd>
+              <hp>22</hp>
+            </htd>
+            <htd>
+              <hp>23</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+
+    const editor = createTableEditor(input);
+
+    editor.update.remove.tableColumn();
+
+    expect(editor.read.children()).toMatchObject([{ colSizes: [60] }]);
+    expect(editor.read.text.string([0])).toBe('1323');
+    expect(
+      editor.read.nodes.toArray({ at: [], match: { type: 'td' } })
+    ).toHaveLength(2);
   });
 });

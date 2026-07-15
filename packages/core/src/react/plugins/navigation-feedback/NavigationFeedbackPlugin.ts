@@ -94,7 +94,7 @@ export const NavigationFeedbackPlugin =
       return {
         clear: () => clearNavigationFeedbackTarget(editor, refreshDecorations),
         flashTarget: (options: NavigationFlashTargetOptions) =>
-          flashTarget(editor, options, refreshDecorations),
+          flashTarget(editor, options, refreshDecorations, tx),
         navigate: (options: NavigationNavigateOptions) =>
           navigate(editor, tx, options, refreshDecorations),
       };

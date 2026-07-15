@@ -1,3 +1,5 @@
+// biome-ignore-all lint/performance/useTopLevelRegex: One-shot migration scanner.
+// biome-ignore-all lint/suspicious/noConsole: CLI reports its generated artifact summary.
 import fs from 'node:fs';
 import path from 'node:path';
 

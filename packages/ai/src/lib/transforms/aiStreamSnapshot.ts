@@ -170,7 +170,7 @@ export const cancelAIPreview = (editor: BaseEditor) => {
 
   if (range.kind === 'invalid') return false;
 
-  editor.update.history.skip((tx) => {
+  editor.update({ history: 'skip' }, (tx) => {
     if (range.kind === 'range') {
       replacePreviewRange(tx, range, preview.originalBlocks);
     }
@@ -204,7 +204,7 @@ export const acceptAIPreview = (editor: BaseEditor, _value?: Value) => {
   if (range.kind === 'range') {
     const acceptedBlocks = cloneAcceptedPreviewBlocks(editor, range);
 
-    editor.update.history.skip((tx) => {
+    editor.update({ history: 'skip' }, (tx) => {
       replacePreviewRange(tx, range, preview.originalBlocks);
       removeAIPreviewAnchor(editor, tx);
       restoreAIPreviewSelection(tx, preview.selectionBefore);
@@ -222,7 +222,7 @@ export const acceptAIPreview = (editor: BaseEditor, _value?: Value) => {
       { split: true }
     );
   } else {
-    editor.update.history.skip((tx) => {
+    editor.update({ history: 'skip' }, (tx) => {
       removeAIPreviewAnchor(editor, tx);
     });
   }

@@ -91,7 +91,10 @@ export const createEditorHarnessScenario = ({
                   );
                 }
 
-                handle.applyOperations(operations, { tag });
+                handle.applyOperations(
+                  operations,
+                  tag === undefined ? undefined : { tags: tag }
+                );
               },
               {
                 key: PLITE_BROWSER_HANDLE_KEY,

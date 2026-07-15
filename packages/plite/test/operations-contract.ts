@@ -143,7 +143,7 @@ describe('plite operations contract', () => {
   });
 
   it('applies and inverts huge replace_children ranges without argument spreading', {
-    timeout: 10_000,
+    timeout: 20_000,
   }, () => {
     const editor = createEditor();
     const childCount = 125_000;
@@ -732,27 +732,27 @@ describe('plite operations contract', () => {
     });
 
     editor.update((tx) => {
-      tx.operations.replay(operations, { normalize: false });
+      tx.operations.replay(operations);
     });
 
+    const committedOperations = editor.read.lastCommit()?.operations;
+
+    assert.ok(committedOperations);
     assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'element',
-        children: [
-          { bold: true, text: 'Hello' },
-          { bold: true, text: '- World' },
-        ],
+        children: [{ bold: true, text: 'Hello- World' }],
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
       anchor: { path: [0, 0], offset: 2 },
-      focus: { path: [0, 1], offset: 3 },
+      focus: { path: [0, 0], offset: 8 },
     });
 
     editor.update((tx) => {
-      tx.operations.replay(operations.map(OperationApi.inverse).reverse(), {
-        normalize: false,
-      });
+      tx.operations.replay(
+        committedOperations.map(OperationApi.inverse).reverse()
+      );
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, children);

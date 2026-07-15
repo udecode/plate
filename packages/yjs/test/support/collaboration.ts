@@ -14,7 +14,7 @@ import {
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
-import type {} from '@platejs/plite-history';
+import { history } from '@platejs/plite-history';
 import { createReactEditor, type ReactEditor } from '@platejs/plite-react';
 import * as Y from 'yjs';
 
@@ -152,6 +152,33 @@ export const createSeededYjsPeers = ({
         seedUpdate,
       })
     ),
+  ];
+};
+
+export const createSeededYjsHistoryPeers = ({
+  children,
+  clientIds,
+}: {
+  children: readonly Descendant[];
+  clientIds: readonly string[];
+}) => {
+  const [firstClientId, ...remainingClientIds] = clientIds;
+
+  if (firstClientId === undefined) {
+    return [];
+  }
+
+  const createPeer = (clientId: string, seedUpdate?: Uint8Array) =>
+    createYjsPeerWithEditor(
+      createEditor({ extensions: [history()] as const }),
+      { children, clientId, seedUpdate }
+    );
+  const firstPeer = createPeer(firstClientId);
+  const seedUpdate = Y.encodeStateAsUpdate(firstPeer.doc);
+
+  return [
+    firstPeer,
+    ...remainingClientIds.map((clientId) => createPeer(clientId, seedUpdate)),
   ];
 };
 

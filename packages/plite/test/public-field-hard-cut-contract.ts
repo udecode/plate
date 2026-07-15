@@ -72,7 +72,6 @@ type PublicPrimitiveWriterKeys = Extract<
   | 'toggleMark'
   | 'unsetNodes'
   | 'unwrapNodes'
-  | 'withoutNormalizing'
   | 'wrapNodes'
 >;
 
@@ -175,7 +174,6 @@ describe('public editor field hard cuts', () => {
       'unsetNodes',
       'unwrapNodes',
       staleWithTransactionKey,
-      'withoutNormalizing',
       'wrapNodes',
     ] as const) {
       assert.equal(property in editor, false);

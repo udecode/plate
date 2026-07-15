@@ -10,6 +10,7 @@ import { getExtensionRegistry } from './extension-registry';
 import { profileCoreDuration } from './profiling';
 import {
   getCommandContext,
+  isInTransaction,
   updateEditor,
   withCommandContext,
 } from './public-state';
@@ -117,7 +118,7 @@ export const executeCommand = <TCommand extends EditorCommand>(
     );
   }
 
-  if (!options.implicitUpdate) {
+  if (!options.implicitUpdate || isInTransaction(editor)) {
     return profileCoreDuration(`command-${command.type}-context`, () =>
       withCommandContext(
         editor,

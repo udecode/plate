@@ -69,4 +69,26 @@ describe('PlaceholderPlugin', () => {
       { children: [{ text: '' }], type: KEYS.placeholder },
     ]);
   });
+
+  it('inserts media through the plugin transaction method', () => {
+    const editor = createPlateEditor({
+      plugins: [PlaceholderPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+
+    editor
+      .plugin(PlaceholderPlugin)
+      .update.insertMedia([
+        new File(['image'], 'image.png', { type: 'image/png' }),
+      ]);
+
+    expect(editor.read.children()).toMatchObject([
+      { children: [{ text: '' }], type: KEYS.p },
+      { children: [{ text: '' }], type: KEYS.placeholder },
+    ]);
+  });
 });

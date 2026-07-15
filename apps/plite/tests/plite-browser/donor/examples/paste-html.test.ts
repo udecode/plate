@@ -156,7 +156,7 @@ test.describe('paste html example', () => {
           new Event('paste', { bubbles: true, cancelable: true }),
           {
             clipboardData: {
-              getData: (type = 'text/html') => htmlContent,
+              getData: (_type = 'text/html') => htmlContent,
               types: ['text/html'],
             },
           }

@@ -4,6 +4,7 @@ import { createBaseEditor } from '@platejs/core';
 import { ElementApi, RangeApi } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 
+import { BaseDatePlugin } from '../BaseDatePlugin';
 import { isPointNextToNode } from './isPointNextToNode';
 
 jsxt;
@@ -22,6 +23,7 @@ describe('isPointNextToNode', () => {
     }
 
     return createBaseEditor({
+      plugins: [BaseDatePlugin],
       selection: input.selection,
       value: input.children,
     });

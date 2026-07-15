@@ -222,6 +222,7 @@ const Image = ({ element }: RenderVoidProps<ImageElement>) => {
   return (
     <div className="plite-images-figure">
       <img
+        alt=""
         className={cn(
           'plite-images-image',
           selected && focused && 'is-selected'
@@ -260,12 +261,12 @@ const InsertImageButton = () => {
   return (
     <Button
       onClick={() => {
-        const url = window.prompt('Enter the URL of the image:');
+        const url = window.prompt.bind(window)('Enter the URL of the image:');
         if (url && !isImageUrl(url)) {
-          alert('URL is not an image');
+          window.alert.bind(window)('URL is not an image');
           return;
         }
-        url && insertImage(editor, url);
+        if (url) insertImage(editor, url);
       }}
       onPointerDown={(event: PointerEvent<HTMLButtonElement>) =>
         event.preventDefault()

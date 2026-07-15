@@ -24,7 +24,6 @@ import {
   pointRef as editorPointRef,
   range as editorRange,
   void as editorVoid,
-  withoutNormalizing as editorWithoutNormalizing,
 } from '../interfaces/editor';
 import type { Editor } from '../interfaces/editor';
 import type {
@@ -187,114 +186,65 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
       return;
     }
 
-    editorWithoutNormalizing(editor, () => {
-      const transforms = getEditorTransformRegistry(editor);
-      let { at = getDefaultInsertLocation(editor) } = options;
-      const insertAt = () => {
-        if (LocationApi.isPath(at)) {
-          at = editorRange(editor, at);
-        }
+    const transforms = getEditorTransformRegistry(editor);
+    let { at = getDefaultInsertLocation(editor) } = options;
+    const insertAt = () => {
+      if (LocationApi.isPath(at)) {
+        at = editorRange(editor, at);
+      }
 
-        if (LocationApi.isRange(at)) {
-          if (RangeApi.isCollapsed(at)) {
-            at = at.anchor;
-          } else {
-            const replacementMarks =
-              text.length > 0 ? getConsistentRangeTextMarks(editor, at) : null;
-            const end = RangeApi.end(at);
-            if (!voids && editorVoid(editor, { at: end })) {
-              return;
-            }
-            const start = RangeApi.start(at);
-            const startRef = editorPointRef(editor, start);
-            const endRef = editorPointRef(editor, end);
-            transforms.delete({
-              at,
-              preserveInlineEdge: true,
-              voids,
-            } as Parameters<typeof transforms.delete>[0] & {
-              preserveInlineEdge: true;
-            });
-            const selectionAfterDelete = getPublicSelection(editor);
-            const selectionPointAfterDelete =
-              selectionAfterDelete && RangeApi.isCollapsed(selectionAfterDelete)
-                ? {
-                    ...selectionAfterDelete.anchor,
-                    path: [...selectionAfterDelete.anchor.path],
-                  }
-                : null;
-            const startPoint = startRef.unref();
-            const endPoint = endRef.unref();
-            const nextAt = selectionPointAfterDelete ?? startPoint ?? endPoint;
-
-            if (!nextAt) {
-              return;
-            }
-
-            at = nextAt;
-
-            if (options.at == null) {
-              transforms.setSelection({ anchor: nextAt, focus: nextAt });
-            } else if (explicitAtPreservesNullSelection) {
-              transforms.deselect();
-            }
-
-            const normalizedReplacementMarks =
-              normalizeTextMarks(replacementMarks);
-
-            if (replacementMarks) {
-              const textInsertionPoint = getPointTextInsertionPoint(
-                editor,
-                nextAt,
-                normalizedReplacementMarks
-              );
-
-              if (textInsertionPoint) {
-                if (!explicitAtPreservesNullSelection) {
-                  transforms.setSelection({
-                    anchor: textInsertionPoint,
-                    focus: textInsertionPoint,
-                  });
-                }
-                insertTextAtPoint(editor, textInsertionPoint, text);
-                return;
-              }
-
-              transforms.insertNodes(
-                { text, ...normalizedReplacementMarks },
-                {
-                  at: nextAt,
-                  select: !explicitAtPreservesNullSelection,
-                  voids,
-                }
-              );
-              return;
-            }
+      if (LocationApi.isRange(at)) {
+        if (RangeApi.isCollapsed(at)) {
+          at = at.anchor;
+        } else {
+          const replacementMarks =
+            text.length > 0 ? getConsistentRangeTextMarks(editor, at) : null;
+          const end = RangeApi.end(at);
+          if (!voids && editorVoid(editor, { at: end })) {
+            return;
           }
-        }
+          const start = RangeApi.start(at);
+          const startRef = editorPointRef(editor, start);
+          const endRef = editorPointRef(editor, end);
+          transforms.delete({
+            at,
+            preserveInlineEdge: true,
+            voids,
+          } as Parameters<typeof transforms.delete>[0] & {
+            preserveInlineEdge: true;
+          });
+          const selectionAfterDelete = getPublicSelection(editor);
+          const selectionPointAfterDelete =
+            selectionAfterDelete && RangeApi.isCollapsed(selectionAfterDelete)
+              ? {
+                  ...selectionAfterDelete.anchor,
+                  path: [...selectionAfterDelete.anchor.path],
+                }
+              : null;
+          const startPoint = startRef.unref();
+          const endPoint = endRef.unref();
+          const nextAt = selectionPointAfterDelete ?? startPoint ?? endPoint;
 
-        if (!LocationApi.isPoint(at)) {
-          return;
-        }
+          if (!nextAt) {
+            return;
+          }
 
-        if (
-          (!voids && editorVoid(editor, { at })) ||
-          elementReadOnly(editor, { at })
-        ) {
-          return;
-        }
+          at = nextAt;
 
-        const { path, offset, root } = at;
-        if (text.length > 0) {
-          const marks = normalizeTextMarks(
-            shouldApplyPendingMarks ? getCurrentMarks(editor) : null
-          );
+          if (options.at == null) {
+            transforms.setSelection({ anchor: nextAt, focus: nextAt });
+          } else if (explicitAtPreservesNullSelection) {
+            transforms.deselect();
+          }
 
-          if (shouldApplyPendingMarks && getCurrentMarks(editor)) {
+          const normalizedReplacementMarks =
+            normalizeTextMarks(replacementMarks);
+
+          if (replacementMarks) {
             const textInsertionPoint = getPointTextInsertionPoint(
               editor,
-              at,
-              marks
+              nextAt,
+              normalizedReplacementMarks
             );
 
             if (textInsertionPoint) {
@@ -305,23 +255,70 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
                 });
               }
               insertTextAtPoint(editor, textInsertionPoint, text);
-              setCurrentMarks(editor, null);
               return;
             }
 
             transforms.insertNodes(
-              { text, ...(marks ?? {}) },
-              { at, select: !explicitAtPreservesNullSelection, voids }
+              { text, ...normalizedReplacementMarks },
+              {
+                at: nextAt,
+                select: !explicitAtPreservesNullSelection,
+                voids,
+              }
             );
+            return;
+          }
+        }
+      }
+
+      if (!LocationApi.isPoint(at)) {
+        return;
+      }
+
+      if (
+        (!voids && editorVoid(editor, { at })) ||
+        elementReadOnly(editor, { at })
+      ) {
+        return;
+      }
+
+      const { path, offset, root } = at;
+      if (text.length > 0) {
+        const marks = normalizeTextMarks(
+          shouldApplyPendingMarks ? getCurrentMarks(editor) : null
+        );
+
+        if (shouldApplyPendingMarks && getCurrentMarks(editor)) {
+          const textInsertionPoint = getPointTextInsertionPoint(
+            editor,
+            at,
+            marks
+          );
+
+          if (textInsertionPoint) {
+            if (!explicitAtPreservesNullSelection) {
+              transforms.setSelection({
+                anchor: textInsertionPoint,
+                focus: textInsertionPoint,
+              });
+            }
+            insertTextAtPoint(editor, textInsertionPoint, text);
             setCurrentMarks(editor, null);
             return;
           }
 
-          insertTextAtPoint(editor, { path, offset, root }, text);
+          transforms.insertNodes(
+            { text, ...(marks ?? {}) },
+            { at, select: !explicitAtPreservesNullSelection, voids }
+          );
+          setCurrentMarks(editor, null);
+          return;
         }
-      };
-      insertAt();
-    });
+
+        insertTextAtPoint(editor, { path, offset, root }, text);
+      }
+    };
+    insertAt();
   };
 
   if (explicitRoot) {

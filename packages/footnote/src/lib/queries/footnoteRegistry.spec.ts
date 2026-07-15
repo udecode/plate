@@ -50,8 +50,8 @@ describe('footnote registry', () => {
     expect(footnote.definitionText({ identifier: '1' })).toBe('body!');
 
     editor.update.selection.set({
-      anchor: { offset: 5, path: [0, 0] },
-      focus: { offset: 5, path: [0, 0] },
+      anchor: { offset: 0, path: [0, 2] },
+      focus: { offset: 0, path: [0, 2] },
     });
     editor.update.insert.footnote({
       focusDefinition: false,

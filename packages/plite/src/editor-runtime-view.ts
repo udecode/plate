@@ -8,7 +8,10 @@ import {
   type InternalEditorRuntime,
   setEditorRuntime,
 } from './core/editor-runtime';
-import { inheritExtensionRegistry } from './core/extension-registry';
+import {
+  getExtensionRegistry,
+  inheritExtensionRegistry,
+} from './core/extension-registry';
 import {
   getCurrentSelection,
   getCurrentSelectionRoot,
@@ -325,10 +328,6 @@ const createRootTransformRegistry = <V extends Value>(
     unwrapNodes: (options) =>
       runRootImplicitTransform(editor, viewState, options, () =>
         registry.unwrapNodes(options)
-      ),
-    withoutNormalizing: (fn) =>
-      registry.withoutNormalizing(() =>
-        runRootTransform(editor, viewState, fn)
       ),
     wrapNodes: (element, options) =>
       runRootImplicitTransform(editor, viewState, options, () =>
@@ -1036,7 +1035,7 @@ export const createEditorView = <
     viewRuntime.read((state) => fn(state as EditorStateView<V, TExtensions>))
   );
   const viewUpdate = createEditorUpdateApi<V, TExtensions>(
-    (fn, updateOptions) => {
+    (fn, policy) => {
       if (viewState.readOnly) {
         throw new Error('Cannot update a read-only editor view.');
       }
@@ -1046,8 +1045,12 @@ export const createEditorView = <
           transaction: EditorUpdateTransaction<V>,
           context: EditorUpdateContext<Editor<V>>
         ) => void,
-        updateOptions
+        { tags: policy.tags }
       );
+    },
+    {
+      hasTxGroup: (groupName) =>
+        getExtensionRegistry(runtime.editor).txGroups.has(groupName),
     }
   );
 

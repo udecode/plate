@@ -20,20 +20,18 @@ export const toggleCodeBlock = (
     match: { type: codeBlockType },
   });
 
-  tx.withoutNormalizing(() => {
-    unwrapCodeBlock(editor, tx);
+  unwrapCodeBlock(editor, tx);
 
-    if (!isActive) {
-      tx.nodes.set({
-        type: codeLineType,
-      });
+  if (!isActive) {
+    tx.nodes.set({
+      type: codeLineType,
+    });
 
-      const codeBlock = {
-        children: [],
-        type: codeBlockType,
-      };
+    const codeBlock = {
+      children: [],
+      type: codeBlockType,
+    };
 
-      tx.nodes.wrap(codeBlock);
-    }
-  });
+    tx.nodes.wrap(codeBlock);
+  }
 };

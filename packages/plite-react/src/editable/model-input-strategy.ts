@@ -228,7 +228,6 @@ export const applyEditableInput = ({
 export const applyModelOwnedBeforeInputOperation = ({
   command: preparedCommand,
   data,
-  deferredOperations,
   editor,
   inputType: type,
   native,
@@ -237,7 +236,6 @@ export const applyModelOwnedBeforeInputOperation = ({
 }: {
   command?: EditableCommand | null;
   data: unknown;
-  deferredOperations: RefBox<DeferredOperation[]>;
   editor: ReactRuntimeEditor;
   inputType: string;
   native: boolean;

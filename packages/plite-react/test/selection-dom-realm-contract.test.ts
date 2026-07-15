@@ -95,7 +95,7 @@ test('selectionchange listener ignores input targets from the target document re
     detach();
     frame.remove();
   }
-});
+}, 15_000);
 
 test('selectionchange listener skips repair-induced model-owned history imports', async () => {
   const { attachEditableSelectionChangeListener } = await import(

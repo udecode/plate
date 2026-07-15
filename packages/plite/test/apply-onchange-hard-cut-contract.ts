@@ -66,17 +66,15 @@ describe('apply/onChange hard cuts', () => {
     commits.length = 0;
 
     editor.update((tx) => {
-      tx.operations.replay(
-        [
-          {
-            type: 'insert_text',
-            path: [0, 0],
-            offset: 3,
-            text: '!',
-          },
-        ],
-        { tag: 'remote-import' }
-      );
+      tx.tags.add('remote-import');
+      tx.operations.replay([
+        {
+          type: 'insert_text',
+          path: [0, 0],
+          offset: 3,
+          text: '!',
+        },
+      ]);
     });
 
     unsubscribe();

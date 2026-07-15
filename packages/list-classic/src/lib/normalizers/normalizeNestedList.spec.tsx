@@ -75,13 +75,16 @@ describe('normalizeNestedList', () => {
     ) as any;
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
-      value: input.children,
+      value: [{ children: [{ text: '' }], type: 'p' }],
     });
-    const entry = editor.read.nodes.get([0, 1])!;
 
     let result = false;
 
     editor.update((tx) => {
+      tx.value.replace({ children: input.children });
+      const entry = tx.nodes.get([0, 1]);
+
+      expect(entry).toBeDefined();
       result = !!normalizeNestedList(editor, tx, {
         nestedListItem: entry as any,
       });

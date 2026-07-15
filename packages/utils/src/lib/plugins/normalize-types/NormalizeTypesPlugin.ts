@@ -32,13 +32,13 @@ export const NormalizeTypesPlugin = createBasePlugin<NormalizeTypesConfig>({
   options: {
     rules: [],
   },
-}).extendExtension(({ editor, getOptions }) => ({
+}).extendExtension(({ getOptions }) => ({
   normalizers: {
     editor({ next, tx }) {
       const { onError, rules = [] } = getOptions();
 
       const normalized = rules.some(({ path, strictType, type }) => {
-        const entry = editor.read.nodes.get(path);
+        const entry = tx.nodes.get(path);
         const node = entry?.[0];
 
         if (node) {

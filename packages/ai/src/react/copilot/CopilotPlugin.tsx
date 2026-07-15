@@ -174,7 +174,7 @@ export const CopilotPlugin = createPlatePlugin<CopilotPluginConfig>({
 
           if (typeof blockId !== 'string') return;
 
-          editor.update.history.skip((tx) => {
+          editor.update({ history: 'skip' }, (tx) => {
             tx.setField(copilotSuggestionField, { id: blockId, text });
           });
         },
@@ -197,7 +197,7 @@ export const CopilotPlugin = createPlatePlugin<CopilotPluginConfig>({
 
       api.stop();
 
-      editor.update.history.skip((tx) => {
+      editor.update({ history: 'skip' }, (tx) => {
         tx.setField(copilotSuggestionField, { id: null, text: null });
       });
       setOptions({ completion: null });

@@ -1,4 +1,5 @@
 import type { BaseEditor } from '@platejs/core';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 import { PathApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
@@ -12,8 +13,9 @@ import type { TFootnoteElement } from '../types';
 
 export const getFootnoteDefinition = (
   editor: BaseEditor,
-  { identifier }: { identifier: string }
-) => getRegistryDefinition(editor, { identifier });
+  { identifier }: { identifier: string },
+  tx?: EditorUpdateTransaction
+) => getRegistryDefinition(editor, { identifier }, tx);
 
 export const getFootnoteDefinitions = (editor: BaseEditor) =>
   editor.read.nodes.toArray<TFootnoteElement>({
@@ -23,8 +25,9 @@ export const getFootnoteDefinitions = (editor: BaseEditor) =>
 
 export const getFootnoteDefinitionsByIdentifier = (
   editor: BaseEditor,
-  { identifier }: { identifier: string }
-) => getRegistryDefinitions(editor, { identifier });
+  { identifier }: { identifier: string },
+  tx?: EditorUpdateTransaction
+) => getRegistryDefinitions(editor, { identifier }, tx);
 
 export const getDuplicateFootnoteDefinitions = (
   editor: BaseEditor,
@@ -54,7 +57,8 @@ export const getFootnoteIdentifiers = (editor: BaseEditor) =>
 
 export const isDuplicateFootnoteDefinition = (
   editor: BaseEditor,
-  { path }: { path: number[] }
+  { path }: { path: number[] },
+  tx?: EditorUpdateTransaction
 ) => {
   const entry = editor.read.nodes.get<TFootnoteElement>(path);
 
@@ -69,7 +73,7 @@ export const isDuplicateFootnoteDefinition = (
 
   if (!identifier) return false;
 
-  return getRegistryDefinitions(editor, { identifier }).some(
+  return getRegistryDefinitions(editor, { identifier }, tx).some(
     ([, definitionPath], index) =>
       index > 0 && PathApi.equals(definitionPath, path)
   );
