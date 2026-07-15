@@ -1,5 +1,6 @@
 /** @jsx jsx */
 
+import assert from 'node:assert/strict';
 import { createPlateEditor } from '@platejs/core/react';
 import type { TTableCellElement } from '@platejs/utils';
 import { jsx, type TestEditor } from '@platejs/test-utils';
@@ -56,8 +57,12 @@ const createEditor = () =>
     value: value.children,
   });
 
-const getCell = (editor: ReturnType<typeof createEditor>, path: number[]) =>
-  editor.read.nodes.get<TTableCellElement>(path, { required: true })[0];
+const getCell = (editor: ReturnType<typeof createEditor>, path: number[]) => {
+  const entry = editor.read.nodes.get<TTableCellElement>(path);
+  assert(entry);
+
+  return entry[0];
+};
 
 describe('getSelectedCellsBoundingBox', () => {
   it('returns the bounds of one cell', () => {

@@ -1,6 +1,11 @@
 import React from 'react';
 
-import type { AnyBasePlugin, RenderElementProps, BaseEditor } from '../lib';
+import {
+  type AnyBasePlugin,
+  type BaseEditor,
+  type RenderElementProps,
+  getEditorPlugin,
+} from '../lib';
 
 import { PliteElement } from './components/plite-nodes';
 import { getPluginDataAttributes } from './utils';
@@ -38,8 +43,11 @@ export const pluginRenderElementStatic = (
     }) as any;
 
     editor.runtime.pluginCache.render.belowNodes.forEach((key) => {
-      const hoc = editor.getPlugin({ key }).render.belowNodes!({
+      const wrapperPlugin = editor.getPlugin({ key });
+      const wrapperContext = getEditorPlugin(editor, wrapperPlugin);
+      const hoc = wrapperPlugin.render.belowNodes!({
         ...nodeProps,
+        ...wrapperContext,
         key,
       } as any);
 
@@ -57,15 +65,26 @@ export const pluginRenderElementStatic = (
         {editor.runtime.pluginCache.render.belowRootNodes.map((key) => {
           const plugin = editor.getPlugin({ key }) as any;
           const Component = plugin.render.belowRootNodes;
+          const pluginContext = getEditorPlugin(editor, plugin);
 
-          return <Component key={key} {...defaultProps} {...nodeProps} />;
+          return (
+            <Component
+              key={key}
+              {...defaultProps}
+              {...nodeProps}
+              {...pluginContext}
+            />
+          );
         })}
       </Element>
     );
 
     editor.runtime.pluginCache.render.aboveNodes.forEach((key) => {
-      const hoc = editor.getPlugin({ key }).render.aboveNodes!({
+      const wrapperPlugin = editor.getPlugin({ key });
+      const wrapperContext = getEditorPlugin(editor, wrapperPlugin);
+      const hoc = wrapperPlugin.render.aboveNodes!({
         ...nodeProps,
+        ...wrapperContext,
         key,
       } as any);
 

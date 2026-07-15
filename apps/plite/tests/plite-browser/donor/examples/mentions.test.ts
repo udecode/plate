@@ -570,6 +570,9 @@ test.describe('mentions example', () => {
           root?: string;
           type?: string;
         }>;
+        selectionAfter?: unknown;
+        selectionBefore?: unknown;
+        selectionChanged?: boolean;
       } | null;
 
       expect(
@@ -585,9 +588,17 @@ test.describe('mentions example', () => {
           },
         },
       ]);
-      expect(
-        lastCommit?.operations?.some((op) => op.type === 'set_selection')
-      ).toBe(true);
+      expect(lastCommit).toMatchObject({
+        selectionAfter: {
+          anchor: { path: [1, 0], offset: beforeFirstMentionText.length },
+          focus: { path: [1, 0], offset: beforeFirstMentionText.length },
+        },
+        selectionBefore: {
+          anchor: { path: [1, 1, 0], offset: 0 },
+          focus: { path: [1, 1, 0], offset: 0 },
+        },
+        selectionChanged: true,
+      });
       runtimeErrors.assertNone();
     } finally {
       runtimeErrors.stop();

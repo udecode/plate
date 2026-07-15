@@ -1,8 +1,12 @@
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import { type Descendant, ElementApi } from '@platejs/plite';
+import {
+  type Descendant,
+  defineEditorExtension,
+  ElementApi,
+} from '@platejs/plite';
 
-export const withGetFragmentExcludeDiff = (
+export const excludeDiffFromFragment = (
   fragment: readonly Descendant[]
 ): Descendant[] => {
   const nextFragment = cloneDeep(fragment) as Descendant[];
@@ -17,3 +21,14 @@ export const withGetFragmentExcludeDiff = (
 
   return nextFragment;
 };
+
+/** Remove diff metadata from fragments copied out of an editor. */
+export const createExcludeDiffFragmentExtension = () =>
+  defineEditorExtension({
+    name: 'exclude-diff-fragment',
+    queries: {
+      fragment: {
+        get: ({ next }) => excludeDiffFromFragment(next()),
+      },
+    },
+  });

@@ -24,10 +24,52 @@ const createVoidElementPlugin = (key: string) =>
     },
   });
 
+const deleteBackwardCharacter = (
+  editor: ReturnType<typeof createBaseEditor>
+) => {
+  editor.update.text.deleteBackward({ unit: 'character' });
+};
+
+const deleteForwardCharacter = (
+  editor: ReturnType<typeof createBaseEditor>
+) => {
+  editor.update.text.deleteForward({ unit: 'character' });
+};
+
+const toggleMark = (
+  editor: ReturnType<typeof createBaseEditor>,
+  key: string,
+  options: { remove?: string } = {}
+) => {
+  editor.update((tx) => {
+    if (options.remove) {
+      tx.marks.remove(options.remove);
+    }
+    tx.marks.toggle(key);
+  });
+};
+
+const isTrailingTextEmpty = (editor: ReturnType<typeof createBaseEditor>) =>
+  editor.read((state) => {
+    const selection = state.selection();
+    if (!selection) return true;
+
+    const blockEntry = state.nodes.block();
+    if (!blockEntry) return true;
+
+    const [, blockPath] = blockEntry;
+    const blockEnd = state.points.end(blockPath);
+
+    if (!blockEnd) return true;
+
+    return (
+      state.text.string({ anchor: selection.focus, focus: blockEnd }) === ''
+    );
+  });
+
 const voidBoundaryCases = [
   {
-    action: (editor: ReturnType<typeof createBaseEditor>) =>
-      editor.tf.deleteBackward('character'),
+    action: deleteBackwardCharacter,
     input: (
       <editor>
         <element type="img">
@@ -49,8 +91,7 @@ const voidBoundaryCases = [
     plugins: [createVoidElementPlugin('img')],
   },
   {
-    action: (editor: ReturnType<typeof createBaseEditor>) =>
-      editor.tf.deleteBackward('character'),
+    action: deleteBackwardCharacter,
     input: (
       <editor>
         <element type="img">
@@ -75,8 +116,7 @@ const voidBoundaryCases = [
     plugins: [createVoidElementPlugin('img')],
   },
   {
-    action: (editor: ReturnType<typeof createBaseEditor>) =>
-      editor.tf.deleteBackward('character'),
+    action: deleteBackwardCharacter,
     input: (
       <editor>
         <hp>previous content</hp>
@@ -100,8 +140,7 @@ const voidBoundaryCases = [
     plugins: [],
   },
   {
-    action: (editor: ReturnType<typeof createBaseEditor>) =>
-      editor.tf.deleteBackward('character'),
+    action: deleteBackwardCharacter,
     input: (
       <editor>
         <element type="img">
@@ -131,8 +170,7 @@ const voidBoundaryCases = [
     plugins: [createVoidElementPlugin('img')],
   },
   {
-    action: (editor: ReturnType<typeof createBaseEditor>) =>
-      editor.tf.deleteBackward('character'),
+    action: deleteBackwardCharacter,
     input: (
       <editor>
         <element type="hr">
@@ -154,8 +192,7 @@ const voidBoundaryCases = [
     plugins: [createVoidElementPlugin('hr')],
   },
   {
-    action: (editor: ReturnType<typeof createBaseEditor>) =>
-      editor.tf.deleteForward('character'),
+    action: deleteForwardCharacter,
     input: (
       <editor>
         <hp>
@@ -178,8 +215,7 @@ const voidBoundaryCases = [
     plugins: [createVoidElementPlugin('hr')],
   },
   {
-    action: (editor: ReturnType<typeof createBaseEditor>) =>
-      editor.tf.deleteForward('character'),
+    action: deleteForwardCharacter,
     input: (
       <editor>
         <hp>
@@ -228,11 +264,18 @@ describe('slate cross-package contracts', () => {
         value: input.children,
       });
 
-      const [, blockPath] = editor.api.block()!;
-      const selectionPath = editor.api
-        .path(input.selection!)!
-        .slice(blockPath.length);
-      const childIndex = selectionPath[0];
+      const [, blockPath] = editor.read.nodes.block()!;
+      const selectionPath = editor.read.nodes.path(input.selection!);
+
+      if (!selectionPath) {
+        throw new Error('Expected the inline selection to resolve to a path');
+      }
+
+      const childIndex = selectionPath[blockPath.length];
+
+      if (childIndex === undefined) {
+        throw new Error('Expected the inline selection to resolve to a child');
+      }
 
       const siblings = Array.from(NodeApi.children(editor as any, blockPath))
         .slice(childIndex + 1)
@@ -260,7 +303,7 @@ describe('slate cross-package contracts', () => {
         value: input.children,
       });
 
-      expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(true);
+      expect(isTrailingTextEmpty(editor)).toBe(true);
     });
 
     it('returns false when text follows the last inline node', () => {
@@ -283,7 +326,7 @@ describe('slate cross-package contracts', () => {
         value: input.children,
       });
 
-      expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(false);
+      expect(isTrailingTextEmpty(editor)).toBe(false);
     });
   });
 
@@ -313,9 +356,9 @@ describe('slate cross-package contracts', () => {
 
       const editor = createMarkEditor(input);
 
-      editor.tf.toggleMark(BoldPlugin.key);
+      toggleMark(editor, BoldPlugin.key);
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read.children()).toEqual(output.children);
     });
 
     it('replaces the removed mark with the new mark', () => {
@@ -342,9 +385,9 @@ describe('slate cross-package contracts', () => {
 
       const editor = createMarkEditor(input);
 
-      editor.tf.toggleMark(ItalicPlugin.key, { remove: BoldPlugin.key });
+      toggleMark(editor, ItalicPlugin.key, { remove: BoldPlugin.key });
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read.children()).toEqual(output.children);
     });
 
     it('adds the inactive mark', () => {
@@ -370,9 +413,9 @@ describe('slate cross-package contracts', () => {
 
       const editor = createMarkEditor(input);
 
-      editor.tf.toggleMark(BoldPlugin.key);
+      toggleMark(editor, BoldPlugin.key);
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read.children()).toEqual(output.children);
     });
   });
 
@@ -387,8 +430,8 @@ describe('slate cross-package contracts', () => {
 
         action(editor);
 
-        expect(editor.children).toEqual(output.children);
-        expect(editor.selection).toEqual(output.selection);
+        expect(editor.read.children()).toEqual(output.children);
+        expect(editor.read.selection()).toEqual(output.selection);
       });
     }
   });

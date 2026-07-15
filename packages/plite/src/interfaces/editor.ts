@@ -360,20 +360,10 @@ export type EditorStateNodesApi = {
   elementReadOnly: (
     options?: WithNodeTarget<EditorElementReadOnlyOptions>
   ) => NodeEntry<Element> | undefined;
-  first: {
-    (at: NodeTarget, options: EditorRequiredTrueQueryOptions): NodeEntry;
-    (at: NodeTarget, options?: EditorFirstReadOptions): NodeEntry | undefined;
-  };
-  get: {
-    <T extends Node>(
-      at: NodeTarget<TargetDescendant<T>>,
-      options: EditorRequiredTrueQueryOptions
-    ): NodeEntry<T>;
-    <T extends Node>(
-      at: NodeTarget<TargetDescendant<T>>,
-      options?: EditorNodeReadOptions
-    ): NodeEntry<T> | undefined;
-  };
+  first: (at: NodeTarget) => NodeEntry | undefined;
+  get: <T extends Node>(
+    at: NodeTarget<TargetDescendant<T>>
+  ) => NodeEntry<T> | undefined;
   hasBlocks: (element: Element) => boolean;
   hasInlines: (element: Element) => boolean;
   hasPath: (path: Path) => boolean;
@@ -381,26 +371,14 @@ export type EditorStateNodesApi = {
   isBlock: (element: Node) => boolean;
   isEmpty: (element: Element) => boolean;
   last: (at: NodeTarget, options?: EditorLastOptions) => NodeEntry | undefined;
-  leaf: {
-    (
-      at: NodeTarget<Text>,
-      options: EditorLeafOptions & EditorRequiredTrueQueryOptions
-    ): NodeEntry<Text>;
-    (
-      at: NodeTarget<Text>,
-      options?: EditorLeafReadOptions
-    ): NodeEntry<Text> | undefined;
-  };
+  leaf: (
+    at: NodeTarget<Text>,
+    options?: EditorLeafOptions
+  ) => NodeEntry<Text> | undefined;
   levels: <T extends Node>(
     options?: WithNodeTarget<EditorLevelsOptions<T>, TargetDescendant<T>>
   ) => Generator<NodeEntry<T>, void, undefined>;
-  path: {
-    (
-      at: NodeTarget,
-      options: EditorPathOptions & EditorRequiredTrueQueryOptions
-    ): Path;
-    (at: NodeTarget, options?: EditorPathReadOptions): Path | undefined;
-  };
+  path: (at: NodeTarget, options?: EditorPathOptions) => Path | undefined;
   entries: <T extends Node>(
     options?: EditorNodesReadOptions<T>
   ) => Generator<NodeEntry<T>, void, undefined>;
@@ -418,24 +396,10 @@ export type EditorStateNodesApi = {
   next: <T extends Descendant>(
     options?: WithNodeTarget<EditorNextOptions<T>, T>
   ) => NodeEntry<T> | undefined;
-  parent: {
-    (
-      at: NodeTarget,
-      options: EditorRequiredTrueQueryOptions
-    ): NodeEntry<Ancestor>;
-    <T extends Ancestor>(
-      at: NodeTarget,
-      options: EditorRequiredTrueQueryOptions
-    ): NodeEntry<T>;
-    (
-      at: NodeTarget,
-      options?: EditorParentReadOptions
-    ): NodeEntry<Ancestor> | undefined;
-    <T extends Ancestor>(
-      at: NodeTarget,
-      options?: EditorParentReadOptions
-    ): NodeEntry<T> | undefined;
-  };
+  parent: <T extends Ancestor = Ancestor>(
+    at: NodeTarget,
+    options?: EditorParentOptions
+  ) => NodeEntry<T> | undefined;
   previous: <T extends Node>(
     options?: WithNodeTarget<EditorPreviousOptions<T>, TargetDescendant<T>>
   ) => NodeEntry<T> | undefined;
@@ -582,17 +546,8 @@ export type EditorTransactionBlocksApi<V extends Value = Value> = {
 export type EditorStatePointsApi = {
   after: (at: NodeTarget, options?: EditorAfterOptions) => Point | undefined;
   before: (at: NodeTarget, options?: EditorBeforeOptions) => Point | undefined;
-  end: {
-    (at: NodeTarget, options: EditorRequiredTrueQueryOptions): Point;
-    (at: NodeTarget, options?: EditorReadOptions): Point | undefined;
-  };
-  get: {
-    (
-      at: NodeTarget,
-      options: EditorPointOptions & EditorRequiredTrueQueryOptions
-    ): Point;
-    (at: NodeTarget, options?: EditorPointReadOptions): Point | undefined;
-  };
+  end: (at: NodeTarget) => Point | undefined;
+  get: (at: NodeTarget, options?: EditorPointOptions) => Point | undefined;
   isEdge: (point: Point, at: NodeTarget) => boolean;
   isEnd: (point: Point, at: NodeTarget) => boolean;
   isStart: (point: Point, at: NodeTarget) => boolean;
@@ -600,32 +555,14 @@ export type EditorStatePointsApi = {
   positions: (
     options?: WithNodeTarget<EditorPositionsOptions>
   ) => Generator<Point, void, undefined>;
-  start: {
-    (at: NodeTarget, options: EditorRequiredTrueQueryOptions): Point;
-    (at: NodeTarget, options?: EditorReadOptions): Point | undefined;
-  };
+  start: (at: NodeTarget) => Point | undefined;
 };
 
 export type EditorStateRangesApi = {
   bookmark: (range: Range, options?: BookmarkOptions) => Bookmark;
-  edges: {
-    (at: NodeTarget, options: EditorRequiredTrueQueryOptions): [Point, Point];
-    (at: NodeTarget, options?: EditorReadOptions): [Point, Point] | undefined;
-  };
+  edges: (at: NodeTarget) => [Point, Point] | undefined;
   fromEntries: (entries: readonly NodeEntry[]) => Range | undefined;
-  get: {
-    (
-      at: NodeTarget,
-      to: Location,
-      options: EditorRequiredTrueQueryOptions
-    ): Range;
-    (at: NodeTarget, options: EditorRequiredTrueQueryOptions): Range;
-    (
-      at: NodeTarget,
-      toOrOptions?: Location | EditorReadOptions,
-      options?: EditorReadOptions
-    ): Range | undefined;
-  };
+  get: (at: NodeTarget, to?: Location) => Range | undefined;
   project: (range: Range) => readonly ProjectedRangeSegment[];
   unhang: (range: Range, options?: EditorUnhangRangeOptions) => Range;
 };
@@ -1294,8 +1231,8 @@ export type EditorQueryMiddlewareArgs<_V extends Value = Value> = {
     elementReadOnly: { options?: EditorElementReadOnlyOptions };
     entries: { options?: EditorNodesOptions<Node> };
     find: { options?: EditorNodesOptions<Node> };
-    first: { at: Location; options?: EditorFirstReadOptions };
-    get: { at: Location; options?: EditorNodeReadOptions };
+    first: { at: Location };
+    get: { at: Location };
     hasBlocks: { element: Element };
     hasInlines: { element: Element };
     hasPath: { path: Path };
@@ -1303,11 +1240,11 @@ export type EditorQueryMiddlewareArgs<_V extends Value = Value> = {
     isBlock: { element: Node };
     isEmpty: { element: Element };
     last: { at: Location; options?: EditorLastOptions };
-    leaf: { at: Location; options?: EditorLeafReadOptions };
+    leaf: { at: Location; options?: EditorLeafOptions };
     levels: { options?: EditorLevelsOptions<Node> };
     next: { options?: EditorNextOptions<Descendant> };
-    parent: { at: Location; options?: EditorParentReadOptions };
-    path: { at: Location; options?: EditorPathReadOptions };
+    parent: { at: Location; options?: EditorParentOptions };
+    path: { at: Location; options?: EditorPathOptions };
     previous: { options?: EditorPreviousOptions<Node> };
     shouldMergeNodesRemovePrevNode: {
       current: NodeEntry;
@@ -1323,22 +1260,20 @@ export type EditorQueryMiddlewareArgs<_V extends Value = Value> = {
   points: {
     after: { at: Location; options?: EditorAfterOptions };
     before: { at: Location; options?: EditorBeforeOptions };
-    end: { at: Location; options?: EditorReadOptions };
-    get: { at: Location; options?: EditorPointReadOptions };
+    end: { at: Location };
+    get: { at: Location; options?: EditorPointOptions };
     isEdge: { at: Location; point: Point };
     isEnd: { at: Location; point: Point };
     isStart: { at: Location; point: Point };
     positions: { options?: EditorPositionsOptions };
-    start: { at: Location; options?: EditorReadOptions };
+    start: { at: Location };
   };
   ranges: {
-    edges: { at: Location; options?: EditorReadOptions };
+    edges: { at: Location };
     fromEntries: { entries: readonly NodeEntry[] };
     get: {
       at: Location;
-      options?: EditorReadOptions;
       to?: Location;
-      toOrOptions?: Location | EditorReadOptions;
     };
     project: { range: Range };
     unhang: { options?: EditorUnhangRangeOptions; range: Range };
@@ -2341,10 +2276,6 @@ export interface EditorLeafOptions {
   edge?: LeafEdge;
 }
 
-export interface EditorLeafReadOptions
-  extends EditorLeafOptions,
-    EditorRequiredQueryOptions {}
-
 export interface EditorLevelsOptions<T extends Node> {
   at?: Location;
   match?: NodeMatch<T>;
@@ -2355,8 +2286,6 @@ export interface EditorLevelsOptions<T extends Node> {
 export interface EditorLastOptions {
   level?: number;
 }
-
-export interface EditorFirstReadOptions extends EditorRequiredQueryOptions {}
 
 export interface EditorNextOptions<T extends Descendant> {
   at?: Location;
@@ -2370,16 +2299,6 @@ export interface EditorNodeOptions {
   depth?: number;
   edge?: LeafEdge;
 }
-
-export interface EditorRequiredQueryOptions {
-  required?: boolean;
-}
-
-export interface EditorRequiredTrueQueryOptions {
-  required: true;
-}
-
-export interface EditorNodeReadOptions extends EditorRequiredQueryOptions {}
 
 export interface EditorNodesOptions<T extends Node> {
   at?: Location | Span;
@@ -2402,18 +2321,10 @@ export interface EditorParentOptions {
   edge?: LeafEdge;
 }
 
-export interface EditorParentReadOptions
-  extends EditorParentOptions,
-    EditorRequiredQueryOptions {}
-
 export interface EditorPathOptions {
   depth?: number;
   edge?: LeafEdge;
 }
-
-export interface EditorPathReadOptions
-  extends EditorPathOptions,
-    EditorRequiredQueryOptions {}
 
 export interface EditorPathRefOptions {
   affinity?: TextDirection | null;
@@ -2423,12 +2334,6 @@ export interface EditorPathRefOptions {
 export interface EditorPointOptions {
   edge?: LeafEdge;
 }
-
-export interface EditorPointReadOptions
-  extends EditorPointOptions,
-    EditorRequiredQueryOptions {}
-
-export interface EditorReadOptions extends EditorRequiredQueryOptions {}
 
 export interface EditorPointRefOptions {
   affinity?: TextDirection | null;

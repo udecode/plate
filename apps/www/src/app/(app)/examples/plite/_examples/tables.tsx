@@ -132,15 +132,10 @@ const TablesExample = () => {
         } else if (rowIndex > 0) {
           const previousRowPath = [...tablePath, rowIndex - 1];
 
-          if (tx.nodes.hasPath(previousRowPath)) {
-            const [previousRow] = tx.nodes.get(previousRowPath);
+          const previousRow = tx.nodes.get(previousRowPath)?.[0];
 
-            if (NodeApi.isElement(previousRow)) {
-              targetPath = [
-                ...previousRowPath,
-                previousRow.children.length - 1,
-              ];
-            }
+          if (previousRow && NodeApi.isElement(previousRow)) {
+            targetPath = [...previousRowPath, previousRow.children.length - 1];
           }
         }
       } else {
@@ -158,8 +153,12 @@ const TablesExample = () => {
       }
 
       if (targetPath) {
-        tx.selection.set(tx.points.start(targetPath));
-        moved = true;
+        const point = tx.points.start(targetPath);
+
+        if (point) {
+          tx.selection.set(point);
+          moved = true;
+        }
       }
     });
 
@@ -194,7 +193,7 @@ const table = () =>
     name: 'table',
     transforms: {
       deleteBackward({ next, tx, unit }) {
-        const selection = tx.selection.get();
+        const selection = tx.selection();
 
         if (selection && RangeApi.isCollapsed(selection)) {
           const cell = tx.nodes.find({
@@ -205,7 +204,7 @@ const table = () =>
             const [, cellPath] = cell;
             const start = tx.points.start(cellPath);
 
-            if (PointApi.equals(selection.anchor, start)) {
+            if (start && PointApi.equals(selection.anchor, start)) {
               return true;
             }
           }
@@ -214,7 +213,7 @@ const table = () =>
         return next({ unit });
       },
       deleteForward({ next, tx, unit }) {
-        const selection = tx.selection.get();
+        const selection = tx.selection();
 
         if (selection && RangeApi.isCollapsed(selection)) {
           const cell = tx.nodes.find({
@@ -225,7 +224,7 @@ const table = () =>
             const [, cellPath] = cell;
             const end = tx.points.end(cellPath);
 
-            if (PointApi.equals(selection.anchor, end)) {
+            if (end && PointApi.equals(selection.anchor, end)) {
               return true;
             }
           }
@@ -234,7 +233,7 @@ const table = () =>
         return next({ unit });
       },
       insertBreak({ next, tx }) {
-        const selection = tx.selection.get();
+        const selection = tx.selection();
 
         if (selection && RangeApi.isCollapsed(selection)) {
           const cell = tx.nodes.find({

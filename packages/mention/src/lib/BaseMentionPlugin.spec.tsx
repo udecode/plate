@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
 import type { Element } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
@@ -37,9 +38,9 @@ describe('BaseMentionPlugin', () => {
 
     editor.update.mention.insert({ key: 'u1', value: 'Ada' });
 
-    const children = editor.read.nodes.get<Element>([0], {
-      required: true,
-    })[0].children;
+    const entry = editor.read.nodes.get<Element>([0]);
+    assert(entry);
+    const children = entry[0].children;
 
     expect(children[0]).toEqual({ text: 'he' });
     expect(children[1]).toMatchObject({

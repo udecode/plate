@@ -1,5 +1,6 @@
 import { SuggestionPlugin } from '@platejs/suggestion/react';
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBaseEditor, KEYS } from 'platejs';
+import { CodeBlockPlugin } from '@platejs/code-block/react';
 
 import { BaseBlockquotePlugin } from '../../../../../../packages/basic-nodes/src/lib/BaseBlockquotePlugin';
 import { insertBlock, setBlockType } from './transforms';
@@ -17,8 +18,8 @@ const createEditor = ({
   selection: any;
   value: any;
 }> = {}) =>
-  createSlateEditor({
-    plugins: [BaseBlockquotePlugin, SuggestionPlugin],
+  createBaseEditor({
+    plugins: [BaseBlockquotePlugin, CodeBlockPlugin, SuggestionPlugin],
     selection,
     value,
   } as any);
@@ -29,14 +30,14 @@ describe('editor block transforms', () => {
 
     setBlockType(editor as any, KEYS.blockquote);
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       { children: [{ text: 'one' }], type: 'p' },
       {
         children: [{ children: [{ text: 'two' }], type: 'p' }],
         type: 'blockquote',
       },
     ]);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 2, path: [1, 0, 0] },
       focus: { offset: 2, path: [1, 0, 0] },
     });
@@ -47,14 +48,14 @@ describe('editor block transforms', () => {
 
     setBlockType(editor as any, KEYS.blockquote, { at: [1] });
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       { children: [{ text: 'one' }], type: 'p' },
       {
         children: [{ children: [{ text: 'two' }], type: 'p' }],
         type: 'blockquote',
       },
     ]);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 2, path: [1, 0, 0] },
       focus: { offset: 2, path: [1, 0, 0] },
     });
@@ -65,7 +66,7 @@ describe('editor block transforms', () => {
 
     insertBlock(editor as any, KEYS.blockquote);
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       { children: [{ text: 'one' }], type: 'p' },
       { children: [{ text: 'two' }], type: 'p' },
       {
@@ -73,7 +74,7 @@ describe('editor block transforms', () => {
         type: 'blockquote',
       },
     ]);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [2, 0, 0] },
       focus: { offset: 0, path: [2, 0, 0] },
     });
@@ -93,16 +94,39 @@ describe('editor block transforms', () => {
 
     insertBlock(editor as any, KEYS.blockquote);
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       { children: [{ text: 'one' }], type: 'p' },
       {
         children: [{ children: [{ text: '' }], type: 'p' }],
         type: 'blockquote',
       },
     ]);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
+  });
+
+  it('keeps a code block converted in place from an empty paragraph', () => {
+    const editor = createEditor({
+      selection: {
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      },
+      value: [
+        { children: [{ text: 'one' }], type: 'p' },
+        { children: [{ text: '' }], type: 'p' },
+      ],
+    });
+
+    insertBlock(editor as any, KEYS.codeBlock);
+
+    expect(editor.read.children()).toMatchObject([
+      { children: [{ text: 'one' }], type: 'p' },
+      {
+        children: [{ children: [{ text: '' }], type: 'code_line' }],
+        type: 'code_block',
+      },
+    ]);
   });
 });

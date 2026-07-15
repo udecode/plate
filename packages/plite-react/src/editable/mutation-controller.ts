@@ -43,6 +43,7 @@ import { decodeProjectedClipboardFragment } from './projected-clipboard';
 import { resolveProjectedSelectionTarget } from './projected-selection-target';
 import {
   type Editor,
+  failInvariant,
   getEditorExtensionRegistry,
   type Editor as RuntimeEditor,
   rangeRef as editorRangeRef,
@@ -545,8 +546,10 @@ const applyRootLocalSelectionMoveCommand = ({
   editor.update((tx) => {
     if (command.axis === 'document') {
       const point = command.reverse
-        ? tx.points.start([], { required: true })
-        : tx.points.end([], { required: true });
+        ? (tx.points.start([]) ??
+          failInvariant('Expected a document start point for selection move'))
+        : (tx.points.end([]) ??
+          failInvariant('Expected a document end point for selection move'));
 
       tx.selection.set(
         command.extend
@@ -786,8 +789,14 @@ export const applyEditableCommand = ({
           command.kind === 'select'
             ? command.selection
             : {
-                anchor: tx.points.start([], { required: true }),
-                focus: tx.points.end([], { required: true }),
+                anchor:
+                  tx.points.start([]) ??
+                  failInvariant(
+                    'Expected a document start point for select all'
+                  ),
+                focus:
+                  tx.points.end([]) ??
+                  failInvariant('Expected a document end point for select all'),
               };
         tx.selection.set(nextSelection);
       });

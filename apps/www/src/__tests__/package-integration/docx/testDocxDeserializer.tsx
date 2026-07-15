@@ -1,6 +1,5 @@
 /** @jsx jsx */
 
-import { type BasePlugin, createBaseEditor } from 'platejs';
 import { TextAlignPlugin } from '@platejs/basic-styles/react';
 import { BasicBlocksPlugin } from '@platejs/basic-nodes/react';
 import { BasicMarksPlugin } from '@platejs/basic-nodes/react';
@@ -16,6 +15,8 @@ import { jsx } from '@platejs/test-utils';
 
 import { DocxPlugin } from '@platejs/docx';
 import { readTestFile } from './readTestFile';
+import { createBaseEditor } from '../../../../../../packages/core/src/lib/editor';
+import type { BasePlugin } from '../../../../../../packages/core/src/lib/plugin';
 
 // biome-ignore lint/suspicious/noUnusedExpressions: test
 jsx;
@@ -76,10 +77,10 @@ export const testDocxDeserializer = ({
       value: input.children,
     } as any);
 
-    actual.tf.insertData(
+    actual.api.clipboard.insertData(
       createClipboardData(readTestFile(`./${filename}.html`))
     );
 
-    expect(actual.children).toEqual(expected.children);
+    expect(actual.read.children()).toEqual(expected.children);
   });
 };

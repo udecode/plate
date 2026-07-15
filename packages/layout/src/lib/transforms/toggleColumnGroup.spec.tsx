@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
 import type { Selection, Value } from '@platejs/plite';
 import type { TColumnGroupElement } from '@platejs/utils';
@@ -12,6 +13,13 @@ const createEditor = ({
   value: Value;
 }) => createBaseEditor({ plugins: [BaseColumnPlugin], selection, value });
 
+const getColumnGroup = (editor: ReturnType<typeof createEditor>) => {
+  const entry = editor.read.nodes.get<TColumnGroupElement>([0]);
+  assert(entry);
+
+  return entry[0];
+};
+
 describe('toggleColumnGroup', () => {
   it('wraps the selected block in a column group', () => {
     const editor = createEditor({
@@ -24,9 +32,7 @@ describe('toggleColumnGroup', () => {
 
     editor.update.column.toggle({ columns: 2 });
 
-    const group = editor.read.nodes.get<TColumnGroupElement>([0], {
-      required: true,
-    })[0];
+    const group = getColumnGroup(editor);
 
     expect(group.children).toHaveLength(2);
     expect(editor.read.text.string([0, 0])).toBe('Some paragraph text');
@@ -60,9 +66,7 @@ describe('toggleColumnGroup', () => {
 
     editor.update.column.toggle({ columns: 3 });
 
-    const group = editor.read.nodes.get<TColumnGroupElement>([0], {
-      required: true,
-    })[0];
+    const group = getColumnGroup(editor);
 
     expect(group.children).toHaveLength(3);
     expect(group.children.map((column) => column.width)).toEqual([

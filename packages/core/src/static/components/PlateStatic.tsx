@@ -18,7 +18,7 @@ import {
 import clsx from 'clsx';
 
 import type { EditableProps, BaseEditor } from '../../lib';
-import type { SlateRenderElementProps } from '../types';
+import type { PliteRenderElementProps } from '../types';
 
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
 import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic';
@@ -41,9 +41,8 @@ function BaseElementStatic({
 }) {
   const renderElement = pipeRenderElementStatic(editor);
 
-  const attributes: SlateRenderElementProps['attributes'] = {
+  const attributes: PliteRenderElementProps['attributes'] = {
     'data-plite-node': 'element',
-    ref: null,
   };
 
   let children: React.ReactNode = (

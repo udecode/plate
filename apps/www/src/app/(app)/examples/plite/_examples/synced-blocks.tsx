@@ -2,6 +2,7 @@ import type { PointerEvent } from 'react';
 import { defineEditorExtension } from '@platejs/plite';
 import {
   Editable,
+  type EditableProps,
   type RenderElementProps,
   type RenderLeafProps,
   Plite,
@@ -58,6 +59,11 @@ const createSyncedBlockBody = (
 
 const cloneValue = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
+const textInvariantDOMStrategy: EditableProps['domStrategy'] = {
+  textSync: { renderLeaf: 'text-invariant' },
+  type: 'full',
+};
+
 const getNextSiblingPath = (path: readonly number[]) => [
   ...path.slice(0, -1),
   (path.at(-1) ?? 0) + 1,
@@ -96,6 +102,7 @@ const SyncedBlocksExample = () => {
 
       <Editable
         aria-label="Synced blocks editor"
+        domStrategy={textInvariantDOMStrategy}
         placeholder="Write around synced blocks..."
         renderElement={renderElement}
         renderLeaf={renderLeaf}
@@ -179,10 +186,8 @@ const SyncedBlock = ({
       return;
     }
 
-    editor.update((tx) => {
-      tx.nodes.insert(createSyncedBlock(bodyRoot), {
-        at: getNextSiblingPath(path),
-      });
+    editor.update.nodes.insert(createSyncedBlock(bodyRoot), {
+      at: getNextSiblingPath(path),
     });
   };
 
@@ -192,7 +197,7 @@ const SyncedBlock = ({
     }
 
     const nextRoot = nextSyncedBlockRoot();
-    const body = editor.read((state) => state.value.root(bodyRoot));
+    const body = editor.read.root(bodyRoot);
 
     editor.update((tx) => {
       tx.roots.create(
@@ -247,6 +252,7 @@ const SyncedBlock = ({
       {slots.contentRoot('body', {
         ariaLabel: `Synced block ${element.copyId} content`,
         className: 'plite-synced-blocks-synced-block-body',
+        domStrategy: textInvariantDOMStrategy,
         placeholder: 'Empty synced block',
       })}
     </section>

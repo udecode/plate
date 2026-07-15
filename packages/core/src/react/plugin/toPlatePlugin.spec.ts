@@ -1,10 +1,11 @@
-import type { PlatePlugin } from './PlatePlugin';
+import type { PlatePlugin, RenderNodeWrapper } from './PlatePlugin';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import {
   type ExtendConfig,
   type NodeComponent,
   type PluginConfig,
+  type WithAnyKey,
   type BasePlugin,
   createBasePlugin,
 } from '../../lib';
@@ -145,6 +146,32 @@ describe('toPlatePlugin', () => {
 });
 
 describe('toPlatePlugin type tests', () => {
+  it('keeps resolved options required inside configured render callbacks', () => {
+    type RequiredOptionsConfig = PluginConfig<
+      'required-options',
+      { enabled: boolean; label: string }
+    >;
+
+    const wrapper: RenderNodeWrapper<WithAnyKey<RequiredOptionsConfig>> = ({
+      getOptions,
+    }) => {
+      const { enabled, label } = getOptions();
+
+      return enabled ? ({ children }) => `${label}:${children}` : undefined;
+    };
+    const plugin = toPlatePlugin(
+      createBasePlugin<RequiredOptionsConfig>({
+        key: 'required-options',
+        options: { enabled: true, label: 'ready' },
+      })
+    ).configure({
+      options: { enabled: false },
+      render: { belowNodes: wrapper },
+    });
+
+    expect(plugin.options.label).toBe('ready');
+  });
+
   it('work with CodeBlockConfig for toPlatePlugin', () => {
     const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
       key: 'code_block',

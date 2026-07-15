@@ -1,5 +1,5 @@
 import type { BaseEditor } from '../editor';
-import type { ParserOptions } from '../plugin/SlatePlugin';
+import type { ParserOptions } from '../plugin/PluginConfig';
 import type { AnyBasePlugin } from '../plugin/BasePlugin';
 
 import { getEditorPlugin } from '../plugin';

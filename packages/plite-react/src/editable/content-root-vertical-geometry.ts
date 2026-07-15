@@ -145,9 +145,9 @@ export const resolveVerticalNavigationPoint = ({
 
   if (!targetPoint) {
     const emptyFallback = targetEditor.read((state) => {
-      const [node] = state.nodes.get(fallbackPoint.path, { required: true });
+      const node = state.nodes.get(fallbackPoint.path)?.[0];
 
-      return NodeApi.isText(node) && node.text.length === 0;
+      return !!node && NodeApi.isText(node) && node.text.length === 0;
     });
 
     return emptyFallback ? fallbackPoint : null;

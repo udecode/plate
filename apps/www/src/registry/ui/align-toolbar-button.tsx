@@ -44,12 +44,13 @@ const items = [
 ];
 
 export function AlignToolbarButton(props: DropdownMenuProps) {
-  const { editor, tf } = useEditorPlugin(TextAlignPlugin);
+  const { editor } = useEditorPlugin(TextAlignPlugin);
   const value =
     useSelectionFragmentProp({
       defaultValue: 'start',
-      getProp: (node) => node.align,
+      getProp: (node) => (node as { align?: Alignment }).align,
     }) ?? 'left';
+  const selectedValue = String(value);
 
   const [open, setOpen] = React.useState(false);
   const IconValue =
@@ -65,10 +66,10 @@ export function AlignToolbarButton(props: DropdownMenuProps) {
 
       <DropdownMenuContent className="min-w-0" align="start">
         <DropdownMenuRadioGroup
-          value={value}
+          value={selectedValue}
           onValueChange={(value) => {
-            tf.textAlign.setNodes(value as Alignment);
-            editor.tf.focus();
+            editor.plugin(TextAlignPlugin).update.set(value as Alignment);
+            editor.api.dom?.focus?.();
           }}
         >
           {items.map(({ icon: Icon, value: itemValue }) => (

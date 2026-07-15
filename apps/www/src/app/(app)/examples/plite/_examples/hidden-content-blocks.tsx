@@ -254,8 +254,12 @@ const HiddenContentBlocksExample = () => {
   const selectAndCopy = useCallback(
     (path: number[]) => {
       editor.update((tx) => {
-        const [node] = editor.read((readState) => readState.nodes.get(path));
-        const text = node ? NodeApi.string(node) : '';
+        const entry = editor.read.nodes.get(path);
+
+        if (!entry) return;
+
+        const [node] = entry;
+        const text = NodeApi.string(node);
 
         tx.selection.set({
           anchor: { offset: 0, path },

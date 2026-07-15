@@ -24,7 +24,7 @@ describe('pipeRenderElementStatic', () => {
       pipeRenderElementStatic(editor, {
         renderElement,
       })({
-        attributes: { 'data-plite-node': 'element', ref: null },
+        attributes: { 'data-plite-node': 'element' },
         children: 'Body',
         element: {
           children: [{ text: 'Body' }],
@@ -47,7 +47,7 @@ describe('pipeRenderElementStatic', () => {
         return <mark data-kind="fallback">{children}</mark>;
       },
     })({
-      attributes: { 'data-plite-node': 'element', ref: null },
+      attributes: { 'data-plite-node': 'element' },
       children: 'Body',
       element: {
         children: [{ text: 'Body' }],
@@ -76,7 +76,7 @@ describe('pipeRenderElementStatic', () => {
     });
     const markup = ReactDOMServer.renderToStaticMarkup(
       pipeRenderElementStatic(editor)({
-        attributes: { 'data-plite-node': 'element', ref: null },
+        attributes: { 'data-plite-node': 'element' },
         children: 'Body',
         element: {
           children: [{ text: 'Body' }],

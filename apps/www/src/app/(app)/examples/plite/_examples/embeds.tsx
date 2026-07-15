@@ -123,9 +123,7 @@ const VideoElement = ({ element }: RenderVoidProps<VideoElementType>) => {
             return;
           }
 
-          editor.update((tx) => {
-            tx.nodes.set({ url: val }, { at: path, voids: true });
-          });
+          editor.update.nodes.set({ url: val }, { at: path, voids: true });
         }}
         url={url}
       />

@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import assert from 'node:assert/strict';
 import { type TTableCellElement } from '@platejs/utils';
 import { createPlateEditor } from '@platejs/core/react';
 
@@ -128,7 +129,7 @@ describe('setSelectedCellsBorder integration', () => {
     expect(editor.read.nodes.path(cells[1])).toEqual([0, 1, 1]);
     expect(
       getLeftTableCell(editor, {
-        at: editor.read.nodes.path(cells[1], { required: true }),
+        at: editor.read.nodes.path(cells[1]),
       })?.[0].id
     ).toBe('c21');
 
@@ -324,9 +325,9 @@ describe('setSelectedCellsBorder integration', () => {
     ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const target = editor.read.nodes.get<TTableCellElement>([0, 1, 1], {
-      required: true,
-    })[0];
+    const entry = editor.read.nodes.get<TTableCellElement>([0, 1, 1]);
+    assert(entry);
+    const [target] = entry;
 
     expect(target.id).toBe('c22');
 

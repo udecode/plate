@@ -204,7 +204,7 @@ export const DocIcons = {
   'mark-toolbar-button': BoldIcon,
   markdown: SquareMIcon,
   'markdown-streaming': SquareMIcon,
-  'markdown-to-slate': SquareMIcon,
+  'markdown-to-plite': SquareMIcon,
   media: ImageIcon,
   'media-audio-node': AudioLinesIcon,
   'media-embed-node': DockIcon,

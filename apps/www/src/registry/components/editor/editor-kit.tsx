@@ -1,7 +1,7 @@
 'use client';
 
 import { type Value, TrailingBlockPlugin } from 'platejs';
-import { type TPlateEditor, useEditorRef } from 'platejs/react';
+import { type PlateEditor, useEditorRef } from 'platejs/react';
 
 import { AIKit } from './plugins/ai-kit';
 import { AlignKit } from './plugins/align-kit';
@@ -21,6 +21,7 @@ import { DiscussionKit } from './plugins/discussion-kit';
 import { DndKit } from './plugins/dnd-kit';
 import { DocxKit } from './plugins/docx-kit';
 import { EmojiKit } from './plugins/emoji-kit';
+import { ExcalidrawKit } from './plugins/excalidraw-kit';
 import { ExitBreakKit } from './plugins/exit-break-kit';
 import { FixedToolbarKit } from './plugins/fixed-toolbar-kit';
 import { FloatingToolbarKit } from './plugins/floating-toolbar-kit';
@@ -47,6 +48,7 @@ export const EditorKit = [
   ...BasicBlocksKit,
   ...CodeBlockKit,
   ...CodeDrawingKit,
+  ...ExcalidrawKit,
   ...TableKit,
   ...ToggleKit,
   ...TocKit,
@@ -92,6 +94,6 @@ export const EditorKit = [
   ...FloatingToolbarKit,
 ];
 
-export type MyEditor = TPlateEditor<Value, (typeof EditorKit)[number]>;
+export type MyEditor = PlateEditor<Value, (typeof EditorKit)[number]>;
 
 export const useEditor = () => useEditorRef<MyEditor>();

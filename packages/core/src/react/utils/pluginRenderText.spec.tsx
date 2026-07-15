@@ -29,7 +29,7 @@ it('uses a plain render.as fast path for simple text plugins', () => {
     renderText({
       attributes: {
         'data-plite-node': 'text',
-        className: 'from-slate',
+        className: 'from-plite',
       } as any,
       children: 'test content',
       text: { test: true, text: 'test content' } as any,
@@ -41,7 +41,7 @@ it('uses a plain render.as fast path for simple text plugins', () => {
 
   expect(text).not.toBeNull();
   expect(text).toHaveClass('plite-test');
-  expect(text).toHaveClass('from-slate');
+  expect(text).toHaveClass('from-plite');
   expect(text).toHaveAttribute('data-plite-node', 'text');
   expect(text).toHaveTextContent('test content');
 });

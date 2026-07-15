@@ -3,8 +3,8 @@ import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import type {
-  Element,
   EditorNodesOptions,
+  Node,
   NodeEntry,
   Path,
   Range,
@@ -63,11 +63,11 @@ export type AIChatPluginConfig = PluginConfig<
       hide: (options?: { focus?: boolean; undo?: boolean }) => void;
       insertBelow: OmitFirst<typeof insertBelowAIChat>;
       node: (
-        options?: EditorNodesOptions<Element> & {
+        options?: EditorNodesOptions<Node> & {
           anchor?: boolean;
           streaming?: boolean;
         }
-      ) => NodeEntry<Element> | undefined;
+      ) => NodeEntry<Node> | undefined;
       reload: () => void;
       replaceSelection: OmitFirst<typeof replaceSelectionAIChat>;
       show: () => void;
@@ -133,7 +133,7 @@ export const AIChatPlugin = createPlatePlugin<AIChatPluginConfig>({
         const { anchor = false, streaming = false, ...rest } = options;
 
         if (anchor) {
-          return editor.read.nodes.find<Element>({
+          return editor.read.nodes.find<Node>({
             at: [],
             match: { type },
             ...rest,
@@ -148,7 +148,7 @@ export const AIChatPlugin = createPlatePlugin<AIChatPluginConfig>({
           const path = getOption('_blockPath');
           if (!path) return;
 
-          return editor.read.nodes.find<Element>({
+          return editor.read.nodes.find<Node>({
             at: path,
             mode: 'lowest',
             reverse: true,
@@ -157,7 +157,7 @@ export const AIChatPlugin = createPlatePlugin<AIChatPluginConfig>({
           });
         }
 
-        return editor.read.nodes.find<Element>({
+        return editor.read.nodes.find<Node>({
           match: (node) => Boolean(Reflect.get(node, aiType)),
           ...rest,
         });

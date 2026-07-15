@@ -10,14 +10,14 @@ describe('ListKit current contract', () => {
       value: [{ children: [{ text: '-' }], type: 'p' }],
     });
 
-    editor.tf.select({
+    editor.update.selection.set({
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     });
 
-    editor.tf.insertText(' ');
+    editor.update.text.insert(' ');
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: '' }],
         indent: 1,
@@ -25,8 +25,8 @@ describe('ListKit current contract', () => {
         type: 'p',
       },
     ]);
-    expect(editor.children[0]).toHaveProperty('id');
-    expect(editor.selection).toEqual({
+    expect(editor.read.children()[0]).toHaveProperty('id');
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });

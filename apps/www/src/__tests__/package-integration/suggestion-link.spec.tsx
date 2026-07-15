@@ -6,20 +6,23 @@ import {
   getSuggestionKey,
   rejectSuggestion,
 } from '@platejs/suggestion';
-import { jsxt } from '@platejs/test-utils';
-import type { BaseEditor } from 'platejs';
+import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
 import { createBaseEditor } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 
 jsxt;
 
-const createEditor = (input: BaseEditor) =>
+const createEditor = (input: TestEditorFixture) =>
   createBaseEditor({
     plugins: BaseEditorKit,
     selection: input.selection,
     value: input.children,
   } as any);
+
+const deleteBackwardCharacter = (editor: ReturnType<typeof createEditor>) => {
+  editor.update.text.deleteBackward({ unit: 'character' });
+};
 
 describe('suggestion link integration', () => {
   it('marks only the previous link character when deleting backward after a link', () => {
@@ -34,7 +37,7 @@ describe('suggestion link integration', () => {
           </htext>
         </hp>
       </editor>
-    ) as any as BaseEditor;
+    ) as TestEditorFixture;
 
     const output = (
       <editor>
@@ -57,21 +60,21 @@ describe('suggestion link integration', () => {
           <htext>{' after'}</htext>
         </hp>
       </editor>
-    ) as any as BaseEditor;
+    ) as TestEditorFixture;
 
     const editor = createEditor(input);
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.deleteBackward();
+    deleteBackwardCharacter(editor);
 
     const outputLinkNode = output.children[0].children[1] as any;
-    const linkNode = editor.children[0].children[1] as any;
+    const linkNode = editor.read.children()[0].children[1] as any;
     const suggestionLeaf = linkNode.children[1] as any;
     const suggestionData = editor
-      .getPluginApi(BaseSuggestionPlugin)
-      .suggestion.suggestionData(suggestionLeaf) as any;
+      .plugin(BaseSuggestionPlugin)
+      .api.suggestionData(suggestionLeaf) as any;
 
-    expect(editor.children[0].children[0]).toEqual(
+    expect(editor.read.children()[0].children[0]).toEqual(
       output.children[0].children[0]
     );
     expect(linkNode.children[0]).toEqual(outputLinkNode.children[0]);
@@ -82,10 +85,10 @@ describe('suggestion link integration', () => {
     expect(
       Object.keys(linkNode).filter((key) => key.startsWith('suggestion_'))
     ).toHaveLength(0);
-    expect(editor.children[0].children[2]).toEqual(
+    expect(editor.read.children()[0].children[2]).toEqual(
       output.children[0].children[2]
     );
-    expect(editor.selection).toEqual(output.selection);
+    expect(editor.read.selection()).toEqual(output.selection);
   });
 
   it('removes an empty link after accepting the last removed character', () => {
@@ -107,26 +110,26 @@ describe('suggestion link integration', () => {
           </ha>
         </hp>
       </editor>
-    ) as any as BaseEditor;
+    ) as TestEditorFixture;
 
     const output = (
       <editor>
         <hp>before </hp>
       </editor>
-    ) as any as BaseEditor;
+    ) as TestEditorFixture;
 
     const editor = createEditor(input);
-    editor.selection = {
+    editor.update.selection.set({
       anchor: { offset: 1, path: [0, 1, 0] },
       focus: { offset: 1, path: [0, 1, 0] },
-    };
+    });
 
     acceptSuggestion(editor, {
       keyId: getSuggestionKey('1'),
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 
   it('rejects remove suggestion on inline link elements', () => {
@@ -147,7 +150,7 @@ describe('suggestion link integration', () => {
           after
         </hp>
       </editor>
-    ) as any as BaseEditor;
+    ) as TestEditorFixture;
 
     const output = (
       <editor>
@@ -155,7 +158,7 @@ describe('suggestion link integration', () => {
           before <ha url="https://example.com">link</ha> after
         </hp>
       </editor>
-    ) as any as BaseEditor;
+    ) as TestEditorFixture;
 
     const editor = createEditor(input);
 
@@ -164,6 +167,6 @@ describe('suggestion link integration', () => {
       suggestionId: '1',
     } as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 });

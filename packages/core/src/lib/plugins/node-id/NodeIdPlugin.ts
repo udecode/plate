@@ -12,8 +12,8 @@ import {
 import cloneDeep from 'lodash/cloneDeep.js';
 import { nanoid } from 'nanoid';
 
-import type { BaseEditor } from '../../editor/SlateEditor';
-import type { PluginConfig } from '../../plugin/SlatePlugin';
+import type { BaseEditor } from '../../editor/BaseEditor';
+import type { PluginConfig } from '../../plugin/PluginConfig';
 
 import { createBasePlugin } from '../../plugin/createBasePlugin';
 

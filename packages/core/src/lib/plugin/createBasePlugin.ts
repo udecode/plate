@@ -1,6 +1,6 @@
 import { isDefined } from '@udecode/utils';
 
-import type { BaseEditor } from '../editor/SlateEditor';
+import type { BaseEditor } from '../editor/BaseEditor';
 import type {
   AnyPluginConfig,
   AnyPluginTx,
@@ -11,7 +11,7 @@ import type {
   NodeComponent,
   PluginConfig,
   WithAnyKey,
-} from './SlatePlugin';
+} from './PluginConfig';
 import type {
   AnyBasePlugin,
   BasePlugin,

@@ -8,7 +8,7 @@ export * from './Plate';
 export * from './PlateContainer';
 export * from './PlateContent';
 export * from './PlateControllerEffect';
-export * from './PlateSlate';
+export * from './PlateRoot';
 export * from './PlateTest';
 export * from './PlateView';
 export * from './plate-nodes';

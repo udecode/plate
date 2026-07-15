@@ -9,7 +9,7 @@ import type {
   NodeComponents,
   PluginConfig,
   WithRequiredKey,
-} from '../plugin/SlatePlugin';
+} from '../plugin/PluginConfig';
 import type {
   AnyBasePlugin,
   BasePlugin,

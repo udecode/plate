@@ -40,7 +40,7 @@ describe('streamInsertChunk', () => {
         </fragment>
       ) as any;
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     it('splits the first streamed chunk into multiple paragraphs', () => {
@@ -69,7 +69,7 @@ describe('streamInsertChunk', () => {
         </fragment>
       ) as any;
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
   });
 
@@ -93,7 +93,7 @@ describe('streamInsertChunk', () => {
         </fragment>
       ) as any;
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     it('keeps marks that close at the end of a paragraph', () => {
@@ -120,7 +120,7 @@ describe('streamInsertChunk', () => {
         </fragment>
       ) as any;
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     it('builds inline equations across chunk boundaries', () => {
@@ -133,7 +133,7 @@ describe('streamInsertChunk', () => {
         'c^2$$',
       ]);
 
-      expect(editor.children).toEqual([
+      expect(editor.read.children()).toEqual([
         {
           children: [{ text: 'inline math:' }],
           type: 'p',
@@ -161,7 +161,7 @@ describe('streamInsertChunk', () => {
         '</u>',
       ]);
 
-      expect(editor.children).toEqual([
+      expect(editor.read.children()).toEqual([
         {
           children: [
             { bold: true, text: 'bold' },
@@ -194,7 +194,7 @@ describe('streamInsertChunk', () => {
         </fragment>
       ) as any;
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
 
     it('preserves ordered list numbering after a paragraph break', () => {
@@ -219,7 +219,7 @@ describe('streamInsertChunk', () => {
         </fragment>
       ) as any;
 
-      expect(editor.children).toEqual(output);
+      expect(editor.read.children()).toEqual(output);
     });
   });
 
@@ -304,7 +304,7 @@ describe('streamInsertChunk', () => {
     ])('matches deserializeMd for %s', (_label, chunks) => {
       const { editor, expected } = getStreamedMarkdown(chunks);
 
-      expect(editor.children).toEqual(expected);
+      expect(editor.read.children()).toEqual(expected);
     });
   });
 });

@@ -576,9 +576,11 @@ export const syncTextOperationsToDOM = (
         return;
       }
 
-      const [node] = editor.read((state) =>
-        state.nodes.get(path, { required: true })
-      );
+      const entry = editor.read((state) => state.nodes.get(path));
+
+      if (!entry) return null;
+
+      const [node] = entry;
 
       return 'text' in node && typeof node.text === 'string' ? node.text : null;
     });

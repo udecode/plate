@@ -4,7 +4,7 @@ import type { UploadConfig } from '../PlaceholderPlugin';
 import { matchFileType } from './matchFileType';
 
 export const groupFilesByType = (
-  fileList: FileList,
+  fileList: File[] | FileList,
   config: UploadConfig
 ): Record<AllowedFileType, File[]> => {
   const FileTypeMap: Record<AllowedFileType, File[]> = {

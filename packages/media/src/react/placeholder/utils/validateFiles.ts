@@ -4,7 +4,10 @@ import type { UploadConfig } from '../PlaceholderPlugin';
 import { groupFilesByType } from './groupFilesByType';
 import { validateFileItem } from './validateFileItem';
 
-export const validateFiles = (fileList: FileList, config: UploadConfig) => {
+export const validateFiles = (
+  fileList: File[] | FileList,
+  config: UploadConfig
+) => {
   const fileTypeMap = groupFilesByType(fileList, config);
 
   const keys = Object.keys(fileTypeMap) as AllowedFileType[];

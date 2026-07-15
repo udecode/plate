@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
 import type { TColumnGroupElement } from '@platejs/utils';
 
@@ -12,9 +13,9 @@ describe('insertColumnGroup', () => {
 
     editor.update.column.insertGroup({ at: [1], columns: 3 });
 
-    const columnGroup = editor.read.nodes.get<TColumnGroupElement>([1], {
-      required: true,
-    })[0];
+    const entry = editor.read.nodes.get<TColumnGroupElement>([1]);
+    assert(entry);
+    const [columnGroup] = entry;
 
     expect(columnGroup.type).toBe('column_group');
     expect(columnGroup.children).toHaveLength(3);

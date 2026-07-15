@@ -1,7 +1,7 @@
 import type { Descendant } from '@platejs/plite';
 
 import type { BaseEditor } from '../../lib/editor';
-import type { ParserOptions } from '../../lib/plugin/SlatePlugin';
+import type { ParserOptions } from '../../lib/plugin/PluginConfig';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 
 import { getEditorPlugin } from '../../lib/plugin';

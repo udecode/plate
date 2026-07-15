@@ -44,10 +44,6 @@ const lintSegmentVariants = cva('plite-linting-segment', {
   },
 });
 
-const rootFor = (snapshot: EditorSnapshot) => ({
-  children: snapshot.children,
-});
-
 const keyFor = (ruleId: string, range: Range) =>
   `${ruleId}:${range.anchor.path.join('.')}:${range.anchor.offset}`;
 
@@ -68,14 +64,14 @@ const createIssue = (
 };
 
 const collectLintIssues = (
-  snapshot: EditorSnapshot,
+  children: EditorSnapshot['children'],
   {
     includeServerDiagnostics = false,
   }: {
     includeServerDiagnostics?: boolean;
   } = {}
 ): LintIssueDecoration[] => {
-  const root = rootFor(snapshot);
+  const root = { children };
   const issues: LintIssueDecoration[] = [];
 
   issues.push(
@@ -157,7 +153,7 @@ const LintingPanel = ({
     (state) =>
       lintMode === 'off'
         ? NO_LINT_ISSUES
-        : collectLintIssues(state.runtime.snapshot(), {
+        : collectLintIssues(state.value().children, {
             includeServerDiagnostics: lintMode === 'server',
           }),
     { deps: [lintMode] }
@@ -166,12 +162,9 @@ const LintingPanel = ({
   const collectFromEditor = (mode: LintMode) =>
     mode === 'off'
       ? NO_LINT_ISSUES
-      : collectLintIssues(
-          editor.read((state) => state.runtime.snapshot()),
-          {
-            includeServerDiagnostics: mode === 'server',
-          }
-        );
+      : collectLintIssues(editor.read.value().children, {
+          includeServerDiagnostics: mode === 'server',
+        });
 
   const runLocalLint = () => {
     setLintMode('local');
@@ -316,7 +309,7 @@ const LintingExample = () => {
     read: ({ snapshot }): readonly PliteRangeDecoration<LintIssue>[] =>
       lintMode === 'off'
         ? []
-        : collectLintIssues(snapshot, {
+        : collectLintIssues(snapshot.children, {
             includeServerDiagnostics: lintMode === 'server',
           }),
   });

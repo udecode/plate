@@ -5,13 +5,11 @@ import { renderHook } from '@testing-library/react';
 import { addOnContextMenu } from './useBlockSelectable';
 
 const useEditorPluginMock = mock();
-const useElementMock = mock();
-const usePathMock = mock();
+const useElementContextMock = mock();
 
 mock.module('@platejs/core/react', async () => ({
+  useElementContext: useElementContextMock,
   useEditorPlugin: useEditorPluginMock,
-  useElement: useElementMock,
-  usePath: usePathMock,
 }));
 
 const loadModule = async () =>
@@ -60,8 +58,7 @@ describe('useBlockSelectable', () => {
   afterEach(() => {
     mock.restore();
     useEditorPluginMock.mockReset();
-    useElementMock.mockReset();
-    usePathMock.mockReset();
+    useElementContextMock.mockReset();
   });
 
   describe('addOnContextMenu', () => {
@@ -152,8 +149,10 @@ describe('useBlockSelectable', () => {
         getPlugin: () => ({ node: { type: 'p' } }),
       } as any;
 
-      useElementMock.mockReturnValue({ id: 'a', type: 'p' });
-      usePathMock.mockReturnValue([0]);
+      useElementContextMock.mockReturnValue({
+        element: { id: 'a', type: 'p' },
+        path: [0],
+      });
       useEditorPluginMock.mockReturnValue({
         api: {
           isSelectable: () => true,
@@ -164,13 +163,15 @@ describe('useBlockSelectable', () => {
       const { useBlockSelectable } = await loadModule();
       const { result } = renderHook(() => useBlockSelectable());
 
-      expect(result.current.props.className).toBe('slate-selectable');
+      expect(result.current.props.className).toBe('plite-selectable');
       expect(typeof result.current.props.onContextMenu).toBe('function');
     });
 
     it('returns empty props when the block is not selectable', async () => {
-      useElementMock.mockReturnValue({ id: 'a', type: 'p' });
-      usePathMock.mockReturnValue([0]);
+      useElementContextMock.mockReturnValue({
+        element: { id: 'a', type: 'p' },
+        path: [0],
+      });
       useEditorPluginMock.mockReturnValue({
         api: {
           isSelectable: () => false,
@@ -182,6 +183,23 @@ describe('useBlockSelectable', () => {
       const { result } = renderHook(() => useBlockSelectable());
 
       expect(result.current.props).toEqual({});
+    });
+
+    it('uses transform props without requiring element context', async () => {
+      useElementContextMock.mockReturnValue(null);
+      useEditorPluginMock.mockReturnValue({
+        api: {
+          isSelectable: () => true,
+        },
+        editor: {},
+      });
+
+      const { useBlockSelectable } = await loadModule();
+      const { result } = renderHook(() =>
+        useBlockSelectable({ element: { id: 'a', type: 'p' }, path: [0] })
+      );
+
+      expect(result.current.props.className).toBe('plite-selectable');
     });
   });
 });

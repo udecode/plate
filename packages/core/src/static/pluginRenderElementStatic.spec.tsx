@@ -44,7 +44,7 @@ describe('pluginRenderElementStatic', () => {
         editor,
         editor.getPlugin(ParagraphPlugin)
       )({
-        attributes: { 'data-plite-node': 'element', ref: null },
+        attributes: { 'data-plite-node': 'element' },
         children: 'Body',
         element: {
           children: [{ text: 'Body' }],

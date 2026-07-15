@@ -6,20 +6,23 @@ import {
   type DiffOperation,
   type DiffUpdate,
   computeDiff,
-  withGetFragmentExcludeDiff,
+  createExcludeDiffFragmentExtension,
 } from '@platejs/diff';
 import { cloneDeep } from 'lodash';
-import { type Value, createEditorPlugin, KEYS } from 'platejs';
-import { createPlatePlugin, toPlatePlugin, useSelected } from 'platejs/react';
+import { type Value, createBasePlugin, KEYS } from 'platejs';
 import {
   type PlateElementProps,
   type PlateLeafProps,
   type PlateProps,
+  type PlateEditor,
   createPlateEditor,
   Plate,
   PlateContent,
   PlateElement,
   PlateLeaf,
+  createPlatePlugin,
+  toPlatePlugin,
+  useElementSelected,
   usePlateEditor,
 } from 'platejs/react';
 
@@ -92,7 +95,7 @@ const InlineElement = ({ children, ...props }: PlateElementProps) => (
 );
 
 const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
-  const selected = useSelected();
+  const selected = useElementSelected();
 
   return (
     <PlateElement {...props} as="span">
@@ -111,10 +114,10 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
 };
 
 const DiffPlugin = toPlatePlugin(
-  createEditorPlugin({
+  createBasePlugin({
     key: 'diff',
     node: { isLeaf: true },
-  }).overrideEditor(withGetFragmentExcludeDiff),
+  }).extendExtension(createExcludeDiffFragmentExtension()),
   {
     render: {
       node: DiffLeaf,
@@ -130,10 +133,12 @@ const DiffPlugin = toPlatePlugin(
               delete: 'deletion',
               insert: 'insertion',
               update: 'update',
-            } as any
+            } as const
           )[diffOperation.type];
 
-          const Component = editor.api.isInline(element) ? 'span' : 'div';
+          const Component = editor.read.schema.isInline(element)
+            ? 'span'
+            : 'div';
 
           return (
             <Component
@@ -155,14 +160,6 @@ const DiffPlugin = toPlatePlugin(
 
 function DiffLeaf({ children, ...props }: PlateLeafProps) {
   const diffOperation = props.leaf.diffOperation as DiffOperation;
-
-  const _Component = (
-    {
-      delete: 'del',
-      insert: 'ins',
-      update: 'span',
-    } as any
-  )[diffOperation.type];
 
   return (
     <PlateLeaf
@@ -223,9 +220,11 @@ const basePlugins = [
 
 const diffPlugins = [...basePlugins, DiffPlugin];
 
-function VersionHistoryPlate(props: Omit<PlateProps, 'children'>) {
+function VersionHistoryPlate<E extends PlateEditor>(
+  props: Omit<PlateProps<E>, 'children'>
+) {
   return (
-    <Plate {...props}>
+    <Plate<E> {...props}>
       <PlateContent className="rounded-md border p-3" />
     </Plate>
   );
@@ -246,7 +245,7 @@ function Diff({ current, previous }: DiffProps) {
       createVersionSnapshot(previous),
       createVersionSnapshot(current),
       {
-        isInline: editor.api.isInline,
+        isInline: (node) => editor.read.schema.isInline(node),
         lineBreakChar: '¶',
       }
     ) as Value;

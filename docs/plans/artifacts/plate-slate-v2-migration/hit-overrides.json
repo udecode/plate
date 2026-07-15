@@ -1,20 +1,6 @@
 [
   {
     "decision": "quarantine",
-    "file": "apps/www/src/app/dev/editor-perf/page.tsx",
-    "kind": "bare-slate-import",
-    "reason": "intentional upstream Slate comparison harness; do not rewrite to the fork or the perf baseline loses meaning",
-    "textIncludes": "from 'slate'"
-  },
-  {
-    "decision": "quarantine",
-    "file": "apps/www/src/app/dev/editor-perf/page.tsx",
-    "kind": "bare-slate-import",
-    "reason": "intentional upstream Slate React comparison harness; import directly from upstream instead of re-exporting through Plate",
-    "textIncludes": "from 'slate-react'"
-  },
-  {
-    "decision": "quarantine",
     "file": "apps/www/src/registry/examples/huge-document-demo.tsx",
     "kind": "bare-slate-import",
     "reason": "intentional upstream Slate comparison pane in the huge-document benchmark; not product runtime",

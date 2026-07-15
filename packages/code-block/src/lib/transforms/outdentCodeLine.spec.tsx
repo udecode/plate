@@ -1,13 +1,24 @@
 /** @jsx jsxt */
 
+import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
-import type { Element } from '@platejs/plite';
+import type { Element, Path } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { outdentCodeLine } from './outdentCodeLine';
 
 jsxt;
+
+const getElementEntry = (
+  editor: ReturnType<typeof createBaseEditor>,
+  path: Path
+) => {
+  const entry = editor.read.nodes.get<Element>(path);
+  assert(entry);
+
+  return entry;
+};
 
 describe('outdent code line', () => {
   describe('when line is indented', () => {
@@ -34,12 +45,8 @@ describe('outdent code line', () => {
         value: input.children,
       });
 
-      const codeBlock = editor.read.nodes.get<Element>([0], {
-        required: true,
-      });
-      const codeLine = editor.read.nodes.get<Element>([0, 0], {
-        required: true,
-      });
+      const codeBlock = getElementEntry(editor, [0]);
+      const codeLine = getElementEntry(editor, [0, 0]);
 
       editor.update((tx) => {
         outdentCodeLine(editor, tx, { codeBlock, codeLine });
@@ -73,12 +80,8 @@ describe('outdent code line', () => {
         value: input.children,
       });
 
-      const codeBlock = editor.read.nodes.get<Element>([0], {
-        required: true,
-      });
-      const codeLine = editor.read.nodes.get<Element>([0, 0], {
-        required: true,
-      });
+      const codeBlock = getElementEntry(editor, [0]);
+      const codeLine = getElementEntry(editor, [0, 0]);
 
       editor.update((tx) => {
         outdentCodeLine(editor, tx, { codeBlock, codeLine });

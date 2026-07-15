@@ -27,17 +27,21 @@ const createEditor = ({
     value,
   } as any);
 
+const insertText = (editor: ReturnType<typeof createEditor>, text: string) => {
+  editor.update.text.insert(text);
+};
+
 describe('BasicBlocksKit blockquote autoformat', () => {
   it('promotes `> ` into a blockquote at the root in the shipped kit surface', () => {
     const editor = createEditor({ offset: 1, text: '>hello' });
 
-    editor.tf.insertText(' ');
+    insertText(editor, ' ');
 
-    expect(editor.children[0]).toMatchObject({
+    expect(editor.read.children()[0]).toMatchObject({
       children: [{ children: [{ text: 'hello' }], type: 'p' }],
       type: 'blockquote',
     });
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 0] },
       focus: { offset: 0, path: [0, 0, 0] },
     });

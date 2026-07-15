@@ -11,7 +11,7 @@ import type {
   InferApi,
   InferState,
   InferTx,
-} from '../plugin/SlatePlugin';
+} from '../plugin/PluginConfig';
 import type { CorePluginApi, CorePluginConfig, CorePluginTx } from '../plugins';
 
 export type BasePluginInput = AnyPluginConfig | AnyBasePlugin;

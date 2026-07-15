@@ -290,7 +290,7 @@ const isPaginationBlockActive = (
   editor: CustomEditor,
   format: PaginationBlockFormat
 ) => {
-  const selection = editor.read((state) => state.selection.get());
+  const selection = editor.read.selection();
 
   if (!selection) {
     return false;
@@ -310,12 +310,10 @@ const togglePaginationBlock = (
 ) => {
   const isActive = isPaginationBlockActive(editor, format);
 
-  editor.update((tx) => {
-    tx.nodes.set(
-      { type: isActive ? 'paragraph' : format },
-      { match: isPaginationTextBlock }
-    );
-  });
+  editor.update.nodes.set(
+    { type: isActive ? 'paragraph' : format },
+    { match: isPaginationTextBlock }
+  );
 };
 
 const handlePaginationKeyDown = (
@@ -340,11 +338,9 @@ const handlePaginationKeyDown = (
 };
 
 const PaginationControlsToolbar = ({
-  applyTableRows,
   controls,
   setControls,
 }: {
-  applyTableRows: (rows: number) => void;
   controls: PaginationControls;
   setControls: SetPaginationControls;
 }) => {
@@ -386,7 +382,6 @@ const PaginationControlsToolbar = ({
     if (Number.isFinite(value)) {
       const nextTableRows = clampNumber(value, 8, MAX_TABLE_ROWS);
 
-      applyTableRows(nextTableRows);
       void setControls({ tableRows: nextTableRows });
     }
   };
@@ -1553,7 +1548,7 @@ const PaginationSurface = ({
         return null;
       }
 
-      const selection = state.selection.get();
+      const selection = state.selection();
       const anchorIndex = selection?.anchor.path[0];
       const focusIndex = selection?.focus.path[0];
       const indexes = [anchorIndex, focusIndex]
@@ -1648,7 +1643,7 @@ const PaginationSurface = ({
   const applyTableRows = useCallback(
     (nextTableRows: number) => {
       editor.update((tx) => {
-        const root = tx.value.root();
+        const root = tx.children();
         const tableIndex = root.findIndex(
           (node: Value[number]) =>
             NodeApi.isElement(node) && node.type === 'table'
@@ -1693,7 +1688,7 @@ const PaginationSurface = ({
   const applyStressPages = useCallback(
     (nextStressPages: number) => {
       editor.update((tx) => {
-        const root = tx.value.root() as Value;
+        const root = tx.children();
         const stressIndexes: number[] = [];
 
         root.forEach((node, index) => {
@@ -2021,7 +2016,6 @@ const PaginationSurface = ({
   return (
     <div className="plite-pagination-shell">
       <PaginationControlsToolbar
-        applyTableRows={applyTableRows}
         controls={controls}
         setControls={setControls}
       />
@@ -2075,7 +2069,7 @@ const PaginationEditor = ({
         stressPages: initialStressPages,
         tableRows: controls.tableRows,
       }),
-      state: {
+      meta: {
         [pageSettings.key]: {
           margins: controls.margins,
           preset: controls.preset,

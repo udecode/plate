@@ -14,13 +14,13 @@ import {
   MAIN_ROOT_KEY,
 } from '@platejs/plite/internal';
 
-import type { BaseEditor } from '../../editor/SlateEditor';
+import type { BaseEditor } from '../../editor/BaseEditor';
 import type { AnyBasePlugin } from '../../plugin/BasePlugin';
-import type { MatchRules } from '../../plugin/SlatePlugin';
+import type { MatchRules } from '../../plugin/PluginConfig';
 
 import { createBasePlugin } from '../../plugin/createBasePlugin';
+import { getPluginByType } from '../../plugin/getBasePlugin';
 import { getEditorPlugin } from '../../plugin/getEditorPlugin';
-import { getPluginByType } from '../../plugin/getSlatePlugin';
 
 const resetBlock = (
   editor: BaseEditor,
@@ -472,10 +472,12 @@ export const OverridePlugin = createBasePlugin({
                 ElementApi.isElement(previous[0]) &&
                 editor.read.schema.isVoid(previous[0])
               ) {
-                tx.selection.set(
-                  editor.read.points.start(previous[1], { required: true })
-                );
-                return true;
+                const start = editor.read.points.start(previous[1]);
+
+                if (start) {
+                  tx.selection.set(start);
+                  return true;
+                }
               }
 
               const rules = getEffectiveDeleteRules(
@@ -511,11 +513,12 @@ export const OverridePlugin = createBasePlugin({
             }
           }
 
-          const documentStart = editor.read.points.start([], {
-            required: true,
-          });
+          const documentStart = editor.read.points.start([]);
 
-          if (PointApi.equals(selection.anchor, documentStart)) {
+          if (
+            documentStart &&
+            PointApi.equals(selection.anchor, documentStart)
+          ) {
             resetBlock(editor, tx, [0]);
             return true;
           }

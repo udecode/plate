@@ -8,9 +8,9 @@ import { TabbablePlugin } from '@platejs/tabbable/react';
 import {
   Plate,
   PlateElement,
-  useFocused,
+  useEditorFocused,
   usePlateEditor,
-  useSelected,
+  useElementSelected,
 } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
@@ -39,8 +39,8 @@ export default function TabbableDemo() {
 }
 
 export function TabbableElement({ children, ...props }: PlateElementProps) {
-  const selected = useSelected();
-  const focused = useFocused();
+  const selected = useElementSelected();
+  const focused = useEditorFocused();
 
   return (
     <PlateElement {...props}>

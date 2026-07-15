@@ -23,11 +23,11 @@ const getDeserializedWithStaticRules = (plugin: AnyBasePlugin) => {
   const rules = deserializer?.rules ?? [];
 
   // Check if rules already contain the plugin node class.
-  const hasSlateRule = rules.some((rule) =>
+  const hasStaticRule = rules.some((rule) =>
     rule.validClassName?.includes(getPluginNodeClass(plugin.key))
   );
 
-  const staticRules = hasSlateRule
+  const staticRules = hasStaticRule
     ? rules
     : [
         {

@@ -541,8 +541,8 @@ export const uiComponents: Registry['items'] = [
     meta: {
       docs: [
         {
-          route: 'https://docs.slatejs.org/libraries/slate-history',
-          title: 'Plate History',
+          route: '/docs/plite/libraries/plite-history',
+          title: 'Plite History',
         },
       ],
       examples: ['basic-nodes-demo'],

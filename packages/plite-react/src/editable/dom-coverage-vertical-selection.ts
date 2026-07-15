@@ -816,7 +816,7 @@ const getSingleTextPointInTopLevelBlock = ({
       return null;
     }
 
-    const [block] = state.nodes.get([blockIndex], { required: true });
+    const block = children[blockIndex]!;
     const textEntries = Array.from(NodeApi.texts(block));
 
     if (textEntries.length !== 1) {
@@ -845,7 +845,7 @@ const getSingleTextInTopLevelBlock = ({
       return null;
     }
 
-    const [block] = state.nodes.get([blockIndex], { required: true });
+    const block = children[blockIndex]!;
     const textEntries = Array.from(NodeApi.texts(block));
 
     if (textEntries.length !== 1) {

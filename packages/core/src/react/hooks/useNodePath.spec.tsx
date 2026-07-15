@@ -5,7 +5,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 
 import { TestPlate as Plate } from '../__tests__/TestPlate';
-import { PlateSlate } from '../components/PlateSlate';
+import { PlateRoot } from '../components/PlateRoot';
 import { createPlateEditor } from '../editor/withPlate';
 import { useNodePath } from './useNodePath';
 
@@ -29,9 +29,9 @@ describe('useNodePath', () => {
 
     const { getByTestId } = render(
       <Plate editor={editor}>
-        <PlateSlate>
+        <PlateRoot>
           <Probe />
-        </PlateSlate>
+        </PlateRoot>
       </Plate>
     );
 

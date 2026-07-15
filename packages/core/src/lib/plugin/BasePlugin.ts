@@ -19,9 +19,9 @@ import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 
 import type {
   PliteElementProps,
-  SlateRenderElementProps,
-  SlateRenderLeafProps,
-  SlateRenderTextProps,
+  PliteRenderElementProps,
+  PliteRenderLeafProps,
+  PliteRenderTextProps,
 } from '../../static';
 import type { BaseEditor } from '../editor';
 import type {
@@ -53,7 +53,7 @@ import type {
   ParserOptions,
   PluginConfig,
   WithAnyKey,
-} from './SlatePlugin';
+} from './PluginConfig';
 import type { HandlerReturnType } from './HandlerReturnType';
 
 export type AnyBasePlugin = BasePlugin<AnyPluginConfig>;
@@ -194,12 +194,12 @@ export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
   };
 
 export type LeafStaticProps<C extends AnyPluginConfig = PluginConfig> =
-  | ((props: SlateRenderLeafProps<Text, C>) => AnyObject | undefined)
+  | ((props: PliteRenderLeafProps<Text, C>) => AnyObject | undefined)
   | AnyObject;
 
 export type NodeStaticProps<C extends AnyPluginConfig = PluginConfig> =
   | ((
-      props: SlateRenderElementProps<Element, C> & SlateRenderLeafProps<Text, C>
+      props: PliteRenderElementProps<Element, C> & PliteRenderLeafProps<Text, C>
     ) => AnyObject | undefined)
   | AnyObject;
 
@@ -234,13 +234,13 @@ export type RenderStaticNodeWrapper<C extends AnyPluginConfig = PluginConfig> =
   (props: RenderStaticNodeWrapperProps<C>) => RenderStaticNodeWrapperFunction;
 
 export type RenderStaticNodeWrapperFunction =
-  | ((hocProps: SlateRenderElementProps) => React.ReactNode)
+  | ((hocProps: PliteRenderElementProps) => React.ReactNode)
   | null
   | undefined;
 
 export interface RenderStaticNodeWrapperProps<
   C extends AnyPluginConfig = PluginConfig,
-> extends SlateRenderElementProps<Element, C> {
+> extends PliteRenderElementProps<Element, C> {
   key: string;
 }
 
@@ -276,6 +276,11 @@ export type ExtendTxGroups<
   C extends AnyPluginConfig = PluginConfig,
   ETx extends PlatePluginTxGroups = PlatePluginTxGroups,
 > = (ctx: BasePluginContext<C>) => ETx;
+
+export type PlatePluginTxExtension = ExtendTxGroups<AnyPluginConfig> & {
+  __plateOwnTxGroup?: true;
+  __plateTxGroupKey?: string;
+};
 
 export type InferTxGroup<TGroup extends PlatePluginTxGroup> =
   ReturnType<TGroup>;
@@ -403,7 +408,7 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> =
          * their content will be rendered in sequence.
          */
         belowRootNodes?: (
-          props: PliteElementProps<Element, AnyBasePlugin>
+          props: PliteElementProps<Element, WithAnyKey<C>>
         ) => React.ReactNode;
       }>;
       rules: {
@@ -452,14 +457,12 @@ export type BasePluginConfig<
   ES = {},
 > = Partial<
   Omit<
-    BasePlugin<PluginConfig<K, Partial<O>, A, Tx, S, State>>,
-    keyof BasePluginMethods | 'api' | 'node' | 'optionsStore'
+    BasePlugin<PluginConfig<K, O, A, Tx, S, State>>,
+    keyof BasePluginMethods | 'api' | 'node' | 'options' | 'optionsStore'
   > & {
     api: Deep2Partial<A> & EA;
-    node: Partial<
-      BasePlugin<PluginConfig<K, Partial<O>, A, Tx, S, State>>['node']
-    >;
-    options: EO;
+    node: Partial<BasePlugin<PluginConfig<K, O, A, Tx, S, State>>['node']>;
+    options: Partial<O> & EO;
     selectors: Partial<S> & ES;
   }
 >;
@@ -499,10 +502,10 @@ type BasePluginMethodConfigFromPlugin<P, EO = {}, EA = {}, ES = {}> = Record<
 export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   __apiExtensions: ((ctx: BasePluginContext<AnyPluginConfig>) => any)[];
   __configuration: ((ctx: BasePluginContext<AnyPluginConfig>) => any) | null;
-  __editorExtensions: ((ctx: BasePluginContext<AnyPluginConfig>) => any)[];
+  __editorExtensions: ExtendPlateEditorExtension<AnyPluginConfig>[];
   __extensions: ((ctx: BasePluginContext<AnyPluginConfig>) => any)[];
   __selectorExtensions: ((ctx: BasePluginContext<AnyPluginConfig>) => any)[];
-  __txExtensions: ExtendTxGroups<AnyPluginConfig>[];
+  __txExtensions: PlatePluginTxExtension[];
   clone(): BasePlugin<C>;
   configure(
     config:
@@ -701,7 +704,7 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
 export type BasePlugins = AnyBasePlugin[];
 
 export type TextStaticProps<C extends AnyPluginConfig = PluginConfig> =
-  | ((props: SlateRenderTextProps<Text, C>) => AnyObject | undefined)
+  | ((props: PliteRenderTextProps<Text, C>) => AnyObject | undefined)
   | AnyObject;
 
 export type TransformOptions<C extends AnyPluginConfig = PluginConfig> =

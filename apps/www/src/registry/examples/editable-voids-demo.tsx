@@ -4,7 +4,12 @@ import * as React from 'react';
 
 import type { PlateElementProps } from 'platejs/react';
 
-import { createPlatePlugin, Plate, usePlateEditor } from 'platejs/react';
+import {
+  createPlatePlugin,
+  Plate,
+  PlateElement,
+  usePlateEditor,
+} from 'platejs/react';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,10 +27,7 @@ export const EditableVoidPlugin = createPlatePlugin({
   },
 });
 
-export function EditableVoidElement({
-  attributes,
-  children,
-}: PlateElementProps) {
+export function EditableVoidElement({ children, ...props }: PlateElementProps) {
   const [inputValue, setInputValue] = React.useState('');
 
   const editor = usePlateEditor({
@@ -34,7 +36,10 @@ export function EditableVoidElement({
 
   return (
     // Need contentEditable=false or Firefox has issues with certain input types.
-    <div {...attributes} contentEditable={false}>
+    <PlateElement
+      {...props}
+      attributes={{ ...props.attributes, contentEditable: false }}
+    >
       <div className="mt-2 grid gap-6 rounded-md border p-6 shadow-sm">
         <Input
           id="name"
@@ -78,7 +83,7 @@ export function EditableVoidElement({
         </div>
       </div>
       {children}
-    </div>
+    </PlateElement>
   );
 }
 

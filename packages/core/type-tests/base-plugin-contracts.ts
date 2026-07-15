@@ -1,3 +1,4 @@
+// Core type contracts for base plugins and their editor extensions.
 import {
   HistoryPlugin,
   type ExtendConfig,

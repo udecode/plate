@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import type { TCodeBlockElement } from '@platejs/utils';
 
 import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
@@ -21,9 +22,9 @@ describe('setCodeBlockContent', () => {
         },
       ],
     });
-    const element = editor.read.nodes.get<TCodeBlockElement>([0], {
-      required: true,
-    })[0];
+    const entry = editor.read.nodes.get<TCodeBlockElement>([0]);
+    assert(entry);
+    const [element] = entry;
 
     editor.update((tx) => {
       setCodeBlockContent(editor, tx, {
@@ -32,10 +33,9 @@ describe('setCodeBlockContent', () => {
       });
     });
 
-    expect(
-      editor.read.nodes.get<TCodeBlockElement>([0], { required: true })[0]
-        .children
-    ).toEqual([
+    const updatedEntry = editor.read.nodes.get<TCodeBlockElement>([0]);
+    assert(updatedEntry);
+    expect(updatedEntry[0].children).toEqual([
       { children: [{ text: '{' }], type: 'code_line' },
       { children: [{ text: '  "name": "plate"' }], type: 'code_line' },
       { children: [{ text: '}' }], type: 'code_line' },

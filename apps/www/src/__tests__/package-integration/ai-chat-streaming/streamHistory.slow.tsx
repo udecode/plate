@@ -1,4 +1,5 @@
 import { ElementApi, KEYS, PathApi, getPluginType } from 'platejs';
+import { BaseAIPlugin } from '@platejs/ai';
 
 import { AIChatPlugin } from '../../../../../../packages/ai/src/react/ai-chat/AIChatPlugin';
 import {
@@ -10,49 +11,47 @@ import { createTestEditor } from './__tests__/createTestEditor';
 
 const streamPreview = (chunks: string[]) => {
   const { editor } = createTestEditor();
-  const initialSelection = JSON.parse(JSON.stringify(editor.selection));
-  const initialValue = JSON.parse(JSON.stringify(editor.children));
+  const initialSelection = JSON.parse(JSON.stringify(editor.read.selection()));
+  const initialValue = JSON.parse(JSON.stringify(editor.read.children()));
 
-  editor.setOption(AIChatPlugin, 'mode', 'insert');
-  editor.setOption(AIChatPlugin, 'open', true);
+  editor.plugin(AIChatPlugin).setOption('mode', 'insert');
+  editor.plugin(AIChatPlugin).setOption('open', true);
 
   const { startBlock, startInEmptyParagraph } = getInsertPreviewStart(editor);
 
-  editor.tf.ai.beginPreview({
+  editor.plugin(BaseAIPlugin).api.beginPreview({
     originalBlocks:
       startInEmptyParagraph && startBlock && ElementApi.isElement(startBlock)
         ? [structuredClone(startBlock)]
         : [],
   });
 
-  editor.tf.withoutSaving(() => {
-    editor.tf.insertNodes(
+  editor.update.history.skip((tx) => {
+    tx.nodes.insert(
       {
         children: [{ text: '' }],
         type: getPluginType(editor, KEYS.aiChat),
       },
       {
-        at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
+        at: PathApi.next(editor.read.selection()!.focus.path.slice(0, 1)),
       }
     );
   });
 
-  editor.setOption(AIChatPlugin, 'streaming', true);
+  editor.plugin(AIChatPlugin).setOption('streaming', true);
 
   for (const chunk of chunks) {
-    editor.tf.withoutSaving(() => {
-      streamInsertChunk(editor, chunk, {
-        textProps: {
-          [getPluginType(editor, KEYS.ai)]: true,
-        },
-      });
+    streamInsertChunk(editor, chunk, {
+      textProps: {
+        [getPluginType(editor, KEYS.ai)]: true,
+      },
     });
   }
 
-  editor.setOption(AIChatPlugin, 'streaming', false);
-  editor.setOption(AIChatPlugin, '_blockChunks', '');
-  editor.setOption(AIChatPlugin, '_blockPath', null);
-  editor.setOption(AIChatPlugin, '_mdxName', null);
+  editor.plugin(AIChatPlugin).setOption('streaming', false);
+  editor.plugin(AIChatPlugin).setOption('_blockChunks', '');
+  editor.plugin(AIChatPlugin).setOption('_blockPath', null);
+  editor.plugin(AIChatPlugin).setOption('_mdxName', null);
 
   return { editor, initialSelection, initialValue };
 };
@@ -61,12 +60,12 @@ describe('ai chat streaming history', () => {
   it('keeps insert-mode preview out of history and restores the snapshot on ai undo', () => {
     const { editor, initialValue } = streamPreview(['hello', ' world']);
 
-    expect(editor.history.undos).toHaveLength(0);
+    expect(editor.read.history.undos()).toHaveLength(0);
 
-    editor.tf.ai.undo();
+    editor.plugin(BaseAIPlugin).api.undo();
 
-    expect(editor.children).toEqual(initialValue);
-    expect(editor.history.undos).toHaveLength(0);
+    expect(editor.read.children()).toEqual(initialValue);
+    expect(editor.read.history.undos()).toHaveLength(0);
   });
 
   it('accepts streamed preview as a compact undoable batch', () => {
@@ -75,12 +74,12 @@ describe('ai chat streaming history', () => {
 
     acceptAIChat(editor);
 
-    expect(editor.history.undos).toHaveLength(1);
-    expect(editor.history.undos[0].operations.length).toBeLessThan(
+    expect(editor.read.history.undos()).toHaveLength(1);
+    expect(editor.read.history.undos()[0]!.operations.length).toBeLessThan(
       chunks.length
     );
     expect(
-      editor.api.some({
+      editor.read.nodes.some({
         at: [],
         match: (n: any) =>
           ElementApi.isElement(n) &&
@@ -88,22 +87,22 @@ describe('ai chat streaming history', () => {
       })
     ).toBe(false);
     expect(
-      editor.api.some({
+      editor.read.nodes.some({
         at: [],
         match: (n: any) => !!n[getPluginType(editor, KEYS.ai)],
       })
     ).toBe(false);
     expect(
-      editor.api.some({
+      editor.read.nodes.some({
         at: [],
         match: (n: any) => ElementApi.isElement(n) && !!n.aiPreview,
       })
     ).toBe(false);
 
-    editor.undo();
+    editor.update.history.undo();
 
-    expect(editor.children).toEqual(initialValue);
-    expect(editor.selection).toEqual(initialSelection);
+    expect(editor.read.children()).toEqual(initialValue);
+    expect(editor.read.selection()).toEqual(initialSelection);
   });
 
   it('places the cursor at the end of the accepted preview', () => {
@@ -111,7 +110,7 @@ describe('ai chat streaming history', () => {
 
     acceptAIChat(editor);
 
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 11, path: [0, 0] },
       focus: { offset: 11, path: [0, 0] },
     });
@@ -121,10 +120,10 @@ describe('ai chat streaming history', () => {
     const { editor } = streamPreview(['hello', ' world']);
 
     acceptAIChat(editor);
-    editor.undo();
-    editor.redo();
+    editor.update.history.undo();
+    editor.update.history.redo();
 
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 11, path: [0, 0] },
       focus: { offset: 11, path: [0, 0] },
     });

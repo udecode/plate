@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import assert from 'node:assert/strict';
 import { createPlateEditor } from '@platejs/core/react';
 import type { TTableCellElement } from '@platejs/utils';
 
@@ -16,6 +17,13 @@ const createTableEditor = (input: TestEditor) =>
     plugins: getTestTablePlugins(),
     value: input.children,
   });
+
+const getCell = (editor: ReturnType<typeof createTableEditor>) => {
+  const entry = editor.read.nodes.get<TTableCellElement>([0, 0, 1]);
+  assert(entry);
+
+  return entry[0];
+};
 
 describe('getTableColumnIndex', () => {
   it('returns the exact sibling index for the same cell object', () => {
@@ -38,9 +46,7 @@ describe('getTableColumnIndex', () => {
     ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const cellNode = editor.read.nodes.get<TTableCellElement>([0, 0, 1], {
-      required: true,
-    })[0];
+    const cellNode = getCell(editor);
 
     expect(getTableColumnIndex(editor, cellNode)).toBe(1);
   });
@@ -62,9 +68,7 @@ describe('getTableColumnIndex', () => {
     ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const clonedCell = structuredClone(
-      editor.read.nodes.get<TTableCellElement>([0, 0, 1], { required: true })[0]
-    );
+    const clonedCell = structuredClone(getCell(editor));
 
     expect(getTableColumnIndex(editor, clonedCell)).toBe(-1);
     expect(

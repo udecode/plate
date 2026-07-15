@@ -7,14 +7,23 @@ import { Plate, usePlateEditor } from 'platejs/react';
 import { Button } from '@/components/ui/button';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
+const initialValue = [
+  {
+    children: [{ text: 'Initial Value' }],
+    type: 'p',
+  },
+];
+
+const replacedValue = [
+  {
+    children: [{ text: 'Replaced Value' }],
+    type: 'p',
+  },
+];
+
 export default function ControlledEditorDemo() {
   const editor = usePlateEditor({
-    value: [
-      {
-        children: [{ text: 'Initial Value' }],
-        type: 'p',
-      },
-    ],
+    value: initialValue,
   });
 
   return (
@@ -28,15 +37,14 @@ export default function ControlledEditorDemo() {
       <div className="mt-4 flex flex-col gap-2">
         <Button
           onClick={() => {
-            // Replace with HTML string
-            editor.tf.setValue([
-              {
-                children: [{ text: 'Replaced Value' }],
-                type: 'p',
-              },
-            ]);
+            editor.update((tx) => {
+              tx.value.replace({ children: replacedValue });
+              const end = tx.points.end([]);
 
-            editor.tf.focus({ edge: 'endEditor' });
+              if (end) tx.selection.set(end);
+            });
+
+            editor.api.dom.focus();
           }}
         >
           Replace Value
@@ -44,8 +52,8 @@ export default function ControlledEditorDemo() {
 
         <Button
           onClick={() => {
-            editor.tf.reset();
-            editor.tf.focus();
+            editor.update.value.replace({ children: initialValue });
+            editor.api.dom.focus();
           }}
         >
           Reset Editor
@@ -64,9 +72,7 @@ function AsyncControlledEditorDemo() {
     { children: { text: string }[]; type: string }[] | undefined
   >(undefined);
   const [loading, setLoading] = React.useState(true);
-  const editor = usePlateEditor({
-    skipInitialization: true,
-  });
+  const editor = usePlateEditor();
 
   React.useEffect(() => {
     // Simulate async fetch
@@ -83,7 +89,12 @@ function AsyncControlledEditorDemo() {
 
   React.useEffect(() => {
     if (!loading && initialValue) {
-      editor.tf.init({ autoSelect: 'end', value: initialValue });
+      editor.update((tx) => {
+        tx.value.replace({ children: initialValue });
+        const end = tx.points.end([]);
+
+        if (end) tx.selection.set(end);
+      });
     }
   }, [loading, initialValue, editor]);
 

@@ -1,7 +1,15 @@
+import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
 import type { TColumnGroupElement } from '@platejs/utils';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
+
+const getColumnGroupEntry = (editor: ReturnType<typeof createBaseEditor>) => {
+  const entry = editor.read.nodes.get<TColumnGroupElement>([0]);
+  assert(entry);
+
+  return entry;
+};
 
 describe('moveMiddleColumn', () => {
   it('merge a non-empty middle column into the first column and remove the wrapper', () => {
@@ -31,16 +39,11 @@ describe('moveMiddleColumn', () => {
       ],
     });
 
-    editor.update.column.moveMiddle(
-      editor.read.nodes.get<TColumnGroupElement>([0], { required: true }),
-      {
-        direction: 'left',
-      }
-    );
+    editor.update.column.moveMiddle(getColumnGroupEntry(editor), {
+      direction: 'left',
+    });
 
-    const columnGroup = editor.read.nodes.get<TColumnGroupElement>([0], {
-      required: true,
-    })[0];
+    const [columnGroup] = getColumnGroupEntry(editor);
 
     expect(columnGroup.children).toHaveLength(2);
     expect(editor.read.text.string([0, 0])).toBe('LeftMiddle');
@@ -75,12 +78,10 @@ describe('moveMiddleColumn', () => {
     });
 
     const result = editor.update.column.moveMiddle(
-      editor.read.nodes.get<TColumnGroupElement>([0], { required: true }),
+      getColumnGroupEntry(editor),
       { direction: 'left' }
     );
-    const columnGroup = editor.read.nodes.get<TColumnGroupElement>([0], {
-      required: true,
-    })[0];
+    const [columnGroup] = getColumnGroupEntry(editor);
 
     expect(result).toBe(false);
     expect(columnGroup.children).toHaveLength(2);

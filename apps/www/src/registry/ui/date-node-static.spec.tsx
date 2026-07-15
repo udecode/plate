@@ -11,7 +11,7 @@ const getDateDisplayLabelMock = mock(({ date, rawDate }: any) => {
 });
 
 mock.module('platejs/static', () => ({
-  SlateElement: ({ children, ...props }: any) => (
+  PliteElement: ({ children, ...props }: any) => (
     <span {...props}>{children}</span>
   ),
 }));

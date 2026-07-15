@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import assert from 'node:assert/strict';
 import { createPlateEditor } from '@platejs/core/react';
 import type { TTableElement } from '@platejs/utils';
 
@@ -49,9 +50,9 @@ describe('insertTableMergeRow', () => {
 
     editor.update.insert.tableRow({ at: [0], select: true });
 
-    expect(
-      editor.read.nodes.get<TTableElement>([0], { required: true })[0].children
-    ).toHaveLength(3);
+    const entry = editor.read.nodes.get<TTableElement>([0]);
+    assert(entry);
+    expect(entry[0].children).toHaveLength(3);
   });
 
   it('extends row-spanning cells and updates rowspan attributes when inserting inside a merged span', () => {

@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import assert from 'node:assert/strict';
 import { createPlateEditor } from '@platejs/core/react';
 import type { TTableCellElement } from '@platejs/utils';
 
@@ -22,6 +23,16 @@ describe('setCellBackground', () => {
       selection: input.selection,
       value: input.children,
     });
+
+  const getCell = (
+    editor: ReturnType<typeof createEditorInstance>,
+    path: number[]
+  ) => {
+    const entry = editor.read.nodes.get<TTableCellElement>(path);
+    assert(entry);
+
+    return entry[0];
+  };
 
   describe('when background color is not set', () => {
     it('set background color for current cell', () => {
@@ -99,12 +110,8 @@ describe('setCellBackground', () => {
       setCellBackground(editorInstance, {
         color: 'red',
         selectedCells: [
-          editorInstance.read.nodes.get<TTableCellElement>([0, 0, 0], {
-            required: true,
-          })[0],
-          editorInstance.read.nodes.get<TTableCellElement>([0, 0, 1], {
-            required: true,
-          })[0],
+          getCell(editorInstance, [0, 0, 0]),
+          getCell(editorInstance, [0, 0, 1]),
         ],
       });
 
@@ -188,12 +195,8 @@ describe('setCellBackground', () => {
       setCellBackground(editorInstance, {
         color: null,
         selectedCells: [
-          editorInstance.read.nodes.get<TTableCellElement>([0, 0, 0], {
-            required: true,
-          })[0],
-          editorInstance.read.nodes.get<TTableCellElement>([0, 0, 1], {
-            required: true,
-          })[0],
+          getCell(editorInstance, [0, 0, 0]),
+          getCell(editorInstance, [0, 0, 1]),
         ],
       });
 

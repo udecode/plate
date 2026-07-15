@@ -17,20 +17,24 @@ const createEditor = (text: string, offset = text.length) =>
     value: [{ children: [{ text }], type: 'p' }],
   } as any);
 
+const insertText = (editor: ReturnType<typeof createEditor>, text: string) => {
+  editor.update.text.insert(text);
+};
+
 describe('CodeBlockKit current contract', () => {
   it('promotes triple backticks into a code block in the shipped kit surface', () => {
     const editor = createEditor('``', 2);
 
-    editor.tf.insertText('`');
-    editor.tf.insertText('code');
+    insertText(editor, '`');
+    insertText(editor, 'code');
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         children: [{ children: [{ text: 'code' }], type: 'code_line' }],
         type: 'code_block',
       },
     ]);
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 4, path: [0, 0, 0] },
       focus: { offset: 4, path: [0, 0, 0] },
     });

@@ -10,7 +10,7 @@ import { KEYS } from '@platejs/utils';
  * @returns Boolean indicating if the sets contain the same values
  */
 export function isEqualTags<T extends TTagProps>(
-  editor: BaseEditor,
+  editor: BaseEditor<any, any>,
   newTags?: T[]
 ): boolean {
   const currentTags = Array.from(

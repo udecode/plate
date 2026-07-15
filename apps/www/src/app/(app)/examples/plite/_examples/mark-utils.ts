@@ -4,12 +4,10 @@ import type { CustomEditor, CustomText, CustomTextKey } from './custom-types.d';
 type ActiveMarks = BooleanMarksOf<CustomText>;
 
 const getActiveMarks = (editor: CustomEditor): ActiveMarks | null =>
-  editor.read((state) => state.marks.get()) as ActiveMarks | null;
+  editor.read.marks() as ActiveMarks | null;
 
 export const toggleMark = (editor: CustomEditor, format: CustomTextKey) => {
-  editor.update((tx) => {
-    tx.marks.toggle(format);
-  });
+  editor.update.marks.toggle(format);
 };
 
 export const isMarkActive = (editor: CustomEditor, format: CustomTextKey) => {

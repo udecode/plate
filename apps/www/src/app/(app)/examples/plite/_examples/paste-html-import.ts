@@ -657,9 +657,7 @@ const insertHtmlData = (editor: CustomEditor, data: DataTransfer) => {
         ? []
         : [deserialized]
   ).filter(isDescendant);
-  editor.update((tx) => {
-    tx.fragment.insert(fragment);
-  });
+  editor.update.fragment.insert(fragment);
   return true;
 };
 

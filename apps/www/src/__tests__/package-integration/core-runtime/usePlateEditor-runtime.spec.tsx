@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import type { EditorUpdateTransaction, Value } from 'platejs';
+import type { Value } from 'platejs';
 import {
   createPlateEditor,
   createPlatePlugin,
@@ -13,11 +13,11 @@ describe('usePlateEditor Plite runtime route', () => {
     const nextValue: Value = [
       { children: [{ text: 'runtime hook' }], type: 'p' },
     ];
-    const TxPlugin = createPlatePlugin({ key: 'txPlugin' }).extendTx(() => ({
-      txPlugin: (tx: EditorUpdateTransaction<Value>) => ({
+    const TxPlugin = createPlatePlugin({ key: 'txPlugin' }).extendTx(
+      () => (tx) => ({
         replace: () => tx.value.replace({ children: nextValue }),
-      }),
-    }));
+      })
+    );
     let replace: () => void = () => {
       throw new Error('runtime editor was not captured');
     };
@@ -28,7 +28,6 @@ describe('usePlateEditor Plite runtime route', () => {
     const Probe = () => {
       const editor = usePlateEditor({
         plugins: [TxPlugin],
-        runtime: 'plite',
         value,
       });
       const assertTxInference = (
@@ -42,11 +41,9 @@ describe('usePlateEditor Plite runtime route', () => {
       expect(assertTxInference).toBeInstanceOf(Function);
 
       replace = () => {
-        editor.update((tx) => {
-          tx.txPlugin.replace();
-        });
+        editor.update.txPlugin.replace();
       };
-      readRoot = () => editor.read((state) => state.value.root());
+      readRoot = () => editor.read.value().children;
 
       return null;
     };
@@ -62,15 +59,14 @@ describe('usePlateEditor Plite runtime route', () => {
     const nextValue: Value = [
       { children: [{ text: 'runtime factory' }], type: 'p' },
     ];
-    const TxPlugin = createPlatePlugin({ key: 'txPlugin' }).extendTx(() => ({
-      txPlugin: (tx: EditorUpdateTransaction<Value>) => ({
+    const TxPlugin = createPlatePlugin({ key: 'txPlugin' }).extendTx(
+      () => (tx) => ({
         replace: () => tx.value.replace({ children: nextValue }),
-      }),
-    }));
+      })
+    );
 
     const editor = createPlateEditor({
       plugins: [TxPlugin],
-      runtime: 'plite',
       value,
     });
     const assertTxInference = (
@@ -83,10 +79,8 @@ describe('usePlateEditor Plite runtime route', () => {
 
     expect(assertTxInference).toBeInstanceOf(Function);
 
-    editor.update((tx) => {
-      tx.txPlugin.replace();
-    });
+    editor.update.txPlugin.replace();
 
-    expect(editor.read((state) => state.value.root())).toEqual(nextValue);
+    expect(editor.read.value().children).toEqual(nextValue);
   });
 });

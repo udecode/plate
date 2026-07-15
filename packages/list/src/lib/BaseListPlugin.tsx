@@ -10,7 +10,7 @@ import {
 import type { Element } from '@platejs/plite';
 import { KEYS, type TListElement } from '@platejs/utils';
 import { isDefined } from '@udecode/utils';
-import type { SlateRenderElementProps } from 'platejs/static';
+import type { PliteRenderElementProps } from 'platejs/static';
 
 import type { GetSiblingListOptions } from './queries/getSiblingList';
 import type { ListStyleType } from './types';
@@ -203,7 +203,7 @@ export const BaseListPlugin = createBasePlugin<BaseListConfig>({
     belowNodes: (props) => {
       if (!props.element.listStyleType) return;
 
-      return (props) => <List {...(props as SlateRenderElementProps)} />;
+      return (props) => <List {...(props as PliteRenderElementProps)} />;
     },
   },
   rules: {
@@ -224,7 +224,7 @@ export const BaseListPlugin = createBasePlugin<BaseListConfig>({
   .extendExtension(withNormalizeList)
   .extendExtension(withInsertBreakList);
 
-function List(props: SlateRenderElementProps) {
+function List(props: PliteRenderElementProps) {
   const { listStart, listStyleType } = props.element as TListElement;
   const List = isOrderedList(props.element) ? 'ol' : 'ul';
 

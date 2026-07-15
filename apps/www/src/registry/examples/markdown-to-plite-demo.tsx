@@ -3,6 +3,7 @@
 import * as React from 'react';
 
 import { MarkdownPlugin, remarkMdx, remarkMention } from '@platejs/markdown';
+import { NodeApi } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
@@ -108,45 +109,32 @@ export default function MarkdownDemo() {
   const editor = usePlateEditor(
     {
       plugins: EditorKit,
-      value: (editor) =>
-        editor
-          .getPluginApi(MarkdownPlugin)
-          .markdown.deserialize(initialMarkdown, {
-            remarkPlugins: [
-              remarkMath,
-              remarkGfm,
-              remarkMdx,
-              remarkMention,
-              remarkEmoji as any,
-            ],
-          }),
     },
     []
   );
+  const markdownApi = editor.plugin(MarkdownPlugin).api;
 
   React.useEffect(() => {
-    if (debouncedMarkdownValue !== initialMarkdown) {
-      editor.tf.reset();
-      editor.tf.setValue(
-        editor.api.markdown.deserialize(debouncedMarkdownValue, {
-          remarkPlugins: [
-            remarkMath,
-            remarkGfm,
-            remarkMdx,
-            remarkMention,
-            remarkEmoji as any,
-          ],
-        })
-      );
-    }
-  }, [debouncedMarkdownValue, editor]);
+    editor.update.value.replace({
+      children: markdownApi.deserialize(debouncedMarkdownValue, {
+        remarkPlugins: [
+          remarkMath,
+          remarkGfm,
+          remarkMdx,
+          remarkMention,
+          remarkEmoji as any,
+        ],
+      }),
+    });
+  }, [debouncedMarkdownValue, editor, markdownApi]);
 
   return (
     <div className="grid h-full grid-cols-2 overflow-y-auto">
       <Plate
         onValueChange={() => {
-          const value = markdownEditor.children
-            .map((node: any) => markdownEditor.api.string(node))
+          const value = markdownEditor.read
+            .children()
+            .map((node) => NodeApi.string(node))
             .join('\n');
           setMarkdownValue(value);
         }}

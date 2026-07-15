@@ -2,11 +2,12 @@
 
 import React from 'react';
 
+import type { Element } from '@platejs/plite';
 import { render } from '@testing-library/react';
 
 import { createBasePlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
-import { PlateSlate } from '../components/PlateSlate';
+import { PlateRoot } from '../components/PlateRoot';
 import { createPlateEditor } from '../editor/withPlate';
 import { useElement } from '../stores/element/useElement';
 import { pluginRenderElement } from './pluginRenderElement';
@@ -35,9 +36,9 @@ const renderPlugin = (editor: ReturnType<typeof createPlateEditor>) => {
 
   return render(
     <Plate editor={editor}>
-      <PlateSlate>
+      <PlateRoot>
         <RenderProbe />
-      </PlateSlate>
+      </PlateRoot>
     </Plate>
   );
 };
@@ -88,6 +89,31 @@ describe('pluginRenderElement', () => {
     const { getByTestId } = renderPlugin(editor);
 
     expect(getByTestId('paragraph')).toHaveAttribute('data-marker', 'yes');
+  });
+
+  it('passes each wrapper its own plugin API', () => {
+    const WrapperPlugin = createBasePlugin({ key: 'wrapper' })
+      .extendApi(() => ({
+        isMarked: (element: Element) => element.marker === 'yes',
+      }))
+      .extend({
+        render: {
+          belowNodes: ({ api, element }) =>
+            api.isMarked(element)
+              ? ({ children }) => (
+                  <section data-testid="wrapper">{children}</section>
+                )
+              : undefined,
+        },
+      });
+    const editor = createPlateEditor({
+      plugins: [WrapperPlugin],
+      value: createValue(),
+    });
+
+    const { getByTestId } = renderPlugin(editor);
+
+    expect(getByTestId('wrapper')).toHaveTextContent('Body');
   });
 
   it('preserves Plite children for void render.as tags', () => {

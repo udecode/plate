@@ -24,6 +24,13 @@ const createCurrentKitEditor = ({
     value,
   } as any);
 
+const insertText = (
+  editor: ReturnType<typeof createCurrentKitEditor>,
+  text: string
+) => {
+  editor.update.text.insert(text);
+};
+
 describe('AutoformatKit current contract', () => {
   it('applies arrow substitution in the shipped kit surface', () => {
     const input = (
@@ -45,7 +52,7 @@ describe('AutoformatKit current contract', () => {
       value: input,
     });
 
-    editor.tf.insertText('>');
+    insertText(editor, '>');
 
     expect(input.children).toEqual(output.children);
   });
@@ -73,8 +80,8 @@ describe('AutoformatKit current contract', () => {
       value: input,
     });
 
-    editor.tf.insertText('=');
-    editor.tf.insertText('=');
+    insertText(editor, '=');
+    insertText(editor, '=');
 
     expect(input.children).toEqual(output.children);
   });
@@ -104,7 +111,7 @@ describe('AutoformatKit current contract', () => {
       value: input,
     });
 
-    editor.tf.insertText('-');
+    insertText(editor, '-');
 
     expect(input.children).toEqual(output.children);
   });

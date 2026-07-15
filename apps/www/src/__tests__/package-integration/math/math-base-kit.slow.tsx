@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 
 import { type Value, BaseParagraphPlugin, createBaseEditor } from 'platejs';
+import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
 import { jsxt } from '@platejs/test-utils';
 
 import { BaseMathKit } from '@/registry/components/editor/plugins/math-base-kit';
@@ -27,7 +28,9 @@ describe('BaseMathKit', () => {
 
     const editor = createMathEditor(input);
 
-    editor.tf.insert.inlineEquation('E=mc^2');
+    editor
+      .plugin(BaseInlineEquationPlugin)
+      .update.insert({ texExpression: 'E=mc^2' });
 
     expect(input.children).toEqual(
       (
@@ -52,9 +55,9 @@ describe('BaseMathKit', () => {
 
     const editor = createMathEditor(input);
 
-    editor.tf.insert.equation();
+    editor.plugin(BaseEquationPlugin).update.insert();
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read.children()).toMatchObject([
       {
         type: 'p',
       },

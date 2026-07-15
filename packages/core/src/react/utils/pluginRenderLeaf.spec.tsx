@@ -29,7 +29,7 @@ it('uses a plain render.as fast path for simple leaf plugins', () => {
     renderLeaf({
       attributes: {
         'data-plite-leaf': true,
-        className: 'from-slate',
+        className: 'from-plite',
       } as any,
       children: 'test content',
       leaf: { test: true, text: 'test content' } as any,
@@ -43,7 +43,7 @@ it('uses a plain render.as fast path for simple leaf plugins', () => {
 
   expect(leaf).not.toBeNull();
   expect(leaf).toHaveClass('plite-test');
-  expect(leaf).toHaveClass('from-slate');
+  expect(leaf).toHaveClass('from-plite');
   expect(leaf).toHaveAttribute('data-plite-leaf', 'true');
   expect(leaf).toHaveTextContent('test content');
 });

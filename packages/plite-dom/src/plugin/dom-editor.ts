@@ -1396,16 +1396,14 @@ export const DOMEditor: DOMEditorInterface = {
   },
 
   resolveDOMPoint: (editor, point) => {
-    if (!editorHasPath(editor, point.path)) {
-      return null;
-    }
+    const entry = editor.read((state) => state.nodes.get(point.path));
+
+    if (!entry) return null;
 
     const resolvedPoint = editorVoid(editor, { at: point })
       ? { path: point.path, offset: 0 }
       : point;
-    const [node] = editor.read((state) =>
-      state.nodes.get(resolvedPoint.path, { required: true })
-    );
+    const [node] = entry;
     const resolvedElement = DOMEditor.resolveDOMNode(editor, node);
     const fallbackElement =
       resolvedElement ?? findMountedDOMNodeByPath(editor, resolvedPoint.path);
@@ -1491,10 +1489,10 @@ export const DOMEditor: DOMEditorInterface = {
       return domPoint;
     }
 
-    if (editorHasPath(editor, resolvedPoint.path)) {
-      const [node] = editor.read((state) =>
-        state.nodes.get(resolvedPoint.path, { required: true })
-      );
+    const entry = editor.read((state) => state.nodes.get(resolvedPoint.path));
+
+    if (entry) {
+      const [node] = entry;
       const domNode =
         DOMEditor.resolveDOMNode(editor, node) ??
         findMountedDOMNodeByPath(editor, resolvedPoint.path);
@@ -1670,9 +1668,11 @@ export const DOMEditor: DOMEditorInterface = {
         return node;
       }
 
-      const [mountedNode] = editor.read((state) =>
-        state.nodes.get(mountedPath, { required: true })
+      const mountedNode = editor.read(
+        (state) => state.nodes.get(mountedPath)?.[0]
       );
+
+      if (!mountedNode) return null;
 
       cachePliteDOMNode(editor, mountedNode, domEl as HTMLElement);
 
@@ -1680,9 +1680,11 @@ export const DOMEditor: DOMEditorInterface = {
     }
 
     if (mountedPath) {
-      const [fallbackNode] = editor.read((state) =>
-        state.nodes.get(mountedPath, { required: true })
+      const fallbackNode = editor.read(
+        (state) => state.nodes.get(mountedPath)?.[0]
       );
+
+      if (!fallbackNode) return null;
 
       cachePliteDOMNode(editor, fallbackNode, domEl as HTMLElement);
 
@@ -1963,7 +1965,7 @@ export const DOMEditor: DOMEditorInterface = {
       : null;
     const path = mountedPath ?? resolvedPath;
     const pointNode = path
-      ? editor.read((state) => state.nodes.get(path, { required: true }))[0]
+      ? editor.read((state) => state.nodes.get(path)?.[0])
       : pliteNode;
 
     if (!pointNode || !path) {
@@ -1971,10 +1973,13 @@ export const DOMEditor: DOMEditorInterface = {
         textNode?.getAttribute('data-plite-path') ?? null
       );
 
-      if (fallbackPath && editorHasPath(editor, fallbackPath)) {
-        const [fallbackNode] = editor.read((state) =>
-          state.nodes.get(fallbackPath, { required: true })
+      if (fallbackPath) {
+        const fallbackNode = editor.read(
+          (state) => state.nodes.get(fallbackPath)?.[0]
         );
+
+        if (!fallbackNode) return null;
+
         const point = resolvePliteTextPoint({
           editor,
           exactMatch,

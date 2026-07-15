@@ -500,16 +500,17 @@ export type PlatePluginConfig<
   ES = {},
 > = Partial<
   Omit<
-    PlatePlugin<PluginConfig<K, Partial<O>, A, Tx, S>>,
+    PlatePlugin<PluginConfig<K, O, A, Tx, S>>,
     | keyof PlatePluginMethods
     | 'api'
     | 'node'
+    | 'options'
     | 'optionsStore'
     | 'useOptionsStore'
   > & {
     api: EA;
     node: Partial<PlatePlugin<PluginConfig<K, O, A, Tx, S>>['node']>;
-    options: EO;
+    options: Partial<O> & EO;
     selectors: ES;
   }
 >;

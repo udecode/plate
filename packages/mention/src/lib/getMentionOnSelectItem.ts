@@ -1,14 +1,11 @@
-import type { BaseEditor, InferConfig } from '@platejs/core';
-import type { Value } from '@platejs/plite';
+import type { BaseEditor } from '@platejs/core';
 
 import { BaseMentionPlugin } from './BaseMentionPlugin';
 import type { TMentionItemBase } from './types';
 
-type MentionEditor = BaseEditor<Value, InferConfig<typeof BaseMentionPlugin>>;
-
 export type MentionOnSelectItem<
   TItem extends TMentionItemBase = TMentionItemBase,
-> = (editor: MentionEditor, item: TItem, search?: string) => void;
+> = (editor: BaseEditor, item: TItem, search?: string) => void;
 
 export const getMentionOnSelectItem =
   <
@@ -18,7 +15,9 @@ export const getMentionOnSelectItem =
     const { getOptions } = editor.plugin(BaseMentionPlugin);
     const { insertSpaceAfterMention } = getOptions();
 
-    editor.update.mention.insert({ key: item.key, search, value: item.text });
+    editor
+      .plugin(BaseMentionPlugin)
+      .update.insert({ key: item.key, search, value: item.text });
 
     // move the selection after the element
     editor.update.selection.move({ unit: 'offset' });

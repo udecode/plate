@@ -44,7 +44,7 @@ export const useSelectionArea = () => {
       boundaries: `#${editor.id}`,
       container: `#${editor.id}`,
       document: window.document,
-      selectables: `#${editor.id} .slate-selectable`,
+      selectables: `#${editor.id} .plite-selectable`,
       selectionAreaClass: 'slate-selection-area',
       ...areaOptions,
     })

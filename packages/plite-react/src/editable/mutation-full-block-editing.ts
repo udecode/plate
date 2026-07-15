@@ -16,6 +16,7 @@ import {
 import { profileEditableMutationDuration } from './mutation-profiler';
 import { withProjectedMutationRoot } from './mutation-root-scope';
 import {
+  failInvariant,
   getEditorCurrentMarks,
   markInternalOwnedReplayOperation,
   type Editor as RuntimeEditor,
@@ -70,7 +71,11 @@ const getConsistentTextMarksInBlocks = (
     let sawText = false;
 
     for (const blockPath of blockPaths) {
-      const [block] = state.nodes.get(blockPath, { required: true });
+      const [block] =
+        state.nodes.get(blockPath) ??
+        failInvariant(
+          `Expected full-block mutation target at ${JSON.stringify(blockPath)}`
+        );
 
       for (const [node] of NodeApi.texts(block)) {
         if (node.text.length === 0) {
@@ -117,7 +122,12 @@ const createTextReplacementNode = (
   }
 
   return editor.read((state) => {
-    const [block] = state.nodes.get(blockPaths[0]!, { required: true });
+    const blockPath = blockPaths[0]!;
+    const [block] =
+      state.nodes.get(blockPath) ??
+      failInvariant(
+        `Expected full-block replacement target at ${JSON.stringify(blockPath)}`
+      );
     const { schema } = state;
 
     if (
@@ -160,13 +170,22 @@ const isPlainTextLeafStart = ({
       return false;
     }
 
-    const [node] = state.nodes.get(path, { required: true });
+    const [node] =
+      state.nodes.get(path) ??
+      failInvariant(
+        `Expected collapsed replacement node at ${JSON.stringify(path)}`
+      );
 
     if (!isUnmarkedTextNode(node)) {
       return false;
     }
 
-    const [block] = state.nodes.get([path[0]!], { required: true });
+    const blockPath = [path[0]!];
+    const [block] =
+      state.nodes.get(blockPath) ??
+      failInvariant(
+        `Expected collapsed replacement block at ${JSON.stringify(blockPath)}`
+      );
     const targetRelativePath = path.slice(1);
     let previousTextNode: Node | null = null;
 
@@ -200,7 +219,11 @@ const canUseExplicitCollapsedTextInsert = ({
   }
 
   return editor.read((state) => {
-    const [node] = state.nodes.get(selection.anchor.path, { required: true });
+    const [node] =
+      state.nodes.get(selection.anchor.path) ??
+      failInvariant(
+        `Expected replacement anchor at ${JSON.stringify(selection.anchor.path)}`
+      );
 
     return isUnmarkedTextNode(node);
   });
@@ -220,7 +243,11 @@ export const canUseCachedCollapsedTextInsert = ({
   }
 
   const unmarkedTextNode = editor.read((state) => {
-    const [node] = state.nodes.get(selection.anchor.path, { required: true });
+    const [node] =
+      state.nodes.get(selection.anchor.path) ??
+      failInvariant(
+        `Expected cached insertion anchor at ${JSON.stringify(selection.anchor.path)}`
+      );
 
     return isUnmarkedTextNode(node);
   });
@@ -299,7 +326,11 @@ const getFullySelectedBlockPaths = (
         return state.nodes.children().length;
       }
 
-      const [parentNode] = state.nodes.get(parentPath, { required: true });
+      const [parentNode] =
+        state.nodes.get(parentPath) ??
+        failInvariant(
+          `Expected insertion parent at ${JSON.stringify(parentPath)}`
+        );
 
       return NodeApi.isAncestor(parentNode) &&
         'children' in parentNode &&
@@ -352,7 +383,11 @@ const getFullySelectedBlockPaths = (
       return state.nodes.children().length;
     }
 
-    const [parentNode] = state.nodes.get(parentPath, { required: true });
+    const [parentNode] =
+      state.nodes.get(parentPath) ??
+      failInvariant(
+        `Expected deletion parent at ${JSON.stringify(parentPath)}`
+      );
 
     return NodeApi.isAncestor(parentNode) &&
       'children' in parentNode &&

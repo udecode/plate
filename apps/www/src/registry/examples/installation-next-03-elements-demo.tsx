@@ -63,11 +63,17 @@ export default function MyEditorPage() {
   return (
     <Plate editor={editor}>
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
-        <ToolbarButton onClick={() => editor.tf.h1.toggle()}>H1</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.h2.toggle()}>H2</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.h3.toggle()}>H3</ToolbarButton>
+        <ToolbarButton onClick={() => editor.update.h1.toggle()}>
+          H1
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.update.h2.toggle()}>
+          H2
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.update.h3.toggle()}>
+          H3
+        </ToolbarButton>
 
-        <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>
+        <ToolbarButton onClick={() => editor.update.blockquote.toggle()}>
           Quote
         </ToolbarButton>
 

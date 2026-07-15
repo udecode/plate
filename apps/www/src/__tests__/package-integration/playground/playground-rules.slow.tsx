@@ -64,6 +64,10 @@ const createEditor = ({
     value: [{ children: [{ text }], type: 'p' }],
   } as any);
 
+const insertText = (editor: ReturnType<typeof createEditor>, text: string) => {
+  editor.update.text.insert(text);
+};
+
 describe('playground rules current contract', () => {
   describe('basic blocks', () => {
     const createBlocksEditor = (text: string, offset?: number) =>
@@ -101,13 +105,13 @@ describe('playground rules current contract', () => {
     ])('promotes `%s ` into %s', (markdown, type) => {
       const editor = createBlocksEditor(markdown, markdown.length);
 
-      editor.tf.insertText(' ');
+      insertText(editor, ' ');
 
-      expect(editor.children[0]).toMatchObject({
+      expect(editor.read.children()[0]).toMatchObject({
         children: [{ text: '' }],
         type,
       });
-      expect(editor.selection).toEqual({
+      expect(editor.read.selection()).toEqual({
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       });
@@ -116,13 +120,13 @@ describe('playground rules current contract', () => {
     it('promotes `> ` into a blockquote', () => {
       const editor = createBlocksEditor('>hello', 1);
 
-      editor.tf.insertText(' ');
+      insertText(editor, ' ');
 
-      expect(editor.children[0]).toMatchObject({
+      expect(editor.read.children()[0]).toMatchObject({
         children: [{ children: [{ text: 'hello' }], type: 'p' }],
         type: 'blockquote',
       });
-      expect(editor.selection).toEqual({
+      expect(editor.read.selection()).toEqual({
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0] },
       });
@@ -134,9 +138,9 @@ describe('playground rules current contract', () => {
     ])('promotes `%s` into a horizontal rule', (prefix, finalInput) => {
       const editor = createBlocksEditor(prefix, prefix.length);
 
-      editor.tf.insertText(finalInput);
+      insertText(editor, finalInput);
 
-      expect(editor.children).toMatchObject([
+      expect(editor.read.children()).toMatchObject([
         { type: 'hr' },
         { children: [{ text: '' }], type: 'p' },
         { children: [{ text: '' }], type: 'p' },
@@ -190,9 +194,9 @@ describe('playground rules current contract', () => {
     ])('formats mark shorthand `%s`', (prefix, finalInput, expectedLeaf) => {
       const editor = createMarksEditor(prefix);
 
-      editor.tf.insertText(finalInput);
+      insertText(editor, finalInput);
 
-      expect(editor.children[0]).toMatchObject({
+      expect(editor.read.children()[0]).toMatchObject({
         children: [expectedLeaf],
         type: 'p',
       });
@@ -253,13 +257,13 @@ describe('playground rules current contract', () => {
     ])('promotes list shorthand `%s`', (prefix, finalInput, expectedNode) => {
       const editor = createListsEditor(prefix, prefix.length);
 
-      editor.tf.insertText(finalInput);
+      insertText(editor, finalInput);
 
-      expect(editor.children[0]).toMatchObject(expectedNode);
-      expect(editor.children[0]).toMatchObject({
+      expect(editor.read.children()[0]).toMatchObject(expectedNode);
+      expect(editor.read.children()[0]).toMatchObject({
         children: [{ text: '' }],
       });
-      expect(editor.selection).toEqual({
+      expect(editor.read.selection()).toEqual({
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       });
@@ -284,9 +288,9 @@ describe('playground rules current contract', () => {
         text: 'Math: $x',
       });
 
-      editor.tf.insertText('$');
+      insertText(editor, '$');
 
-      expect(editor.children[0]).toMatchObject({
+      expect(editor.read.children()[0]).toMatchObject({
         children: [
           { text: 'Math: ' },
           { texExpression: 'x', type: 'inline_equation' },
@@ -316,9 +320,9 @@ describe('playground rules current contract', () => {
     it('promotes markdown links on `)`', () => {
       const editor = createLinksEditor('[Example](https://example.com');
 
-      editor.tf.insertText(')');
+      insertText(editor, ')');
 
-      expect(editor.children[0]).toMatchObject({
+      expect(editor.read.children()[0]).toMatchObject({
         children: [
           { text: '' },
           {
@@ -331,7 +335,7 @@ describe('playground rules current contract', () => {
         ],
         type: 'p',
       });
-      expect(editor.selection).toEqual({
+      expect(editor.read.selection()).toEqual({
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       });

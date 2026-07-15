@@ -63,8 +63,12 @@ const createSelectionContext = ({
 
     if (!selection || !blockEntry) return;
 
+    const anchor = editor.read.points.start(blockEntry[1]);
+
+    if (!anchor) return;
+
     return {
-      anchor: editor.read.points.start(blockEntry[1], { required: true }),
+      anchor,
       focus: RangeApi.start(selection),
     };
   });

@@ -1,6 +1,6 @@
 import ReactDOMServer from 'react-dom/server';
 
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBaseEditor, KEYS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 import { BlockList } from '@/registry/ui/block-list';
@@ -23,6 +23,17 @@ const orderedElement = {
   type: KEYS.p,
 } as any;
 
+type ListNodePropsContract = {
+  query: (options: unknown) => boolean;
+  transformProps: (options: unknown) => unknown;
+};
+
+const getListNodeProps = (editor: {
+  getPlugin: (plugin: { key: string }) => { inject?: { nodeProps?: unknown } };
+}) =>
+  editor.getPlugin({ key: KEYS.list }).inject!
+    .nodeProps! as ListNodePropsContract;
+
 describe('ListKit unordered list rendering', () => {
   it('keeps the lightweight unordered path inside the app list renderer', () => {
     expect(BlockList({ element: unorderedElement } as any)).toBeUndefined();
@@ -44,12 +55,16 @@ describe('ListKit unordered list rendering', () => {
   });
 
   it('injects root list-item props without wiping indent margin', () => {
-    const interactiveNodeProps = createPlateEditor({
-      plugins: ListKit,
-    }).getPlugin({ key: KEYS.list }).inject.nodeProps!;
-    const staticNodeProps = createSlateEditor({
-      plugins: BaseListKit,
-    }).getPlugin({ key: KEYS.list }).inject.nodeProps!;
+    const interactiveNodeProps = getListNodeProps(
+      createPlateEditor({
+        plugins: ListKit,
+      })
+    );
+    const staticNodeProps = getListNodeProps(
+      createBaseEditor({
+        plugins: BaseListKit,
+      })
+    );
 
     for (const nodeProps of [interactiveNodeProps, staticNodeProps]) {
       const query = nodeProps.query!;

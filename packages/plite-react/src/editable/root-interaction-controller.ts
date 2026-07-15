@@ -43,6 +43,7 @@ import {
 import { getDragAutoScrollTarget } from './drag-auto-scroll-target';
 import type { EditableDOMSelectionSyncOptions } from './input-controller';
 import { writeCollapsedModelSelectionDOMPreference } from './model-selection-dom-preference';
+import { failInvariant } from './runtime-editor-api';
 import {
   getExpandedDOMSelectionInTarget,
   hasExpandedDOMSelectionInTarget,
@@ -639,13 +640,7 @@ const resolvePliteStringPlacementRange = ({
     return null;
   }
 
-  const node = editor.read((state) => {
-    if (!state.nodes.hasPath(path)) {
-      return null;
-    }
-
-    return state.nodes.get(path, { required: true })[0];
-  });
+  const node = editor.read((state) => state.nodes.get(path)?.[0]) ?? null;
 
   if (!node) {
     return null;
@@ -1081,9 +1076,9 @@ export const useRootInteractionController = ({
       const focusEditor = getMountedViewEditor(root) ?? editor;
       const currentSelection = focusEditor.read((state) => state.selection());
       const getEndSelection = (): Range => {
-        const point = focusEditor.read((state) =>
-          state.points.end([], { required: true })
-        );
+        const point =
+          focusEditor.read((state) => state.points.end([])) ??
+          failInvariant('Expected a document end point when focusing a root');
 
         return { anchor: point, focus: point };
       };

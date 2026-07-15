@@ -153,11 +153,11 @@ export const examples: Registry['items'] = [
     dependencies: ['remark-emoji'],
     files: [
       {
-        path: 'examples/markdown-to-Plate-demo.tsx',
+        path: 'examples/markdown-to-plite-demo.tsx',
         type: 'registry:example',
       },
     ],
-    name: 'markdown-to-Plate-demo',
+    name: 'markdown-to-plite-demo',
     registryDependencies: ['@plate/editor-kit', '@plate/use-debounce'],
     type: 'registry:example',
   },

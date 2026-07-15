@@ -183,9 +183,15 @@
     },
     {
       "name": "plite-to-html",
-      "files": ["apps/www/src/registry/components/editor/slate-to-html.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for plite-to-html."
+        }
+      ]
     },
     {
       "name": "suggestion-kit",

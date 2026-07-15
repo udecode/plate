@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import assert from 'node:assert/strict';
 import { createPlateEditor } from '@platejs/core/react';
 import type { TTableCellElement } from '@platejs/utils';
 
@@ -37,9 +38,9 @@ describe('getTableRowIndex', () => {
     ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const cellNode = editor.read.nodes.get<TTableCellElement>([0, 1, 0], {
-      required: true,
-    })[0];
+    const entry = editor.read.nodes.get<TTableCellElement>([0, 1, 0]);
+    assert(entry);
+    const [cellNode] = entry;
 
     expect(getTableRowIndex(editor, cellNode)).toBe(1);
   });

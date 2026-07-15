@@ -3,14 +3,14 @@ import type {
   AnyPluginConfig,
   PluginConfig,
   WithRequiredKey,
-} from './SlatePlugin';
-import type { AnyBasePlugin, BasePlugin } from './BasePlugin';
+} from './PluginConfig';
+import type { BasePlugin } from './BasePlugin';
 
 import { resolvePlugin } from '../../internal/plugin/resolvePlugin';
 import { createBasePlugin } from './createBasePlugin';
 
 /** Get editor plugin by key or plugin object. */
-export function getSlatePlugin<C extends AnyPluginConfig = PluginConfig>(
+export function getBasePlugin<C extends AnyPluginConfig = PluginConfig>(
   editor: BaseEditor,
   p: WithRequiredKey<C>
 ): C extends { node: any } ? C : BasePlugin<C> {
@@ -33,9 +33,9 @@ export function getSlatePlugin<C extends AnyPluginConfig = PluginConfig>(
 
 /** Get editor plugin type by key or plugin object. */
 export function getPluginType(editor: BaseEditor, key: string): string {
-  const p = (editor.getPlugin as any)({ key }) as AnyBasePlugin;
+  const plugin = editor.getPlugin({ key });
 
-  return p.node.type ?? p.key ?? '';
+  return plugin.node.type ?? plugin.key ?? '';
 }
 
 /** Get editor plugin types by key. */

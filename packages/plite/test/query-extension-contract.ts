@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   elementReadOnly as editorElementReadOnly,
+  first as editorFirst,
   getOperations as editorGetOperations,
   getSnapshot as editorGetSnapshot,
   path as editorPath,
@@ -32,9 +33,33 @@ const children: Element[] = [
 ];
 
 describe('extension query middleware', () => {
+  it('preserves strict static query postconditions after middleware', () => {
+    const editor = createEditor({ initialValue: children });
+
+    editor.extend(
+      defineEditorExtension({
+        name: 'invalid-strict-query-result',
+        queries: {
+          nodes: {
+            first() {
+              return;
+            },
+          },
+        },
+      })
+    );
+
+    assert.throws(
+      () => editorFirst(editor, []),
+      /Plite invariant failed: Query middleware returned no result for nodes\.first/
+    );
+  });
+
   it('receives normalized locations for node-target reads', () => {
     const editor = createEditor({ initialValue: children });
-    const first = editor.read.nodes.get<Element>([0], { required: true })[0];
+    const firstEntry = editor.read.nodes.get<Element>([0]);
+    assert(firstEntry);
+    const [first] = firstEntry;
     const seen: unknown[] = [];
 
     editor.extend(
@@ -52,9 +77,9 @@ describe('extension query middleware', () => {
             },
           },
           points: {
-            start({ at, next, options }) {
+            start({ at, next }) {
               seen.push(at);
-              return next({ at, options });
+              return next({ at });
             },
           },
           text: {

@@ -165,7 +165,7 @@ const MentionExample = () => {
       editor={editor}
       onChange={() => {
         const match = editor.read((state) => {
-          const selection = state.selection.get();
+          const selection = state.selection();
 
           if (selection && RangeApi.isCollapsed(selection)) {
             const [start] = RangeApi.edges(selection);
@@ -187,13 +187,12 @@ const MentionExample = () => {
                 offset: start.offset - beforeMatch[1].length - 1,
               };
 
-              return {
-                range: state.ranges.get({
-                  anchor: mentionStart,
-                  focus: start,
-                }),
-                search: beforeMatch[1],
-              };
+              const range = state.ranges.get({
+                anchor: mentionStart,
+                focus: start,
+              });
+
+              if (range) return { range, search: beforeMatch[1] };
             }
           }
 

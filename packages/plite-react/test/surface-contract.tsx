@@ -21,6 +21,8 @@ const packageRoot = cwd.endsWith(`${sep}packages${sep}plite-react`)
   : resolve(cwd, 'packages/plite-react');
 const repoRoot = resolve(packageRoot, '../..');
 const sourceFilePattern = /\.(md|ts|tsx)$/;
+const runtimePeerRangePattern = /^>=\d+\.\d+\.\d+(?:-[a-z]+\.\d+)?$/i;
+const runtimeVersionPattern = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z]+)\.(\d+))?$/i;
 const packageDirectoryByName = new Map([
   ['@platejs/plite', 'plite'],
   ['@platejs/plite-dom', 'plite-dom'],
@@ -166,10 +168,50 @@ const readPackageJson = (packageName: string) =>
     version: string;
   };
 
-const expectedRuntimePeerRange = (packageName: string) => {
-  const packageJson = readPackageJson(packageName);
+const parseRuntimeVersion = (version: string) => {
+  const match = runtimeVersionPattern.exec(version);
 
-  return `>=${packageJson.version}`;
+  if (!match) throw new Error(`Invalid runtime version: ${version}`);
+
+  return {
+    major: Number(match[1]),
+    minor: Number(match[2]),
+    patch: Number(match[3]),
+    prereleaseNumber: match[5] ? Number(match[5]) : null,
+    prereleaseTag: match[4] ?? null,
+  };
+};
+
+const compareRuntimeVersions = (left: string, right: string) => {
+  const leftVersion = parseRuntimeVersion(left);
+  const rightVersion = parseRuntimeVersion(right);
+
+  for (const key of ['major', 'minor', 'patch'] as const) {
+    if (leftVersion[key] !== rightVersion[key]) {
+      return leftVersion[key] - rightVersion[key];
+    }
+  }
+
+  if (leftVersion.prereleaseTag === null) {
+    return rightVersion.prereleaseTag === null ? 0 : 1;
+  }
+  if (rightVersion.prereleaseTag === null) return -1;
+
+  const tagComparison = leftVersion.prereleaseTag.localeCompare(
+    rightVersion.prereleaseTag
+  );
+
+  return (
+    tagComparison ||
+    leftVersion.prereleaseNumber! - rightVersion.prereleaseNumber!
+  );
+};
+
+const expectRuntimePeerFloor = (packageName: string, range: string) => {
+  expect(range).toMatch(runtimePeerRangePattern);
+  expect(
+    compareRuntimeVersions(range.slice(2), readPackageJson(packageName).version)
+  ).toBeGreaterThanOrEqual(0);
 };
 
 const allowedPliteInternalImportFiles = new Set([
@@ -497,11 +539,13 @@ describe('plite-react surface contract', () => {
     expect(runtimeSources).toContain("from '@platejs/plite/internal'");
     expect(runtimeSources).toContain("from '@platejs/plite-dom/internal'");
     expect(runtimeSources).toContain("from '@platejs/plite'");
-    expect(pliteReactPackage.peerDependencies?.['@platejs/plite']).toBe(
-      expectedRuntimePeerRange('@platejs/plite')
+    expectRuntimePeerFloor(
+      '@platejs/plite',
+      pliteReactPackage.peerDependencies?.['@platejs/plite'] ?? ''
     );
-    expect(pliteReactPackage.peerDependencies?.['@platejs/plite-dom']).toBe(
-      expectedRuntimePeerRange('@platejs/plite-dom')
+    expectRuntimePeerFloor(
+      '@platejs/plite-dom',
+      pliteReactPackage.peerDependencies?.['@platejs/plite-dom'] ?? ''
     );
   });
 

@@ -45,9 +45,13 @@ const hasAnchorSideVisibleText = (
   }
 
   const { anchor } = selection;
-  const [anchorNode] = editor.read((state) =>
-    state.nodes.get(anchor.path, { required: true })
-  );
+  const anchorEntry = editor.read((state) => state.nodes.get(anchor.path));
+
+  if (!anchorEntry) {
+    return false;
+  }
+
+  const [anchorNode] = anchorEntry;
 
   if (!NodeApi.isText(anchorNode)) {
     return false;
@@ -69,9 +73,13 @@ const getFocusSideVisibleRange = (
   }
 
   const { focus } = selection;
-  const [focusNode] = editor.read((state) =>
-    state.nodes.get(focus.path, { required: true })
-  );
+  const focusEntry = editor.read((state) => state.nodes.get(focus.path));
+
+  if (!focusEntry) {
+    return null;
+  }
+
+  const [focusNode] = focusEntry;
 
   if (!NodeApi.isText(focusNode)) {
     return null;

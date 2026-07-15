@@ -23,7 +23,7 @@ mock.module('platejs/react', () => ({
       {children}
     </div>
   ),
-  useReadOnly: () => false,
+  useEditorReadOnly: () => false,
   withHOC: (_Provider: any, Component: any) => Component,
 }));
 

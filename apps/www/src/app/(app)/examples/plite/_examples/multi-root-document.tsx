@@ -132,7 +132,7 @@ const MultiRootPanel = () => {
   const title = useStateFieldValue(documentTitle);
   const setTitleField = useSetStateField(documentTitle);
   const commitSummary = useEditorState((state) =>
-    formatCommit(state.value.lastCommit())
+    formatCommit(state.lastCommit())
   );
 
   const setTitle = (value: string) => {
@@ -247,7 +247,7 @@ const MultiRootDocumentExample = () => {
           },
         ],
       },
-      state: {
+      meta: {
         [documentTitle.key]: 'Q2 Operating Plan',
       },
     },

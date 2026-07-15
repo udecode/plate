@@ -4,7 +4,10 @@ import { BoldPlugin, ItalicPlugin } from '@platejs/basic-nodes/react';
 import { ListPlugin } from '@platejs/list-classic/react';
 import { jsxt } from '@platejs/test-utils';
 
-import { createBaseEditor } from '../../../../../../packages/core/src/lib/editor';
+import {
+  createBaseEditor,
+  type BasePluginInput,
+} from '../../../../../../packages/core/src/lib/editor';
 import { createBasePlugin } from '../../../../../../packages/core/src/lib/plugin';
 import { BaseParagraphPlugin } from '../../../../../../packages/core/src/lib/plugins/paragraph';
 import { htmlElementToLeaf } from '../../../../../../packages/core/src/lib/plugins/html/utils/htmlElementToLeaf';
@@ -23,7 +26,7 @@ describe('when children is a text', () => {
     expect(
       htmlElementToLeaf(
         createBaseEditor({
-          plugins: [BoldPlugin],
+          plugins: [BoldPlugin as BasePluginInput],
         }),
         parseHtmlElement('<strong>test</strong>')
       )
@@ -62,7 +65,12 @@ describe('when there is a mark above multiple elements', () => {
     expect(
       htmlElementToLeaf(
         createBaseEditor({
-          plugins: [BaseParagraphPlugin, ListPlugin, BoldPlugin, ItalicPlugin],
+          plugins: [
+            BaseParagraphPlugin,
+            ListPlugin as BasePluginInput,
+            BoldPlugin as BasePluginInput,
+            ItalicPlugin as BasePluginInput,
+          ],
         }),
         parseHtmlElement('<strong><li><p>test</p>test</li></strong>')
       )

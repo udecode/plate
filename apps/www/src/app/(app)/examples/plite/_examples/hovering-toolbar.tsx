@@ -106,7 +106,7 @@ const HoveringToolbar = () => {
       !selection ||
       !inFocus ||
       RangeApi.isCollapsed(selection) ||
-      editor.read((state) => state.text.string(selection)) === ''
+      editor.read.text.string(selection) === ''
     ) {
       el.removeAttribute('style');
       return;

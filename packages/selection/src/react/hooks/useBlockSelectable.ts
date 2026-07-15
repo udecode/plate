@@ -1,12 +1,11 @@
 import type React from 'react';
 
-import { type Element, PathApi } from '@platejs/plite';
+import { type Element, type Path, PathApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 import {
   type PlateEditor,
+  useElementContext,
   useEditorPlugin,
-  useElement,
-  usePath,
 } from '@platejs/core/react';
 
 import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
@@ -78,25 +77,33 @@ export const addOnContextMenu = (
   }
 };
 
-export const useBlockSelectable = () => {
-  const element = useElement();
-  const path = usePath();
+export const useBlockSelectable = ({
+  element: elementProp,
+  path: pathProp,
+}: {
+  element?: Element;
+  path?: Path;
+} = {}) => {
+  const elementContext = useElementContext();
+  const element = elementProp ?? elementContext?.element;
+  const path = pathProp ?? elementContext?.path;
   const { api, editor } = useEditorPlugin<BlockSelectionConfig>({
     key: KEYS.blockSelection,
   });
 
   return {
-    props: api?.isSelectable(element, path)
-      ? {
-          className: 'slate-selectable',
-          onContextMenu: (
-            event: React.MouseEvent<HTMLDivElement, MouseEvent>
-          ) =>
-            addOnContextMenu(editor, {
-              element,
-              event,
-            }),
-        }
-      : {},
+    props:
+      element && path && api?.isSelectable(element, path)
+        ? {
+            className: 'plite-selectable',
+            onContextMenu: (
+              event: React.MouseEvent<HTMLDivElement, MouseEvent>
+            ) =>
+              addOnContextMenu(editor, {
+                element,
+                event,
+              }),
+          }
+        : {},
   };
 };

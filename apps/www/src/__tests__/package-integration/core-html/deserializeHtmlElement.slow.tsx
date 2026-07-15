@@ -6,7 +6,10 @@ import { ImagePlugin } from '@platejs/media/react';
 import { TablePlugin } from '@platejs/table/react';
 import { getHtmlDocument, jsxt } from '@platejs/test-utils';
 
-import { createBaseEditor } from '../../../../../../packages/core/src/lib/editor';
+import {
+  createBaseEditor,
+  type BasePluginInput,
+} from '../../../../../../packages/core/src/lib/editor';
 import { createBasePlugin } from '../../../../../../packages/core/src/lib/plugin';
 import { BaseParagraphPlugin } from '../../../../../../packages/core/src/lib/plugins/paragraph';
 import { deserializeHtmlElement } from '../../../../../../packages/core/src/lib/plugins/html/utils/deserializeHtmlElement';
@@ -82,7 +85,7 @@ describe('when plugin has deserialize attributeNames', () => {
     expect(
       deserializeHtmlElement(
         createBaseEditor({
-          plugins: [TablePlugin],
+          plugins: [TablePlugin as BasePluginInput],
         }),
         element
       )
@@ -165,7 +168,7 @@ describe('when plugin has deserializer.attributeNames', () => {
             },
           },
         },
-      }),
+      }) as BasePluginInput,
     ],
   });
 
@@ -192,7 +195,7 @@ describe('when plugin has deserializer.parse', () => {
 
   const editor = createBaseEditor({
     plugins: [
-      BaseParagraphPlugin,
+      BaseParagraphPlugin as BasePluginInput,
       LinkPlugin.extend(() => ({
         parsers: {
           html: {
@@ -205,7 +208,7 @@ describe('when plugin has deserializer.parse', () => {
             },
           },
         },
-      })),
+      })) as BasePluginInput,
     ],
   });
 
@@ -231,7 +234,7 @@ describe('when plugin has deserializer.rules.validNodeName', () => {
 
   const editor = createBaseEditor({
     plugins: [
-      BaseParagraphPlugin,
+      BaseParagraphPlugin as BasePluginInput,
       BoldPlugin.extend({
         parsers: {
           html: {
@@ -240,7 +243,7 @@ describe('when plugin has deserializer.rules.validNodeName', () => {
             },
           },
         },
-      }),
+      }) as BasePluginInput,
     ],
   });
 

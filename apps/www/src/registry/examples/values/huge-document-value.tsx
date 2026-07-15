@@ -6,7 +6,7 @@ type HugeDocumentBlock = {
   type: 'heading-one' | 'paragraph';
 };
 
-type HugeDocumentEngine = 'plate' | 'slate';
+type HugeDocumentEngine = 'plate' | 'upstream-slate';
 
 const DEFAULT_HUGE_DOCUMENT_BLOCKS = 10_000;
 const HEADING_INTERVAL = 100;
@@ -64,7 +64,7 @@ export const createHugeDocumentValue = ({
 } = {}): Value => {
   const hugeDocumentBlocks = getHugeDocumentBlocks(blocks);
 
-  return engine === 'slate'
+  return engine === 'upstream-slate'
     ? toPliteValue(hugeDocumentBlocks)
     : toPlateValue(hugeDocumentBlocks);
 };

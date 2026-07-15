@@ -75,7 +75,7 @@ const DocumentStatePanel = () => {
   const setSpellcheckEnabled = useSetStateField(spellcheck);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const commitSummary = useEditorState((state) =>
-    formatCommit(state.value.lastCommit())
+    formatCommit(state.lastCommit())
   );
 
   const updateTitle = (event: ChangeEvent<HTMLInputElement>) => {
@@ -138,7 +138,7 @@ const DocumentStatePanel = () => {
   };
 
   const receiveRemoteTitle = () => {
-    const previousValue = editor.read((state) => state.getField(documentTitle));
+    const previousValue = editor.read.getField(documentTitle);
 
     editor.update(
       (tx) => {
@@ -196,7 +196,7 @@ const DocumentStatePanel = () => {
         </Button>
         <Button
           onClick={() => {
-            editor.update((tx) => tx.history.undo());
+            editor.update.history.undo();
           }}
           type="button"
           variant="outline"
@@ -205,7 +205,7 @@ const DocumentStatePanel = () => {
         </Button>
         <Button
           onClick={() => {
-            editor.update((tx) => tx.history.redo());
+            editor.update.history.redo();
           }}
           type="button"
           variant="outline"
@@ -255,7 +255,7 @@ const DocumentStateExample = () => {
           children: [{ text: 'Title changes never need invisible nodes.' }],
         },
       ],
-      state: {
+      meta: {
         [documentTitle.key]: 'Q2 Planning Brief',
         [spellcheck.key]: true,
       },

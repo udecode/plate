@@ -4,7 +4,7 @@ import type { UIMessage } from 'ai';
 import { getMarkdown } from '@platejs/ai';
 import { serializeMd } from '@platejs/markdown';
 import dedent from 'dedent';
-import { type SlateEditor, KEYS, RangeApi } from 'platejs';
+import { ElementApi, type BaseEditor, KEYS, RangeApi } from 'platejs';
 
 /**
  * Tag content split by newlines
@@ -207,36 +207,43 @@ export function getLastUserInstruction(messages: ChatMessage[]): string {
 const SELECTION_START = '<Selection>';
 const SELECTION_END = '</Selection>';
 
-export const addSelection = (editor: SlateEditor) => {
-  if (!editor.selection) return;
-  if (editor.api.isExpanded()) {
-    const [start, end] = RangeApi.edges(editor.selection);
+export const addSelection = (editor: BaseEditor) => {
+  const selection = editor.read.selection();
 
-    editor.tf.withoutNormalizing(() => {
-      editor.tf.insertText(SELECTION_END, {
-        at: end,
-      });
+  if (!selection || RangeApi.isCollapsed(selection)) return;
 
-      editor.tf.insertText(SELECTION_START, {
-        at: start,
-      });
+  const [start, end] = RangeApi.edges(selection);
+
+  editor.update.withoutNormalizing(({ tx }) => {
+    tx.text.insert(SELECTION_END, {
+      at: end,
     });
-  }
+
+    tx.text.insert(SELECTION_START, {
+      at: start,
+    });
+  });
 };
 
-const removeEscapeSelection = (editor: SlateEditor, text: string) => {
+const removeEscapeSelection = (editor: BaseEditor, text: string) => {
   let newText = text
     .replace(`\\${SELECTION_START}`, SELECTION_START)
     .replace(`\\${SELECTION_END}`, SELECTION_END);
 
   // If the selection is on a void element, inserting the placeholder will fail, and the string must be replaced manually.
   if (!newText.includes(SELECTION_END)) {
-    const [_, end] = RangeApi.edges(editor.selection!);
+    const selection = editor.read.selection();
 
-    const node = editor.api.block({ at: end.path });
+    if (!selection) return newText;
+
+    const [_, end] = RangeApi.edges(selection);
+
+    const node = editor.read.nodes.block({
+      at: end.path,
+    });
 
     if (!node) return newText;
-    if (editor.api.isVoid(node[0])) {
+    if (editor.read.schema.isVoid(node[0])) {
       const voidString = serializeMd(editor, { value: [node[0]] });
 
       const idx = newText.lastIndexOf(voidString);
@@ -255,39 +262,51 @@ const removeEscapeSelection = (editor: SlateEditor, text: string) => {
 };
 
 /** Check if the current selection fully covers all top-level blocks. */
-export const isMultiBlocks = (editor: SlateEditor) => {
-  const blocks = editor.api.blocks({ mode: 'lowest' });
+export const isMultiBlocks = (editor: BaseEditor) => {
+  const selection = editor.read.selection();
+
+  if (!selection) return false;
+
+  const blocks = editor.read((state) =>
+    state.nodes.toArray({
+      at: selection,
+      match: (node) => ElementApi.isElement(node) && state.schema.isBlock(node),
+      mode: 'lowest',
+    })
+  );
 
   return blocks.length > 1;
 };
 
 /** Get markdown with selection markers */
-export const getMarkdownWithSelection = (editor: SlateEditor) =>
+export const getMarkdownWithSelection = (editor: BaseEditor) =>
   removeEscapeSelection(editor, getMarkdown(editor, { type: 'block' }));
 
 /** Check if the current selection is inside a table cell */
-export const isSelectionInTable = (editor: SlateEditor): boolean => {
-  if (!editor.selection) return false;
+export const isSelectionInTable = (editor: BaseEditor): boolean => {
+  const selection = editor.read.selection();
 
-  const tableEntry = editor.api.block({
-    at: editor.selection,
-    match: { type: KEYS.table },
+  if (!selection) return false;
+
+  const tableEntry = editor.read.nodes.block({
+    at: selection,
+    match: (node) => ElementApi.isElement(node) && node.type === KEYS.table,
   });
 
   return !!tableEntry;
 };
 
 /** Check if selection is within a single table cell */
-export const isSingleCellSelection = (editor: SlateEditor): boolean => {
-  if (!editor.selection) return false;
+export const isSingleCellSelection = (editor: BaseEditor): boolean => {
+  const selection = editor.read.selection();
+
+  if (!selection) return false;
 
   // Get all td blocks in selection
-  const cells = Array.from(
-    editor.api.nodes({
-      at: editor.selection,
-      match: { type: KEYS.td },
-    })
-  );
+  const cells = editor.read.nodes.toArray({
+    at: selection,
+    match: (node) => ElementApi.isElement(node) && node.type === KEYS.td,
+  });
 
   return cells.length === 1;
 };

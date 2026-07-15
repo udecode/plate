@@ -8,10 +8,10 @@ import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { createPlateEditor } from '../editor';
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
 import { createPlatePlugin } from '../plugin';
-import { useSlateProps } from './useSlateProps';
+import { usePlateRootProps } from './usePlateRootProps';
 
-describe('useSlateProps', () => {
-  it('routes slate callbacks through the matching plate callbacks', () => {
+describe('usePlateRootProps', () => {
+  it('routes Plite callbacks through the matching Plate callbacks', () => {
     const onChange = mock();
     const onSelectionChange = mock();
     const onValueChange = mock();
@@ -30,7 +30,7 @@ describe('useSlateProps', () => {
     );
     const { result } = renderHook(
       () => ({
-        props: useSlateProps({}),
+        props: usePlateRootProps({}),
       }),
       { wrapper }
     );
@@ -87,7 +87,7 @@ describe('useSlateProps', () => {
     );
     const { result } = renderHook(
       () => ({
-        props: useSlateProps({}),
+        props: usePlateRootProps({}),
       }),
       { wrapper }
     );

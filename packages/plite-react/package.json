@@ -86,8 +86,8 @@
   "peerDependencies": {
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0",
-    "@platejs/plite": ">=54.0.0-beta.0",
-    "@platejs/plite-dom": ">=54.0.0-beta.0"
+    "@platejs/plite": ">=54.0.0-beta.2",
+    "@platejs/plite-dom": ">=54.0.0-beta.2"
   },
   "publishConfig": {
     "access": "public"

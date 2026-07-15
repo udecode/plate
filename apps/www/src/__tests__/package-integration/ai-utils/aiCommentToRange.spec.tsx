@@ -28,7 +28,7 @@ describe('applyAIReview', () => {
               },
             ],
             type: 'a',
-            url: 'https://slatejs.org',
+            url: 'https://platejs.org/docs/plite',
           },
           {
             text: ' and ',
@@ -392,7 +392,7 @@ describe('applyAIReview', () => {
         comment:
           'This sentence introduces the technologies used to build the rich-text editor, Plite and React.',
         content:
-          'Experience a modern rich-text editor built with [Plite](https://slatejs.org) and [React](https://reactjs.org).',
+          'Experience a modern rich-text editor built with [Plite](https://platejs.org/docs/plite) and [React](https://reactjs.org).',
       },
       {
         blockId: 'GznILN9jX7',

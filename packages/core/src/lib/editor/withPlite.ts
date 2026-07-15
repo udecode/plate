@@ -20,7 +20,7 @@ import type {
   NodeComponents,
   PluginConfig,
   WithRequiredKey,
-} from '../plugin/SlatePlugin';
+} from '../plugin/PluginConfig';
 import type {
   AnyBasePlugin,
   BasePlugin,
@@ -30,12 +30,12 @@ import type {
 } from '../plugin/BasePlugin';
 import type { NodeIdConfig } from '../plugins/node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from '../plugins/paragraph/BaseParagraphPlugin';
-import type { InferPlugins, BaseEditor, BasePluginInput } from './SlateEditor';
+import type { InferPlugins, BaseEditor, BasePluginInput } from './BaseEditor';
 
 import { resolvePlugins } from '../../internal/plugin/resolvePlugins';
 import { pipeTransformInitialValue } from '../../internal/plugin/pipeTransformInitialValue';
 import { createBasePlugin } from '../plugin/createBasePlugin';
-import { getPluginType, getSlatePlugin } from '../plugin/getSlatePlugin';
+import { getBasePlugin, getPluginType } from '../plugin/getBasePlugin';
 import { getEditorPlugin } from '../plugin/getEditorPlugin';
 import {
   type CorePluginConfig,
@@ -512,7 +512,7 @@ export const extendBaseEditor = <
   }
 
   editor.getPlugin = ((plugin: PluginLookupInput) =>
-    getSlatePlugin(editor, plugin)) as BaseEditor['getPlugin'];
+    getBasePlugin(editor, plugin)) as BaseEditor['getPlugin'];
   editor.plugin = ((plugin: PluginContextLookupInput) =>
     getEditorPlugin(
       editor,
@@ -522,7 +522,7 @@ export const extendBaseEditor = <
   editor.getInjectProps = (<C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ): InjectNodeProps<C> => {
-    const resolvedPlugin = getSlatePlugin(editor, plugin) as BasePlugin<C>;
+    const resolvedPlugin = getBasePlugin(editor, plugin) as BasePlugin<C>;
     const nodeProps = (resolvedPlugin.inject?.nodeProps ??
       {}) as InjectNodeProps<C>;
 
@@ -532,7 +532,7 @@ export const extendBaseEditor = <
     return nodeProps;
   }) satisfies BaseEditor['getInjectProps'];
   editor.getOptionsStore = (plugin) =>
-    getSlatePlugin(editor, plugin).optionsStore;
+    getBasePlugin(editor, plugin).optionsStore;
 
   const pluginList = [...plugins];
   const corePlugins = getCorePlugins({

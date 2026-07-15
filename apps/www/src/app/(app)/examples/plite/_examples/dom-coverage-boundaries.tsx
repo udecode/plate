@@ -141,7 +141,10 @@ const DomCoverageBoundariesExample = () => {
 
   const updateHiddenBody = useCallback(() => {
     editor.update((tx) => {
-      const [node] = editor.read((state) => state.nodes.get(hiddenBodyPath));
+      const node = editor.read.nodes.get(hiddenBodyPath)?.[0];
+
+      if (!node) return;
+
       const text =
         typeof (node as { text?: unknown }).text === 'string'
           ? (node as { text: string }).text
@@ -156,7 +159,10 @@ const DomCoverageBoundariesExample = () => {
 
   const selectHiddenBody = useCallback(() => {
     editor.update((tx) => {
-      const [node] = editor.read((state) => state.nodes.get(hiddenBodyPath));
+      const node = editor.read.nodes.get(hiddenBodyPath)?.[0];
+
+      if (!node) return;
+
       const text =
         typeof (node as { text?: unknown }).text === 'string'
           ? (node as { text: string }).text
@@ -171,16 +177,12 @@ const DomCoverageBoundariesExample = () => {
   }, [editor, refreshTrace]);
 
   const selectAll = useCallback(() => {
-    editor.update((tx) => {
-      tx.selection.set({
-        anchor: { offset: 0, path: [0, 0] },
-        focus: {
-          offset: editor.read((state) =>
-            NodeApi.string(state.runtime.snapshot().children[4])
-          ).length,
-          path: [4, 0],
-        },
-      });
+    editor.update.selection.set({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: {
+        offset: NodeApi.string(editor.read.children()[4]).length,
+        path: [4, 0],
+      },
     });
     refreshTrace();
   }, [editor, refreshTrace]);

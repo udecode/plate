@@ -13,6 +13,7 @@ import {
   pathRef as editorPathRef,
 } from '@platejs/plite/internal';
 import {
+  failInvariant,
   getEditorTransformRegistry,
   setEditorTransformRegistry,
   withOperationRootChildren,
@@ -251,17 +252,21 @@ export const installDOM = <
           }
 
           for (const [path, key] of matches) {
-            const [node] = e.read((state) =>
-              state.nodes.get(path, { required: true })
-            );
+            const [node] =
+              e.read((state) => state.nodes.get(path)) ??
+              failInvariant(
+                `Expected transformed DOM node at ${JSON.stringify(path)}`
+              );
             NODE_TO_KEY.set(node, key);
           }
 
           for (const [pathRef, key] of pathRefMatches) {
             if (pathRef.current) {
-              const [node] = e.read((state) =>
-                state.nodes.get(pathRef.current!, { required: true })
-              );
+              const [node] =
+                e.read((state) => state.nodes.get(pathRef.current!)) ??
+                failInvariant(
+                  `Expected transformed DOM node at ${JSON.stringify(pathRef.current)}`
+                );
               NODE_TO_KEY.set(node, key);
             }
 

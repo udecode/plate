@@ -17,17 +17,14 @@ import type {
   EditorCoreStateView,
   EditorCoreUpdateTransaction,
   EditorDocumentValue,
-  EditorFirstReadOptions,
   EditorFragmentReadOptions,
-  EditorLeafReadOptions,
+  EditorLeafOptions,
   EditorMarks,
-  EditorNodeReadOptions,
   EditorNodesReadOptions,
   EditorNodesOptions,
-  EditorParentReadOptions,
-  EditorPathReadOptions,
-  EditorPointReadOptions,
-  EditorReadOptions,
+  EditorParentOptions,
+  EditorPathOptions,
+  EditorPointOptions,
   EditorNormalizerTransaction,
   EditorSnapshot,
   EditorSelectionBlockOptions,
@@ -36,8 +33,6 @@ import type {
   EditorStateField,
   EditorStateMarksApi,
   EditorStateNodesApi,
-  EditorStatePointsApi,
-  EditorStateRangesApi,
   EditorStateSelectionApi,
   EditorStatePatch,
   EditorStateView,
@@ -556,29 +551,6 @@ const hasLocationPath = (
   );
 };
 
-const requireLocationPath = (editor: Editor, location: Location | Span) => {
-  assertLocationPathShape(location);
-
-  if (LocationApi.isSpan(location)) {
-    NodeApi.get(editor, location[0]);
-    NodeApi.get(editor, location[1]);
-    return;
-  }
-
-  if (PathApi.isPath(location)) {
-    NodeApi.get(editor, location);
-    return;
-  }
-
-  if (LocationApi.isPoint(location)) {
-    NodeApi.get(editor, location.path);
-    return;
-  }
-
-  NodeApi.get(editor, location.anchor.path);
-  NodeApi.get(editor, location.focus.path);
-};
-
 const hasReadableNodeCollection = (
   editor: Editor,
   options: { at?: Location | Span } | undefined
@@ -586,16 +558,9 @@ const hasReadableNodeCollection = (
 
 const readNodeEntry = <T extends PliteNode>(
   editor: Editor,
-  at: Location,
-  options: EditorNodeReadOptions = {}
+  at: Location
 ): NodeEntry<T> | undefined => {
-  if (!hasLocationPath(editor, at)) {
-    if (options.required) {
-      requireLocationPath(editor, at);
-    }
-
-    return;
-  }
+  if (!hasLocationPath(editor, at)) return;
 
   return getNode(editor, at) as NodeEntry<T>;
 };
@@ -603,28 +568,14 @@ const readNodeEntry = <T extends PliteNode>(
 const readNodePath = (
   editor: Editor,
   at: Location,
-  options: EditorPathReadOptions = {}
+  options: EditorPathOptions = {}
 ): Path | undefined => {
-  const { required, ...pathOptions } = options;
+  if (!hasLocationPath(editor, at)) return;
 
-  if (!hasLocationPath(editor, at)) {
-    if (required) {
-      requireLocationPath(editor, at);
-    }
-
-    return;
-  }
-
-  const path = getEditorRuntime(editor).path(at, pathOptions);
+  const path = getEditorRuntime(editor).path(at, options);
   assertPathShape(path);
 
-  if (NodeApi.has(editor, path)) {
-    return path;
-  }
-
-  if (required) {
-    NodeApi.get(editor, path);
-  }
+  if (NodeApi.has(editor, path)) return path;
 };
 
 const resolveNodeTargetLocation = (
@@ -644,17 +595,8 @@ const resolveNodeTargetLocation = (
 
 const resolveReadableNodeTarget = (
   editor: Editor,
-  target: NodeTarget,
-  required = false
-): Location | undefined => {
-  const at = resolveNodeTargetLocation(editor, target);
-
-  if (at === undefined && required) {
-    throw new Error('Cannot resolve a detached node target.');
-  }
-
-  return at;
-};
+  target: NodeTarget
+): Location | undefined => resolveNodeTargetLocation(editor, target);
 
 type NodeTargetOptions = { at?: NodeTarget };
 
@@ -754,18 +696,8 @@ const readNodeChildren = (
     : [];
 };
 
-const readNodeFirst = (
-  editor: Editor,
-  at: Location,
-  options: EditorFirstReadOptions = {}
-): NodeEntry | undefined => {
-  if (!hasLocationPath(editor, at)) {
-    if (options.required) {
-      requireLocationPath(editor, at);
-    }
-
-    return;
-  }
+const readNodeFirst = (editor: Editor, at: Location): NodeEntry | undefined => {
+  if (!hasLocationPath(editor, at)) return;
 
   return getEditorRuntime(editor).first(at);
 };
@@ -773,15 +705,9 @@ const readNodeFirst = (
 const readNodeLeaf = (
   editor: Editor,
   at: Location,
-  options: EditorLeafReadOptions = {}
+  options: EditorLeafOptions = {}
 ): NodeEntry<Text> | undefined => {
-  if (!hasLocationPath(editor, at)) {
-    if (options.required) {
-      requireLocationPath(editor, at);
-    }
-
-    return;
-  }
+  if (!hasLocationPath(editor, at)) return;
 
   return getEditorRuntime(editor).leaf(at, options);
 };
@@ -789,23 +715,11 @@ const readNodeLeaf = (
 const readNodeParent = (
   editor: Editor,
   at: Location,
-  options: EditorParentReadOptions = {}
+  options: EditorParentOptions = {}
 ): NodeEntry<Ancestor> | undefined => {
-  if (PathApi.isPath(at) && at.length === 0) {
-    if (options.required) {
-      PathApi.parent(at);
-    }
+  if (PathApi.isPath(at) && at.length === 0) return;
 
-    return;
-  }
-
-  if (!hasLocationPath(editor, at) || (PathApi.isPath(at) && at.length === 0)) {
-    if (options.required) {
-      requireLocationPath(editor, at);
-    }
-
-    return;
-  }
+  if (!hasLocationPath(editor, at)) return;
 
   return getEditorRuntime(editor).parent(at, options);
 };
@@ -813,15 +727,9 @@ const readNodeParent = (
 const readPoint = (
   editor: Editor,
   at: Location,
-  options: EditorPointReadOptions = {}
+  options: EditorPointOptions = {}
 ): Point | undefined => {
-  if (!hasLocationPath(editor, at)) {
-    if (options.required) {
-      requireLocationPath(editor, at);
-    }
-
-    return;
-  }
+  if (!hasLocationPath(editor, at)) return;
 
   return getEditorRuntime(editor).point(at, options);
 };
@@ -829,9 +737,8 @@ const readPoint = (
 const readPointEdge = (
   editor: Editor,
   at: Location,
-  edge: 'start' | 'end',
-  options: EditorReadOptions = {}
-): Point | undefined => readPoint(editor, at, { edge, ...options });
+  edge: 'start' | 'end'
+): Point | undefined => readPoint(editor, at, { edge });
 
 const readAdjacentPoint = (
   editor: Editor,
@@ -850,44 +757,19 @@ const readAdjacentPoint = (
 
 const readRangeEdges = (
   editor: Editor,
-  at: Location,
-  options: EditorReadOptions = {}
+  at: Location
 ): [Point, Point] | undefined => {
-  if (!hasLocationPath(editor, at)) {
-    if (options.required) {
-      requireLocationPath(editor, at);
-    }
-
-    return;
-  }
+  if (!hasLocationPath(editor, at)) return;
 
   return getEditorRuntime(editor).edges(at);
 };
 
-const isEditorReadOptions = (
-  value: Location | EditorReadOptions | undefined
-): value is EditorReadOptions =>
-  value !== undefined && !LocationApi.isLocation(value);
-
 const readRange = (
   editor: Editor,
   at: Location,
-  toOrOptions?: Location | EditorReadOptions,
-  options: EditorReadOptions = {}
+  to?: Location
 ): Range | undefined => {
-  const to = isEditorReadOptions(toOrOptions) ? undefined : toOrOptions;
-  const readOptions = isEditorReadOptions(toOrOptions) ? toOrOptions : options;
-  const required = readOptions.required;
-
   if (!hasLocationPath(editor, at) || (to && !hasLocationPath(editor, to))) {
-    if (required) {
-      requireLocationPath(editor, at);
-
-      if (to) {
-        requireLocationPath(editor, to);
-      }
-    }
-
     return;
   }
 
@@ -2093,8 +1975,8 @@ const getStateView = <
           ({ options }) => getEditorRuntime(editor).elementReadOnly(options)
         );
       },
-      first: ((target: NodeTarget, options: EditorFirstReadOptions = {}) => {
-        const at = resolveReadableNodeTarget(editor, target, options.required);
+      first: (target: NodeTarget) => {
+        const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
@@ -2102,18 +1984,13 @@ const getStateView = <
           editor,
           'nodes',
           'first',
-          { at, options },
-          ({ at, options }) =>
-            withLocationRootRead(editor, at, () =>
-              readNodeFirst(editor, at, options)
-            )
+          { at },
+          ({ at }) =>
+            withLocationRootRead(editor, at, () => readNodeFirst(editor, at))
         );
-      }) as EditorStateNodesApi['first'],
-      get: (<T extends PliteNode>(
-        target: NodeTarget,
-        options: EditorNodeReadOptions = {}
-      ) => {
-        const at = resolveReadableNodeTarget(editor, target, options.required);
+      },
+      get: <T extends PliteNode>(target: NodeTarget) => {
+        const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
@@ -2121,13 +1998,11 @@ const getStateView = <
           editor,
           'nodes',
           'get',
-          { at, options },
-          ({ at, options }) =>
-            withLocationRootRead(editor, at, () =>
-              readNodeEntry<T>(editor, at, options)
-            )
-        );
-      }) as EditorStateNodesApi['get'],
+          { at },
+          ({ at }) =>
+            withLocationRootRead(editor, at, () => readNodeEntry<T>(editor, at))
+        ) as NodeEntry<T> | undefined;
+      },
       hasBlocks: (element: import('../interfaces/element').Element) =>
         executeQueryMiddleware(
           editor,
@@ -2189,8 +2064,8 @@ const getStateView = <
           ({ at, options }) => getEditorRuntime(editor).last(at, options)
         );
       },
-      leaf: ((target: NodeTarget, options: EditorLeafReadOptions = {}) => {
-        const at = resolveReadableNodeTarget(editor, target, options.required);
+      leaf: (target: NodeTarget, options: EditorLeafOptions = {}) => {
+        const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
@@ -2204,7 +2079,7 @@ const getStateView = <
               readNodeLeaf(editor, at, options)
             )
         );
-      }) as EditorStateNodesApi['leaf'],
+      },
       levels: <T extends PliteNode>(options = {}) => {
         const resolvedOptions = resolveNodeTargetOptions(editor, options);
 
@@ -2231,8 +2106,8 @@ const getStateView = <
               : (function* emptyLevels() {})()
         ) as Generator<[T, Path], void, undefined>;
       },
-      path: ((target: NodeTarget, options: EditorPathReadOptions = {}) => {
-        const at = resolveReadableNodeTarget(editor, target, options.required);
+      path: (target: NodeTarget, options: EditorPathOptions = {}) => {
+        const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
@@ -2246,7 +2121,7 @@ const getStateView = <
               readNodePath(editor, at, options)
             )
         );
-      }) as EditorStateNodesApi['path'],
+      },
       entries: <T extends PliteNode>(options = {}) => {
         const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, options);
 
@@ -2390,8 +2265,11 @@ const getStateView = <
               current
             )
         ),
-      parent: ((target: NodeTarget, options: EditorParentReadOptions = {}) => {
-        const at = resolveReadableNodeTarget(editor, target, options.required);
+      parent: <T extends Ancestor = Ancestor>(
+        target: NodeTarget,
+        options: EditorParentOptions = {}
+      ) => {
+        const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
@@ -2404,8 +2282,8 @@ const getStateView = <
             withLocationRootRead(editor, at, () =>
               readNodeParent(editor, at, options)
             )
-        );
-      }) as EditorStateNodesApi['parent'],
+        ) as NodeEntry<T> | undefined;
+      },
       void: (options = {}) => {
         const resolvedOptions = resolveNodeTargetOptions(editor, options);
 
@@ -2449,8 +2327,8 @@ const getStateView = <
           ({ at, options }) => readAdjacentPoint(editor, at, 'before', options)
         );
       },
-      end: ((target: NodeTarget, options: EditorReadOptions = {}) => {
-        const at = resolveReadableNodeTarget(editor, target, options.required);
+      end: (target: NodeTarget) => {
+        const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
@@ -2458,12 +2336,12 @@ const getStateView = <
           editor,
           'points',
           'end',
-          { at, options },
-          ({ at, options }) => readPointEdge(editor, at, 'end', options)
+          { at },
+          ({ at }) => readPointEdge(editor, at, 'end')
         );
-      }) as EditorStatePointsApi['end'],
-      get: ((target: NodeTarget, options: EditorPointReadOptions = {}) => {
-        const at = resolveReadableNodeTarget(editor, target, options.required);
+      },
+      get: (target: NodeTarget, options: EditorPointOptions = {}) => {
+        const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
@@ -2474,7 +2352,7 @@ const getStateView = <
           { at, options },
           ({ at, options }) => readPoint(editor, at, options)
         );
-      }) as EditorStatePointsApi['get'],
+      },
       isEdge: (point, target) => {
         const at = resolveReadableNodeTarget(editor, target);
 
@@ -2549,8 +2427,8 @@ const getStateView = <
               : (function* emptyPositions() {})()
         );
       },
-      start: ((target: NodeTarget, options: EditorReadOptions = {}) => {
-        const at = resolveReadableNodeTarget(editor, target, options.required);
+      start: (target: NodeTarget) => {
+        const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
@@ -2558,16 +2436,16 @@ const getStateView = <
           editor,
           'points',
           'start',
-          { at, options },
-          ({ at, options }) => readPointEdge(editor, at, 'start', options)
+          { at },
+          ({ at }) => readPointEdge(editor, at, 'start')
         );
-      }) as EditorStatePointsApi['start'],
+      },
     }),
     ranges: Object.freeze({
       bookmark: (range, options = {}) =>
         getEditorTransformRegistry(editor).bookmark(range, options),
-      edges: ((target: NodeTarget, options: EditorReadOptions = {}) => {
-        const at = resolveReadableNodeTarget(editor, target, options.required);
+      edges: (target: NodeTarget) => {
+        const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
@@ -2575,10 +2453,10 @@ const getStateView = <
           editor,
           'ranges',
           'edges',
-          { at, options },
-          ({ at, options }) => readRangeEdges(editor, at, options)
+          { at },
+          ({ at }) => readRangeEdges(editor, at)
         );
-      }) as EditorStateRangesApi['edges'],
+      },
       fromEntries: (entries) =>
         executeQueryMiddleware(
           editor,
@@ -2587,16 +2465,8 @@ const getStateView = <
           { entries },
           ({ entries }) => readRangeFromEntries(editor, entries)
         ),
-      get: ((
-        target: NodeTarget,
-        toOrOptions?: Location | EditorReadOptions,
-        options: EditorReadOptions = {}
-      ) => {
-        const required =
-          'required' in (toOrOptions ?? {})
-            ? (toOrOptions as EditorReadOptions).required
-            : options.required;
-        const at = resolveReadableNodeTarget(editor, target, required);
+      get: (target: NodeTarget, to?: Location) => {
+        const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
@@ -2604,11 +2474,10 @@ const getStateView = <
           editor,
           'ranges',
           'get',
-          { at, options, toOrOptions },
-          ({ at, options, toOrOptions }) =>
-            readRange(editor, at, toOrOptions, options)
+          { at, to },
+          ({ at, to }) => readRange(editor, at, to)
         );
-      }) as EditorStateRangesApi['get'],
+      },
       project: (range) =>
         executeQueryMiddleware(
           editor,

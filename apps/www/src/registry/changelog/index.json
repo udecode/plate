@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-07-13-use-installed-block-insert-commands",
+      "href": "/registry/changelog/2026-07-13-use-installed-block-insert-commands.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Use installed block insertion commands",
+      "change": {
+        "type": "source",
+        "date": "2026-07-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["transforms", "transforms-classic", "editor-kit", "dnd-kit"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-06-15-editor-fix-preserved-space-wrapping",
       "href": "/registry/changelog/2026-06-15-editor-fix-preserved-space-wrapping.json",
       "status": "draft",

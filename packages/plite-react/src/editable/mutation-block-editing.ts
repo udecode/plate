@@ -11,6 +11,7 @@ import {
   type RootKey,
 } from '@platejs/plite';
 import {
+  failInvariant,
   type Editor as RuntimeEditor,
   isBlock as editorIsBlock,
   isVoid as editorIsVoid,
@@ -128,13 +129,10 @@ export const applyBackspaceAtLeadingInlineVoidBlockBoundary = (
   const target = editor.read((state) => {
     const isInlineVoidAt = (location: Path | Point) => {
       if (PathApi.isPath(location)) {
-        if (!state.nodes.hasPath(location)) {
-          return false;
-        }
-
-        const [node] = state.nodes.get(location, { required: true });
+        const node = state.nodes.get(location)?.[0];
 
         return (
+          !!node &&
           NodeApi.isElement(node) &&
           editorIsInline(editor, node) &&
           editorIsVoid(editor, node)
@@ -170,9 +168,11 @@ export const applyBackspaceAtLeadingInlineVoidBlockBoundary = (
 
     const [blockNode] = block;
     const previousBlockPath = PathApi.previous(blockPath);
-    const [previousBlockNode] = state.nodes.get(previousBlockPath, {
-      required: true,
-    });
+    const [previousBlockNode] =
+      state.nodes.get(previousBlockPath) ??
+      failInvariant(
+        `Expected previous block at ${JSON.stringify(previousBlockPath)}`
+      );
 
     if (
       !NodeApi.isElement(blockNode) ||

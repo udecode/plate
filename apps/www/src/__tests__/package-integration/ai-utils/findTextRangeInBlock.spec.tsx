@@ -1,6 +1,9 @@
 import { createTestEditor } from './__tests__/createTestEditor';
 import { findTextRangeInBlock } from '../../../../../../packages/ai/src/react/ai/utils/findTextRangeInBlock';
 
+const getFirstBlock = (editor: ReturnType<typeof createTestEditor>) =>
+  editor.read.nodes.get([0])!;
+
 describe('findTextRangeInBlock', () => {
   it('find text in a simple nested inline node', () => {
     const editor = createTestEditor([
@@ -19,7 +22,7 @@ describe('findTextRangeInBlock', () => {
     ]);
 
     const range = findTextRangeInBlock({
-      block: editor.api.node([0])!,
+      block: getFirstBlock(editor),
       findText: 'test',
     });
 
@@ -45,7 +48,7 @@ describe('findTextRangeInBlock', () => {
     ]);
 
     const range = findTextRangeInBlock({
-      block: editor.api.node([0])!,
+      block: getFirstBlock(editor),
       findText: 'test',
     });
 
@@ -66,7 +69,7 @@ describe('findTextRangeInBlock', () => {
     ]);
 
     const range = findTextRangeInBlock({
-      block: editor.api.node([0])!,
+      block: getFirstBlock(editor),
       findText: 'test',
     });
 
@@ -87,7 +90,7 @@ describe('findTextRangeInBlock', () => {
     ]);
 
     const range = findTextRangeInBlock({
-      block: editor.api.node([0])!,
+      block: getFirstBlock(editor),
       findText: 'xyz',
     });
 
@@ -148,7 +151,7 @@ describe('findTextRangeInBlock', () => {
     ]);
 
     const range = findTextRangeInBlock({
-      block: editor.api.node([0])!,
+      block: getFirstBlock(editor),
       findText:
         'Structure your content with headings, lists, and quotes. Apply marks like bold, italic, underline, strikethrough, and code. Use autoformatting for Markdown-like shortcuts (e.g., * for lists, # for H1).',
     });
@@ -213,7 +216,7 @@ describe('findTextRangeInBlock', () => {
     ]);
 
     const range = findTextRangeInBlock({
-      block: editor.api.node([0])!,
+      block: getFirstBlock(editor),
       findText:
         'Structure your content with headings, lixxxxxxxxxxxxxsts, and quotes. Apply marks like bold, italic, underline, strikethrough, and code. Use autoformatting for Markdown-like shortcuts (e.g., * for lists, # for H1).',
     });

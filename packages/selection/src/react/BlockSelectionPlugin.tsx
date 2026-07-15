@@ -179,9 +179,9 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
   inject: {
     isBlock: true,
     nodeProps: {
-      transformProps: () => {
+      transformProps: ({ element, path }) => {
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        return useBlockSelectable().props;
+        return useBlockSelectable({ element, path }).props;
       },
     },
   },

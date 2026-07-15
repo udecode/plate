@@ -10,6 +10,7 @@ import {
   CODE_LINE_TO_DECORATIONS,
   setCodeBlockToDecorations,
 } from './setCodeBlockToDecorations';
+import { insertCodeBlock } from './transforms/insertCodeBlock';
 import { toggleCodeBlock } from './transforms/toggleCodeBlock';
 import {
   resetCodeBlock,
@@ -118,6 +119,7 @@ export const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
   .extendExtension(withInsertFragmentCodeBlock)
   .extendExtension(withNormalizeCodeBlock)
   .extendTx(({ editor }) => (tx) => ({
+    insert: insertCodeBlock.bind(null, editor, tx),
     resetBlock: () => resetCodeBlock(editor, tx),
     selectAll: () => selectCodeBlock(editor, tx),
     tab: (options?: { reverse?: boolean }) => tabCodeBlock(editor, tx, options),

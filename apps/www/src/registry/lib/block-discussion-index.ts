@@ -4,29 +4,30 @@ import * as React from 'react';
 
 import type { TResolvedSuggestion } from '@platejs/suggestion';
 import type { PlateEditor } from 'platejs/react';
+import type { Element, NodeEntry, Path } from '@platejs/plite';
 
-import { CommentPlugin } from '@platejs/comment/react';
+import { BaseCommentPlugin } from '@platejs/comment';
+import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { getSuggestionKey, keyId2SuggestionId } from '@platejs/suggestion';
-import { SuggestionPlugin } from '@platejs/suggestion/react';
 import {
-  type NodeEntry,
-  NodeApi,
-  type Path,
   type TCommentText,
-  type TElement,
   type TSuggestionText,
   ElementApi,
   KEYS,
+  NodeApi,
   PathApi,
   TextApi,
 } from 'platejs';
-import { useEditorRef, useEditorVersion, usePluginOption } from 'platejs/react';
+import {
+  useEditorRef,
+  useEditorRuntimeState,
+  usePluginOption,
+} from 'platejs/react';
 
 import {
   type TDiscussion,
   discussionPlugin,
 } from '@/registry/components/editor/plugins/discussion-kit';
-
 import type { TComment } from '@/registry/ui/comment';
 
 export interface ResolvedSuggestion extends TResolvedSuggestion {
@@ -35,10 +36,8 @@ export interface ResolvedSuggestion extends TResolvedSuggestion {
 
 export const BLOCK_SUGGESTION_TOKEN = '__block__';
 
-type BlockDiscussionEntry = NodeEntry<
-  TCommentText | TElement | TSuggestionText
->;
-type SuggestionEntry = NodeEntry<TElement | TSuggestionText>;
+type BlockDiscussionEntry = NodeEntry<TCommentText | Element | TSuggestionText>;
+type SuggestionEntry = NodeEntry<Element | TSuggestionText>;
 
 type BlockDiscussionIndex = {
   discussionsByBlock: Map<string, TDiscussion[]>;
@@ -49,7 +48,7 @@ type BuildBlockDiscussionIndexOptions = {
   entries: BlockDiscussionEntry[];
   discussions: TDiscussion[];
   getCommentId: (node: TCommentText) => string | undefined;
-  getSuggestionData: (node: TElement | TSuggestionText) =>
+  getSuggestionData: (node: Element | TSuggestionText) =>
     | {
         createdAt: Date | number | string;
         id: string;
@@ -66,8 +65,8 @@ type BuildBlockDiscussionIndexOptions = {
     properties?: Record<string, unknown>;
     type: 'insert' | 'remove' | 'update';
   }>;
-  getSuggestionId: (node: TElement | TSuggestionText) => string | undefined;
-  isBlockSuggestion: (node: TElement | TSuggestionText) => boolean;
+  getSuggestionId: (node: Element | TSuggestionText) => string | undefined;
+  isBlockSuggestion: (node: Element | TSuggestionText) => boolean;
 };
 
 const discussionIndexCache = new WeakMap<
@@ -79,7 +78,13 @@ const discussionIndexCache = new WeakMap<
   }
 >();
 
-const TYPE_TEXT_MAP: Record<string, (node?: TElement) => string> = {
+const getCommentApi = (editor: PlateEditor) =>
+  editor.plugin(BaseCommentPlugin).api;
+
+const getSuggestionApi = (editor: PlateEditor) =>
+  editor.plugin(BaseSuggestionPlugin).api;
+
+const TYPE_TEXT_MAP: Record<string, (node?: Element) => string> = {
   [KEYS.audio]: () => 'Audio',
   [KEYS.blockquote]: () => 'Blockquote',
   [KEYS.callout]: () => 'Callout',
@@ -126,7 +131,7 @@ const getTopLevelPath = (path: Path): Path | null =>
   path.length > 0 ? path.slice(0, 1) : null;
 
 const getSuggestionIds = (
-  node: TCommentText | TElement | TSuggestionText,
+  node: TCommentText | Element | TSuggestionText,
   getSuggestionDataList: BuildBlockDiscussionIndexOptions['getSuggestionDataList'],
   getSuggestionId: BuildBlockDiscussionIndexOptions['getSuggestionId']
 ) => {
@@ -152,7 +157,7 @@ const getSuggestionIds = (
   return [];
 };
 
-const suggestionTypeText = (node: TElement) =>
+const suggestionTypeText = (node: Element) =>
   (TYPE_TEXT_MAP[node.type] ?? (() => node.type))(node);
 
 const formatSuggestionDateText = (date: string) => {
@@ -183,7 +188,7 @@ const formatSuggestionDateText = (date: string) => {
   });
 };
 
-const getInlineSuggestionElementText = (node: TElement) => {
+const getInlineSuggestionElementText = (node: Element) => {
   if (typeof node.value === 'string' && node.value.length > 0) {
     return node.value;
   }
@@ -194,11 +199,11 @@ const getInlineSuggestionElementText = (node: TElement) => {
 
   if (
     node.type === KEYS.inlineEquation &&
-    typeof (node as TElement & { texExpression?: unknown }).texExpression ===
+    typeof (node as Element & { texExpression?: unknown }).texExpression ===
       'string' &&
-    (node as TElement & { texExpression: string }).texExpression.length > 0
+    (node as Element & { texExpression: string }).texExpression.length > 0
   ) {
-    return (node as TElement & { texExpression: string }).texExpression;
+    return (node as Element & { texExpression: string }).texExpression;
   }
 
   const nodeText = NodeApi.string(node);
@@ -402,7 +407,7 @@ export const buildBlockDiscussionIndex = ({
         }
 
         appendByKey(suggestionEntriesById, suggestionId, [
-          node as TElement | TSuggestionText,
+          node as Element | TSuggestionText,
           path,
         ]);
       }
@@ -466,12 +471,17 @@ const getDiscussionIndex = (
     return cached.index;
   }
 
-  const commentApi = editor.getApi(CommentPlugin).comment;
-  const suggestionApi = editor.getApi(SuggestionPlugin).suggestion;
+  const commentApi = getCommentApi(editor);
+  const suggestionApi = getSuggestionApi(editor);
 
   const index = buildBlockDiscussionIndex({
     discussions,
-    entries: [...editor.api.nodes({ at: [], mode: 'all' })],
+    entries: editor.read.nodes.toArray<
+      TCommentText | Element | TSuggestionText
+    >({
+      at: [],
+      mode: 'all',
+    }),
     getCommentId: (node) => commentApi.nodeId(node),
     getSuggestionData: (node) => suggestionApi.suggestionData(node),
     getSuggestionDataList: (node) => suggestionApi.dataList(node),
@@ -488,7 +498,11 @@ const getDiscussionIndex = (
 export const useBlockDiscussionItems = (blockPath: Path) => {
   const editor = useEditorRef();
   const discussions = usePluginOption(discussionPlugin, 'discussions');
-  const version = useEditorVersion() ?? 0;
+  const version = useEditorRuntimeState(
+    editor,
+    (state) => state.runtime.snapshot().version,
+    { deps: [] }
+  );
 
   return React.useMemo(() => {
     const index = getDiscussionIndex(editor, discussions, version);

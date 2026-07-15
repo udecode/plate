@@ -25,6 +25,7 @@ import type { EditableRepairRequest } from './mutation-controller';
 import {
   before as editorBefore,
   after as editorAfter,
+  failInvariant,
 } from './runtime-editor-api';
 
 export type EditableCaretMovementResult = {
@@ -419,8 +420,10 @@ export const applyEditableCaretMovement = ({
       editor,
       move: (tx) => {
         const point = documentBoundaryMove.reverse
-          ? tx.points.start([], { required: true })
-          : tx.points.end([], { required: true });
+          ? (tx.points.start([]) ??
+            failInvariant('Expected a document start point for caret movement'))
+          : (tx.points.end([]) ??
+            failInvariant('Expected a document end point for caret movement'));
 
         tx.selection.set(
           documentBoundaryMove.extend

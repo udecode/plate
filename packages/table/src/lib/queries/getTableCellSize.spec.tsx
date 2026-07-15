@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import assert from 'node:assert/strict';
 import { createPlateEditor } from '@platejs/core/react';
 import type { TTableCellElement } from '@platejs/utils';
 
@@ -17,6 +18,16 @@ const createTableEditor = (input: TestEditor) =>
     value: input.children,
   });
 
+const getCell = (
+  editor: ReturnType<typeof createTableEditor>,
+  path: number[]
+) => {
+  const entry = editor.read.nodes.get<TTableCellElement>(path);
+  assert(entry);
+
+  return entry[0];
+};
+
 describe('getTableCellSize', () => {
   it('falls back to zero width and height when the cell has no row parent', () => {
     const input = (
@@ -28,9 +39,7 @@ describe('getTableCellSize', () => {
     ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const element = editor.read.nodes.get<TTableCellElement>([0], {
-      required: true,
-    })[0];
+    const element = getCell(editor, [0]);
 
     expect(getTableCellSize(editor, { element })).toEqual({
       minHeight: 0,
@@ -55,9 +64,7 @@ describe('getTableCellSize', () => {
     ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const element = editor.read.nodes.get<TTableCellElement>([0, 0, 1], {
-      required: true,
-    })[0];
+    const element = getCell(editor, [0, 0, 1]);
 
     expect(getTableCellSize(editor, { element })).toEqual({
       minHeight: 72,
@@ -82,9 +89,7 @@ describe('getTableCellSize', () => {
     ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const element = editor.read.nodes.get<TTableCellElement>([0, 0, 1], {
-      required: true,
-    })[0];
+    const element = getCell(editor, [0, 0, 1]);
 
     expect(
       getTableCellSize(editor, {

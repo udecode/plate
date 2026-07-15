@@ -154,7 +154,7 @@ const toggleBlock = (editor: CustomEditor, format: CustomElementFormat) => {
   const isList = isListType(format);
   const alignBlockPath = isAlignType(format)
     ? editor.read((state) => {
-        const selection = state.selection.get();
+        const selection = state.selection();
 
         if (!selection || !RangeApi.isCollapsed(selection)) {
           return null;
@@ -326,15 +326,13 @@ const richText = () =>
           deserialize(parsed.body)
         );
 
-        editor.update((tx) => {
-          tx.fragment.insert(fragment);
-        });
+        editor.update.fragment.insert(fragment);
         return true;
       },
     },
     transforms: {
       insertBreak({ next, tx }) {
-        const selection = tx.selection.get();
+        const selection = tx.selection();
 
         if (selection && RangeApi.isCollapsed(selection)) {
           const blockEntry = tx.nodes.above({
@@ -352,7 +350,10 @@ const richText = () =>
               const blockText = NodeApi.string(block);
               const end = tx.points.end(blockPath);
 
-              if (blockText === '' || PointApi.equals(selection.anchor, end)) {
+              if (
+                blockText === '' ||
+                (end && PointApi.equals(selection.anchor, end))
+              ) {
                 const paragraphPath = PathApi.next(blockPath);
                 const result = next();
 
@@ -404,7 +405,7 @@ const isBlockActive = (
   format: CustomElementFormat,
   blockType: 'type' | 'align' = 'type'
 ) => {
-  const selection = editor.read((state) => state.selection.get());
+  const selection = editor.read.selection();
   if (!selection) return false;
 
   return editor.read((state) =>

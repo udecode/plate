@@ -48,10 +48,11 @@ function ElementContent({
 
   editor.runtime.pluginCache.render.belowNodes.forEach((key) => {
     const plugin = editor.getPlugin({ key });
+    const wrapperContext = getEditorPlugin(editor, plugin as any) as any;
     const withHOC = plugin.render.belowNodes!;
 
     // belowNodes can have hooks
-    const hoc = withHOC({ ...props, key } as any);
+    const hoc = withHOC({ ...props, ...wrapperContext, key } as any);
 
     if (hoc && !isEditOnly(readOnly, plugin, 'render')) {
       children = hoc({ ...props, children } as any);
@@ -70,10 +71,11 @@ function ElementContent({
 
   editor.runtime.pluginCache.render.aboveNodes.forEach((key) => {
     const plugin = editor.getPlugin({ key });
+    const wrapperContext = getEditorPlugin(editor, plugin as any) as any;
     const withHOC = plugin.render.aboveNodes!;
 
     // aboveNodes can have hooks
-    const hoc = withHOC({ ...props, key } as any);
+    const hoc = withHOC({ ...props, ...wrapperContext, key } as any);
 
     if (hoc && !isEditOnly(readOnly, plugin, 'render')) {
       component = hoc({ ...props, children: component } as any);
@@ -95,8 +97,9 @@ export function BelowRootNodes({ ...props }: any) {
         if (isEditOnly(readOnly, plugin, 'render')) return null;
 
         const Component = plugin.render.belowRootNodes!;
+        const pluginContext = getEditorPlugin(editor, plugin as any) as any;
 
-        return <Component key={key} {...props} />;
+        return <Component key={key} {...props} {...pluginContext} />;
       })}
     </>
   );

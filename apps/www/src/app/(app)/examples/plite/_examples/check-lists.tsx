@@ -89,7 +89,7 @@ const checklist = () =>
     name: 'checklists',
     transforms: {
       deleteBackward({ next, tx }) {
-        const selection = tx.selection.get();
+        const selection = tx.selection();
 
         if (selection && RangeApi.isCollapsed(selection)) {
           const match = tx.nodes.find({
@@ -100,7 +100,7 @@ const checklist = () =>
             const [, path] = match;
             const start = tx.points.start(path);
 
-            if (PointApi.equals(selection.anchor, start)) {
+            if (start && PointApi.equals(selection.anchor, start)) {
               tx.nodes.set(
                 { type: 'paragraph' } satisfies Partial<PliteElement>,
                 {
@@ -159,15 +159,10 @@ const CheckListItemElement = ({
         <input
           checked={checked}
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            const path = editor.api.dom.resolvePath(element);
-
-            if (!path) {
-              return;
-            }
-
-            editor.update((tx) => {
-              tx.nodes.set({ checked: event.target.checked }, { at: path });
-            });
+            editor.update.nodes.set(
+              { checked: event.target.checked },
+              { at: element }
+            );
           }}
           type="checkbox"
         />

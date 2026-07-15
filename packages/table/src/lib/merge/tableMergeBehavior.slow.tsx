@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import assert from 'node:assert/strict';
 import { createPlateEditor } from '@platejs/core/react';
 import { NodeApi } from '@platejs/plite';
 import type {
@@ -24,6 +25,13 @@ const createTableEditor = (
     selection: input.selection,
     value: input.children,
   });
+
+const getTable = (editor: ReturnType<typeof createTableEditor>) => {
+  const entry = editor.read.nodes.get<TTableElement>([0]);
+  assert(entry);
+
+  return entry[0];
+};
 
 describe('table merge behavior', () => {
   describe('mergeTableCells', () => {
@@ -61,9 +69,7 @@ describe('table merge behavior', () => {
 
       editor.update.table.merge();
 
-      const table = editor.read.nodes.get<TTableElement>([0], {
-        required: true,
-      })[0];
+      const table = getTable(editor);
       const firstRow = table.children[0] as TTableRowElement;
       const mergedCell = firstRow.children[0] as TTableCellElement;
 
@@ -168,9 +174,7 @@ describe('table merge behavior', () => {
 
       editor.update.table.split();
 
-      const table = editor.read.nodes.get<TTableElement>([0], {
-        required: true,
-      })[0];
+      const table = getTable(editor);
       const rows = table.children as TTableRowElement[];
 
       expect(rows[0].children).toHaveLength(3);

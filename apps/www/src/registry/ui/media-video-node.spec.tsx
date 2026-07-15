@@ -66,11 +66,11 @@ mock.module('./resize-handle', () => ({
 
 describe('VideoElement', () => {
   const editor = {
-    getApi: () => ({
+    api: {
       suggestion: {
         suggestionData: () => null,
       },
-    }),
+    },
   } as any;
 
   beforeEach(() => {

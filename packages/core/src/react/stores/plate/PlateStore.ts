@@ -19,7 +19,7 @@ export type PlateStoreState<E extends PlateStoreEditor = PlateStoreEditor> =
     decorate: NonNullable<
       (options: { editor: E; entry: NodeEntry }) => Range[]
     >;
-    /** Whether `Editable` is rendered so slate DOM is resolvable. */
+    /** Whether `Editable` is rendered so Plite DOM is resolvable. */
     isMounted: boolean;
     /**
      * Whether the editor is primary. If no editor is active, then PlateController

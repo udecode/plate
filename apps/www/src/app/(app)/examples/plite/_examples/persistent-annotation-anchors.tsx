@@ -38,7 +38,7 @@ type BlockRowDescriptor = {
   text: string;
 };
 
-const getBlockRows = (value: Value): BlockRowDescriptor[] =>
+const getBlockRows = (value: readonly Value[number][]): BlockRowDescriptor[] =>
   value.flatMap((node, index) => {
     if (!('children' in node)) {
       return [];
@@ -65,7 +65,7 @@ const getLeafPathByText = (
   editor: ReturnType<typeof createEditor>,
   match: (text: string) => boolean
 ) => {
-  const value = editor.read((state) => state.runtime.snapshot().children);
+  const value = editor.read.children();
 
   for (const [blockIndex, node] of value.entries()) {
     if (!('children' in node)) {
@@ -86,7 +86,7 @@ const getPointBeforeText = (
   editor: ReturnType<typeof createEditor>,
   textToFind: string
 ): Point => {
-  const value = editor.read((state) => state.runtime.snapshot().children);
+  const value = editor.read.children();
 
   for (const [blockIndex, node] of value.entries()) {
     if (!('children' in node)) {
@@ -115,7 +115,7 @@ const getRangeInsideText = (
   startOffset: number,
   endOffset: number
 ): Range => {
-  const value = editor.read((state) => state.runtime.snapshot().children);
+  const value = editor.read.children();
 
   for (const [blockIndex, node] of value.entries()) {
     if (!('children' in node)) {
@@ -143,10 +143,12 @@ const getRangeInsideText = (
   throw new Error(`Missing text: ${textToFind}`);
 };
 
-const getBlockRowByText = (value: Value, match: (text: string) => boolean) =>
-  getBlockRows(value).find((row) => match(row.text)) ?? null;
+const getBlockRowByText = (
+  value: readonly Value[number][],
+  match: (text: string) => boolean
+) => getBlockRows(value).find((row) => match(row.text)) ?? null;
 
-const getOutline = (value: Value) =>
+const getOutline = (value: readonly Value[number][]) =>
   getBlockRows(value)
     .map((row) => row.text)
     .join('|');
@@ -213,7 +215,7 @@ const ProjectionRow = ({
 
 const Outline = () => {
   const outline = useEditorSelector((editor) =>
-    getOutline(editor.read((state) => state.runtime.snapshot().children))
+    getOutline(editor.read.children())
   );
 
   return (
@@ -254,7 +256,7 @@ const AnnotationSidebar = () => {
     tone?: string;
   }>();
   const rows = useEditorSelector((editor) =>
-    getBlockRows(editor.read((state) => state.runtime.snapshot().children))
+    getBlockRows(editor.read.children())
   );
 
   return (
@@ -341,9 +343,8 @@ const AnchoredProjectionContent = ({
 }) => {
   const alphaRow = useEditorSelector(
     (editor) =>
-      getBlockRowByText(
-        editor.read((state) => state.runtime.snapshot().children),
-        (text) => text.includes('alpha')
+      getBlockRowByText(editor.read.children(), (text) =>
+        text.includes('alpha')
       ) ?? null,
     (left, right) =>
       left != null &&
@@ -353,10 +354,8 @@ const AnchoredProjectionContent = ({
   );
   const betaRow = useEditorSelector(
     (editor) =>
-      getBlockRowByText(
-        editor.read((state) => state.runtime.snapshot().children),
-        (text) => text === 'beta'
-      ) ?? null,
+      getBlockRowByText(editor.read.children(), (text) => text === 'beta') ??
+      null,
     (left, right) =>
       left != null &&
       right != null &&
@@ -383,12 +382,10 @@ const AnchoredProjectionContent = ({
             setAnnotation(
               (current) =>
                 current ??
-                editor.read((state) =>
-                  state.ranges.bookmark({
-                    anchor: { path, offset: 1 },
-                    focus: { path, offset: 4 },
-                  })
-                )
+                editor.read.ranges.bookmark({
+                  anchor: { path, offset: 1 },
+                  focus: { path, offset: 4 },
+                })
             );
           }}
           type="button"
@@ -431,10 +428,8 @@ const AnchoredProjectionContent = ({
           onClick={() => {
             const at = getPointBeforeText(editor, 'alpha');
 
-            editor.update((tx) => {
-              tx.text.insert('>', {
-                at,
-              });
+            editor.update.text.insert('>', {
+              at,
             });
           }}
           type="button"
@@ -448,9 +443,7 @@ const AnchoredProjectionContent = ({
           onClick={() => {
             const range = getRangeInsideText(editor, 'alpha', 1, 4);
 
-            editor.update((tx) => {
-              tx.text.delete({ at: range });
-            });
+            editor.update.text.delete({ at: range });
           }}
           type="button"
           variant="outline"

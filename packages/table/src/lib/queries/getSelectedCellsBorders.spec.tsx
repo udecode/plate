@@ -1,5 +1,6 @@
 /** @jsx jsx */
 
+import assert from 'node:assert/strict';
 import { createPlateEditor } from '@platejs/core/react';
 import type { Value } from '@platejs/plite';
 import type { TTableCellElement } from '@platejs/utils';
@@ -49,8 +50,12 @@ const createEditor = () =>
     value: input.children,
   });
 
-const getCell = (editor: ReturnType<typeof createEditor>, path: number[]) =>
-  editor.read.nodes.get<TTableCellElement>(path, { required: true })[0];
+const getCell = (editor: ReturnType<typeof createEditor>, path: number[]) => {
+  const entry = editor.read.nodes.get<TTableCellElement>(path);
+  assert(entry);
+
+  return entry[0];
+};
 
 const setBorders = (
   editor: ReturnType<typeof createEditor>,

@@ -1,12 +1,20 @@
+import assert from 'node:assert/strict';
 import type { Element } from '@platejs/plite';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { createPlateEditor } from '@platejs/core/react';
+import { createPlateEditor, type PlateEditor } from '@platejs/core/react';
 
 import type { ElementDragItemNode } from '../types';
 
 import * as utils from '../utils';
 import { onDropNode } from './onDropNode';
+
+const getElement = (editor: PlateEditor, path: number[]) => {
+  const entry = editor.read.nodes.get<Element>(path);
+  assert(entry);
+
+  return entry[0];
+};
 
 describe('onDropNode', () => {
   const monitor = { canDrop: () => true } as DropTargetMonitor;
@@ -27,8 +35,8 @@ describe('onDropNode', () => {
       ],
       { at: [0] }
     );
-    dragElement = editor.read.nodes.get<Element>([0], { required: true })[0];
-    hoverElement = editor.read.nodes.get<Element>([1], { required: true })[0];
+    dragElement = getElement(editor, [0]);
+    hoverElement = getElement(editor, [1]);
     dragItem = {
       id: 'drag',
       editorId: editor.id,
@@ -76,9 +84,7 @@ describe('onDropNode', () => {
 
   it('moves a block before the hovered block', () => {
     spyOn(utils, 'getHoverDirection').mockReturnValue('top');
-    const otherElement = editor.read.nodes.get<Element>([2], {
-      required: true,
-    })[0];
+    const otherElement = getElement(editor, [2]);
 
     onDropNode(editor, {
       dragItem: {
@@ -133,9 +139,7 @@ describe('onDropNode', () => {
 
   it('moves every selected block in the same editor', () => {
     spyOn(utils, 'getHoverDirection').mockReturnValue('bottom');
-    const targetElement = editor.read.nodes.get<Element>([2], {
-      required: true,
-    })[0];
+    const targetElement = getElement(editor, [2]);
 
     onDropNode(editor, {
       dragItem: { ...dragItem, id: ['drag', 'hover'] },
@@ -162,9 +166,7 @@ describe('onDropNode', () => {
       ],
       { at: [0] }
     );
-    const sourceElement = sourceEditor.read.nodes.get<Element>([0], {
-      required: true,
-    })[0];
+    const sourceElement = getElement(sourceEditor, [0]);
 
     onDropNode(editor, {
       dragItem: {
@@ -200,17 +202,13 @@ describe('onDropNode', () => {
       { children: [{ text: 'target' }], id: 'hover', type: 'p' },
       { at: [0] }
     );
-    const targetElement = targetEditor.read.nodes.get<Element>([0], {
-      required: true,
-    })[0];
+    const targetElement = getElement(targetEditor, [0]);
     const sourceEditor = createPlateEditor();
     sourceEditor.update.nodes.insert(
       { children: [{ text: 'source' }], id: 'hover', type: 'p' },
       { at: [0] }
     );
-    const sourceElement = sourceEditor.read.nodes.get<Element>([0], {
-      required: true,
-    })[0];
+    const sourceElement = getElement(sourceEditor, [0]);
 
     onDropNode(targetEditor, {
       dragItem: {

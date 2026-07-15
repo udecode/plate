@@ -9,6 +9,7 @@ import {
   getHistoryDirectionFromNativeEvent,
   type HistoryDirection,
 } from '../editable/history-keyboard';
+import { failInvariant } from '../editable/runtime-editor-api';
 import {
   getOperationRoot,
   MAIN_ROOT_KEY,
@@ -248,7 +249,9 @@ export function usePliteHistory({
 
           if (!focusEditor.read((state) => state.selection())) {
             focusEditor.update((tx) => {
-              const point = tx.points.start([], { required: true });
+              const point =
+                tx.points.start([]) ??
+                failInvariant('Expected a document start point after history');
               tx.selection.set({ anchor: point, focus: point });
             });
           }

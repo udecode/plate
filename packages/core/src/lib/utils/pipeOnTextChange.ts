@@ -1,6 +1,6 @@
 import type { Descendant, TextOperation } from '@platejs/plite';
 
-import type { BaseEditor } from '../editor/SlateEditor';
+import type { BaseEditor } from '../editor/BaseEditor';
 import type { AnyBasePlugin } from '../plugin';
 import { getEditorPlugin } from '../plugin/getEditorPlugin';
 

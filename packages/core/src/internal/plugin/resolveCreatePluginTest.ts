@@ -1,4 +1,4 @@
-import type { AnyPluginConfig } from '../../lib/plugin/SlatePlugin';
+import type { AnyPluginConfig } from '../../lib/plugin/PluginConfig';
 
 import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin/createBasePlugin';

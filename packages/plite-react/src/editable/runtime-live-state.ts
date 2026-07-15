@@ -21,15 +21,7 @@ export type RuntimeNodeBinding = {
 };
 
 const readRuntimeNodeFromView = (editor: Editor, path: Path): Node | null =>
-  editor.read((state) => {
-    if (!state.nodes.hasPath(path)) {
-      return null;
-    }
-
-    const [node] = state.nodes.get(path, { required: true });
-
-    return node;
-  });
+  editor.read((state) => state.nodes.get(path)?.[0] ?? null);
 
 export const readRuntimeNode = (editor: Editor, path: Path): Node | null =>
   getEditorLiveNode(editor, path) ?? readRuntimeNodeFromView(editor, path);

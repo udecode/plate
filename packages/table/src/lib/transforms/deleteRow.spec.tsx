@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import assert from 'node:assert/strict';
 import { createPlateEditor } from '@platejs/core/react';
 import type { TTableElement } from '@platejs/utils';
 
@@ -86,9 +87,9 @@ describe('deleteRow', () => {
 
     editor.update.remove.tableRow();
 
-    expect(
-      editor.read.nodes.get<TTableElement>([0], { required: true })[0].children
-    ).toHaveLength(1);
+    const entry = editor.read.nodes.get<TTableElement>([0]);
+    assert(entry);
+    expect(entry[0].children).toHaveLength(1);
     expect(editor.read.text.string([0, 0, 0])).toBe('11');
   });
 

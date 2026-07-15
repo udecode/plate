@@ -29,7 +29,7 @@ export function FindToolbar() {
         value={search}
         onChange={(e) => {
           setOption('search', e.target.value);
-          editor.api.redecorate();
+          editor.api.react.refreshDecorations();
         }}
         placeholder="Search the text..."
         type="search"

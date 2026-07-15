@@ -75,17 +75,17 @@ describe('PlateEditor core package', () => {
       expect(editor.api.debug.warn).toBeInstanceOf(Function);
     });
 
-    it('combines core and custom plugin APIs on slate and plate editors', () => {
-      const slateEditor = createBaseEditor({
+    it('combines core and custom plugin APIs on base and Plate editors', () => {
+      const baseEditor = createBaseEditor({
         plugins: [DebugPlugin, TextFormattingPlugin, ImagePlugin, LinkPlugin],
       });
 
-      expect(slateEditor.api.debug).toBeDefined();
-      expect(slateEditor.api.bold).toBeInstanceOf(Function);
-      expect(slateEditor.api.insertImage).toBeInstanceOf(Function);
+      expect(baseEditor.api.debug).toBeDefined();
+      expect(baseEditor.api.bold).toBeInstanceOf(Function);
+      expect(baseEditor.api.insertImage).toBeInstanceOf(Function);
 
       // @ts-expect-error
-      slateEditor.api.createBulletedList;
+      baseEditor.api.createBulletedList;
 
       const editor = createPlateEditor({
         plugins: [DebugPlugin, TextFormattingPlugin, ImagePlugin, LinkPlugin],

@@ -559,12 +559,8 @@ describe('extendPlateEditor', () => {
       value,
     });
     const expectedStartSelection = {
-      anchor: editorWithAutoSelectStart.read((state) =>
-        state.points.start([], { required: true })
-      ),
-      focus: editorWithAutoSelectStart.read((state) =>
-        state.points.start([], { required: true })
-      ),
+      anchor: editorWithAutoSelectStart.read((state) => state.points.start([])),
+      focus: editorWithAutoSelectStart.read((state) => state.points.start([])),
     };
     expect(editorWithAutoSelectStart.read.selection()).toEqual(
       expectedStartSelection
@@ -576,12 +572,8 @@ describe('extendPlateEditor', () => {
       value,
     });
     const expectedEndSelection = {
-      anchor: editorWithAutoSelectEnd.read((state) =>
-        state.points.end([], { required: true })
-      ),
-      focus: editorWithAutoSelectEnd.read((state) =>
-        state.points.end([], { required: true })
-      ),
+      anchor: editorWithAutoSelectEnd.read((state) => state.points.end([])),
+      focus: editorWithAutoSelectEnd.read((state) => state.points.end([])),
     };
     expect(editorWithAutoSelectEnd.read.selection()).toEqual(
       expectedEndSelection

@@ -4,7 +4,7 @@ import { createBaseEditor, createBasePlugin } from '../../lib';
 import { getRenderNodeStaticProps } from './getRenderNodeStaticProps';
 
 describe('getRenderNodeStaticProps', () => {
-  it('merges plugin props, allowed attrs, slate classes, and injected node props', () => {
+  it('merges plugin props, allowed attrs, Plite classes, and injected node props', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
       node: {

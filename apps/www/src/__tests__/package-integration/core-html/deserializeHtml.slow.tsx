@@ -1,26 +1,31 @@
 /** @jsx jsxt */
 
-import { BlockquotePlugin, HeadingPlugin } from '@platejs/basic-nodes/react';
 import {
-  BoldPlugin,
-  CodePlugin,
-  ItalicPlugin,
-  StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
-  UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
-import { HighlightPlugin, KbdPlugin } from '@platejs/basic-nodes/react';
-import { TextAlignPlugin } from '@platejs/basic-styles/react';
-import { CodeBlockPlugin } from '@platejs/code-block/react';
+  BaseBlockquotePlugin,
+  BaseBoldPlugin,
+  BaseCodePlugin,
+  BaseHeadingPlugin,
+  BaseHighlightPlugin,
+  BaseItalicPlugin,
+  BaseKbdPlugin,
+  BaseStrikethroughPlugin,
+  BaseSubscriptPlugin,
+  BaseSuperscriptPlugin,
+  BaseUnderlinePlugin,
+} from '@platejs/basic-nodes';
+import { BaseTextAlignPlugin } from '@platejs/basic-styles';
+import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { FindReplacePlugin } from '@platejs/find-replace';
-import { LinkPlugin } from '@platejs/link/react';
-import { ListPlugin } from '@platejs/list-classic/react';
-import { ImagePlugin, MediaEmbedPlugin } from '@platejs/media/react';
-import { TablePlugin } from '@platejs/table/react';
+import { BaseLinkPlugin } from '@platejs/link';
+import { BaseListPlugin } from '@platejs/list-classic';
+import { BaseImagePlugin, BaseMediaEmbedPlugin } from '@platejs/media';
+import { BaseTablePlugin } from '@platejs/table';
 import { getHtmlDocument, jsxt } from '@platejs/test-utils';
 
-import { createBaseEditor } from '../../../../../../packages/core/src/lib/editor';
+import {
+  createBaseEditor,
+  type BasePluginInput,
+} from '../../../../../../packages/core/src/lib/editor';
 import { BaseParagraphPlugin } from '../../../../../../packages/core/src/lib/plugins/paragraph';
 import { deserializeHtml } from '../../../../../../packages/core/src/lib/plugins/html/utils/deserializeHtml';
 import { deserializeHtmlElement } from '../../../../../../packages/core/src/lib/plugins/html/utils/deserializeHtmlElement';
@@ -191,31 +196,35 @@ describe('when deserializing all plugins', () => {
   ) as any;
 
   it('deserializes all configured plugin outputs', () => {
+    const plugins: readonly BasePluginInput[] = [
+      BaseBlockquotePlugin as BasePluginInput,
+      BaseHeadingPlugin.configure({
+        options: { levels: 1 },
+      }) as BasePluginInput,
+      BaseImagePlugin as BasePluginInput,
+      BaseLinkPlugin as BasePluginInput,
+      BaseListPlugin as BasePluginInput,
+      BaseParagraphPlugin as BasePluginInput,
+      BaseCodeBlockPlugin as BasePluginInput,
+      BaseTablePlugin as BasePluginInput,
+      BaseMediaEmbedPlugin as BasePluginInput,
+      FindReplacePlugin as BasePluginInput,
+      BaseTextAlignPlugin as BasePluginInput,
+      BaseBoldPlugin as BasePluginInput,
+      BaseHighlightPlugin as BasePluginInput,
+      BaseCodePlugin as BasePluginInput,
+      BaseKbdPlugin as BasePluginInput,
+      BaseItalicPlugin as BasePluginInput,
+      BaseStrikethroughPlugin as BasePluginInput,
+      BaseSubscriptPlugin as BasePluginInput,
+      BaseSuperscriptPlugin as BasePluginInput,
+      BaseUnderlinePlugin as BasePluginInput,
+    ];
+
     expect(
       deserializeHtmlElement(
         createBaseEditor({
-          plugins: [
-            BlockquotePlugin,
-            HeadingPlugin.configure({ options: { levels: 1 } }),
-            ImagePlugin,
-            LinkPlugin,
-            ListPlugin,
-            BaseParagraphPlugin,
-            CodeBlockPlugin,
-            TablePlugin,
-            MediaEmbedPlugin,
-            FindReplacePlugin,
-            TextAlignPlugin,
-            BoldPlugin,
-            HighlightPlugin,
-            CodePlugin,
-            KbdPlugin,
-            ItalicPlugin,
-            StrikethroughPlugin,
-            SubscriptPlugin,
-            SuperscriptPlugin,
-            UnderlinePlugin,
-          ],
+          plugins,
         }),
         element
       )

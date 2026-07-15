@@ -36,7 +36,7 @@ export const useMarkToolbarButton = (
         editor.update.marks.toggle(state.nodeType, true, {
           clear: state.clear,
         });
-        editor.api.dom?.focus?.();
+        editor.api.dom.focus();
       },
       onMouseDown: (e: PreventDefaultMouseEvent) => {
         e.preventDefault();

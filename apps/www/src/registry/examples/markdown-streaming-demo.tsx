@@ -16,7 +16,7 @@ import {
   PlayIcon,
   RotateCcwIcon,
 } from 'lucide-react';
-import { getPluginType, KEYS } from 'platejs';
+import { type Value, getPluginType, KEYS } from 'platejs';
 import { Plate, usePlateEditor, usePlateViewEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
@@ -314,11 +314,10 @@ export default function MarkdownStreamingDemo() {
   const editor = usePlateEditor(
     {
       plugins: [...CopilotKit, ...EditorKit],
-      value: [],
+      value: [{ children: [{ text: '' }], type: KEYS.p }] as Value,
     },
     []
   );
-
   const editorStatic = usePlateViewEditor(
     {
       plugins: BaseEditorKit,
@@ -341,11 +340,10 @@ export default function MarkdownStreamingDemo() {
 
     setPausedState(false);
     setActiveIndex(0);
-    // editor.tf.setValue([]);
 
-    editor.setOption(AIChatPlugin, 'streaming', false);
-    editor.setOption(AIChatPlugin, '_blockChunks', '');
-    editor.setOption(AIChatPlugin, '_blockPath', null);
+    editor.plugin(AIChatPlugin).setOption('streaming', false);
+    editor.plugin(AIChatPlugin).setOption('_blockChunks', '');
+    editor.plugin(AIChatPlugin).setOption('_blockPath', null);
 
     for (let i = 0; i < transformedCurrentChunks.length; i++) {
       while (pausedRef.current) {
@@ -374,7 +372,6 @@ export default function MarkdownStreamingDemo() {
     setStreaming(false);
   }, [editor, transformedCurrentChunks, speed, setPausedState]);
 
-  // eslint-disable-next-line react-hooks/immutability -- Static editor demo intentionally mutates editor.children during playback.
   const onStreamingStatic = useCallback(async () => {
     let output = '';
     setStreaming(true);
@@ -391,8 +388,9 @@ export default function MarkdownStreamingDemo() {
       if (sessionId !== streamSessionRef.current) return;
 
       output += chunk.chunk;
-      // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally mutates static editor for streaming visualization.
-      editorStatic.children = deserializeMd(editorStatic, output);
+      editorStatic.update.value.replace({
+        children: deserializeMd(editorStatic, output),
+      });
       setActiveIndex((prev) => prev + 1);
       forceUpdate();
       await new Promise((resolve) =>
@@ -405,14 +403,13 @@ export default function MarkdownStreamingDemo() {
   const onReset = useCallback(() => {
     setActiveIndex(0);
     if (isPlateStatic) {
-      // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally mutates static editor for reset.
-      editorStatic.children = [];
+      editorStatic.update.value.replace({ children: [] });
       forceUpdate();
     } else {
-      editor.tf.setValue([]);
-      editor.setOption(AIChatPlugin, 'streaming', false);
-      editor.setOption(AIChatPlugin, '_blockChunks', '');
-      editor.setOption(AIChatPlugin, '_blockPath', null);
+      editor.update.value.replace({ children: [] });
+      editor.plugin(AIChatPlugin).setOption('streaming', false);
+      editor.plugin(AIChatPlugin).setOption('_blockChunks', '');
+      editor.plugin(AIChatPlugin).setOption('_blockPath', null);
     }
   }, [editor, editorStatic, isPlateStatic]);
 
@@ -428,16 +425,17 @@ export default function MarkdownStreamingDemo() {
           output += chunk.chunk;
         }
 
-        // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally mutates static editor for navigation.
-        editorStatic.children = deserializeMd(editorStatic, output);
+        editorStatic.update.value.replace({
+          children: deserializeMd(editorStatic, output),
+        });
         setActiveIndex(targetIndex);
         forceUpdate();
       } else {
-        editor.tf.setValue([]);
+        editor.update.value.replace({ children: [] });
 
-        editor.setOption(AIChatPlugin, 'streaming', false);
-        editor.setOption(AIChatPlugin, '_blockChunks', '');
-        editor.setOption(AIChatPlugin, '_blockPath', null);
+        editor.plugin(AIChatPlugin).setOption('streaming', false);
+        editor.plugin(AIChatPlugin).setOption('_blockChunks', '');
+        editor.plugin(AIChatPlugin).setOption('_blockPath', null);
 
         for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
           streamInsertChunk(editor, chunk.chunk, {
@@ -473,7 +471,7 @@ export default function MarkdownStreamingDemo() {
             onChange={(e) => {
               setSelectedScenario(e.target.value as keyof typeof testScenarios);
               setActiveIndex(0);
-              editor.tf.setValue([]);
+              editor.update.value.replace({ children: [] });
             }}
           >
             {Object.entries(testScenarios).map(([key]) => (
@@ -493,7 +491,7 @@ export default function MarkdownStreamingDemo() {
           </Button>
 
           <Button
-            // eslint-disable-next-line react-hooks/immutability -- Static editor playback mutates editor.children through onStreamingStatic.
+            // eslint-disable-next-line react-hooks/immutability -- Static editor playback mutates editor.read.children() through onStreamingStatic.
             onClick={() => {
               if (streaming) {
                 setPausedState(!pausedRef.current);

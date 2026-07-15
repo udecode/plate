@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import assert from 'node:assert/strict';
 import { createPlateEditor } from '@platejs/core/react';
 import type { TTableCellElement } from '@platejs/utils';
 
@@ -167,12 +168,12 @@ describe('withApplyTable', () => {
       </editor>
     ) as TestEditor;
     const editor = createTableEditor(input);
-    const keep = editor.read.nodes.get<TTableCellElement>([0, 0, 0], {
-      required: true,
-    })[0];
-    const remove = editor.read.nodes.get<TTableCellElement>([0, 0, 1], {
-      required: true,
-    })[0];
+    const keepEntry = editor.read.nodes.get<TTableCellElement>([0, 0, 0]);
+    const removeEntry = editor.read.nodes.get<TTableCellElement>([0, 0, 1]);
+    assert(keepEntry);
+    assert(removeEntry);
+    const [keep] = keepEntry;
+    const [remove] = removeEntry;
 
     getCellIndices(editor, keep);
     getCellIndices(editor, remove);

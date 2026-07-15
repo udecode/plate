@@ -1,5 +1,7 @@
 export type { Editor, Value } from '../interfaces/editor';
 
+export { failInvariant } from './fail-invariant';
+
 export {
   above,
   addMark,

@@ -195,7 +195,7 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
     >
       <div className="h-9" />
       <SidebarContent className="no-scrollbar w-(--sidebar-menu-width) overflow-x-hidden px-2.5">
-        {docsRoot === 'slate'
+        {docsRoot === 'plite'
           ? navSections.map((section, index) => (
               <DocsNavStaticGroup
                 key={getSectionKey(section, index)}

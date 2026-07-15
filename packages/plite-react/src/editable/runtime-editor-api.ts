@@ -16,6 +16,7 @@ export {
   getEditorRuntime,
   getEditorTransformRegistry,
   getOperationCount,
+  failInvariant,
   hasEditorTransformMiddleware,
   markInternalOwnedReplayOperation,
   projectRangeInSnapshot,

@@ -1,5 +1,4 @@
 import React from 'react';
-import type { ConnectDragSource } from 'react-dnd';
 
 import { type UseDndNodeOptions, DRAG_ITEM_BLOCK, useDndNode } from '..';
 
@@ -15,7 +14,7 @@ export type DraggableState = {
   /** The ref of the multiple preview element */
   previewRef: React.RefObject<HTMLDivElement | null>;
   /** The ref of the draggable handle */
-  handleRef: ConnectDragSource;
+  handleRef: React.RefCallback<HTMLElement>;
 };
 
 export const useDraggable = (props: UseDndNodeOptions): DraggableState => {
@@ -37,12 +36,18 @@ export const useDraggable = (props: UseDndNodeOptions): DraggableState => {
     onDropHandler,
     ...props,
   });
+  const handleRef = React.useCallback(
+    (node: HTMLElement | null) => {
+      dragRef(node);
+    },
+    [dragRef]
+  );
 
   return {
     isAboutToDrag,
     isDragging,
     nodeRef,
     previewRef: multiplePreviewRef,
-    handleRef: dragRef,
+    handleRef,
   };
 };

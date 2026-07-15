@@ -399,6 +399,7 @@ const internalBridgeRuntimeExportExpectations = {
     'elementReadOnly',
     'executeCommand',
     'extend',
+    'failInvariant',
     'first',
     'formatDebugValue',
     'fragment',

@@ -84,7 +84,7 @@ const InlinesExample = () => {
     ],
   });
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    const selection = editor.read((state) => state.selection.get());
+    const selection = editor.read.selection();
 
     // Default left/right behavior is unit:'character'.
     // This fails to distinguish between two cursor positions, such as
@@ -94,15 +94,11 @@ const InlinesExample = () => {
     // You may wish to customize this further to only use unit:'offset' in specific cases.
     if (selection && RangeApi.isCollapsed(selection)) {
       if (isHotkey('left', event)) {
-        editor.update((tx) => {
-          tx.selection.move({ unit: 'offset', reverse: true });
-        });
+        editor.update.selection.move({ unit: 'offset', reverse: true });
         return true;
       }
       if (isHotkey('right', event)) {
-        editor.update((tx) => {
-          tx.selection.move({ unit: 'offset' });
-        });
+        editor.update.selection.move({ unit: 'offset' });
         return true;
       }
     }
@@ -227,7 +223,7 @@ const insertLinkText = (
     });
   }
 
-  const selection = tx.selection.get();
+  const selection = tx.selection();
   const isCollapsed = selection && RangeApi.isCollapsed(selection);
   const link: LinkElement = {
     type: 'link',
@@ -249,7 +245,7 @@ const insertLinkedTextSegments = (
   tx: EditorUpdateTransaction<CustomElement[]>,
   text: string
 ) => {
-  const selection = tx.selection.get();
+  const selection = tx.selection();
 
   if (!selection || !RangeApi.isCollapsed(selection)) {
     return false;
@@ -296,32 +292,24 @@ const renderElement = (props: RenderElementProps<CustomElement>) => {
 };
 
 const isLinkActive = (editor: CustomEditor): boolean =>
-  editor.read((state) =>
-    state.nodes.some({
-      match: (n) => NodeApi.isElement(n) && n.type === 'link',
-    })
-  );
+  editor.read.nodes.some({
+    match: (n) => NodeApi.isElement(n) && n.type === 'link',
+  });
 
 const isButtonActive = (editor: CustomEditor): boolean =>
-  editor.read((state) =>
-    state.nodes.some({
-      match: (n) => NodeApi.isElement(n) && n.type === 'button',
-    })
-  );
+  editor.read.nodes.some({
+    match: (n) => NodeApi.isElement(n) && n.type === 'button',
+  });
 
 const unwrapLink = (editor: CustomEditor) => {
-  editor.update((tx) => {
-    tx.nodes.unwrap({
-      match: (n) => NodeApi.isElement(n) && n.type === 'link',
-    });
+  editor.update.nodes.unwrap({
+    match: (n) => NodeApi.isElement(n) && n.type === 'link',
   });
 };
 
 const unwrapButton = (editor: CustomEditor) => {
-  editor.update((tx) => {
-    tx.nodes.unwrap({
-      match: (n) => NodeApi.isElement(n) && n.type === 'button',
-    });
+  editor.update.nodes.unwrap({
+    match: (n) => NodeApi.isElement(n) && n.type === 'button',
   });
 };
 
@@ -330,7 +318,7 @@ const wrapLink = (editor: CustomEditor, url: string) => {
     unwrapLink(editor);
   }
 
-  const selection = editor.read((state) => state.selection.get());
+  const selection = editor.read.selection();
   const isCollapsed = selection && RangeApi.isCollapsed(selection);
   const link: LinkElement = {
     type: 'link',
@@ -355,7 +343,7 @@ const wrapButton = (editor: CustomEditor) => {
     unwrapButton(editor);
   }
 
-  const selection = editor.read((state) => state.selection.get());
+  const selection = editor.read.selection();
   const isCollapsed = selection && RangeApi.isCollapsed(selection);
   const button: ButtonElement = {
     type: 'button',
@@ -489,7 +477,7 @@ const AddLinkButton = () => {
         const url = window.prompt('Enter the URL of the link:');
         if (!url) return;
 
-        if (editor.read((state) => state.selection.get())) {
+        if (editor.read.selection()) {
           wrapLink(editor, url);
         }
       }}
@@ -533,7 +521,7 @@ const ToggleEditableButtonButton = () => {
       onClick={() => {
         if (isButtonActive(editor)) {
           unwrapButton(editor);
-        } else if (editor.read((state) => state.selection.get())) {
+        } else if (editor.read.selection()) {
           wrapButton(editor);
         }
       }}

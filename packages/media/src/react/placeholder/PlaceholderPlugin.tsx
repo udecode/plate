@@ -17,7 +17,10 @@ export type PlaceholderApi = {
 
 export type PlaceholderTransforms = {
   placeholder: {
-    insertMedia: (files: FileList, options?: InsertMediaOptions) => void;
+    insertMedia: (
+      files: File[] | FileList,
+      options?: InsertMediaOptions
+    ) => void;
   };
 };
 
@@ -89,7 +92,7 @@ export const PlaceholderPlugin = toPlatePlugin<
   },
 })
   .extendTx(({ editor }) => () => ({
-    insertMedia: (files: FileList, options?: InsertMediaOptions) =>
+    insertMedia: (files: File[] | FileList, options?: InsertMediaOptions) =>
       insertMedia(editor, files, options),
   }))
   .extendApi(({ getOption, setOption }) => ({

@@ -1,13 +1,24 @@
 /** @jsx jsxt */
 
+import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
-import type { Element } from '@platejs/plite';
+import type { Element, Path } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { indentCodeLine } from './indentCodeLine';
 
 jsxt;
+
+const getElementEntry = (
+  editor: ReturnType<typeof createBaseEditor>,
+  path: Path
+) => {
+  const entry = editor.read.nodes.get<Element>(path);
+  assert(entry);
+
+  return entry;
+};
 
 describe('indent code line', () => {
   it('does nothing when the code line no longer resolves', () => {
@@ -24,12 +35,8 @@ describe('indent code line', () => {
       plugins: [CodeBlockPlugin],
       value: input.children,
     });
-    const codeBlock = editor.read.nodes.get<Element>([0], {
-      required: true,
-    });
-    const codeLine = editor.read.nodes.get<Element>([0, 0], {
-      required: true,
-    });
+    const codeBlock = getElementEntry(editor, [0]);
+    const codeLine = getElementEntry(editor, [0, 0]);
 
     editor.update.nodes.remove({ at: codeLine[0] });
 
@@ -75,12 +82,8 @@ describe('indent code line', () => {
         value: input.children,
       });
 
-      const codeBlock = editor.read.nodes.get<Element>([0], {
-        required: true,
-      });
-      const codeLine = editor.read.nodes.get<Element>([0, 0], {
-        required: true,
-      });
+      const codeBlock = getElementEntry(editor, [0]);
+      const codeLine = getElementEntry(editor, [0, 0]);
 
       editor.update((tx) => {
         indentCodeLine(editor, tx, { codeBlock, codeLine });
@@ -123,12 +126,8 @@ describe('indent code line', () => {
           value: input.children,
         });
 
-        const codeBlock = editor.read.nodes.get<Element>([0], {
-          required: true,
-        });
-        const codeLine = editor.read.nodes.get<Element>([0, 0], {
-          required: true,
-        });
+        const codeBlock = getElementEntry(editor, [0]);
+        const codeLine = getElementEntry(editor, [0, 0]);
 
         editor.update((tx) => {
           indentCodeLine(editor, tx, { codeBlock, codeLine });
@@ -170,12 +169,8 @@ describe('indent code line', () => {
           value: input.children,
         });
 
-        const codeBlock = editor.read.nodes.get<Element>([0], {
-          required: true,
-        });
-        const codeLine = editor.read.nodes.get<Element>([0, 0], {
-          required: true,
-        });
+        const codeBlock = getElementEntry(editor, [0]);
+        const codeLine = getElementEntry(editor, [0, 0]);
 
         editor.update((tx) => {
           indentCodeLine(editor, tx, { codeBlock, codeLine });

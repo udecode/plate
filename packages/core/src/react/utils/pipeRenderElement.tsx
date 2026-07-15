@@ -8,7 +8,6 @@ import type { PlateEditor } from '../editor/PlateEditor';
 import {
   type AnyBasePlugin,
   type EditableProps,
-  getEditorPlugin as getBaseEditorPlugin,
   getPluginByType,
   getPluginNodeClass,
 } from '../../lib';
@@ -201,7 +200,7 @@ function FastIntrinsicElementBody({
   tag: keyof HTMLElementTagNameMap;
 }) {
   const readOnly = useEditorReadOnly();
-  const pluginContext = getBaseEditorPlugin(editor, plugin);
+  const elementContext = getEditorPlugin(editor, { key: plugin.key });
   const injectedAttributes = useFastInjectedAttributes({
     attributes,
     editor,
@@ -217,7 +216,7 @@ function FastIntrinsicElementBody({
 
   if (renderBelowNodes) {
     const nodeProps = {
-      ...pluginContext,
+      ...elementContext,
       attributes: injectedAttributes,
       children,
       element,
@@ -225,10 +224,14 @@ function FastIntrinsicElementBody({
     };
 
     editor.runtime.pluginCache.render.belowNodes.forEach((key) => {
-      const wrapperPlugin = editor.getPlugin({ key });
-      const hoc = wrapperPlugin.render.belowNodes!({ ...nodeProps, key });
+      const wrapperContext = getEditorPlugin(editor, { key });
+      const hoc = wrapperContext.plugin.render.belowNodes!({
+        ...nodeProps,
+        ...wrapperContext,
+        key,
+      });
 
-      if (hoc && !isEditOnly(readOnly, wrapperPlugin, 'render')) {
+      if (hoc && !isEditOnly(readOnly, wrapperContext.plugin, 'render')) {
         elementChildren = hoc({
           ...nodeProps,
           children: elementChildren,

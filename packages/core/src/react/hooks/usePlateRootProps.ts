@@ -9,20 +9,20 @@ import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey
 import { useEditorRef, usePlateStore } from '../stores';
 import { pipeOnChange } from '../utils/pipeOnChange';
 
-type SlateComponentProps = Omit<
+type PliteComponentProps = Omit<
   RuntimePliteProps,
   'children' | 'onChange' | 'onSelectionChange' | 'onValueChange'
 >;
 
-interface PlateSlateProps extends SlateComponentProps {
+interface PlateRootProps extends PliteComponentProps {
   key: React.Key;
   onChange?: (value: Value) => void;
   onSelectionChange?: (selection: Selection) => void;
   onValueChange?: (value: Value) => void;
 }
 
-/** Get Slate props stored in a global store. */
-export const useSlateProps = ({ id }: { id?: string }): PlateSlateProps => {
+/** Get the Plite root props stored in a Plate store. */
+export const usePlateRootProps = ({ id }: { id?: string }): PlateRootProps => {
   const editor = useEditorRef(id);
   const store = usePlateStore(id);
   const onChangeProp = useAtomStoreValue(store, 'onChange');
@@ -43,18 +43,15 @@ export const useSlateProps = ({ id }: { id?: string }): PlateSlateProps => {
     [editor, onChangeProp]
   );
 
-  const onValueChange: PlateSlateProps['onValueChange'] = React.useMemo(
-    () => (value) => {
-      onValueChangeProp?.({
-        editor,
-        value: value as ValueOf<typeof editor>,
-      });
+  const onValueChange = React.useCallback(
+    (value: Value) => {
+      onValueChangeProp?.({ editor, value: value as ValueOf<typeof editor> });
     },
     [editor, onValueChangeProp]
   );
 
-  const onSelectionChange: PlateSlateProps['onSelectionChange'] = React.useMemo(
-    () => (selection) => {
+  const onSelectionChange = React.useCallback(
+    (selection: Selection) => {
       onSelectionChangeProp?.({ editor, selection });
     },
     [editor, onSelectionChangeProp]
@@ -63,7 +60,7 @@ export const useSlateProps = ({ id }: { id?: string }): PlateSlateProps => {
   return React.useMemo(
     () => ({
       key: getPlateEditorInstanceKey(editor),
-      editor: editor as unknown as SlateComponentProps['editor'],
+      editor,
       onChange,
       onSelectionChange,
       onValueChange,

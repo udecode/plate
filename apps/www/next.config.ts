@@ -141,7 +141,7 @@ const withMDX = createMDX({});
 const nextConfig = async (_phase: string) => {
   const isDev = _phase === PHASE_DEVELOPMENT_SERVER;
   const config: NextConfig = {
-    distDir: isPliteMode ? '.next-slate' : '.next',
+    distDir: isPliteMode ? '.next-plite' : '.next',
     typescript: {
       ignoreBuildErrors: true,
     },
@@ -176,11 +176,10 @@ const nextConfig = async (_phase: string) => {
     outputFileTracingIncludes: {
       '/api/search': ['../../content/docs/**/*'],
       '/api/registry-source/[name]': ['./src/registry/**/*', './public/r/**/*'],
-      '/blocks/slate-to-html': ['./public/tailwind.css'],
       '/cn/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],
+      '/cn/docs/examples/plate-to-html': ['./public/tailwind.css'],
       '/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],
-      '/docs/examples/plite-to-html': ['./public/tailwind.css'],
-      '/view/slate-to-html': ['./public/tailwind.css'],
+      '/docs/examples/plate-to-html': ['./public/tailwind.css'],
     },
     reactCompiler: !isDev,
     // Configure domains to allow for optimized image loading.

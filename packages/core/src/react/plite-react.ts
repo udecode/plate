@@ -1,6 +1,6 @@
 export {
   Editable,
-  Plite as Slate,
+  Plite,
   useEditorComposing,
   useEditorEditableElement,
   useEditorFocused,

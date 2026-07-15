@@ -243,9 +243,7 @@ const Image = ({ element }: RenderVoidProps<ImageElement>) => {
             return;
           }
 
-          editor.update((tx) => {
-            tx.nodes.remove({ at: path, voids: true });
-          });
+          editor.update.nodes.remove({ at: path, voids: true });
         }}
         onPointerDown={(event: PointerEvent<HTMLButtonElement>) => {
           event.preventDefault();

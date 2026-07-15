@@ -20,6 +20,7 @@
     "serve-handler": "6.1.6"
   },
   "devDependencies": {
-    "@types/serve-handler": "6.1.4"
+    "@types/serve-handler": "6.1.4",
+    "@typescript/native-preview": "7.0.0-dev.20260707.2"
   }
 }

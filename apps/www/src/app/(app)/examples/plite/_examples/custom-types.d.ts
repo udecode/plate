@@ -213,6 +213,7 @@ export type EmptyText = {
   text: string;
 };
 
-export type CustomEditor = ReactEditor<CustomValue> & {
-  nodeToDecorations?: Map<Element, Range[]>;
-};
+export type CustomEditor<TExtensions extends readonly unknown[] = readonly []> =
+  ReactEditor<CustomValue, TExtensions> & {
+    nodeToDecorations?: Map<Element, Range[]>;
+  };

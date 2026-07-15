@@ -25,9 +25,9 @@ import {
   SuperscriptPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
-import type { Element as PliteElement } from '@platejs/plite';
+import type { Editor, Element as PliteElement } from '@platejs/plite';
+import { createReactEditor, Plite as PliteRuntime } from '@platejs/plite-react';
 import {
-  ChunkingPlugin,
   normalizeNodeId,
   type Descendant,
   type Path,
@@ -43,17 +43,16 @@ import {
   PlateElement,
   PlateLeaf,
   Plite,
+  createPlatePlugin,
   createAtomStore,
   createZustandStore,
   createPlateEditor,
-  getBasePlugin,
   getRenderNodeProps,
   pluginRenderElement,
   pluginRenderLeaf,
   pipeRenderElement,
   pipeRenderLeaf,
   pipeRenderText,
-  useComposing,
   useEditableProps,
   useEditorReadOnly,
   useEditorMounted,
@@ -66,12 +65,9 @@ import {
   useNodeAttributes,
   usePath,
   usePlateEditor,
-  usePlateStore,
   usePluginOption,
-  useReadOnly,
+  type PlateEditor,
 } from 'platejs/react';
-import { createEditor, Editor, Transforms } from 'slate';
-import { withReact } from 'slate-react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -702,22 +698,6 @@ const FANOUT_CASES: FanoutCase[] = [
   },
 ];
 
-function BenchFirstBlockEffect() {
-  const editor = useEditorRef();
-  const store = usePlateStore();
-  const composing = useComposing();
-  const readOnly = useReadOnly();
-
-  React.useLayoutEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability -- Benchmark helper intentionally syncs editor.dom flags to mirror PlateContent behavior
-    editor.dom.readOnly = readOnly;
-    editor.dom.composing = composing;
-    store.set('composing', composing);
-  }, [composing, editor, readOnly, store]);
-
-  return null;
-}
-
 function BenchElementProviderPropEffect({
   children,
   element,
@@ -737,8 +717,6 @@ function BenchElementProviderPropEffect({
       path={path}
       scope={scope}
     >
-      {path.length === 1 && path[0] === 0 ? <BenchFirstBlockEffect /> : null}
-
       {children}
     </BenchElementNoEffectProvider>
   );
@@ -1198,7 +1176,7 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
   },
   {
     description:
-      'PlateElement with just the resolved plugin ref and Plite class injection, but no full getBasePlugin context and no getRenderNodeProps. This isolates whether the plugin object alone is enough for the plain fast path.',
+      'PlateElement with just the resolved plugin ref and Plite class injection, but no full editor.plugin context and no getRenderNodeProps. This isolates whether the plugin object alone is enough for the plain fast path.',
     id: 'editable-element-plate-element-plugin-only-no-provider',
     label: 'Editable + PlateElement + plugin',
   },
@@ -1607,6 +1585,29 @@ function buildElementPathMap(value: Value) {
   return pathMap;
 }
 
+function parseDataPlitePath(value: unknown): Path | undefined {
+  if (typeof value !== 'string' || value.length === 0) return;
+
+  const path = value.split(',').map((part) => Number(part));
+
+  if (path.some((part) => !Number.isInteger(part) || part < 0)) return;
+
+  return path;
+}
+
+function getRenderElementPath(
+  props: RenderElementProps,
+  pathMap: WeakMap<PliteElement, number[]>
+) {
+  const element = props.element as PliteElement;
+
+  return (
+    props.path ??
+    pathMap.get(element) ??
+    parseDataPlitePath((props.attributes as any)['data-plite-path'])
+  );
+}
+
 function consume(..._values: unknown[]) {}
 
 function getDissectionValue(caseItem: DissectionCase, blocks: number) {
@@ -1859,7 +1860,7 @@ function calculateLatencyStats(samples: number[]): LatencyResult {
 
 function createScenarioConstructionEditor(scenario: Scenario) {
   if (scenario.kind === 'slate') {
-    return withReact(createEditor());
+    return createReactEditor() as Editor;
   }
 
   return createPlateEditor({
@@ -1869,7 +1870,6 @@ function createScenarioConstructionEditor(scenario: Scenario) {
 }
 
 function createScenarioMountedEditor({
-  config,
   scenario,
   value,
 }: {
@@ -1878,17 +1878,10 @@ function createScenarioMountedEditor({
   value: Value;
 }) {
   if (scenario.kind === 'slate') {
-    const editor: any = withReact(createEditor());
-
-    editor.children = value;
-    editor.getChunkSize = (node: unknown) =>
-      config.chunking && node === editor ? config.chunkSize : null;
-
-    return editor as Editor;
+    return createReactEditor({ initialValue: value }) as Editor;
   }
 
   return createPlateEditor({
-    chunking: config.chunking ? { chunkSize: config.chunkSize } : false,
     nodeId: getNodeIdOption({ mode: scenario.nodeId }) as any,
     plugins: getScenarioPlugins(scenario.plugins),
     value,
@@ -1897,42 +1890,35 @@ function createScenarioMountedEditor({
 
 function createPlateDissectionEditor({
   caseItem,
-  config,
   counter,
-  skipInitialization = false,
   value,
 }: {
   caseItem: DissectionCase;
   config: BenchmarkConfig;
   counter?: { count: number };
-  skipInitialization?: boolean;
   value?: Value;
 }) {
   return createPlateEditor({
-    chunking: config.chunking ? { chunkSize: config.chunkSize } : false,
     nodeId: getNodeIdOption({ counter, mode: caseItem.nodeId }) as any,
     plugins: getScenarioPlugins(caseItem.plugins),
-    skipInitialization,
     value,
   });
 }
 
 function createFanoutEditor({
-  config,
   value,
 }: {
   config: BenchmarkConfig;
   value: Value;
 }) {
   return createPlateEditor({
-    chunking: config.chunking ? { chunkSize: config.chunkSize } : false,
     nodeId: false,
+    plugins: [BenchmarkOptionPlugin],
     value,
-  }) as unknown as Editor;
+  });
 }
 
 function createCoreMountEditor({
-  config,
   nodeId = false,
   plugins = 'none',
   value,
@@ -1943,15 +1929,13 @@ function createCoreMountEditor({
   value: Value;
 }) {
   return createPlateEditor({
-    chunking: config.chunking ? { chunkSize: config.chunkSize } : false,
     nodeId: getNodeIdOption({ mode: nodeId }) as any,
     plugins: getScenarioPlugins(plugins),
     value,
-  }) as unknown as Editor;
+  });
 }
 
 function createPluginCensusMountedEditor({
-  config,
   plugins = 'none',
   value,
 }: {
@@ -1960,7 +1944,6 @@ function createPluginCensusMountedEditor({
   value: Value;
 }) {
   return createPlateEditor({
-    chunking: config.chunking ? { chunkSize: config.chunkSize } : false,
     nodeId: false,
     plugins: getScenarioPlugins(plugins),
     value,
@@ -1974,34 +1957,15 @@ function createFanoutParagraph(index: number): Descendant {
   } as Descendant;
 }
 
-function incrementStoreVersion(
-  store: {
-    get: (key: string) => number;
-    set: (key: string, value: number) => void;
-  },
-  key: 'versionEditor' | 'versionValue'
-) {
-  store.set(key, Number(store.get(key) ?? 1) + 1);
-}
+const getBenchmarkDOMStrategy = (config: BenchmarkConfig) =>
+  config.chunking ? ('auto' as const) : ('full' as const);
 
-function BenchmarkChunk({
-  attributes,
-  children,
-  lowest,
-}: {
-  attributes: Record<string, unknown>;
-  children: React.ReactNode;
-  lowest: boolean;
-}) {
-  return (
-    <div
-      {...attributes}
-      style={{ contentVisibility: lowest ? 'auto' : undefined }}
-    >
-      {children}
-    </div>
-  );
-}
+const BenchmarkOptionPlugin = createPlatePlugin({
+  key: 'benchmarkOption',
+  options: {
+    enabled: false,
+  },
+});
 
 function BenchmarkElement({
   attributes,
@@ -2049,7 +2013,7 @@ function BenchmarkPlateElement({
   includeBlockId?: boolean;
 }) {
   const blockId =
-    includeBlockId && element.id && editor.api.isBlock(element)
+    includeBlockId && element.id && editor.read.schema.isBlock(element)
       ? element.id
       : undefined;
 
@@ -2086,7 +2050,7 @@ function BenchmarkPlateElementNodeAttributes({
     attributes: rawAttributes,
   } as any);
   const blockId =
-    element.id && editor.api.isBlock(element) ? element.id : undefined;
+    element.id && editor.read.schema.isBlock(element) ? element.id : undefined;
 
   return (
     <div
@@ -2158,21 +2122,12 @@ function ScenarioEditor({
     [config.contentVisibility]
   );
 
-  const renderChunk = React.useMemo(
-    () =>
-      config.contentVisibility === 'chunk'
-        ? (props: any) => <BenchmarkChunk {...props} />
-        : undefined,
-    [config.contentVisibility]
-  );
-
   if (scenario.kind === 'slate') {
     return (
       <SlateScenarioEditor
         config={config}
         containerRef={containerRef}
         editorRef={editorRef}
-        renderChunk={renderChunk}
         renderElement={renderElement}
         value={value}
       />
@@ -2184,7 +2139,6 @@ function ScenarioEditor({
       config={config}
       containerRef={containerRef}
       editorRef={editorRef}
-      renderChunk={renderChunk}
       renderElement={renderElement}
       scenario={scenario}
       value={value}
@@ -2196,25 +2150,19 @@ function SlateScenarioEditor({
   config,
   containerRef,
   editorRef,
-  renderChunk,
   renderElement,
   value,
 }: {
   config: BenchmarkConfig;
   containerRef: React.RefObject<HTMLDivElement | null>;
   editorRef?: React.Ref<BenchmarkEditorHandle>;
-  renderChunk?: (props: any) => React.ReactNode;
   renderElement: (props: RenderElementProps) => React.ReactNode;
   value: Value;
 }) {
-  const editor = React.useMemo(() => {
-    const nextEditor: any = withReact(createEditor());
-
-    nextEditor.getChunkSize = (node: unknown) =>
-      config.chunking && node === nextEditor ? config.chunkSize : null;
-
-    return nextEditor as Editor;
-  }, [config.chunkSize, config.chunking]);
+  const editor = React.useMemo(
+    () => createReactEditor({ initialValue: value }) as Editor,
+    [value]
+  );
 
   React.useImperativeHandle(
     editorRef,
@@ -2228,11 +2176,14 @@ function SlateScenarioEditor({
         await wait(60);
       },
       insertText: (text: string) => {
-        Transforms.insertText(editor, text);
+        editor.update.text.insert(text);
       },
       selectStart: () => {
-        const start = Editor.start(editor, []);
-        Transforms.select(editor, { anchor: start, focus: start });
+        const start = editor.read.points.start([]);
+
+        if (!start) return;
+
+        editor.update.selection.set({ anchor: start, focus: start });
       },
     }),
     [containerRef, editor]
@@ -2240,14 +2191,14 @@ function SlateScenarioEditor({
 
   return (
     <div ref={containerRef} className="h-full overflow-auto p-4">
-      <Plite editor={editor as any} initialValue={value} onChange={() => {}}>
+      <PliteRuntime editor={editor as any} onChange={() => {}}>
         <Editable
           className="min-h-[70vh] outline-none"
-          renderChunk={renderChunk as any}
+          domStrategy={getBenchmarkDOMStrategy(config)}
           renderElement={renderElement as any}
           spellCheck={false}
         />
-      </Plite>
+      </PliteRuntime>
     </div>
   );
 }
@@ -2256,7 +2207,6 @@ function PlateScenarioEditor({
   config,
   containerRef,
   editorRef,
-  renderChunk,
   renderElement,
   scenario,
   value,
@@ -2264,18 +2214,15 @@ function PlateScenarioEditor({
   config: BenchmarkConfig;
   containerRef: React.RefObject<HTMLDivElement | null>;
   editorRef?: React.Ref<BenchmarkEditorHandle>;
-  renderChunk?: (props: any) => React.ReactNode;
   renderElement: (props: RenderElementProps) => React.ReactNode;
   scenario: Scenario;
   value: Value;
 }) {
   const editor = usePlateEditor({
-    chunking: config.chunking ? { chunkSize: config.chunkSize } : false,
     nodeId: scenario.nodeId === false ? false : undefined,
     plugins: getScenarioPlugins(scenario.plugins),
     value,
   });
-  const slateEditor = editor as any;
 
   React.useImperativeHandle(
     editorRef,
@@ -2289,14 +2236,17 @@ function PlateScenarioEditor({
         await wait(60);
       },
       insertText: (text: string) => {
-        Transforms.insertText(slateEditor, text);
+        editor.update.text.insert(text);
       },
       selectStart: () => {
-        const start = Editor.start(slateEditor, []);
-        Transforms.select(slateEditor, { anchor: start, focus: start });
+        const start = editor.read.points.start([]);
+
+        if (!start) return;
+
+        editor.update.selection.set({ anchor: start, focus: start });
       },
     }),
-    [containerRef, slateEditor]
+    [containerRef, editor]
   );
 
   return (
@@ -2304,7 +2254,7 @@ function PlateScenarioEditor({
       <Plate editor={editor}>
         <PlateContent
           className="min-h-[70vh] outline-none"
-          renderChunk={renderChunk as any}
+          domStrategy={getBenchmarkDOMStrategy(config)}
           renderElement={renderElement as any}
           spellCheck={false}
         />
@@ -2332,29 +2282,17 @@ function PrebuiltScenarioEditor({
     [config.contentVisibility]
   );
 
-  const renderChunk = React.useMemo(
-    () =>
-      config.contentVisibility === 'chunk'
-        ? (props: any) => <BenchmarkChunk {...props} />
-        : undefined,
-    [config.contentVisibility]
-  );
-
   if (scenario.kind === 'slate') {
     return (
       <div className="h-full overflow-auto p-4">
-        <Plite
-          editor={editor as any}
-          initialValue={(editor.children ?? []) as any}
-          onChange={() => {}}
-        >
+        <PliteRuntime editor={editor as any} onChange={() => {}}>
           <Editable
             className="min-h-[70vh] outline-none"
-            renderChunk={renderChunk as any}
+            domStrategy={getBenchmarkDOMStrategy(config)}
             renderElement={renderElement as any}
             spellCheck={false}
           />
-        </Plite>
+        </PliteRuntime>
       </div>
     );
   }
@@ -2364,7 +2302,7 @@ function PrebuiltScenarioEditor({
       <Plate editor={editor as any}>
         <PlateContent
           className="min-h-[70vh] outline-none"
-          renderChunk={renderChunk as any}
+          domStrategy={getBenchmarkDOMStrategy(config)}
           renderElement={renderElement as any}
           spellCheck={false}
         />
@@ -2392,29 +2330,17 @@ function PluginCensusEditorSurface({
     [config.contentVisibility]
   );
 
-  const renderChunk = React.useMemo(
-    () =>
-      config.contentVisibility === 'chunk'
-        ? (props: any) => <BenchmarkChunk {...props} />
-        : undefined,
-    [config.contentVisibility]
-  );
-
   if (scenarioId === 'slate') {
     return (
       <div className="h-full overflow-auto p-4">
-        <Plite
-          editor={editor as any}
-          initialValue={(editor.children ?? []) as any}
-          onChange={() => {}}
-        >
+        <PliteRuntime editor={editor as any} onChange={() => {}}>
           <Editable
             className="min-h-[70vh] outline-none"
-            renderChunk={renderChunk as any}
+            domStrategy={getBenchmarkDOMStrategy(config)}
             renderElement={renderElement as any}
             spellCheck={false}
           />
-        </Plite>
+        </PliteRuntime>
       </div>
     );
   }
@@ -2424,7 +2350,7 @@ function PluginCensusEditorSurface({
       <Plate editor={editor as any}>
         <PlateContent
           className="min-h-[70vh] outline-none"
-          renderChunk={renderChunk as any}
+          domStrategy={getBenchmarkDOMStrategy(config)}
           renderElement={renderElement as any}
           spellCheck={false}
         />
@@ -2436,7 +2362,7 @@ function PluginCensusEditorSurface({
 function EditorStateSubscriber() {
   const editor = useEditorState();
 
-  consume(editor.children.length);
+  consume(editor.read.children().length);
 
   return null;
 }
@@ -2450,9 +2376,13 @@ function EditorValueSubscriber() {
 }
 
 function EditorSelectorSubscriber() {
-  const blockCount = useEditorSelector((editor) => editor.children.length, [], {
-    equalityFn: (a, b) => a === b,
-  });
+  const blockCount = useEditorSelector(
+    (editor) => editor.read.children().length,
+    [],
+    {
+      equalityFn: (a, b) => a === b,
+    }
+  );
 
   consume(blockCount);
 
@@ -2460,12 +2390,9 @@ function EditorSelectorSubscriber() {
 }
 
 function PluginOptionSubscriber() {
-  const contentVisibilityAuto = usePluginOption(
-    ChunkingPlugin,
-    'contentVisibilityAuto'
-  );
+  const enabled = usePluginOption(BenchmarkOptionPlugin, 'enabled');
 
-  consume(contentVisibilityAuto);
+  consume(enabled);
 
   return null;
 }
@@ -2474,21 +2401,13 @@ function MixedSubscriber() {
   const editor = useEditorState();
   const value = useEditorValue();
   const blockCount = useEditorSelector(
-    (nextEditor) => nextEditor.children.length,
+    (nextEditor) => nextEditor.read.children().length,
     [],
     { equalityFn: (a, b) => a === b }
   );
-  const contentVisibilityAuto = usePluginOption(
-    ChunkingPlugin,
-    'contentVisibilityAuto'
-  );
+  const enabled = usePluginOption(BenchmarkOptionPlugin, 'enabled');
 
-  consume(
-    editor.children.length,
-    value.length,
-    blockCount,
-    contentVisibilityAuto
-  );
+  consume(editor.read.children().length, value.length, blockCount, enabled);
 
   return null;
 }
@@ -2533,7 +2452,7 @@ function FanoutSurface({
 }: {
   caseId: FanoutCaseId;
   config: BenchmarkConfig;
-  editor: Editor;
+  editor: PlateEditor;
   subscriberCount: number;
   ref?: React.Ref<FanoutEditorHandle>;
 }) {
@@ -2547,63 +2466,46 @@ function FanoutSurface({
     ),
     [config.contentVisibility]
   );
-  const renderChunk = React.useMemo(
-    () =>
-      config.contentVisibility === 'chunk'
-        ? (props: any) => <BenchmarkChunk {...props} />
-        : undefined,
-    [config.contentVisibility]
-  );
-
   React.useImperativeHandle(
     ref,
     () => ({
       triggerUpdate: () => {
-        const plateEditor = editor as any;
-        const store = plateEditor.store;
-
         updateCountRef.current += 1;
+
+        const insertFanoutParagraph = () => {
+          editor.update.nodes.insert(
+            createFanoutParagraph(updateCountRef.current),
+            { at: [editor.read.children().length] }
+          );
+        };
+
+        const benchmarkOption = editor.plugin(BenchmarkOptionPlugin);
 
         switch (caseId) {
           case 'editor-value': {
-            plateEditor.children = [
-              ...plateEditor.children,
-              createFanoutParagraph(updateCountRef.current),
-            ];
-            incrementStoreVersion(store, 'versionValue');
+            insertFanoutParagraph();
 
             break;
           }
           case 'plugin-option': {
-            plateEditor.setOption(
-              ChunkingPlugin,
-              'contentVisibilityAuto',
-              !plateEditor.getOption(ChunkingPlugin, 'contentVisibilityAuto')
+            benchmarkOption.setOption(
+              'enabled',
+              !benchmarkOption.getOption('enabled')
             );
 
             break;
           }
           case 'mixed': {
-            plateEditor.children = [
-              ...plateEditor.children,
-              createFanoutParagraph(updateCountRef.current),
-            ];
-            incrementStoreVersion(store, 'versionEditor');
-            incrementStoreVersion(store, 'versionValue');
-            plateEditor.setOption(
-              ChunkingPlugin,
-              'contentVisibilityAuto',
-              !plateEditor.getOption(ChunkingPlugin, 'contentVisibilityAuto')
+            insertFanoutParagraph();
+            benchmarkOption.setOption(
+              'enabled',
+              !benchmarkOption.getOption('enabled')
             );
 
             break;
           }
           default: {
-            plateEditor.children = [
-              ...plateEditor.children,
-              createFanoutParagraph(updateCountRef.current),
-            ];
-            incrementStoreVersion(store, 'versionEditor');
+            insertFanoutParagraph();
           }
         }
       },
@@ -2616,7 +2518,7 @@ function FanoutSurface({
       <Plate editor={editor as any}>
         <PlateContent
           className="min-h-[70vh] outline-none"
-          renderChunk={renderChunk as any}
+          domStrategy={getBenchmarkDOMStrategy(config)}
           renderElement={renderElement as any}
           spellCheck={false}
         />
@@ -2636,24 +2538,17 @@ function EditablePropsProbe({ config }: { config: BenchmarkConfig }) {
     ),
     [config.contentVisibility]
   );
-  const renderChunk = React.useMemo(
-    () =>
-      config.contentVisibility === 'chunk'
-        ? (props: any) => <BenchmarkChunk {...props} />
-        : undefined,
-    [config.contentVisibility]
-  );
   const readOnly = useEditorReadOnly();
   const editableProps = useEditableProps({
+    domStrategy: getBenchmarkDOMStrategy(config),
     readOnly,
-    renderChunk: renderChunk as any,
     renderElement,
   });
 
   consume(
     editableProps.className,
     editableProps.decorate,
-    editableProps.renderChunk,
+    editableProps.domStrategy,
     editableProps.renderElement,
     editableProps.renderLeaf,
     editableProps.renderText
@@ -2679,27 +2574,20 @@ function MinimalEditableMount({
     ),
     [config.contentVisibility]
   );
-  const renderChunk = React.useMemo(
-    () =>
-      config.contentVisibility === 'chunk'
-        ? (props: any) => <BenchmarkChunk {...props} />
-        : undefined,
-    [config.contentVisibility]
-  );
-  const readOnly = useEditorReadOnly(id);
+  const readOnly = useEditorReadOnly();
   const editableProps = useEditableProps({
+    domStrategy: getBenchmarkDOMStrategy(config),
     id,
     readOnly,
-    renderChunk: renderChunk as any,
     renderElement,
   });
 
-  if (!editor.children || editor.children.length === 0) {
+  if (!editor.read.children() || editor.read.children().length === 0) {
     return null;
   }
 
   return (
-    <Plite id={id}>
+    <Plite editor={editor}>
       <Editable
         className="min-h-[70vh] outline-none"
         {...(editableProps as any)}
@@ -2776,7 +2664,7 @@ function BenchmarkEditableMount({
 }) {
   const editor = useEditorRef(id);
   const pathMap = React.useMemo(
-    () => buildElementPathMap((editor.children ?? []) as Value),
+    () => buildElementPathMap((editor.read.children() ?? []) as Value),
     [editor]
   );
   const paragraphPlugin = React.useMemo(
@@ -2802,13 +2690,6 @@ function BenchmarkEditableMount({
         elementContentVisibility={config.contentVisibility === 'element'}
       />
     ),
-    [config.contentVisibility]
-  );
-  const renderChunk = React.useMemo(
-    () =>
-      config.contentVisibility === 'chunk'
-        ? (props: any) => <BenchmarkChunk {...props} />
-        : undefined,
     [config.contentVisibility]
   );
   const plainLeafRenderer = React.useCallback(
@@ -2917,8 +2798,10 @@ function BenchmarkEditableMount({
 
     return (props: RenderElementProps) => {
       const element = props.element as PliteElement;
-      const path =
-        pathMap.get(element) ?? ((editor as any).api.findPath(element) as any);
+      const path = getRenderElementPath(props, pathMap);
+
+      if (!path) return renderElement(props);
+
       const elementType = element.type as string | undefined;
       const elementPlugin = elementType
         ? editor.getPlugin({ key: elementType as any })
@@ -2971,7 +2854,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'benchmark-mounted-block-element') {
         const blockId =
-          typeof element.id === 'string' && editor.api.isBlock(element)
+          typeof element.id === 'string' && editor.read.schema.isBlock(element)
             ? element.id
             : undefined;
 
@@ -3020,8 +2903,8 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plate-element-plugin-context-no-provider') {
         const pluginContext = elementPlugin
-          ? getBasePlugin(editor as any, elementPlugin as any)
-          : { api: editor.api, editor, tf: editor.transforms };
+          ? editor.plugin(elementPlugin)
+          : { api: editor.api, editor };
 
         return (
           <PlateElement
@@ -3136,8 +3019,8 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'render-as-provider') {
         const pluginContext = elementPlugin
-          ? getBasePlugin(editor as any, elementPlugin as any)
-          : { api: editor.api, editor, tf: editor.transforms };
+          ? editor.plugin(elementPlugin)
+          : { api: editor.api, editor };
         const ctxProps = {
           ...props,
           ...pluginContext,
@@ -3303,8 +3186,8 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-render-node-hooks') {
         const pluginContext = elementPlugin
-          ? getBasePlugin(editor as any, elementPlugin as any)
-          : { api: editor.api, editor, tf: editor.transforms };
+          ? editor.plugin(elementPlugin)
+          : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
           attributes: element.attributes as any,
           editor: editor as any,
@@ -3340,8 +3223,8 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-render-node-hooks-plain-context') {
         const pluginContext = elementPlugin
-          ? getBasePlugin(editor as any, elementPlugin as any)
-          : { api: editor.api, editor, tf: editor.transforms };
+          ? editor.plugin(elementPlugin)
+          : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
           attributes: element.attributes as any,
           editor: editor as any,
@@ -3379,8 +3262,8 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-render-node-hooks-jotai-provider') {
         const pluginContext = elementPlugin
-          ? getBasePlugin(editor as any, elementPlugin as any)
-          : { api: editor.api, editor, tf: editor.transforms };
+          ? editor.plugin(elementPlugin)
+          : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
           attributes: element.attributes as any,
           editor: editor as any,
@@ -3417,8 +3300,8 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'plugin-render-node-hooks-jotai-hydrate-only'
       ) {
         const pluginContext = elementPlugin
-          ? getBasePlugin(editor as any, elementPlugin as any)
-          : { api: editor.api, editor, tf: editor.transforms };
+          ? editor.plugin(elementPlugin)
+          : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
           attributes: element.attributes as any,
           editor: editor as any,
@@ -3455,8 +3338,8 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'plugin-render-node-hooks-jotai-hydrate-sync'
       ) {
         const pluginContext = elementPlugin
-          ? getBasePlugin(editor as any, elementPlugin as any)
-          : { api: editor.api, editor, tf: editor.transforms };
+          ? editor.plugin(elementPlugin)
+          : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
           attributes: element.attributes as any,
           editor: editor as any,
@@ -3491,8 +3374,8 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-render-node-selector') {
         const pluginContext = elementPlugin
-          ? getBasePlugin(editor as any, elementPlugin as any)
-          : { api: editor.api, editor, tf: editor.transforms };
+          ? editor.plugin(elementPlugin)
+          : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
           attributes: element.attributes as any,
           editor: editor as any,
@@ -3530,8 +3413,8 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'plugin-render-node-selector-plain-context'
       ) {
         const pluginContext = elementPlugin
-          ? getBasePlugin(editor as any, elementPlugin as any)
-          : { api: editor.api, editor, tf: editor.transforms };
+          ? editor.plugin(elementPlugin)
+          : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
           attributes: element.attributes as any,
           editor: editor as any,
@@ -3571,8 +3454,8 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'plugin-render-node-selector-jotai-provider'
       ) {
         const pluginContext = elementPlugin
-          ? getBasePlugin(editor as any, elementPlugin as any)
-          : { api: editor.api, editor, tf: editor.transforms };
+          ? editor.plugin(elementPlugin)
+          : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
           attributes: element.attributes as any,
           editor: editor as any,
@@ -3607,8 +3490,8 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-precomputed-fast-node-props') {
         const pluginContext = elementPlugin
-          ? getBasePlugin(editor as any, elementPlugin as any)
-          : { api: editor.api, editor, tf: editor.transforms };
+          ? editor.plugin(elementPlugin)
+          : { api: editor.api, editor };
         const ctxProps = {
           ...props,
           ...pluginContext,
@@ -3635,8 +3518,8 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plain-context-plugin-fast-node-props') {
         const pluginContext = elementPlugin
-          ? getBasePlugin(editor as any, elementPlugin as any)
-          : { api: editor.api, editor, tf: editor.transforms };
+          ? editor.plugin(elementPlugin)
+          : { api: editor.api, editor };
         const ctxProps = {
           ...props,
           ...pluginContext,
@@ -3665,8 +3548,8 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'jotai-provider-plugin-fast-node-props') {
         const pluginContext = elementPlugin
-          ? getBasePlugin(editor as any, elementPlugin as any)
-          : { api: editor.api, editor, tf: editor.transforms };
+          ? editor.plugin(elementPlugin)
+          : { api: editor.api, editor };
         const ctxProps = {
           ...props,
           ...pluginContext,
@@ -3694,8 +3577,8 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'jotai-hydrate-only-plugin-fast-node-props'
       ) {
         const pluginContext = elementPlugin
-          ? getBasePlugin(editor as any, elementPlugin as any)
-          : { api: editor.api, editor, tf: editor.transforms };
+          ? editor.plugin(elementPlugin)
+          : { api: editor.api, editor };
         const ctxProps = {
           ...props,
           ...pluginContext,
@@ -3723,8 +3606,8 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'jotai-hydrate-sync-plugin-fast-node-props'
       ) {
         const pluginContext = elementPlugin
-          ? getBasePlugin(editor as any, elementPlugin as any)
-          : { api: editor.api, editor, tf: editor.transforms };
+          ? editor.plugin(elementPlugin)
+          : { api: editor.api, editor };
         const ctxProps = {
           ...props,
           ...pluginContext,
@@ -3750,8 +3633,8 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'zustand-provider-plugin-fast-node-props') {
         const pluginContext = elementPlugin
-          ? getBasePlugin(editor as any, elementPlugin as any)
-          : { api: editor.api, editor, tf: editor.transforms };
+          ? editor.plugin(elementPlugin)
+          : { api: editor.api, editor };
         const ctxProps = {
           ...props,
           ...pluginContext,
@@ -3865,8 +3748,9 @@ function BenchmarkEditableMount({
         return renderElement(props);
       }
 
-      const path =
-        pathMap.get(element) ?? ((editor as any).api.findPath(element) as any);
+      const path = getRenderElementPath(props, pathMap);
+
+      if (!path) return renderElement(props);
 
       return renderParagraph({
         ...props,
@@ -3973,11 +3857,10 @@ function BenchmarkEditableMount({
   );
 
   return (
-    <Plite id={id}>
+    <Plite editor={editor}>
       <Editable
         className="min-h-[70vh] outline-none"
         readOnly={false}
-        renderChunk={renderChunk as any}
         renderElement={finalRenderElement as any}
         renderLeaf={finalRenderLeaf as any}
         renderText={finalRenderText as any}
@@ -3994,17 +3877,17 @@ function CoreMountSurface({
 }: {
   caseId: CoreMountCaseId;
   config: BenchmarkConfig;
-  editor: Editor;
+  editor: PlateEditor;
 }) {
-  const id = (editor as any).id as string | undefined;
+  const id = editor.id;
 
   return (
     <div className="h-full overflow-auto p-4">
-      <Plate editor={editor as any}>
+      <Plate editor={editor}>
         {caseId === 'provider-only' ? (
           <div className="min-h-[70vh]" />
         ) : caseId === 'plite-only' ? (
-          <Plite id={id}>
+          <Plite editor={editor}>
             <div />
           </Plite>
         ) : caseId === 'editable-props-only' ? (
@@ -4378,11 +4261,7 @@ function CoreMountSurface({
         ) : (
           <PlateContent
             className="min-h-[70vh] outline-none"
-            renderChunk={
-              config.contentVisibility === 'chunk'
-                ? (props: any) => <BenchmarkChunk {...props} />
-                : undefined
-            }
+            domStrategy={getBenchmarkDOMStrategy(config)}
             renderElement={(props) => (
               <BenchmarkElement
                 {...props}
@@ -4867,11 +4746,12 @@ export default function EditorPerfPage() {
     null
   );
   const [fanoutSubscriberCount, setFanoutSubscriberCount] = React.useState(250);
-  const [fanoutEditor, setFanoutEditor] = React.useState<Editor | null>(null);
-  const [fanoutMountVersion, setFanoutMountVersion] = React.useState(0);
-  const [coreMountEditor, setCoreMountEditor] = React.useState<Editor | null>(
+  const [fanoutEditor, setFanoutEditor] = React.useState<PlateEditor | null>(
     null
   );
+  const [fanoutMountVersion, setFanoutMountVersion] = React.useState(0);
+  const [coreMountEditor, setCoreMountEditor] =
+    React.useState<PlateEditor | null>(null);
   const [coreMountVersion, setCoreMountVersion] = React.useState(0);
   const [pluginCensusEditor, setPluginCensusEditor] =
     React.useState<Editor | null>(null);
@@ -5584,87 +5464,32 @@ export default function EditorPerfPage() {
           const constructEditor = createPlateDissectionEditor({
             caseItem,
             config,
-            skipInitialization: true,
           });
           const constructDuration = performance.now() - constructStart;
 
-          pluginCount = constructEditor.meta.pluginList.length;
+          pluginCount = constructEditor.runtime.pluginList.length;
 
           if (!isWarmup) {
             constructOnlySamples.push(constructDuration);
           }
 
           const initCounter = { count: 0 };
-          const initEditor = createPlateDissectionEditor({
+          const initStart = performance.now();
+          createPlateDissectionEditor({
             caseItem,
             config,
             counter: initCounter,
-            skipInitialization: true,
-          });
-          const initNodeLookupStats = {
-            count: 0,
-            time: 0,
-          };
-          const initSetNodesStats = {
-            count: 0,
-            time: 0,
-          };
-          const originalNode = initEditor.api.node.bind(initEditor.api);
-          const originalSetNodes: (...args: any[]) => any =
-            initEditor.tf.setNodes.bind(initEditor.tf);
-          const originalSetNodesBatch: (...args: any[]) => any =
-            initEditor.tf.setNodesBatch.bind(initEditor.tf);
-          const wrappedSetNodes = ((...args: any[]) => {
-            const setNodesStart = performance.now();
-
-            try {
-              return originalSetNodes(...args);
-            } finally {
-              initSetNodesStats.count += 1;
-              initSetNodesStats.time += performance.now() - setNodesStart;
-            }
-          }) as typeof initEditor.tf.setNodes;
-          const wrappedSetNodesBatch = ((...args: any[]) => {
-            const setNodesStart = performance.now();
-
-            try {
-              return originalSetNodesBatch(...args);
-            } finally {
-              initSetNodesStats.count += 1;
-              initSetNodesStats.time += performance.now() - setNodesStart;
-            }
-          }) as typeof initEditor.tf.setNodesBatch;
-
-          initEditor.api.node = ((...args: Parameters<typeof originalNode>) => {
-            const nodeLookupStart = performance.now();
-
-            try {
-              return originalNode(...args);
-            } finally {
-              initNodeLookupStats.count += 1;
-              initNodeLookupStats.time += performance.now() - nodeLookupStart;
-            }
-          }) as typeof initEditor.api.node;
-          initEditor.tf.setNodes = wrappedSetNodes;
-          initEditor.tf.setNodesBatch = wrappedSetNodesBatch;
-          initEditor.transforms.setNodes = wrappedSetNodes;
-          initEditor.transforms.setNodesBatch = wrappedSetNodesBatch;
-
-          const initStart = performance.now();
-
-          initEditor.tf.init({
             value: getDissectionValue(caseItem, config.blocks),
           });
-
           const initDuration = performance.now() - initStart;
 
           if (!isWarmup) {
             idsAssignedSamples.push(initCounter.count);
             initOnlySamples.push(initDuration);
-            nodeLookupCallSamples.push(initNodeLookupStats.count);
-            nodeLookupTimeSamples.push(initNodeLookupStats.time);
-            setNodesCallSamples.push(initSetNodesStats.count);
-            setNodesTimeSamples.push(initSetNodesStats.time);
+            nodeLookupCallSamples.push(0);
+            nodeLookupTimeSamples.push(0);
+            setNodesCallSamples.push(0);
+            setNodesTimeSamples.push(0);
           }
 
           const createCounter = { count: 0 };
@@ -5677,7 +5502,7 @@ export default function EditorPerfPage() {
           });
           const createDuration = performance.now() - createStart;
 
-          pluginCount = createEditor.meta.pluginList.length;
+          pluginCount = createEditor.runtime.pluginList.length;
 
           if (!isWarmup) {
             createWithValueSamples.push(createDuration);
@@ -5756,7 +5581,6 @@ export default function EditorPerfPage() {
           );
           const duplicateScanStats = { count: 0, time: 0 };
           const editor = createPlateEditor({
-            chunking: config.chunking ? { chunkSize: config.chunkSize } : false,
             nodeId: getNodeIdOption({
               counter: idCounter,
               duplicateScanStats,
@@ -5776,10 +5600,12 @@ export default function EditorPerfPage() {
             return originalApply(operation);
           }) as typeof editor.apply;
 
-          Transforms.select(editor, Editor.end(editor, []));
+          const end = editor.read.points.end([]);
+
+          editor.update.selection.set({ anchor: end, focus: end });
 
           const insertStart = performance.now();
-          editor.tf.insertFragment(fragment as any);
+          editor.update.fragment.insert(fragment as any);
           const insertDuration = performance.now() - insertStart;
 
           editor.apply = originalApply;

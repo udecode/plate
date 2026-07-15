@@ -1,4 +1,4 @@
-import type { AnyPluginConfig, PluginConfig } from '../plugin/SlatePlugin';
+import type { AnyPluginConfig, PluginConfig } from '../plugin/PluginConfig';
 import type { BasePlugin, InferConfig } from '../plugin/BasePlugin';
 import type { ReactApi } from '@platejs/plite-react';
 import type { HistoryExtensionTypes } from '@platejs/plite-history';

@@ -3,7 +3,7 @@
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { jsxt } from '@platejs/test-utils';
 import { describe, expect, it } from 'bun:test';
-import { createSlateEditor, createSlatePlugin, KEYS } from 'platejs';
+import { createBaseEditor, createBasePlugin, KEYS } from 'platejs';
 
 import {
   BLOCK_SUGGESTION_TOKEN,
@@ -34,7 +34,7 @@ const collectEntries = (editor: any) => {
     });
   };
 
-  editor.children.forEach((child: any, index: number) => {
+  editor.read.children().forEach((child: any, index: number) => {
     visit(child, [index]);
   });
 
@@ -50,30 +50,31 @@ const getSuggestionDataList = (node: any) =>
 
 const getSuggestionId = (node: any) => node.suggestion_1?.id;
 
-const MentionPlugin = createSlatePlugin({
+const MentionPlugin = createBasePlugin({
   key: KEYS.mention,
   node: { isElement: true, isInline: true, isMarkableVoid: true, isVoid: true },
 });
 
-const InlineEquationPlugin = createSlatePlugin({
+const InlineEquationPlugin = createBasePlugin({
   key: KEYS.inlineEquation,
   node: { isElement: true, isInline: true, isVoid: true },
 });
 
-const getResolvedSuggestions = (editor: any) =>
-  buildBlockDiscussionIndex({
-    discussions: [],
-    entries: collectEntries(editor),
-    getCommentId: () => {},
-    getSuggestionData: (node: any) =>
-      editor.getApi(BaseSuggestionPlugin).suggestion.suggestionData(node),
-    getSuggestionDataList: (node: any) =>
-      editor.getApi(BaseSuggestionPlugin).suggestion.dataList(node),
-    getSuggestionId: (node: any) =>
-      editor.getApi(BaseSuggestionPlugin).suggestion.nodeId(node),
-    isBlockSuggestion: (node: any) =>
-      editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(node),
-  }).suggestionsByBlock.get('0') ?? [];
+const getResolvedSuggestions = (editor: any) => {
+  const suggestionApi = editor.plugin(BaseSuggestionPlugin).api;
+
+  return (
+    buildBlockDiscussionIndex({
+      discussions: [],
+      entries: collectEntries(editor),
+      getCommentId: () => {},
+      getSuggestionData: (node: any) => suggestionApi.suggestionData(node),
+      getSuggestionDataList: (node: any) => suggestionApi.dataList(node),
+      getSuggestionId: (node: any) => suggestionApi.nodeId(node),
+      isBlockSuggestion: (node: any) => suggestionApi.isBlockSuggestion(node),
+    }).suggestionsByBlock.get('0') ?? []
+  );
+};
 
 describe('buildBlockDiscussionIndex', () => {
   it('keeps inline void display text in remove summaries', () => {
@@ -268,7 +269,7 @@ describe('buildBlockDiscussionIndex', () => {
   }) => {
     const input = createValue() as any;
 
-    const editor = createSlateEditor({
+    const editor = createBaseEditor({
       plugins: [
         BaseSuggestionPlugin.configure({
           options: { currentUserId: 'u1' },
@@ -282,10 +283,10 @@ describe('buildBlockDiscussionIndex', () => {
       value: input.children,
     });
 
-    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
-    editor.tf.deleteBackward('character');
-    editor.tf.deleteBackward('character');
+    editor.update.text.deleteBackward({ unit: 'character' });
+    editor.update.text.deleteBackward({ unit: 'character' });
 
     const suggestions = getResolvedSuggestions(editor);
 

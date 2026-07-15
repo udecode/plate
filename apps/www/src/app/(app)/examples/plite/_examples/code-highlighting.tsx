@@ -104,7 +104,7 @@ const editor = usePliteEditor<CustomValue>({ initialValue })`),
   const editor = usePliteEditor({ initialValue });
   const commitVersion = useSyncExternalStore(
     (listener) => editor.subscribeCommit(listener),
-    () => editor.read((state) => state.value.lastCommit()?.version ?? 0),
+    () => editor.read.lastCommit()?.version ?? 0,
     () => 0
   );
   const codeHighlightingSource = usePliteRangeDecorationSource(editor, {
@@ -141,9 +141,7 @@ const editor = usePliteEditor<CustomValue>({ initialValue })`),
           );
 
           if (!handledCodeLines && isTab) {
-            editor.update((tx) => {
-              tx.text.insert(CodeIndent);
-            });
+            editor.update.text.insert(CodeIndent);
           }
 
           return true;
@@ -162,20 +160,7 @@ const ElementWrapper = (props: RenderElementProps<CustomElement>) => {
 
   if (element.type === CodeBlockType) {
     const setLanguage = (language: string) => {
-      editor.update((tx) => {
-        const entry = tx.nodes.find({
-          at: [],
-          match: (node) => node === element,
-        });
-
-        if (!entry) {
-          return;
-        }
-
-        const [, path] = entry;
-
-        tx.nodes.set({ language }, { at: path });
-      });
+      editor.update.nodes.set({ language }, { at: element });
     };
 
     return (
@@ -201,9 +186,7 @@ const ElementWrapper = (props: RenderElementProps<CustomElement>) => {
     );
   }
 
-  const Tag = editor.read((state) => state.schema.isInline(element))
-    ? 'span'
-    : 'div';
+  const Tag = editor.read.schema.isInline(element) ? 'span' : 'div';
   return (
     <Tag {...attributes} className="plite-code-highlighting-positioned">
       {children}
@@ -371,8 +354,8 @@ const preventLeadingCodeBlockBackspace = (
   }
 
   const snapshot = editor.read((state) => ({
-    children: state.runtime.snapshot().children,
-    selection: state.selection.get(),
+    children: state.children(),
+    selection: state.selection(),
   }));
   const selection = snapshot.selection;
 
@@ -414,8 +397,8 @@ const updateSelectedCodeLines = (
   action: CodeIndentAction
 ) => {
   const snapshot = editor.read((state) => ({
-    children: state.runtime.snapshot().children,
-    selection: state.selection.get(),
+    children: state.children(),
+    selection: state.selection(),
   }));
   const selection = snapshot.selection;
 

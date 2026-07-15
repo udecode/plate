@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import assert from 'node:assert/strict';
 import { createPlateEditor } from '@platejs/core/react';
 import type { TTableElement, TTableRowElement } from '@platejs/utils';
 
@@ -49,9 +50,9 @@ describe('insertTableMergeColumn', () => {
 
     editor.update.insert.tableColumn({ at: [0], select: true });
 
-    const table = editor.read.nodes.get<TTableElement>([0], {
-      required: true,
-    })[0];
+    const entry = editor.read.nodes.get<TTableElement>([0]);
+    assert(entry);
+    const [table] = entry;
     const rows = table.children as TTableRowElement[];
 
     expect(rows[0].children).toHaveLength(3);

@@ -39,19 +39,17 @@ import type {
   EditorAboveOptions,
   EditorLevelsOptions,
   EditorNextOptions,
-  EditorPathReadOptions,
   EditorPreviousOptions,
   Location,
   Node,
   NodeEntry,
-  Path,
   Point,
   Range,
   Span,
-  Text,
   Value,
 } from '../interfaces';
 import { RangeApi } from '../interfaces';
+import { failInvariant } from '../internal/fail-invariant';
 import { getCommonLocationRoot } from '../internal/root-location';
 import type { InternalEditorQueryRuntime } from './editor-runtime';
 import { getFragment } from './get-fragment';
@@ -185,24 +183,18 @@ export const createEditorQueryRuntime = <V extends Value>(
       }
     ),
   edges: (at) =>
-    executeQueryMiddleware(
-      editor,
-      'ranges',
-      'edges',
-      { at, options: { required: true } },
-      ({ at }) => {
-        const root = getQueryRoot(editor, [at]);
+    executeQueryMiddleware(editor, 'ranges', 'edges', { at }, ({ at }) => {
+      const root = getQueryRoot(editor, [at]);
 
-        return withQueryRoot(editor, [at], () => {
-          const [start, end] = edges(editor, at);
+      return withQueryRoot(editor, [at], () => {
+        const [start, end] = edges(editor, at);
 
-          return [
-            withExplicitPointRoot(start, root),
-            withExplicitPointRoot(end, root),
-          ] as [Point, Point];
-        });
-      }
-    ) as [Point, Point],
+        return [
+          withExplicitPointRoot(start, root),
+          withExplicitPointRoot(end, root),
+        ] as [Point, Point];
+      });
+    }) ?? failInvariant('Query middleware returned no result for ranges.edges'),
   elementReadOnly: (options) =>
     executeQueryMiddleware(
       editor,
@@ -218,13 +210,9 @@ export const createEditorQueryRuntime = <V extends Value>(
         )
     ),
   first: (at) =>
-    executeQueryMiddleware(
-      editor,
-      'nodes',
-      'first',
-      { at, options: { required: true } },
-      ({ at }) => withQueryRoot(editor, [at], () => first(editor, at))
-    ) as NodeEntry,
+    executeQueryMiddleware(editor, 'nodes', 'first', { at }, ({ at }) =>
+      withQueryRoot(editor, [at], () => first(editor, at))
+    ) ?? failInvariant('Query middleware returned no result for nodes.first'),
   fragment: (at) => {
     const root = getQueryRoot(editor, [at]);
     const fragmentRange = withQueryRoot(editor, [at], () =>
@@ -333,10 +321,10 @@ export const createEditorQueryRuntime = <V extends Value>(
       editor,
       'nodes',
       'leaf',
-      { at, options: { ...options, required: true } },
+      { at, options },
       ({ at, options }) =>
         withQueryRoot(editor, [at], () => leaf(editor, at, options))
-    ) as NodeEntry<Text>,
+    ) ?? failInvariant('Query middleware returned no result for nodes.leaf'),
   levels: <T extends Node>(options?: EditorLevelsOptions<T>) =>
     executeQueryMiddleware(
       editor,
@@ -367,28 +355,25 @@ export const createEditorQueryRuntime = <V extends Value>(
       editor,
       'nodes',
       'parent',
-      { at, options: { ...options, required: true } },
+      { at, options },
       ({ at, options }) =>
         withQueryRoot(editor, [at], () => parent(editor, at, options))
-    ) as NodeEntry<Ancestor>,
-  path: (at, options) => {
-    const queryOptions: EditorPathReadOptions = { ...options, required: true };
-
-    return executeQueryMiddleware(
+    ) ?? failInvariant('Query middleware returned no result for nodes.parent'),
+  path: (at, options) =>
+    executeQueryMiddleware(
       editor,
       'nodes',
       'path',
-      { at, options: queryOptions },
+      { at, options },
       ({ at, options }) =>
         withQueryRoot(editor, [at], () => path(editor, at, options))
-    ) as Path;
-  },
+    ) ?? failInvariant('Query middleware returned no result for nodes.path'),
   point: (at, options) =>
     executeQueryMiddleware(
       editor,
       'points',
       'get',
-      { at, options: { ...options, required: true } },
+      { at, options },
       ({ at, options }) => {
         const root = getQueryRoot(editor, [at]);
 
@@ -396,7 +381,7 @@ export const createEditorQueryRuntime = <V extends Value>(
           withExplicitPointRoot(point(editor, at, options), root)
         );
       }
-    ) as Point,
+    ) ?? failInvariant('Query middleware returned no result for points.get'),
   positions: (options) =>
     executeQueryMiddleware(
       editor,
@@ -445,18 +430,15 @@ export const createEditorQueryRuntime = <V extends Value>(
       editor,
       'ranges',
       'get',
-      { at, options: { required: true }, toOrOptions: to },
-      ({ at, toOrOptions }) => {
+      { at, to },
+      ({ at, to }) => {
         const root = getQueryRoot(editor, [at, to]);
 
         return withQueryRoot(editor, [at, to], () =>
-          withExplicitRangeRoot(
-            range(editor, at, toOrOptions as Location | undefined),
-            root
-          )
+          withExplicitRangeRoot(range(editor, at, to), root)
         );
       }
-    ) as Range,
+    ) ?? failInvariant('Query middleware returned no result for ranges.get'),
   shouldMergeNodesRemovePrevNode: (previous, current) =>
     executeQueryMiddleware(
       editor,

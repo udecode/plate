@@ -1,7 +1,6 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "jsx": "preserve",
     "incremental": true,
@@ -64,7 +63,6 @@
       "@platejs/utils/react": ["../../packages/utils/src/react"],
       "@platejs/yjs": ["../../packages/yjs/src/index.ts"],
       "@platejs/yjs/core": ["../../packages/yjs/src/core/index.ts"],
-      "@platejs/yjs/internal": ["../../packages/yjs/src/internal/index.ts"],
       "@platejs/yjs/react": ["../../packages/yjs/src/react"],
       "@platejs/*": ["../../packages/*/src"],
       "@udecode/*": ["../../packages/udecode/*/src"],

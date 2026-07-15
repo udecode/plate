@@ -1,19 +1,23 @@
 /** @jsx jsxt */
 
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
-import { BoldPlugin } from '@platejs/basic-nodes/react';
-import { LinkPlugin } from '@platejs/link/react';
-import { MediaEmbedPlugin } from '@platejs/media/react';
-import { jsxt } from '@platejs/test-utils';
+import { BaseBoldPlugin, BaseHeadingPlugin } from '@platejs/basic-nodes';
+import { BaseLinkPlugin } from '@platejs/link';
+import { BaseMediaEmbedPlugin } from '@platejs/media';
+import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
 import { afterEach, describe, expect, it, spyOn, type Mock } from 'bun:test';
 
 import {
   createBaseEditor,
   type BaseEditor,
+  type BasePluginInput,
 } from '../../../../../../packages/core/src/lib/editor';
 import { BaseParagraphPlugin } from '../../../../../../packages/core/src/lib/plugins/paragraph';
 
 jsxt;
+
+const insertData = (editor: BaseEditor, data: DataTransfer) => {
+  editor.api.clipboard.insertData(data);
+};
 
 describe('when inserting html', () => {
   // noinspection CheckTagEmptyBody
@@ -42,7 +46,7 @@ describe('when inserting html', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as BaseEditor;
+      ) as TestEditorFixture;
 
       const expected = (
         <editor>
@@ -53,7 +57,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins = [HeadingPlugin];
+      const plugins = [BaseHeadingPlugin];
 
       const editor = createBaseEditor({
         plugins,
@@ -61,9 +65,9 @@ describe('when inserting html', () => {
         value: input.children,
       });
 
-      editor.tf.insertData(dataTransfer);
+      insertData(editor, dataTransfer);
 
-      expect(editor.children).toEqual(expected.children);
+      expect(editor.read.children()).toEqual(expected.children);
     });
   });
 
@@ -75,7 +79,7 @@ describe('when inserting html', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as BaseEditor;
+      ) as TestEditorFixture;
 
       const expected = (
         <editor>
@@ -86,7 +90,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins = [HeadingPlugin];
+      const plugins = [BaseHeadingPlugin];
 
       const editor = createBaseEditor({
         plugins,
@@ -94,9 +98,9 @@ describe('when inserting html', () => {
         value: input.children,
       });
 
-      editor.tf.insertData(dataTransfer as any);
+      insertData(editor, dataTransfer as any);
 
-      expect(editor.children).toEqual(expected.children);
+      expect(editor.read.children()).toEqual(expected.children);
     });
   });
 
@@ -108,7 +112,7 @@ describe('when inserting html', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as BaseEditor;
+      ) as TestEditorFixture;
 
       const expected = (
         <editor>
@@ -129,13 +133,14 @@ describe('when inserting html', () => {
         value: input.children,
       });
 
-      editor.tf.insertData(
+      insertData(
+        editor,
         makeDataTransfer(
           '<html><body><p>first element</p><p>second element</p>text node in the end</body></html>'
         )
       );
 
-      expect(editor.children).toEqual(expected.children);
+      expect(editor.read.children()).toEqual(expected.children);
     });
   });
 });
@@ -148,7 +153,7 @@ describe('when inserting empty html', () => {
         <cursor />
       </hp>
     </editor>
-  ) as any as BaseEditor;
+  ) as TestEditorFixture;
 
   // noinspection CheckTagEmptyBody
   const dataTransfer = {
@@ -165,7 +170,7 @@ describe('when inserting empty html', () => {
   ) as any;
 
   it('keeps the editor unchanged', () => {
-    const plugins = [BoldPlugin];
+    const plugins: readonly BasePluginInput[] = [BaseBoldPlugin];
 
     const editor = createBaseEditor({
       plugins,
@@ -173,9 +178,9 @@ describe('when inserting empty html', () => {
       value: input.children,
     });
 
-    editor.tf.insertData(dataTransfer as any);
+    insertData(editor, dataTransfer as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 });
 
@@ -187,7 +192,7 @@ describe('when inserting an iframe without src', () => {
         <cursor />
       </hp>
     </editor>
-  ) as any as BaseEditor;
+  ) as TestEditorFixture;
 
   // noinspection CheckTagEmptyBody
   const data = {
@@ -206,7 +211,7 @@ describe('when inserting an iframe without src', () => {
   ) as any;
 
   it('falls back to inserting the iframe text content', () => {
-    const plugins = [MediaEmbedPlugin];
+    const plugins = [BaseMediaEmbedPlugin];
 
     const editor = createBaseEditor({
       plugins,
@@ -214,9 +219,9 @@ describe('when inserting an iframe without src', () => {
       value: input.children,
     });
 
-    editor.tf.insertData(data as any);
+    insertData(editor, data as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 });
 
@@ -228,7 +233,7 @@ describe('when inserting link with href', () => {
         <cursor />
       </hp>
     </editor>
-  ) as any as BaseEditor;
+  ) as TestEditorFixture;
 
   // noinspection CheckTagEmptyBody
   const data = {
@@ -250,7 +255,7 @@ describe('when inserting link with href', () => {
   ) as any;
 
   it('insert the link with url', () => {
-    const plugins = [BaseParagraphPlugin, LinkPlugin];
+    const plugins = [BaseParagraphPlugin, BaseLinkPlugin];
 
     const editor = createBaseEditor({
       plugins,
@@ -258,9 +263,9 @@ describe('when inserting link with href', () => {
       value: input.children,
     });
 
-    editor.tf.insertData(data as any);
+    insertData(editor, data as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 });
 
@@ -272,7 +277,7 @@ describe('when inserting plain text', () => {
         <cursor />
       </hp>
     </editor>
-  ) as any as BaseEditor;
+  ) as TestEditorFixture;
 
   const data = {
     getData: (format: string) => (format === 'text/html' ? '' : 'inserted'),
@@ -304,8 +309,8 @@ describe('when inserting plain text', () => {
       value: input.children,
     });
 
-    editor.tf.insertData(data as any);
+    insertData(editor, data as any);
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 });

@@ -1,4 +1,4 @@
-import type { NodeComponent, PluginConfig } from './SlatePlugin';
+import type { NodeComponent, PluginConfig } from './PluginConfig';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';

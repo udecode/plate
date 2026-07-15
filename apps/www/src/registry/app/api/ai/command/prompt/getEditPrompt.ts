@@ -1,5 +1,5 @@
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from 'platejs';
 
 import dedent from 'dedent';
 
@@ -17,7 +17,7 @@ import {
 import { buildEditTableMultiCellPrompt } from './getEditTablePrompt';
 import { commonEditRules } from './common';
 function buildEditMultiBlockPrompt(
-  editor: SlateEditor,
+  editor: BaseEditor,
   messages: ChatMessage[]
 ) {
   const selectingMarkdown = getMarkdownWithSelection(editor);
@@ -84,10 +84,7 @@ function buildEditMultiBlockPrompt(
   });
 }
 
-function buildEditSelectionPrompt(
-  editor: SlateEditor,
-  messages: ChatMessage[]
-) {
+function buildEditSelectionPrompt(editor: BaseEditor, messages: ChatMessage[]) {
   addSelection(editor);
 
   const selectingMarkdown = getMarkdownWithSelection(editor);
@@ -220,7 +217,7 @@ function buildEditSelectionPrompt(
 }
 
 export function getEditPrompt(
-  editor: SlateEditor,
+  editor: BaseEditor,
   { isSelecting, messages }: { isSelecting: boolean; messages: ChatMessage[] }
 ): [string, 'table' | 'multi-block' | 'selection'] {
   if (!isSelecting)

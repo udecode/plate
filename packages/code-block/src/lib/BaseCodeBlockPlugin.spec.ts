@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
 import { pipeDecorate } from '@platejs/core/static';
 import type { DecoratedRange, Element } from '@platejs/plite';
@@ -47,6 +48,13 @@ describe('BaseCodeBlockPlugin', () => {
     expect(editorWithCodeLine.update.code_block.toggle).toEqual(
       expect.any(Function)
     );
+
+    editorWithoutCodeLine.plugin(BaseCodeBlockPlugin).update.insert();
+
+    expect(editorWithoutCodeLine.read.children().at(-1)).toEqual({
+      children: [{ children: [{ text: '' }], type: 'code_line' }],
+      type: 'code_block',
+    });
   });
 
   it('initializes code-block decorations and returns cached code-line ranges', () => {
@@ -106,9 +114,9 @@ describe('BaseCodeBlockPlugin', () => {
         },
       ],
     });
-    const codeLine = editor.read.nodes.get<Element>([0, 0], {
-      required: true,
-    })[0];
+    const codeLineEntry = editor.read.nodes.get<Element>([0, 0]);
+    assert(codeLineEntry);
+    const [codeLine] = codeLineEntry;
 
     decorationsModule.CODE_LINE_TO_DECORATIONS.set(codeLine, []);
 

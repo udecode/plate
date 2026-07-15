@@ -1,5 +1,5 @@
 import type { BaseEditor } from '../editor';
-import type { PluginConfig } from './SlatePlugin';
+import type { PluginConfig } from './PluginConfig';
 import type { BasePlugin } from './BasePlugin';
 
 import { createBaseEditor } from '../editor';
@@ -157,15 +157,42 @@ describe('getEditorPlugin', () => {
 
   it('exposes plugin-owned updates without their key namespace', () => {
     let mode: 'edit' | 'view' = 'view';
-    const plugin = createBasePlugin({ key: 'command' }).extendTx(() => () => ({
-      setMode: (nextMode: 'edit' | 'view') => {
-        mode = nextMode;
-      },
-    }));
-    const typedEditor = createBaseEditor({ plugins: [plugin] });
+    let insertedBy: 'command' | 'other' | null = null;
+    const plugin = createBasePlugin({ key: 'command' })
+      .extendTx(() => () => ({
+        setMode: (nextMode: 'edit' | 'view') => {
+          mode = nextMode;
+        },
+      }))
+      .extendTxGroup('insert', () => () => ({
+        node: () => {
+          insertedBy = 'command';
+        },
+      }))
+      .extendExtension({
+        tx: {
+          editorInsert: () => ({
+            node: () => {
+              insertedBy = 'command';
+            },
+          }),
+        },
+      });
+    const otherPlugin = createBasePlugin({ key: 'other' }).extendTxGroup(
+      'insert',
+      () => () => ({
+        node: () => {
+          insertedBy = 'other';
+        },
+      })
+    );
+    const typedEditor = createBaseEditor({ plugins: [plugin, otherPlugin] });
 
     typedEditor.plugin(plugin).update.setMode('edit');
+    typedEditor.plugin(plugin).update.insert.node();
+    typedEditor.plugin(plugin).update.editorInsert.node();
 
     expect(mode).toBe('edit');
+    expect(insertedBy).toBe('command');
   });
 });

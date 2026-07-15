@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { createPlateEditor } from '@platejs/core/react';
 import type { TTableElement } from '@platejs/utils';
 
@@ -59,7 +60,8 @@ describe('deleteRowWhenExpanded', () => {
 
     editor.update.remove.tableRow();
 
-    const table = editor.read.nodes.get<TTableElement>([0], { required: true });
+    const table = editor.read.nodes.get<TTableElement>([0]);
+    assert(table);
 
     expect(table[0].children).toHaveLength(1);
     expect(editor.read.text.string([0])).toBe('3132');

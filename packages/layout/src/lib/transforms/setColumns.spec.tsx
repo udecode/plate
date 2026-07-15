@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
 import type { TColumnGroupElement } from '@platejs/utils';
 
@@ -5,6 +6,13 @@ import { BaseColumnPlugin } from '../BaseColumnPlugin';
 
 const createEditor = (value = twoColumns) =>
   createBaseEditor({ plugins: [BaseColumnPlugin], value });
+
+const getColumnGroup = (editor: ReturnType<typeof createEditor>) => {
+  const entry = editor.read.nodes.get<TColumnGroupElement>([0]);
+  assert(entry);
+
+  return entry[0];
+};
 
 const twoColumns = [
   {
@@ -30,9 +38,7 @@ describe('setColumns', () => {
 
     editor.update.column.set({ at: [0], widths: ['30%', '70%'] });
 
-    const group = editor.read.nodes.get<TColumnGroupElement>([0], {
-      required: true,
-    })[0];
+    const group = getColumnGroup(editor);
 
     expect(group.children.map((column) => column.width)).toEqual([
       '30%',
@@ -50,9 +56,7 @@ describe('setColumns', () => {
       widths: ['33%', '33%', '34%'],
     });
 
-    const group = editor.read.nodes.get<TColumnGroupElement>([0], {
-      required: true,
-    })[0];
+    const group = getColumnGroup(editor);
 
     expect(group.children.map((column) => column.width)).toEqual([
       '33%',
@@ -95,9 +99,7 @@ describe('setColumns', () => {
 
     editor.update.column.set({ at: [0], widths: ['50%', '50%'] });
 
-    const group = editor.read.nodes.get<TColumnGroupElement>([0], {
-      required: true,
-    })[0];
+    const group = getColumnGroup(editor);
 
     expect(group.children).toHaveLength(2);
     expect(group.children.map((column) => column.width)).toEqual([
@@ -145,9 +147,7 @@ describe('setColumns', () => {
 
     editor.update.column.set({ at: [0], widths: ['40%', '40%'] });
 
-    const group = editor.read.nodes.get<TColumnGroupElement>([0], {
-      required: true,
-    })[0];
+    const group = getColumnGroup(editor);
 
     expect(group.children.map((column) => column.width)).toEqual([
       '50%',

@@ -1,15 +1,19 @@
 import { useEffect, useMemo } from 'react';
 
 import { type DeserializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
-import { type PlateEditor, useEditorPlugin } from '@platejs/core/react';
+import {
+  type PlateEditor,
+  useEditorPlugin,
+  useEditorRuntimeState,
+} from '@platejs/core/react';
 
 import { AIChatPlugin } from '../AIChatPlugin';
 
 /**
  * Register an editor in the AI chat plugin, and deserializes the content into
- * `editor.children` with block-level memoization.
+ * the editor with block-level memoization.
  *
- * @returns Deserialized children to pass as `value` prop to PlateStatic
+ * @returns The live editor children after each committed content update.
  */
 export const useAIChatEditor = (
   editor: PlateEditor,
@@ -26,6 +30,9 @@ export const useAIChatEditor = (
       }),
     [content, editor, parser]
   );
+  const value = useEditorRuntimeState(editor, (state) => state.children(), {
+    deps: [],
+  });
 
   useEffect(() => {
     editor.update.value.replace(
@@ -35,5 +42,5 @@ export const useAIChatEditor = (
     setOption('aiEditor', editor);
   }, [children, editor, setOption]);
 
-  return children;
+  return value;
 };

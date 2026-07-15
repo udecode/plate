@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export function SlateShell({ children }: { children: ReactNode }) {
+export function PliteShell({ children }: { children: ReactNode }) {
   return (
     <div
       className="min-h-svh bg-background"

@@ -1,6 +1,6 @@
 /** @jsx jsxt */
-import { jsxt } from '@platejs/test-utils';
-import { KEYS, createBaseEditor, type BaseEditor } from 'platejs';
+import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
+import { KEYS, createBaseEditor } from 'platejs';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -41,7 +41,7 @@ const markdownPlugin = MarkdownPlugin.configure({
   },
 });
 // Helper function to create input and editor with common configuration
-export const defaultPlugins = [
+export const defaultPlugins: any[] = [
   BaseParagraphPlugin,
   BaseBasicMarksPlugin,
   BaseIndentPlugin,
@@ -62,13 +62,13 @@ export const createTestEditor = () => {
         <cursor />
       </hp>
     </editor>
-  ) as any as BaseEditor;
+  ) as TestEditorFixture;
 
   const editor = createBaseEditor({
     plugins: defaultPlugins,
     selection: input.selection,
     value: input.children,
-  }) as any;
+  });
 
   return { editor, input };
 };

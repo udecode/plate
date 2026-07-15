@@ -1,3 +1,4 @@
+/** Shared type contracts for Plate plugin configuration. */
 import type { Element, Path, Text } from '@platejs/plite';
 import type { AnyObject, Nullable } from '@udecode/utils';
 import type { Draft } from 'mutative';
@@ -234,7 +235,7 @@ export type PluginBaseContext<C extends AnyPluginConfig = PluginConfig> = {
   /** API owned by the current plugin, without the plugin-key namespace wrapper. */
   api: InferOwnApi<C>;
   /** One-shot updates owned by the current plugin, without its key namespace. */
-  update: InferPluginTx<C> extends object ? InferPluginTx<C> : {};
+  update: InferOwnTx<C>;
   setOptions: (
     options:
       | ((state: Draft<Partial<InferOptions<C>>>) => void)
@@ -570,6 +571,9 @@ export type InferTx<P> = P extends { tx: infer Tx } ? Tx : never;
 
 export type InferPluginTx<P extends AnyPluginConfig> =
   InferTx<P> extends Record<P['key'], infer TTx> ? TTx : {};
+
+export type InferOwnTx<P extends AnyPluginConfig> = Omit<InferTx<P>, P['key']> &
+  InferPluginTx<P>;
 
 /**
  * Renders a component for Plite Nodes (elements if `isElement: true` or leaves

@@ -385,12 +385,13 @@ export const applyEditableCut = ({
         const collapsePoint = collapsePointRef.unref();
         const shouldRemoveEmptyInline =
           inlinePath &&
-          editorHasPath(editor, inlinePath) &&
           (() => {
-            const [inlineNode] = editor.read((state) =>
-              state.nodes.get(inlinePath, { required: true })
+            const inlineNode = editor.read(
+              (state) => state.nodes.get(inlinePath)?.[0]
             );
+
             return (
+              inlineNode &&
               NodeApi.isElement(inlineNode) &&
               editorIsInline(editor, inlineNode) &&
               NodeApi.string(inlineNode) === ''

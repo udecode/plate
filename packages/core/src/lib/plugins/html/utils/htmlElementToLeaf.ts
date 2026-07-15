@@ -19,7 +19,7 @@ export const htmlElementToLeaf = (editor: BaseEditor, element: HTMLElement) => {
       if (!child) return arr;
       if (ElementApi.isElement(child)) {
         if (Object.keys(node).length > 0) {
-          mergeDeepToNodes({
+          mergeDeepToNodes<Descendant>({
             match: TextApi.isText,
             node: child,
             source: node,

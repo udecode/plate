@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import { PlaywrightPlugin } from '@platejs/playwright';
 import { KEYS, NormalizeTypesPlugin, normalizeStaticValue } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
@@ -21,8 +20,6 @@ export default function PlaygroundDemo({
   className?: string;
 }) {
   const locale = useLocale();
-  const browserProofEnabled =
-    process.env.NEXT_PUBLIC_PLATE_BROWSER_PROOF === '1';
   const value = React.useMemo(
     () => normalizeStaticValue(getI18nValues(locale).playground),
     [locale]
@@ -36,7 +33,6 @@ export default function PlaygroundDemo({
           [KEYS.indent]: id !== 'listClassic',
           [KEYS.list]: id !== 'listClassic',
           [KEYS.listClassic]: id === 'listClassic',
-          [KEYS.playwright]: browserProofEnabled,
         },
       },
       plugins: [
@@ -50,9 +46,6 @@ export default function PlaygroundDemo({
             rules: [{ path: [0], strictType: 'h1' }],
           },
         }),
-
-        // Testing
-        PlaywrightPlugin,
       ],
       value,
     },

@@ -70,7 +70,7 @@ const isEventHandled = <
  *   `undefined`.
  * - Return a handler calling all the plugins handlers then the prop handler.
  * - Any handler returning true will stop the next handlers to be called,
- *   including slate internal handler.
+ *   including the Plite internal handler.
  */
 export const pipeHandler = <K extends keyof DOMHandlers>(
   editor: PlateEditor,

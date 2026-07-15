@@ -23,13 +23,22 @@ const createEditor = (value: any) =>
     value,
   } as any);
 
+const insertText = (
+  editor:
+    | ReturnType<typeof createPlainEditor>
+    | ReturnType<typeof createEditor>,
+  text: string
+) => {
+  editor.update.text.insert(text);
+};
+
 describe('AutoformatKit link automd', () => {
   it('converts [text](url on ) into a link in the shipped kit surface', () => {
     const editor = createPlainEditor('[Example](https://example.com');
 
-    editor.tf.insertText(')');
+    insertText(editor, ')');
 
-    expect(editor.children[0]).toMatchObject({
+    expect(editor.read.children()[0]).toMatchObject({
       children: [
         { text: '' },
         {
@@ -41,7 +50,7 @@ describe('AutoformatKit link automd', () => {
       ],
       type: 'p',
     });
-    expect(editor.selection).toEqual({
+    expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 2] },
       focus: { offset: 0, path: [0, 2] },
     });
@@ -59,7 +68,7 @@ describe('AutoformatKit link automd', () => {
 
     const editor = createEditor(input);
 
-    editor.tf.insertText(' ');
+    insertText(editor, ' ');
 
     expect(input.children).toEqual(
       (

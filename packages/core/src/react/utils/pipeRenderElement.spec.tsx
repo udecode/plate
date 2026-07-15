@@ -6,7 +6,7 @@ import { render } from '@testing-library/react';
 
 import { createBasePlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
-import { PlateSlate } from '../components/PlateSlate';
+import { PlateRoot } from '../components/PlateRoot';
 import { createPlateEditor } from '../editor/withPlate';
 import { useElement, useElementSelector, usePath } from '../stores';
 import { pipeRenderElement } from './pipeRenderElement';
@@ -41,9 +41,9 @@ const renderPipe = (editor: ReturnType<typeof createPlateEditor>) => {
 
   return render(
     <Plate editor={editor}>
-      <PlateSlate>
+      <PlateRoot>
         <RenderProbe />
-      </PlateSlate>
+      </PlateRoot>
     </Plate>
   );
 };
@@ -61,9 +61,9 @@ const renderPipeBare = (editor: ReturnType<typeof createPlateEditor>) => {
 
   return render(
     <Plate editor={editor}>
-      <PlateSlate>
+      <PlateRoot>
         <RenderProbe />
-      </PlateSlate>
+      </PlateRoot>
     </Plate>
   );
 };
@@ -214,9 +214,9 @@ describe('pipeRenderElement', () => {
 
     const { container } = render(
       <Plate editor={editor}>
-        <PlateSlate>
+        <PlateRoot>
           <RenderProbe />
-        </PlateSlate>
+        </PlateRoot>
       </Plate>
     );
     const rendered = container.querySelector('[data-plite-node="element"]');
@@ -274,9 +274,9 @@ describe('pipeRenderElement', () => {
 
     render(
       <Plate editor={editor}>
-        <PlateSlate>
+        <PlateRoot>
           <RenderProbe />
-        </PlateSlate>
+        </PlateRoot>
       </Plate>
     );
 

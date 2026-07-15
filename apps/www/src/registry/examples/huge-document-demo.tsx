@@ -18,14 +18,12 @@ import type { Editor } from 'slate';
 
 import {
   createPlateEditor,
-  Editable,
   Plate,
   PlateContent,
-  Plite,
-  useSelected,
+  useElementSelected,
 } from 'platejs/react';
 import { createEditor as slateCreateEditor } from 'slate';
-import { withReact } from 'slate-react';
+import { Editable as SlateEditable, Slate, withReact } from 'slate-react';
 
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
 import { Button } from '@/components/ui/button';
@@ -33,6 +31,8 @@ import { Button } from '@/components/ui/button';
 const subscribeBrowserPerformanceSupport = () => () => {};
 
 const getUnsupportedBrowserFeature = () => false;
+
+const getBrowserReady = () => true;
 
 const getBrowserSupportsEventTiming = () =>
   typeof window !== 'undefined' && 'PerformanceEventTiming' in window;
@@ -66,7 +66,7 @@ const HUGE_DOCUMENT_BLOCK_OPTIONS = [
 
 const HUGE_DOCUMENT_CHUNK_SIZE_OPTIONS = [3, 10, 100, 1000];
 
-type EngineKind = 'plate' | 'slate';
+type EngineKind = 'plate' | 'upstream-slate';
 type ContentVisibilityMode = 'none' | 'element' | 'chunk';
 type MountedEngines = 'both' | EngineKind;
 
@@ -196,7 +196,7 @@ function getInitialHugeDocumentConfig() {
     mountedEngines: parseEnum({
       defaultValue: DEFAULT_CONFIG.mountedEngines,
       key: 'engines',
-      options: ['both', 'plate', 'slate'],
+      options: ['both', 'plate', 'upstream-slate'],
       searchParams,
     }),
     showSelectedHeadings: parseBoolean({
@@ -234,7 +234,7 @@ function writeHugeDocumentSearchParams(config: Config) {
 
 function getMountedEngines({ mountedEngines }: Pick<Config, 'mountedEngines'>) {
   return mountedEngines === 'both'
-    ? (['plate', 'slate'] as const)
+    ? (['plate', 'upstream-slate'] as const)
     : [mountedEngines];
 }
 
@@ -278,7 +278,7 @@ const createEditor = ({
   engine: EngineKind;
   initialValue: Value;
 }) => {
-  if (engine === 'slate') {
+  if (engine === 'upstream-slate') {
     const editor = withReact(slateCreateEditor());
 
     editor.getChunkSize = (node) =>
@@ -288,7 +288,6 @@ const createEditor = ({
   }
 
   return createPlateEditor({
-    chunking: config.chunking ? { chunkSize: config.chunkSize } : false,
     nodeId: false,
     value: structuredClone(initialValue),
   }) as unknown as Editor;
@@ -321,12 +320,12 @@ const Chunk = ({
   );
 };
 
-const Heading = ({
+const PlateHeading = ({
   showSelectedHeadings = false,
   style: styleProp,
   ...props
 }: React.ComponentProps<'h1'> & { showSelectedHeadings: boolean }) => {
-  const selected = useSelected();
+  const selected = useElementSelected();
   const highlightSelected = showSelectedHeadings && selected;
   const style = {
     ...styleProp,
@@ -349,12 +348,14 @@ const Element = ({
   children,
   contentVisibility,
   element,
+  engine,
   showSelectedHeadings,
 }: {
   attributes: any;
   children: React.ReactNode;
   contentVisibility: boolean;
   element: { type?: string };
+  engine: EngineKind;
   showSelectedHeadings: boolean;
 }) => {
   const style: CSSProperties = {
@@ -364,14 +365,22 @@ const Element = ({
   switch (element.type) {
     case 'h1':
     case 'heading-one':
+      if (engine === 'upstream-slate') {
+        return (
+          <h1 {...attributes} style={style}>
+            {children}
+          </h1>
+        );
+      }
+
       return (
-        <Heading
+        <PlateHeading
           {...attributes}
           showSelectedHeadings={showSelectedHeadings}
           style={style}
         >
           {children}
-        </Heading>
+        </PlateHeading>
       );
     default:
       return (
@@ -501,10 +510,11 @@ function EnginePane({
       <Element
         {...props}
         contentVisibility={config.contentVisibilityMode === 'element'}
+        engine={engine}
         showSelectedHeadings={config.showSelectedHeadings}
       />
     ),
-    [config.contentVisibilityMode, config.showSelectedHeadings]
+    [config.contentVisibilityMode, config.showSelectedHeadings, engine]
   );
 
   const renderChunk = useCallback(
@@ -520,20 +530,20 @@ function EnginePane({
 
   const editable = rendering ? (
     <div>Rendering&hellip;</div>
-  ) : engine === 'slate' ? (
-    <Plite editor={editor as any} initialValue={initialValue as any}>
-      <Editable
+  ) : engine === 'upstream-slate' ? (
+    <Slate editor={editor as any} initialValue={initialValue as any}>
+      <SlateEditable
         placeholder="Enter some text…"
         renderChunk={config.chunkDivs ? renderChunk : undefined}
         renderElement={renderElement}
         spellCheck
       />
-    </Plite>
+    </Slate>
   ) : (
     <Plate editor={editor as any}>
       <PlateContent
+        domStrategy={config.chunking ? ('auto' as const) : ('full' as const)}
         placeholder="Enter some text…"
-        renderChunk={config.chunkDivs ? (renderChunk as any) : undefined}
         renderElement={renderElement as any}
         spellCheck
       />
@@ -556,7 +566,9 @@ function EnginePane({
         minWidth: 0,
       }}
     >
-      <h2 style={{ margin: 0 }}>{engine === 'plate' ? 'Plate' : 'Plite'}</h2>
+      <h2 style={{ margin: 0 }}>
+        {engine === 'plate' ? 'Plate' : 'Upstream Slate'}
+      </h2>
 
       <div
         style={{
@@ -647,9 +659,9 @@ function PerformanceControls({
             }
             value={config.mountedEngines}
           >
-            <option value="both">Plate + Plite</option>
+            <option value="both">Plate + upstream Slate</option>
             <option value="plate">Plate only</option>
-            <option value="slate">Plite only</option>
+            <option value="upstream-slate">Upstream Slate only</option>
           </select>
         </label>
       </p>
@@ -763,7 +775,7 @@ function PerformanceControls({
               }
               type="checkbox"
             />{' '}
-            Call <code>useSelected</code> in each heading
+            Call <code>useElementSelected</code> in each Plate heading
           </label>
         </p>
 
@@ -796,7 +808,7 @@ function PerformanceControls({
             <tr>
               <th align="left">Metric</th>
               <th align="right">Plate</th>
-              <th align="right">Plite</th>
+              <th align="right">Upstream Slate</th>
             </tr>
           </thead>
 
@@ -812,9 +824,9 @@ function PerformanceControls({
               </td>
               <td align="right">
                 {renderStatisticValue(
-                  mountedEngines.includes('slate'),
+                  mountedEngines.includes('upstream-slate'),
                   supportsEventTiming,
-                  statistics.slate.lastKeyPressDuration
+                  statistics['upstream-slate'].lastKeyPressDuration
                 )}
               </td>
             </tr>
@@ -829,9 +841,9 @@ function PerformanceControls({
               </td>
               <td align="right">
                 {renderStatisticValue(
-                  mountedEngines.includes('slate'),
+                  mountedEngines.includes('upstream-slate'),
                   supportsEventTiming,
-                  statistics.slate.averageKeyPressDuration
+                  statistics['upstream-slate'].averageKeyPressDuration
                 )}
               </td>
             </tr>
@@ -846,9 +858,9 @@ function PerformanceControls({
               </td>
               <td align="right">
                 {renderStatisticValue(
-                  mountedEngines.includes('slate'),
+                  mountedEngines.includes('upstream-slate'),
                   supportsLoafTiming,
-                  statistics.slate.lastLongAnimationFrameDuration
+                  statistics['upstream-slate'].lastLongAnimationFrameDuration
                 )}
               </td>
             </tr>
@@ -857,7 +869,7 @@ function PerformanceControls({
 
         {supportsEventTiming &&
           statistics.plate.lastKeyPressDuration === null &&
-          statistics.slate.lastKeyPressDuration === null && (
+          statistics['upstream-slate'].lastKeyPressDuration === null && (
             <p>
               Focus a pane and type. Events shorter than 16ms may not be
               detected.
@@ -877,7 +889,12 @@ function PerformanceControls({
 }
 
 export default function HugeDocumentDemo() {
-  const [activePane, setActivePane] = useState<EngineKind>('slate');
+  const browserReady = useSyncExternalStore(
+    subscribeBrowserPerformanceSupport,
+    getBrowserReady,
+    getUnsupportedBrowserFeature
+  );
+  const [activePane, setActivePane] = useState<EngineKind>('upstream-slate');
   const [config, baseSetConfig] = useState<Config>(() =>
     getInitialHugeDocumentConfig()
   );
@@ -887,7 +904,7 @@ export default function HugeDocumentDemo() {
     Record<EngineKind, EngineStatistics>
   >({
     plate: defaultStatistics,
-    slate: defaultStatistics,
+    'upstream-slate': defaultStatistics,
   });
 
   const setConfig = useCallback(
@@ -904,7 +921,7 @@ export default function HugeDocumentDemo() {
       writeHugeDocumentSearchParams(newConfig);
       setStatistics({
         plate: defaultStatistics,
-        slate: defaultStatistics,
+        'upstream-slate': defaultStatistics,
       });
 
       setTimeout(() => {
@@ -939,6 +956,8 @@ export default function HugeDocumentDemo() {
     },
     []
   );
+
+  if (!browserReady) return null;
 
   return (
     <div

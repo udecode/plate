@@ -420,14 +420,19 @@ describe('editor runtime/view contract', () => {
     const headerEditor = createEditorView(runtime, { root: 'header' });
 
     const mainRuntimeId = runtime.read((state) => state.runtime.idAt([0]));
-    const viewRead = headerEditor.read((state) => ({
-      children: state.nodes.children(),
-      node: state.nodes.get([0], { required: true })[0],
-      runtimeId: state.runtime.idAt([0]),
-      snapshot: state.runtime.snapshot(),
-      text: state.text.string([]),
-      value: state.value(),
-    }));
+    const viewRead = headerEditor.read((state) => {
+      const entry = state.nodes.get([0]);
+      assert(entry);
+
+      return {
+        children: state.nodes.children(),
+        node: entry[0],
+        runtimeId: state.runtime.idAt([0]),
+        snapshot: state.runtime.snapshot(),
+        text: state.text.string([]),
+        value: state.value(),
+      };
+    });
 
     assert.deepEqual(viewRead.children, [paragraph('header')]);
     assert.deepEqual(viewRead.node, paragraph('header'));
@@ -451,17 +456,22 @@ describe('editor runtime/view contract', () => {
       anchor: { path: [0, 0], offset: 0, root: 'header' },
       focus: { path: [0, 0], offset: 6, root: 'header' },
     };
-    const read = runtime.read((state) => ({
-      end: state.points.end(headerRange),
-      entries: state.nodes.toArray({
-        at: headerRange,
-        match: NodeApi.isText,
-      }),
-      node: state.nodes.get(headerRange.anchor, { required: true })[0],
-      positions: [...state.points.positions({ at: headerRange })],
-      staticText: editorString(runtime.editor, headerRange),
-      text: state.text.string(headerRange),
-    }));
+    const read = runtime.read((state) => {
+      const entry = state.nodes.get(headerRange.anchor);
+      assert(entry);
+
+      return {
+        end: state.points.end(headerRange),
+        entries: state.nodes.toArray({
+          at: headerRange,
+          match: NodeApi.isText,
+        }),
+        node: entry[0],
+        positions: [...state.points.positions({ at: headerRange })],
+        staticText: editorString(runtime.editor, headerRange),
+        text: state.text.string(headerRange),
+      };
+    });
 
     assert.deepEqual(read.node, { text: 'header' });
     assert.equal(read.text, 'header');

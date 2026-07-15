@@ -360,7 +360,9 @@ describe('extension method hard cut', () => {
     const editor = createEditor({
       initialValue: [{ type: 'paragraph', children: [{ text: 'one' }] }],
     });
-    const first = editor.read.nodes.get<Element>([0], { required: true })[0];
+    const firstEntry = editor.read.nodes.get<Element>([0]);
+    assert(firstEntry);
+    const [first] = firstEntry;
     const seen: unknown[] = [];
 
     editor.extend(
@@ -381,10 +383,9 @@ describe('extension method hard cut', () => {
     );
 
     assert.deepEqual(seen, [[[0], 'function']]);
-    assert.equal(
-      editor.read.nodes.get<Element>([0], { required: true })[0].tone,
-      'quiet'
-    );
+    const updatedEntry = editor.read.nodes.get<Element>([0]);
+    assert(updatedEntry);
+    assert.equal(updatedEntry[0].tone, 'quiet');
   });
 
   it('extension transform middleware receives transaction-local tx', () => {

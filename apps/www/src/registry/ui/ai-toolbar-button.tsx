@@ -16,7 +16,7 @@ export function AIToolbarButton(
     <ToolbarButton
       {...props}
       onClick={() => {
-        api.aiChat.show();
+        api.show();
       }}
       onMouseDown={(e) => {
         e.preventDefault();

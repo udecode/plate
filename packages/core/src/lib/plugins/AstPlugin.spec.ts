@@ -2,7 +2,7 @@ import { createBaseEditor } from '../editor';
 import { AstPlugin } from './AstPlugin';
 
 describe('AstPlugin', () => {
-  it('declares the slate fragment mime type', () => {
+  it('declares the Plite fragment mime type', () => {
     const editor = createBaseEditor();
 
     expect(editor.getPlugin(AstPlugin).parser.format).toBe(
@@ -10,7 +10,7 @@ describe('AstPlugin', () => {
     );
   });
 
-  it('decodes and parses serialized slate fragments', () => {
+  it('decodes and parses serialized Plite fragments', () => {
     const editor = createBaseEditor();
     const fragment = [{ children: [{ text: 'alpha' }], type: 'p' }];
     const data = window.btoa(encodeURIComponent(JSON.stringify(fragment)));

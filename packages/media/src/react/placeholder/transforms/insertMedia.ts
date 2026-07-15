@@ -21,7 +21,7 @@ export type InsertMediaOptions = Omit<
 
 export const insertMedia = (
   editor: PlateEditor,
-  files: FileList,
+  files: File[] | FileList,
   options?: InsertMediaOptions
 ): any => {
   const api = editor.plugin(PlaceholderPlugin).api;

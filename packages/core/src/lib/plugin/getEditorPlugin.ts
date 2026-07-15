@@ -5,13 +5,19 @@ import type {
   InferOwnApi,
   InferOptions,
   WithRequiredKey,
-} from './SlatePlugin';
+} from './PluginConfig';
 import type {
   AnyBasePlugin,
   BasePlugin,
-  InferConfig,
   BasePluginContext,
+  InferConfig,
+  PlatePluginTxGroup,
 } from './BasePlugin';
+
+type PluginUpdateGroup = (...args: Parameters<PlatePluginTxGroup>) => unknown;
+
+const isPluginUpdateGroup = (value: unknown): value is PluginUpdateGroup =>
+  typeof value === 'function';
 
 export function getEditorPlugin<C extends AnyPluginConfig>(
   editor: BaseEditor,
@@ -25,7 +31,7 @@ export function getEditorPlugin(
   editor: BaseEditor,
   p: WithRequiredKey<AnyPluginConfig> | AnyBasePlugin
 ): BasePluginContext<any> {
-  const plugin = editor.getPlugin(p) as any;
+  const plugin = editor.getPlugin(p) as AnyBasePlugin;
   const getStore = () => editor.getOptionsStore(plugin);
   const getApi = () => {
     const pluginApi = plugin.api ?? {};
@@ -41,6 +47,112 @@ export function getEditorPlugin(
     }
 
     return pluginApi as InferApi<AnyPluginConfig>;
+  };
+  const getUpdate = () => {
+    let groupFactories: Map<string, PluginUpdateGroup[]> | undefined;
+
+    const getGroupFactories = () => {
+      if (groupFactories) return groupFactories;
+
+      groupFactories = new Map();
+      const addFactory = (groupKey: string, factory: PluginUpdateGroup) => {
+        const factories = groupFactories!.get(groupKey) ?? [];
+
+        factories.push(factory);
+        groupFactories!.set(groupKey, factories);
+      };
+
+      plugin.__txExtensions.forEach((extension) => {
+        Object.entries(extension(getEditorPlugin(editor, plugin))).forEach(
+          ([groupKey, factory]) => {
+            if (factory) addFactory(groupKey, factory);
+          }
+        );
+      });
+      Object.entries(plugin.tx ?? {}).forEach(([groupKey, factory]) => {
+        if (factory) addFactory(groupKey, factory);
+      });
+      plugin.__editorExtensions.forEach((extendEditor) => {
+        const input = extendEditor(getEditorPlugin(editor, plugin));
+
+        if (!input) return;
+
+        const extensions = Array.isArray(input) ? input : [input];
+
+        extensions.forEach((extension) => {
+          Object.entries(extension.tx ?? {}).forEach(([groupKey, factory]) => {
+            if (isPluginUpdateGroup(factory)) addFactory(groupKey, factory);
+          });
+        });
+      });
+
+      return groupFactories;
+    };
+
+    const runCommand = (
+      groupKey: string,
+      path: readonly PropertyKey[],
+      args: unknown[]
+    ) => {
+      let result: unknown;
+
+      editor.update((tx, context) => {
+        const group = Object.create(null) as Record<PropertyKey, unknown>;
+
+        getGroupFactories()
+          .get(groupKey)
+          ?.forEach((factory) => {
+            const commands = factory(tx, editor, context);
+
+            if (commands && typeof commands === 'object') {
+              Object.assign(group, commands);
+            }
+          });
+
+        const command = path.reduce<unknown>(
+          (value, key) =>
+            value && typeof value === 'object'
+              ? (value as Record<PropertyKey, unknown>)[key]
+              : undefined,
+          group
+        );
+
+        if (typeof command !== 'function') {
+          throw new TypeError(
+            `Plugin update command "${groupKey}.${path.join('.')}" is not callable.`
+          );
+        }
+
+        result = command(...args);
+      });
+
+      return result;
+    };
+
+    const createCommand = (groupKey: string, path: readonly PropertyKey[]) =>
+      new Proxy((...args: unknown[]) => runCommand(groupKey, path, args), {
+        get(_target, key) {
+          return createCommand(groupKey, [...path, key]);
+        },
+      });
+
+    return new Proxy(Object.create(null) as Record<PropertyKey, unknown>, {
+      get(_target, key) {
+        if (
+          typeof key === 'string' &&
+          key !== plugin.key &&
+          getGroupFactories().has(key)
+        ) {
+          return new Proxy(Object.create(null), {
+            get(_groupTarget, methodName) {
+              return createCommand(key, [methodName]);
+            },
+          });
+        }
+
+        return createCommand(plugin.key, [key]);
+      },
+    });
   };
 
   return {
@@ -100,7 +212,6 @@ export function getEditorPlugin(
 
       return store.get('state');
     }) as any,
-    update:
-      (editor.update as unknown as Record<string, unknown>)[plugin.key] ?? {},
+    update: getUpdate(),
   };
 }

@@ -1,7 +1,7 @@
 import merge from 'lodash/merge.js';
 
 import type { BaseEditor } from '../../lib/editor';
-import type { AnyPluginTx, PluginConfig } from '../../lib/plugin/SlatePlugin';
+import type { AnyPluginTx, PluginConfig } from '../../lib/plugin/PluginConfig';
 import type { AnyBasePlugin, BasePlugin } from '../../lib/plugin/BasePlugin';
 
 import { getEditorPlugin } from '../../lib/plugin/getEditorPlugin';

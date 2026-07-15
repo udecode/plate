@@ -173,12 +173,14 @@ describe('state query contract', () => {
     const editor = createEditor({
       initialValue: [paragraph('one'), paragraph('two')],
     });
-    const first = editor.read(
-      (state) => state.nodes.get<Element>([0], { required: true })[0]
+    const firstEntry = editor.read((state) => state.nodes.get<Element>([0]));
+    const firstTextEntry = editor.read((state) =>
+      state.nodes.get<Text>([0, 0])
     );
-    const firstText = editor.read(
-      (state) => state.nodes.get<Text>([0, 0], { required: true })[0]
-    );
+    assert(firstEntry);
+    assert(firstTextEntry);
+    const [first] = firstEntry;
+    const [firstText] = firstTextEntry;
 
     assert.deepEqual(
       editor.read((state) => state.nodes.path(first)),
@@ -198,8 +200,12 @@ describe('state query contract', () => {
 
   it('uses element and text targets across lifecycle reads', () => {
     const editor = createEditor({ initialValue: [paragraph('one')] });
-    const element = editor.read.nodes.get<Element>([0], { required: true })[0];
-    const text = editor.read.nodes.get<Text>([0, 0], { required: true })[0];
+    const elementEntry = editor.read.nodes.get<Element>([0]);
+    const textEntry = editor.read.nodes.get<Text>([0, 0]);
+    assert(elementEntry);
+    assert(textEntry);
+    const [element] = elementEntry;
+    const [text] = textEntry;
 
     assert.deepEqual(editor.read.nodes.get(element), [element, [0]]);
     assert.deepEqual(editor.read.nodes.get(text), [text, [0, 0]]);
@@ -228,15 +234,13 @@ describe('state query contract', () => {
 
   it('invalidates removed node targets without scanning the tree', () => {
     const editor = createEditor({ initialValue: [paragraph('one')] });
-    const element = editor.read.nodes.get<Element>([0], { required: true })[0];
+    const entry = editor.read.nodes.get<Element>([0]);
+    assert(entry);
+    const [element] = entry;
 
     editor.update.nodes.remove({ at: element });
 
     assert.equal(editor.read.nodes.path(element), undefined);
-    assert.throws(
-      () => editor.read.nodes.path(element, { required: true }),
-      /detached node target/
-    );
     assert.equal(editor.read.nodes.get(element), undefined);
     assert.equal(editor.read.text.string(element), '');
   });
@@ -251,9 +255,11 @@ describe('state query contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    const headerNode = headerEditor.read(
-      (state) => state.nodes.get<Element>([0], { required: true })[0]
+    const headerEntry = headerEditor.read((state) =>
+      state.nodes.get<Element>([0])
     );
+    assert(headerEntry);
+    const [headerNode] = headerEntry;
 
     assert.deepEqual(
       headerEditor.read((state) => state.nodes.path(headerNode)),
@@ -331,7 +337,7 @@ describe('state query contract', () => {
     );
   });
 
-  it('keeps app node reads safe by default and strict with required true', () => {
+  it('keeps lifecycle reads optional while rejecting malformed locations', () => {
     const editor = createEditor({
       initialValue: [paragraph('one')],
     });
@@ -341,15 +347,7 @@ describe('state query contract', () => {
       [paragraph('one'), [0]]
     );
     assert.deepEqual(
-      editor.read((state) => state.nodes.get([0], { required: true })),
-      [paragraph('one'), [0]]
-    );
-    assert.deepEqual(
       editor.read((state) => state.nodes.path([0])),
-      [0]
-    );
-    assert.deepEqual(
-      editor.read((state) => state.nodes.path([0], { required: true })),
       [0]
     );
 
@@ -454,40 +452,6 @@ describe('state query contract', () => {
         })
       ),
       []
-    );
-
-    assert.throws(() =>
-      editor.read((state) => state.nodes.get([9], { required: true }))
-    );
-    assert.throws(() =>
-      editor.read((state) => state.nodes.path([9], { required: true }))
-    );
-    assert.throws(() =>
-      editor.read((state) => state.nodes.first([9], { required: true }))
-    );
-    assert.throws(() =>
-      editor.read((state) => state.nodes.leaf([9], { required: true }))
-    );
-    assert.throws(() =>
-      editor.read((state) => state.nodes.parent([9], { required: true }))
-    );
-    assert.throws(() =>
-      editor.read((state) => state.nodes.parent([], { required: true }))
-    );
-    assert.throws(() =>
-      editor.read((state) => state.points.get([9], { required: true }))
-    );
-    assert.throws(() =>
-      editor.read((state) => state.points.start([9], { required: true }))
-    );
-    assert.throws(() =>
-      editor.read((state) => state.points.end([9], { required: true }))
-    );
-    assert.throws(() =>
-      editor.read((state) => state.ranges.get([9], { required: true }))
-    );
-    assert.throws(() =>
-      editor.read((state) => state.ranges.edges([9], { required: true }))
     );
 
     assert.throws(() =>

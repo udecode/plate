@@ -302,9 +302,6 @@ describe('old Slate helper behavior through current Plite APIs', () => {
       editor.read((state) => state.nodes.get([9, 9, 9])),
       undefined
     );
-    assert.throws(() =>
-      editor.read((state) => state.nodes.get([9, 9, 9], { required: true }))
-    );
   });
 
   it('keeps old fragment unwrap behavior as state.fragment({ unwrap })', () => {

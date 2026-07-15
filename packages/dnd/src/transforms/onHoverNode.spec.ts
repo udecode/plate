@@ -1,13 +1,21 @@
+import assert from 'node:assert/strict';
 import type { Element } from '@platejs/plite';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { createPlateEditor } from '@platejs/core/react';
+import { createPlateEditor, type PlateEditor } from '@platejs/core/react';
 
 import type { ElementDragItemNode } from '../types';
 
 import { DndPlugin } from '../DndPlugin';
 import * as onDropNodeModule from './onDropNode';
 import { onHoverNode } from './onHoverNode';
+
+const getElement = (editor: PlateEditor, path: number[]) => {
+  const entry = editor.read.nodes.get<Element>(path);
+  assert(entry);
+
+  return entry[0];
+};
 
 describe('onHoverNode', () => {
   const monitor = {} as DropTargetMonitor;
@@ -27,10 +35,8 @@ describe('onHoverNode', () => {
       ],
       { at: [0] }
     );
-    const dragElement = editor.read.nodes.get<Element>([2], {
-      required: true,
-    })[0];
-    hoverElement = editor.read.nodes.get<Element>([1], { required: true })[0];
+    const dragElement = getElement(editor, [2]);
+    hoverElement = getElement(editor, [1]);
     dragItem = {
       id: 'drag',
       editorId: editor.id,

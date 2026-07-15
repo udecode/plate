@@ -72,9 +72,14 @@ mock.module('lucide-react', () => ({
 }));
 
 mock.module('platejs', () => ({
+  ElementApi: {
+    isElement: () => false,
+  },
   KEYS: {},
   NodeApi: {},
-  TextApi: {},
+  TextApi: {
+    isText: () => false,
+  },
   isHotkey: () => () => false,
 }));
 
@@ -143,35 +148,37 @@ describe('AIMenu', () => {
     useHotkeysMock.mockImplementation(() => {});
     useEditorRefMock.mockReturnValue({
       api: {
-        marks: () => ({}),
-      },
-      getApi: () => ({
         aiChat: {
           hide: () => {},
           reload: () => {},
           stop: () => {},
           submit: async () => {},
         },
-      }),
+        marks: () => ({}),
+      },
       getOptions: () => ({
         aiEditor: null,
         mode: 'insert',
         toolName: null,
       }),
-      getTransforms: () => ({
-        ai: {
-          undo: () => {},
-        },
-        aiChat: {
-          accept: () => {},
-          hide: () => {},
-          replaceSelection: () => {},
-        },
-      }),
       selection: null,
-      tf: {
-        focus: () => {},
-        unsetNodes: () => {},
+      update: (callback: (tx: any) => void) => {
+        callback({
+          ai: {
+            undo: () => {},
+          },
+          aiChat: {
+            accept: () => {},
+            hide: () => {},
+            replaceSelection: () => {},
+          },
+          marks: {
+            unset: () => {},
+          },
+          selection: {
+            focus: () => {},
+          },
+        });
       },
     });
 
@@ -196,13 +203,11 @@ describe('AIMenu', () => {
 
     useEditorPluginMock.mockReturnValue({
       api: {
-        aiChat: {
-          hide: () => {},
-          node: () => {},
-          show: () => {},
-          stop: () => {},
-          submit: async () => {},
-        },
+        hide: () => {},
+        node: () => {},
+        show: () => {},
+        stop: () => {},
+        submit: async () => {},
       },
       editor: {
         api: {

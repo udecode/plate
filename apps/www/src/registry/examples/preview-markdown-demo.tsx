@@ -6,7 +6,7 @@ import type { Text } from '@platejs/plite';
 import {
   type Decorate,
   type RenderLeafProps,
-  createEditorPlugin,
+  createBasePlugin,
   TextApi,
 } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
@@ -100,7 +100,7 @@ export default function PreviewMdDemo() {
     {
       plugins: [
         ...BasicNodesKit,
-        createEditorPlugin({
+        createBasePlugin({
           key: 'preview-markdown',
           decorate: decoratePreview,
         }),

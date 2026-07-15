@@ -10,11 +10,11 @@ export type RenderElementProps<N extends Element = Element> = {
   attributes: {
     [key: string]: unknown;
     'data-plite-node': 'element';
-    ref?: React.Ref<HTMLElement>;
+    ref?: React.RefCallback<HTMLElement>;
     className?: string;
     'data-plite-inline'?: true;
     'data-plite-void'?: true;
-    dir?: 'rtl';
+    dir?: React.HTMLAttributes<HTMLElement>['dir'];
     style?: React.CSSProperties;
   };
   children: React.ReactNode;

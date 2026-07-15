@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
 import type { TMediaElement } from '@platejs/utils';
 import { KEYS } from '@platejs/utils';
@@ -28,6 +29,13 @@ describe('submitFloatingMedia', () => {
     mock.restore();
   });
 
+  const getMediaElement = (editor: ReturnType<typeof createEditor>) => {
+    const entry = editor.read.nodes.get<TMediaElement>([0]);
+    assert(entry);
+
+    return entry[0];
+  };
+
   it('applies transformUrl before validation so allowlisted embed snippets can submit', () => {
     const editor = createEditor();
 
@@ -37,7 +45,7 @@ describe('submitFloatingMedia', () => {
     );
 
     const result = submitFloatingMedia(editor, {
-      element: editor.read.nodes.get<TMediaElement>([0], { required: true })[0],
+      element: getMediaElement(editor),
       plugin: BaseMediaEmbedPlugin,
     });
 
@@ -58,7 +66,7 @@ describe('submitFloatingMedia', () => {
     );
 
     const result = submitFloatingMedia(editor, {
-      element: editor.read.nodes.get<TMediaElement>([0], { required: true })[0],
+      element: getMediaElement(editor),
       plugin: BaseMediaEmbedPlugin,
     });
 
@@ -80,7 +88,7 @@ describe('submitFloatingMedia', () => {
     );
 
     const result = submitFloatingMedia(editor, {
-      element: editor.read.nodes.get<TMediaElement>([0], { required: true })[0],
+      element: getMediaElement(editor),
       plugin: BaseMediaEmbedPlugin,
     });
 

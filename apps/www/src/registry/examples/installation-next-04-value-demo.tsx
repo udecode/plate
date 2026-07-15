@@ -47,6 +47,14 @@ const initialValue: Value = [
 ];
 
 export default function MyEditorPage() {
+  const value = React.useMemo(() => {
+    const savedValue = localStorage.getItem(
+      `nextjs-plate-value-demo-${new Date().toISOString().split('T')[0]}`
+    );
+
+    return savedValue ? JSON.parse(savedValue) : initialValue;
+  }, []);
+
   const editor = usePlateEditor({
     plugins: [
       BoldPlugin,
@@ -57,13 +65,7 @@ export default function MyEditorPage() {
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value: () => {
-      const savedValue = localStorage.getItem(
-        `nextjs-plate-value-demo-${new Date().toISOString().split('T')[0]}`
-      );
-
-      return savedValue ? JSON.parse(savedValue) : initialValue;
-    },
+    value,
   });
 
   return (
@@ -77,11 +79,17 @@ export default function MyEditorPage() {
       editor={editor}
     >
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
-        <ToolbarButton onClick={() => editor.tf.h1.toggle()}>H1</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.h2.toggle()}>H2</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.h3.toggle()}>H3</ToolbarButton>
+        <ToolbarButton onClick={() => editor.update.h1.toggle()}>
+          H1
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.update.h2.toggle()}>
+          H2
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.update.h3.toggle()}>
+          H3
+        </ToolbarButton>
 
-        <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>
+        <ToolbarButton onClick={() => editor.update.blockquote.toggle()}>
           Quote
         </ToolbarButton>
 
@@ -100,7 +108,7 @@ export default function MyEditorPage() {
         <ToolbarButton
           className="px-2"
           onClick={() => {
-            editor.tf.setValue(initialValue);
+            editor.update.value.replace({ children: initialValue });
           }}
         >
           Reset

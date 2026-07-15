@@ -824,8 +824,8 @@ test.describe('On richtext example', () => {
     await editor.root.press('Shift+Enter');
     await page.keyboard.type('Next');
 
-    await editor.assert.blockTexts(['Bold', 'Next']);
-    await expect(editor.root.locator('strong')).toHaveText(['Bold', 'Next']);
+    await editor.assert.blockTexts(['Bold\nNext']);
+    await expect(editor.root.locator('strong')).toHaveText('Bold\nNext');
   });
 
   test('keeps an empty soft-break line caret measurable and editable', async ({
@@ -850,12 +850,12 @@ test.describe('On richtext example', () => {
       await page.keyboard.type('alpha');
       await editor.root.press('Shift+Enter');
 
-      await editor.assert.blockTexts(['alpha', '']);
+      await editor.assert.blockTexts(['alpha\n']);
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
-          anchor: { path: [1, 0], offset: 0 },
-          focus: { path: [1, 0], offset: 0 },
+          anchor: { path: [0, 0], offset: 6 },
+          focus: { path: [0, 0], offset: 6 },
         });
 
       const caretRect = await editor.selection.rect();
@@ -874,7 +874,7 @@ test.describe('On richtext example', () => {
 
       await page.keyboard.type('beta');
 
-      await editor.assert.blockTexts(['alpha', 'beta']);
+      await editor.assert.blockTexts(['alpha\nbeta']);
       runtimeErrors.assertNone();
     } finally {
       runtimeErrors.stop();
@@ -4630,7 +4630,7 @@ test.describe('On richtext example', () => {
     });
   });
 
-  test('records core command metadata for keydown movement', async ({
+  test('records editable command metadata for keydown movement', async ({
     page,
   }) => {
     const editor = await openExample(page, 'plite/richtext', {
@@ -4642,13 +4642,27 @@ test.describe('On richtext example', () => {
     await editor.selection.collapse({ path: [0, 6], offset: 0 });
     await editor.press('ArrowRight');
 
-    const lastCommit = (await editor.get.lastCommit()) as {
-      command?: { origin?: string; type?: string } | null;
-    } | null;
+    const movementTrace = [...(await editor.get.kernelTrace())].reverse().find(
+      (entry) =>
+        (
+          entry as {
+            command?: { kind?: string } | null;
+          }
+        ).command?.kind === 'move-selection'
+    ) as
+      | {
+          command?: {
+            axis?: string;
+            extend?: boolean;
+            kind?: string;
+            reverse?: boolean;
+          } | null;
+        }
+      | undefined;
 
-    expect(lastCommit?.command).toEqual({
-      origin: 'command',
-      type: 'move_selection',
+    expect(movementTrace?.command).toEqual({
+      axis: 'horizontal',
+      kind: 'move-selection',
     });
   });
 
@@ -5642,8 +5656,8 @@ test.describe('On richtext example', () => {
       'richtext-warm-toolbar-mark-arrow-conformance',
       createPliteBrowserWarmToolbarArrowGauntlet({
         domCaretAfterInsert: {
-          offset: 9,
-          text: 'editableW',
+          offset: 17,
+          text: 'This is editableW ',
         },
         insertedText: 'W',
         markDOMSelection: {
@@ -5667,8 +5681,8 @@ test.describe('On richtext example', () => {
           focus: { path: [0, 1], offset: 8 },
         },
         selectionAfterInsert: {
-          anchor: { path: [0, 1], offset: 9 },
-          focus: { path: [0, 1], offset: 9 },
+          anchor: { path: [0, 0], offset: 17 },
+          focus: { path: [0, 0], offset: 17 },
         },
         textAfterInsert:
           'This is editableW rich text, much better than a <textarea>!',
@@ -5801,7 +5815,7 @@ test.describe('On richtext example', () => {
           let node = walker.nextNode();
 
           while (node) {
-            if (node.textContent === 'editableW') {
+            if (node.textContent === 'This is editableW ') {
               count++;
             }
             node = walker.nextNode();

@@ -181,7 +181,12 @@ const applyMergeNode = <E extends Editor<Value>>(
   tx.operations.replay([op], { normalize: false });
 
   const startPoint = { offset: prevNode.text.length, path: prevNodePath };
-  const endPoint = editor.read.points.end(prevNodePath, { required: true });
+  const endPoint = editor.read.points.end(prevNodePath);
+
+  if (!endPoint) {
+    throw new Error('Change tracking merge replay produced no end point.');
+  }
+
   const range = { anchor: startPoint, focus: endPoint };
   const rangeRef = tx.refs.range(range);
 
@@ -205,7 +210,12 @@ const applySplitNode = <E extends Editor<Value>>(
   tx.operations.replay([op], { normalize: false });
 
   const newNodePath = PathApi.next(op.path);
-  const newNodeRange = editor.read.ranges.get(newNodePath, { required: true });
+  const newNodeRange = editor.read.ranges.get(newNodePath);
+
+  if (!newNodeRange) {
+    throw new Error('Change tracking split replay produced no node range.');
+  }
+
   const rangeRef = tx.refs.range(newNodeRange);
 
   state.propsChanges.push({
@@ -231,7 +241,12 @@ const applySetNode = <E extends Editor<Value>>(
     { normalize: false }
   );
 
-  const range = editor.read.ranges.get(op.path, { required: true });
+  const range = editor.read.ranges.get(op.path);
+
+  if (!range) {
+    throw new Error('Change tracking set-node replay produced no node range.');
+  }
+
   const rangeRef = tx.refs.range(range);
 
   state.propsChanges.push({

@@ -15,7 +15,11 @@ import {
   type Descendant,
   defineEditorExtension,
   type Element,
+  type Editor,
+  type Node,
   NodeApi,
+  type NodeEntry,
+  type Path,
   TextApi,
 } from '@platejs/plite';
 
@@ -28,6 +32,16 @@ const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
+
+const getNodeEntry = <T extends Node>(
+  editor: Editor,
+  path: Path
+): NodeEntry<T> => {
+  const entry = editor.read.nodes.get<T>(path);
+  assert(entry);
+
+  return entry;
+};
 
 describe('plite transforms contract', () => {
   it('moveNodes is a no-op when the source and destination paths are equal', () => {
@@ -101,7 +115,9 @@ describe('plite transforms contract', () => {
     });
 
     editor.update((tx) => {
-      tx.nodes.duplicate([tx.nodes.get<Element>([0], { required: true })]);
+      const entry = tx.nodes.get<Element>([0]);
+      assert(entry);
+      tx.nodes.duplicate([entry]);
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -125,8 +141,8 @@ describe('plite transforms contract', () => {
 
     assert.deepEqual(
       editor.read.ranges.fromEntries([
-        editor.read.nodes.get<Element>([0], { required: true }),
-        editor.read.nodes.get<Element>([1], { required: true }),
+        getNodeEntry<Element>(editor, [0]),
+        getNodeEntry<Element>(editor, [1]),
       ]),
       {
         anchor: { path: [0, 0], offset: 0 },
@@ -177,7 +193,7 @@ describe('plite transforms contract', () => {
       type: 'paragraph',
       children: [{ text: 'inserted' }],
     };
-    const target = editor.read.nodes.get<Element>([2], { required: true })[0];
+    const [target] = getNodeEntry<Element>(editor, [2]);
 
     editor.update.blocks.insertAfter(inserted);
     editor.update.blocks.insertAfter(
@@ -560,13 +576,11 @@ describe('plite transforms contract', () => {
         },
       ],
     });
-    const element = editor.read.nodes.get<CalloutElement>([0], {
-      required: true,
-    })[0];
-    const text = editor.read.nodes.get<CalloutElement['children'][number]>(
-      [0, 0],
-      { required: true }
-    )[0];
+    const [element] = getNodeEntry<CalloutElement>(editor, [0]);
+    const [text] = getNodeEntry<CalloutElement['children'][number]>(
+      editor,
+      [0, 0]
+    );
 
     editor.update.nodes.set({ icon: 'warning' }, { at: element });
     editor.update.nodes.set({ bold: true }, { at: text });
@@ -585,10 +599,8 @@ describe('plite transforms contract', () => {
     const foreignEditor = createEditor({
       initialValue: [paragraph('foreign')],
     });
-    const element = editor.read.nodes.get<Element>([0], { required: true })[0];
-    const foreign = foreignEditor.read.nodes.get<Element>([0], {
-      required: true,
-    })[0];
+    const [element] = getNodeEntry<Element>(editor, [0]);
+    const [foreign] = getNodeEntry<Element>(foreignEditor, [0]);
     const detached = paragraph('detached');
 
     editor.update.nodes.replaceChildren([{ text: 'two' }], { at: element });
@@ -604,12 +616,8 @@ describe('plite transforms contract', () => {
       },
     });
     const header = createEditorView(runtime, { root: 'header' });
-    const bodyNode = runtime.editor.read.nodes.get<Element>([0], {
-      required: true,
-    })[0];
-    const headerNode = header.read.nodes.get<Element>([0], {
-      required: true,
-    })[0];
+    const [bodyNode] = getNodeEntry<Element>(runtime.editor, [0]);
+    const [headerNode] = getNodeEntry<Element>(header, [0]);
 
     header.update.nodes.replaceChildren([{ text: 'next' }], {
       at: headerNode,
@@ -627,7 +635,7 @@ describe('plite transforms contract', () => {
     const editor = createEditor({
       initialValue: [paragraph('one'), paragraph('two')],
     });
-    const first = editor.read.nodes.get<Element>([0], { required: true })[0];
+    const [first] = getNodeEntry<Element>(editor, [0]);
 
     editor.update.nodes.set({ tone: 'quiet' }, { at: first });
     editor.update.nodes.move({ at: first, to: [2] });
@@ -660,9 +668,7 @@ describe('plite transforms contract', () => {
     const foreignEditor = createEditor({
       initialValue: [paragraph('foreign')],
     });
-    const foreign = foreignEditor.read.nodes.get<Element>([0], {
-      required: true,
-    })[0];
+    const [foreign] = getNodeEntry<Element>(foreignEditor, [0]);
     const detached = paragraph('detached');
 
     editor.update.nodes.set({ tone: 'wrong' }, { at: foreign });
@@ -677,12 +683,8 @@ describe('plite transforms contract', () => {
       },
     });
     const header = createEditorView(runtime, { root: 'header' });
-    const bodyNode = runtime.editor.read.nodes.get<Element>([0], {
-      required: true,
-    })[0];
-    const headerNode = header.read.nodes.get<Element>([0], {
-      required: true,
-    })[0];
+    const [bodyNode] = getNodeEntry<Element>(runtime.editor, [0]);
+    const [headerNode] = getNodeEntry<Element>(header, [0]);
 
     runtime.editor.update.nodes.set({ tone: 'wrong' }, { at: headerNode });
     header.update.nodes.set({ tone: 'wrong' }, { at: bodyNode });

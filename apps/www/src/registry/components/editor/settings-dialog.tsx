@@ -231,9 +231,10 @@ export function SettingsDialog() {
     e.preventDefault();
 
     // Update AI chat options
-    const chatOptions = editor.getOptions(aiChatPlugin).chatOptions ?? {};
+    const chatOptions =
+      editor.plugin(aiChatPlugin).getOptions().chatOptions ?? {};
 
-    editor.setOption(aiChatPlugin, 'chatOptions', {
+    editor.plugin(aiChatPlugin).setOption('chatOptions', {
       ...chatOptions,
       body: {
         ...chatOptions.body,
@@ -246,8 +247,8 @@ export function SettingsDialog() {
 
     // Update AI complete options
     const completeOptions =
-      editor.getOptions(CopilotPlugin).completeOptions ?? {};
-    editor.setOption(CopilotPlugin, 'completeOptions', {
+      editor.plugin(CopilotPlugin).getOptions().completeOptions ?? {};
+    editor.plugin(CopilotPlugin).setOption('completeOptions', {
       ...completeOptions,
       body: {
         ...completeOptions.body,

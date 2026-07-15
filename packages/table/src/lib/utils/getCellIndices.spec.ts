@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
 import type { Value } from '@platejs/plite';
 import type { TTableCellElement } from '@platejs/utils';
@@ -36,9 +37,9 @@ describe('getCellIndices', () => {
       plugins: getTestTablePlugins(),
       value,
     });
-    const cell = editor.read.nodes.get<TTableCellElement>([0, 0, 1], {
-      required: true,
-    })[0];
+    const entry = editor.read.nodes.get<TTableCellElement>([0, 0, 1]);
+    assert(entry);
+    const [cell] = entry;
 
     expect(getCellIndices(editor, cell)).toEqual({ col: 1, row: 0 });
     expect(

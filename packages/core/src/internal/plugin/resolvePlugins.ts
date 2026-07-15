@@ -28,11 +28,6 @@ import { createInputRuleBuilder } from '../../lib/plugins/input-rules/internal/c
 export type PluginStoreFactory = typeof createVanillaStore;
 
 type PluginApiCleanups = Map<string, () => void>;
-type TxExtensionMetadata = {
-  __plateOwnTxGroup?: true;
-  __plateTxGroupKey?: string;
-};
-
 const pluginApiCleanups = new WeakMap<BaseEditor, PluginApiCleanups>();
 
 const getPluginApiCleanups = (editor: BaseEditor) => {
@@ -76,14 +71,11 @@ const getPluginShortcutTxCommand = (
 const hasOwnPluginTxGroup = (plugin: BasePlugin) => {
   if (typeof plugin.tx?.[plugin.key] === 'function') return true;
 
-  return plugin.__txExtensions.some((txExtension) => {
-    const metadata = txExtension as TxExtensionMetadata;
-
-    return (
-      metadata.__plateOwnTxGroup === true ||
-      metadata.__plateTxGroupKey === plugin.key
-    );
-  });
+  return plugin.__txExtensions.some(
+    (txExtension) =>
+      txExtension.__plateOwnTxGroup === true ||
+      txExtension.__plateTxGroupKey === plugin.key
+  );
 };
 
 export const resolvePlugins = (

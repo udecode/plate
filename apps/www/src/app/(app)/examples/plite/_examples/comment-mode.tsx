@@ -195,13 +195,11 @@ const WriterPane = ({ editor }: { editor: CommentEditor }) => {
 
     const path = firstAnnotation.range.anchor.path;
 
-    editor.update((tx) => {
-      tx.text.insert('>', {
-        at: {
-          offset: 0,
-          path,
-        },
-      });
+    editor.update.text.insert('>', {
+      at: {
+        offset: 0,
+        path,
+      },
     });
   };
 
@@ -326,11 +324,9 @@ const CommentModePane = ({
     const tone: CommentTone =
       nextCommentId.current % 2 === 0 ? 'question' : 'review';
     const snippet =
-      writerEditor
-        .read((state) => state.text.string(range))
-        .replace(/\s+/g, ' ')
-        .trim() || 'selection';
-    const anchor = writerEditor.read((state) => state.ranges.bookmark(range));
+      writerEditor.read.text.string(range).replace(/\s+/g, ' ').trim() ||
+      'selection';
+    const anchor = writerEditor.read.ranges.bookmark(range);
 
     nextCommentId.current += 1;
     onCommentWrite();
@@ -597,11 +593,9 @@ const CommentModeExample = () => {
   });
 
   const syncCommentModeFromDocument = (value: Value) => {
-    commentEditor.update((tx) => {
-      tx.value.replace({
-        children: cloneValue(value),
-        selection: null,
-      });
+    commentEditor.update.value.replace({
+      children: cloneValue(value),
+      selection: null,
     });
   };
 

@@ -14,7 +14,7 @@ import { type PlateStoreState, useEditorRef, usePlateStore } from '../stores';
 import { EditorHotkeysEffect } from './EditorHotkeysEffect';
 import { EditorRefEffect } from './EditorRefEffect';
 import { PlateControllerEffect } from './PlateControllerEffect';
-import { PlateSlate } from './PlateSlate';
+import { PlateRoot } from './PlateRoot';
 
 export type PlateContentProps = Omit<EditableProps, 'decorate'> & {
   /** Autofocus when it becomes editable (readOnly false -> readOnly true) */
@@ -170,7 +170,7 @@ const PlateContentBranch = React.forwardRef<
     });
 
     return (
-      <PlateSlate id={id}>
+      <PlateRoot id={id}>
         <PlateContentStateEffect
           id={id}
           autoFocusOnEditable={autoFocusOnEditable}
@@ -181,7 +181,7 @@ const PlateContentBranch = React.forwardRef<
         {beforeEditable}
         {aboveEditable}
         {afterEditable}
-      </PlateSlate>
+      </PlateRoot>
     );
   }
 );
@@ -222,10 +222,12 @@ function PlateContentStateEffect({
 
   React.useEffect(() => {
     if (autoFocusOnEditable && prevReadOnly.current && !readOnly) {
-      const point = editor.read.points.end([], { required: true });
+      const point = editor.read.points.end([]);
 
-      editor.update.selection.set({ anchor: point, focus: point });
-      editor.api.dom.focus();
+      if (point) {
+        editor.update.selection.set({ anchor: point, focus: point });
+        editor.api.dom.focus();
+      }
     }
 
     prevReadOnly.current = readOnly;

@@ -103,7 +103,7 @@ const markdownShortcuts = () =>
     name: 'markdown-shortcuts',
     transforms: {
       deleteBackward({ editor, next, tx, unit }) {
-        const selection = tx.selection.get();
+        const selection = tx.selection();
 
         if (
           unit === 'character' &&
@@ -119,6 +119,7 @@ const markdownShortcuts = () =>
             const start = tx.points.start(path);
 
             if (
+              start &&
               NodeApi.isElement(block) &&
               block.type !== 'paragraph' &&
               PointApi.equals(selection.anchor, start)
@@ -146,7 +147,7 @@ const markdownShortcuts = () =>
         return next({ unit });
       },
       insertBreak({ next, tx }) {
-        const selection = tx.selection.get();
+        const selection = tx.selection();
 
         if (selection && RangeApi.isCollapsed(selection)) {
           const blockEntry = tx.nodes.above({
@@ -163,7 +164,7 @@ const markdownShortcuts = () =>
             ) {
               const start = tx.points.start(blockPath);
 
-              if (PointApi.equals(selection.anchor, start)) {
+              if (start && PointApi.equals(selection.anchor, start)) {
                 const result = next();
 
                 tx.nodes.set(
@@ -183,7 +184,7 @@ const markdownShortcuts = () =>
         return next();
       },
       insertText({ editor, next, text, tx }) {
-        const selection = tx.selection.get();
+        const selection = tx.selection();
 
         if (
           SHORTCUT_TRAILING_WHITESPACE.test(text) &&
@@ -197,6 +198,9 @@ const markdownShortcuts = () =>
           const path = block ? block[1] : [];
           const currentBlock = block?.[0];
           const start = tx.points.start(path);
+
+          if (!start) return next();
+
           const range = { anchor, focus: start };
           const beforeText =
             tx.text.string(range) +
@@ -323,7 +327,7 @@ const createListElement = (
 const mergeAdjacentBulletedLists = (
   tx: EditorUpdateTransaction<CustomValue>
 ) => {
-  const selection = tx.selection.get();
+  const selection = tx.selection();
 
   if (!selection) {
     return;
@@ -342,9 +346,7 @@ const mergeAdjacentBulletedLists = (
 
   if (PathApi.hasPrevious(listPath)) {
     const previousPath = PathApi.previous(listPath);
-    const [previousNode] = tx.nodes.hasPath(previousPath)
-      ? tx.nodes.get(previousPath)
-      : [null, previousPath];
+    const previousNode = tx.nodes.get(previousPath)?.[0] ?? null;
 
     if (
       previousNode &&
@@ -357,9 +359,7 @@ const mergeAdjacentBulletedLists = (
   }
 
   const nextPath = PathApi.next(listPath);
-  const [nextNode] = tx.nodes.hasPath(nextPath)
-    ? tx.nodes.get(nextPath)
-    : [null, nextPath];
+  const nextNode = tx.nodes.get(nextPath)?.[0] ?? null;
 
   if (
     nextNode &&
@@ -376,7 +376,9 @@ const selectCurrentBlockStart = (tx: EditorUpdateTransaction<CustomValue>) => {
   });
 
   if (block) {
-    tx.selection.set(tx.points.start(block[1]));
+    const start = tx.points.start(block[1]);
+
+    if (start) tx.selection.set(start);
   }
 };
 
