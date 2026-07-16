@@ -1,11 +1,11 @@
 ---
 title: "Saving to a Database"
-description: "Persist primary children, extra roots, and document state from the editor runtime."
+description: "Persist primary children, extra roots, and document meta from the editor runtime."
 ---
 
 Plite documents are JSON. Save the full document value when you need more than
 the primary editor body, such as extra roots, content roots, document titles,
-page settings, or other persistent state fields.
+page settings, or other persistent meta fields.
 
 This walkthrough uses Local Storage, but the same shape is what you send to
 your database.
@@ -35,7 +35,7 @@ const fallbackValue = {
       children: [{ text: "A line of text in a paragraph." }],
     },
   ],
-  state: {
+  meta: {
     [documentTitle.key]: "Untitled",
   },
 };
@@ -59,7 +59,7 @@ const App = () => {
         return;
       }
 
-      const documentValue = editor.read((state) => state.value.get());
+      const documentValue = editor.read.value();
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(documentValue));
     });
@@ -73,24 +73,24 @@ const App = () => {
 };
 ```
 
-`state.value.get()` returns the persisted document value:
+`editor.read.value()` returns the persisted document value:
 
 ```ts
 type EditorDocumentValue = {
   children: Descendant[];
   roots?: Record<string, Descendant[]>;
-  state?: Record<string, unknown>;
+  meta?: Record<string, unknown>;
 };
 ```
 
-That shape includes the primary document, every extra root, and persistent state
-fields. It omits state fields declared with `persist: false`.
+That shape includes the primary document, every extra root, and persistent meta
+from state fields. It omits fields declared with `persist: false`.
 
 ## Single-Root Shortcut
 
 The first argument to `<Plite onChange>` is the provider root's block array.
 You can save that value directly for a tiny single-root editor with no
-persistent state fields.
+persistent meta fields.
 
 ```tsx
 <Plite
@@ -144,22 +144,25 @@ a different saved document. That is the clean path for arbitrary persisted
 state fields.
 
 Use `editor.update` for targeted in-place replacement when the app owns the
-schema and can reconcile every root and every persistent state field.
+schema and can reconcile every root and every persistent meta field.
 
 ```tsx
-editor.update((tx) => {
-  tx.value.replace({
-    children: nextDocument.children,
-    marks: null,
-    selection: null,
-  });
+editor.update.value.replace({
+  children: nextDocument.children,
+  marks: null,
+  selection: null,
 });
 ```
 
-`tx.value.replace` replaces the active root snapshot. For an in-place multi-root
-replacement, create, replace, or delete extra roots with `tx.roots`, and set or
-reset every persistent state field your app registered with `tx.setField`. This
-example assumes your app registered `documentTitle` and `pageSettings` fields.
+`editor.update.value.replace` replaces the active root snapshot. Pass
+`selection: "start"` or `selection: "end"` when the imported document should
+place the cursor at a document edge.
+
+For an in-place multi-root replacement, use one transaction: replace the primary
+children with `tx.value.replace`, create, replace, or delete extra roots with
+`tx.roots`, and set or reset every persistent meta field your app registered
+with `tx.setField`. This example assumes your app registered `documentTitle`
+and `pageSettings` fields.
 
 ```tsx
 editor.update((tx) => {
@@ -171,7 +174,7 @@ editor.update((tx) => {
     selection: null,
   });
 
-  const currentRoots = tx.value.get().roots ?? {};
+  const currentRoots = tx.value().roots ?? {};
 
   for (const root of Object.keys(currentRoots)) {
     if (!Object.hasOwn(nextRoots, root)) {
@@ -189,11 +192,11 @@ editor.update((tx) => {
 
   tx.setField(
     documentTitle,
-    nextDocument.state?.[documentTitle.key] ?? "Untitled"
+    nextDocument.meta?.[documentTitle.key] ?? "Untitled"
   );
   tx.setField(
     pageSettings,
-    nextDocument.state?.[pageSettings.key] ?? defaultPageSettings
+    nextDocument.meta?.[pageSettings.key] ?? defaultPageSettings
   );
 });
 ```
@@ -212,6 +215,6 @@ the comment store.
 Use [Annotations](../libraries/plite-react/annotations) to render comment
 anchors from that external store.
 
-Persistence uses `state.value.get()` for the whole document. Use `value` from
+Persistence uses `editor.read.value()` for the whole document. Use `value` from
 `onChange` only for single-root shortcuts, and keep external app data outside
 the Plite document unless it is part of the document model.

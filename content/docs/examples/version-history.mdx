@@ -22,14 +22,14 @@ This example stores immutable Plate value snapshots in local React state. It com
 | `computeDiff` | `@platejs/diff` | Compares the selected revision and live value, then returns diff-marked nodes. |
 | `DiffPlugin` | registry example | Renders diff leaves and wraps diff elements with insert, delete, or update styling. |
 | `InlinePlugin` and `InlineVoidPlugin` | registry example | Keep inline and inline-void nodes in the demo value so the diff path covers mixed content. |
-| `withGetFragmentExcludeDiff` | `@platejs/diff` | Removes `diff` and `diffOperation` metadata from copied fragments. |
+| `createExcludeDiffFragmentExtension` | `@platejs/diff` | Removes `diff` and `diffOperation` metadata from copied fragments. |
 
 ## Snapshot Flow
 
 1. The editor starts from `initialValue` and keeps the live value in local state.
 2. `Save revision` clones the live value and appends it to `revisions`.
 3. The select menu chooses one saved revision for comparison.
-4. `computeDiff` receives the selected revision, current value, `editor.api.isInline`, and `lineBreakChar: '¶'`.
+4. `computeDiff` receives the selected revision, current value, `state.schema.isInline`, and `lineBreakChar: '¶'`.
 5. The read-only diff editor renders the returned value with the same inline plugins plus `DiffPlugin`.
 
 ## Product Preview

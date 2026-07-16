@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const calloutValue: any = (
+export const calloutValue = (
   <fragment>
     <hh2>Callouts</hh2>
     <hp>

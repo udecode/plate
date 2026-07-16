@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { useDraggable, useDropLine } from '@platejs/dnd';
+import { selectBlockById, useDraggable, useDropLine } from '@platejs/dnd';
 import {
   BlockSelectionPlugin,
   useBlockSelected,
@@ -46,7 +46,6 @@ import {
   XIcon,
 } from 'lucide-react';
 import {
-  type TElement,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
@@ -54,6 +53,7 @@ import {
   PathApi,
 } from 'platejs';
 import {
+  type PlateEditor,
   type PlateElementProps,
   PlateElement,
   useComposedRef,
@@ -63,9 +63,10 @@ import {
   useElement,
   useFocusedLast,
   usePluginOption,
-  useReadOnly,
+  useEditorReadOnly,
   useRemoveNodeButton,
-  useSelected,
+  useElementSelected,
+  usePath,
   withHOC,
 } from 'platejs/react';
 import { useElementSelector } from 'platejs/react';
@@ -143,6 +144,10 @@ const TABLE_DEFAULT_COLUMN_WIDTH = 120;
 const TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT = 1200;
 const TABLE_MULTI_SELECTION_TOOLBAR_DELAY_MS = 150;
 
+const getTablePlugin = (editor: PlateEditor) => editor.plugin(TablePlugin);
+
+const getTableApi = (editor: PlateEditor) => getTablePlugin(editor).api;
+
 const TableResizeContext = React.createContext<TableResizeContextValue | null>(
   null
 );
@@ -178,9 +183,10 @@ function useTableResizeController({
 }) {
   const { editor, getOptions } = useEditorPlugin(TablePlugin);
   const { disableMarginLeft = false, minColumnWidth = 0 } = getOptions();
-  const colSizes = useTableColSizes({
-    disableOverrides: true,
-  });
+  const colSizes =
+    useTableColSizes({
+      disableOverrides: true,
+    }) ?? [];
   const effectiveColSizes = React.useMemo(
     () => colSizes.map((colSize) => colSize || TABLE_DEFAULT_COLUMN_WIDTH),
     [colSizes]
@@ -607,19 +613,19 @@ export const TableElement = withHOC(
     children,
     ...props
   }: PlateElementProps<TTableElement>) {
-    const readOnly = useReadOnly();
+    const readOnly = useEditorReadOnly();
     const isSelectionAreaVisible = usePluginOption(
       BlockSelectionPlugin,
       'isSelectionAreaVisible'
     );
     const hasControls = !readOnly && !isSelectionAreaVisible;
     const { marginLeft, props: tableProps } = useTableElement();
-    const colSizes = useTableColSizes();
+    const colSizes = useTableColSizes() ?? [];
     const controlColumnWidth = hasControls ? TABLE_CONTROL_COLUMN_WIDTH : 0;
     const dragIndicatorRef = React.useRef<HTMLDivElement>(null);
     const hoverIndicatorRef = React.useRef<HTMLDivElement>(null);
     const deferColumnResize =
-      colSizes.length * props.element.children.length >
+      colSizes.length * (props.element.children?.length ?? 0) >
       TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT;
     const tablePath = useElementSelector(([, path]) => path, [], {
       key: KEYS.table,
@@ -762,13 +768,12 @@ function TableFloatingToolbar({
   ...props
 }: React.ComponentProps<typeof PopoverContent>) {
   const selectedCellCount = useEditorSelector(
-    (editor) =>
-      editor.getApi(TablePlugin).table.getSelectedCellIds()?.length ?? 0,
+    (editor) => getTableApi(editor).getSelectedCellIds()?.length ?? 0,
     []
   );
-  const selected = useSelected();
+  const selected = useElementSelected();
   const collapsedInside = useEditorSelector(
-    (editor) => selected && editor.api.isCollapsed(),
+    (editor) => selected && editor.read.selection.isCollapsed(),
     [selected]
   );
   const isFocusedLast = useFocusedLast();
@@ -816,7 +821,7 @@ function TableFloatingToolbar({
 function ExpandedSelectionTableFloatingToolbarContent(
   props: React.ComponentProps<typeof PopoverContent>
 ) {
-  const { tf } = useEditorPlugin(TablePlugin);
+  const { editor } = useEditorPlugin(TablePlugin);
   const { canMerge, canSplit } = useTableMergeState();
 
   if (!canMerge && !canSplit) return null;
@@ -825,8 +830,12 @@ function ExpandedSelectionTableFloatingToolbarContent(
     <TableFloatingToolbarContent
       canMerge={canMerge}
       canSplit={canSplit}
-      onMerge={() => tf.table.merge()}
-      onSplit={() => tf.table.split()}
+      onMerge={() => {
+        getTablePlugin(editor).update.merge();
+      }}
+      onSplit={() => {
+        getTablePlugin(editor).update.split();
+      }}
       {...props}
     />
   );
@@ -835,7 +844,7 @@ function ExpandedSelectionTableFloatingToolbarContent(
 function CollapsedTableFloatingToolbarContent(
   props: React.ComponentProps<typeof PopoverContent>
 ) {
-  const { tf } = useEditorPlugin(TablePlugin);
+  const { editor } = useEditorPlugin(TablePlugin);
   const element = useElement<TTableElement>();
   const { props: buttonProps } = useRemoveNodeButton({ element });
   const { canSplit } = useTableMergeState();
@@ -846,24 +855,26 @@ function CollapsedTableFloatingToolbarContent(
       canSplit={canSplit}
       collapsedInside
       onDeleteColumn={() => {
-        tf.remove.tableColumn();
+        editor.update.remove.tableColumn();
       }}
       onDeleteRow={() => {
-        tf.remove.tableRow();
+        editor.update.remove.tableRow();
       }}
       onInsertColumnAfter={() => {
-        tf.insert.tableColumn();
+        editor.update.insert.tableColumn();
       }}
       onInsertColumnBefore={() => {
-        tf.insert.tableColumn({ before: true });
+        editor.update.insert.tableColumn({ before: true });
       }}
       onInsertRowAfter={() => {
-        tf.insert.tableRow();
+        editor.update.insert.tableRow();
       }}
       onInsertRowBefore={() => {
-        tf.insert.tableRow({ before: true });
+        editor.update.insert.tableRow({ before: true });
       }}
-      onSplit={() => tf.table.split()}
+      onSplit={() => {
+        getTablePlugin(editor).update.split();
+      }}
       {...props}
     />
   );
@@ -1027,7 +1038,7 @@ function TableBordersDropdownMenuContent(
       className="min-w-[220px]"
       onCloseAutoFocus={(e) => {
         e.preventDefault();
-        editor.tf.focus();
+        editor.api.dom.focus();
       }}
       align="start"
       side="right"
@@ -1101,8 +1112,7 @@ function ColorDropdownMenu({
       setOpen(false);
       setCellBackground(editor, {
         color,
-        selectedCells:
-          editor.getApi(TablePlugin).table.getSelectedCells() ?? [],
+        selectedCells: getTableApi(editor).getSelectedCells() ?? [],
       });
     },
     [editor]
@@ -1112,7 +1122,7 @@ function ColorDropdownMenu({
     setOpen(false);
     setCellBackground(editor, {
       color: null,
-      selectedCells: editor.getApi(TablePlugin).table.getSelectedCells() ?? [],
+      selectedCells: getTableApi(editor).getSelectedCells() ?? [],
     });
   }, [editor]);
 
@@ -1146,7 +1156,7 @@ export function TableRowElement({
   ...props
 }: PlateElementProps<TTableRowElement>) {
   const { element } = props;
-  const readOnly = useReadOnly();
+  const readOnly = useEditorReadOnly();
   const editor = useEditorRef();
   const rowIndex = useElementSelector(([, path]) => path.at(-1) as number, [], {
     key: KEYS.tr,
@@ -1175,10 +1185,12 @@ export function TableRowElement({
         PathApi.parent(dropEntry[1])
       ),
     onDropHandler: (_, { dragItem }) => {
-      const dragElement = (dragItem as { element: TElement }).element;
+      if ('id' in dragItem) {
+        const id = Array.isArray(dragItem.id) ? dragItem.id[0] : dragItem.id;
 
-      if (dragElement) {
-        editor.tf.select(dragElement);
+        if (id) {
+          selectBlockById(editor, id);
+        }
       }
     },
   });
@@ -1191,7 +1203,6 @@ export function TableRowElement({
       className={cn('group/row', isDragging && 'opacity-50')}
       style={
         {
-          ...props.style,
           '--tableRowMinHeight': rowMinHeight ? `${rowMinHeight}px` : undefined,
         } as React.CSSProperties
       }
@@ -1216,8 +1227,8 @@ function useTableCellPresentation(element: TTableCellElement) {
   const borders = useTableCellBorders({ element });
   const { col, row } = useCellIndices();
 
-  const colSpan = api.table.getColSpan(element);
-  const rowSpan = api.table.getRowSpan(element);
+  const colSpan = api.getColSpan(element);
+  const rowSpan = api.getRowSpan(element);
   const width = React.useMemo(() => {
     const terms = Array.from(
       { length: colSpan },
@@ -1237,9 +1248,9 @@ function useTableCellPresentation(element: TTableCellElement) {
   };
 }
 
-function RowDragHandle({ dragRef }: { dragRef: React.Ref<any> }) {
+function RowDragHandle({ dragRef }: { dragRef: React.Ref<HTMLButtonElement> }) {
   const editor = useEditorRef();
-  const element = useElement();
+  const path = usePath();
 
   return (
     <Button
@@ -1251,7 +1262,12 @@ function RowDragHandle({ dragRef }: { dragRef: React.Ref<any> }) {
         'opacity-0 transition-opacity duration-100 group-hover/row:opacity-100 group-data-[table-resizing=true]/row:opacity-0'
       )}
       onClick={() => {
-        editor.tf.select(element);
+        const range = editor.read.ranges.get(path);
+
+        if (!range) return;
+
+        editor.update.selection.set(range);
+        editor.api.dom.focus();
       }}
     >
       <GripVertical className="text-muted-foreground" />
@@ -1280,7 +1296,7 @@ export function TableCellElement({
 }: PlateElementProps<TTableCellElement> & {
   isHeader?: boolean;
 }) {
-  const readOnly = useReadOnly();
+  const readOnly = useEditorReadOnly();
   const element = props.element;
 
   const tableId = useElementSelector(([node]) => node.id as string, [], {

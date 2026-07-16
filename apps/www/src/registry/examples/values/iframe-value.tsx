@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const iframeValue: any = (
+export const iframeValue = (
   <fragment>
     <hp>
       In this example, the document gets rendered into a controlled{' '}

@@ -254,7 +254,7 @@ export function InsertToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 onSelect={() => {
                   onSelect(editor, value);
-                  editor.tf.focus();
+                  editor.api.dom.focus();
                 }}
               >
                 {icon}

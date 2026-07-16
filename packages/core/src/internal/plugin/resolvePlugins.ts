@@ -68,7 +68,7 @@ const getPluginShortcutTxCommand = (
   return typeof command === 'function' ? (command as () => unknown) : undefined;
 };
 
-const hasOwnPluginTxGroup = (plugin: BasePlugin) => {
+const hasOwnPluginTxGroup = (plugin: AnyBasePlugin) => {
   if (typeof plugin.tx?.[plugin.key] === 'function') return true;
 
   return plugin.__txExtensions.some(
@@ -138,12 +138,10 @@ export const resolvePlugins = (
 
   applyPluginsToEditor(editor, resolvedPlugins);
 
-  resolvePluginOverrides(editor);
-
   resolvePluginStores(editor, createStore);
 
   // Last pass
-  editor.runtime.pluginList.forEach((plugin: BasePlugin) => {
+  editor.runtime.pluginList.forEach((plugin: AnyBasePlugin) => {
     // Sync overridden plugin methods to the editor runtime.
     resolvePluginMethods(editor, plugin);
 
@@ -484,34 +482,45 @@ const resolvePluginInputRules = (editor: BaseEditor) => {
 const flattenAndResolvePlugins = (
   editor: BaseEditor,
   plugins: readonly AnyBasePlugin[]
-): Map<string, AnyBasePlugin> => {
+): {
+  explicitKeys: Set<string>;
+  pluginMap: Map<string, AnyBasePlugin>;
+} => {
   const pluginMap = new Map<string, AnyBasePlugin>();
+  const explicitKeys = new Set<string>();
   const mergeDuplicatePlugin = (
     existingPlugin: AnyBasePlugin,
     resolvedPlugin: AnyBasePlugin
   ) => {
     const mergedPlugin = mergePlugins(existingPlugin, resolvedPlugin);
 
-    mergedPlugin.__apiExtensions = [
-      ...(existingPlugin.__apiExtensions ?? []),
-      ...(resolvedPlugin.__apiExtensions ?? []),
+    const mergeExtensions = <T>(current: T[] = [], next: T[] = []) => [
+      ...current,
+      ...next.filter((extension) => !current.includes(extension)),
     ];
-    mergedPlugin.__selectorExtensions = [
-      ...(existingPlugin.__selectorExtensions ?? []),
-      ...(resolvedPlugin.__selectorExtensions ?? []),
-    ];
-    mergedPlugin.__txExtensions = [
-      ...(existingPlugin.__txExtensions ?? []),
-      ...(resolvedPlugin.__txExtensions ?? []),
-    ];
+
+    mergedPlugin.__apiExtensions = mergeExtensions(
+      existingPlugin.__apiExtensions,
+      resolvedPlugin.__apiExtensions
+    );
+    mergedPlugin.__selectorExtensions = mergeExtensions(
+      existingPlugin.__selectorExtensions,
+      resolvedPlugin.__selectorExtensions
+    );
+    mergedPlugin.__txExtensions = mergeExtensions(
+      existingPlugin.__txExtensions,
+      resolvedPlugin.__txExtensions
+    );
 
     return mergedPlugin;
   };
 
-  const processPlugin = (plugin: AnyBasePlugin) => {
+  const processPlugin = (plugin: AnyBasePlugin, explicit: boolean) => {
     const resolvedPlugin = resolvePlugin(editor, plugin);
 
     if (resolvedPlugin.key) {
+      if (explicit) explicitKeys.add(resolvedPlugin.key);
+
       const existingPlugin = pluginMap.get(resolvedPlugin.key);
 
       if (existingPlugin) {
@@ -527,56 +536,102 @@ const flattenAndResolvePlugins = (
     }
 
     if (resolvedPlugin.plugins && resolvedPlugin.plugins.length > 0) {
-      resolvedPlugin.plugins.forEach(processPlugin);
+      resolvedPlugin.plugins.forEach((nestedPlugin) => {
+        processPlugin(nestedPlugin, explicit);
+      });
     }
   };
 
-  plugins.forEach(processPlugin);
+  const dependencyObjects = new WeakSet<object>();
+  const collectDependencies = (plugin: AnyBasePlugin) => {
+    for (const dependency of plugin.dependencies) {
+      if (!dependency || typeof dependency !== 'object') {
+        throw new Error(
+          `Plugin "${plugin.key}" has an invalid dependency. Pass the plugin object, not its key.`
+        );
+      }
+      if (dependencyObjects.has(dependency)) continue;
 
-  return pluginMap;
+      dependencyObjects.add(dependency);
+      collectDependencies(dependency as AnyBasePlugin);
+      processPlugin(dependency as AnyBasePlugin, false);
+    }
+
+    plugin.plugins.forEach(collectDependencies);
+  };
+
+  plugins.forEach(collectDependencies);
+  plugins.forEach((plugin) => {
+    processPlugin(plugin, true);
+  });
+
+  return { explicitKeys, pluginMap };
 };
 
 export const resolveAndSortPlugins = (
   editor: BaseEditor,
   plugins: readonly AnyBasePlugin[]
 ): BasePlugins => {
-  // Step 1: Resolve, flatten, and merge all plugins
-  const pluginMap = flattenAndResolvePlugins(editor, plugins);
-
-  // Step 2: Filter out disabled plugins
-  const enabledPlugins = Array.from(pluginMap.values()).filter(
-    (plugin) => plugin.enabled !== false
+  const { explicitKeys, pluginMap: collectedPluginMap } =
+    flattenAndResolvePlugins(editor, plugins);
+  const overriddenPlugins = applyPluginOverrides(
+    Array.from(collectedPluginMap.values()),
+    false
   );
-
-  // Step 3: Sort plugins by priority
-  enabledPlugins.sort((a, b) => b.priority - a.priority);
-
-  // Step 4: Reorder based on dependencies
+  const pluginMap = new Map(
+    overriddenPlugins.map((plugin) => [plugin.key, plugin])
+  );
+  const roots = overriddenPlugins
+    .filter(
+      (plugin) => explicitKeys.has(plugin.key) && plugin.enabled !== false
+    )
+    .sort((a, b) => b.priority - a.priority);
   const orderedPlugins: BasePlugins = [];
-  const visited = new Set<string>();
+  const state = new Map<string, 'visited' | 'visiting'>();
+  const stack: string[] = [];
 
   const visit = (plugin: AnyBasePlugin) => {
-    if (visited.has(plugin.key)) return;
+    if (state.get(plugin.key) === 'visited') return;
+    if (state.get(plugin.key) === 'visiting') {
+      const cycleStart = stack.indexOf(plugin.key);
+      const cycle = [...stack.slice(cycleStart), plugin.key].join(' -> ');
 
-    visited.add(plugin.key);
+      throw new Error(`Circular plugin dependency: ${cycle}`);
+    }
 
-    plugin.dependencies?.forEach((depKey) => {
-      const depPlugin = pluginMap.get(depKey);
+    state.set(plugin.key, 'visiting');
+    stack.push(plugin.key);
 
-      if (depPlugin) {
-        visit(depPlugin);
-      } else {
-        editor.api.debug.warn(
-          `Plugin "${plugin.key}" depends on missing plugin "${depKey}"`,
-          'PLUGIN_DEPENDENCY_MISSING'
+    for (const dependency of plugin.dependencies) {
+      if (!dependency || typeof dependency !== 'object') {
+        throw new Error(
+          `Plugin "${plugin.key}" has an invalid dependency. Pass the plugin object, not its key.`
         );
       }
-    });
 
+      const dependencyKey = (dependency as AnyBasePlugin).key;
+      const dependencyPlugin = pluginMap.get(dependencyKey);
+
+      if (!dependencyPlugin) {
+        throw new Error(
+          `Plugin "${plugin.key}" depends on missing plugin "${dependencyKey}"`
+        );
+      }
+      if (dependencyPlugin.enabled === false) {
+        throw new Error(
+          `Plugin "${plugin.key}" depends on disabled plugin "${dependencyKey}"`
+        );
+      }
+
+      visit(dependencyPlugin);
+    }
+
+    stack.pop();
+    state.set(plugin.key, 'visited');
     orderedPlugins.push(plugin);
   };
 
-  enabledPlugins.forEach(visit);
+  roots.forEach(visit);
 
   return orderedPlugins;
 };
@@ -591,89 +646,93 @@ export const applyPluginsToEditor = (
   );
 };
 
-export const resolvePluginOverrides = (editor: BaseEditor) => {
-  const applyOverrides = (plugins: AnyBasePlugin[]): AnyBasePlugin[] => {
-    let overriddenPlugins = [...plugins];
+const applyPluginOverrides = (
+  plugins: AnyBasePlugin[],
+  filterDisabled = true
+): AnyBasePlugin[] => {
+  let overriddenPlugins = [...plugins];
 
-    const enabledOverrides: Record<string, boolean> = {};
-    const componentOverrides: Record<
-      string,
-      { component: any; priority: number }
-    > = {};
-    const pluginOverrides: Record<string, Partial<AnyBasePlugin>> = {};
+  const enabledOverrides: Record<string, boolean> = {};
+  const componentOverrides: Record<
+    string,
+    { component: any; priority: number }
+  > = {};
+  const pluginOverrides: Record<string, Partial<AnyBasePlugin>> = {};
 
-    // Collect all overrides
-    for (const plugin of plugins) {
-      if (plugin.override.enabled) {
-        Object.assign(enabledOverrides, plugin.override.enabled);
-      }
-      // TODO react
-      if ((plugin.override as any).components) {
-        Object.entries((plugin.override as any).components).forEach(
-          ([key, component]) => {
-            if (
-              !componentOverrides[key] ||
-              plugin.priority > componentOverrides[key].priority
-            ) {
-              componentOverrides[key] = {
-                component,
-                priority: plugin.priority,
-              };
-            }
+  // Collect all overrides
+  for (const plugin of plugins) {
+    if (plugin.override.enabled) {
+      Object.assign(enabledOverrides, plugin.override.enabled);
+    }
+    // TODO react
+    if ((plugin.override as any).components) {
+      Object.entries((plugin.override as any).components).forEach(
+        ([key, component]) => {
+          if (
+            !componentOverrides[key] ||
+            plugin.priority > componentOverrides[key].priority
+          ) {
+            componentOverrides[key] = {
+              component,
+              priority: plugin.priority,
+            };
           }
-        );
-      }
-      if (plugin.override.plugins) {
-        Object.entries(plugin.override.plugins).forEach(([key, value]) => {
-          pluginOverrides[key] = mergePlugins(pluginOverrides[key], value);
+        }
+      );
+    }
+    if (plugin.override.plugins) {
+      Object.entries(plugin.override.plugins).forEach(([key, value]) => {
+        pluginOverrides[key] = mergePlugins(pluginOverrides[key], value);
 
-          if (value.enabled !== undefined) {
-            enabledOverrides[key] = value.enabled;
-          }
-        });
-      }
+        if (value.enabled !== undefined) {
+          enabledOverrides[key] = value.enabled;
+        }
+      });
+    }
+  }
+
+  // Apply overrides
+  overriddenPlugins = overriddenPlugins.map((p) => {
+    let updatedPlugin = { ...p };
+
+    // Apply plugin overrides
+    if (pluginOverrides[p.key]) {
+      updatedPlugin = mergePlugins(updatedPlugin, pluginOverrides[p.key]);
+    }
+    // Apply component overrides
+    // TODO react
+    if (
+      componentOverrides[p.key] &&
+      ((!(p as any).render.node && !(p as any).node.component) ||
+        componentOverrides[p.key].priority > p.priority)
+    ) {
+      (updatedPlugin as any).render.node = componentOverrides[p.key].component;
+      (updatedPlugin as any).node.component =
+        componentOverrides[p.key].component;
     }
 
-    // Apply overrides
-    overriddenPlugins = overriddenPlugins.map((p) => {
-      let updatedPlugin = { ...p };
+    // Apply enabled overrides
+    const enabled = enabledOverrides[p.key] ?? updatedPlugin.enabled;
 
-      // Apply plugin overrides
-      if (pluginOverrides[p.key]) {
-        updatedPlugin = mergePlugins(updatedPlugin, pluginOverrides[p.key]);
-      }
-      // Apply component overrides
-      // TODO react
-      if (
-        componentOverrides[p.key] &&
-        ((!(p as any).render.node && !(p as any).node.component) ||
-          componentOverrides[p.key].priority > p.priority)
-      ) {
-        (updatedPlugin as any).render.node =
-          componentOverrides[p.key].component;
-        (updatedPlugin as any).node.component =
-          componentOverrides[p.key].component;
-      }
+    if (isDefined(enabled)) {
+      updatedPlugin.enabled = enabled;
+    }
 
-      // Apply enabled overrides
-      const enabled = enabledOverrides[p.key] ?? updatedPlugin.enabled;
+    return updatedPlugin;
+  });
 
-      if (isDefined(enabled)) {
-        updatedPlugin.enabled = enabled;
-      }
+  return overriddenPlugins
+    .filter((p) => !filterDisabled || p.enabled !== false)
+    .map((plugin) => ({
+      ...plugin,
+      plugins: applyPluginOverrides(plugin.plugins || [], filterDisabled),
+    }));
+};
 
-      return updatedPlugin;
-    });
-
-    return overriddenPlugins
-      .filter((p) => p.enabled !== false)
-      .map((plugin) => ({
-        ...plugin,
-        plugins: applyOverrides(plugin.plugins || []),
-      }));
-  };
-
-  editor.runtime.pluginList = applyOverrides(editor.runtime.pluginList as any);
+export const resolvePluginOverrides = (editor: BaseEditor) => {
+  editor.runtime.pluginList = applyPluginOverrides(
+    editor.runtime.pluginList as AnyBasePlugin[]
+  );
   editor.plugins = Object.fromEntries(
     editor.runtime.pluginList.map((plugin) => [plugin.key, plugin])
   );

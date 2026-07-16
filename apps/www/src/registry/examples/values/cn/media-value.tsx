@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const imageValue: any = (
+export const imageValue = (
   <fragment>
     <hh2>图片</hh2>
     <hp>通过上传或提供图片 URL 来添加图片：</hp>
@@ -20,7 +20,7 @@ export const imageValue: any = (
   </fragment>
 );
 
-export const mediaPlaceholderValue: any = (
+export const mediaPlaceholderValue = (
   <fragment>
     <hh2>上传</hh2>
     <hp>我们的编辑器支持多种媒体类型的上传，包括图片、视频、音频和文件。</hp>
@@ -63,7 +63,7 @@ export const mediaPlaceholderValue: any = (
   </fragment>
 );
 
-export const mediaValue: any = (
+export const mediaValue = (
   <fragment>
     {imageValue}
     {mediaPlaceholderValue}

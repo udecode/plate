@@ -2,13 +2,13 @@
 
 import * as React from 'react';
 
+import type { Element } from '@platejs/plite';
 import { cva } from 'class-variance-authority';
 import { CornerDownLeftIcon } from 'lucide-react';
 import type {
-  AnyPluginConfig,
-  TElement,
   TSuggestionData,
   TSuggestionText,
+  WithAnyKey,
   WithRequiredKey,
 } from 'platejs';
 import { KEYS } from 'platejs';
@@ -17,15 +17,18 @@ import type {
   PlateLeafProps,
   RenderNodeWrapper,
 } from 'platejs/react';
-
-import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { PlateLeaf, useEditorPlugin, usePluginOption } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 import type { SuggestionConfig } from '@/registry/components/editor/plugins/suggestion-kit';
 import { voidRemoveSuggestionOverlayVariants } from '@/registry/ui/suggestion-node-static';
 
-const suggestionPlugin = SuggestionPlugin as WithRequiredKey<SuggestionConfig>;
+const suggestionPlugin: WithRequiredKey<SuggestionConfig> = {
+  key: KEYS.suggestion,
+};
+
+const getSuggestionApi = (editor: PlateEditor) =>
+  editor.plugin<SuggestionConfig>(suggestionPlugin).api;
 
 export const suggestionVariants = cva(
   cn(
@@ -77,11 +80,8 @@ export function getBlockSuggestionWrapperClassName({
   );
 }
 
-export function isVoidRemoveSuggestion(editor: PlateEditor, element: TElement) {
-  return (
-    editor.getApi(SuggestionPlugin).suggestion.suggestionData(element)?.type ===
-    'remove'
-  );
+export function isVoidRemoveSuggestion(editor: PlateEditor, element: Element) {
+  return getSuggestionApi(editor).suggestionData(element)?.type === 'remove';
 }
 
 export function VoidRemoveSuggestionOverlay({
@@ -89,11 +89,11 @@ export function VoidRemoveSuggestionOverlay({
   element,
 }: {
   editor: PlateEditor;
-  element: TElement;
+  element: Element;
 }) {
   const active =
-    editor.api.isVoid(element) &&
-    !editor.api.isInline(element) &&
+    editor.read.schema.isVoid(element) &&
+    !editor.read.schema.isInline(element) &&
     isVoidRemoveSuggestion(editor, element);
 
   if (!active) return null;
@@ -144,7 +144,7 @@ function SuggestionLineBreakElementAnchor({
   className,
 }: {
   badgeProps?: React.ComponentProps<'span'>;
-  children: React.ReactElement<any>;
+  children: React.ReactElement;
   className?: string;
 }) {
   if (!React.isValidElement(children)) return children;
@@ -174,7 +174,7 @@ function SuggestionLineBreakElementAnchor({
     }
 
     const nextLastChild = React.cloneElement(
-      lastChild as React.ReactElement<any>,
+      lastChild as React.ReactElement<{ children?: React.ReactNode }>,
       {
         children: (
           <>
@@ -185,9 +185,12 @@ function SuggestionLineBreakElementAnchor({
       }
     );
 
-    return React.cloneElement(children as React.ReactElement<any>, {
-      children: [...childNodes.slice(0, lastIndex), nextLastChild],
-    });
+    return React.cloneElement(
+      children as React.ReactElement<{ children?: React.ReactNode }>,
+      {
+        children: [...childNodes.slice(0, lastIndex), nextLastChild],
+      }
+    );
   }
 
   if (typeof children.type === 'string') {
@@ -199,19 +202,26 @@ function SuggestionLineBreakElementAnchor({
     );
   }
 
-  return React.cloneElement(children as React.ReactElement<any>, {
-    lineBreakBadge: badge,
-  });
+  return React.cloneElement(
+    children as React.ReactElement<{ lineBreakBadge?: React.ReactNode }>,
+    { lineBreakBadge: badge }
+  );
 }
 
 export function SuggestionLeaf(props: PlateLeafProps<TSuggestionText>) {
   const { api, setOption } = useEditorPlugin(suggestionPlugin);
   const leaf = props.leaf;
 
-  const leafId: string = api.suggestion.nodeId(leaf) ?? '';
-  const activeSuggestionId = usePluginOption(suggestionPlugin, 'activeId');
-  const hoverSuggestionId = usePluginOption(suggestionPlugin, 'hoverId');
-  const dataList = api.suggestion.dataList(leaf);
+  const leafId: string = api.nodeId(leaf) ?? '';
+  const activeSuggestionId = usePluginOption<
+    WithRequiredKey<SuggestionConfig>,
+    SuggestionConfig
+  >(suggestionPlugin, 'activeId');
+  const hoverSuggestionId = usePluginOption<
+    WithRequiredKey<SuggestionConfig>,
+    SuggestionConfig
+  >(suggestionPlugin, 'hoverId');
+  const dataList = api.dataList(leaf);
 
   const hasRemove = dataList.some((data) => data.type === 'remove');
   const hasActive = dataList.some((data) => data.id === activeSuggestionId);
@@ -244,11 +254,10 @@ export function SuggestionLeaf(props: PlateLeafProps<TSuggestionText>) {
     </PlateLeaf>
   );
 }
-export const SuggestionLineBreak: RenderNodeWrapper<AnyPluginConfig> = ({
-  api,
-  element,
-}) => {
-  if (!api.suggestion.isBlockSuggestion(element)) return;
+export const SuggestionLineBreak: RenderNodeWrapper<
+  WithAnyKey<SuggestionConfig>
+> = ({ api, element }) => {
+  if (!api.isBlockSuggestion(element)) return;
 
   const suggestionData = element.suggestion as TSuggestionData;
 
@@ -277,8 +286,14 @@ export function SuggestionLineBreakContent({
   const isRemove = type === 'remove';
   const isInsert = type === 'insert';
 
-  const activeSuggestionId = usePluginOption(suggestionPlugin, 'activeId');
-  const hoverSuggestionId = usePluginOption(suggestionPlugin, 'hoverId');
+  const activeSuggestionId = usePluginOption<
+    WithRequiredKey<SuggestionConfig>,
+    SuggestionConfig
+  >(suggestionPlugin, 'activeId');
+  const hoverSuggestionId = usePluginOption<
+    WithRequiredKey<SuggestionConfig>,
+    SuggestionConfig
+  >(suggestionPlugin, 'hoverId');
 
   const isActive = activeSuggestionId === suggestionData.id;
   const isHover = hoverSuggestionId === suggestionData.id;

@@ -19,7 +19,7 @@ npm install platejs
 
 ```ts
 // 之前
-import { createBasePlateEditor } from '@platejs/plite';
+import { createBaseEditor } from '@platejs/plite';
 import { Plite, Editable, withReact } from '@platejs/plite-react';
 
 // 之后
@@ -28,11 +28,11 @@ import { createPlateEditor, Plate, PlateContent } from 'platejs/react';
 
 ## 3. 创建 Plate 编辑器
 
-将 `createBasePlateEditor`、`withHistory` 和 `withReact` 替换为 `createPlateEditor`：
+将 `createBaseEditor`、`withHistory` 和 `withReact` 替换为 `createPlateEditor`：
 
 ```ts
 // 之前
-const editor = useMemo(() => withReact(withHistory(createBasePlateEditor()))), []);
+const editor = useMemo(() => withReact(withHistory(createBaseEditor()))), []);
 
 // 之后
 const editor = createPlateEditor({
@@ -101,39 +101,40 @@ const ParagraphPlugin = createPlatePlugin({
 
 ## 6. 将 Plite 插件转换为 Plate 插件
 
-如果您有自定义 Plite 插件，将它们转换为 Plate 插件：
+如果自定义行为需要可复用的文档命令，使用 `.extendTx()`。命令会出现在
+`editor.update(...)` 的事务对象上：
 
 ```ts
-// 之前
-const withMyPlugin = (editor) => {
-  const { insertText } = editor;
-  editor.insertText = (text) => {
-    // 自定义逻辑
-    insertText(text);
-  };
-  return editor;
-};
-
-// 之后
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-}).overrideEditor(({ editor, tf: { insertText } }) => ({
-  transforms: {
-    insertText(text, options) {
-      // 自定义逻辑
-      insertText(text, options);
-    },
-  }
-}));
-
-// 添加新的可重放文档命令：
-const MyOtherPlugin = createPlatePlugin({
-  key: 'myOtherPlugin',
+const SignaturePlugin = createPlatePlugin({
+  key: 'signature',
 }).extendTx(() => (tx) => ({
-  newMethod(text: string) {
-    tx.text.insert(text);
+  insert() {
+    tx.text.insert(' - Plate');
   }
 }));
+
+editor.update((tx) => {
+  tx.signature.insert();
+});
+```
+
+如果插件要把命令放进共享命令组，使用 `.extendTxGroup()`：
+
+```ts
+const CalloutPlugin = createPlatePlugin({
+  key: 'callout',
+}).extendTxGroup('insert', () => (tx) => ({
+  callout() {
+    tx.nodes.insert({
+      children: [{ text: '' }],
+      type: 'callout',
+    });
+  },
+}));
+
+editor.update((tx) => {
+  tx.insert.callout();
+});
 ```
 
 有关插件上下文的更多信息，请参阅[插件上下文指南](/docs/plugin-context)。
@@ -183,14 +184,19 @@ const TabPlugin = createPlatePlugin({
 
 ## 8. 适应 Plate 的 API
 
-熟悉 Plate 的 API 并使用其工具和钩子：
+Plate 将读取和写入分开。用 `editor.read(...)` 读取编辑器状态，用
+`editor.update(...)` 修改文档。`editor.api.*` 适合插件服务和宿主运行时
+API，不适合作为文档修改命令。
 
 ```ts
-// 使用 Plate 的 transforms
-editor.tf.toggleMark('bold');
+const text = editor.read((state) => state.text.string([]));
 
-// 使用 Plate 的调试 API
-editor.api.debug.log('Hello, Plate!');
+editor.update((tx) => {
+  tx.marks.toggle('bold');
+  tx.text.insert('Hello');
+});
+
+editor.api.debug.log(text);
 ```
 
 有关编辑器方法的完整列表，请参阅[编辑器方法指南](/docs/editor-methods)。

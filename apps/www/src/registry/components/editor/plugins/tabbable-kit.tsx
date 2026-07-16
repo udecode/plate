@@ -1,7 +1,7 @@
 'use client';
 
 import { TabbablePlugin } from '@platejs/tabbable/react';
-import { KEYS } from 'platejs';
+import { ElementApi, KEYS } from 'platejs';
 
 export const TabbableKit = TabbablePlugin.configure(({ editor }) => ({
   node: {
@@ -9,20 +9,27 @@ export const TabbableKit = TabbablePlugin.configure(({ editor }) => ({
   },
   options: {
     query: () => {
-      if (editor.api.isAt({ start: true }) || editor.api.isAt({ end: true }))
-        return false;
+      const isAtEditorEdge = editor.read((state) => {
+        const selection = state.selection();
 
-      return !editor.api.some({
+        if (!selection) return false;
+
+        return (
+          state.points.isStart(selection.focus, []) ||
+          state.points.isEnd(selection.focus, [])
+        );
+      });
+
+      if (isAtEditorEdge) return false;
+
+      return !editor.read.nodes.some({
         match: (n) =>
           !!(
-            (n.type &&
-              [
-                KEYS.codeBlock,
-                KEYS.li,
-                KEYS.listTodoClassic,
-                KEYS.table,
-              ].includes(n.type as any)) ||
-            n.listStyleType
+            (ElementApi.isElement(n) &&
+              [KEYS.codeBlock, KEYS.li, KEYS.listTodoClassic, KEYS.table].some(
+                (type) => type === n.type
+              )) ||
+            (ElementApi.isElement(n) && n.listStyleType)
           ),
       });
     },

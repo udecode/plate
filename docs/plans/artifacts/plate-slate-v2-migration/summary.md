@@ -1,6 +1,6 @@
 # Plate Slate v2 Migration Inventory
 
-Generated from 5202 scanned files.
+Generated from 5207 scanned files.
 
 ## Top Owners
 

@@ -4,7 +4,7 @@ import { createBaseEditor } from '@platejs/core';
 
 import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt } from '@platejs/test-utils';
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
 import { BaseListPlugin } from './BaseListPlugin';
 import { BulletedListRules } from './BulletedListRules';

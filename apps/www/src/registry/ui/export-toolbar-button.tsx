@@ -7,8 +7,8 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { exportToDocx } from '@platejs/docx-io';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowDownToLineIcon } from 'lucide-react';
-import type { SlatePlugin } from 'platejs';
-import { createSlateEditor } from 'platejs';
+import type { BasePlugin } from 'platejs';
+import { createBaseEditor } from 'platejs';
 import { useEditorRef } from 'platejs/react';
 import { serializeHtml } from 'platejs/static';
 
@@ -30,14 +30,21 @@ const siteUrl = 'https://platejs.org';
 export function ExportToolbarButton(props: DropdownMenuProps) {
   const editor = useEditorRef();
   const [open, setOpen] = React.useState(false);
+  const markdownApi = editor.plugin(MarkdownPlugin).api;
 
   const getCanvas = async () => {
     const { default: html2canvas } = await import('html2canvas-pro');
 
     const style = document.createElement('style');
     document.head.append(style);
+    const editorElement = editor.api.dom.resolveDOMNode(editor);
 
-    const canvas = await html2canvas(editor.api.toDOMNode(editor)!, {
+    if (!editorElement) {
+      style.remove();
+      throw new Error('Cannot resolve editor DOM node for export.');
+    }
+
+    const canvas = await html2canvas(editorElement, {
       onclone: (document: Document) => {
         const editorElement = document.querySelector(
           '[contenteditable="true"]'
@@ -100,9 +107,9 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToHtml = async () => {
-    const editorStatic = createSlateEditor({
+    const editorStatic = createBaseEditor({
       plugins: BaseEditorKit,
-      value: editor.children,
+      value: editor.read.children(),
     });
 
     const editorHtml = await serializeHtml(editorStatic, {
@@ -145,14 +152,14 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToMarkdown = async () => {
-    const md = editor.getApi(MarkdownPlugin).markdown.serialize();
+    const md = markdownApi.serialize();
     const url = `data:text/markdown;charset=utf-8,${encodeURIComponent(md)}`;
     await downloadFile(url, 'plate.md');
   };
 
   const exportToWord = async () => {
-    const blob = await exportToDocx(editor.children, {
-      editorPlugins: [...BaseEditorKit, ...DocxExportKit] as SlatePlugin[],
+    const blob = await exportToDocx(editor.read.value().children, {
+      editorPlugins: [...BaseEditorKit, ...DocxExportKit] as BasePlugin[],
     });
 
     const url = URL.createObjectURL(blob);

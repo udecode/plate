@@ -5,16 +5,25 @@ import * as React from 'react';
 import type { PlateElementProps, RenderNodeWrapper } from 'platejs/react';
 
 import { getDraftCommentKey } from '@platejs/comment';
-import { CommentPlugin } from '@platejs/comment/react';
 import { getTransientSuggestionKey } from '@platejs/suggestion';
-import { SuggestionPlugin } from '@platejs/suggestion/react';
 import {
   MessageSquareTextIcon,
   MessagesSquareIcon,
   PencilLineIcon,
 } from 'lucide-react';
-import { type AnyPluginConfig, type NodeEntry, PathApi } from 'platejs';
-import { useEditorRef, usePluginOption } from 'platejs/react';
+import {
+  type AnyPluginConfig,
+  type Element,
+  type NodeEntry,
+  type Text,
+  PathApi,
+} from 'platejs';
+import {
+  useEditorPlugin,
+  useEditorRef,
+  useNodePath,
+  usePluginOption,
+} from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -36,8 +45,9 @@ export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> =
 
 const BlockCommentContent = ({ children, element }: PlateElementProps) => {
   const editor = useEditorRef();
-  const commentsApi = editor.getApi(CommentPlugin).comment;
-  const blockPath = editor.api.findPath(element) ?? [];
+  const { api: commentsApi } = useEditorPlugin(commentPlugin);
+  const { api: suggestionApi } = useEditorPlugin(suggestionPlugin);
+  const blockPath = useNodePath(element) ?? [];
   const isTopLevelBlock = blockPath.length === 1;
   const draftCommentNode = isTopLevelBlock
     ? commentsApi.node({ at: blockPath, isDraft: true })
@@ -46,9 +56,9 @@ const BlockCommentContent = ({ children, element }: PlateElementProps) => {
     ? [...commentsApi.nodes({ at: blockPath })]
     : [];
   const suggestionNodes = isTopLevelBlock
-    ? [
-        ...editor.getApi(SuggestionPlugin).suggestion.nodes({ at: blockPath }),
-      ].filter(([node]) => !node[getTransientSuggestionKey()])
+    ? [...suggestionApi.nodes({ at: blockPath })].filter(
+        ([node]) => !node[getTransientSuggestionKey()]
+      )
     : [];
   const { resolvedDiscussions, resolvedSuggestions } =
     useBlockDiscussionItems(blockPath);
@@ -92,13 +102,11 @@ const BlockCommentContent = ({ children, element }: PlateElementProps) => {
     (isCommenting && !!draftCommentNode && commentingCurrent);
 
   const anchorElement = React.useMemo(() => {
-    let activeNode: NodeEntry | undefined;
+    let activeNode: NodeEntry<Element | Text> | undefined;
 
     if (activeSuggestion) {
       activeNode = suggestionNodes.find(
-        ([node]) =>
-          editor.getApi(SuggestionPlugin).suggestion.nodeId(node) ===
-          activeSuggestion.suggestionId
+        ([node]) => suggestionApi.nodeId(node) === activeSuggestion.suggestionId
       );
     }
 
@@ -107,16 +115,14 @@ const BlockCommentContent = ({ children, element }: PlateElementProps) => {
         activeNode = draftCommentNode;
       } else {
         activeNode = commentNodes.find(
-          ([node]) =>
-            editor.getApi(commentPlugin).comment.nodeId(node) ===
-            activeCommentId
+          ([node]) => commentsApi.nodeId(node) === activeCommentId
         );
       }
     }
 
     if (!activeNode) return null;
 
-    return editor.api.toDOMNode(activeNode[0])!;
+    return editor.api.dom.resolveDOMNode(activeNode[0]) as HTMLElement | null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     open,
@@ -139,10 +145,11 @@ const BlockCommentContent = ({ children, element }: PlateElementProps) => {
         open={open}
         onOpenChange={(_open_) => {
           if (!_open_ && isCommenting && draftCommentNode) {
-            editor.tf.unsetNodes(getDraftCommentKey(), {
+            editor.update.nodes.unset(getDraftCommentKey(), {
               at: [],
               mode: 'lowest',
-              match: (n) => n[getDraftCommentKey()],
+              match: (n) =>
+                Boolean((n as Record<string, unknown>)[getDraftCommentKey()]),
             });
           }
           setOpen(_open_);

@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const deserializeHtmlValue: any = (
+export const deserializeHtmlValue = (
   <fragment>
     <hh2>HTML</hh2>
     <hp>

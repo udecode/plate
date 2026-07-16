@@ -24,8 +24,9 @@ import {
   useEditorSelector,
   useElement,
   useFocusedLast,
-  useReadOnly,
-  useSelected,
+  useNodePath,
+  useEditorReadOnly,
+  useElementSelected,
 } from 'platejs/react';
 import debounce from 'lodash/debounce.js';
 import { Trash2, DownloadIcon } from 'lucide-react';
@@ -94,7 +95,8 @@ function createDebouncedCodeDrawingRenderer(
 
 function useCodeDrawingElement({ element }: { element: TCodeDrawingElement }) {
   const editor = useEditorRef();
-  const readOnly = useReadOnly();
+  const readOnly = useEditorReadOnly();
+  const path = useNodePath(element);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [image, setImage] = React.useState<string>('');
@@ -115,9 +117,8 @@ function useCodeDrawingElement({ element }: { element: TCodeDrawingElement }) {
   const removeNode = () => {
     if (readOnly) return;
 
-    const path = editor.api.findPath(element);
     if (path) {
-      editor.tf.removeNodes({ at: path });
+      editor.update.nodes.remove({ at: path });
     }
   };
 
@@ -135,10 +136,11 @@ export function CodeDrawingElement(
   const { children } = props;
   const isMobile = useIsMobile();
   const editor = useEditorRef();
-  const readOnly = useReadOnly();
-  const selected = useSelected();
+  const readOnly = useEditorReadOnly();
+  const selected = useElementSelected();
   const isFocusedLast = useFocusedLast();
   const element = useElement<TCodeDrawingElement>();
+  const path = useNodePath(element);
   const { removeNode, image, loading } = useCodeDrawingElement({ element });
 
   const handleDownload = React.useCallback(() => {
@@ -148,9 +150,8 @@ export function CodeDrawingElement(
 
   const handleCodeChange = React.useCallback(
     (code: string) => {
-      const path = editor.api.findPath(element);
       if (path) {
-        editor.tf.setNodes(
+        editor.update.nodes.set(
           {
             data: {
               ...element.data,
@@ -161,14 +162,13 @@ export function CodeDrawingElement(
         );
       }
     },
-    [editor, element]
+    [editor, element.data, path]
   );
 
   const handleDrawingTypeChange = React.useCallback(
     (drawingType: CodeDrawingType) => {
-      const path = editor.api.findPath(element);
       if (path) {
-        editor.tf.setNodes(
+        editor.update.nodes.set(
           {
             data: {
               ...element.data,
@@ -179,14 +179,13 @@ export function CodeDrawingElement(
         );
       }
     },
-    [editor, element]
+    [editor, element.data, path]
   );
 
   const handleDrawingModeChange = React.useCallback(
     (drawingMode: ViewMode) => {
-      const path = editor.api.findPath(element);
       if (path) {
-        editor.tf.setNodes(
+        editor.update.nodes.set(
           {
             data: {
               ...element.data,
@@ -197,7 +196,7 @@ export function CodeDrawingElement(
         );
       }
     },
-    [editor, element]
+    [editor, element.data, path]
   );
 
   const code = element.data?.code ?? '';
@@ -205,7 +204,7 @@ export function CodeDrawingElement(
   const drawingMode = element.data?.drawingMode ?? 'Both';
 
   const selectionCollapsed = useEditorSelector(
-    (editor) => !editor.api.isExpanded(),
+    (editor) => editor.read.selection.isCollapsed(),
     []
   );
 

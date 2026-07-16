@@ -324,11 +324,9 @@ export function PlaceholderElement({ className, children, element, ...props }) {
       // Replace placeholder with actual media element
       const { url, type } = uploadedFile;
       
-      // Transform placeholder to appropriate media type
-      editor.tf.replace.placeholder({
-        id: element.id,
-        url,
-        type: getMediaType(type), // image, video, audio, file
+      // Insert the final media node after upload succeeds.
+      editor.update((tx) => {
+        tx.placeholder.insert(getMediaType(type), { select: true });
       });
     },
     onUploadError: (error) => {
@@ -546,7 +544,7 @@ Removes a file from the uploading tracking state after upload completes or fails
 
 ## Transforms
 
-### `tf.insert.media`
+### `tx.placeholder.insert.media`
 
 Inserts media files into the editor with upload placeholders.
 
@@ -556,17 +554,17 @@ Inserts media files into the editor with upload placeholders.
     Files to upload. Validates against configured file types and limits.
   </APIItem>
   <APIItem name="options" type="object" optional>
-    Options for the insert nodes transform.
+    Exact-path and selection options.
   </APIItem>
 </APIParameters>
 
 <APIOptions type="object">
   <APIItem name="at" type="Path" optional>
-    Location to insert the media. Defaults to current selection.
+    Exact insertion path. When omitted, placeholders are inserted after the
+    selected block, or appended when there is no selection.
   </APIItem>
-  <APIItem name="nextBlock" type="boolean" optional>
-    Whether to insert a new block after the media.
-    - **Default:** `true`
+  <APIItem name="select" type="boolean" optional>
+    Select the inserted placeholders.
   </APIItem>
 </APIOptions>
 </API>
@@ -584,23 +582,23 @@ enum UploadErrorCode {
 }
 ```
 
-### `tf.insert.imagePlaceholder`
+### `tx.insert.imagePlaceholder`
 
 Inserts a placeholder that converts to an image element when completed.
 
-### `tf.insert.videoPlaceholder`
+### `tx.insert.videoPlaceholder`
 
 Inserts a placeholder that converts to a video element when completed.
 
-### `tf.insert.audioPlaceholder`
+### `tx.insert.audioPlaceholder`
 
 Inserts a placeholder that converts to an audio element when completed.
 
-### `tf.insert.filePlaceholder`
+### `tx.insert.filePlaceholder`
 
 Inserts a placeholder that converts to a file element when completed.
 
-### `tf.insert.image`
+### `insertImage`
 
 Inserts an image element into the editor.
 
@@ -609,19 +607,23 @@ Inserts an image element into the editor.
   <APIItem name="url" type="string | ArrayBuffer">
     The URL or ArrayBuffer of the image.
   </APIItem>
-  <APIItem name="options" type="InsertNodesOptions" optional>
+  <APIItem name="options" type="object" optional>
     Additional options for inserting the image element.
   </APIItem>
 </APIParameters>
 
 <APIOptions type="InsertImageOptions">
-  <APIItem name="nextBlock" type="boolean" optional>
-    If true, the image will be inserted in the next block.
+  <APIItem name="after" type="NodeTarget" optional>
+    Reference block or location. Defaults to the selected block; appends when
+    there is no reference or selection.
+  </APIItem>
+  <APIItem name="select" type="boolean" optional>
+    Select the inserted image.
   </APIItem>
 </APIOptions>
 </API>
 
-### `tf.insert.mediaEmbed`
+### `insertMediaEmbed`
 
 Inserts a media embed element at the current selection.
 
@@ -631,12 +633,11 @@ Inserts a media embed element at the current selection.
     The URL of the media embed.
     - **Default:** `''`
   </APIItem>
-  <APIItem name="key" type="string" optional>
-    The key of the media embed element.
-    - **Default:** `KEYS.mediaEmbed`
+  <APIItem name="after" type="NodeTarget" optional>
+    Reference block or location. Defaults to the selected block.
   </APIItem>
-  <APIItem name="insertNodesOptions" type="InsertNodesOptions" optional>
-    Additional options for inserting nodes.
+  <APIItem name="select" type="boolean" optional>
+    Select the inserted embed.
   </APIItem>
 </APIOptions>
 </API>
@@ -922,7 +923,7 @@ Enhances the editor instance with image-related functionality.
 ### `TMediaElement`
 
 ```tsx
-export interface TMediaElement extends TElement {
+export interface TMediaElement extends Element {
   url: string;
   id?: string;
   align?: 'center' | 'left' | 'right';
@@ -935,7 +936,7 @@ export interface TMediaElement extends TElement {
 ### `TPlaceholderElement`
 
 ```tsx
-export interface TPlaceholderElement extends TElement {
+export interface TPlaceholderElement extends Element {
   mediaType: string;
 }
 ```

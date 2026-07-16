@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const fontValue: any = (
+export const fontValue = (
   <fragment>
     <hh2>Colors</hh2>
     <hp>

@@ -29,20 +29,16 @@ export function BlockSuggestionCard({
   isLast: boolean;
   suggestion: ResolvedSuggestion;
 }) {
-  const { api, editor } = useEditorPlugin(SuggestionPlugin);
+  const { editor } = useEditorPlugin(SuggestionPlugin);
 
   const userInfo = usePluginOption(discussionPlugin, 'user', suggestion.userId);
 
   const accept = (suggestion: ResolvedSuggestion) => {
-    api.suggestion.withoutSuggestions(() => {
-      acceptSuggestion(editor, suggestion);
-    });
+    acceptSuggestion(editor, suggestion);
   };
 
   const reject = (suggestion: ResolvedSuggestion) => {
-    api.suggestion.withoutSuggestions(() => {
-      rejectSuggestion(editor, suggestion);
-    });
+    rejectSuggestion(editor, suggestion);
   };
 
   const [hovering, setHovering] = React.useState(false);

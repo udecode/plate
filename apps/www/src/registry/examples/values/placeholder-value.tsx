@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const blockPlaceholderValue: any = (
+export const blockPlaceholderValue = (
   <fragment>
     <hh2>Placeholder</hh2>
     <hp>

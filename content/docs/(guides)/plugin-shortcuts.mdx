@@ -3,7 +3,7 @@ title: Plugin Shortcuts
 description: Configure keyboard shortcuts on Plate plugins.
 ---
 
-Plugin shortcuts map key combinations to plugin methods or explicit handlers. Plate resolves shortcuts during plugin setup, stores them on `editor.meta.shortcuts`, and renders them through `EditorHotkeysEffect` inside the editable. This guide covers linked methods, custom handlers, overrides, priorities, and default shortcut ownership.
+Plugin shortcuts map key combinations to plugin methods or explicit handlers. Plate resolves shortcuts during plugin setup, stores them on `editor.runtime.shortcuts`, and renders them through `EditorHotkeysEffect` inside the editable. This guide covers linked methods, custom handlers, overrides, priorities, and default shortcut ownership.
 
 ## How Shortcuts Resolve
 
@@ -11,7 +11,7 @@ Each plugin owns a `shortcuts` object. At resolution time Plate namespaces every
 
 When a shortcut has no `handler`, Plate looks for a matching plugin-specific method in this order:
 
-1. `editor.tf[plugin.key][shortcutName]`
+1. `tx[plugin.key][shortcutName]` inside `editor.update(...)`
 2. `editor.api[plugin.key][shortcutName]`
 
 If neither method exists and no `handler` is provided, the shortcut is ignored by `EditorHotkeysEffect`.
@@ -24,9 +24,9 @@ If neither method exists and no `handler` is provided, the shortcut is ignored b
 | `preventDefault` | Passed through to `useHotkeys`. When omitted, Plate calls `event.preventDefault()` and `event.stopPropagation()` after handled shortcuts. |
 | `null` | Removes that named shortcut from the plugin. |
 
-## Linked Transform Shortcuts
+## Linked Transaction Shortcuts
 
-Use a linked transform when the shortcut name and plugin transform name are the same.
+Use a linked transaction command when the shortcut name and plugin tx command name are the same.
 
 ```tsx title="plugins/signature-plugin.tsx" showLineNumbers
 import { Key, createPlatePlugin } from 'platejs/react';
@@ -34,9 +34,9 @@ import { Key, createPlatePlugin } from 'platejs/react';
 export const SignaturePlugin = createPlatePlugin({
   key: 'signature',
 })
-  .extendTransforms(({ editor }) => ({
+  .extendTx(() => (tx) => ({
     insertSignature: () => {
-      editor.tf.insertText(' - Plate');
+      tx.text.insert(' - Plate');
     },
   }))
   .extend({
@@ -48,7 +48,7 @@ export const SignaturePlugin = createPlatePlugin({
   });
 ```
 
-Pressing `Mod+Shift+S` calls `editor.tf.signature.insertSignature()`.
+Pressing `Mod+Shift+S` runs `editor.update((tx) => tx.signature.insertSignature())`.
 
 ## Linked API Shortcuts
 
@@ -151,7 +151,7 @@ export const AppItalicPlugin = ItalicPlugin.configure({
 });
 ```
 
-The `null` value removes `italic.toggle` from `editor.meta.shortcuts`.
+The `null` value removes `italic.toggle` from `editor.runtime.shortcuts`.
 
 ## Multiple Shortcuts
 
@@ -163,9 +163,9 @@ import { Key, createPlatePlugin } from 'platejs/react';
 export const ReviewPlugin = createPlatePlugin({
   key: 'review',
 })
-  .extendTransforms(({ editor }) => ({
-    accept: () => editor.tf.insertText('Accepted'),
-    reject: () => editor.tf.insertText('Rejected'),
+  .extendTx(() => (tx) => ({
+    accept: () => tx.text.insert('Accepted'),
+    reject: () => tx.text.insert('Rejected'),
   }))
   .extend({
     shortcuts: {
@@ -179,7 +179,7 @@ export const ReviewPlugin = createPlatePlugin({
   });
 ```
 
-This creates `review.accept` and `review.reject` in `editor.meta.shortcuts`.
+This creates `review.accept` and `review.reject` in `editor.runtime.shortcuts`.
 
 ## Priority
 

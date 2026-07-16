@@ -20,7 +20,7 @@ export const codeDrawingInitialData: NodeProps<TCodeDrawingElement> = {
   },
 };
 
-export const codeDrawingValue: any = (
+export const codeDrawingValue = (
   <fragment>
     <hh2>Code Drawing</hh2>
     <hp>

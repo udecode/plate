@@ -10,18 +10,20 @@ import {
   AIChatPlugin,
   aiCommentToRange,
   applyTableCellSuggestion,
+  createAIChatAdapter,
 } from '@platejs/ai/react';
 import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
 import { deserializeMd } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { TablePlugin } from '@platejs/table/react';
+import { type Range, type Value, NodeApi, TextApi } from '@platejs/plite';
 import { type UIMessage, DefaultChatTransport } from 'ai';
-import { type TNode, KEYS, nanoid, NodeApi, TextApi } from 'platejs';
+import { KEYS, nanoid } from 'platejs';
 import { type PlateEditor, useEditorRef, usePluginOption } from 'platejs/react';
 
 import { aiChatPlugin } from '@/registry/components/editor/plugins/ai-kit';
 
 import { discussionPlugin } from './plugins/discussion-kit';
-import { withAIBatch } from '@platejs/ai';
 
 export type ToolName = 'comment' | 'edit' | 'generate';
 
@@ -52,6 +54,29 @@ export type Chat = UseChatHelpers<ChatMessage>;
 
 export type ChatMessage = UIMessage<{}, MessageDataPart>;
 
+type ChatRequestBody = {
+  messages: ChatMessage[];
+  ctx?: {
+    children?: Value;
+    selection?: Range;
+  };
+  [key: string]: unknown;
+};
+
+const getSelectedTableCells = (editor: PlateEditor): unknown[] => {
+  const selectedCells: unknown = editor
+    .plugin(TablePlugin)
+    .getOption('selectedCells');
+
+  return Array.isArray(selectedCells) ? selectedCells : [];
+};
+
+const hasStringId = (value: unknown): value is { id: string } =>
+  typeof value === 'object' &&
+  value !== null &&
+  'id' in value &&
+  typeof value.id === 'string';
+
 function createChatTransport({
   api,
   abortControllerRef,
@@ -65,11 +90,12 @@ function createChatTransport({
     api,
     // Mock the API response. Remove it when you implement the route /api/ai/command
     fetch: (async (input, init) => {
-      const bodyOptions = editor.getOptions(aiChatPlugin).chatOptions?.body;
+      const bodyOptions = editor.plugin(aiChatPlugin).getOptions()
+        .chatOptions?.body;
 
-      const initBody = JSON.parse(init?.body as string);
+      const initBody = JSON.parse(init?.body as string) as ChatRequestBody;
 
-      const body = {
+      const body: ChatRequestBody = {
         ...initBody,
         ...bodyOptions,
       };
@@ -83,16 +109,18 @@ function createChatTransport({
         let sample: 'comment' | 'markdown' | 'mdx' | 'table' | null = null;
 
         try {
-          const body = JSON.parse(init?.body as string);
-          const content = body.messages
+          const responseBody = JSON.parse(
+            init?.body as string
+          ) as ChatRequestBody;
+          const content = responseBody.messages
             .at(-1)
-            .parts.find((p: any) => p.type === 'text')?.text;
+            ?.parts.find((part) => part.type === 'text')?.text;
 
-          if (content.includes('Generate a markdown sample')) {
+          if (content?.includes('Generate a markdown sample')) {
             sample = 'markdown';
-          } else if (content.includes('Generate a mdx sample')) {
+          } else if (content?.includes('Generate a mdx sample')) {
             sample = 'mdx';
-          } else if (content.includes('comment')) {
+          } else if (content?.includes('comment')) {
             sample = 'comment';
           }
 
@@ -100,15 +128,17 @@ function createChatTransport({
           // Single cell selection should use normal edit flow, only multi-cell uses table tool
           if (!sample) {
             // First check: selectedCells from TablePlugin (cell selection mode)
-            const selectedCells =
-              editor.getOption({ key: KEYS.table }, 'selectedCells') || [];
+            const selectedCells = getSelectedTableCells(editor);
 
             if (selectedCells.length > 1) {
               sample = 'table';
             }
             // Second check: selection range spans multiple cells
-            else if (body.ctx?.children && body.ctx?.selection) {
-              const { selection, children } = body.ctx;
+            else if (
+              responseBody.ctx?.children &&
+              responseBody.ctx?.selection
+            ) {
+              const { selection, children } = responseBody.ctx;
               const anchorPath = selection.anchor?.path;
               const focusPath = selection.focus?.path;
 
@@ -187,34 +217,36 @@ export const useChat = () => {
     transport,
     onData(data) {
       if (data.type === 'data-toolName') {
-        editor.setOption(AIChatPlugin, 'toolName', data.data as ToolName);
+        editor
+          .plugin(AIChatPlugin)
+          .setOption('toolName', data.data as ToolName);
       }
 
       if (data.type === 'data-table' && data.data) {
         const tableData = data.data as TTableCellUpdate;
 
         if (tableData.status === 'finished') {
-          const chatSelection = editor.getOption(AIChatPlugin, 'chatSelection');
+          const chatSelection = editor
+            .plugin(AIChatPlugin)
+            .getOption('chatSelection');
 
           if (!chatSelection) return;
 
-          editor.tf.setSelection(chatSelection);
+          editor.update.selection.set(chatSelection);
 
           return;
         }
 
         const cellUpdate = tableData.cellUpdate!;
 
-        withAIBatch(editor, () => {
-          applyTableCellSuggestion(editor, cellUpdate);
-        });
+        applyTableCellSuggestion(editor, cellUpdate);
       }
 
       if (data.type === 'data-comment' && data.data) {
         const commentData = data.data as TComment;
 
         if (commentData.status === 'finished') {
-          editor.getApi(BlockSelectionPlugin).blockSelection.deselect();
+          editor.plugin(BlockSelectionPlugin).api.deselect();
 
           return;
         }
@@ -225,7 +257,7 @@ export const useChat = () => {
         if (!range) return console.warn('No range found for AI comment');
 
         const discussions =
-          editor.getOption(discussionPlugin, 'discussions') || [];
+          editor.plugin(discussionPlugin).getOption('discussions') || [];
 
         // Generate a new discussion ID
         const discussionId = nanoid();
@@ -237,7 +269,7 @@ export const useChat = () => {
           createdAt: new Date(),
           discussionId,
           isEdited: false,
-          userId: editor.getOption(discussionPlugin, 'currentUserId'),
+          userId: editor.plugin(discussionPlugin).getOption('currentUserId'),
         };
 
         // Create a new discussion
@@ -246,31 +278,31 @@ export const useChat = () => {
           comments: [newComment],
           createdAt: new Date(),
           documentContent: deserializeMd(editor, aiComment.content)
-            .map((node: TNode) => NodeApi.string(node))
+            .map((node) => NodeApi.string(node))
             .join('\n'),
           isResolved: false,
-          userId: editor.getOption(discussionPlugin, 'currentUserId'),
+          userId: editor.plugin(discussionPlugin).getOption('currentUserId'),
         };
 
         // Update discussions
         const updatedDiscussions = [...discussions, newDiscussion];
-        editor.setOption(discussionPlugin, 'discussions', updatedDiscussions);
+        editor
+          .plugin(discussionPlugin)
+          .setOption('discussions', updatedDiscussions);
 
         // Apply comment marks to the editor
-        editor.tf.withMerging(() => {
-          editor.tf.setNodes(
-            {
-              [getCommentKey(newDiscussion.id)]: true,
-              [getTransientCommentKey()]: true,
-              [KEYS.comment]: true,
-            },
-            {
-              at: range,
-              match: TextApi.isText,
-              split: true,
-            }
-          );
-        });
+        editor.update({ history: 'merge' }).nodes.set(
+          {
+            [getCommentKey(newDiscussion.id)]: true,
+            [getTransientCommentKey()]: true,
+            [KEYS.comment]: true,
+          },
+          {
+            at: range,
+            match: TextApi.isText,
+            split: true,
+          }
+        );
       }
     },
 
@@ -279,11 +311,14 @@ export const useChat = () => {
 
   const chat = {
     ...baseChat,
-    _abortFakeStream,
+    stop: async () => {
+      await baseChat.stop();
+      _abortFakeStream();
+    },
   };
 
   React.useEffect(() => {
-    editor.setOption(AIChatPlugin, 'chat', chat as any);
+    editor.plugin(AIChatPlugin).setOption('chat', createAIChatAdapter(chat));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chat.status, chat.messages, chat.error, _abortFakeStream]);
 
@@ -1556,7 +1591,7 @@ const mdxChunks = [
 ];
 
 const createCommentChunks = (editor: PlateEditor) => {
-  const selectedBlocksApi = editor.getApi(BlockSelectionPlugin).blockSelection;
+  const selectedBlocksApi = editor.plugin(BlockSelectionPlugin).api;
 
   const selectedBlocks = selectedBlocksApi
     .getNodes({
@@ -1565,15 +1600,15 @@ const createCommentChunks = (editor: PlateEditor) => {
     })
     .map(([block]) => block);
 
-  const isSelectingSome = editor.getOption(
-    BlockSelectionPlugin,
-    'isSelectingSome'
-  );
+  const isSelectingSome = editor
+    .plugin(BlockSelectionPlugin)
+    .getOption('isSelectingSome');
 
   const blocks =
-    selectedBlocks.length > 0 && (editor.api.isExpanded() || isSelectingSome)
+    selectedBlocks.length > 0 &&
+    (!editor.read.selection.isCollapsed() || isSelectingSome)
       ? selectedBlocks
-      : editor.children;
+      : editor.read.children();
 
   const max = blocks.length;
 
@@ -1619,29 +1654,24 @@ const createCommentChunks = (editor: PlateEditor) => {
 
 const createTableCellChunks = (editor: PlateEditor) => {
   // Get selected table cells from the TablePlugin
-  const selectedCells =
-    editor.getOption({ key: KEYS.table }, 'selectedCells') || [];
+  const selectedCells = getSelectedTableCells(editor);
 
   // If no cells selected, try to get cells from current selection
   let cellIds: string[] = [];
 
   if (selectedCells.length > 0) {
-    cellIds = selectedCells
-      .map((cell: { id?: string }) => cell.id)
-      .filter(Boolean);
+    cellIds = selectedCells.filter(hasStringId).map((cell) => cell.id);
   } else {
     // Try to find table cells in current selection
-    const cells = Array.from(
-      editor.api.nodes({
-        at: editor.selection ?? undefined,
-        match: (n) =>
-          (n as { type?: string }).type === KEYS.td ||
-          (n as { type?: string }).type === KEYS.th,
-      })
+    const cells = editor.read((state) => [
+      ...state.nodes.entries({
+        at: state.selection() ?? undefined,
+        match: { type: [KEYS.td, KEYS.th] },
+      }),
+    ]);
+    cellIds = cells.flatMap(([node]) =>
+      typeof node.id === 'string' ? [node.id] : []
     );
-    cellIds = cells
-      .map(([node]) => (node as { id?: string }).id)
-      .filter(Boolean) as string[];
   }
 
   // If still no cells, return empty chunks

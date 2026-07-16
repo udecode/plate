@@ -1,4 +1,3 @@
-import type { BaseEditor } from '@platejs/core';
 import type {
   EditorUpdateTransaction,
   Element,
@@ -7,22 +6,6 @@ import type {
 import { KEYS } from '@platejs/utils';
 
 import { ListStyleType } from '../types';
-
-/**
- * Set indent list to the given entries. Add indent if listStyleType was not
- * defined.
- */
-export const setListNodes = (
-  editor: BaseEditor,
-  entries: NodeEntry<Element>[],
-  {
-    listStyleType = ListStyleType.Disc,
-  }: {
-    listStyleType?: string;
-  }
-) => {
-  editor.update((tx) => setListNodesWithTx(tx, entries, { listStyleType }));
-};
 
 export const setListNodesWithTx = (
   tx: Pick<EditorUpdateTransaction, 'nodes'>,

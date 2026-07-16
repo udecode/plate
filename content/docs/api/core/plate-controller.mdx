@@ -78,7 +78,7 @@ export function ActiveEditorLabel() {
   const editor = useEditorRef();
   const mounted = useEditorMounted();
 
-  if (!mounted || editor.meta.isFallback) {
+  if (!mounted || editor.runtime.isFallback) {
     return <p>No editor selected.</p>;
   }
 
@@ -87,13 +87,13 @@ export function ActiveEditorLabel() {
 ```
 
 <Callout type="warning" title="Guard transforms">
-  Check `useEditorMounted(id?)` or `!editor.meta.isFallback` before running
+  Check `useEditorMounted(id?)` or `!editor.runtime.isFallback` before running
   transforms from UI that lives under `PlateController`.
 </Callout>
 
 ## Registration
 
-`PlateControllerEffect` runs inside `PlateContent`. It registers the current `Plate` store by editor ID, appends primary editors to `primaryEditorIds`, removes them on unmount, and sets `activeId` when Slate focus enters that editor.
+`PlateControllerEffect` runs inside `PlateContent`. It registers the current `Plate` store by editor ID, appends primary editors to `primaryEditorIds`, removes them on unmount, and sets `activeId` when Plite focus enters that editor.
 
 | State | Owner | Behavior |
 |-------|-------|----------|

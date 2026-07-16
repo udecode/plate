@@ -1,6 +1,6 @@
 ---
-description: 'Define or execute Plate v2 architecture/API plans aligned with Plite: minimal breaking changes, Plite/Plate boundary, runtime/API conflict removal, product DX, performance, proof gates, and migration roadmap.'
-argument-hint: '[--quick|--standard|--deep] <Plate v2 architecture/API/boundary prompt | accepted plan path>'
+description: Plan or execute Plate architecture and public API changes on top of Plite. Use for plugin/runtime boundaries, product API hard cuts, package/docs/registry adoption, and accepted Plate architecture plans.
+argument-hint: '[--quick|--standard|--deep] <Plate architecture/API question | accepted plan path>'
 disable-model-invocation: true
 name: plate-plan
 metadata:
@@ -12,495 +12,186 @@ metadata:
 
 Handle $ARGUMENTS.
 
-Use this for Plate v2 "absolute best architecture/DX" planning where the bad
-outcome is incremental compatibility sludge: old Plate APIs fighting new Plite
-APIs, wrappers around wrappers, private runtime bridges leaking public, and
-breaking changes made without a crisp payoff.
+Use Plate Plan for architecture and public API decisions in the Plate product
+layer. Use Plite Plan when the owner is raw editor substrate.
 
-This is a two-phase lane skill.
+## Modes
 
-Planning mode is the default. It creates or updates an execution-grade plan,
-scores it, and keeps the active goal open until every required pass, boundary
-row, API-conflict row, proof gate, objection row, and final handoff gate is
-closed. A high score never closes the goal by itself.
+Choose one mode from the arguments. Default to `--standard`.
 
-Execution mode starts only after the user explicitly accepts a ready Plate Plan
-and invokes `plate-plan` again against that accepted plan. Execution mode uses a
-new execution-shaped goal. Do not implement a planning proposal under the
-planning goal.
+- `--quick`: inspect the named source and answer with a source-backed
+  recommendation. Do not create a goal or plan. Do not call the result
+  execution-ready. Promote to standard when the decision spans multiple owners,
+  public breaks, or uncertain runtime behavior.
+- `--standard`: create or continue one Plate Plan goal and plan. Run the three
+  phases continuously in the current activation unless interrupted or blocked.
+- `--deep`: use the standard workflow and add only the research, benchmarks,
+  or red-team work justified by the named risk. Do not add more lifecycle
+  phases or generic research.
 
-## Use When
+A plan path does not by itself authorize implementation. Execution starts only
+when the user explicitly accepts a ready plan and invokes `plate-plan` against
+that exact path. Create a new one-shot execution goal for the accepted plan.
 
-- Defining Plate v2 public API, plugin API, runtime, package, docs, examples,
-  registry, or migration architecture.
-- Deciding the minimal breaking changes needed to stop Plate APIs conflicting
-  with Plite APIs.
-- Auditing or redesigning Plate runtime accessors, plugin command surfaces,
-  transform namespaces, package bridges, legacy substrate imports, docs
-  examples, and runtime/default-route bridges that may overlap with Plite.
-- Reviewing whether a Plate feature belongs in Plite substrate, Plate product
-  APIs, a private migration bridge, docs/examples, or deletion.
-- Executing a user-accepted Plate Plan after a second explicit invocation names
-  the accepted plan.
-- The user asks for a harsh architecture call before continuing Plate package
-  migration.
+## Ownership
 
-## Do Not Use When
+Read root `VISION.md` and `docs/vision/plate.md` for doctrine; do not duplicate
+their full ownership tables in the plan.
 
-- The user asks for one narrow bug fix with no architecture/API choice.
-- The user asks for a normal diff review; use `autoreview`.
-- The user asks for public GitHub issue/PR queue handling; use `maintainer`.
-- The user asks for already-applied current-tree closure; use `autoclosure`.
-- The work is pure Plite substrate design; use `plite-plan`.
+- Plite owns the editor model, operations, reads, updates, transactions,
+  selection primitives, DOM/runtime substrate, history, replay, and browser
+  proof infrastructure.
+- Plate owns product plugins, feature workflows, kits, registry code,
+  app-facing docs/examples, and opinionated UX.
+- When a Plate API duplicates or conflicts with Plite, Plite wins. Cut or rename
+  Plate; do not bend Plite or keep a compatibility alias.
+- Keep a Plate API only when it serves a distinct product job with a distinct
+  namespace and adoption story.
 
 ## Hard Policy
 
-- Requires `autogoal` as the lifecycle kernel and `--template plate-plan` as
-  the plan shell.
-- One scheduled pass per activation. Passes are rows in the active plan, not
-  separate goals.
-- Planning mode may edit only planning, research, behavior-law, migration,
-  issue/provenance, and reference artifacts it explicitly owns.
-- Execution mode may edit Plate implementation, tests, examples, docs, package
-  files, build config, and generated references only after explicit acceptance
-  of a ready plan.
-- User phrases like "go", "rewrite", "fix it", or "execute" do not override
-  planning mode while the plan is not ready for review.
-- Never write contradictory closeout state. If any accepted pass, proof row, or
-  handoff item is pending, the plan is pending.
-- Treat pasted reviews as context. The latest user request is the task.
-- Breaking changes are allowed when they produce the best long-term
-  architecture, DX, performance, testability, and agent-maintainability.
-- Minimal breaking change means the smallest public break set that achieves a
-  clean target architecture. It does not mean preserving aliases, shims, or old
-  names when those keep the conflict alive.
-- No public compatibility aliases. No public runtime shims. No docs for old API
-  names. Private temporary bridges are allowed only with an owner, deletion
-  trigger, proof gate, and no public export.
-- Plite API wins when a Plate API conflicts with the Plite substrate. Plate may
-  keep a distinct product-level API only when the plan proves a separate user
-  job, separate namespace, and no conceptual overlap.
-- Do not let a polished plan self-certify. Scores, verdicts, and keep/drop
-  decisions need live source evidence.
-- Prefer inline implementation when used once. Extract helpers only when reuse,
-  readability, proof ownership, or public/internal API shape justifies it.
-- Docs describe the latest state only. Do not write migration/changelog prose
-  into reference docs.
-- If execution touches package exports or exported folders, require `pnpm brl`.
-- Workspace proof must run from the Plate repo root and use the owner command
-  for the changed package/app/docs surface.
+- Current checkout wins. Source every current API, export, docs, test, and
+  dependency claim from live owners.
+- Prefer the smallest public break set that produces one clean architecture.
+  No public aliases, runtime shims, dual signatures, or docs for old names.
+- A private bridge is exceptional. Name its owner, non-public proof, deletion
+  trigger, and removal gate in the decision row.
+- Planning edits only planning, research, vision, behavior-law, migration, and
+  reference artifacts it explicitly owns. Do not implement product source
+  before accepted-plan execution.
+- Keep the plan proportional. One plan is the default artifact. Add a machine-
+  readable artifact only when it materially improves a large audit; do not
+  mirror the same decisions across ledgers.
+- Use worker skills only when their surface actually applies. Do not create a
+  matrix of skills merely to record N/A rows.
+- Follow root `AGENTS.md` for package, docs, browser, barrel, lint, and review
+  commands instead of copying those command tables into the plan.
 
-## Plate V2 Doctrine
+## Standard And Deep Setup
 
-Plate v2 sits on top of Plite. Plate should become simpler because Plite owns
-more of the substrate cleanly.
+Use `autogoal` with `docs/plans/templates/plate-plan.md`.
 
-Default take:
-
-- Plite owns raw editor substrate.
-- Plate owns product composition.
-- Plate must not fork Plite concepts under Plate names.
-- Plate must not expose legacy Plite compatibility as a public beta promise.
-- Plate can break public APIs when the break removes overlap, improves DX,
-  improves performance, or makes behavior easier to test.
-- Plate should keep product ergonomics. Do not make app authors manually wire
-  low-level Plite primitives just to build common editor features.
-- The target is not "closest to old Plate." The target is "best Plate on top of
-  Plite."
-
-## Plite / Plate Boundary
-
-Use this ownership map before scoring any plan:
-
-| Surface | Owner | Rule |
-| --- | --- | --- |
-| Document model, nodes, operations, ranges, selection primitives | Plite | Plate consumes and specializes; it does not redefine core shape. |
-| `editor.read`, `editor.update`, transaction groups, operation replay | Plite | Plate product APIs may call them, but must not expose a competing core mutation layer. |
-| React editor runtime, root locality, DOM projection, browser selection bridge | Plite | Plate composes runtime behavior through supported hooks and extension points. |
-| Browser proof harness for editor behavior | Plite/browser proof infra | Plate uses it for product behavior proof; it does not turn proof helpers into app API. |
-| Yjs/collaboration substrate | Plite/Yjs substrate first | Plate owns product collab UI and package ergonomics. |
-| Product plugins, kits, UI, registry, docs, examples, templates | Plate | Opinionated editor features belong here. |
-| Product commands and feature workflows | Plate | Names must be product-level and must not collide with Plite core namespaces. |
-| App-level configuration and registry defaults | Plate | Keep it ergonomic; do not leak private runtime bridges. |
-
-If a surface is mixed, split it. Do not keep a shared owner because migration is
-awkward.
-
-## API Conflict Law
-
-Every Plate v2 API plan that touches runtime or plugins must include an API
-conflict ledger discovered from live source. The ledger must cover every public
-or exported Plate surface that can overlap with Plite-owned substrate:
-
-- editor runtime accessors
-- product command and transform namespaces
-- plugin API and option extension points
-- feature-package command surfaces
-- Plite transaction/read/update interaction points
-- runtime/default-route bridge APIs
-- package exports and declarations
-- docs/examples teaching public API
-- legacy substrate imports or package bridges
-
-Row verdicts:
-
-- `hard-cut`: remove the public API and update callers.
-- `rename`: keep the concept but move it to a distinct Plate product name.
-- `move-to-plite`: delete the Plate owner and consume Plite.
-- `move-to-plate-product`: keep as Plate product API with a non-conflicting
-  namespace and clear user job.
-- `private-bridge`: temporary internal scaffold, not public, with deletion gate.
-- `defer`: only when the plan names the missing proof and next owner.
-
-Source-discovered legacy accessors deserve special suspicion. They are useful
-only if they remain clearly Plate product surfaces. If they read like alternate
-Plite core APIs, cut or rename them.
-
-Typed escape hatches may be transitional only if the plan proves why normal
-typing cannot cover the caller yet. They cannot become the final Plate v2 story
-without an explicit keep decision.
-
-## Required Artifacts
-
-- Plan file under `docs/plans/`, created from the Plate Plan template:
-
-  ```bash
-  node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
-    --template plate-plan \
-    --title "<short Plate Plan title>"
-  ```
-
-- Active planning goal: one short `create_goal` objective under 240 characters.
-  Put the full pass schedule, threshold, proof gates, and blocker state in the
-  plan file.
-- Active execution goal after user acceptance: a new goal that names the
-  accepted plan and implementation target.
-- API conflict ledger in the active plan.
-- Plite/Plate boundary map in the active plan.
-- Minimal breaking-change matrix in the active plan.
-- Public API target, private bridge target, and deletion gates in the active
-  plan.
-- Package/docs/examples/registry migration order in the active plan.
-- Verification matrix with focused commands for every touched package or app.
-- Objection ledger for every public API, package-boundary, runtime, or product
-  behavior change.
-- Applicable implementation-skill review notes: `architecture-cleanup`,
-  `performance`, `tdd`, `docs-creator`, `react`, `react-useeffect`,
-  `components`, `plate-ui`, and `autoreview`, each marked applied or skipped
-  with a concrete reason.
-- Editor-behavior outputs under `docs/editor-behavior/**` only when the plan
-  changes current Plate behavior law, protocol rows, parity gates, or roadmap.
-
-Allowed planning edit scope:
-
-- `docs/plans/**`
-- `docs/research/**`
-- `docs/vision/**`
-- `docs/editor-behavior/**` when behavior law changes
-- `docs/plite/**` references only when the plan relies on Plite migration
-  evidence
-- `.agents/rules/plate-plan.mdc` only when self-repairing the skill
-
-Allowed execution edit scope:
-
-- The accepted plan's named package, app, docs, tests, examples, build, config,
-  and generated-reference owners.
-
-## Goal Setup
-
-Plate Plan requires `autogoal`.
-
-- Template: `plate-plan`.
-- Planning flow mode: agent-led plan hardening.
-- Execution flow mode: one-shot execution after explicit acceptance.
-- Goal handle: `<lane outcome>; done when <short threshold>; plan
-  <docs/plans/path>`.
-- One pass per activation.
-- Autogoal owns goal conflict, completion, blocker semantics, and lifecycle.
-- Plate Plan owns plan shape, pass table, scorecard, conflict ledger,
-  boundary map, verification matrix, objection ledger, and final handoff.
-- If the goal tool is unavailable, record degraded state in the plan and stop
-  before autonomous pass work unless the user explicitly accepts that.
-
-Good planning goal:
-
-```txt
-Close Plate v2 API conflict plan; done when Plate Plan gates pass; plan docs/plans/YYYY-MM-DD-plate-v2-api-conflicts.md.
+```bash
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template plate-plan \
+  --title "<short Plate plan title>"
 ```
 
-Good execution goal:
+Use a short objective:
 
 ```txt
-Execute docs/plans/<accepted-plan>.md; done when Plate package gates pass; target packages/core.
+Close <Plate decision>; done when binary readiness gates pass; plan docs/plans/<path>.md.
 ```
 
-Bad goal:
+Autogoal owns lifecycle, evidence integrity, blocking, and the final mechanical
+check. Plate Plan owns Plate/Plite decisions, adoption, execution slices, and
+Plate-specific proof.
 
-```txt
-Review Plate APIs a bit.
-```
+## Read Order
 
-## Read First
+1. Latest user request, current goal, and active plan when present.
+2. Root `VISION.md`, `docs/vision/plate.md`, and the relevant common doctrine.
+3. Named Plate source, tests, exports, callers, docs, registry, and examples.
+4. Only the Plite owners directly consumed or challenged by the proposal.
+5. External sources only when local source cannot settle the decision or deep
+   mode names a research question.
 
-1. Latest user request.
-2. Current goal state.
-3. Active plan under `docs/plans/`, if present.
-4. Root `VISION.md`.
-5. Relevant `docs/vision/**` detail files.
-6. `.agents/rules/plite-plan.mdc` when methodology drift is suspected.
-7. Current Plite package APIs that Plate plans to consume:
-   - `packages/plite/**`
-   - `packages/plite-react/**`
-   - `packages/plite-dom/**`
-   - `packages/plite-history/**`
-   - `packages/plite-yjs/**`
-   - `packages/plite-layout/**`
-8. Current Plate package source affected by the plan:
-   - `packages/core/**`
-   - `packages/plate/**`
-   - feature packages under `packages/**`
-   - `apps/www/**`
-   - `content/docs/**`
-9. Existing tests and examples for the affected packages.
-10. Research or issue ledgers only when the plan relies on external evidence.
+Do not scan every Plate or Plite package by default. Expand owner by owner when
+evidence requires it.
 
-Do not treat old plans or chat as current-state proof. Re-read live source
-before saying what currently exists.
+## Three Phases
 
-## Live Source Grounding
+### 1. Ground
 
-Current checkout wins.
+- Capture outcome, scope, non-goals, and explicit user constraints.
+- Read live source and current public teaching surfaces.
+- Name the Plate and Plite owners involved.
+- Record baseline behavior or proof only when it affects the decision.
 
-- Every "current API" claim needs a source pointer.
-- Every "docs currently say" claim needs a docs pointer.
-- Every "tests cover" claim needs a test name or file pointer.
-- Every "package export" claim needs package/export evidence.
-- Every "legacy dependency remains" claim needs import, package, or declaration
-  evidence.
+### 2. Decide
 
-If live source contradicts a prior plan, mark the prior plan stale and update
-the current plan. Do not preserve stale claims for continuity.
+Use one concept-level decision ledger:
 
-## Verification Workspace Gate
+| Surface | Current | Target | Owner | Reason | Adoption | Proof | Risk | Verdict |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
 
-Plan verification uses source audits and template checks. Execution
-verification uses focused package/app commands.
+Verdicts: `keep`, `cut`, `rename`, `move`, `bridge`, `defer`, or `gate`.
 
-Common command families:
+- Use one row per user-facing concept or runtime responsibility, not one row per
+  exported symbol.
+- Put conflict, boundary, minimal-break, objection, rejected-alternative, and
+  bridge answers in the same row when they describe the same decision.
+- A break row must name callers, docs/example adoption, and proof.
+- `defer` must name missing evidence and the next owner.
+- Prefer delete, merge, or inline over wrappers and file churn.
 
-| Surface | Preferred proof |
-| --- | --- |
-| package source/type changes | `pnpm turbo typecheck --filter=./packages/<pkg>` |
-| package tests | `pnpm --filter <package-name> test` or owner script |
-| package build/public declarations | `pnpm --filter <package-name> build` |
-| exports/barrels | `pnpm brl` plus diff review |
-| docs/content | `pnpm --filter www check:docs` and browser proof when route changed |
-| Plite behavior used by Plate | focused `pnpm --filter plite test:plite-browser:chromium <file-or-grep>` |
-| full Plite release/deletion claim | `pnpm check:plite` |
-| broad Plate repo claim | the repo `check` command only when the plan explicitly needs it |
+### 3. Prove And Hand Off
 
-Do not run Playwright against `apps/www` by default. Browser editor behavior
-proof belongs in the owned Plite/browser lane unless the accepted plan names a
-Plate app route as the product behavior owner.
+- Order implementation into vertical slices with owner, entry condition, exit
+  condition, and focused proof.
+- Name exact source audits and owner commands. Planning proof validates the
+  decision; execution proof validates changed behavior.
+- Prepare the final handoff in the plan, run `check-complete`, then emit the
+  handoff in chat. Do not make pre-checker completion depend on a response that
+  has not been sent yet.
 
-## Confidence Score
+## Conditional Work
 
-Score with evidence. Threshold: total score >= 0.92 and no dimension below
-0.85.
+Add only what the scope triggers:
 
-| Dimension | Weight |
-| --- | ---: |
-| Plite/Plate boundary correctness | 0.20 |
-| Plate API/DX quality | 0.20 |
-| Runtime, performance, and testability | 0.20 |
-| Minimal breaking-change strategy | 0.15 |
-| Product/plugin/docs/examples coherence | 0.15 |
-| Research, source evidence, and proof completeness | 0.10 |
+- High-risk public API, runtime, normalization, selection, collaboration, DOM,
+  browser, or generated-contract change: record three realistic failures,
+  blast radius, rollback/hard-cut answer, and focused proof.
+- External research: record the mechanism accepted or rejected and its local
+  consequence. A bibliography is not evidence.
+- Issue or PR provenance: include only for issue-backed work or when the plan
+  changes a public claim.
+- Docs, registry, browser, release, behavior-law, or collaboration rows: include
+  only when those owners change.
+- Typed escape hatch: keep only with a specific reason and deletion gate.
 
-Automatic caps:
+## Binary Readiness
 
-- Any unresolved Plite/Plate owner overlap caps total at 0.84.
-- Any public compatibility alias or shim without an accepted hard reason caps
-  total at 0.80.
-- Any API conflict ledger missing required rows caps total at 0.78.
-- Any current-state claim without live source evidence caps the relevant
-  dimension at 0.75.
-- Any breaking API change without adoption answer, docs/example answer, and
-  proof route caps DX at 0.80.
-- Any execution plan without focused verification commands caps proof at 0.82.
-- Any private bridge without deletion gate caps boundary at 0.82.
-- Any final handoff that lists only highlights caps total at 0.85.
+A standard or deep plan is ready only when all are true:
 
-## Plan Shape
+- every current-state claim has live evidence;
+- every touched responsibility has one owner;
+- every decision row has a resolved verdict;
+- every public break has adoption, docs/example, and proof answers;
+- execution slices and focused verification are concrete;
+- conditional risk/provenance/browser/docs gates are resolved or explicitly
+  inapplicable with a reason;
+- no decision-changing question or runnable planning owner remains;
+- `check-complete.mjs` passes after fresh verification evidence is recorded.
 
-Every Plate Plan should contain:
+Do not use numeric confidence scores or weighted caps. Missing evidence is an
+open gate, not a decimal.
 
-1. Verdict and confidence score.
-2. Intent, outcome, in-scope, non-goals, decision boundaries.
-3. Decision brief: principles, drivers, viable options, rejected alternatives,
-   chosen option, consequences.
-4. Plite/Plate boundary map.
-5. Current-source inventory.
-6. API conflict ledger.
-7. Minimal breaking-change matrix.
-8. Public API target.
-9. Private bridge and deletion-gate target.
-10. Runtime/default-route target.
-11. Plugin/feature package target.
-12. Docs/examples/registry target.
-13. Plate migration phases.
-14. Proof matrix.
-15. Research/ecosystem synthesis when used.
-16. Applicable implementation-skill review matrix.
-17. High-risk pre-mortem when triggered.
-18. Objection ledger.
-19. Hard cuts and rejected alternatives.
-20. Pass schedule.
-21. Plan deltas from review.
-22. Open questions and decision-changing evidence.
-23. Final handoff outline.
-24. Completion gates.
+## Accepted-Plan Execution
 
-## Pass Schedule
+After explicit acceptance:
 
-Run one scheduled pass per activation unless the user explicitly asks for a
-full uninterrupted loop.
+1. Read the accepted plan and current source; repair stale plan claims before
+   implementation.
+2. Create a new one-shot execution goal naming the plan and target owners.
+3. Implement the vertical slices in order, using focused proof first.
+4. Hard-cut rejected surfaces and sweep callers, exports, tests, docs, and
+   examples. Leave no compatibility path unless the accepted ledger contains a
+   time-bounded private bridge.
+5. Run the applicable root `AGENTS.md` gates and applicable review skills.
+6. Update the plan with actual evidence and hand off the result.
 
-Required passes:
+## Handoff
 
-1. Current-state read and initial score.
-2. Intent, scope, boundary, and non-goals.
-3. Plite/Plate boundary audit.
-4. API conflict inventory.
-5. Minimal breaking-change strategy.
-6. Runtime/performance/testability pass.
-7. Docs/examples/registry pass.
-8. Research/ecosystem/live-source pass when external evidence is used.
-9. Objection and steelman pass.
-10. High-risk deliberate pass when triggered.
-11. Revision pass.
-12. Verification and final handoff gate.
+For quick mode, give the recommendation, strongest evidence, rejected option,
+and next owner.
 
-Each pass must either change the plan or explicitly defend no change with
-evidence. A rubber-stamp pass does not count.
+For ready standard/deep plans, link the plan and concisely report:
 
-## Pressure Passes
+- ownership and target API decisions;
+- public breaks and adoption;
+- runtime/package/docs/browser decisions that actually apply;
+- focused proof and unresolved execution risks;
+- execution order and what needs user acceptance.
 
-Before scoring above threshold, record these pass results:
-
-- Boundary pass: prove each surface has one owner.
-- API conflict pass: prove every required conflict row has a verdict.
-- DX pass: prove the target shape is easier for app authors and future agents.
-- Minimal-break pass: prove the public break set is the smallest clean set.
-- Hard-cut pass: remove aliases, shims, stale docs, and fake compatibility.
-- Runtime pass: prove runtime/default-route choices do not fight Plite.
-- Performance pass: prove hot-path and subscription choices are bounded.
-- Testability pass: prove the plan improves proofability, not just aesthetics.
-- Docs pass: prove latest-state docs and examples match the target API.
-- Simplicity pass: delete, inline, or merge before extracting.
-- Ecosystem pass: prove plugin authors, app authors, docs/test maintainers, and
-  package owners have a coherent path.
-- Plate maintainer pass: challenge the plan as if reviewing a public beta PR.
-
-## High-Risk Deliberate Mode
-
-Trigger this mode when a proposal changes:
-
-- public API
-- package boundary
-- runtime/default route
-- plugin or extension behavior
-- data model
-- collaboration semantics
-- normalization
-- selection, focus, IME, browser behavior
-- docs/examples that teach public API
-- release or generated contract
-
-When triggered, add:
-
-- three realistic failure scenarios
-- blast-radius note
-- focused proof plan
-- rollback or hard-cut answer
-- adoption/docs/example answer
-
-## Objection Ledger
-
-Every major public API, package-boundary, runtime, docs, or behavior change
-needs a ledger row:
-
-- Change.
-- Who feels pain.
-- Likely objection.
-- Steelman antithesis.
-- Tradeoff tension.
-- Why this is worth it.
-- Evidence.
-- Rejected alternative.
-- Adoption answer.
-- Docs/example answer.
-- Regression proof.
-- Verdict: `keep`, `revise`, `drop`, or `unresolved`.
-
-Rows are not accepted if they say only "cleaner" or "better architecture."
-That is not a plan. That is a vibe.
-
-## Editor-Behavior Outputs
-
-Plate Plan may update `docs/editor-behavior/**`, but only when the plan changes
-current Plate behavior law, protocol rows, parity gates, or roadmap.
-
-Do not route every Plate v2 API plan through markdown behavior law. That was
-the stale shape. Editor-behavior docs are an output, not this skill's center.
-
-## User Review And Execution Mode
-
-When the score is below threshold, a required row remains open, or a proof gate
-has a runnable next move:
-
-1. Update the plan with score, evidence, deltas, and next owner.
-2. Keep the active goal open.
-3. Continue the next review/refinement slice.
-
-When final gates pass, complete the planning goal and stop for user review.
-Implementation starts only after a later explicit execution request invoking
-Plate Plan against the accepted plan.
-
-## Done Handoff
-
-When setting completion to done, final chat must include a concise but complete
-list of accepted decisions so the user can review without opening the whole
-plan.
-
-Group by surface:
-
-- Plite/Plate boundary
-- public API target
-- API conflicts and verdicts
-- breaking changes
-- private bridges and deletion gates
-- runtime/default-route target
-- package/plugin target
-- docs/examples/registry target
-- proof gates
-- rejected alternatives
-- next execution owners
-- needs user attention
-
-Each bullet should include:
-
-- decision name
-- current -> target shape when changing live source
-- status: `keep`, `cut`, `rename`, `move`, `bridge`, `defer`, or `gate`
-- source/proof pointer when short enough
-
-Do not list only highlights. If the plan accepts twenty decisions, list twenty
-short bullets.
-
-## Final Response
-
-When the plan is still pending, say what score remains and the next owner.
-
-When the plan is ready, say it is ready for user review, list the decisions,
-and stop. Do not silently begin implementation.
+Stop after planning handoff. Never silently begin implementation.

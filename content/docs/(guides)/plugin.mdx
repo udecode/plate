@@ -192,8 +192,8 @@ The `overrideEditor` method provides a way to override existing editor methods w
 const CustomPlugin = createPlatePlugin({
   key: 'custom',
 }).overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
-  // Override transforms
-  transforms: {
+  // Override existing editor transform methods
+  tf: {
     deleteForward(options) {
       // Custom logic before deletion
       console.info('Deleting forward...');
@@ -220,9 +220,9 @@ const CustomPlugin = createPlatePlugin({
 }));
 ```
 
-- Access to original methods via destructured `tf` (transforms) and `api` parameters
+- Access to original methods via destructured `tf` and `api` parameters
 - Type-safe overrides of existing methods
-- Clean separation between transforms and API methods
+- Clean separation between `tf` overrides and API methods
 - Plugin context and options access
 
 Example with typed options:
@@ -233,11 +233,11 @@ type CustomConfig = PluginConfig<
   { allowDelete: boolean }
 >;
 
-const CustomPlugin = createTPlatePlugin<CustomConfig>({
+const CustomPlugin = createPlatePlugin<CustomConfig>({
   key: 'custom',
   options: { allowDelete: true },
 }).overrideEditor(({ editor, tf: { deleteForward }, getOptions }) => ({
-  transforms: {
+  tf: {
     deleteForward(options) {
       // Use typed options to control behavior
       if (!getOptions().allowDelete) {
@@ -250,24 +250,35 @@ const CustomPlugin = createTPlatePlugin<CustomConfig>({
 }));
 ```
 
-### Extend Editor (Advanced)
+### Install Plite Extensions (Advanced)
 
-You can extend the editor for complex functionality. To do this, you can use the `extendEditor` plugin option to directly mutate properties of the `editor` object after its creation.
+Use `extensions` when a Plate plugin needs to install Plite substrate behavior: schema facts, state groups, tx groups, operation middleware, or runtime services.
 
-```ts showLineNumbers {20}
-const CustomNormalizerPlugin = createPlatePlugin({
-  key: 'customNormalizer',
-  extendEditor: ({ editor }) => {
-    editor.customState = true;
-    
-    return editor;
+```ts showLineNumbers
+import { defineEditorExtension } from '@platejs/plite';
+import { createPlatePlugin } from 'platejs/react';
+
+const customState = defineEditorExtension({
+  name: 'custom-state',
+  state: {
+    customState() {
+      return {
+        enabled: () => true,
+      };
+    },
   },
+});
+
+const CustomStatePlugin = createPlatePlugin({
+  key: 'customState',
+  extensions: [customState],
 });
 ```
 
-<Callout type="info" title="Difference between extendEditor and overrideEditor">
-- Use `extendEditor` when integrating legacy Slate plugins like `withYjs` that need direct editor mutation. There is only one `extendEditor` per plugin.
-- Prefer using `overrideEditor` for modifying editor behavior as it has single purpose responsibility and better type safety. It can be called multiple times to layer different overrides.
+<Callout type="info" title="Extensions, overrides, and commands">
+- Use `extensions` for Plite substrate behavior.
+- Use `overrideEditor` only when wrapping existing editor behavior.
+- Use `editor.api` for reads/services and `editor.update` or `tx` groups for mutations.
 </Callout>
 
 ## Advanced Plugin Configuration
@@ -295,13 +306,13 @@ You can access and update the store using the following methods:
 
 ```ts
 // Get the current value
-const count = editor.getOption(MyPlugin, 'count');
+const count = editor.plugin(MyPlugin).getOption('count');
 
 // Set a new value
-editor.setOption(MyPlugin, 'count', 5);
+editor.plugin(MyPlugin).setOption('count', 5);
 
 // Update the value based on the previous state
-editor.setOption(MyPlugin, 'count', (prev) => prev + 1);
+editor.plugin(MyPlugin).setOption('count', (prev) => prev + 1);
 ```
 
 In React components, you can use the `usePluginOption` or `usePluginOptions` hook to subscribe to store changes:
@@ -318,12 +329,12 @@ See more in [Plugin Context](/docs/plugin-context) and [Editor Methods](/docs/ed
 
 ### Dependencies
 
-You can specify plugin dependencies using the `dependencies` property. This ensures that the required plugins are loaded before the current plugin.
+Declare required plugins with their plugin objects. Plate installs the dependency graph recursively, deduplicates plugins by key, and loads dependencies before their dependents.
 
 ```ts
 const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
-  dependencies: ['paragraphPlugin', 'listPlugin'],
+  dependencies: [ParagraphPlugin, ListPlugin],
 });
 ```
 
@@ -396,11 +407,11 @@ Core plugins includes `html` and `htmlReact` parsers.
 
 Using above methods, plugin types are automatically inferred from the given configuration.
 
-If you need to pass an explicit type as generic, you can use `createTPlatePlugin`.
+If you need to pass an explicit type as generic, you can use `createPlatePlugin`.
 
-### Using createTPlatePlugin
+### Using createPlatePlugin
 
-The `createTPlatePlugin` function allows you to create a typed plugin:
+The `createPlatePlugin` function allows you to create a typed plugin:
 
 ```ts
 type CodeBlockConfig = PluginConfig<
@@ -415,15 +426,17 @@ type CodeBlockConfig = PluginConfig<
     };
     toggleSyntax: () => void;
   },
-  // transforms
+  // tx
   {
     insert: {
-      codeBlock: (options: { language: string }) => void;
-    }
-  }
+      codeBlock: () => void;
+    };
+  },
+  // selectors
+  {}
 >;
 
-const CodeBlockPlugin = createTPlatePlugin<CodeBlockConfig>({
+const CodeBlockPlugin = createPlatePlugin<CodeBlockConfig>({
   key: 'code_block',
   options: { syntax: true, syntaxPopularFirst: false },
 }).extendEditorApi<CodeBlockConfig['api']>(() => ({
@@ -431,11 +444,13 @@ const CodeBlockPlugin = createTPlatePlugin<CodeBlockConfig>({
     getSyntaxState: () => true,
   },
   toggleSyntax: () => {},
-})).extendEditorTransforms<CodeBlockConfig['transforms']>(() => ({
-  insert: {
-    codeBlock: ({ editor, getOptions }) => {
-      editor.tf.insertBlock({ type: 'code_block', language: getOptions().language });
-    },
+})).extendTxGroup('insert', ({ getOptions }) => (tx) => ({
+  codeBlock: () => {
+    tx.nodes.insert({
+      type: 'code_block',
+      language: getOptions().language,
+      children: [{ text: '' }],
+    });
   },
 }));
 ```
@@ -450,7 +465,7 @@ const editor = createPlateEditor({
 });
 
 // Type-safe access to options
-const options = editor.getOptions(ExtendedCodeBlockPlugin);
+const options = editor.plugin(ExtendedCodeBlockPlugin).getOptions();
 options.syntax;
 options.syntaxPopularFirst;
 options.hotkey;
@@ -461,8 +476,8 @@ editor.api.plugin.getSyntaxState();
 editor.api.plugin2.setLanguage('python');
 editor.api.plugin.getLanguage();
 
-// Type-safe Transforms
-editor.tf.insert.codeBlock({ language: 'typescript' });
+// Type-safe transactions
+editor.update((tx) => tx.insert.codeBlock());
 ```
 
 ## See also

@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const previewMdValue: any = (
+export const previewMdValue = (
   <fragment>
     <hh2>👀 Markdown 预览</hh2>
     <hp>

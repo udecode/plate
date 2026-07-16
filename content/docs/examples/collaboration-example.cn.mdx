@@ -2,4 +2,24 @@
 title: 协作演示
 ---
 
+这个示例展示协作边界：Plate 渲染编辑器界面，应用负责 Yjs provider、传输、持久化、认证、房间命名和光标数据。
+
 <ComponentPreview name="collaboration-demo" />
+
+## 源码
+
+示例刻意保持很小。它让编辑器界面可见，同时标出哪些协作部分属于应用边界。
+
+<ComponentSource name="collaboration-demo" />
+
+## 运行时形状
+
+| 部分 | 所有者 | 说明 |
+| --- | --- | --- |
+| `createYjsExtension` | `@platejs/yjs` | 把共享 `Y.Doc` 和 provider 包装器接入 Plite 操作。 |
+| Provider 包装器 | 应用基础设施 | 将 Hocuspocus、WebRTC、IndexedDB 或自定义传输包装成 `YjsProviderLike`。 |
+| 房间状态 | 应用 | 房间 id、认证令牌和持久化逻辑不属于 Plate 包。 |
+| 连接命令 | `tx.yjs` | 连接、断开、重连、发布选择、清空选择、撤销和重做。 |
+| 连接读取 | `state.yjs` | 通过 `editor.read` 读取连接、同步和 provider 状态。 |
+
+真实 provider 接入请看 [Yjs 指南](/docs/yjs)。

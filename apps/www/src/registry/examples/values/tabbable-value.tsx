@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const tabbableValue: any = (
+export const tabbableValue = (
   <fragment>
     <hh2>Tabbable</hh2>
     <hp>

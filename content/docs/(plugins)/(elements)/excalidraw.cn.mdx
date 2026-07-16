@@ -52,11 +52,20 @@ Excalidraw 空元素插件。
 
 ## API 接口
 
-### `insertExcalidraw`
+### `editor.update.excalidraw.insert`
 
 向编辑器中插入 Excalidraw 元素。
 
-<API name="insertExcalidraw">
+```tsx
+editor.update.excalidraw.insert(
+  { data: { elements: [], state: {} } },
+  { after: referenceBlock, select: true }
+);
+```
+
+省略 `after` 时使用当前选区所在的块。没有可解析的块时不执行操作。
+
+<API name="editor.update.excalidraw.insert">
 <APIParameters>
   <APIItem name="props" type="NodeProps<TExcalidrawElement>" optional>
     Excalidraw 元素的属性参数

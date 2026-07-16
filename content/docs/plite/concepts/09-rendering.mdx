@@ -155,7 +155,7 @@ const MyEditor = () => {
 
 const Toolbar = () => {
   const isBold = useEditorState((state) => {
-    return state.marks.get()?.bold === true;
+    return state.marks()?.bold === true;
   });
 
   return (

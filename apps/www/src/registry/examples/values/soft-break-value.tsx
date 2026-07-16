@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const softBreakValue: any = (
+export const softBreakValue = (
   <fragment>
     <hh2>Soft Break</hh2>
     <hp>

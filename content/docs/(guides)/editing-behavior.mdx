@@ -29,13 +29,13 @@ Most editing behavior belongs in `plugin.rules`. Reach for custom transforms onl
 | Remove empty nodes during normalization. | `rules.normalize` |
 | Control mark or inline boundaries while typing and moving. | `rules.selection` |
 | Apply one plugin's rules to another node type. | `rules.match` |
-| Run product-specific behavior that rules cannot express. | `.overrideEditor()` or an explicit `editor.tf.*` command |
+| Run product-specific behavior that rules cannot express. | `.overrideEditor()` or an explicit `editor.update(...)` command |
 
 Rules keep common editor policy close to the plugin that owns the node. Transforms are still the right tool for commands, toolbar actions, and behavior that depends on app state.
 
 ## Runtime Pipeline
 
-Plate resolves plugins first, then core plugins wrap Slate APIs and transforms.
+Plate resolves plugins first, then core plugins wrap Plite APIs and transforms.
 
 | Layer | Owner | Handles |
 | --- | --- | --- |
@@ -50,7 +50,7 @@ The normal flow is:
 key press or command
   -> optional input rule for typed patterns
   -> plugin rule lookup for the current node
-  -> editor.tf transform
+  -> tx command
   -> merge guard when nodes are joined
   -> normalization
   -> selection affinity cleanup
@@ -60,7 +60,7 @@ Input rules are for text patterns such as markdown shortcuts and autolinks. Plug
 
 ## Break Behavior
 
-`rules.break` controls `editor.tf.insertBreak()`, which is what `Enter` calls.
+`rules.break` controls the break transaction that `Enter` calls.
 
 Plate checks the current block and handles these cases in order:
 
@@ -114,7 +114,7 @@ Plate checks collapsed `deleteBackward` in this order:
 | Cursor at the start of the current block | `delete.start` | Runs `reset`, `lift`, or falls through. |
 | Current block is empty | `delete.empty` | Runs `reset` or falls through. |
 | Cursor is at the start of the document | Core default | Resets the first block. |
-| Nothing handled the case | Slate transform | Runs the original delete transform. |
+| Nothing handled the case | Plite transform | Runs the original delete transform. |
 
 Use `start: 'reset'` for formatted text blocks that should become paragraphs before they merge into the previous block.
 
@@ -148,13 +148,16 @@ export const QuoteItemPlugin = createPlatePlugin({
 });
 ```
 
-When a selection spans multiple blocks, Plate deletes the selected content and then calls `editor.tf.mergeNodes()` at the end boundary. That means cross-block deletion can still enter the merge pipeline below.
+When a selection spans multiple blocks, Plate deletes the selected content and
+then calls `tx.nodes.merge(...)` at the end boundary. That means cross-block
+deletion can still enter the merge pipeline below.
 
 ## Merge Behavior
 
 Merge behavior decides whether two nodes can join and whether empty nodes at the boundary disappear.
 
-`editor.tf.mergeNodes()` calls `editor.api.shouldMergeNodes(prev, next, options)` before it applies the merge. Plate's merge rules add three important guards:
+`tx.nodes.merge(...)` calls `editor.api.shouldMergeNodes(prev, next, options)`
+before it applies the merge. Plate's merge rules add three important guards:
 
 | Case | Behavior |
 | --- | --- |
@@ -193,12 +196,12 @@ export const StableCalloutPlugin = CalloutPlugin.configure({
 <Callout>
   Merge rules are not table cell merge commands. `rules.merge` protects
   document structure during node joins. Table cell merge and split commands live
-  on `editor.tf.table.merge()` and `editor.tf.table.split()`.
+  on `tx.table.merge()` and `tx.table.split()`.
 </Callout>
 
 ## Normalize Behavior
 
-`rules.normalize` runs during Slate normalization.
+`rules.normalize` runs during Plite normalization.
 
 Use `normalize.removeEmpty` for elements that should not exist without text content. Links use this shape because an empty link has no useful editing surface.
 
@@ -222,7 +225,7 @@ Keep normalization rules boring. If a node needs a rich repair strategy, write a
 
 | Affinity | Use for |
 | --- | --- |
-| `default` | Normal Slate boundary behavior. |
+| `default` | Normal Plite boundary behavior. |
 | `directional` | Links and highlights where cursor direction decides whether typed text stays inside. |
 | `outward` | Comment and suggestion marks where edge typing should leave the mark. |
 | `hard` | Boundaries that should take an extra arrow-key step to cross. |
@@ -255,8 +258,8 @@ For list metadata and code-block children, use `rules.match` so the feature plug
 | `rules.normalize` | Core rule engine plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesnormalize) |
 | `rules.selection` | Affinity core plugin plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesselection) |
 | `rules.match` | Core rule lookup plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesmatch) |
-| `editor.tf.mergeNodes()` | Slate transform patched by Plate | [Editor Transforms](/docs/api/slate/editor-transforms#mergenodes) |
-| `editor.api.shouldMergeNodes()` | Slate editor API patched by Plate | [Editor API](/docs/api/slate/editor-api#shouldmergenodes) |
-| `editor.tf.table.merge()` | Table feature package | [Table](/docs/table#editing-behavior) |
+| `tx.nodes.merge(...)` | Plite transform patched by Plate | [Editor Transforms](/docs/api/plite/editor-transforms#mergenodes) |
+| `editor.api.shouldMergeNodes()` | Plite editor API patched by Plate | [Editor API](/docs/api/plite/editor-api#shouldmergenodes) |
+| `tx.table.merge()` | Table feature package | [Table](/docs/table#editing-behavior) |
 
 Done. Rules describe the policy; transforms do the work.

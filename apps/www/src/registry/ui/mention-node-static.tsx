@@ -1,16 +1,16 @@
 import * as React from 'react';
 
 import type { TMentionElement } from 'platejs';
-import type { SlateElementProps } from 'platejs/static';
+import type { PliteElementProps } from 'platejs/static';
 
 import { KEYS } from 'platejs';
-import { SlateElement } from 'platejs/static';
+import { PliteElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
 import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 
 export function MentionElementStatic(
-  props: SlateElementProps<TMentionElement> & {
+  props: PliteElementProps<TMentionElement> & {
     prefix?: string;
   }
 ) {
@@ -18,7 +18,7 @@ export function MentionElementStatic(
   const element = props.element;
 
   return (
-    <SlateElement
+    <PliteElement
       {...props}
       as="span"
       className={cn(
@@ -30,12 +30,12 @@ export function MentionElementStatic(
       )}
       attributes={{
         ...props.attributes,
-        'data-slate-value': element.value,
+        'data-plite-value': element.value,
       }}
     >
       {props.children}
       {prefix}
       {element.value}
-    </SlateElement>
+    </PliteElement>
   );
 }

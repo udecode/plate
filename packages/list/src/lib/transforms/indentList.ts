@@ -1,23 +1,18 @@
-import type { BaseEditor } from '@platejs/core';
-import { BaseIndentPlugin } from '@platejs/indent';
-import type { Location } from '@platejs/plite';
+import type { InferConfig, InferTx } from '@platejs/core';
+import type { BaseIndentPlugin } from '@platejs/indent';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import { ListStyleType } from '../types';
+import { ListStyleType, type IndentListOptions } from '../types';
 
-export type ListOptions = {
-  at?: Location;
-  listRestart?: number;
-  listRestartPolite?: number;
-  listStyleType?: ListStyleType | string;
-};
+export type ListEditorTransaction = EditorUpdateTransaction &
+  InferTx<InferConfig<typeof BaseIndentPlugin>>;
 
-/** Increase the indentation of the selected blocks. */
-export const indentList = (
-  editor: BaseEditor,
-  { listStyleType = ListStyleType.Disc, ...options }: ListOptions = {}
+export const indentListWithTx = (
+  tx: ListEditorTransaction,
+  { listStyleType = ListStyleType.Disc, ...options }: IndentListOptions = {}
 ) => {
-  editor.plugin(BaseIndentPlugin).update.set({
+  tx.indent.set({
     nodes: { at: options.at },
     offset: 1,
     setNodeProps: () => ({
@@ -26,11 +21,11 @@ export const indentList = (
   });
 };
 
-export const indentTodo = (
-  editor: BaseEditor,
-  { listStyleType = ListStyleType.Disc, ...options }: ListOptions = {}
+export const indentTodoWithTx = (
+  tx: ListEditorTransaction,
+  { listStyleType = ListStyleType.Disc, ...options }: IndentListOptions = {}
 ) => {
-  editor.plugin(BaseIndentPlugin).update.set({
+  tx.indent.set({
     nodes: { at: options.at },
     offset: 1,
     setNodeProps: () => ({

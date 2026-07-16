@@ -2,17 +2,20 @@ import * as React from 'react';
 
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import type { TDateElement } from 'platejs';
 
-const getDateDisplayLabelMock = mock(({ date, rawDate }: any) => {
-  if (rawDate) return rawDate;
-  if (date === '2026-03-23') return 'Today';
+const getDateDisplayLabelMock = mock(
+  ({ date, rawDate }: { date?: string; rawDate?: string }) => {
+    if (rawDate) return rawDate;
+    if (date === '2026-03-23') return 'Today';
 
-  return date;
-});
+    return date;
+  }
+);
 
 mock.module('platejs/static', () => ({
-  PliteElement: ({ children, ...props }: any) => (
-    <span {...props}>{children}</span>
+  PliteElement: ({ children }: React.ComponentProps<'span'>) => (
+    <span>{children}</span>
   ),
 }));
 mock.module('@platejs/date', () => ({
@@ -41,7 +44,7 @@ describe('DateElementStatic', () => {
             children: [{ text: '' }],
             date: '2026-03-23',
             type: 'date',
-          } as any
+          } satisfies TDateElement
         }
       >
         {null}
@@ -64,7 +67,7 @@ describe('DateElementStatic', () => {
             children: [{ text: '' }],
             rawDate: 'sometime next week',
             type: 'date',
-          } as any
+          } satisfies TDateElement
         }
       >
         {null}

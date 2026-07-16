@@ -135,11 +135,11 @@ as local copied plugin code:
 
 ```tsx
 import {
-  createSlatePlugin,
+  createBasePlugin,
   createTextSubstitutionInputRule,
 } from 'platejs';
 
-const ShortcutsPlugin = createSlatePlugin({
+const ShortcutsPlugin = createBasePlugin({
   key: 'shortcuts',
   inputRules: [
     createTextSubstitutionInputRule({

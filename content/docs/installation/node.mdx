@@ -9,7 +9,7 @@ Use Plate in Node.js when you need to read, validate, transform, or serialize ed
 
 <Callout type="warning" title="Use base imports">
   Do not import from `platejs/react` or `@platejs/*/react` in Node.js scripts.
-  Use `createSlateEditor` from `platejs` and base plugins from `@platejs/*`
+  Use `createBaseEditor` from `platejs` and base plugins from `@platejs/*`
   packages.
 </Callout>
 
@@ -25,14 +25,15 @@ npm install platejs @platejs/basic-nodes @platejs/markdown
 
 | Package | Owns |
 | --- | --- |
-| `platejs` | `createSlateEditor`, core editor APIs, core paragraph behavior. |
+| `platejs` | `createBaseEditor`, core editor APIs, core paragraph behavior. |
 | `@platejs/basic-nodes` | Base headings, blockquotes, horizontal rules, and text marks. |
 | `@platejs/markdown` | Markdown serialization, deserialization, and the `MarkdownPlugin` API. |
 
 ### Create a Server Editor
 
-Create the editor with base plugins only. The editor exposes the same `editor.api`
-and `editor.tf` surfaces without mounting a React tree.
+Create the editor with base plugins only. The editor exposes `editor.read(...)`
+for committed state and `editor.update(...)` for writes without mounting a
+React tree.
 
 ```ts showLineNumbers title="scripts/process-content.ts"
 import type { Value } from 'platejs';
@@ -41,7 +42,7 @@ import {
   BaseBasicBlocksPlugin,
   BaseBasicMarksPlugin,
 } from '@platejs/basic-nodes';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from 'platejs';
 
 const value: Value = [
   {
@@ -58,7 +59,7 @@ const value: Value = [
   },
 ];
 
-const editor = createSlateEditor({
+const editor = createBaseEditor({
   plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin],
   value,
 });
@@ -70,9 +71,8 @@ console.info(plainText);
 
 ### Read and Write Markdown
 
-Add `MarkdownPlugin` when the script needs Markdown helpers through
-`editor.getApi(MarkdownPlugin)`. You can also call `deserializeMd` and
-`serializeMd` directly.
+Add `MarkdownPlugin` when the script needs Markdown helpers. Call
+`deserializeMd` and `serializeMd` directly for one-off conversion scripts.
 
 ```ts showLineNumbers title="scripts/markdown-io.ts"
 import {
@@ -84,9 +84,9 @@ import {
   deserializeMd,
   serializeMd,
 } from '@platejs/markdown';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from 'platejs';
 
-const editor = createSlateEditor({
+const editor = createBaseEditor({
   plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin, MarkdownPlugin],
 });
 
@@ -106,8 +106,8 @@ console.info(markdown);
 
 ### Transform Content
 
-Use transforms for migrations and bulk cleanup. Pass `at: []` when the operation
-should scan the whole document.
+Use transaction groups for migrations and bulk cleanup. Pass `at: []` when the
+operation should scan the whole document.
 
 ```ts showLineNumbers title="scripts/normalize-headings.ts"
 import type { Value } from 'platejs';
@@ -117,31 +117,35 @@ import {
   BaseBasicMarksPlugin,
 } from '@platejs/basic-nodes';
 import { MarkdownPlugin, serializeMd } from '@platejs/markdown';
-import { createSlateEditor } from 'platejs';
+import { createBaseEditor } from 'platejs';
 
 export function normalizeHeadings(value: Value) {
-  const editor = createSlateEditor({
+  const editor = createBaseEditor({
     plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin, MarkdownPlugin],
     value,
   });
 
-  editor.tf.setNodes(
-    { type: 'h2' },
-    {
-      at: [],
-      match: (node) => 'type' in node && node.type === 'h1',
-    }
-  );
+  const insertAt = editor.read((state) => [state.value.root().length]);
 
-  editor.tf.insertNodes(
-    [{ children: [{ text: 'Imported from the legacy CMS.' }], type: 'p' }],
-    { at: [editor.children.length] }
-  );
+  editor.update((tx) => {
+    tx.nodes.set(
+      { type: 'h2' },
+      {
+        at: [],
+        match: (node) => 'type' in node && node.type === 'h1',
+      }
+    );
+
+    tx.nodes.insert(
+      [{ children: [{ text: 'Imported from the legacy CMS.' }], type: 'p' }],
+      { at: insertAt }
+    );
+  });
 
   return {
     markdown: serializeMd(editor),
-    text: editor.api.string([]),
-    value: editor.children,
+    text: editor.read((state) => state.text.string([])),
+    value: editor.read((state) => state.value.root()),
   };
 }
 ```
@@ -166,10 +170,10 @@ export function normalizeHeadings(value: Value) {
 
 | API | Package | Notes |
 | --- | --- | --- |
-| `createSlateEditor` | `platejs` | Creates a non-React editor instance. |
-| `editor.api.string([])` | `platejs` | Reads text from the whole document. |
-| `editor.tf.setNodes` | `platejs` | Updates matching nodes. Use `at: []` for document-wide transforms. |
-| `editor.tf.insertNodes` | `platejs` | Inserts nodes at a path. |
+| `createBaseEditor` | `platejs` | Creates a non-React editor instance. |
+| `editor.read((state) => state.text.string([]))` | `platejs` | Reads text from the whole document. |
+| `editor.update((tx) => tx.nodes.set(...))` | `platejs` | Updates matching nodes. Use `at: []` for document-wide transforms. |
+| `editor.update((tx) => tx.nodes.insert(...))` | `platejs` | Inserts nodes at a path. |
 | `deserializeMd` | `@platejs/markdown` | Converts Markdown into a Plate value. |
 | `serializeMd` | `@platejs/markdown` | Converts the editor value or an explicit `value` option to Markdown. |
 
@@ -180,8 +184,8 @@ export function normalizeHeadings(value: Value) {
 | Serialize to Markdown | [Markdown](/docs/markdown) |
 | Serialize to HTML | [HTML](/docs/html) |
 | Render read-only content | [Static Rendering](/docs/static) |
-| Query editor state | [Editor API](/docs/api/slate/editor-api) |
-| Apply transforms | [Editor Transforms](/docs/api/slate/editor-transforms) |
+| Query editor state | [Editor API](/docs/api/plite/editor-api) |
+| Apply transforms | [Editor Transforms](/docs/api/plite/editor-transforms) |
 
 Done. You now have a server-safe Plate runtime that can power migration scripts,
 validation jobs, and content serialization.

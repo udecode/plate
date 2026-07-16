@@ -102,7 +102,7 @@ export const subscriptPlugin = SubscriptPlugin.configure({
 | `SubscriptPlugin` | `@platejs/basic-nodes/react` | React wrapper for the headless subscript mark. |
 | `SubscriptRules.markdown` | `@platejs/basic-nodes` | Optional `~` mark input rule factory. |
 | `BasicMarksKit` | Registry | Adds `SubscriptPlugin`, the input rule, and `mod+comma`. |
-| `MoreToolbarButton` | Registry UI | Calls `editor.tf.toggleMark(KEYS.sub, { remove: KEYS.sup })`. |
+| `MoreToolbarButton` | Registry UI | Calls `tx.subscript.toggle()`. |
 
 The package owns subscript semantics. The registry owns shortcut configuration and toolbar placement.
 
@@ -112,7 +112,7 @@ The package owns subscript semantics. The registry owns shortcut configuration a
 |----------|--------|
 | Mark key | `KEYS.sub` (`subscript`) |
 | Leaf behavior | `node.isLeaf: true` |
-| Toggle transform | `editor.tf.subscript.toggle()` calls `editor.tf.toggleMark(type, { remove: editor.getType(KEYS.sup) })`. |
+| Toggle command | `tx.subscript.toggle()` removes superscript and toggles subscript. |
 | Selection affinity | `directional` |
 | HTML tags | `sub` |
 | HTML styles | `vertical-align: sub` |
@@ -127,4 +127,4 @@ The package owns subscript semantics. The registry owns shortcut configuration a
 | `BaseSubscriptPlugin` | `@platejs/basic-nodes` | Headless subscript plugin. |
 | `SubscriptPlugin` | `@platejs/basic-nodes/react` | React subscript plugin. |
 | `SubscriptRules.markdown()` | `@platejs/basic-nodes` | Creates the `~` mark input rule. |
-| `tf.subscript.toggle()` | `@platejs/basic-nodes` | Toggles subscript and removes superscript. |
+| `tx.subscript.toggle()` | `@platejs/basic-nodes` | Toggles subscript and removes superscript. |

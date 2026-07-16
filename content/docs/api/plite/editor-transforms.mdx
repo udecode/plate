@@ -1,0 +1,18 @@
+---
+title: Editor Transforms
+description: Transaction methods for changing Plite editor state.
+---
+
+Plite mutations live under `editor.update`. Use a direct group method for one
+write and the callback form for an atomic group of writes.
+
+```ts
+editor.update.text.insert("Hello");
+
+editor.update((tx) => {
+  tx.nodes.set({ type: "heading" });
+  tx.text.insert("Title");
+});
+```
+
+See the canonical [Plite transform reference](/docs/plite/api/transforms).

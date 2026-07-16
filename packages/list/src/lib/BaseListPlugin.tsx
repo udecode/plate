@@ -7,18 +7,27 @@ import {
   postCleanHtml,
   traverseHtmlElements,
 } from '@platejs/core';
-import type { Element } from '@platejs/plite';
+import { BaseIndentPlugin } from '@platejs/indent';
+import { ElementApi, type Element } from '@platejs/plite';
 import { KEYS, type TListElement } from '@platejs/utils';
 import { isDefined } from '@udecode/utils';
-import type { PliteRenderElementProps } from 'platejs/static';
+import type { PliteRenderElementProps } from '@platejs/core/static';
 
 import type { GetSiblingListOptions } from './queries/getSiblingList';
 import type { ListStyleType } from './types';
+import type {
+  IndentListOptions,
+  OutdentListOptions,
+  ToggleListOptions,
+} from './types';
 
-import { isOrderedList } from './queries';
+import { isOrderedList } from './queries/isOrderedList';
+import { indentListWithTx } from './transforms/indentList';
+import { outdentListWithTx } from './transforms/outdentList';
+import { toggleListWithTx } from './transforms/toggleList';
 import { withList } from './withList';
 import { withNormalizeList } from './withNormalizeList';
-import { withInsertBreakList } from './normalizers';
+import { withInsertBreakList } from './normalizers/withInsertBreakList';
 
 /**
  * All list items are normalized to have a listStart prop indicating their
@@ -39,10 +48,26 @@ export type BaseListConfig = PluginConfig<
     getSiblingListOptions?: GetSiblingListOptions<Element>;
     /** Map html element to list style type. */
     getListStyleType?: (element: HTMLElement) => ListStyleType;
-  }
+  },
+  {
+    list: {
+      isActive: (style: ListStyleType | string | readonly string[]) => boolean;
+    };
+  },
+  {
+    list: {
+      indent: (options?: IndentListOptions) => void;
+      outdent: (options?: OutdentListOptions) => void;
+      toggle: (options: ToggleListOptions) => void;
+    };
+  },
+  {},
+  {},
+  readonly [typeof BaseIndentPlugin]
 >;
 
 export const BaseListPlugin = createBasePlugin<BaseListConfig>({
+  dependencies: [BaseIndentPlugin],
   key: KEYS.list,
   inject: {
     plugins: {
@@ -220,6 +245,34 @@ export const BaseListPlugin = createBasePlugin<BaseListConfig>({
     match: ({ node }) => isDefined(node[KEYS.listType]),
   },
 })
+  .extendApi(({ editor }) => ({
+    isActive: (style: ListStyleType | string | readonly string[]) => {
+      const selection = editor.read.selection();
+
+      if (!selection) return false;
+
+      const styles = Array.isArray(style) ? style : [style];
+
+      return editor.read.nodes.some({
+        match: (node) => {
+          if (!ElementApi.isElement(node)) return false;
+
+          const isTodo = Object.hasOwn(node, KEYS.listChecked);
+
+          return (
+            styles.includes(node[KEYS.listType] as string) &&
+            (styles.includes(KEYS.listTodo) ? isTodo : !isTodo)
+          );
+        },
+      });
+    },
+  }))
+  .extendTx(({ editor }) => (tx) => ({
+    indent: (options?: IndentListOptions) => indentListWithTx(tx, options),
+    outdent: (options?: OutdentListOptions) => outdentListWithTx(tx, options),
+    toggle: (options: ToggleListOptions) =>
+      toggleListWithTx(editor, tx, options, options.getSiblingListOptions),
+  }))
   .extendExtension('behavior', withList)
   .extendExtension(withNormalizeList)
   .extendExtension(withInsertBreakList);

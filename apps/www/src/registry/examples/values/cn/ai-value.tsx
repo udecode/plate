@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const aiValue: any = (
+export const aiValue = (
   <fragment>
     <hh2>AI 菜单</hh2>
     <hp>使用 AI 生成和优化内容。</hp>

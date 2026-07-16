@@ -13,7 +13,7 @@ const toAppImportPath = (targetPath: string) => {
     .relative(APP_ROOT, targetPath)
     .replaceAll('\\', '/');
 
-  return relativePath.startsWith('.') ? relativePath : `./${relativePath}`;
+  return relativePath.startsWith('../') ? relativePath : `./${relativePath}`;
 };
 
 const getIndexEntry = (dir: string) => {

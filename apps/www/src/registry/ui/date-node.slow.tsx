@@ -29,7 +29,8 @@ mock.module('platejs/react', () => ({
 
     return <div data-testid="plate-element">{props.children}</div>;
   },
-  useReadOnly: useReadOnlyMock,
+  useEditorReadOnly: useReadOnlyMock,
+  usePath: () => [0],
 }));
 
 mock.module('@/components/ui/calendar', () => ({
@@ -90,7 +91,9 @@ describe('DateElement', () => {
       </DateElement>
     );
 
-    expect(view.getByText('Today')).toBeTruthy();
+    expect(
+      view.getByRole('button', { name: 'Today' }).getAttribute('type')
+    ).toBe('button');
   });
 
   it('renders raw fallback text literally', async () => {
@@ -126,7 +129,7 @@ describe('DateElement', () => {
     const view = render(
       <DateElement
         attributes={{}}
-        editor={{ tf: { setNodes } }}
+        editor={{ update: { nodes: { set: setNodes } } }}
         element={
           {
             children: [{ text: '' }],
@@ -143,7 +146,7 @@ describe('DateElement', () => {
 
     expect(setNodes).toHaveBeenCalledWith(
       { date: '2026-03-24', rawDate: undefined },
-      expect.any(Object)
+      { at: [0] }
     );
   });
 });

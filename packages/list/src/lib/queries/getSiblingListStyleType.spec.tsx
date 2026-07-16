@@ -3,7 +3,7 @@
 import { createBaseEditor } from '@platejs/core';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import { type Element } from 'platejs';
+import type { Element } from '@platejs/plite';
 
 import { getSiblingListStyleType } from './getSiblingListStyleType';
 

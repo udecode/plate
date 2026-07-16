@@ -17,7 +17,7 @@ description: Plate 组件的 API 参考。
 <APIItem name="editor" type="PlateEditor">
 受控的 `editor` 实例。此属性是必需的。
 </APIItem>
-<APIItem name="decorate" type="(ctx: EditorPluginContext<C>) => Range[]" optional>
+<APIItem name="decorate" type="(ctx: BasePluginContext<C>) => Range[]" optional>
 参见 [Plite 文档](https://docs.slatejs.org/concepts/09-rendering#decorations)。
 </APIItem>
 <APIItem name="onChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
@@ -71,7 +71,7 @@ description: Plate 组件的 API 参考。
 ## `<PlateContent>`
 
 <API name="PlateContent">
-[Editable](https://docs.slatejs.org/libraries/slate-react/editable) 组件的属性。继承自 `TextareaHTMLAttributes<HTMLDivElement>`。
+[Editable](/docs/plite/libraries/plite-react/editable) 组件的属性。继承自 `TextareaHTMLAttributes<HTMLDivElement>`。
 
 <APIProps>
 <APIItem name="autoFocusOnEditable" type="boolean" optional>
@@ -84,13 +84,12 @@ description: Plate 组件的 API 参考。
 </APIItem>
 <APIItem name="as" type="React.ElementType" optional />
 <APIItem name="autoFocus" type="boolean" optional />
-<APIItem name="decorate" type="(ctx: EditorPluginContext<C>) => Range[]" optional />
+<APIItem name="decorate" type="(ctx: BasePluginContext<C>) => Range[]" optional />
 <APIItem name="disableDefaultStyles" type="boolean" optional />
 <APIItem name="onDOMBeforeInput" type="(event: Event) => void" optional />
 <APIItem name="onKeyDown" type="(event: KeyboardEvent) => void" optional />
 <APIItem name="placeholder" type="string" optional />
 <APIItem name="readOnly" type="boolean" optional />
-<APIItem name="renderChunk" type="FC<RenderChunkProps>" optional />
 <APIItem name="renderElement" type="FC<RenderElementProps>" optional />
 <APIItem name="renderLeaf" type="FC<RenderLeafProps>" optional />
 <APIItem name="renderPlaceholder" type="FC<RenderPlaceholderProps>" optional />

@@ -18,7 +18,7 @@ export const AIChatEditor = React.memo(function AIChatEditor({
     plugins: BaseEditorKit,
   });
 
-  const value = useAIChatEditor(aiEditor, content);
+  useAIChatEditor(aiEditor, content);
 
-  return <EditorStatic variant="aiChat" editor={aiEditor} value={value} />;
+  return <EditorStatic variant="aiChat" editor={aiEditor} />;
 });

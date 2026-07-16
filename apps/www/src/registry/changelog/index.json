@@ -2,6 +2,42 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-07-16-list-toolbar-wiring",
+      "href": "/registry/changelog/2026-07-16-list-toolbar-wiring.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Wire list toolbar controls to ListPlugin",
+      "change": {
+        "type": "source",
+        "date": "2026-07-16",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["list-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-07-15-fix-date-picker-trigger",
+      "href": "/registry/changelog/2026-07-15-fix-date-picker-trigger.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix date picker interaction",
+      "change": {
+        "type": "source",
+        "date": "2026-07-15",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["date-node"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-07-13-use-installed-block-insert-commands",
       "href": "/registry/changelog/2026-07-13-use-installed-block-insert-commands.json",
       "status": "draft",

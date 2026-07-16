@@ -1,5 +1,6 @@
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
+import type { ChatRequestOptions, ChatStatus, UIMessage } from 'ai';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import type {
@@ -16,7 +17,6 @@ import { type PlateEditor, createPlatePlugin } from '@platejs/core/react';
 
 import { BaseAIPlugin } from '../../lib/BaseAIPlugin';
 import type { AIMode, AIToolName } from '../../lib/types';
-import type { ChatMessage } from './internal/types';
 
 import {
   type RemoveAnchorAIChatOptions,
@@ -29,6 +29,26 @@ import { resetAIChat } from './utils/resetAIChat';
 import { submitAIChat } from './utils/submitAIChat';
 import { withAIChat } from './withAIChat';
 
+export type AIChatAdapter = {
+  clear: () => void;
+  messages: UIMessage[];
+  regenerate: (options?: ChatRequestOptions) => Promise<void>;
+  sendMessage: (text: string, options?: ChatRequestOptions) => Promise<void>;
+  status: ChatStatus;
+  stop: () => Promise<void> | void;
+};
+
+export const createAIChatAdapter = <TMessage extends UIMessage>(
+  chat: UseChatHelpers<TMessage>
+): AIChatAdapter => ({
+  clear: () => chat.setMessages([]),
+  messages: chat.messages,
+  regenerate: chat.regenerate,
+  sendMessage: (text, options) => chat.sendMessage({ text }, options),
+  status: chat.status,
+  stop: chat.stop,
+});
+
 export type AIChatPluginConfig = PluginConfig<
   'aiChat',
   {
@@ -39,7 +59,7 @@ export type AIChatPluginConfig = PluginConfig<
     _replaceIds: string[];
     /** @private The Editor used to generate the AI response. */
     aiEditor: PlateEditor | null;
-    chat: UseChatHelpers<ChatMessage> | null;
+    chat: AIChatAdapter | null;
     chatNodes: TIdElement[];
     chatSelection: Range | null;
     /**
@@ -78,12 +98,15 @@ export type AIChatPluginConfig = PluginConfig<
     aiChat: {
       removeAnchor: (options?: RemoveAnchorAIChatOptions) => void;
     };
-  }
+  },
+  {},
+  {},
+  readonly [typeof BaseAIPlugin]
 >;
 
 export const AIChatPlugin = createPlatePlugin<AIChatPluginConfig>({
   key: KEYS.aiChat,
-  dependencies: ['ai'],
+  dependencies: [BaseAIPlugin],
   node: {
     isElement: true,
   },
@@ -197,7 +220,7 @@ export const AIChatPlugin = createPlatePlugin<AIChatPluginConfig>({
       show: () => {
         resetAIChat(editor);
         setOption('toolName', null);
-        getOptions().chat?.setMessages?.([]);
+        getOptions().chat?.clear();
         setOption('open', true);
       },
       stop: () => {

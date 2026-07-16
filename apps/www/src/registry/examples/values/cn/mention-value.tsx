@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const mentionValue: any = (
+export const mentionValue = (
   <fragment>
     <hh2>提及</hh2>
     <hp>使用@提及功能在文本中提及和引用其他用户或实体。</hp>

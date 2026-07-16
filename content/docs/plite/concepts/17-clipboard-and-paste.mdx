@@ -53,16 +53,14 @@ import { defineEditorExtension } from "@platejs/plite";
 const pasteTodoPrefix = defineEditorExtension({
   name: "paste-todo-prefix",
   clipboard: {
-    insertData(data, { editor, next }) {
+    insertData(data, { next, tx }) {
       const text = data.getData("text/plain");
 
       if (!text.startsWith("todo:")) {
         return next();
       }
 
-      editor.update((tx) => {
-        tx.text.insert(text.slice("todo:".length).trim());
-      });
+      tx.text.insert(text.slice("todo:".length).trim());
 
       return true;
     },
@@ -70,8 +68,9 @@ const pasteTodoPrefix = defineEditorExtension({
 });
 ```
 
-Return `true` when the extension handled the payload. Return `next()` when Plite
-should keep running the internal fragment and plain-text import path.
+The handler receives the transaction owned by clipboard ingress. Return `true`
+when the extension handled the payload. Return `next()` when Plite should keep
+running the internal fragment and plain-text import path in that transaction.
 
 Use this for package-owned import rules such as custom inline syntax, pasted
 URLs, product fragments, and table-specific paste policy. Do not put those rules
@@ -89,8 +88,9 @@ editor.api.clipboard.writeSelection(dataTransfer);
 ```
 
 Use these APIs from framework bridges, tests, or low-level event code that
-already has a `DataTransfer`. Product commands should still write model state
-through `editor.update((tx) => ...)`.
+already has a `DataTransfer`. `insertData` owns a transaction when called
+directly and joins the active transaction when framework code already opened
+one. Clipboard middleware mutates through the supplied `tx`.
 
 Plite writes plain text, HTML, and an internal Plite fragment payload. The
 fragment payload uses `application/${clipboardFormatKey}`, so editors with

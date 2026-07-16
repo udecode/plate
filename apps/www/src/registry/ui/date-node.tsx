@@ -10,7 +10,7 @@ import {
 import type { TDateElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 
-import { PlateElement, useReadOnly } from 'platejs/react';
+import { PlateElement, useEditorReadOnly, usePath } from 'platejs/react';
 
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -23,23 +23,25 @@ import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 
 export function DateElement(props: PlateElementProps<TDateElement>) {
   const { editor, element } = props;
-  const readOnly = useReadOnly();
+  const readOnly = useEditorReadOnly();
+  const path = usePath();
 
   const trigger = (
-    <span
+    <button
       className={cn(
         'w-fit cursor-pointer rounded-sm bg-muted px-1 text-muted-foreground',
         inlineSuggestionVariants()
       )}
       contentEditable={false}
       draggable
+      type="button"
     >
       {element.date || element.rawDate ? (
         getDateDisplayLabel(element)
       ) : (
         <span>Pick a date</span>
       )}
-    </span>
+    </button>
   );
 
   return (
@@ -61,10 +63,11 @@ export function DateElement(props: PlateElementProps<TDateElement>) {
               selected={parseCanonicalDateValue(element.date ?? '')}
               onSelect={(date) => {
                 if (!date) return;
+                if (!path) return;
 
-                editor.tf.setNodes(
+                editor.update.nodes.set(
                   { date: formatDateValue(date), rawDate: undefined },
-                  { at: element }
+                  { at: path }
                 );
               }}
               mode="single"

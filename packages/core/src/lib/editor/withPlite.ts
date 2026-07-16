@@ -105,10 +105,17 @@ const initializeBaseEditor = <V extends Value>(
           ? autoSelect
           : null);
 
-    replaceEditorSnapshot(editor, {
-      children: nextValue,
-      selection: selectionInput,
-    });
+    const wasInitializing = editor.runtime.isNormalizing;
+
+    editor.runtime.isNormalizing = true;
+    try {
+      replaceEditorSnapshot(editor, {
+        children: nextValue,
+        selection: selectionInput,
+      });
+    } finally {
+      editor.runtime.isNormalizing = wasInitializing;
+    }
 
     pipeTransformInitialValue(editor);
 
@@ -581,8 +588,7 @@ export const extendBaseEditor = <
 
 export type CreateBaseEditorOptions<
   V extends Value = Value,
-  P extends
-    readonly CreateBaseEditorPluginInput[] = readonly CreateBaseEditorPluginInput[],
+  P extends readonly unknown[] = readonly CreateBaseEditorPluginInput[],
 > = Omit<ExtendBaseEditorOptions<V, BasePluginInput>, 'plugins'> & {
   /** Stable logical identity for the created editor. */
   id?: string;
@@ -653,7 +659,7 @@ type InferCreateBaseEditorPlugins<P extends readonly unknown[]> =
  */
 export function createBaseEditor<
   V extends Value = Value,
-  const P extends readonly CreateBaseEditorPluginInput[] = readonly [],
+  const P extends readonly unknown[] = readonly [],
 >(
   options: CreateBaseEditorOptions<V, P> & { plugins: P }
 ): BaseEditor<V, InferCreateBaseEditorPlugins<P>>;
@@ -662,7 +668,7 @@ export function createBaseEditor<V extends Value = Value>(
 ): BaseEditor<V, CorePluginConfig>;
 export function createBaseEditor<
   V extends Value = Value,
-  const P extends readonly CreateBaseEditorPluginInput[] = readonly [],
+  const P extends readonly unknown[] = readonly [],
 >({
   editor,
   id,

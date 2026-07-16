@@ -18,6 +18,9 @@ and root callback types without local adapter casts.
 Prepare v54 beta prerelease versioning and preserve initial selections when
 `transformInitialValue` wraps selected text during editor setup.
 
+Install typed plugin-object dependencies recursively with deterministic
+overrides, dependency-first ordering, and graph validation.
+
 **Migration:** Replace nested plugin API reads with the scoped portal API:
 
 ```tsx
@@ -38,3 +41,6 @@ Rename these exports:
 - `SlateRenderElementProps` to `PliteRenderElementProps`
 - `SlateRenderLeafProps` to `PliteRenderLeafProps`
 - `SlateRenderTextProps` to `PliteRenderTextProps`
+
+Replace dependency keys such as `dependencies: ['feature']` with the plugin
+object, for example `dependencies: [BaseFeaturePlugin]`.

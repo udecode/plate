@@ -100,7 +100,9 @@ Use the bound transform or the headless utility.
 ```tsx
 import { setLineHeight } from '@platejs/basic-styles';
 
-editor.tf.lineHeight.setNodes(2);
+editor.update((tx) => {
+  tx.lineHeight.setNodes(2);
+});
 
 setLineHeight(editor, 1.5, { at: [] });
 ```
@@ -114,7 +116,7 @@ setLineHeight(editor, 1.5, { at: [] });
 | `BaseLineHeightPlugin` | `@platejs/basic-styles` | Headless plugin that stores `lineHeight`, injects block props, and parses HTML line-height styles. |
 | `LineHeightPlugin` | `@platejs/basic-styles/react` | React wrapper around `BaseLineHeightPlugin`. |
 | `setLineHeight` | `@platejs/basic-styles` | Sets or clears `lineHeight` on matching blocks. |
-| `tf.lineHeight.setNodes` | `@platejs/basic-styles` | Bound transform exposed by the plugin. |
+| `tx.lineHeight.setNodes` | `@platejs/basic-styles` | Bound transform exposed by the plugin. |
 | `BaseLineHeightKit` | Registry kit | Static/headless setup for paragraphs and headings. |
 | `LineHeightKit` | Registry kit | React setup plus toolbar dependency. |
 | `LineHeightToolbarButton` | Registry UI | Dropdown that writes values through `lineHeight.setNodes`. |
@@ -150,7 +152,7 @@ The plugin injects an HTML deserializer into each target plugin. When pasted HTM
 |-----|---------|-----|
 | `LineHeightPlugin` | `@platejs/basic-styles/react` | React line-height plugin. |
 | `BaseLineHeightPlugin` | `@platejs/basic-styles` | Headless line-height plugin. |
-| `editor.tf.lineHeight.setNodes(value, options?)` | `@platejs/basic-styles` | Sets or clears line height on matching blocks. |
+| `tx.lineHeight.setNodes(value, options?)` | `@platejs/basic-styles` | Sets or clears line height on matching blocks. |
 | `setLineHeight(editor, value, options?)` | `@platejs/basic-styles` | Headless transform behind the bound API. |
 
 ## Options
@@ -161,4 +163,4 @@ The plugin injects an HTML deserializer into each target plugin. When pasted HTM
 | `inject.nodeProps.nodeKey` | `BaseLineHeightPlugin` | Stored block property; defaults to `lineHeight`. |
 | `inject.nodeProps.defaultNodeValue` | `BaseLineHeightPlugin` | Value that clears the stored property when selected. |
 | `inject.nodeProps.validNodeValues` | Registry toolbar | Dropdown values used by `LineHeightToolbarButton`. |
-| `SetNodesOptions` | `setLineHeight` | Slate node update options passed to `setNodes` or `unsetNodes`. |
+| `object` | `setLineHeight` | Plite node update options passed to `setNodes` or `unsetNodes`. |

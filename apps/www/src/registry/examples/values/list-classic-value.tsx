@@ -5,7 +5,7 @@ import { KEYS } from 'platejs';
 
 jsx;
 
-export const listValue: any = (
+export const listValue = (
   <fragment>
     <hh2>✍️ List</hh2>
     <hp>

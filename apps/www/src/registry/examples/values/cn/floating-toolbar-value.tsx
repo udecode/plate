@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const floatingToolbarValue: any = (
+export const floatingToolbarValue = (
   <fragment>
     <hh2>浮动工具栏</hh2>
     <hp>浮动工具栏为选中的文本提供快速访问格式化选项和操作的功能。</hp>

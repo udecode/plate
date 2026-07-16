@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const blockSelectionValue: any = (
+export const blockSelectionValue = (
   <fragment>
     <hh2>Block Selection</hh2>
     <hp>

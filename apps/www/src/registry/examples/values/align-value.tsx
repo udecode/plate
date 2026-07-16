@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const alignValue: any = (
+export const alignValue = (
   <fragment>
     <hh2 align="right">Alignment</hh2>
     <hp align="right">

@@ -91,7 +91,9 @@ editor.update((tx) => {
 
 ## Grouped Repairs
 
-Sometimes a command needs several structural edits before the tree is valid again. Wrap related writes in one `editor.update(...)`, and use `tx.withoutNormalizing(...)` when the tree should not normalize between those writes.
+Sometimes a command needs several structural edits before the tree is valid
+again. Put every related write in one `editor.update(...)`; Plite runs the final
+normalization pass before publishing the commit.
 
 ```ts
 import { ElementApi, type Editor } from "@platejs/plite";
@@ -100,29 +102,29 @@ const LIST_TYPES = ["numbered-list", "bulleted-list"];
 
 function changeBlockType(editor: Editor, type: string) {
   editor.update((tx) => {
-    tx.withoutNormalizing(() => {
-      const isActive = isBlockActive(editor, type);
-      const isList = LIST_TYPES.includes(type);
+    const isActive = isBlockActive(tx, type);
+    const isList = LIST_TYPES.includes(type);
 
-      tx.nodes.unwrap({
-        match: (node) =>
-          ElementApi.isElement(node) && LIST_TYPES.includes(node.type),
-        split: true,
-      });
-
-      tx.nodes.set({
-        type: isActive ? "paragraph" : isList ? "list-item" : type,
-      });
-
-      if (!isActive && isList) {
-        tx.nodes.wrap({ type, children: [] });
-      }
+    tx.nodes.unwrap({
+      match: (node) =>
+        ElementApi.isElement(node) && LIST_TYPES.includes(node.type),
+      split: true,
     });
+
+    tx.nodes.set({
+      type: isActive ? "paragraph" : isList ? "list-item" : type,
+    });
+
+    if (!isActive && isList) {
+      tx.nodes.wrap({ type, children: [] });
+    }
   });
 }
 ```
 
-The update still publishes one commit. `withoutNormalizing` only delays normalization until the grouped repair has finished.
+Call `tx.normalize()` only when later code in the same update must read the
+repaired tree before continuing. It is a barrier, not boilerplate for grouped
+writes.
 
 ## Extension Normalizers
 

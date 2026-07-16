@@ -138,7 +138,7 @@ describe('ai chat action utils', () => {
 
   it('stops chat, resets options, and undoes the active AI batch', () => {
     const stop = mock();
-    const setMessages = mock();
+    const clear = mock();
     const editor = createPlateEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
       value: [{ children: [{ text: '' }], type: 'p' }],
@@ -151,7 +151,7 @@ describe('ai chat action utils', () => {
           role: 'assistant',
         },
       ],
-      setMessages,
+      clear,
       stop,
     } as unknown as NonNullable<AIChatPluginConfig['options']['chat']>;
     editor.plugin(AIChatPlugin).setOptions({
@@ -169,7 +169,7 @@ describe('ai chat action utils', () => {
     resetAIChat(editor);
 
     expect(stop).toHaveBeenCalled();
-    expect(setMessages).toHaveBeenCalledWith([]);
+    expect(clear).toHaveBeenCalled();
     expect(editor.read.text.string([])).toBe('');
     expect(editor.plugin(AIChatPlugin).getOption('_replaceIds')).toEqual([]);
     expect(editor.plugin(AIChatPlugin).getOption('chatNodes')).toEqual([]);

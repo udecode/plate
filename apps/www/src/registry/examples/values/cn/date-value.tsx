@@ -6,7 +6,7 @@ jsx;
 
 const today = new Date().toISOString().split('T')[0];
 
-export const dateValue: any = (
+export const dateValue = (
   <fragment>
     <hh2>日期</hh2>
     <hp>

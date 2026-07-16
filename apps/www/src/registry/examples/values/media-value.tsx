@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const imageValue: any = (
+export const imageValue = (
   <fragment>
     <hh2>Image</hh2>
     <hp>Add images by either uploading them or providing the image URL:</hp>
@@ -20,7 +20,7 @@ export const imageValue: any = (
   </fragment>
 );
 
-export const mediaPlaceholderValue: any = (
+export const mediaPlaceholderValue = (
   <fragment>
     <hh2>Upload</hh2>
     <hp>
@@ -67,7 +67,7 @@ export const mediaPlaceholderValue: any = (
   </fragment>
 );
 
-export const mediaValue: any = (
+export const mediaValue = (
   <fragment>
     {imageValue}
     {mediaPlaceholderValue}

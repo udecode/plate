@@ -9,7 +9,7 @@ Plate is not a normal controlled text input. The editor owns content, selection,
 
 <Callout type="warning" title="Do not control every keystroke">
   Do not mirror `editor.children` into React state and pass it back on every
-  change. That fights Slate selection/history and turns normal typing into a
+  change. That fights Plite selection/history and turns normal typing into a
   full-document replacement loop.
 </Callout>
 
@@ -17,9 +17,9 @@ Plate is not a normal controlled text input. The editor owns content, selection,
 | --- | --- |
 | Set initial content. | `value` in `usePlateEditor` or `createPlateEditor`. |
 | Persist edits. | `<Plate onValueChange>` or `<Plate onChange>`. |
-| Replace content from outside the editor. | `editor.tf.setValue(value)`. |
-| Reset editor state. | `editor.tf.reset()`. |
-| Delay initialization. | `skipInitialization: true` plus `editor.tf.init(...)`. |
+| Replace content from outside the editor. | `editor.update((tx) => tx.value.replace({ children: value }))`. |
+| Restore initial content. | `editor.update((tx) => tx.value.replace({ children: initialValue }))`. |
+| Delay initialization. | `skipInitialization: true` plus an explicit `editor.update(...)`. |
 
 <Steps>
 
@@ -110,14 +110,21 @@ Use `onChange` when the callback needs the editor instance too.
 
 ### Replace or Reset Content
 
-Use transforms for external changes. `setValue` replaces the document and
-`reset` returns the editor to its initialized state.
+Use a transaction group for external changes. `tx.value.replace(...)` replaces
+the document with an explicit value.
 
 ```tsx title="components/replace-controls.tsx" showLineNumbers
 import type { Value } from 'platejs';
 import { useEditorRef } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
+
+const initialValue: Value = [
+  {
+    children: [{ text: 'Initial value' }],
+    type: 'p',
+  },
+];
 
 const replacementValue: Value = [
   {
@@ -131,18 +138,32 @@ export function ReplaceControls() {
 
   return (
     <div className="flex gap-2">
-      <Button onClick={() => editor.tf.setValue(replacementValue)}>
+      <Button
+        onClick={() => {
+          editor.update((tx) => {
+            tx.value.replace({ children: replacementValue });
+          });
+        }}
+      >
         Replace Value
       </Button>
-      <Button onClick={() => editor.tf.reset()}>Reset Editor</Button>
+      <Button
+        onClick={() => {
+          editor.update((tx) => {
+            tx.value.replace({ children: initialValue });
+          });
+        }}
+      >
+        Reset Editor
+      </Button>
     </div>
   );
 }
 ```
 
 <Callout type="info">
-  `editor.tf.setValue` replaces nodes at the document root. Use it for explicit
-  outside-editor changes, not for every `onValueChange`.
+  `tx.value.replace(...)` replaces nodes at the document root. Use it for
+  explicit outside-editor changes, not for every `onValueChange`.
 </Callout>
 
 <ComponentPreview name="controlled-demo" padding="md" />
@@ -201,9 +222,11 @@ export function ManualInitEditor() {
     void fetch('/api/document')
       .then((response) => response.json())
       .then((data) => {
-        editor.tf.init({
-          autoSelect: 'end',
-          value: data.content,
+        editor.update((tx) => {
+          tx.value.replace({ children: data.content });
+          const end = tx.points.end([]);
+
+          if (end) tx.selection.set(end);
         });
       });
   }, [editor]);

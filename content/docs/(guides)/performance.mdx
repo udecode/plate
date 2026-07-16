@@ -1,10 +1,10 @@
 ---
 title: Performance
-description: Latest Plate vs Slate large-document benchmark snapshot and how to rerun it locally.
+description: Latest Plate vs Plite large-document benchmark snapshot and how to rerun it locally.
 ---
 
 Performance is about whether the editor stays usable when the document gets
-large. This page shows the latest 10k Plate vs Slate snapshot from the docs
+large. This page shows the latest 10k Plate vs Plite snapshot from the docs
 benchmark route and the command that reproduces it locally.
 
 ## Latest Snapshot
@@ -13,7 +13,7 @@ This snapshot was captured on June 2, 2026 from the docs benchmark route in
 headless Chrome. The benchmark uses a 10,000-block document with chunked
 rendering enabled.
 
-| Workload | Slate | Plate core | Plate with basic plugins |
+| Workload | Plite | Plate core | Plate with basic plugins |
 | --- | ---: | ---: | ---: |
 | Open a mixed document | `524 ms` | `866 ms` | `881 ms` |
 | Type in a mixed document | `26 ms` | `43 ms` | `35 ms` |

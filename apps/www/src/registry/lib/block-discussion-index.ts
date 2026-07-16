@@ -4,14 +4,13 @@ import * as React from 'react';
 
 import type { TResolvedSuggestion } from '@platejs/suggestion';
 import type { PlateEditor } from 'platejs/react';
-import type { Element, NodeEntry, Path } from '@platejs/plite';
+import type { Element, Node, NodeEntry, Path, Text } from '@platejs/plite';
 
 import { BaseCommentPlugin } from '@platejs/comment';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { getSuggestionKey, keyId2SuggestionId } from '@platejs/suggestion';
 import {
   type TCommentText,
-  type TSuggestionText,
   ElementApi,
   KEYS,
   NodeApi,
@@ -36,8 +35,8 @@ export interface ResolvedSuggestion extends TResolvedSuggestion {
 
 export const BLOCK_SUGGESTION_TOKEN = '__block__';
 
-type BlockDiscussionEntry = NodeEntry<TCommentText | Element | TSuggestionText>;
-type SuggestionEntry = NodeEntry<Element | TSuggestionText>;
+type BlockDiscussionEntry = NodeEntry<TCommentText | Element>;
+type SuggestionEntry = NodeEntry<Element | Text>;
 
 type BlockDiscussionIndex = {
   discussionsByBlock: Map<string, TDiscussion[]>;
@@ -48,7 +47,7 @@ type BuildBlockDiscussionIndexOptions = {
   entries: BlockDiscussionEntry[];
   discussions: TDiscussion[];
   getCommentId: (node: TCommentText) => string | undefined;
-  getSuggestionData: (node: Element | TSuggestionText) =>
+  getSuggestionData: (node: Node) =>
     | {
         createdAt: Date | number | string;
         id: string;
@@ -59,14 +58,14 @@ type BuildBlockDiscussionIndexOptions = {
         userId: string;
       }
     | undefined;
-  getSuggestionDataList: (node: TSuggestionText) => Array<{
+  getSuggestionDataList: (node: Text) => Array<{
     id: string;
     newProperties?: Record<string, unknown>;
     properties?: Record<string, unknown>;
     type: 'insert' | 'remove' | 'update';
   }>;
-  getSuggestionId: (node: Element | TSuggestionText) => string | undefined;
-  isBlockSuggestion: (node: Element | TSuggestionText) => boolean;
+  getSuggestionId: (node: Node) => string | undefined;
+  isBlockSuggestion: (node: Node) => boolean;
 };
 
 const discussionIndexCache = new WeakMap<
@@ -131,19 +130,19 @@ const getTopLevelPath = (path: Path): Path | null =>
   path.length > 0 ? path.slice(0, 1) : null;
 
 const getSuggestionIds = (
-  node: TCommentText | Element | TSuggestionText,
+  node: Node,
   getSuggestionDataList: BuildBlockDiscussionIndexOptions['getSuggestionDataList'],
   getSuggestionId: BuildBlockDiscussionIndexOptions['getSuggestionId']
 ) => {
   if (TextApi.isText(node)) {
-    const dataList = getSuggestionDataList(node as TSuggestionText);
+    const dataList = getSuggestionDataList(node);
     const updateIds = dataList
       .filter((data) => data.type === 'update')
       .map((data) => data.id);
 
     if (updateIds.length > 0) return updateIds;
 
-    const suggestionId = getSuggestionId(node as TSuggestionText);
+    const suggestionId = getSuggestionId(node);
 
     return suggestionId ? [suggestionId] : [];
   }
@@ -241,7 +240,7 @@ const toResolvedSuggestion = ({
 
   sortedEntries.forEach(([node]) => {
     if (TextApi.isText(node)) {
-      getSuggestionDataList(node as TSuggestionText).forEach((data) => {
+      getSuggestionDataList(node).forEach((data) => {
         if (data.id !== id) return;
 
         switch (data.type) {
@@ -406,10 +405,7 @@ export const buildBlockDiscussionIndex = ({
           suggestionOwnerById.set(suggestionId, blockPath);
         }
 
-        appendByKey(suggestionEntriesById, suggestionId, [
-          node as Element | TSuggestionText,
-          path,
-        ]);
+        appendByKey(suggestionEntriesById, suggestionId, [node, path]);
       }
     );
   });
@@ -476,9 +472,7 @@ const getDiscussionIndex = (
 
   const index = buildBlockDiscussionIndex({
     discussions,
-    entries: editor.read.nodes.toArray<
-      TCommentText | Element | TSuggestionText
-    >({
+    entries: editor.read.nodes.toArray<TCommentText | Element>({
       at: [],
       mode: 'all',
     }),

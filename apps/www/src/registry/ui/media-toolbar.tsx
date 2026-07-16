@@ -17,9 +17,9 @@ import {
   useEditorSelector,
   useElement,
   useFocusedLast,
-  useReadOnly,
+  useEditorReadOnly,
   useRemoveNodeButton,
-  useSelected,
+  useElementSelected,
 } from 'platejs/react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -44,11 +44,11 @@ export function MediaToolbar({
   plugin: WithRequiredKey;
 }) {
   const editor = useEditorRef();
-  const readOnly = useReadOnly();
-  const selected = useSelected();
+  const readOnly = useEditorReadOnly();
+  const selected = useElementSelected();
   const isFocusedLast = useFocusedLast();
   const selectionCollapsed = useEditorSelector(
-    (editor) => !editor.api.isExpanded(),
+    (editor) => editor.read.selection.isCollapsed(),
     []
   );
   const isImagePreviewOpen = useImagePreviewValue('isOpen', editor.id);

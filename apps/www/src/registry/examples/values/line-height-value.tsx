@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const lineHeightValue: any = (
+export const lineHeightValue = (
   <fragment>
     <hh2>Line Height</hh2>
     <hp>

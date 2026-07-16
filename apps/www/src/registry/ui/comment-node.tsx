@@ -19,7 +19,7 @@ export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
   const activeId = usePluginOption(commentPlugin, 'activeId');
 
   const isOverlapping = getCommentCount(leaf) > 1;
-  const currentId = api.comment.nodeId(leaf);
+  const currentId = api.nodeId(leaf);
   const isActive = activeId === currentId;
   const isHover = hoverId === currentId;
 

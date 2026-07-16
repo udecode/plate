@@ -177,7 +177,7 @@ const editor = createPlateEditor({
 
 ```tsx
 // 表格结构
-const CustomTablePlugin = createEditorPlugin({
+const CustomTablePlugin = createBasePlugin({
   key: 'table',
   node: {
     isElement: true,
@@ -185,7 +185,7 @@ const CustomTablePlugin = createEditorPlugin({
   },
 });
 
-const CustomTableRowPlugin = createEditorPlugin({
+const CustomTableRowPlugin = createBasePlugin({
   key: 'tr',
   node: {
     isElement: true,
@@ -193,7 +193,7 @@ const CustomTableRowPlugin = createEditorPlugin({
   },
 });
 
-const CustomTableCellPlugin = createEditorPlugin({
+const CustomTableCellPlugin = createBasePlugin({
   key: 'td',
   node: {
     isElement: true,

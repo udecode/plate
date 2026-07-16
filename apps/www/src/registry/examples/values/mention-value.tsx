@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const mentionValue: any = (
+export const mentionValue = (
   <fragment>
     <hh2>Mention</hh2>
     <hp>

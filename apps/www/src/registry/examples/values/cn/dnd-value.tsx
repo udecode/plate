@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const dndValue: any = (
+export const dndValue = (
   <fragment>
     <hh2>拖放</hh2>
     <hp>使用拖放功能轻松重新组织文档中的内容。</hp>

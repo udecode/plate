@@ -8,18 +8,18 @@ import type { PlateElementProps } from 'platejs/react';
 import Link from 'next/link';
 import {
   PlateElement,
-  useFocused,
-  useReadOnly,
-  useSelected,
+  useEditorFocused,
+  useEditorReadOnly,
+  useElementSelected,
 } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
 export function TagElement(props: PlateElementProps<TTagElement>) {
   const { element } = props;
-  const selected = useSelected();
-  const focused = useFocused();
-  const readOnly = useReadOnly();
+  const selected = useElementSelected();
+  const focused = useEditorFocused();
+  const readOnly = useEditorReadOnly();
 
   const badge = (
     <div

@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import type { EditorUpdateTransaction, Point } from '@platejs/plite';
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
@@ -7,6 +8,7 @@ const pointRefUnrefMock = mock();
 const insertTextMock = mock();
 const useComboboxInputMock = mock();
 const useEditorRefMock = mock();
+const useNodePathMock = mock();
 
 const store = {
   first: () => null,
@@ -21,7 +23,10 @@ const store = {
   },
 };
 
-let pointRefCurrent: { current: any; unref: typeof pointRefUnrefMock };
+let pointRefCurrent: {
+  current: Point | null;
+  unref: typeof pointRefUnrefMock;
+};
 let capturedCancelInput:
   | ((cause: 'arrowLeft' | 'arrowRight' | 'blur' | 'backspace') => void)
   | undefined;
@@ -70,6 +75,7 @@ mock.module('platejs/react', () => ({
       });
     },
   useEditorRef: useEditorRefMock,
+  useNodePath: useNodePathMock,
 }));
 
 mock.module('@/lib/utils', () => ({
@@ -84,6 +90,7 @@ describe('InlineCombobox', () => {
     pointRefUnrefMock.mockReset();
     useComboboxInputMock.mockReset();
     useEditorRefMock.mockReset();
+    useNodePathMock.mockReset();
     store.setActiveId.mockReset();
 
     pointRefCurrent = {
@@ -100,17 +107,27 @@ describe('InlineCombobox', () => {
       };
     });
 
+    useNodePathMock.mockReturnValue([0]);
     useEditorRefMock.mockReturnValue({
-      api: {
-        before: () => ({ offset: 1, path: [0, 0] }),
-        findPath: () => [0],
-        pointRef: () => pointRefCurrent,
+      read: {
+        points: {
+          before: () => ({ offset: 1, path: [0, 0] }),
+        },
       },
-      meta: {},
-      tf: {
-        insertText: insertTextMock,
-        move: mock(),
-      },
+      runtime: {},
+      update: Object.assign(
+        (callback: (tx: EditorUpdateTransaction) => void) => {
+          callback({
+            selection: { move: mock() },
+            text: { insert: insertTextMock },
+          } as unknown as EditorUpdateTransaction);
+        },
+        {
+          refs: {
+            point: () => pointRefCurrent,
+          },
+        }
+      ),
     });
   });
 
@@ -125,7 +142,7 @@ describe('InlineCombobox', () => {
 
     render(
       <InlineCombobox
-        element={{ children: [{ text: '' }], type: 'mention_input' } as any}
+        element={{ children: [{ text: '' }], type: 'mention_input' }}
         trigger="@"
       >
         <div>child</div>

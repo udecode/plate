@@ -40,7 +40,7 @@ That is the real fork. The code matters, but the maintenance philosophy matters 
 
 ## Why Not Stay Closer To Upstream Slate?
 
-The first attempted design was conservative: keep upstream Slate core intact, rewrite `plite-react`, and push the hard work into the renderer. That would have kept the public runtime closer to Slate 0.x while trying to unlock extra roots, document state, overlays, and React performance from React alone.
+The first attempted design was conservative: keep upstream Slate core intact, rewrite `plite-react`, and push the hard work into the renderer. That would have kept the public runtime closer to Slate 0.x while trying to unlock extra roots, document meta, overlays, and React performance from React alone.
 
 That path broke down because the renderer cannot safely own the facts that make a rich-text editor correct. React can render a tree, but it cannot be the source of truth for write boundaries, selection authority, operation batching, dirty regions, stable node identity, history grouping, collaboration metadata, and DOM repair.
 
@@ -89,7 +89,7 @@ Those choices are still good. The fork changes the runtime around them.
 The public authoring model has two boundaries:
 
 ```tsx
-const value = editor.read((state) => state.value.get());
+const value = editor.read.value();
 
 editor.update((tx) => {
   tx.text.insert("Hello");
@@ -130,13 +130,13 @@ const initialValue = {
     header: [{ type: "paragraph", children: [{ text: "Draft" }] }],
     footer: [{ type: "paragraph", children: [{ text: "Internal" }] }],
   },
-  state: {
+  meta: {
     "document.title": "Launch brief",
   },
 };
 ```
 
-`children` is the primary editable body. `roots` stores extra editable regions. `state` stores persistent document metadata and small shared model state.
+`children` is the primary editable body. `roots` stores extra editable regions. `meta` stores persistent document metadata and small shared model state.
 
 Omit `root` for the primary editable. Root keys are for extra document regions.
 
@@ -268,7 +268,7 @@ This table is intentionally exhaustive. It gives humans and agents one place to 
 | Core data model    | JSON-like nodes, paths, points, ranges, operations, bookmarks, runtime ids, refs, snapshots                                                                                                                                                                                                   |
 | Public helper APIs | `ElementApi`, `LocationApi`, `NodeApi`, `OperationApi`, `PathApi`, `PointApi`, `RangeApi`, `SpanApi`, `TextApi`, ref APIs                                                                                                                                                                     |
 | Extensions         | `defineEditorExtension`, schema elements, state fields, operation/query middleware, commit listeners, namespaced editor/state/transaction groups                                                                                                                                              |
-| Document values    | primary `children`, optional extra `roots`, optional persistent `state`                                                                                                                                                                                                                       |
+| Document values    | primary `children`, optional extra `roots`, optional persistent `meta`                                                                                                                                                                                                                       |
 | Roots              | rootless primary document, named extra roots, content roots, root-aware React hooks and chrome                                                                                                                                                                                                |
 | State fields       | persistent and local fields, history policy, collaboration patch shape, React state-field hooks                                                                                                                                                                                               |
 | React setup        | `usePliteEditor`, `createReactEditor`, `<Plite>`, `<Editable>`, render primitives                                                                                                                                                                                                             |
@@ -277,12 +277,12 @@ This table is intentionally exhaustive. It gives humans and agents one place to 
 | DOM bridge         | DOM point/range conversion, clipboard bridge, hotkeys, DOM coverage boundaries, browser environment helpers                                                                                                                                                                                   |
 | Overlays           | decorations, annotations, widgets, projection stores, source-scoped invalidation                                                                                                                                                                                                              |
 | Large documents    | active editing corridor, staged DOM coverage, virtualized rendering proof, huge-document smoke lanes                                                                                                                                                                                          |
-| History            | `history()` extension, `state.history`, `tx.history`, `editor.api.history`, history stack validation                                                                                                                                                                                          |
+| History            | `history()` extension, `state.history`, `tx.history`, semantic `editor.update({ history })` policies, direct undo/redo, history stack validation                                                                                                                                                |
 | Hyperscript        | JSX fixture factory, custom fixture tags, low-level fixture creators                                                                                                                                                                                                                          |
 | Layout             | `createPliteLayout`, `PagedEditable`, page mount plans, fragment hooks                                                                                                                                                                                                                        |
 | Browser proof      | `@platejs/browser/core`, `@platejs/browser/browser`, `@platejs/browser/playwright`, `@platejs/browser/transports`, feature contracts, screenshots, traces, replay                                                                                                                             |
-| Docs               | migration guide, walkthroughs, API reference, roots/state docs, React setup docs, DOM coverage docs, layout docs                                                                                                                                                                              |
-| Examples           | plaintext, richtext, checklists, markdown, inlines, mentions, images, embeds, tables, paste HTML, placeholder, read-only, iframe/shadow DOM, styling, document state, hidden content, huge document, multi-root document, synced blocks, comment mode, search/code highlighting, Yjs examples |
+| Docs               | migration guide, walkthroughs, API reference, roots/meta docs, React setup docs, DOM coverage docs, layout docs                                                                                                                                                                               |
+| Examples           | plaintext, richtext, checklists, markdown, inlines, mentions, images, embeds, tables, paste HTML, placeholder, read-only, iframe/shadow DOM, styling, document meta, hidden content, huge document, multi-root document, synced blocks, comment mode, search/code highlighting, Yjs examples |
 | Hard cuts          | rootless primary APIs, explicit reads/writes, transaction groups, no public compatibility aliases, no primary mutable editor-field authoring story                                                                                                                                            |
 
 ## Read Next
@@ -291,7 +291,7 @@ This table is intentionally exhaustive. It gives humans and agents one place to 
 - [Migration](migration)
 - [React Editor Setup](libraries/plite-react/react-editor-setup)
 - [Roots](concepts/13-roots)
-- [Document State](concepts/14-document-state)
+- [Document Meta](concepts/14-document-state)
 - [Browser](/docs/browser)
 - [Plite Layout](libraries/plite-layout)
 

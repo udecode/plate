@@ -36,7 +36,7 @@ export const useExcalidrawElement = ({
   }, []);
 
   const handleChange = (
-    elements: readonly Partial<OrderedExcalidrawElement>[],
+    elements: readonly OrderedExcalidrawElement[],
     state: Partial<AppState>
   ) => {
     if (readOnly) return;

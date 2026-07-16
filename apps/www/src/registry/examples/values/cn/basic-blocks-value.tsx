@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const basicBlocksValue: any = (
+export const basicBlocksValue = (
   <fragment>
     <hh2>块</hh2>
     <hp>轻松创建从 H1 到 H6 的各级标题，以构建你的内容结构，使其更有条理。</hp>

@@ -12,7 +12,12 @@ import {
 } from '@platejs/media/react';
 import { AudioLines, FileUp, Film, ImageIcon, Loader2Icon } from 'lucide-react';
 import { KEYS } from 'platejs';
-import { PlateElement, useEditorPlugin, withHOC } from 'platejs/react';
+import {
+  PlateElement,
+  useEditorPlugin,
+  useNodePath,
+  withHOC,
+} from 'platejs/react';
 import { useFilePicker } from 'use-file-picker';
 
 import { cn } from '@/lib/utils';
@@ -52,6 +57,7 @@ export const PlaceholderElement = withHOC(
   PlaceholderProvider,
   function PlaceholderElement(props: PlateElementProps<TPlaceholderElement>) {
     const { editor, element } = props;
+    const path = useNodePath(element);
 
     const { api } = useEditorPlugin(PlaceholderPlugin);
 
@@ -76,7 +82,7 @@ export const PlaceholderElement = withHOC(
         replaceCurrentPlaceholder(firstFile);
 
         if (restFiles.length > 0) {
-          editor.getTransforms(PlaceholderPlugin).insert.media(restFiles);
+          editor.plugin(PlaceholderPlugin).update.insertMedia(restFiles);
         }
       },
     });
@@ -84,18 +90,18 @@ export const PlaceholderElement = withHOC(
     const replaceCurrentPlaceholder = React.useCallback(
       (file: File) => {
         void uploadFile(file);
-        api.placeholder.addUploadingFile(element.id as string, file);
+        api.addUploadingFile(element.id as string, file);
       },
-      [api.placeholder, element.id, uploadFile]
+      [api, element.id, uploadFile]
     );
 
     React.useEffect(() => {
       if (!uploadedFile) return;
 
-      const path = editor.api.findPath(element);
+      if (!path) return;
 
-      editor.tf.withoutSaving(() => {
-        editor.tf.removeNodes({ at: path });
+      editor.update({ history: 'skip' }, (tx) => {
+        tx.nodes.remove({ at: path });
 
         const node = {
           children: [{ text: '' }],
@@ -108,14 +114,14 @@ export const PlaceholderElement = withHOC(
           url: uploadedFile.url,
         };
 
-        editor.tf.insertNodes(node, { at: path });
+        tx.nodes.insert(node, { at: path });
 
         updateUploadHistory(editor, node);
       });
 
-      api.placeholder.removeUploadingFile(element.id as string);
+      api.removeUploadingFile(element.id as string);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [uploadedFile, element.id]);
+    }, [uploadedFile, element.id, path]);
 
     // React dev mode will call React.useEffect twice
     const isReplaced = React.useRef(false);
@@ -125,9 +131,7 @@ export const PlaceholderElement = withHOC(
       if (isReplaced.current) return;
 
       isReplaced.current = true;
-      const currentFiles = api.placeholder.getUploadingFile(
-        element.id as string
-      );
+      const currentFiles = api.getUploadingFile(element.id as string);
 
       if (!currentFiles) return;
 

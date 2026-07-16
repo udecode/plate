@@ -109,9 +109,10 @@ export const editor = createPlateEditor({
 
 ```tsx
 import cloneDeep from 'lodash/cloneDeep';
-import { BaseAIPlugin, withAIBatch } from '@platejs/ai';
+import { withAIBatch } from '@platejs/ai';
 import {
   AIChatPlugin,
+  AIPlugin,
   applyAISuggestions,
   getInsertPreviewStart,
   streamInsertChunk,
@@ -136,48 +137,46 @@ export const aiChatPlugin = AIChatPlugin.extend({
     const toolName = usePluginOption(AIChatPlugin, 'toolName');
 
     useChatChunk({
-      onChunk: ({ chunk, isFirst, text }) => {
+      onChunk: ({ chunk, isFirst, nodes, text: content }) => {
         if (isFirst && mode === 'insert') {
+          const selection = editor.read.selection();
+
+          if (!selection) return;
+
           const { startBlock, startInEmptyParagraph } =
             getInsertPreviewStart(editor);
 
-          editor.update((tx) =>
-            tx.ai.beginPreview({
-              originalBlocks:
-                startInEmptyParagraph &&
-                startBlock &&
-                ElementApi.isElement(startBlock)
-                  ? [cloneDeep(startBlock)]
-                  : [],
-            })
-          );
+          editor.plugin(AIPlugin).api.beginPreview({
+            originalBlocks:
+              startInEmptyParagraph &&
+              startBlock &&
+              ElementApi.isElement(startBlock)
+                ? [cloneDeep(startBlock)]
+                : [],
+          });
 
-          editor.setOption(AIChatPlugin, 'streaming', true);
-
-          editor.tf.withoutSaving(() => {
-            editor.tf.insertNodes(
+          editor.update({ history: 'skip' }, (tx) => {
+            tx.nodes.insert(
               {
                 children: [{ text: '' }],
                 type: getPluginType(editor, KEYS.aiChat),
               },
               {
-                at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
+                at: PathApi.next(selection.focus.path.slice(0, 1)),
               }
             );
           });
+          editor.plugin(AIChatPlugin).setOption('streaming', true);
         }
 
-        if (mode === 'insert') {
-          editor.tf.withoutSaving(() => {
-            if (!getOption('streaming')) return;
+        if (mode === 'insert' && nodes.length > 0) {
+          if (!getOption('streaming')) return;
 
-            editor.tf.withScrolling(() => {
-              streamInsertChunk(editor, chunk, {
-                textProps: {
-                  [getPluginType(editor, KEYS.ai)]: true,
-                },
-              });
-            });
+          streamInsertChunk(editor, chunk, {
+            autoScroll: true,
+            textProps: {
+              [getPluginType(editor, KEYS.ai)]: true,
+            },
           });
         }
 
@@ -185,17 +184,17 @@ export const aiChatPlugin = AIChatPlugin.extend({
           withAIBatch(
             editor,
             () => {
-              applyAISuggestions(editor, text);
+              applyAISuggestions(editor, content);
             },
             { split: isFirst }
           );
         }
       },
       onFinish: () => {
-        editor.setOption(AIChatPlugin, 'streaming', false);
-        editor.setOption(AIChatPlugin, '_blockChunks', '');
-        editor.setOption(AIChatPlugin, '_blockPath', null);
-        editor.setOption(AIChatPlugin, '_mdxName', null);
+        editor.plugin(AIChatPlugin).setOption('streaming', false);
+        editor.plugin(AIChatPlugin).setOption('_blockChunks', '');
+        editor.plugin(AIChatPlugin).setOption('_blockPath', null);
+        editor.plugin(AIChatPlugin).setOption('_mdxName', null);
       },
     });
   },
@@ -203,7 +202,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
 ```
 
 - `useChatChunk`：监视 `UseChatHelpers` 状态并生成增量块。
-- `tf.ai.beginPreview`：在写入首个未保存的预览块之前，捕获插入模式预览的回滚块切片和选区。
+- `editor.plugin(AIPlugin).api.beginPreview`：在写入首个未保存的预览块之前，捕获插入模式预览的回滚块切片和选区。
 - `streamInsertChunk`：将 Markdown/MDX 流式传输到文档中，尽可能重用现有块。
 - `applyAISuggestions`：当 `toolName === 'edit'` 时，将响应转换为临时建议节点。
 - `withAIBatch`：标记已保存的 AI 批次，使建议审查和已接受的 AI 更改保持可撤销。
@@ -218,7 +217,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
 ```ts title="app/api/ai/command/route.ts"
 import { createGateway } from '@ai-sdk/gateway';
 import { convertToCoreMessages, streamText } from 'ai';
-import { createBasePlateEditor } from 'platejs';
+import { createBaseEditor } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
@@ -226,7 +225,7 @@ import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transfor
 export async function POST(req: Request) {
   const { apiKey, ctx, messages, model } = await req.json();
 
-  const editor = createBasePlateEditor({
+  const editor = createBaseEditor({
     plugins: BaseEditorKit,
     selection: ctx.selection,
     value: ctx.children,
@@ -275,7 +274,7 @@ export const useEditorAIChat = () => {
     transport: new DefaultChatTransport(),
     onData(data) {
       if (data.type === 'data-toolName') {
-        editor.setOption(AIChatPlugin, 'toolName', data.data);
+        editor.plugin(AIChatPlugin).setOption('toolName', data.data);
       }
     },
   });
@@ -303,9 +302,7 @@ useEditorChat({
 现在您可以以编程方式提交提示：
 
 ```tsx
-import { AIChatPlugin } from '@platejs/ai/react';
-
-editor.getPluginApi(AIChatPlugin).aiChat.submit('', {
+editor.api.aiChat.submit('', {
   prompt: {
     default: 'Continue the document after {block}',
     selecting: 'Rewrite {selection} with a clearer tone',
@@ -326,7 +323,7 @@ editor.getPluginApi(AIChatPlugin).aiChat.submit('', {
 ```tsx
 import { replacePlaceholders } from '@platejs/ai';
 
-editor.getPluginApi(AIChatPlugin).aiChat.submit('Improve tone', {
+editor.api.aiChat.submit('Improve tone', {
   prompt: ({ isSelecting }) =>
     isSelecting
       ? replacePlaceholders(editor, 'Rewrite {blockSelection} using a friendly tone.')
@@ -346,7 +343,7 @@ editor.getPluginApi(AIChatPlugin).aiChat.submit('Improve tone', {
 增强从客户端发送的有效载荷以微调服务器提示：
 
 ```ts
-editor.setOption(aiChatPlugin, 'chatOptions', {
+editor.plugin(aiChatPlugin).setOption('chatOptions', {
   api: '/api/ai/command',
   body: {
     model: 'openai/gpt-4o-mini',
@@ -392,7 +389,7 @@ editor.setOption(aiChatPlugin, 'chatOptions', {
 
 <API name="useAIChatEditor">
 <APIParameters>
-  <APIItem name="editor" type="BasePlateEditor">专用于聊天预览的编辑器实例。</APIItem>
+  <APIItem name="editor" type="BaseEditor">专用于聊天预览的编辑器实例。</APIItem>
   <APIItem name="content" type="string">模型返回的 Markdown 内容。</APIItem>
   <APIItem name="options" type="DeserializeMdOptions" optional>传递 `parser` 以在反序列化之前过滤令牌。</APIItem>
 </APIParameters>
@@ -444,7 +441,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="withAIBatch">
 <APIParameters>
-  <APIItem name="editor" type="BasePlateEditor">目标编辑器。</APIItem>
+  <APIItem name="editor" type="BaseEditor">目标编辑器。</APIItem>
   <APIItem name="fn" type="() => void">要运行的操作。</APIItem>
   <APIItem name="options" type="{ split?: boolean }" optional>设置 `split: true` 以开始新的历史批次。</APIItem>
 </APIParameters>
@@ -456,7 +453,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="applyAISuggestions">
 <APIParameters>
-  <APIItem name="editor" type="BasePlateEditor">要应用建议的编辑器。</APIItem>
+  <APIItem name="editor" type="BaseEditor">要应用建议的编辑器。</APIItem>
   <APIItem name="content" type="string">来自模型的 Markdown 响应。</APIItem>
 </APIParameters>
 </API>
@@ -496,7 +493,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="getEditorPrompt">
 <APIParameters>
-  <APIItem name="editor" type="BasePlateEditor">提供上下文的编辑器。</APIItem>
+  <APIItem name="editor" type="BaseEditor">提供上下文的编辑器。</APIItem>
   <APIItem name="options" type="{ prompt?: EditorPrompt }">描述提示的字符串、配置或函数。</APIItem>
 </APIParameters>
 <APIReturns type="string">上下文化的提示字符串。</APIReturns>
@@ -508,7 +505,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="replacePlaceholders">
 <APIParameters>
-  <APIItem name="editor" type="BasePlateEditor">提供内容的编辑器。</APIItem>
+  <APIItem name="editor" type="BaseEditor">提供内容的编辑器。</APIItem>
   <APIItem name="text" type="string">模板文本。</APIItem>
   <APIItem name="options" type="{ prompt?: string }" optional>注入到 `{prompt}` 中的提示值。</APIItem>
 </APIParameters>
@@ -536,7 +533,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
   <APIOptions>
     <APIItem name="trigger" type="RegExp | string | string[]" optional>打开命令菜单的字符。默认为 `' '`。</APIItem>
     <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>触发器前字符必须匹配的模式。默认为 `/^\s?$/`。</APIItem>
-    <APIItem name="triggerQuery" type="(editor: BasePlateEditor) => boolean" optional>返回 `false` 以在特定上下文中取消打开。</APIItem>
+    <APIItem name="triggerQuery" type="(editor: BaseEditor) => boolean" optional>返回 `false` 以在特定上下文中取消打开。</APIItem>
     <APIItem name="chat" type="UseChatHelpers&lt;ChatMessage&gt;" optional>存储来自 `useChat` 的助手，以便 API 调用可以访问它们。</APIItem>
     <APIItem name="chatNodes" type="TIdElement[]" optional>用于差异编辑建议的节点快照（内部管理）。</APIItem>
     <APIItem name="chatSelection" type="Range | null" optional>提交提示前捕获的选择（内部管理）。</APIItem>
@@ -621,7 +618,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="insertBelow">
 <APIParameters>
-  <APIItem name="sourceEditor" type="BasePlateEditor">包含生成内容的编辑器。</APIItem>
+  <APIItem name="sourceEditor" type="BaseEditor">包含生成内容的编辑器。</APIItem>
   <APIItem name="options" type="{ format?: 'all' | 'none' | 'single' }" optional>从源选择复制格式。默认为 `'single'`。</APIItem>
 </APIParameters>
 </API>
@@ -632,7 +629,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="replaceSelection">
 <APIParameters>
-  <APIItem name="sourceEditor" type="BasePlateEditor">包含生成内容的编辑器。</APIItem>
+  <APIItem name="sourceEditor" type="BaseEditor">包含生成内容的编辑器。</APIItem>
   <APIItem name="options" type="{ format?: 'all' | 'none' | 'single' }" optional>控制应应用原始选择的多少格式。</APIItem>
 </APIParameters>
 </API>
@@ -659,7 +656,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 移除标记为 AI 生成的文本节点。
 
-### `tf.ai.beginPreview(options?)`
+### `editor.plugin(AIPlugin).api.beginPreview(options?)`
 
 捕获插入模式 AI 预览的回滚块切片和选区。在写入首个未保存的预览块之前调用一次。
 
@@ -670,7 +667,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 <APIReturns type="boolean">当存储了新的预览回滚点时返回 `true`；若预览状态已存在则返回 `false`。</APIReturns>
 </API>
 
-### `tf.ai.acceptPreview()`
+### `editor.plugin(AIPlugin).api.acceptPreview()`
 
 将当前预览作为一次新的可撤销批次提交，移除仅预览使用的标记，并清除预览状态。
 
@@ -678,7 +675,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 <APIReturns type="boolean">当活动预览被提交时返回 `true`。</APIReturns>
 </API>
 
-### `tf.ai.cancelPreview()`
+### `editor.plugin(AIPlugin).api.cancelPreview()`
 
 恢复当前预览的回滚点，并清除预览状态。
 
@@ -722,7 +719,7 @@ summarizeInBullets: {
   label: 'Summarize in bullets',
   value: 'summarizeInBullets',
   onSelect: ({ editor }) => {
-    void editor.getPluginApi(AIChatPlugin).aiChat.submit('', {
+    void editor.api.aiChat.submit('', {
       prompt: 'Summarize the current selection using bullet points',
       toolName: 'generate',
     });
@@ -747,7 +744,7 @@ generateTOC: {
         ? 'Create a realistic table of contents for this document'
         : 'Generate a table of contents that reflects the existing headings';
 
-    void editor.getPluginApi(AIChatPlugin).aiChat.submit('', {
+    void editor.api.aiChat.submit('', {
       mode: 'insert',
       prompt,
       toolName: 'generate',

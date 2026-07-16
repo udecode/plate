@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { insertInlineEquation } from '@platejs/math';
+import { BaseInlineEquationPlugin } from '@platejs/math';
 import { RadicalIcon } from 'lucide-react';
 import { useEditorRef } from 'platejs/react';
 
@@ -17,7 +17,7 @@ export function InlineEquationToolbarButton(
     <ToolbarButton
       {...props}
       onClick={() => {
-        insertInlineEquation(editor);
+        editor.plugin(BaseInlineEquationPlugin).update.insert();
       }}
       tooltip="Mark as equation"
     >

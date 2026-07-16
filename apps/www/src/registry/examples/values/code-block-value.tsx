@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const codeBlockValue: any = (
+export const codeBlockValue = (
   <fragment>
     <hh2>Code Blocks</hh2>
     <hp>

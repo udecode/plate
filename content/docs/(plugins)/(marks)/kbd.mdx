@@ -103,9 +103,9 @@ export const kbdPlugin = KbdPlugin.withComponent(KbdLeaf);
 | `BaseKbdPlugin` | `@platejs/basic-nodes` | Headless keyboard-input mark, HTML parser, render tag, selection rule, and `toggle` transform. |
 | `KbdPlugin` | `@platejs/basic-nodes/react` | React wrapper for the headless keyboard-input mark. |
 | `KbdLeaf` | Registry UI | Styled client `<kbd>` leaf using `PlateLeaf`. |
-| `KbdLeafStatic` | Registry UI | Static rendering version using `SlateLeaf`. |
+| `KbdLeafStatic` | Registry UI | Static rendering version using `PliteLeaf`. |
 | `BasicMarksKit` | Registry | Adds `KbdPlugin.withComponent(KbdLeaf)`. |
-| `MoreToolbarButton` | Registry UI | Calls `editor.tf.toggleMark(KEYS.kbd)` from the More menu. |
+| `MoreToolbarButton` | Registry UI | Calls `tx.marks.toggle(KEYS.kbd)` from the More menu. |
 
 The package owns the mark. The registry owns keycap styling and toolbar placement.
 
@@ -115,7 +115,7 @@ The package owns the mark. The registry owns keycap styling and toolbar placemen
 |----------|--------|
 | Mark key | `KEYS.kbd` |
 | Leaf behavior | `node.isLeaf: true` |
-| Toggle transform | `editor.tf.kbd.toggle()` calls `editor.tf.toggleMark(type)`. |
+| Toggle command | `tx.kbd.toggle()` calls `tx.marks.toggle(type)`. |
 | Selection affinity | `hard` |
 | HTML tags | `kbd` |
 | Render output | `kbd` |
@@ -128,6 +128,6 @@ The package owns the mark. The registry owns keycap styling and toolbar placemen
 |-----|---------|-----|
 | `BaseKbdPlugin` | `@platejs/basic-nodes` | Headless keyboard-input plugin. |
 | `KbdPlugin` | `@platejs/basic-nodes/react` | React keyboard-input plugin. |
-| `tf.kbd.toggle()` | `@platejs/basic-nodes` | Toggles the keyboard-input mark at the selection. |
+| `tx.kbd.toggle()` | `@platejs/basic-nodes` | Toggles the keyboard-input mark at the selection. |
 | `KbdLeaf` | Registry UI | Styled client keyboard-input leaf. |
 | `KbdLeafStatic` | Registry UI | Styled static keyboard-input leaf. |

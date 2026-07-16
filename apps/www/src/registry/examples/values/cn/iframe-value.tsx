@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const iframeValue: any = (
+export const iframeValue = (
   <fragment>
     <hp>
       在这个示例中，文档被渲染到一个受控的 <htext code>iframe</htext> 中。

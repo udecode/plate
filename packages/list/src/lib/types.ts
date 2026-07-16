@@ -60,6 +60,23 @@ export const ListStyleType = {
 
 export type ListStyleType = (typeof ListStyleType)[keyof typeof ListStyleType];
 
+export type IndentListOptions = {
+  at?: Location;
+  listStyleType?: ListStyleType | (string & {});
+};
+
+export type OutdentListOptions = {
+  at?: Location;
+};
+
+export type ToggleListOptions = {
+  at?: Location;
+  getSiblingListOptions?: GetSiblingListOptions<Element>;
+  listRestart?: number;
+  listRestartPolite?: number;
+  listStyleType: ListStyleType | (string & {});
+};
+
 export const ULIST_STYLE_TYPES = [
   ListStyleType.Disc,
   ListStyleType.Circle,
@@ -67,3 +84,6 @@ export const ULIST_STYLE_TYPES = [
   ListStyleType.DisclosureOpen,
   ListStyleType.DisclosureClosed,
 ] as const;
+import type { Element, Location } from '@platejs/plite';
+
+import type { GetSiblingListOptions } from './queries/getSiblingList';

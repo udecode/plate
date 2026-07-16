@@ -1,3 +1,5 @@
+import { NodeApi, TextApi } from '@platejs/plite';
+
 import { createValue, DEMO_VALUES } from './demo-values';
 
 describe('createValue', () => {
@@ -12,22 +14,27 @@ describe('createValue', () => {
     expect(snapshotA[2]).not.toBe(DEMO_VALUES.table[2]);
     expect(snapshotA[2]).not.toBe(snapshotB[2]);
 
-    snapshotA[2].children[1].children[0].children[0].children[0] = {
-      bold: true,
-      text: 'Changed heading',
-    };
+    const headingPath = [2, 1, 0, 0, 0];
+    const snapshotAHeading = NodeApi.get(
+      { children: snapshotA, type: 'root' },
+      headingPath
+    );
+    const snapshotBHeading = NodeApi.get(
+      { children: snapshotB, type: 'root' },
+      headingPath
+    );
+    const sourceHeading = NodeApi.get(
+      { children: DEMO_VALUES.table, type: 'root' },
+      headingPath
+    );
 
-    expect(
-      DEMO_VALUES.table[2].children[1].children[0].children[0].children[0]
-    ).toMatchObject({
-      bold: true,
-      text: 'Heading',
-    });
-    expect(
-      snapshotB[2].children[1].children[0].children[0].children[0]
-    ).toMatchObject({
-      bold: true,
-      text: 'Heading',
-    });
+    expect(TextApi.isText(snapshotAHeading)).toBe(true);
+
+    if (!TextApi.isText(snapshotAHeading)) return;
+
+    snapshotAHeading.text = 'Changed heading';
+
+    expect(sourceHeading).toMatchObject({ bold: true, text: 'Heading' });
+    expect(snapshotBHeading).toMatchObject({ bold: true, text: 'Heading' });
   });
 });

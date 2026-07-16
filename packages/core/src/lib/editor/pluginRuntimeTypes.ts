@@ -1,6 +1,7 @@
 import type {
   BaseEditor as PliteRuntimeBaseEditor,
   EditorExtensionTypeProvider,
+  EditorUpdateTransaction,
   Value,
 } from '@platejs/plite';
 import type { UnionToIntersection } from '@udecode/utils';
@@ -9,6 +10,7 @@ import type { AnyBasePlugin, BasePlugin } from '../plugin/BasePlugin';
 import type {
   AnyPluginConfig,
   InferApi,
+  InferPluginConfigTree,
   InferState,
   InferTx,
 } from '../plugin/PluginConfig';
@@ -26,9 +28,10 @@ export type InferPluginConfig<P> = P extends {
       ? P
       : never;
 
-export type InferPlugins<T extends readonly unknown[]> = InferPluginConfig<
-  T[number]
->;
+export type InferPlugins<T extends readonly unknown[]> =
+  InferPluginConfig<T[number]> extends infer C extends AnyPluginConfig
+    ? InferPluginConfigTree<C>
+    : never;
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
 
@@ -105,11 +108,18 @@ type KnownPluginConfig<P> = P extends unknown
     : P
   : never;
 
-type InferencePluginConfig<P> = [KnownPluginConfig<P>] extends [never]
+type OwnInferencePluginConfig<P> = [KnownPluginConfig<P>] extends [never]
   ? never
   : IsUnknown<KnownPluginConfig<P>> extends true
     ? never
     : KnownPluginConfig<P>;
+
+type InferencePluginConfig<P> =
+  OwnInferencePluginConfig<P> extends infer C
+    ? C extends AnyPluginConfig
+      ? InferPluginConfigTree<C>
+      : never
+    : never;
 
 type InferApiFromPluginConfig<C> = [C] extends [never]
   ? never
@@ -172,6 +182,42 @@ type PlateInstalledExtension<P> = {
     tx: CorePluginTx & InstalledPluginTx<P>;
   }
 >;
+
+type PlatePluginTransactionExtension<P> = {
+  name: 'plate-dependencies';
+} & EditorExtensionTypeProvider<
+  () => {
+    api: InstalledPluginApi<P>;
+    state: InstalledPluginState<P>;
+    tx: InstalledPluginTx<P>;
+  }
+>;
+
+export type PlatePluginTransaction<P extends AnyPluginConfig> =
+  EditorUpdateTransaction<Value, readonly [PlatePluginTransactionExtension<P>]>;
+
+type PlateOwnInstalledExtension<P> = {
+  name: 'plate';
+} & EditorExtensionTypeProvider<
+  () => {
+    api: CorePluginApi &
+      MergeObjectApi<InferApiFromPluginConfig<OwnInferencePluginConfig<P>>>;
+    state: InstalledPluginState<CorePluginConfig> &
+      MergeObjectIntersection<
+        InferStateFromPluginConfig<OwnInferencePluginConfig<P>>
+      >;
+    tx: CorePluginTx &
+      MergeObjectIntersection<
+        InferTxFromPluginConfig<OwnInferencePluginConfig<P>>
+      >;
+  }
+>;
+
+export type PlatePluginOwnUpdate<P extends AnyPluginConfig> =
+  PliteRuntimeBaseEditor<
+    Value,
+    readonly [PlateOwnInstalledExtension<P>]
+  >['update'];
 
 export type PliteEditorWithPlatePlugins<
   V extends Value,

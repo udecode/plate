@@ -7,6 +7,15 @@ Plite changes the document inside `editor.update(...)`. The callback receives a
 transaction object named `tx`. Use `tx` for writes and for reads that belong to
 the command you are running.
 
+For one write, use the direct update method:
+
+```javascript
+editor.update.text.insert("some words");
+```
+
+Use the callback form when a command composes multiple writes, reads transaction
+state, adjusts update tags, or registers post-commit work.
+
 ## Transaction Groups
 
 ```javascript
@@ -31,8 +40,8 @@ The core transaction groups are:
 - `tx.selection` for changing the model selection
 - `tx.marks` for changing text marks
 - `tx.value` and `tx.roots` for whole-root or whole-document replacement
-- `tx.setField` and `tx.statePatches` for persistent state fields
-- `tx.normalize` and `tx.withoutNormalizing` for explicit normalization control
+- `tx.setField` and `tx.statePatches` for persistent meta fields
+- `tx.normalize` for an explicit normalization barrier
 - `tx.operations` for replaying operation batches
 
 Commands should stay inside one update when the changes belong to one user
@@ -41,6 +50,21 @@ finishes.
 
 See [Transforms API](../api/transforms) for method options and the complete
 transaction reference.
+
+## Value Replacement
+
+Use `editor.update.value.replace(...)` for one-shot imports, reset buttons, and
+controlled external replacements.
+
+```javascript
+editor.update({ history: "skip" }).value.replace({
+  children: [{ type: "paragraph", children: [{ text: "Imported" }] }],
+  selection: "start",
+});
+```
+
+Use the callback form when the same replacement also edits extra roots or
+persistent meta fields.
 
 ## Selection
 
@@ -70,7 +94,7 @@ editor.update((tx) => {
 Read selection with `editor.read(...)` when you are outside an update:
 
 ```javascript
-const selection = editor.read((state) => state.selection.get());
+const selection = editor.read((state) => state.selection());
 ```
 
 ## Text
@@ -148,21 +172,26 @@ editor.update((tx) => {
 });
 ```
 
+When you already have the exact node, pass it as `at`. The node type narrows the
+properties accepted by `set`.
+
+```typescript
+editor.update.nodes.set({ icon: "🔥" }, { at: calloutElement });
+```
+
 ## Marks
 
 Use `tx.marks` for text formatting commands.
 
 ```javascript
-editor.update((tx) => {
-  tx.marks.toggle("bold");
-});
+editor.update.marks.toggle("bold");
 ```
 
 You can read marks inside the same command:
 
 ```javascript
 editor.update((tx) => {
-  const marks = tx.marks.get();
+  const marks = tx.marks();
 
   if (marks?.code) {
     tx.marks.remove("code");
@@ -179,10 +208,8 @@ through `tx.operations.replay(...)` so replay follows the same commit,
 normalization, history, and subscription boundary as local commands.
 
 ```javascript
-editor.update((tx) => {
-  tx.operations.replay(remoteOperations, {
-    tag: "remote-import",
-  });
+editor.update({ tags: "remote-import" }, (tx) => {
+  tx.operations.replay(remoteOperations);
 });
 ```
 
@@ -204,7 +231,8 @@ editor.update((tx) => {
 });
 ```
 
-`at` can be a `Path`, `Point`, or `Range`.
+`at` can be a `Path`, `Point`, `Range`, text node, or element node. Node targets
+resolve to their current path in the active editor root.
 
 ```javascript
 editor.update((tx) => {
@@ -219,7 +247,8 @@ editor.update((tx) => {
 
 ## The `match` Option
 
-Node methods accept a `match` function to restrict which nodes are changed.
+Node methods accept a predicate or a shallow property object to restrict which
+nodes are changed.
 
 ```javascript
 editor.update((tx) => {
@@ -233,6 +262,22 @@ editor.update((tx) => {
 
 The `match` function can examine the node, the path, or surrounding structure
 through transaction read helpers.
+
+Use property objects for exact fields and one-of sets.
+
+```javascript
+const callout = editor.read.nodes.find({
+  match: { type: "callout" },
+});
+
+const tableNode = editor.read.nodes.find({
+  match: { type: ["table", "table_cell"] },
+});
+```
+
+Property matching is shallow. Scalar values use exact equality; array values
+mean one-of. Use a predicate for computed policies such as block, text, or empty
+checks, and whenever TypeScript should narrow the matched node.
 
 ## Normalization
 

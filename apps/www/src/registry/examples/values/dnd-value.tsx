@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const dndValue: any = (
+export const dndValue = (
   <fragment>
     <hh2>Drag and Drop</hh2>
     <hp>Easily reorganize content within your document using drag and drop.</hp>

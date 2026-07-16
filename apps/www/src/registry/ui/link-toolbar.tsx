@@ -30,6 +30,8 @@ import {
 
 import { buttonVariants } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';
+import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-kit';
 
 const popoverVariants = cva(
   'z-50 w-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-hidden'
@@ -44,11 +46,8 @@ export function LinkFloatingToolbar({
 }: {
   state?: LinkFloatingToolbarState;
 }) {
-  const activeCommentId = usePluginOption({ key: KEYS.comment }, 'activeId');
-  const activeSuggestionId = usePluginOption(
-    { key: KEYS.suggestion },
-    'activeId'
-  );
+  const activeCommentId = usePluginOption(commentPlugin, 'activeId');
+  const activeSuggestionId = usePluginOption(suggestionPlugin, 'activeId');
 
   const floatingOptions: UseVirtualFloatingOptions = React.useMemo(
     () => ({
@@ -176,7 +175,7 @@ function LinkOpenButton() {
 
   const attributes = React.useMemo(
     () => {
-      const entry = editor.api.node<TLinkElement>({
+      const entry = editor.read.nodes.find<TLinkElement>({
         match: { type: editor.getType(KEYS.link) },
       });
       if (!entry) {

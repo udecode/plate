@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const pluginRulesValue: any = (
+export const pluginRulesValue = (
   <fragment>
     <hh2>Plugin Rules</hh2>
     <hp>

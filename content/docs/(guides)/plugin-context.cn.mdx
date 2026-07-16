@@ -23,7 +23,7 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-### `getEditorPlugin`
+### `getBasePlugin`
 
 当您需要访问其他插件的上下文时，这个函数特别有用。它支持跨插件通信和交互，实现更复杂和相互关联的插件行为。
 
@@ -32,7 +32,7 @@ const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
   handlers: {
     onKeyDown: ({ editor }) => {
-      const linkCtx = getEditorPlugin(LinkPlugin);
+      const linkCtx = getBasePlugin(LinkPlugin);
     },
   },
 });

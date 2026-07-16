@@ -13,7 +13,7 @@ walkthrough shows the raw replay substrate an adapter can build on.
 - [Export operations](07-operation-replay-substrate#export-operations)
 - [Import remote operations](07-operation-replay-substrate#import-remote-operations)
 - [Subscribe to commits](07-operation-replay-substrate#subscribe-to-commits)
-- [Commit metadata](07-operation-replay-substrate#commit-metadata)
+- [Commit shape](07-operation-replay-substrate#commit-shape)
 - [Runtime ids are local](07-operation-replay-substrate#runtime-ids-are-local)
 - [Adapter ownership](07-operation-replay-substrate#adapter-ownership)
 - [Hocuspocus transport](07-operation-replay-substrate#hocuspocus-transport)
@@ -30,31 +30,28 @@ import { createEditor } from "@platejs/plite";
 
 const editor = createEditor();
 
-editor.update(
-  (tx) => {
-    tx.text.insert("!");
-    tx.nodes.insert(
-      { type: "paragraph", children: [{ text: "four" }] },
-      { at: [3] }
-    );
-  },
-  { tag: ["local-edit", "collab-export"] }
-);
+editor.update({ tags: ["local-edit", "collab-export"] }, (tx) => {
+  tx.text.insert("!");
+  tx.nodes.insert(
+    { type: "paragraph", children: [{ text: "four" }] },
+    { at: [3] }
+  );
+});
 
-const commit = editor.read((state) => state.value.lastCommit());
+const commit = editor.read.lastCommit();
 ```
 
-The `tag` option is a cheap lifecycle label. `metadata` is the typed policy
-channel for history, remote import, and selection behavior.
+Tags are cheap lifecycle labels recorded on the commit. Adapter-specific remote
+behavior belongs in a package-owned update policy.
 
 ## Export operations
 
-A commit contains the operations that changed the document plus the metadata
-Plite computed while applying them.
+A commit contains the operations that changed the document plus the final tags,
+selection, dirty regions, and state patches Plite computed while applying them.
 
 ```tsx
 const sharedStateKeys = new Set(["document.title", "page.settings"]);
-const commit = editor.read((state) => state.value.lastCommit());
+const commit = editor.read.lastCommit();
 
 if (commit) {
   const statePatches = commit.statePatches.filter((patch) =>
@@ -63,7 +60,6 @@ if (commit) {
 
   if (commit.operations.length > 0 || statePatches.length > 0) {
     sendToPeers({
-      metadata: commit.metadata,
       operations: commit.operations,
       statePatches,
       tags: commit.tags,
@@ -94,28 +90,21 @@ adapter, not inside Plite's paste path.
 ## Import remote operations
 
 Remote operations enter through `tx.operations.replay(...)`. This is the
-explicit operation replay path.
+explicit operation replay path. The Yjs adapter owns the tags for history,
+selection preservation, and echo suppression.
 
 ```tsx
-editor.update(
-  (tx) => {
-    tx.operations.replay(message.operations);
-  },
-  {
-    tag: ["collaboration", "remote-import"],
-    metadata: {
-      collab: { origin: "remote", saveToHistory: false },
-      history: { mode: "skip" },
-      selection: { dom: "preserve" },
-    },
-  }
-);
+import { YjsUpdatePolicy } from "@platejs/yjs";
+
+editor.update(YjsUpdatePolicy.remote, (tx) => {
+  tx.operations.replay(message.operations);
+});
 ```
 
 Importing operations produces a normal commit. Subscribers, history, extension
 listeners, and React projection code all observe the same commit shape.
 
-If the remote message includes document state-field changes, replay those
+If the remote message includes document meta-field changes, replay those
 patches in the same transaction.
 
 ```tsx
@@ -124,21 +113,15 @@ const statePatches = (message.statePatches ?? []).filter((patch) =>
   sharedStateKeys.has(patch.key)
 );
 
-editor.update(
-  (tx) => {
-    tx.operations.replay(message.operations);
-    tx.statePatches.replay(statePatches);
-  },
-  {
-    tag: ["collaboration", "remote-import"],
-    metadata: {
-      collab: { origin: "remote", saveToHistory: false },
-      history: { mode: "skip" },
-      selection: { dom: "preserve" },
-    },
-  }
-);
+editor.update(YjsUpdatePolicy.remote, (tx) => {
+  tx.operations.replay(message.operations);
+  tx.statePatches.replay(statePatches);
+});
 ```
+
+If remote replay reaches `@platejs/yjs` during an existing update, the adapter
+joins that active transaction and adds its policy tags there. It does not start
+a nested public update.
 
 ## Subscribe to commits
 
@@ -149,14 +132,14 @@ The listener receives the change summary for each commit.
 const sharedStateKeys = new Set(["document.title", "page.settings"]);
 
 const unsubscribe = editor.subscribeCommit((change) => {
-  const documentValue = editor.read((state) => state.value.get());
+  const documentValue = editor.read.value();
   const statePatches = change.statePatches.filter((patch) =>
     sharedStateKeys.has(patch.key)
   );
 
   saveDocument(documentValue);
 
-  if (change.metadata.collab?.origin === "remote") return;
+  if (change.tags.includes("remote-yjs-import")) return;
 
   if (change.operations.length === 0 && statePatches.length === 0) {
     return;
@@ -172,7 +155,7 @@ const unsubscribe = editor.subscribeCommit((change) => {
 ```
 
 Send operations and filtered state patches to peers. Save the full
-`state.value.get()` document value to your database, not to the adapter
+`editor.read.value()` document value to your database, not to the adapter
 transport, unless your adapter strips local persisted state first.
 
 Call the returned function when the adapter disconnects.
@@ -185,7 +168,7 @@ That's the adapter loop: local `update`, export the commit operations, import
 remote operations with `tx.operations.replay(...)`, and subscribe to committed
 snapshots.
 
-## Commit metadata
+## Commit shape
 
 The commit is the unit adapters should reason about. It groups every primitive
 write inside one `editor.update` call.
@@ -194,8 +177,7 @@ write inside one `editor.update` call.
 | --------------------- | ------------------------------------------------------------------------------------------ |
 | `operations`          | The Plite operations that changed the document.                                            |
 | `statePatches`        | State-field changes. Filter to shared adapter-owned keys before exporting remote payloads. |
-| `tags`                | Adapter/app metadata such as `local-edit` or `remote-import`.                              |
-| `metadata`            | Typed policy for history, remote import, selection, and origin.                            |
+| `tags`                | Ordered lifecycle labels such as `local-edit` or `remote-yjs-import`.                       |
 | `classes`             | Runtime classification, such as text or structural changes.                                |
 | `selectionBefore`     | The model selection before the commit.                                                     |
 | `selectionAfter`      | The model selection after the commit.                                                      |
@@ -206,9 +188,10 @@ write inside one `editor.update` call.
 | `selectionChanged`    | Whether the model selection changed.                                                       |
 | `textChanged`         | Whether text content changed.                                                              |
 
-Adapters should treat this as an observation contract. If your transport layer
-needs a different representation, derive it from the commit instead of
-reading mutable editor fields.
+Adapters should treat this as an observation contract. Internal adapter origin
+stays inside the adapter; public observers route from final commit tags. If your
+transport layer needs a different representation, derive it from the commit
+instead of reading mutable editor fields.
 
 ## Runtime ids are local
 

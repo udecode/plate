@@ -3,7 +3,7 @@
 import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-import type { TElement } from 'platejs';
+import type { Element } from '@platejs/plite';
 
 import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
 import {
@@ -145,13 +145,14 @@ export function TurnIntoToolbarButton(props: DropdownMenuProps) {
 
   const value = useSelectionFragmentProp({
     defaultValue: KEYS.p,
-    getProp: (node) => getBlockType(node as TElement),
+    getProp: (node) => getBlockType(node as Element),
   });
+  const selectedValue = String(value ?? KEYS.p);
   const selectedItem = React.useMemo(
     () =>
-      turnIntoItems.find((item) => item.value === (value ?? KEYS.p)) ??
+      turnIntoItems.find((item) => item.value === selectedValue) ??
       turnIntoItems[0],
-    [value]
+    [selectedValue]
   );
 
   return (
@@ -171,12 +172,12 @@ export function TurnIntoToolbarButton(props: DropdownMenuProps) {
         className="ignore-click-outside/toolbar min-w-0"
         onCloseAutoFocus={(e) => {
           e.preventDefault();
-          editor.tf.focus();
+          editor.api.dom.focus();
         }}
         align="start"
       >
         <ToolbarMenuGroup
-          value={value}
+          value={selectedValue}
           onValueChange={(type) => {
             setBlockType(editor, type);
           }}

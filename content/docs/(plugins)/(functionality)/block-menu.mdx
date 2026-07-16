@@ -163,8 +163,8 @@ Force it open from a focused block with `data-plate-open-context-menu="true"` wh
 | Action | Source |
 |--------|--------|
 | Ask AI | Opens `AIChatPlugin` after the menu closes. |
-| Delete | Calls `editor.getTransforms(BlockSelectionPlugin).blockSelection.removeNodes()`. |
-| Duplicate | Calls `editor.getTransforms(BlockSelectionPlugin).blockSelection.duplicate()`. |
+| Delete | Runs `editor.update((tx) => tx.blockSelection.removeNodes())`. |
+| Duplicate | Runs `editor.update((tx) => tx.blockSelection.duplicate())`. |
 | Turn into | Calls the registry `setBlockType` helper for paragraph, headings, blockquote, and code drawing. |
 | Indent / Outdent | Calls `blockSelection.setIndent(1)` or `blockSelection.setIndent(-1)`. |
 | Align | Calls `blockSelection.setNodes({ align })`. |

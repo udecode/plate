@@ -1,6 +1,7 @@
 import type {
   AnyPluginConfig,
   InferApi,
+  InferDependencies,
   InferOptions,
   InferSelectors,
   InferState,
@@ -28,7 +29,8 @@ type PlatePluginConfig<
         EA & InferApi<C>,
         InferTx<C>,
         ES & InferSelectors<C>,
-        InferState<C>
+        InferState<C>,
+        InferDependencies<C>
       >
     >
   >,
@@ -90,7 +92,8 @@ type ExtendPlatePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
         Partial<InferApi<C>>,
         Partial<InferTx<C>>,
         Partial<InferSelectors<C>>,
-        InferState<C>
+        InferState<C>,
+        InferDependencies<C>
       >
     >
   >,
@@ -128,7 +131,8 @@ export function toPlatePlugin<
     EA & InferApi<C>,
     InferTx<C>,
     ES & InferSelectors<C>,
-    InferState<C>
+    InferState<C>,
+    InferDependencies<C>
   >
 >;
 
@@ -147,7 +151,8 @@ export function toPlatePlugin<
     InferApi<C>,
     InferTx<C>,
     InferSelectors<C>,
-    InferState<C>
+    InferState<C>,
+    InferDependencies<C>
   >
 >;
 

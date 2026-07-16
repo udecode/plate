@@ -28,7 +28,7 @@ migrate just to rename APIs.
 | Migrate this surface first                                                                                      | Wait or defer                                                                                                                                 |
 | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | A representative editor that users type in, save, undo, and paste into.                                         | A low-value editor with no active product pressure.                                                                                           |
-| An editor that needs cleaner command ownership, document state, overlays, extra roots, or large-document proof. | An editor whose only goal is to keep old Slate 0.x behavior with the smallest possible diff.                                                  |
+| An editor that needs cleaner command ownership, document meta, overlays, extra roots, or large-document proof. | An editor whose only goal is to keep old Slate 0.x behavior with the smallest possible diff.                                                  |
 | A surface where you can run browser proof for selection, paste, undo, and save/load.                            | A surface whose correctness depends on mobile-device proof, collaboration adapters, or production pagination that your app cannot verify yet. |
 
 Keep the old editor path alive until the new path proves the same user-visible
@@ -72,13 +72,13 @@ into archaeology.
 | `createEditor()` plus `withReact(editor)`                            | `usePliteEditor({ initialValue })` in React, or `createReactEditor({ initialValue })` outside a component |
 | `withHistory(editor)`                                                | `usePliteEditor(...)` for the default React editor, or `history()` when building an editor manually       |
 | `<Plite editor={editor} initialValue={value}>`                       | `const editor = usePliteEditor({ initialValue }); <Plite editor={editor}>`                                |
-| Slate 0.x transform helper calls                                     | `editor.update((tx) => tx.*...)`                                                                          |
-| `Editor.*` reads that inspect the current editor                     | `editor.read((state) => state.*...)`                                                                      |
+| Slate 0.x transform helper calls                                     | `editor.update.<group>.<method>()` for one write, or `editor.update((tx) => tx.*...)` for grouped writes  |
+| `Editor.*` reads that inspect the current editor                     | `editor.read.<group>.<method>()` for one read, or `editor.read((state) => state.*...)` for grouped reads  |
 | Pure node, point, path, range, and text helpers                      | `NodeApi`, `ElementApi`, `PointApi`, `PathApi`, `RangeApi`, and `TextApi` from `@platejs/plite`           |
 | `ReactEditor.*` DOM bridge calls                                     | `editor.api.dom.*`, `editor.api.react.*`, or renderer hooks such as `useElementPath()`                    |
 | `usePlite`, `usePliteStatic`                                         | `useEditor()` and `useEditorState(...)`                                                                   |
 | `useSelected`, `useFocused`, `useReadOnly`                           | `useElementSelected(...)`, `useEditorFocused()`, and `useEditorReadOnly()`                                |
-| `onChange(value)` as the primary persistence hook                    | `onChange(value, change)` and `change.valueChanged`, or `state.value.get()` for the full document         |
+| `onChange(value)` as the primary persistence hook                    | `onChange(value, change)` and `change.valueChanged`, or `editor.read.value()` for the full document         |
 | editor-only `children` persistence                                   | primary `children`, optional extra `roots`, and optional document `state`                                 |
 | `decorate` for simple local ranges                                   | `<Editable decorate={...} />`                                                                             |
 | `decorate` for shared, external, frequent, or source-scoped overlays | `usePliteDecorationSource`, `usePliteRangeDecorationSource`, or `usePliteAnnotationStore`                 |
@@ -172,8 +172,10 @@ const editor = createEditor({
 
 ## Step 3: Move Reads And Writes Into The Runtime
 
-The runtime separates reads from writes. Reads happen inside `editor.read(...)`.
-Writes happen inside `editor.update(...)`.
+The runtime separates reads from writes. One-shot reads use
+`editor.read.<group>.<method>()`, and grouped reads use `editor.read(...)`.
+One-shot writes use `editor.update.<group>.<method>()`, and grouped writes use
+`editor.update(...)`.
 
 Slate 0.x commands often mixed read helpers and transform helpers directly
 against the editor object. In the Plate-maintained runtime, read the committed runtime state and
@@ -202,15 +204,13 @@ editor.update((tx) => {
 });
 ```
 
-For text commands, write through `tx.text`.
+For one-shot text commands, use direct update methods.
 
 ```tsx
-editor.update((tx) => {
-  tx.text.insert("Hello");
-});
+editor.update.text.insert("Hello");
 ```
 
-For selection commands, write through `tx.selection`.
+For grouped selection commands, write through `tx.selection`.
 
 ```tsx
 editor.update((tx) => {
@@ -324,9 +324,7 @@ Plite runtime:
   onKeyDown={(event, { editor }) => {
     if (!(event.metaKey && event.key === "b")) return false;
 
-    editor.update((tx) => {
-      tx.marks.toggle("bold");
-    });
+    editor.update.marks.toggle("bold");
 
     return true;
   }}
@@ -340,9 +338,7 @@ Use `onDOMBeforeInput` for browser input types that need editor context.
   onDOMBeforeInput={(event, { editor, inputType }) => {
     if (inputType !== "formatBold") return false;
 
-    editor.update((tx) => {
-      tx.marks.toggle("bold");
-    });
+    editor.update.marks.toggle("bold");
 
     return true;
   }}
@@ -369,7 +365,7 @@ import { useEditorState } from "@platejs/plite-react";
 
 const BoldButton = () => {
   const isBold = useEditorState((state) => {
-    return state.marks.get()?.bold === true;
+    return state.marks()?.bold === true;
   });
 
   return <button aria-pressed={isBold}>Bold</button>;
@@ -511,10 +507,10 @@ const handleChange = (value, change: PliteChange) => {
 </Plite>;
 ```
 
-For a document with extra roots or document state, read the full document value.
+For a document with extra roots or document meta, read the full document value.
 
 ```tsx
-const documentValue = editor.read((state) => state.value.get());
+const documentValue = editor.read.value();
 ```
 
 The short value is still a block array.
@@ -547,7 +543,7 @@ const initialValue = {
       },
     ],
   },
-  state: {
+  meta: {
     "document.title": "Draft",
   },
 };
@@ -562,7 +558,7 @@ Omit `root` for the primary editable. Pass `root` only for extra roots.
 </Plite>
 ```
 
-## Step 11: Migrate Document State
+## Step 11: Migrate Document Meta
 
 Use `defineStateField` for document-level state that should travel with the
 document, such as title, layout settings, review mode, spellcheck metadata, or
@@ -622,7 +618,7 @@ editor.update((tx) => {
 ## Step 12: Migrate Extra Roots
 
 Use extra roots when one editor owns multiple editable regions that share
-history, schema, commands, and document state.
+history, schema, commands, and document meta.
 
 ```tsx
 const editor = usePliteEditor({
@@ -657,7 +653,7 @@ const HeaderChrome = ({ children }) => {
 
   return (
     <section {...chrome.props}>
-      <button onClick={() => headerEditor.update((tx) => tx.text.insert("!"))}>
+      <button onClick={() => headerEditor.update.text.insert("!")}>
         Add
       </button>
       {children}
@@ -758,7 +754,7 @@ Run the migration in behavior order:
 3. Port one command to `editor.read(...)` plus `editor.update(...)`.
 4. Port custom element and leaf renderers.
 5. Verify keyboard shortcuts, paste, copy, drag/drop, undo/redo, and selection.
-6. Persist `state.value.get()` if the editor uses extra roots or document state.
+6. Persist `editor.read.value()` if the editor uses extra roots or document meta.
 7. Move tests to current public imports.
 8. Delete the old editor wrapper after the new editor owns the same behavior.
 
@@ -775,7 +771,7 @@ of view and the codebase no longer depends on old helper aliases.
 - [Editor](concepts/07-editor)
 - [Transforms](api/transforms)
 - [Roots](concepts/13-roots)
-- [Document State](concepts/14-document-state)
+- [Document Meta](concepts/14-document-state)
 - [Plite React Hooks](libraries/plite-react/hooks)
 - [Plite React Event Handling](libraries/plite-react/event-handling)
 - [Plite History](libraries/plite-history/history-extension-setup)

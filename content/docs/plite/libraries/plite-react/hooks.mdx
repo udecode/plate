@@ -49,7 +49,7 @@ hand.
 
 ```typescript
 const isBold = useEditorState((state) => {
-  return state.marks.get()?.bold === true;
+  return state.marks()?.bold === true;
 });
 ```
 
@@ -57,7 +57,7 @@ Use `options.shouldUpdate` to skip commits that cannot affect the selected
 value.
 
 ```typescript
-const selection = useEditorState((state) => state.selection.get(), {
+const selection = useEditorState((state) => state.selection(), {
   shouldUpdate: (change) => Boolean(change?.selectionChanged),
 });
 ```
@@ -71,6 +71,21 @@ const matchingText = useEditorState(
 );
 ```
 
+#### `useEditorRuntimeState<T>(editor, selector, options?): T`
+
+Subscribe to editor state from an explicit editor instance. Use this for
+toolbars, containers, or app chrome that receives an editor but is not rendered
+inside that editor's `Plite` provider.
+
+```typescript
+const readOnly = useEditorRuntimeState(editor, (state) =>
+  state.view.isReadOnly()
+);
+```
+
+Inside provider descendants, prefer `useEditorState`. It reads the same state
+but gets the editor from context.
+
 #### `useStateFieldValue<T>(field, options?): T`
 
 Subscribe to one `defineStateField` value.
@@ -81,20 +96,21 @@ const title = useStateFieldValue(documentTitle);
 
 The hook only re-renders when that field key appears in
 `change.dirtyStateKeys`. Use it for document title, page settings, spellcheck,
-and other document state controls.
+and other document meta controls.
 
-#### `useSetStateField<T>(field): (value, options?) => void`
+#### `useSetStateField<T>(field): (value, policy?) => void`
 
 Create a setter for one `defineStateField` value.
 
 ```tsx
 const setTitle = useSetStateField(documentTitle);
 
-setTitle("Q3 Launch Brief");
+setTitle("Q3 Launch Brief", { history: "new-batch", tags: "title-input" });
 ```
 
 The setter writes through `editor.update` and preserves DOM selection by
-default. Pass update options when the app needs a tag or collaboration metadata.
+default. Pass the editor's typed update policy when the app needs history or
+additional tags; the hook appends its selection-preservation tags.
 
 #### `useEditorSelector<T>(selector, equalityFn?, options?): T`
 
@@ -220,7 +236,7 @@ Create a stable callback that resolves the mounted root editor at call time.
 
 ```tsx
 const toggleTitle = usePliteCommandCallback((editor) => {
-  editor.update((tx) => tx.text.insert("Title"));
+  editor.update.text.insert("Title");
 });
 ```
 

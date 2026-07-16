@@ -3,9 +3,9 @@ title: Collaboration Demo
 description: Real-time Plate collaboration example with Yjs providers and remote cursors.
 ---
 
-This example shows a Plate editor bound to a shared Yjs document. It uses the
-`collaboration-demo` registry example with `YjsPlugin`, Hocuspocus, WebRTC, room
-state, connection controls, and remote cursor rendering.
+This example shows the collaboration boundary: Plate renders the editor surface,
+and the app owns the Yjs provider, transport, persistence, authentication, room
+naming, and cursor data.
 
 ## Demo
 
@@ -13,8 +13,8 @@ state, connection controls, and remote cursor rendering.
 
 ## Source
 
-The demo creates a room id in `localStorage`, gives each tab a random user name
-and cursor color, then initializes Yjs after mount.
+The demo is intentionally small. It keeps the editor UI visible while naming the
+parts that belong outside the Plate package.
 
 <ComponentSource name="collaboration-demo" />
 
@@ -22,34 +22,30 @@ and cursor color, then initializes Yjs after mount.
 
 | Piece | Owner | Notes |
 | --- | --- | --- |
-| `YjsPlugin` | `@platejs/yjs/react` | Binds Plate to a shared `Y.Doc`, provider list, awareness data, and cursor data. |
-| Hocuspocus provider | App infrastructure | The demo points to `ws://localhost:8888`; run your own server for durable collaboration. |
-| WebRTC provider | `y-webrtc` | The demo uses `ws://localhost:4444` in dev and `wss://signaling.yjs.dev` in production. |
-| Room state | Registry example | The room id is stored in `localStorage` and passed to every provider plus `yjs.init`. |
-| Connection controls | Registry example | The status bar reads `_providers` and `_isConnected`, then calls `connect` or `disconnect`. |
+| `createYjsExtension` | `@platejs/yjs` | Binds a shared `Y.Doc` and provider wrapper to Plite operations. |
+| Provider wrapper | App infrastructure | Wrap Hocuspocus, WebRTC, IndexedDB, or custom transport as `YjsProviderLike`. |
+| Room state | App | Keep room ids, auth tokens, and persistence outside Plate packages. |
+| Connection commands | `tx.yjs` | Connect, disconnect, reconnect, publish selection, clear selection, undo, and redo. |
+| Connection reads | `state.yjs` | Read connected, synced, and provider status from `editor.read`. |
 
-Set `skipInitialization: true` on the editor. Yjs owns the initial document
-load, and `editor.getApi(YjsPlugin).yjs.init()` seeds the value only when the
-shared document is empty.
+Use the full [Yjs guide](/docs/yjs) when wiring a real provider.
 
 ## Remote Cursors
 
-The demo renders remote selections with the registry `remote-cursor-overlay`
-component.
+Remote cursor UI belongs at the app edge. The reusable registry component is
+`remote-cursor-overlay`.
 
 <ComponentSource name="remote-cursor-overlay" />
 
-`RemoteCursorOverlay` waits for `_isSynced`, reads cursor positions with
-`useRemoteCursorOverlayPositions`, then paints selection rectangles and a named
-caret.
+Render it around a positioned editor container and feed cursor state from
+`@platejs/yjs/react`.
 
 ## Try It
 
-Open the same demo in two tabs and use the same room id. Each tab receives a
-different random user name and cursor color, so typing and selections are easy
-to distinguish.
+Use this demo to review the app/package boundary. Use the [Yjs guide](/docs/yjs)
+for the provider setup and connection commands.
 
 ## Related
 
-- [Yjs](/docs/yjs) covers provider setup, lifecycle methods, and API reference.
+- [Yjs](/docs/yjs) covers provider setup, connection commands, and React cursor UI.
 - [Remote Cursor Overlay](/docs/components/remote-cursor-overlay) covers the reusable cursor UI component.

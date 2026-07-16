@@ -2,17 +2,18 @@
 
 import type { ExtendConfig, Path } from 'platejs';
 
+import { TextApi } from 'platejs';
 import {
   type BaseCommentConfig,
   BaseCommentPlugin,
   getDraftCommentKey,
 } from '@platejs/comment';
-import { toTPlatePlugin } from 'platejs/react';
+import { toPlatePlugin } from 'platejs/react';
 
 import { CommentLeaf } from '@/registry/ui/comment-node';
 import { getDiscussionClickTarget } from './discussion-kit';
 
-type CommentConfig = ExtendConfig<
+export type CommentConfig = ExtendConfig<
   BaseCommentConfig,
   {
     activeId: string | null;
@@ -21,11 +22,18 @@ type CommentConfig = ExtendConfig<
   }
 >;
 
-export const commentPlugin = toTPlatePlugin<CommentConfig>(BaseCommentPlugin, {
+export const commentPlugin = toPlatePlugin<
+  BaseCommentConfig,
+  {
+    activeId: string | null;
+    commentingBlock: Path | null;
+    hoverId: string | null;
+  }
+>(BaseCommentPlugin, {
   handlers: {
     onClick: ({ api, event, setOption, type }) => {
       const activeTarget = getDiscussionClickTarget({
-        selector: `.slate-${type}`,
+        selector: `.plite-${type}`,
         target: event.target,
       });
 
@@ -34,11 +42,11 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(BaseCommentPlugin, {
         return;
       }
 
-      const commentEntry = api.comment?.node();
+      const commentEntry = api.node();
 
       setOption(
         'activeId',
-        commentEntry ? (api.comment?.nodeId(commentEntry[0]) ?? null) : null
+        commentEntry ? (api.nodeId(commentEntry[0]) ?? null) : null
       );
     },
   },
@@ -48,27 +56,31 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(BaseCommentPlugin, {
     hoverId: null,
   },
 })
-  .extendTransforms(
-    ({
-      editor,
-      setOption,
-      tf: {
-        comment: { setDraft },
-      },
-    }) => ({
-      setDraft: () => {
-        if (editor.api.isCollapsed()) {
-          editor.tf.select(editor.api.block()![1]);
+  .extendTx(({ setOption, type }) => (tx) => ({
+    setDraft: (options = {}) => {
+      const commentingBlock = tx.selection()?.focus.path.slice(0, 1) ?? null;
+
+      if (tx.selection.isCollapsed()) {
+        const blockEntry = tx.nodes.block();
+
+        if (blockEntry) {
+          tx.selection.set(blockEntry[1]);
         }
+      }
 
-        setDraft();
+      tx.nodes.set(
+        {
+          [getDraftCommentKey()]: true,
+          [type]: true,
+        },
+        { match: TextApi.isText, split: true, ...options }
+      );
 
-        editor.tf.collapse();
-        setOption('activeId', getDraftCommentKey());
-        setOption('commentingBlock', editor.selection!.focus.path.slice(0, 1));
-      },
-    })
-  )
+      tx.selection.collapse();
+      setOption('activeId', getDraftCommentKey());
+      setOption('commentingBlock', commentingBlock);
+    },
+  }))
   .configure({
     node: { component: CommentLeaf },
     shortcuts: {

@@ -407,7 +407,7 @@ title: 主要版本更新
     - 新钩子 `usePluginOptions(plugin, selector)` 用于选择插件选项（Zustand 方式）。
   - 我们之前支持通过 `extendOptions` 向插件添加选择器。这些选择器与选项状态混合，可能导致冲突和混淆。
     - 插件方法重命名为 `extendSelectors`
-    - 选择器现在内部存储在 `plugin.selectors` 而非 `plugin.options` 中，但访问方式不变：使用 `editor.getOption(plugin, 'selectorName')`、`ctx.getOption('selectorName')` 或上述钩子。
+    - 选择器现在内部存储在 `plugin.selectors` 而非 `plugin.options` 中，但访问方式不变：使用 `editor.plugin(plugin).getOption('selectorName')`、`ctx.getOption('selectorName')` 或上述钩子。
     - 选择器类型不再位于 `PluginConfig` 的第二个泛型参数中，我们新增第五个泛型参数用于此。
 
   ```ts
@@ -422,9 +422,9 @@ title: 主要版本更新
     'blockSelection',
     { selectedIds?: Set<string>; },
     {}, // API
-    {}, // Transforms
+    {}, // Tx
     BlockSelectionSelectors, // Selectors
-  }>
+  >;
   ```
 
 ## @udecode/plate-comments@44.0.0

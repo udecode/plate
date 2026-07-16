@@ -1,15 +1,15 @@
 'use client';
 
 import { SlashInputPlugin, SlashPlugin } from '@platejs/slash-command/react';
-import { type SlateEditor, KEYS } from 'platejs';
+import { type BaseEditor, KEYS } from 'platejs';
 
 import { SlashInputElement } from '@/registry/ui/slash-node';
 
 export const SlashKit = [
   SlashPlugin.configure({
     options: {
-      triggerQuery: (editor: SlateEditor) =>
-        !editor.api.some({
+      triggerQuery: (editor: BaseEditor) =>
+        !editor.read.nodes.some({
           match: { type: editor.getType(KEYS.codeBlock) },
         }),
     },

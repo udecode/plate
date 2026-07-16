@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const basicMarksValue: any = (
+export const basicMarksValue = (
   <fragment>
     <hh2>标记</hh2>
     <hp>使用标记插件为你的文本添加样式和强调，它提供了多种格式化选项。</hp>

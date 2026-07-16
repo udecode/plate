@@ -17,6 +17,7 @@ editor.update((tx) => {
 
 - [Node options](transforms#node-options)
 - [Node methods](transforms#node-methods)
+- [Block methods](transforms#block-methods)
 - [Break methods](transforms#break-methods)
 - [Fragment methods](transforms#fragment-methods)
 - [Text methods](transforms#text-methods)
@@ -34,16 +35,17 @@ across most node methods:
 
 ```typescript
 type NodeSelectorOptions = {
-  at?: Location;
-  match?: (node: Node, path: Path) => boolean;
+  at?: NodeTarget;
+  match?: NodeMatch<Node>;
   mode?: "highest" | "lowest" | "all";
   voids?: boolean;
 };
 ```
 
-- `at?: Location`: The explicit location to change. When omitted inside
+- `at?: NodeTarget`: An explicit location or live descendant to change. When omitted inside
   `editor.update(...)`, selection-sensitive methods use the transaction target.
-- `match?: (node, path) => boolean`: Filters which nodes are changed.
+- `match?: NodeMatch<Node>`: A predicate or shallow property object that filters
+  which nodes are changed. Array property values mean one-of.
 - `mode?: 'highest' | 'lowest'`: Controls which matching node level is used.
   Methods documented with `mode?: 'highest' | 'lowest' | 'all'` also accept
   `all`.
@@ -113,6 +115,12 @@ Options: `at`, `match`, `mode`, `hanging`, `split`, `voids`, `compare`,
 - `compare?: PropsCompare`: Decide whether a property should be written.
 - `merge?: PropsMerge`: Merge incoming and existing property values.
 
+Pass an exact node as `at` to preserve its property inference.
+
+```typescript
+editor.update.nodes.set({ icon: "🔥" }, { at: calloutElement });
+```
+
 #### `tx.nodes.unset(props: string | string[], options?)`
 
 Unset properties on matching nodes.
@@ -133,6 +141,46 @@ Options: `at`, `match`, `mode`, `to`, `voids`.
 
 - `to: Path`: Destination path for the moved nodes.
 
+## Block methods
+
+Use semantic block mutations from `tx.blocks` inside a transaction or from
+`editor.update.blocks` for a direct update.
+
+#### `tx.blocks.insertAfter(blocks, options?)`
+
+Insert one or more block elements after the block containing `options.at`.
+When `at` is omitted, the transaction selection is the reference. Ranges use
+their document-order end. Missing or blockless references are no-ops.
+
+Options:
+
+- `at?: NodeTarget`: Reference location or live descendant.
+- `select?: boolean`: Select the inserted blocks.
+
+```typescript
+editor.update.blocks.insertAfter(
+  { type: "callout", children: [{ text: "" }] },
+  { at: calloutElement, select: true }
+);
+```
+
+#### `tx.blocks.duplicate(options?)`
+
+Duplicate the targeted blocks after the last matching block.
+
+#### `tx.blocks.lift(options?)`
+
+Lift the targeted blocks one structural level.
+
+#### `tx.blocks.reset(props, options?)`
+
+Reset a block to `props`, removing other block properties unless their keys
+are listed in `options.preserve`.
+
+#### `tx.blocks.toggle(type, options?)`
+
+Toggle targeted blocks between `type` and the editor default block type.
+
 ## Break methods
 
 Use break methods from `tx.break`.
@@ -149,7 +197,7 @@ Insert a soft break at the transaction target.
 
 Use fragment methods from `tx.fragment`.
 
-#### `tx.fragment.get(options?)`
+#### `tx.fragment(options?)`
 
 Read the fragment at `options.at` or the current selection.
 
@@ -168,7 +216,7 @@ paste, belongs in an extension clipboard/fragment policy.
 
 Options:
 
-- `at?: Location`: Where to insert. Defaults to the transaction target.
+- `at?: NodeTarget`: Where to insert. Defaults to the transaction target.
 - `hanging?: boolean`: Preserve hanging range edges instead of un-hanging first.
 - `voids?: boolean`: Allow insertion into void elements.
 - `batchDirty?: boolean`: Batch dirty-path work for the fragment insert.
@@ -179,7 +227,7 @@ Delete the fragment at `options.at` or the transaction target.
 
 Options:
 
-- `at?: Location`: Location to delete. Defaults to the transaction target.
+- `at?: NodeTarget`: Location or live descendant to delete. Defaults to the transaction target.
 - `direction?: 'forward' | 'backward'`: Direction used for collapsed deletion.
 
 ## Text methods
@@ -190,7 +238,7 @@ Insert text at `options.at` or the transaction target.
 
 Options:
 
-- `at?: Location`: Where to insert. Defaults to the transaction target.
+- `at?: NodeTarget`: Where to insert. Defaults to the transaction target.
 - `voids?: boolean`: Allow insertion into void elements.
 
 When `at` is an expanded range, the inserted text replaces the range and the
@@ -202,7 +250,7 @@ Delete text at `options.at` or the transaction target.
 
 Options:
 
-- `at?: Location`: Location to delete from. Defaults to the transaction target.
+- `at?: NodeTarget`: Location or live descendant to delete from. Defaults to the transaction target.
 - `distance?: number`: Number of units to delete. Defaults to one unit.
 - `unit?: 'character' | 'word' | 'line' | 'block'`: Unit used for collapsed
   deletion.
@@ -235,6 +283,12 @@ Options:
   to one character.
 
 ## Selection methods
+
+`tx.selection` reads the transaction selection and exposes the same query
+predicates as `editor.read.selection`: `contains(target)`,
+`intersects(target)`, `isCollapsed()`, `isExpanded()`, `isWithinText()`,
+`isWithinBlock(options?)`, `isAcrossBlocks(options?)`,
+`isAtBlockStart(options?)`, and `isAtBlockEnd(options?)`.
 
 #### `tx.selection.set(target: Location | null)`
 
@@ -286,7 +340,7 @@ Set properties on an active selection.
 
 ## Mark methods
 
-#### `tx.marks.get()`
+#### `tx.marks()`
 
 Return the active marks for the transaction.
 
@@ -304,9 +358,13 @@ Replace the pending insertion marks. Use `{}` to force plain inserted text at a
 collapsed selection, or `null` to let inserted text inherit from the selected
 text position.
 
-#### `tx.marks.toggle(key: string, value?)`
+#### `tx.marks.toggle(key: string, value?, options?)`
 
 Toggle a mark for the current selection or pending marks.
+
+- `options.clear?: string | string[]`: Remove mutually exclusive marks before
+  enabling the target mark. If the target mark is active, only the target mark
+  is removed.
 
 ## Value and root methods
 
@@ -314,9 +372,21 @@ Use value and root methods for whole-root or whole-document replacement. Normal
 typing commands should use `tx.text`, `tx.nodes`, `tx.fragment`, or
 `tx.selection`.
 
+For one-shot snapshot imports, call the direct update method:
+
+```javascript
+editor.update({ history: "skip" }).value.replace({
+  children: [{ type: "paragraph", children: [{ text: "Imported" }] }],
+  selection: "end",
+});
+```
+
+`selection` accepts a range, `null`, `"start"`, or `"end"`. Configure history
+and tags through `editor.update(policy)` before calling the direct method.
+
 #### `tx.value.replace(input: SnapshotInput)`
 
-Replace the active root or complete snapshot.
+Replace the active root or complete snapshot inside a larger transaction.
 
 ```javascript
 editor.update((tx) => {
@@ -327,7 +397,9 @@ editor.update((tx) => {
 });
 ```
 
-Pass `roots` in the input when replacing multiple roots at once.
+Pass `roots` in the input when replacing multiple roots at once, or combine
+`tx.value.replace`, `tx.roots`, and `tx.setField` when the import also updates
+document meta fields.
 
 #### `tx.roots.create(root: RootKey, children: Node[])`
 
@@ -365,23 +437,18 @@ Filter remote or collaborative patches before replaying them.
 
 #### `tx.normalize(options?)`
 
-Run editor normalization inside the active transaction.
-
-#### `tx.withoutNormalizing(fn)`
-
-Run several writes without normalizing between each write, then let the
-transaction normalize afterward.
+Run an explicit normalization barrier inside the active transaction. Normal
+grouped updates already normalize before commit; use this only when subsequent
+transaction logic must read the repaired tree.
 
 ## Operation methods
 
-#### `tx.operations.replay(operations: Operation[], options?)`
+#### `tx.operations.replay(operations: Operation[])`
 
 Replay operations through the transaction boundary.
 
 ```javascript
-editor.update((tx) => {
-  tx.operations.replay(remoteOperations, {
-    tag: "remote-import",
-  });
+editor.update({ tags: "remote-import" }, (tx) => {
+  tx.operations.replay(remoteOperations);
 });
 ```

@@ -4,39 +4,35 @@ import {
   type EditorUpdateTransaction,
   type Element,
   ElementApi,
+  PathApi,
 } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import type { ListOptions } from './indentList';
+import type { ToggleListOptions } from '../types';
 
 import { BaseListPlugin } from '../BaseListPlugin';
-import {
-  type GetSiblingListOptions,
-  getListAbove,
-  getPreviousList,
-} from '../queries';
+import type { GetSiblingListOptions } from '../queries/getSiblingList';
+import { getListAbove } from '../queries/getListAbove';
+import { getPreviousList } from '../queries/getPreviousList';
 import { getListSequenceSiblingOptions } from '../internal/isSameListSequence';
 import { areEqListStyleType } from '../queries/areEqListStyleType';
 import { setListNodesWithTx } from './setListNodes';
 import { setListSiblingNodesWithTx } from './setListSiblingNodes';
 
-/** Toggle indent list. */
-export const toggleList = <N extends Element = Element>(
-  editor: BaseEditor,
-  options: ListOptions,
-  getSiblingListOptions?: GetSiblingListOptions<N>
-) =>
-  editor.update((tx) =>
-    toggleListWithTx(editor, tx, options, getSiblingListOptions)
-  );
-
 export const toggleListWithTx = <N extends Element = Element>(
   editor: BaseEditor,
   tx: EditorUpdateTransaction,
-  options: ListOptions,
+  options: ToggleListOptions,
   getSiblingListOptions?: GetSiblingListOptions<N>
 ) => {
-  const { listRestart, listRestartPolite, listStyleType } = options;
+  const {
+    at = editor.read.selection(),
+    listRestart,
+    listRestartPolite,
+    listStyleType,
+  } = options;
+  if (!at || (PathApi.isPath(at) && at.length === 0)) return;
+
   const { getSiblingListOptions: pluginGetSiblingListOptions } = editor
     .plugin(BaseListPlugin)
     .getOptions();
@@ -44,6 +40,17 @@ export const toggleListWithTx = <N extends Element = Element>(
     ...pluginGetSiblingListOptions,
     ...getSiblingListOptions,
   } as GetSiblingListOptions<Element>;
+  const match = getInjectMatch(editor, editor.getPlugin({ key: KEYS.list }));
+  const entries = editor.read.nodes.toArray<Element>({
+    at,
+    match: (node, path) =>
+      ElementApi.isElement(node) &&
+      editor.read.nodes.isBlock(node) &&
+      match(node, path),
+    mode: 'lowest',
+  });
+
+  if (entries.length === 0) return;
 
   /**
    * True - One or more blocks were converted to lists or changed such that they
@@ -54,10 +61,8 @@ export const toggleListWithTx = <N extends Element = Element>(
    * Null - No action was taken.
    */
   const setList = ((): boolean | null => {
-    if (editor.read.selection.isCollapsed()) {
-      const entry = editor.read.nodes.block<Element>();
-
-      if (!entry) return null;
+    if (entries.length === 1) {
+      const entry = entries[0];
       const [node, path] = entry;
       const indent = Number(node[KEYS.indent] ?? 0);
       const isTodo = listStyleType === KEYS.listTodo;
@@ -99,18 +104,7 @@ export const toggleListWithTx = <N extends Element = Element>(
 
       return true;
     }
-    if (editor.read.selection.isExpanded()) {
-      const match = getInjectMatch(
-        editor,
-        editor.getPlugin({ key: KEYS.list })
-      );
-      const entries = editor.read.nodes.toArray<Element>({
-        match: (node, path) =>
-          ElementApi.isElement(node) &&
-          editor.read.nodes.isBlock(node) &&
-          match(node, path),
-      });
-
+    if (entries.length > 1) {
       const eqListStyleType = areEqListStyleType(editor, entries, {
         listStyleType,
       });
@@ -152,13 +146,17 @@ export const toggleListWithTx = <N extends Element = Element>(
   const isRestart = !!listRestart;
 
   if (setList && restartValue) {
-    const selection = editor.read.selection();
-    if (!selection) return;
-
-    const atStart = editor.read.points.start(selection);
-    if (!atStart) return;
-    const entry = getListAbove(editor, { at: atStart });
-    if (!entry) return;
+    const [targetNode, targetPath] = entries[0];
+    const entry = getListAbove(editor, { at: targetPath }) ?? [
+      {
+        ...targetNode,
+        [KEYS.indent]:
+          Number(targetNode[KEYS.indent] ?? 0) +
+          (targetNode[KEYS.listType] ? 0 : 1),
+        [KEYS.listType]: listStyleType,
+      },
+      targetPath,
+    ];
 
     const isFirst = !getPreviousList(
       editor,

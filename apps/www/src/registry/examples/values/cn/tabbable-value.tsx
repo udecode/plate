@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const tabbableValue: any = (
+export const tabbableValue = (
   <fragment>
     <hh2>可Tab</hh2>
     <hp>使用Tabbable插件确保编辑器内的平滑标签导航体验。</hp>

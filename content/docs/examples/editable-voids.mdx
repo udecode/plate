@@ -31,7 +31,7 @@ an empty paragraph after it.
 | `EditableVoidElement` | Registry example | Renders inputs, radio controls, and a nested `<Plate>` instance. |
 | Outer editor | Registry example | Loads `EditorKit` plus `EditableVoidPlugin` and the `editableVoidsValue`. |
 | Inner editor | Registry example | Creates a separate `usePlateEditor({ plugins: EditorKit })` inside the void element. |
-| Value shape | Slate | Keeps an empty text child inside the void node so Slate can select it. |
+| Value shape | Plite | Keeps an empty text child inside the void node so Plite can select it. |
 
 ## Void Element Rules
 
@@ -39,7 +39,7 @@ Set `contentEditable={false}` on the custom void wrapper. Without it, browser
 editing behavior can leak into the nested controls; the demo notes Firefox input
 issues specifically.
 
-Render `{children}` after the non-editable UI. Slate still needs the hidden void
+Render `{children}` after the non-editable UI. Plite still needs the hidden void
 child mounted even when your visible element is fully custom React.
 
 The nested editor is a separate Plate editor. It does not share the outer

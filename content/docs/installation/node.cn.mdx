@@ -8,7 +8,7 @@ description: 在Node.js环境中安装和配置Plate
 <Callout type="warning" title="Node.js关键限制">
   在Node.js环境中使用Plate时，**绝对不要**从任何`platejs*`包的`/react`子路径导入。始终使用基础导入（例如使用`@platejs/basic-nodes`而不是`@platejs/basic-nodes/react`）。
 
-  这意味着你不能使用`platejs/react`中的`createPlateEditor`。应改用`platejs`中的`createBasePlateEditor`。
+  这意味着你不能使用`platejs/react`中的`createPlateEditor`。应改用`platejs`中的`createBaseEditor`。
 </Callout>
 
 <Steps>
@@ -26,10 +26,10 @@ npm install platejs @platejs/basic-nodes
 
 ### 创建编辑器实例
 
-在Node.js脚本中，使用`platejs`的`createBasePlateEditor`初始化编辑器实例。此函数与框架无关，不依赖React或浏览器API。
+在Node.js脚本中，使用`platejs`的`createBaseEditor`初始化编辑器实例。此函数与框架无关，不依赖React或浏览器API。
 
 ```typescript title="scripts/process-content.ts"
-import { createBasePlateEditor } from 'platejs';
+import { createBaseEditor } from 'platejs';
 import {
   BaseBoldPlugin,
   BaseItalicPlugin,
@@ -64,7 +64,7 @@ const initialValue = [
   },
 ];
 
-const editor = createBasePlateEditor({
+const editor = createBaseEditor({
   plugins: [
     BaseBoldPlugin,
     BaseItalicPlugin,
@@ -77,12 +77,12 @@ const editor = createBasePlateEditor({
   value: initialValue,
 });
 
-// 现在可以使用editor.children、editor.api、editor.tf等
+// 现在可以使用 editor.children、editor.api、editor.update 等
 console.debug('编辑器内容:', editor.children);
 ```
 
 <Callout type="info">
-  `createBasePlateEditor`创建一个原始的Plate编辑器实例，适用于服务端逻辑、数据转换或准备静态渲染内容。它提供与React版本相同的API，但没有浏览器依赖。
+  `createBaseEditor`创建一个原始的Plate编辑器实例，适用于服务端逻辑、数据转换或准备静态渲染内容。它提供与React版本相同的API，但没有浏览器依赖。
 </Callout>
 
 ### 内容操作
@@ -90,7 +90,7 @@ console.debug('编辑器内容:', editor.children);
 Plate在Node.js中的主要用例是程序化内容操作：
 
 ```typescript title="scripts/transform-content.ts"
-import { createBasePlateEditor } from 'platejs';
+import { createBaseEditor } from 'platejs';
 import {
   BaseBoldPlugin,
   BaseItalicPlugin,
@@ -101,7 +101,7 @@ import {
 } from '@platejs/basic-nodes';
 
 async function processDocument(value: any[]) {
-  const editor = createBasePlateEditor({
+  const editor = createBaseEditor({
     plugins: [
       BaseBoldPlugin,
       BaseItalicPlugin,
@@ -118,16 +118,17 @@ async function processDocument(value: any[]) {
   console.debug('提取的文本:', textContent);
 
   // 将所有H1转换为H2
-  editor.tf.setNodes(
-    { type: 'h2' },
-    { at: [], match: (n) => n.type === 'h1' }
-  );
+  editor.update((tx) => {
+    tx.nodes.set({ type: 'h2' }, { at: [], match: (n) => n.type === 'h1' });
+  });
 
   // 在末尾添加新段落
-  editor.tf.insertNodes(
-    [{ type: 'p', children: [{ text: '由Node.js脚本添加！' }] }],
-    { at: [editor.children.length] }
-  );
+  editor.update((tx) => {
+    tx.nodes.insert(
+      [{ type: 'p', children: [{ text: '由Node.js脚本添加！' }] }],
+      { at: [editor.children.length] }
+    );
+  });
 
   return {
     textContent,
@@ -162,11 +163,11 @@ processDocument(mySlateValue).then(result => {
     -   [HTML序列化](/docs/html)
     -   [Markdown序列化](/docs/markdown)
 
--   **[`editor.tf`](/docs/api/plite/editor-transforms)**: 使用转换函数修改编辑器内容：
-    -   `editor.tf.insertNodes(nodes, opts)`: 插入新节点
-    -   `editor.tf.removeNodes(opts)`: 删除节点
-    -   `editor.tf.setNodes(props, opts)`: 更新现有节点属性
-    -   `editor.tf.normalize({ force: true })`: 规范化编辑器
+-   **[`editor.update`](/docs/api/plite/editor-transforms)**: 使用事务修改编辑器内容：
+    -   `tx.nodes.insert(nodes, opts)`: 插入新节点
+    -   `tx.nodes.remove(opts)`: 删除节点
+    -   `tx.nodes.set(props, opts)`: 更新现有节点属性
+    -   `tx.normalize({ force: true })`: 规范化编辑器
 
 </Steps>
 

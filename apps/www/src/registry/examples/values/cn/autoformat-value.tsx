@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const autoformatValue: any = (
+export const autoformatValue = (
   <fragment>
     <hh2>自动格式化</hh2>
     <hp>

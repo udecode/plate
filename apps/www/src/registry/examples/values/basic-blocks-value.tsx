@@ -5,7 +5,7 @@ import { KEYS } from 'platejs';
 
 jsx;
 
-export const basicBlocksValue: any = (
+export const basicBlocksValue = (
   <fragment>
     <hh1>Heading 1</hh1>
     <hp>

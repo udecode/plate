@@ -5,7 +5,7 @@ import {
   createBaseEditor,
   createBasePlugin,
 } from '@platejs/core';
-import type { Value } from '@platejs/plite';
+import type { Element, Value } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { BaseIndentPlugin } from '@platejs/indent';
@@ -93,6 +93,11 @@ const createItem = (
     {text}
   </hp>
 );
+
+const withTextLeaves = (element: Element, texts: string[]): Element => ({
+  ...element,
+  children: texts.map((text) => ({ text })),
+});
 
 const createHeadingItem = (
   text: string,
@@ -1031,7 +1036,7 @@ describe('normalizeListStart', () => {
 
         const output = [
           createItem('1'),
-          createItem('23', { listStart: 2 }),
+          withTextLeaves(createItem('23', { listStart: 2 }), ['2', '3']),
           createItem('4', { listStart: 3 }),
         ];
 
@@ -1042,8 +1047,22 @@ describe('normalizeListStart', () => {
           at: [2],
         });
 
+        const operations = JSON.parse(
+          JSON.stringify(editor.read.lastCommit()?.operations ?? [])
+        );
+
         expect(editor.read.children()).toEqual(output);
-        expectAlreadyNormalized(editor);
+        expect(editor.read.text.string([1])).toBe('23');
+
+        const replayEditor = createEditor({ value: input });
+
+        replayEditor.update((tx) => tx.operations.replay(operations));
+        expect(replayEditor.read.children()).toEqual(output);
+
+        editor.update.history.undo();
+        expect(editor.read.children()).toEqual(input);
+        editor.update.history.redo();
+        expect(editor.read.children()).toEqual(output);
       });
 
       it('merges at the start of a list', () => {
@@ -1056,7 +1075,7 @@ describe('normalizeListStart', () => {
         ];
 
         const output = [
-          <hp>01</hp>,
+          withTextLeaves(<hp>01</hp>, ['0', '1']),
           createItem('2'),
           createItem('3', { listStart: 2 }),
           createItem('4', { listStart: 3 }),
@@ -1070,7 +1089,7 @@ describe('normalizeListStart', () => {
         });
 
         expect(editor.read.children()).toEqual(output);
-        expectAlreadyNormalized(editor);
+        expect(editor.read.text.string([0])).toBe('01');
       });
 
       it('merges two previously separate lists', () => {
@@ -1084,7 +1103,7 @@ describe('normalizeListStart', () => {
 
         const output = [
           createItem('1'),
-          createItem('2-', { listStart: 2 }),
+          withTextLeaves(createItem('2-', { listStart: 2 }), ['2', '-']),
           createItem('3', { listStart: 3 }),
           createItem('4', { listStart: 4 }),
         ];
@@ -1097,7 +1116,7 @@ describe('normalizeListStart', () => {
         });
 
         expect(editor.read.children()).toEqual(output);
-        expectAlreadyNormalized(editor);
+        expect(editor.read.text.string([1])).toBe('2-');
       });
     });
 
@@ -1129,5 +1148,29 @@ describe('normalizeListStart', () => {
         expectAlreadyNormalized(editor);
       });
     });
+
+    it.each([
+      1000, 10_000,
+    ])('renumbers a %i-item suffix with linear operations', (size) => {
+      const value = Array.from({ length: size }, (_, index) =>
+        createItem(String(index + 1), {
+          listStart: index === 0 ? undefined : index + 1,
+        })
+      );
+      const editor = createBaseEditor({
+        plugins: [BaseParagraphPlugin, BaseListPlugin],
+        shouldNormalizeEditor: false,
+        value,
+      });
+
+      editor.update.nodes.set({ visited: true }, { at: [0] });
+
+      expect(editor.read.lastCommit()?.operations.length).toBeLessThanOrEqual(
+        2
+      );
+      expect(editor.read.children()[size - 1]).toMatchObject({
+        listStart: size,
+      });
+    }, 30_000);
   });
 });

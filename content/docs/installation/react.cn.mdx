@@ -187,10 +187,10 @@ export default function App() {
     <Plate editor={editor}>
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
         {/* 元素工具栏按钮 */}
-        <ToolbarButton onClick={() => editor.tf.h1.toggle()}>H1</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.h2.toggle()}>H2</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.h3.toggle()}>H3</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>Quote</ToolbarButton>
+        <ToolbarButton onClick={() => editor.update((tx) => tx.h.toggle())}>H1</ToolbarButton>
+        <ToolbarButton onClick={() => editor.update((tx) => tx.h.toggle())}>H2</ToolbarButton>
+        <ToolbarButton onClick={() => editor.update((tx) => tx.h.toggle())}>H3</ToolbarButton>
+        <ToolbarButton onClick={() => editor.update((tx) => tx.blockquote.toggle())}>Quote</ToolbarButton>
         {/* 标记工具栏按钮 */}
         <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
         <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
@@ -294,17 +294,19 @@ export default function App() {
       }}
     >
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
-        <ToolbarButton onClick={() => editor.tf.h1.toggle()}>H1</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.h2.toggle()}>H2</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.h3.toggle()}>H3</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>Quote</ToolbarButton>
+        <ToolbarButton onClick={() => editor.update((tx) => tx.h.toggle())}>H1</ToolbarButton>
+        <ToolbarButton onClick={() => editor.update((tx) => tx.h.toggle())}>H2</ToolbarButton>
+        <ToolbarButton onClick={() => editor.update((tx) => tx.h.toggle())}>H3</ToolbarButton>
+        <ToolbarButton onClick={() => editor.update((tx) => tx.blockquote.toggle())}>Quote</ToolbarButton>
         <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
         <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
         <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">U</MarkToolbarButton>
         <div className="flex-1" />
         <ToolbarButton
           className="px-2"
-          onClick={() => editor.tf.setValue(initialValue)}
+          onClick={() =>
+            editor.update((tx) => tx.value.replace({ children: initialValue }))
+          }
         >
           Reset
         </ToolbarButton>

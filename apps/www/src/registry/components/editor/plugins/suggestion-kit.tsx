@@ -1,19 +1,12 @@
 'use client';
 
-import type {
-  ExtendConfig,
-  TElement,
-  TInlineSuggestionData,
-  TSuggestionData,
-  TSuggestionText,
-} from 'platejs';
+import type { Element } from '@platejs/plite';
+import type { BaseEditor, ExtendConfig } from 'platejs';
 
 import { KEYS, TextApi, TrailingBlockPlugin } from 'platejs';
-import {
-  type BaseSuggestionConfig,
-  BaseSuggestionPlugin,
-} from '@platejs/suggestion';
-import { toTPlatePlugin } from 'platejs/react';
+import { BaseSuggestionPlugin } from '@platejs/suggestion';
+import type { BaseSuggestionConfig } from '@platejs/suggestion';
+import { toPlatePlugin } from 'platejs/react';
 
 import {
   SuggestionLeaf,
@@ -41,12 +34,9 @@ const INLINE_SUGGESTION_TARGET_PLUGINS = [
   KEYS.mention,
 ];
 
-function getInlineSuggestionData(editor: any, element: TElement) {
-  const suggestionApi = editor.getApi(BaseSuggestionPlugin).suggestion;
-  const data = suggestionApi.suggestionData(element) as
-    | TSuggestionData
-    | TInlineSuggestionData
-    | undefined;
+function getInlineSuggestionData(editor: BaseEditor, element: Element) {
+  const suggestionApi = editor.plugin(BaseSuggestionPlugin).api;
+  const data = suggestionApi.suggestionData(element);
 
   if (data) return data;
   if (typeof suggestionApi.dataList !== 'function') return;
@@ -54,27 +44,30 @@ function getInlineSuggestionData(editor: any, element: TElement) {
   for (const child of element.children) {
     if (!TextApi.isText(child)) continue;
 
-    const childData = suggestionApi.dataList(child as TSuggestionText).at(-1);
+    const childData = suggestionApi.dataList(child).at(-1);
 
     if (childData) return childData;
   }
 }
 
-export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
-  BaseSuggestionPlugin,
-  ({ editor }) => ({
-    options: {
-      activeId: null,
-      currentUserId: editor.getOption(discussionPlugin, 'currentUserId'),
-      hoverId: null,
-    },
-  })
-).configure({
+export const suggestionPlugin = toPlatePlugin<
+  BaseSuggestionConfig,
+  {
+    activeId: string | null;
+    hoverId: string | null;
+  }
+>(BaseSuggestionPlugin, ({ editor }) => ({
+  options: {
+    activeId: null,
+    currentUserId: editor.plugin(discussionPlugin).getOption('currentUserId'),
+    hoverId: null,
+  },
+})).configure({
   handlers: {
     // unset active suggestion when clicking outside of suggestion
     onClick: ({ api, event, setOption, type }) => {
       const markTarget = getDiscussionClickTarget({
-        selector: `.slate-${type}`,
+        selector: `.plite-${type}`,
         target: event.target,
       });
       const blockTarget = markTarget
@@ -88,15 +81,13 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
         return;
       }
 
-      const suggestionEntry = api.suggestion?.node({
+      const suggestionEntry = api.node({
         isText: !blockTarget,
       });
 
       setOption(
         'activeId',
-        suggestionEntry
-          ? (api.suggestion?.nodeId(suggestionEntry[0]) ?? null)
-          : null
+        suggestionEntry ? (api.nodeId(suggestionEntry[0]) ?? null) : null
       );
     },
   },
@@ -122,8 +113,8 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
     targetPlugins: INLINE_SUGGESTION_TARGET_PLUGINS,
   },
   render: {
-    belowNodes: SuggestionLineBreak as any,
-    belowRootNodes: VoidRemoveSuggestionOverlay as any,
+    belowNodes: SuggestionLineBreak,
+    belowRootNodes: VoidRemoveSuggestionOverlay,
     node: SuggestionLeaf,
   },
 });
@@ -131,7 +122,7 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
 const trailingBlockPlugin = TrailingBlockPlugin.configure({
   options: {
     insert: (editor, { insert }) => {
-      editor.getApi(suggestionPlugin).suggestion.withoutSuggestions(insert);
+      editor.plugin(suggestionPlugin).api.untracked(insert);
     },
   },
 });

@@ -22,9 +22,9 @@ Navigation Feedback is a small core plugin for "you landed here" UX. It doesn't 
 
 <Steps>
 
-### Core Plugin
+### React Plugin
 
-`NavigationFeedbackPlugin` is part of Plate core and is included by `createPlateEditor` automatically. You don't need to add it to the `plugins` array for the defaults to work.
+`NavigationFeedbackPlugin` is part of the React editor defaults and is included by `createPlateEditor` automatically. You don't need to add it to the `plugins` array for the defaults to work.
 
 ### Configure Duration
 
@@ -52,14 +52,18 @@ const editor = createPlateEditor({
 
 ### Flash a Target
 
-When another action already handled scroll, focus, and selection, and you only want the visual confirmation, call `editor.tf.navigation.flashTarget`:
+When another action already handled scroll, focus, and selection, and you only
+want the visual confirmation, call `tx.navigation.flashTarget(...)` inside
+`editor.update(...)`:
 
 ```tsx
-editor.tf.navigation.flashTarget({
-  target: {
-    path: [12],
-    type: 'node',
-  },
+editor.update((tx) => {
+  tx.navigation.flashTarget({
+    target: {
+      path: [12],
+      type: 'node',
+    },
+  });
 });
 ```
 
@@ -68,13 +72,15 @@ The call returns `false` when the path doesn't resolve to a node, so you can bra
 Override the duration or variant per call when this jump deserves its own look:
 
 ```tsx
-editor.tf.navigation.flashTarget({
-  duration: 1500,
-  target: {
-    path: [12],
-    type: 'node',
-  },
-  variant: 'mention',
+editor.update((tx) => {
+  tx.navigation.flashTarget({
+    duration: 1500,
+    target: {
+      path: [12],
+      type: 'node',
+    },
+    variant: 'mention',
+  });
 });
 ```
 
@@ -82,43 +88,52 @@ The `variant` string is written straight to `data-nav-highlight`, so you can key
 
 ### Navigate and Flash
 
-Most navigation actions should do four things at once: move the selection, focus the editor, scroll the target into view, and flash the landed node. `editor.tf.navigation.navigate` does all four, and each step is independent — skip any of them with the flags below.
+Most navigation actions should do four things at once: move the selection, focus
+the editor, scroll the target into view, and flash the landed node.
+`tx.navigation.navigate(...)` does all four inside `editor.update(...)`, and
+each step is independent — skip any of them with the flags below.
 
 Here's how the footnote plugin jumps from a reference to its definition:
 
 ```tsx
-editor.tf.navigation.navigate({
-  focus: true,
-  scroll: true,
-  scrollTarget: point,
-  select: {
-    anchor: { offset: 0, path: firstTextPath },
-    focus: { offset: 0, path: firstTextPath },
-  },
-  target: {
-    path: definition[1],
-    type: 'node',
-  },
+editor.update((tx) => {
+  tx.navigation.navigate({
+    focus: true,
+    scroll: true,
+    scrollTarget: point,
+    select: {
+      anchor: { offset: 0, path: firstTextPath },
+      focus: { offset: 0, path: firstTextPath },
+    },
+    target: {
+      path: definition[1],
+      type: 'node',
+    },
+  });
 });
 ```
 
 Skip the flash when the jump should be silent:
 
 ```tsx
-editor.tf.navigation.navigate({
-  flash: false,
-  select: point,
-  target: { path: [12], type: 'node' },
+editor.update((tx) => {
+  tx.navigation.navigate({
+    flash: false,
+    select: point,
+    target: { path: [12], type: 'node' },
+  });
 });
 ```
 
 Or tune the flash per call:
 
 ```tsx
-editor.tf.navigation.navigate({
-  flash: { duration: 1200, variant: 'mention' },
-  select: point,
-  target: { path: [12], type: 'node' },
+editor.update((tx) => {
+  tx.navigation.navigate({
+    flash: { duration: 1200, variant: 'mention' },
+    select: point,
+    target: { path: [12], type: 'node' },
+  });
 });
 ```
 
@@ -139,16 +154,16 @@ Whenever a target is active, the plugin injects transient attributes onto that n
 Style them anywhere your editor styles live:
 
 ```css
-.slate-editor [data-nav-highlight] {
+.plite-editor [data-nav-highlight] {
   border-radius: 0.375rem;
 }
 
-.slate-editor [data-nav-highlight][data-nav-cycle='0'] {
+.plite-editor [data-nav-highlight][data-nav-cycle='0'] {
   animation: plate-nav-highlight-a var(--plate-nav-feedback-duration, 900ms)
     ease-out;
 }
 
-.slate-editor [data-nav-highlight][data-nav-cycle='1'] {
+.plite-editor [data-nav-highlight][data-nav-cycle='1'] {
   animation: plate-nav-highlight-b var(--plate-nav-feedback-duration, 900ms)
     ease-out;
 }
@@ -194,7 +209,10 @@ export function FootnoteReferenceElement(props) {
 }
 ```
 
-The hook returns `null` when this node isn't the active target and the full target (`{ cycle, duration, path, pulse, type, variant }`) when it is. Pass a `Path`, a `TElement`, or a `TText` — paths go through, nodes get resolved via `editor.api.findPath`.
+The hook returns `null` when this node isn't the active target and the full
+target (`{ cycle, duration, path, pulse, type, variant }`) when it is. Pass a
+`Path` when you have one. Inside an element render, you can also pass the
+current `Element` or `Text`; the hook resolves it from the render context path.
 
 Done. You now have a deterministic flash on every jump and the wiring to style or extend it.
 
@@ -254,7 +272,7 @@ Check whether a given path is the current flashed target.
 
 ## Transforms
 
-### `tf.navigation.flashTarget`
+### `tx.navigation.flashTarget`
 
 Flash a target node without changing selection, focus, or scroll. Replaces any active flash on the same editor.
 
@@ -278,7 +296,7 @@ Flash a target node without changing selection, focus, or scroll. Replaces any a
 </APIReturns>
 </API>
 
-### `tf.navigation.navigate`
+### `tx.navigation.navigate`
 
 Select, focus, scroll, and flash a target in one call. Each step is independent — skip any of them with the flags below.
 
@@ -287,7 +305,7 @@ Select, focus, scroll, and flash a target in one call. Each step is independent 
   <APIItem name="target" type="{ path: Path; type: 'node' }">
     Node target to navigate to.
   </APIItem>
-  <APIItem name="select" type="Point | TRange" optional>
+  <APIItem name="select" type="Point | Range" optional>
     Point (collapsed) or range to apply before scrolling and flashing.
   </APIItem>
   <APIItem name="focus" type="boolean" optional>
@@ -312,7 +330,7 @@ Select, focus, scroll, and flash a target in one call. Each step is independent 
 </APIReturns>
 </API>
 
-### `tf.navigation.clear`
+### `tx.navigation.clear`
 
 Clear the current flashed target immediately. Same effect as `api.navigation.clear`.
 
@@ -326,8 +344,9 @@ Subscribe a custom render to the active navigation target. Returns the target me
 
 <API name="useNavigationHighlight">
 <APIParameters>
-  <APIItem name="target" type="Path | TElement | TText | null | undefined">
-    Path to compare, or a node the hook resolves via `editor.api.findPath`.
+  <APIItem name="target" type="Path | Element | Text | null | undefined">
+    Path to compare, or the current rendered node resolved through element
+    context.
   </APIItem>
 </APIParameters>
 <APIReturns>

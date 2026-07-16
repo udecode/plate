@@ -2087,6 +2087,39 @@ describe('plite-react surface contract', () => {
     expect(spacer?.querySelector('[data-plite-zero-width]')).toBeTruthy();
   });
 
+  test('renderElement owns void nodes when renderVoid is omitted', () => {
+    const editor = createReactEditor({
+      initialValue: [
+        { type: 'image', url: 'about:blank', children: [{ text: '' }] },
+      ],
+    }) as ReactRuntimeEditor;
+    const renderElement = jest.fn(
+      ({ attributes, children, element }: RenderElementProps) => (
+        <figure {...attributes} data-renderer={element.type}>
+          {children}
+        </figure>
+      )
+    );
+
+    editor.extend({
+      elements: [{ type: 'image', void: 'block' }],
+      name: 'test-block-void-render-element-fallback',
+    });
+
+    const rendered = render(
+      <Plite editor={editor}>
+        <Editable renderElement={renderElement} />
+      </Plite>
+    );
+
+    const image = rendered.container.querySelector('[data-renderer="image"]');
+
+    expect(renderElement).toHaveBeenCalledTimes(1);
+    expect(image).toHaveAttribute('data-plite-node', 'element');
+    expect(image).toHaveAttribute('data-plite-void', 'true');
+    expect(image?.querySelector('[data-plite-zero-width]')).toBeTruthy();
+  });
+
   test('editable-island void content keeps classic void chrome while nested editors stay focusable', () => {
     const editor = createReactEditor({
       initialValue: [

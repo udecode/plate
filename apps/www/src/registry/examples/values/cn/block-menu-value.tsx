@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const blockMenuValue: any = (
+export const blockMenuValue = (
   <fragment>
     <hh2>块菜单</hh2>
 

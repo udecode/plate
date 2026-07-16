@@ -1,36 +1,28 @@
-import { useEditorRef, useEditorSelector } from 'platejs/react';
+import { useEditorRef, useEditorSelector } from '@platejs/core/react';
+import { KEYS } from '@platejs/utils';
 
-import { ListStyleType, toggleList } from '../../index';
-import { someTodoList } from '../../lib/queries/someTodoList';
+import { ListPlugin } from '../ListPlugin';
 
-export const useIndentTodoToolBarButtonState = ({
-  nodeType = ListStyleType.Disc,
-}: {
-  nodeType?: string;
-} = {}) => {
+export const useTodoListToolbarButtonState = () => {
   const pressed = useEditorSelector(
-    (editor) => someTodoList(editor),
-    [nodeType]
+    (editor) => editor.plugin(ListPlugin).api.isActive(KEYS.listTodo),
+    []
   );
 
-  return {
-    nodeType,
-    pressed,
-  };
+  return { pressed };
 };
 
-export const useIndentTodoToolBarButton = ({
-  nodeType,
+export const useTodoListToolbarButton = ({
   pressed,
-}: ReturnType<typeof useIndentTodoToolBarButtonState>) => {
+}: ReturnType<typeof useTodoListToolbarButtonState>) => {
   const editor = useEditorRef();
 
   return {
     props: {
       pressed,
       onClick: () => {
-        toggleList(editor, {
-          listStyleType: nodeType,
+        editor.plugin(ListPlugin).update.toggle({
+          listStyleType: KEYS.listTodo,
         });
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {

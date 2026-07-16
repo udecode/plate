@@ -6,14 +6,14 @@ import { createTable } from './table-value';
 
 jsx;
 
-export const trailingBlockValue: any = (
+export const trailingBlockValue = (
   <fragment>
     <hh2>尾随块</hh2>
     <hp>始终在编辑器末尾保留一个尾随段落。</hp>
   </fragment>
 );
 
-export const exitBreakValue: any = (
+export const exitBreakValue = (
   <fragment>
     <hh2>退出换行</hh2>
     <hp>使用简单的规则配置退出换行（块之间的换行）的行为：</hp>

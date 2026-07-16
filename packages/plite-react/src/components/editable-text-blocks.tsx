@@ -880,7 +880,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
   };
   const defaultChildren = childRuntimeIds.map(renderChild);
 
-  if (voidNode) {
+  if (voidNode && renderVoid) {
     if (!path) {
       return null;
     }
@@ -946,6 +946,26 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
               props={renderElementProps}
               renderElement={nodeRenderElement}
             />
+          </ElementContext.Provider>
+        </ElementPathContext.Provider>
+      </NodeRuntimeIdContext.Provider>
+    );
+  }
+
+  if (voidNode) {
+    if (!path) {
+      return null;
+    }
+
+    const children = renderChildren();
+
+    return (
+      <NodeRuntimeIdContext.Provider key={runtimeId} value={runtimeId}>
+        <ElementPathContext.Provider value={path}>
+          <ElementContext.Provider value={node}>
+            <EditableRenderedVoid element={node as TElement} isInline={inline}>
+              {children}
+            </EditableRenderedVoid>
           </ElementContext.Provider>
         </ElementPathContext.Provider>
       </NodeRuntimeIdContext.Provider>

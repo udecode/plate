@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const equationValue: any = (
+export const equationValue = (
   <fragment>
     <hh2>
       <htext>公式</htext>

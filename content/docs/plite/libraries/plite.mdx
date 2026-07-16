@@ -27,19 +27,29 @@ need multiple root-scoped editor views over one committed editor runtime. App UI
 should normally use the framework package helpers, such as `usePliteEditor` in
 `@platejs/plite-react`.
 
-Read committed state with `editor.read(...)`.
+Read committed state with direct read methods, or with `editor.read(...)` when
+several reads should share one state view.
 
 ```ts
-const value = editor.read((state) => state.value.get());
-const selection = editor.read((state) => state.selection.get());
+const value = editor.read.value();
+const selection = editor.read.selection();
+
+const info = editor.read((state) => ({
+  text: state.text.string([]),
+  value: state.value(),
+}));
 ```
 
 Write document, selection, mark, root, state-field, and operation changes inside
-`editor.update(...)`.
+direct update methods, or inside `editor.update(...)` when one command groups
+related writes into one commit.
 
 ```ts
+editor.update.text.insert("Hello");
+
 editor.update((tx) => {
-  tx.text.insert("Hello");
+  tx.text.insert(" ");
+  tx.text.insert("world");
 });
 ```
 
@@ -53,8 +63,8 @@ Runtime, view, snapshot, and commit types include `EditorRuntime`,
 `SnapshotInput`, and `SnapshotListener`.
 
 Read/update API types include `EditorStateView`, `EditorStateValueApi`,
-`EditorUpdateTransaction`, `EditorTransactionValueApi`, `EditorUpdateOptions`,
-and `EditorUpdateMetadata`.
+`EditorUpdate`, `EditorUpdatePolicy`, `EditorUpdatePolicyFor`,
+`EditorUpdateTransaction`, and `EditorTransactionValueApi`.
 
 Extension and schema types include `EditorExtension`, `EditorExtensionInput`,
 `EditorExtensionSetupContext`, `EditorExtensionSetupOutput`,
@@ -96,9 +106,11 @@ Pure data helpers live on `ElementApi`, `LocationApi`, `NodeApi`,
 `OperationApi`, `PathApi`, `PathRefApi`, `PointApi`, `PointRefApi`, `RangeApi`,
 `RangeRefApi`, `SpanApi`, and `TextApi`.
 
-Inside `editor.read(...)` and `editor.update(...)`, prefer the grouped
-`state.*` and `tx.*` APIs. Use the helper namespaces when library code needs
-pure operations on Plite data outside an editor transaction.
+Inside a live editor, use `editor.read.<group>.<method>()` and
+`editor.update.<group>.<method>()` for one-shot actions. Use grouped `state.*`
+and `tx.*` APIs when code needs custom logic or extension-owned namespaces. Use
+the helper namespaces when library code needs pure operations on Plite data
+outside an editor transaction.
 
 ## Internal Subpath
 

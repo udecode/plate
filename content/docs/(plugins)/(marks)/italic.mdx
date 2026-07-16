@@ -119,7 +119,7 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 |----------|--------|
 | Mark key | `KEYS.italic` |
 | Leaf behavior | `node.isLeaf: true` |
-| Toggle transform | `editor.tf.italic.toggle()` calls `editor.tf.toggleMark(type)`. |
+| Toggle command | `tx.italic.toggle()` calls `tx.marks.toggle(type)`. |
 | Shortcut | `ItalicPlugin` registers `mod+i`. |
 | HTML tags | `em`, `i` |
 | HTML styles | `font-style: italic` |
@@ -133,4 +133,4 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 | `BaseItalicPlugin` | `@platejs/basic-nodes` | Headless italic plugin. |
 | `ItalicPlugin` | `@platejs/basic-nodes/react` | React italic plugin with shortcut defaults. |
 | `ItalicRules.markdown(options)` | `@platejs/basic-nodes` | Creates an italic mark input rule. |
-| `tf.italic.toggle()` | `@platejs/basic-nodes` | Toggles the italic mark at the selection. |
+| `tx.italic.toggle()` | `@platejs/basic-nodes` | Toggles the italic mark at the selection. |

@@ -9,8 +9,9 @@ import {
   useFloatingToolbar,
   useFloatingToolbarState,
 } from '@platejs/floating';
+import { AIChatPlugin } from '@platejs/ai/react';
+import { LinkPlugin } from '@platejs/link/react';
 import { useComposedRef } from '@udecode/cn';
-import { KEYS } from 'platejs';
 import {
   useEditorId,
   useEventEditorValue,
@@ -31,8 +32,8 @@ export function FloatingToolbar({
 }) {
   const editorId = useEditorId();
   const focusedEditorId = useEventEditorValue('focus');
-  const isFloatingLinkOpen = !!usePluginOption({ key: KEYS.link }, 'mode');
-  const isAIChatOpen = usePluginOption({ key: KEYS.aiChat }, 'open');
+  const isFloatingLinkOpen = !!usePluginOption(LinkPlugin, 'mode');
+  const isAIChatOpen = usePluginOption(AIChatPlugin, 'open');
 
   const floatingToolbarState = useFloatingToolbarState({
     editorId,

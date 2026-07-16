@@ -202,9 +202,9 @@ const editor = createPlateEditor({
 ```
 
 <Callout type="note">
-  The `NavigationFeedbackPlugin` is part of the core plugins and is
-  automatically included. Use `navigationFeedback` for normal configuration and
-  keep `rootPlugin.configurePlugin(...)` for advanced escape-hatch work.
+  The `NavigationFeedbackPlugin` is part of the React editor defaults. Use
+  `navigationFeedback` for normal configuration and keep
+  `rootPlugin.configurePlugin(...)` for advanced escape-hatch work.
 </Callout>
 
 #### Disabling Navigation Feedback
@@ -302,22 +302,6 @@ const editor = createPlateEditor({
 });
 ```
 
-### Root Plugin
-
-From the root plugin, you can configure any plugin:
-
-```ts
-const editor = createPlateEditor({
-  plugins: [HeadingPlugin],
-  rootPlugin: (plugin) =>
-    plugin.configurePlugin(LengthPlugin, {
-    options: {
-        maxLength: 100,
-      },
-    }),
-});
-```
-
 ## Typed Editor
 
 `createPlateEditor` will automatically infer the types for your editor from the value and the plugins you pass in. For explicit type creation, use the generics:
@@ -330,7 +314,9 @@ const editor = createPlateEditor<Value, typeof TablePlugin | typeof LinkPlugin>(
 });
 
 // Usage
-editor.tf.insert.tableRow()
+editor.update((tx) => {
+  tx.insert.tableRow();
+});
 ```
 
 ### Value Type
@@ -338,24 +324,24 @@ editor.tf.insert.tableRow()
 For more complex editors, you can define your types in a separate file (e.g., `plate-types.ts`):
 
 ```ts
-import type { TElement, TText } from 'platejs';
-import type { TPlateEditor } from 'platejs/react';
+import type { Element, Text } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
 // Define custom element types
-interface ParagraphElement extends TElement {
+interface ParagraphElement extends Element {
   align?: 'left' | 'center' | 'right' | 'justify';
   children: RichText[];
   type: typeof ParagraphPlugin.key;
 }
 
-interface ImageElement extends TElement {
+interface ImageElement extends Element {
   children: [{ text: '' }]
   type: typeof ImagePlugin.key;
   url: string;
 }
 
 // Define custom text types
-interface FormattedText extends TText {
+interface FormattedText extends Text {
   bold?: boolean;
   italic?: boolean;
 }
@@ -366,7 +352,7 @@ export type MyRootBlock = ParagraphElement | ImageElement;
 export type MyValue = MyRootBlock[];
 
 // Define the custom editor type
-export type MyEditor = TPlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>;
+export type MyEditor = PlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>;
 
 export const useMyEditorRef = () => useEditorRef<MyEditor>();
 

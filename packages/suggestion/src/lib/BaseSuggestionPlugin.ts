@@ -9,6 +9,7 @@ import {
   ElementApi,
   type Node,
   type NodeEntry,
+  type Text,
   TextApi,
 } from '@platejs/plite';
 import {
@@ -33,19 +34,19 @@ export type BaseSuggestionConfig = PluginConfig<
   },
   {
     suggestion: {
-      dataList: (node: TSuggestionText) => TInlineSuggestionData[];
+      dataList: (node: Text) => TInlineSuggestionData[];
       /** Whether suggestion middleware should track the current operation. */
       isTracking: () => boolean;
       isBlockSuggestion: (node: Node) => node is TSuggestionElement;
       node: (
         options?: EditorNodesOptions<Node> & { id?: string; isText?: boolean }
       ) => NodeEntry<TSuggestionElement | TSuggestionText> | undefined;
-      nodeId: (node: Element | TSuggestionText) => string | undefined;
+      nodeId: (node: Node) => string | undefined;
       nodes: (
         options?: EditorNodesOptions<Node> & { transient?: boolean }
       ) => NodeEntry<Element | TSuggestionText>[];
       suggestionData: (
-        node: Element | TSuggestionText
+        node: Node
       ) => TInlineSuggestionData | TSuggestionElement['suggestion'] | undefined;
       /** Run synchronous operations without recursively creating suggestions. */
       untracked: <T>(fn: () => T) => T;
@@ -76,7 +77,10 @@ const runSuggestionUntracked = <T>(editor: BaseEditor, fn: () => T): T => {
 const hasSuggestionFlag = (node: Node, type: string) =>
   !!(node as Record<string, unknown>)[type];
 
-const isInlineSuggestionNode = (editor: BaseEditor, node: Node) =>
+const isInlineSuggestionNode = (
+  editor: BaseEditor,
+  node: Node
+): node is Element | Text =>
   TextApi.isText(node) ||
   (ElementApi.isElement(node) && editor.read.schema.isInline(node));
 
@@ -92,7 +96,7 @@ export const BaseSuggestionPlugin = createBasePlugin<BaseSuggestionConfig>({
   .extendExtension(withSuggestion)
   .extendApi<Partial<BaseSuggestionConfig['api']['suggestion']>>(
     ({ api, editor, type }) => ({
-      dataList: (node: TSuggestionText): TInlineSuggestionData[] =>
+      dataList: (node: Text): TInlineSuggestionData[] =>
         Object.keys(node)
           .filter((key) => key.startsWith(`${KEYS.suggestion}_`))
           .map((key) => node[key] as TInlineSuggestionData),

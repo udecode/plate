@@ -8,73 +8,68 @@ describe('insertColumn', () => {
   it('insert a column with the default width and an empty block', () => {
     const editor = createBaseEditor({
       plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
-      value: [
-        {
-          children: [
-            {
-              children: [{ children: [{ text: 'First' }], type: 'p' }],
-              type: 'column',
-              width: '50%',
-            },
-            {
-              children: [{ children: [{ text: 'Second' }], type: 'p' }],
-              type: 'column',
-              width: '50%',
-            },
-          ],
-          type: 'column_group',
-        },
-      ],
     });
 
-    editor.update.column.insert({ at: [0, 2] });
+    editor.update((tx) => {
+      tx.value.replace({
+        children: [
+          {
+            children: [
+              {
+                children: [{ children: [{ text: 'First' }], type: 'p' }],
+                type: 'column',
+                width: '67%',
+              },
+            ],
+            type: 'column_group',
+          },
+        ],
+      });
+      tx.column.insert({ at: [0, 1] });
+    });
 
     const entry = editor.read.nodes.get<TColumnGroupElement>([0]);
     assert(entry);
     const [columnGroup] = entry;
 
-    expect(columnGroup.children).toHaveLength(3);
-    expect(columnGroup.children[2].type).toBe('column');
-    expect(columnGroup.children[2].width).toBe('33%');
-    expect(columnGroup.children[0].width).toBe('33.5%');
-    expect(columnGroup.children[1].width).toBe('33.5%');
-    expect(columnGroup.children[2].children[0]).toMatchObject({ type: 'p' });
+    expect(columnGroup.children).toHaveLength(2);
+    expect(columnGroup.children[1].type).toBe('column');
+    expect(columnGroup.children[1].width).toBe('33%');
+    expect(columnGroup.children[0].width).toBe('67%');
+    expect(columnGroup.children[1].children[0]).toMatchObject({ type: 'p' });
   });
 
   it('respect a custom width and insertion path', () => {
     const editor = createBaseEditor({
       plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
-      value: [
-        {
-          children: [
-            {
-              children: [{ children: [{ text: 'Existing' }], type: 'p' }],
-              type: 'column',
-              width: '50%',
-            },
-            {
-              children: [{ children: [{ text: 'Second' }], type: 'p' }],
-              type: 'column',
-              width: '50%',
-            },
-          ],
-          type: 'column_group',
-        },
-      ],
     });
 
-    editor.update.column.insert({ at: [0, 1], width: '25%' });
+    editor.update((tx) => {
+      tx.value.replace({
+        children: [
+          {
+            children: [
+              {
+                children: [{ children: [{ text: 'Existing' }], type: 'p' }],
+                type: 'column',
+                width: '75%',
+              },
+            ],
+            type: 'column_group',
+          },
+        ],
+      });
+      tx.column.insert({ at: [0, 0], width: '25%' });
+    });
 
     const entry = editor.read.nodes.get<TColumnGroupElement>([0]);
     assert(entry);
     const [columnGroup] = entry;
 
-    expect(columnGroup.children).toHaveLength(3);
-    expect(columnGroup.children[0].width).toBe('37.5%');
-    expect(columnGroup.children[1].width).toBe('25%');
-    expect(columnGroup.children[2].width).toBe('37.5%');
-    expect(editor.read.text.string([0, 0])).toBe('Existing');
-    expect(editor.read.text.string([0, 1])).toBe('');
-    expect(editor.read.text.string([0, 2])).toBe('Second');
+    expect(columnGroup.children).toHaveLength(2);
+    expect(columnGroup.children[0].width).toBe('25%');
+    expect(columnGroup.children[1].width).toBe('75%');
+    expect(editor.read.text.string([0, 0])).toBe('');
+    expect(editor.read.text.string([0, 1])).toBe('Existing');
   });
 });

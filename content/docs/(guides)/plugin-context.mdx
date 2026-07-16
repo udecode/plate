@@ -1,19 +1,19 @@
 ---
 title: Plugin Context
-description: Use editor, plugin, option, API, and transform context inside Plate plugins.
+description: Use editor, plugin, option, API, and transaction context inside Plate plugins.
 ---
 
 Plugin context is the object Plate passes to plugin configuration callbacks,
-handlers, extensions, transforms, and render components. It gives you the
-resolved editor, current plugin, node type, `api`, `tf`, and option helpers
+handlers, extensions, transaction commands, and render components. It gives you
+the resolved editor, current plugin, node type, `api`, and option helpers
 without reaching through global state. Use it inside plugin-owned code; use
 editor methods or React hooks when code runs outside a plugin callback.
 
 ## Context Shape
 
 `PlatePluginContext` extends the shared plugin context with a React
-`PlateEditor`. The same helper names are available in headless Slate plugins,
-but the editor type is `SlateEditor`.
+`PlateEditor`. The same helper names are available in headless Plite plugins,
+but the editor type is `BaseEditor`.
 
 | Property | Use for |
 | --- | --- |
@@ -21,7 +21,6 @@ but the editor type is `SlateEditor`.
 | `plugin` | The resolved plugin configuration for the current plugin. |
 | `type` | The plugin node type, usually `plugin.node.type`. |
 | `api` | Editor API plus plugin-specific API methods. |
-| `tf` | Editor transforms plus plugin-specific transforms. |
 | `getOption(key, ...args)` | Read an option, selector, or `'state'` from the current plugin. |
 | `getOptions()` | Read the full option state for the current plugin. |
 | `setOption(key, value)` | Update one option in the current plugin store. |
@@ -58,8 +57,8 @@ export const CounterPlugin = createPlatePlugin({
 
 ## Extension Callbacks
 
-Configuration, extension, selector, API, transform, and editor override callbacks
-also receive plugin context.
+Configuration, extension, selector, API, transaction, and editor override
+callbacks also receive plugin context.
 
 ```ts title="counter-plugin.ts" showLineNumbers
 import { createPlatePlugin } from 'platejs/react';
@@ -83,12 +82,12 @@ Selectors are readable through `getOption` and subscribable through
 
 ## Another Plugin
 
-Use `getEditorPlugin(editor, Plugin)` when plugin-owned code needs another
+Use `getBasePlugin(editor, Plugin)` when plugin-owned code needs another
 plugin's context. The editor argument is required.
 
 ```ts title="link-aware-plugin.ts" showLineNumbers
 import { LinkPlugin } from '@platejs/link/react';
-import { createPlatePlugin, getEditorPlugin } from 'platejs/react';
+import { createPlatePlugin, getBasePlugin } from 'platejs/react';
 
 export const LinkAwarePlugin = createPlatePlugin({
   key: 'linkAware',
@@ -96,7 +95,7 @@ export const LinkAwarePlugin = createPlatePlugin({
     onKeyDown: ({ editor, event }) => {
       if (event.key !== 'Enter') return;
 
-      const link = getEditorPlugin(editor, LinkPlugin);
+      const link = getBasePlugin(editor, LinkPlugin);
 
       console.info(`Link node type: ${link.type}`);
     },
@@ -168,12 +167,12 @@ export const CounterPluginWithInitialCount = CounterPlugin.configure(
 `setOptions` accepts either a partial object or a draft callback.
 
 ```ts title="counter-actions.ts" showLineNumbers
-import { getEditorPlugin, type PlateEditor } from 'platejs/react';
+import { getBasePlugin, type PlateEditor } from 'platejs/react';
 
 import { CounterPlugin } from './counter-plugin';
 
 export function resetCounter(editor: PlateEditor) {
-  const { setOptions } = getEditorPlugin(editor, CounterPlugin);
+  const { setOptions } = getBasePlugin(editor, CounterPlugin);
 
   setOptions({
     count: 1,
@@ -192,7 +191,7 @@ Plate reports `OPTION_UNDEFINED` through the debug API when `getOption`,
 
 | Helper | Scope | Notes |
 | --- | --- | --- |
-| `getEditorPlugin(editor, plugin)` | Any editor code. | Returns plugin context for the given editor and plugin. |
+| `getBasePlugin(editor, plugin)` | Any editor code. | Returns plugin context for the given editor and plugin. |
 | `useEditorPlugin(plugin, id?)` | React under `<Plate>`. | Returns plugin context plus `store`. |
 | `usePluginOption(plugin, key, ...args)` | React under `<Plate>`. | Subscribes to one option, selector, or `'state'`. |
 | `usePluginOptions(plugin, selector, options?)` | React under `<Plate>`. | Subscribes to a selected value from the option state. |

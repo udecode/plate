@@ -262,21 +262,21 @@ const removeEscapeSelection = (editor: BaseEditor, text: string) => {
 };
 
 /** Check if the current selection fully covers all top-level blocks. */
-export const isMultiBlocks = (editor: BaseEditor) => {
-  const selection = editor.read.selection();
+export const isMultiBlocks = (editor: BaseEditor) =>
+  editor.read((state) => {
+    const selection = state.selection();
 
-  if (!selection) return false;
+    if (!selection) return false;
 
-  const blocks = editor.read((state) =>
-    state.nodes.toArray({
-      at: selection,
-      match: (node) => ElementApi.isElement(node) && state.schema.isBlock(node),
-      mode: 'lowest',
-    })
-  );
-
-  return blocks.length > 1;
-};
+    return (
+      state.nodes.toArray({
+        at: selection,
+        match: (node) =>
+          ElementApi.isElement(node) && state.schema.isBlock(node),
+        mode: 'lowest',
+      }).length > 1
+    );
+  });
 
 /** Get markdown with selection markers */
 export const getMarkdownWithSelection = (editor: BaseEditor) =>
@@ -290,7 +290,7 @@ export const isSelectionInTable = (editor: BaseEditor): boolean => {
 
   const tableEntry = editor.read.nodes.block({
     at: selection,
-    match: (node) => ElementApi.isElement(node) && node.type === KEYS.table,
+    match: { type: KEYS.table },
   });
 
   return !!tableEntry;
@@ -305,7 +305,7 @@ export const isSingleCellSelection = (editor: BaseEditor): boolean => {
   // Get all td blocks in selection
   const cells = editor.read.nodes.toArray({
     at: selection,
-    match: (node) => ElementApi.isElement(node) && node.type === KEYS.td,
+    match: { type: KEYS.td },
   });
 
   return cells.length === 1;

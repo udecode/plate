@@ -42,6 +42,7 @@ type EditableProps = {
   decorateRuntimeScope?: PliteProjectionRuntimeScope;
   disableDefaultStyles?: boolean;
   id?: string;
+  maxLength?: number;
   domStrategy?: DOMStrategyOptions | null;
   domStrategyLayout?: EditableDOMStrategyLayout | null;
   onBeforeInput?: React.FormEventHandler<HTMLDivElement>;
@@ -74,6 +75,10 @@ type EditableProps = {
 ```
 
 `Editable` also accepts safe `div` attributes such as `aria-*`, `data-*`, and event handlers that are not owned by Plite.
+
+`maxLength` overrides the editor-level limit while this editable is mounted. Use
+it when one surface needs a tighter character limit than the editor factory
+option.
 
 `DOMStrategyOptions` is either `'auto'`, `'staged'`, `'full'`, an object with
 `{ type: 'auto' | 'staged' | 'full', textSync? }`, or the experimental object
@@ -316,7 +321,7 @@ const markdown = defineEditorExtension({
   transforms: {
     insertText({ next, text, tx }) {
       if (text === " ") {
-        const selection = tx.selection.get();
+        const selection = tx.selection();
 
         if (selection) {
           tx.nodes.set({ type: "code" });

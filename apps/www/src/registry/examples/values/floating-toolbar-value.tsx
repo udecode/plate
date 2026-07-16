@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const floatingToolbarValue: any = (
+export const floatingToolbarValue = (
   <fragment>
     <hh2>Floating Toolbar</hh2>
     <hp>

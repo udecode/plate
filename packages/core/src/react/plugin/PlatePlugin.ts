@@ -39,6 +39,7 @@ import type {
   GetInjectNodePropsReturnType,
   HandlerReturnType,
   InferApi,
+  InferDependencies,
   InferOptions,
   InferPluginApi,
   InferPluginTx,
@@ -525,7 +526,7 @@ export type PlatePluginContext<
 
 export type PlateExtendTx<
   C extends AnyPluginConfig = PluginConfig,
-  TGroup extends PlatePluginTxGroup = PlatePluginTxGroup,
+  TGroup extends PlatePluginTxGroup<object, C> = PlatePluginTxGroup<object, C>,
 > = (ctx: PlatePluginContext<C>) => TGroup;
 
 export type PlateExtendTxGroups<
@@ -639,7 +640,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       EA & InferApi<C>,
       InferTx<C>,
       InferSelectors<C>,
-      InferState<C>
+      InferState<C>,
+      InferDependencies<C>
     >
   >;
   extendApi: <
@@ -653,7 +655,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferApi<C> & Record<C['key'], EA>,
       InferTx<C>,
       InferSelectors<C>,
-      InferState<C>
+      InferState<C>,
+      InferDependencies<C>
     >
   >;
   /**
@@ -711,7 +714,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       },
       InferTx<C>,
       InferSelectors<C>,
-      InferState<C>
+      InferState<C>,
+      InferDependencies<C>
     >
   >;
   extendExtension: {
@@ -725,7 +729,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
         InferApi<C> & ExtensionApiFromArgument<TExtension>,
         InferTx<C> & ExtensionTxFromArgument<TExtension>,
         InferSelectors<C>,
-        InferState<C> & ExtensionStateFromArgument<TExtension>
+        InferState<C> & ExtensionStateFromArgument<TExtension>,
+        InferDependencies<C>
       >
     >;
     <const TKey extends string, const TExtension>(
@@ -739,7 +744,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
         InferApi<C> & ExtensionApiFromArgument<TExtension>,
         InferTx<C> & ExtensionTxFromArgument<TExtension>,
         InferSelectors<C>,
-        InferState<C> & ExtensionStateFromArgument<TExtension>
+        InferState<C> & ExtensionStateFromArgument<TExtension>,
+        InferDependencies<C>
       >
     >;
   };
@@ -765,16 +771,17 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferApi<C>,
       InferTx<C>,
       ES & InferSelectors<C>,
-      InferState<C>
+      InferState<C>,
+      InferDependencies<C>
     >
   >;
   extendTx: {
     (
       extension: HasOwnPluginTx<C> extends true
-        ? PlateExtendTx<C, PlatePluginTxGroup<OwnPluginTx<C>>>
+        ? PlateExtendTx<C, PlatePluginTxGroup<OwnPluginTx<C>, C>>
         : never
     ): PlatePlugin<C>;
-    <TGroup extends PlatePluginTxGroup>(
+    <TGroup extends PlatePluginTxGroup<object, C>>(
       extension: PlateExtendTx<C, TGroup>
     ): PlatePlugin<
       PluginConfig<
@@ -783,13 +790,17 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
         InferApi<C>,
         InferTx<C> & PluginTx<C['key'], InferTxGroup<TGroup>>,
         InferSelectors<C>,
-        InferState<C>
+        InferState<C>,
+        InferDependencies<C>
       >
     >;
   };
   extendTxGroup: <
     K extends string,
-    TGroup extends PlatePluginTxGroup = PlatePluginTxGroup,
+    TGroup extends PlatePluginTxGroup<object, C> = PlatePluginTxGroup<
+      object,
+      C
+    >,
   >(
     key: K,
     extension: PlateExtendTx<C, TGroup>
@@ -800,7 +811,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferApi<C>,
       InferTx<C> & PluginTx<K, InferTxGroup<TGroup>>,
       InferSelectors<C>,
-      InferState<C>
+      InferState<C>,
+      InferDependencies<C>
     >
   >;
   /** Returns a new instance of the plugin with the component. */
@@ -810,7 +822,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
 
 export type PlatePlugins = AnyPlatePlugin[];
 
-export type RenderNodeWrapper<C extends AnyPluginConfig = PluginConfig> = (
+export type RenderNodeWrapper<C extends AnyPluginConfig = AnyPluginConfig> = (
   props: RenderNodeWrapperProps<C>
 ) => RenderNodeWrapperFunction;
 
@@ -819,7 +831,7 @@ export type RenderNodeWrapperFunction =
   | undefined;
 
 export interface RenderNodeWrapperProps<
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyPluginConfig = AnyPluginConfig,
 > extends PlateElementProps<Element, C> {
   key: string;
 }

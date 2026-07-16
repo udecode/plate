@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const emojiValue: any = (
+export const emojiValue = (
   <fragment>
     <hh2>表情符号</hh2>
     <hp>用一点趣味 🎉 和情感 😃 来表达自己。</hp>

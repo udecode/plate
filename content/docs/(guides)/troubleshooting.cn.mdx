@@ -54,18 +54,18 @@ pnpm why @platejs/core
 
 **问题：** 编辑器功能可能无法正常工作。
 
-**根本原因：** 包管理器有时会安装不匹配的 Plite 依赖版本。例如，`pnpm` 可能安装 `slate` 0.112.2 版本而非所需的 0.111.0 版本。
+**根本原因：** 包管理器有时会安装不匹配的 Plite 依赖版本。例如，`pnpm` 可能安装多个 `@platejs/plite` 版本。
 
 **诊断方法：** 检查多个 Plite 版本：
 
 ```bash
 # npm
-npm ls slate slate-react plite-dom
+npm ls @platejs/plite @platejs/plite-dom @platejs/plite-react
 
 # pnpm
-pnpm why slate
-pnpm why slate-react
-pnpm why plite-dom
+pnpm why @platejs/plite
+pnpm why @platejs/plite-dom
+pnpm why @platejs/plite-react
 ```
 
 **解决方案：** 按顺序尝试以下解决方案：
@@ -80,9 +80,9 @@ pnpm why plite-dom
 // package.json
 {
   "resolutions": {
-    "slate": "0.114.0",
-    "plite-dom": "0.114.0",
-    "plite-react": "0.114.2"
+    "@platejs/plite": "54.0.0-beta.0",
+    "@platejs/plite-dom": "54.0.0-beta.0",
+    "@platejs/plite-react": "54.0.0-beta.0"
   }
 }
 ```

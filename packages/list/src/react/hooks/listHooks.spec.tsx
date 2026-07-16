@@ -3,34 +3,20 @@ import { renderHook } from '@testing-library/react';
 const useEditorRefMock = mock();
 const useEditorSelectorMock = mock();
 const useReadOnlyMock = mock();
-const someListMock = mock();
-const someTodoListMock = mock();
+const isActiveMock = mock();
 const toggleListMock = mock();
-
-mock.module('platejs/react', () => ({
-  useEditorRef: useEditorRefMock,
-  useEditorSelector: useEditorSelectorMock,
-}));
 
 mock.module('@platejs/core/react', () => ({
   useEditorRef: useEditorRefMock,
+  useEditorSelector: useEditorSelectorMock,
 }));
 
 mock.module('@platejs/plite-react', () => ({
   useEditorReadOnly: useReadOnlyMock,
 }));
 
-mock.module('../../index', () => ({
-  ListStyleType: { Disc: 'disc' },
-  toggleList: toggleListMock,
-}));
-
-mock.module('../../lib/queries/someList', () => ({
-  someList: someListMock,
-}));
-
-mock.module('../../lib/queries/someTodoList', () => ({
-  someTodoList: someTodoListMock,
+mock.module('../ListPlugin', () => ({
+  ListPlugin: { key: 'list' },
 }));
 
 describe('list hooks', () => {
@@ -38,8 +24,7 @@ describe('list hooks', () => {
     useEditorRefMock.mockReset();
     useEditorSelectorMock.mockReset();
     useReadOnlyMock.mockReset();
-    someListMock.mockReset();
-    someTodoListMock.mockReset();
+    isActiveMock.mockReset();
     toggleListMock.mockReset();
   });
 
@@ -51,10 +36,17 @@ describe('list hooks', () => {
     const { useListToolbarButton, useListToolbarButtonState } = await import(
       `./useListToolbarButton?test=${Math.random().toString(36).slice(2)}`
     );
-    const editor = {};
-    someListMock.mockReturnValue(true);
+    const editor = {
+      plugin: () => ({
+        api: { isActive: isActiveMock },
+        update: { toggle: toggleListMock },
+      }),
+    };
+    isActiveMock.mockReturnValue(true);
     useEditorRefMock.mockReturnValue(editor);
-    useEditorSelectorMock.mockImplementation((selector: any) => selector({}));
+    useEditorSelectorMock.mockImplementation((selector: any) =>
+      selector(editor)
+    );
 
     const { result } = renderHook(() => {
       const state = useListToolbarButtonState();
@@ -65,7 +57,7 @@ describe('list hooks', () => {
     result.current.props.onClick();
 
     expect(result.current.props.pressed).toBe(true);
-    expect(toggleListMock).toHaveBeenCalledWith(editor, {
+    expect(toggleListMock).toHaveBeenCalledWith({
       listStyleType: 'disc',
     });
   });
@@ -95,27 +87,34 @@ describe('list hooks', () => {
   });
 
   it('builds todo toolbar button props from todo selection state', async () => {
-    const { useIndentTodoToolBarButton, useIndentTodoToolBarButtonState } =
+    const { useTodoListToolbarButton, useTodoListToolbarButtonState } =
       await import(
         `./useTodoListToolbarButton?test=${Math.random().toString(36).slice(2)}`
       );
-    const editor = {};
+    const editor = {
+      plugin: () => ({
+        api: { isActive: isActiveMock },
+        update: { toggle: toggleListMock },
+      }),
+    };
 
-    someTodoListMock.mockReturnValue(true);
+    isActiveMock.mockReturnValue(true);
     useEditorRefMock.mockReturnValue(editor);
-    useEditorSelectorMock.mockImplementation((selector: any) => selector({}));
+    useEditorSelectorMock.mockImplementation((selector: any) =>
+      selector(editor)
+    );
 
     const { result } = renderHook(() => {
-      const state = useIndentTodoToolBarButtonState();
+      const state = useTodoListToolbarButtonState();
 
-      return useIndentTodoToolBarButton(state);
+      return useTodoListToolbarButton(state);
     });
 
     result.current.props.onClick();
 
     expect(result.current.props.pressed).toBe(true);
-    expect(toggleListMock).toHaveBeenCalledWith(editor, {
-      listStyleType: 'disc',
+    expect(toggleListMock).toHaveBeenCalledWith({
+      listStyleType: 'todo',
     });
   });
 });

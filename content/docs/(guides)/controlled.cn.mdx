@@ -1,28 +1,26 @@
 ---
 title: 受控编辑器值
-description: 如何控制编辑器的值。
+description: 控制初始值、持久化、替换和异步初始化。
 ---
 
-在 Plate 中实现完全受控的编辑器值较为复杂，原因如下：
+Plate 不是普通的受控文本输入。编辑器拥有内容、选择、历史、插件状态和规范化。本指南关注安全的控制点：初始值、变更持久化、显式替换、重置和延迟初始化。
 
-1. 编辑器状态不仅包含内容 (`editor.children`)，还包含 `editor.selection` 和 `editor.history`。
-
-2. 直接替换 `editor.children` 可能会破坏选区(selection)和历史记录(history)，导致意外行为或崩溃。
-
-3. 所有对编辑器值的更改都应通过 [Transforms](https://docs.slatejs.org/api/transforms) 进行，以保持与选区(selection)和历史记录(history)的一致性。
-
-鉴于这些挑战，通常建议将 Plate 作为非受控输入使用。但如果需要从外部更改编辑器内容，可以使用 `editor.tf.setValue(value)` 函数。
-
-<Callout type="warning" title="性能考量">
-  使用 `editor.tf.setValue` 会在每次调用时重新渲染所有节点，因此应谨慎使用。
-  如果频繁调用或处理大型文档，可能会影响性能。
+<Callout type="warning" title="不要控制每一次按键">
+  不要把 `editor.children` 镜像到 React state 后在每次变更时再传回编辑器。
+  这会和 Plite 的选择、历史和规范化相冲突，把普通输入变成整篇文档替换。
 </Callout>
 
-或者，您可以使用 `editor.tf.reset()` 来重置编辑器状态，这将同时重置选区(selection)和历史记录(history)。
+| 目标 | API |
+| --- | --- |
+| 设置初始内容。 | `usePlateEditor` 或 `createPlateEditor` 的 `value`。 |
+| 持久化编辑。 | `<Plate onValueChange>` 或 `<Plate onChange>`。 |
+| 从编辑器外部替换内容。 | `editor.update((tx) => tx.value.replace({ children: value }))`。 |
+| 恢复初始内容。 | `editor.update((tx) => tx.value.replace({ children: initialValue }))`。 |
+| 延迟初始化。 | `skipInitialization: true` 加一次显式 `editor.update(...)`。 |
 
-### 异步初始值
+### 延迟初始化
 
-您可以使用 `skipInitialization` 延迟编辑器初始化，直到异步数据准备就绪。然后调用 `editor.tf.init` 并传入您的值：
+当协作层、多步骤加载器或异步请求拥有启动时机时，使用 `skipInitialization`。数据准备好后，用一次事务替换内容并设置选择。
 
 ```tsx
 function AsyncControlledEditor() {
@@ -47,7 +45,12 @@ function AsyncControlledEditor() {
 
   React.useEffect(() => {
     if (!loading && initialValue) {
-      editor.tf.init({ value: initialValue, autoSelect: 'end' });
+      editor.update((tx) => {
+        tx.value.replace({ children: initialValue });
+        const end = tx.points.end([]);
+
+        if (end) tx.selection.set(end);
+      });
     }
   }, [loading, initialValue, editor]);
 

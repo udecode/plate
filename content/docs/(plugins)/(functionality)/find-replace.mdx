@@ -85,7 +85,7 @@ The demo combines `FindReplacePlugin`, `FixedToolbar`, `Input`, and `SearchHighl
 | Surface | Owner | What It Does |
 |---------|-------|--------------|
 | `FindReplacePlugin` | `@platejs/find-replace` | Stores `options.search`, registers a leaf node, and wires `decorateFindReplace`. |
-| `decorateFindReplace` | `@platejs/find-replace` | Finds matches in one element's text children and returns Slate ranges. |
+| `decorateFindReplace` | `@platejs/find-replace` | Finds matches in one element's text children and returns Plite ranges. |
 | `SearchHighlightLeaf` | Registry UI | Renders decorated ranges with a yellow background. |
 | `FindToolbar` | App or registry example | Updates `options.search` and calls `editor.api.redecorate()`. |
 | Replace actions | App code | Perform text replacement with editor transforms. The package does not replace content for you. |

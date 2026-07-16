@@ -4,7 +4,8 @@ description: "Use paths, points, ranges, spans, and refs to address content in a
 ---
 
 Locations tell Plite where to read or write inside an editor root. The core
-location types are `Path`, `Point`, and `Range`.
+location types are `Path`, `Point`, and `Range`. Public read and update methods
+with an `at` option also accept a live text or element node.
 
 ## Root Resolution
 
@@ -48,6 +49,38 @@ import { PathApi } from "@platejs/plite";
 const parent = PathApi.parent([0, 0]);
 const common = PathApi.common([0, 0], [0, 2]);
 ```
+
+## Node Targets
+
+A node target is either a location or a descendant from the current editor.
+
+```ts
+type NodeTarget<N extends Descendant = Descendant> = Location | N;
+```
+
+Pass a node directly when component code already owns that element. Plite
+resolves its current path before running the read or update.
+
+```ts
+editor.update.nodes.set({ icon: "🔥" }, { at: calloutElement });
+```
+
+The target follows the same logical node through property updates and moves.
+It resolves only while that node belongs to the current editor root. A removed,
+detached, foreign-editor, or different-root node does not resolve, so writes do
+nothing.
+
+Use `editor.read.nodes.path(...)` when the path itself is the result you need.
+It returns `undefined` when the target does not resolve.
+
+```ts
+const path = editor.read.nodes.path(calloutElement);
+```
+
+`Location` remains `Path | Point | Range`. A node is accepted at the public
+editor lifecycle boundary; pure location utilities still operate on structural
+locations. Destination fields such as `tx.nodes.move({ to })` remain explicit
+paths.
 
 ## Point
 
@@ -123,7 +156,7 @@ The editor selection is a `Range | null`. Read it from the editor state and
 write it inside `editor.update(...)`.
 
 ```ts
-const selection = editor.read((state) => state.selection.get());
+const selection = editor.read((state) => state.selection());
 ```
 
 ```ts
@@ -149,7 +182,7 @@ Use read helpers for common editor-derived points and ranges.
 const start = editor.read((state) => state.points.start([0]));
 const end = editor.read((state) => state.points.end([0]));
 const unhung = editor.read((state) => {
-  const selection = state.selection.get();
+  const selection = state.selection();
 
   return selection ? state.ranges.unhang(selection, { voids: true }) : null;
 });

@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const deserializeDocxValue: any = (
+export const deserializeDocxValue = (
   <fragment>
     <hh2>Docx</hh2>
     <hp>

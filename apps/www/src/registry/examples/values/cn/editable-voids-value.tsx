@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const editableVoidsValue: any = (
+export const editableVoidsValue = (
   <fragment>
     <hp>
       除了包含可编辑文本的节点外，您还可以插入空节点，这些节点也可以包含可编辑元素、

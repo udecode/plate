@@ -133,7 +133,7 @@ export function BoldToolbarButton() {
 | Highlight | `HighlightPlugin` | `KEYS.highlight` | `mark` | Uses directional selection affinity. |
 | Kbd | `KbdPlugin` | `KEYS.kbd` | `kbd` | Uses hard selection affinity. |
 
-Each base mark plugin extends `editor.tf.<mark>.toggle()` by calling `editor.tf.toggleMark(type)`.
+Each base mark plugin extends `tx.<mark>.toggle()` by calling `tx.marks.toggle(type)`.
 
 ## Input Rules
 
@@ -190,4 +190,3 @@ Use the individual pages for mark-specific setup and component details.
 | `BasicMarksKit` | Registry | Full client kit with highlight, kbd, input rules, and leaves. |
 | `BaseBasicMarksKit` | Registry | Static/base kit for server or static rendering. |
 | `MarkToolbarButton` | Registry UI | Toolbar control for one mark key. |
-

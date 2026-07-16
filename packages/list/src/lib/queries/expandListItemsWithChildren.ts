@@ -14,24 +14,24 @@ import { getListChildren } from './getListChildren';
  */
 export const expandListItemsWithChildren = <N extends Element = Element>(
   editor: Editor,
-  entries: NodeEntry<Element>[]
+  entries: NodeEntry<N>[]
 ): NodeEntry<N>[] => {
   const expandedEntries: NodeEntry<N>[] = [];
   const processedIds = new Set<string>();
 
   entries.forEach((entry) => {
     const [node] = entry;
+    const id = typeof node.id === 'string' ? node.id : undefined;
 
     // Skip if already processed
-    if (processedIds.has(node.id as string)) return;
+    if (id && processedIds.has(id)) return;
 
-    expandedEntries.push(entry as NodeEntry<N>);
-    processedIds.add(node.id as string);
+    expandedEntries.push(entry);
+    if (id) processedIds.add(id);
 
     // Check if it's a list item
     const isListItem =
-      isDefined((node as any)[KEYS.listType]) &&
-      isDefined((node as any)[KEYS.indent]);
+      isDefined(node[KEYS.listType]) && isDefined(node[KEYS.indent]);
 
     if (isListItem) {
       // Get all children (items with bigger indent)
@@ -39,9 +39,12 @@ export const expandListItemsWithChildren = <N extends Element = Element>(
 
       // Add children that aren't already in the selection
       children.forEach((childEntry) => {
-        if (!processedIds.has(childEntry[0].id as string)) {
+        const childId =
+          typeof childEntry[0].id === 'string' ? childEntry[0].id : undefined;
+
+        if (!childId || !processedIds.has(childId)) {
           expandedEntries.push(childEntry);
-          processedIds.add(childEntry[0].id as string);
+          if (childId) processedIds.add(childId);
         }
       });
     }

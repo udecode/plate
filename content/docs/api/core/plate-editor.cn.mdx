@@ -1,167 +1,206 @@
 ---
 title: Plate 编辑器
-description: Plate 编辑器的 API 参考文档。
+description: Plate 编辑器运行时的 API 参考。
 ---
 
-一个自定义编辑器接口，扩展了基础的 **`Editor`** 接口，并包含 Plate 库特有的额外属性和方法。
+`PlateEditor` 是 `createPlateEditor`、`usePlateEditor` 和 `withPlate` 返回的 React 编辑器类型。它在基础 Plite 编辑器之上添加插件注册表、类型化 `api`、类型化 `editor.update()` 事务、DOM 状态、元数据和插件选项工具。
 
-## 核心属性
+## 所有权
 
-<API name="Properties">
+| 表面 | 所有者 | 说明 |
+| --- | --- | --- |
+| `PlateEditor` | `@platejs/core/react` | React 编辑器类型，包含 Plate 插件 API、事务组、handlers、render 和 hooks。 |
+| `BaseEditor` | `@platejs/core` | 非 React 编辑器类型，用于服务端和静态编辑器路径。 |
+| Plite primitives | `@platejs/plite` | `children`、`selection`、`operations`、核心 `api` 和事务/update 运行时。 |
+| Core plugins | `@platejs/core` | debug、HTML 解析、parser pipeline、length、node id、history、input rules 和基础段落行为。 |
+| React core plugins | `@platejs/core/react` | React 扩展、DOM 集成、event editor、navigation feedback 和 React paragraph plugin。 |
+
+React 页面或组件中使用 `PlateEditor`。需要 headless 编辑器时，从 `createBaseEditor` 使用 `BaseEditor`。
+
+## 编辑器形状
+
+编辑器仍然是 Plite 编辑器。Plate 在这个形状上增加类型化插件访问、插件元数据、DOM 状态和选项存储。
+
+<API name="PlateEditor">
 <APIAttributes>
-  <APIItem name="id" type="any">
-    编辑器的唯一标识符。
+  <APIItem name="id" type="string">
+    编辑器实例 id。`withPlite` 会使用传入的 `id`、已有编辑器 id，或调用 `nanoid()`。
   </APIItem>
-  <APIItem name="dom" type="object">
-    包含编辑器 DOM 状态的对象。
-    <APISubList>
-      <APISubListItem parent="dom" name="composing" type="boolean">
-        编辑器当前是否正在输入文本（例如在 IME 输入期间）。
-      </APISubListItem>
-      <APISubListItem parent="dom" name="currentKeyboardEvent" type="KeyboardEventLike | null">
-        编辑器当前正在处理的键盘事件，如果没有事件正在处理则为 null。
-      </APISubListItem>
-      <APISubListItem parent="dom" name="focused" type="boolean">
-        编辑器当前是否获得焦点。
-      </APISubListItem>
-      <APISubListItem parent="dom" name="prevSelection" type="Range | null">
-        编辑器中之前的选择范围。
-      </APISubListItem>
-      <APISubListItem parent="dom" name="readOnly" type="boolean">
-        编辑器是否处于只读模式。
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="children" type="Value">
+    当前文档值。
+  </APIItem>
+  <APIItem name="selection" type="Range | null">
+    当前 Plite selection。
+  </APIItem>
+  <APIItem name="operations" type="Operation[]">
+    Plite 上次 flush 后应用的 operations。
+  </APIItem>
+  <APIItem name="api" type="PlateEditor['api'] & CorePluginApi">
+    Core Plite API 加上已解析 Plate 插件贡献的 API。
+  </APIItem>
+  <APIItem name="update" type="PlateEditor['update']">
+    文档、选择、历史和插件命令的事务入口。
   </APIItem>
   <APIItem name="plugins" type="Record<string, AnyEditorPlatePlugin>">
-    按插件键名索引的插件记录。
+    已解析插件 map，按插件 key 索引。
   </APIItem>
-  <APIItem name="meta" type="object">
-    包含编辑器元数据的对象，通常来自插件或编辑器配置。
-    <APISubList>
-      <APISubListItem parent="meta" name="components" type="Record<string, React.FC<any>>">
-        按插件键名索引的插件组件。
-      </APISubListItem>
-      <APISubListItem parent="meta" name="node.isContainer" type="string[]">
-        设置了 `plugin.node.isContainer = true` 的插件键名数组。
-      </APISubListItem>
-      <APISubListItem parent="meta" name="isFallback" type="boolean">
-        编辑器是否为回退编辑器。
-        
-        - **默认值:** `false`
-      </APISubListItem>
-      <APISubListItem parent="meta" name="key" type="any">
-        可用于唯一标识编辑器的键。
-      </APISubListItem>
-      <APISubListItem parent="meta" name="pluginList" type="AnyEditorPlatePlugin[]">
-        编辑器当前正在使用的插件数组。
-      </APISubListItem>
-      <APISubListItem parent="meta" name="shortcuts" type="Record<string, any>">
-        按快捷键名称索引的编辑器快捷键配置。
-      </APISubListItem>
-      <APISubListItem parent="meta" name="uid" type="any">
-        从 RSC 到客户端水合过程中保持一致的稳定唯一标识符。
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="dom" type="PlateEditor['dom']">
+    编辑器实例拥有的运行时 DOM 状态。
+  </APIItem>
+  <APIItem name="runtime" type="PlateEditor['runtime']">
+    插件解析期间构建的运行时元数据和插件缓存。
   </APIItem>
 </APIAttributes>
 </API>
 
-## API 方法
+## 运行时状态
 
-<API name="API">
+React 和 DOM 运行时状态通过 Plite runtime API 读取。Plate 将插件元数据保存在 `editor.runtime`。
+
+| 状态 | 读取路径 | 设置者 |
+| --- | --- | --- |
+| composition | `editor.api.react.isComposing()` | Plite React composition runtime。 |
+| focus | `editor.api.react.isFocused()` | Plite React focus runtime。 |
+| read-only | `editor.read.view.isReadOnly()` 或 `editor.api.react.isReadOnly()` | `createPlateEditor`、`<Plate>` 和 `<PlateContent>`。 |
+
+`editor.runtime` 保存插件解析输出。大多数应用代码通过 `getPlugin`、`getOptions` 和 render 工具间接读取它。
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `key` | `string` | 内部编辑器 key。缺失时 `withPlite` 会创建一个。 |
+| `uid` | `string \| undefined` | Plate 容器在 RSC 和客户端水合之间使用的稳定 id。 |
+| `userId` | `string \| null \| undefined` | 通过编辑器选项传入的协作身份。 |
+| `components` | `NodeComponents` | 按插件 key 索引的已解析节点组件。 |
+| `isFallback` | `boolean` | 普通编辑器为 `false`。Fallback editor 由 controller 层创建。 |
+| `pluginList` | `AnyEditorPlatePlugin[]` | 有序的已解析插件列表。 |
+| `inputRules` | `ResolvedInputRulesMeta` | input-rules 插件构建的元数据。 |
+| `shortcuts` | `Shortcuts` | 已解析快捷键元数据。 |
+| `pluginCache` | `object` | render hooks、handlers、rules、nodes、decorators 和 injection 的预计算插件 key 列表。 |
+
+## 插件访问
+
+需要已解析插件实例或插件选项时，使用编辑器 helper。插件 API 从 `editor.api` 读取；插件命令通过 `editor.update` 执行。
+
+```tsx title="Plugin option access"
+import { ParagraphPlugin, useEditorPlugin } from 'platejs/react';
+
+export function ParagraphType() {
+  const { editor } = useEditorPlugin(ParagraphPlugin);
+
+  return <span>{editor.getType(ParagraphPlugin.key)}</span>;
+}
+```
+
+| Helper | 类型 | 用途 |
+| --- | --- | --- |
+| `getPlugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => EditorPlatePlugin<C>` | 读取 overrides 和配置后的插件实例。 |
+| `getType(pluginKey)` | `(pluginKey: string) => string` | 解析插件 key 对应的节点 type。 |
+| `getInjectProps(plugin)` | `(plugin) => InjectNodeProps` | 读取 injected node props，并从插件 type 填充默认 `nodeKey` 和 `styleKey`。 |
+| `getOptionsStore(plugin)` | `(plugin) => TStateApi` | 读取插件选项 store。 |
+| `getOptions(plugin)` | `(plugin) => InferOptions<C>` | 读取插件当前全部选项。 |
+| `getOption(plugin, key, ...args)` | `(plugin, key, ...args) => value` | 读取一个选项或 selector 结果。缺失的存储 key 会通过 `editor.api.debug.error` 报告。 |
+| `setOption(plugin, key, value)` | `(plugin, key, value) => void` | 更新一个插件选项。 |
+| `setOptions(plugin, options)` | `(plugin, partialOrRecipe) => void` | 合并 partial 对象，或对插件 state 执行 mutative recipe。 |
+
+## 初始化
+
+`withPlate` 用 React 默认配置包装 `withPlite`。它用 `createZustandStore` 创建插件选项 store，并把 React core plugins 插入到用户插件前面。
+
+```tsx title="Create a typed editor"
+import { usePlateEditor } from 'platejs/react';
+import { BoldPlugin } from '@platejs/basic-nodes/react';
+
+export function useBasicEditor() {
+  return usePlateEditor({
+    plugins: [BoldPlugin],
+    value: [
+      {
+        type: 'p',
+        children: [{ text: 'Bold text is ready.' }],
+      },
+    ],
+  });
+}
+```
+
+`withPlite` 做更底层的设置：
+
+| 步骤 | 行为 |
+| --- | --- |
+| 运行时元数据 | 保留 Plite `editor.id`，并安装 Plate 插件运行时状态，例如 `runtime.isFallback`、`runtime.userId` 和插件缓存。 |
+| Helper 方法 | 安装 `getPlugin`、`getType`、选项 helpers 和 injection helpers。 |
+| Core plugins | 解析 core plugins，用相同 key 的自定义插件替换 core plugins，并解析 root plugin。 |
+| Components | 将 `components` 合并到 root-plugin component overrides。 |
+| Normalization guard | 包装 `normalizeNode`，让 `editor.api.shouldNormalizeNode(entry)` 可以跳过一次 normalization。 |
+| 初始值 | 除非 `skipInitialization` 为 `true`，否则通过运行时 update 路径初始化 value 和 selection。 |
+
+`value` 接受 Plate value、HTML 字符串，或返回 value 的函数。初始化完成后，`onReady` 会收到 `{ editor, isAsync, value }`。
+
+## Core API
+
+这些 API 存在于每个 Plate editor 上，因为 core plugins 总是在用户插件之前解析。
+
+<API name="Core plugin APIs">
 <APIMethods>
-  <APIItem name="getPluginApi" type="(plugin: PlatePlugin) => PlateEditor['api'] & PlatePlugin['api']">
-    获取插件的类型化 API。
+  <APIItem name="editor.api.debug.log" type="(message: string, type?: DebugErrorType, details?: any) => void">
+    debug logging 启用时记录 debug 消息。
   </APIItem>
-  <APIItem name="getPlugin" type="(plugin: PlatePlugin) => PlatePlugin">
-    通过键名或基础插件获取编辑器插件实例。
+  <APIItem name="editor.api.debug.info" type="(message: string, type?: DebugErrorType, details?: any) => void">
+    当前 log level 允许时记录 info 消息。
   </APIItem>
-  <APIItem name="getType" type="(plugin: PlatePlugin) => string">
-    获取与插件关联的节点类型。
+  <APIItem name="editor.api.debug.warn" type="(message: string, type?: DebugErrorType, details?: any) => void">
+    当前 log level 允许时记录 warning。
   </APIItem>
-  <APIItem name="init" type="(options: InitOptions) => Promise<void>">
-    初始化编辑器值、选择和规范化。接受自动选择、选择、规范化和值的选项。
+  <APIItem name="editor.api.debug.error" type="(message: unknown, type?: DebugErrorType, details?: any) => void">
+    开发环境默认抛出 `PlateError`。用 `DebugPlugin` 配置 logging 或 `throwErrors`。
+  </APIItem>
+  <APIItem name="editor.api.html.deserialize" type="(options: { element: HTMLElement | string; collapseWhiteSpace?: boolean; defaultElementPlugin?: WithRequiredKey }) => Descendant[]">
+    将 HTML 反序列化为 Plate nodes。HTML parser 插件会在 `text/html` paste 路径调用它。
+  </APIItem>
+  <APIItem name="editor.api.react.refreshDecorations" type="(options?: PliteProjectionStoreRefreshOptions) => void">
+    外部状态变更后刷新 React decorations。
+  </APIItem>
+  <APIItem name="editor.api.navigation.activeTarget" type="() => NavigationFeedbackTarget | null">
+    读取当前 navigation feedback target；如果存储的 target 已无法解析，会清空它。
+  </APIItem>
+  <APIItem name="editor.api.navigation.clear" type="() => void">
+    清空当前 navigation feedback target。
+  </APIItem>
+  <APIItem name="editor.api.navigation.isTarget" type="(path: Path) => boolean">
+    检查 path 是否匹配当前 navigation feedback target。
   </APIItem>
 </APIMethods>
 </API>
 
-## 选项方法
+## Core 事务
 
-<API name="Options">
-<APIMethods>
-  <APIItem name="getOption" type="(plugin: PlatePlugin, optionKey: string) => any">
-    获取插件的特定选项值。
-  </APIItem>
-  <APIItem name="getOptions" type="(plugin: PlatePlugin) => any">
-    获取插件的所有选项。
-  </APIItem>
-  <APIItem name="setOption" type="(plugin: PlatePlugin, optionKey: string, value: any) => void">
-    设置插件的特定选项值。
-  </APIItem>
-  <APIItem name="setOptions" type="(plugin: PlatePlugin, options: (draft: object) => void | Partial<object>) => void">
-    设置插件的多个选项。
-  </APIItem>
-  <APIItem name="getOptionsStore" type="(plugin: PlatePlugin) => any">
-    获取插件的 zustand-x 选项存储。
-  </APIItem>
-</APIMethods>
-</API>
+mutation 通过 `editor.update` 执行。Core Plite 命令在 transaction 对象上；插件命令由 `extendTx` 或 `extendTxGroup` 添加。
 
-## 核心插件 API
-
-### `DebugPlugin`
-
-<API name="DebugPlugin">
-<APIListAPI>
-  <APIItem name="editor.api.debug.log" type="(...args: any[]) => void">
-    在 'log' 级别记录消息。
-  </APIItem>
-  <APIItem name="editor.api.debug.info" type="(...args: any[]) => void">
-    在 'info' 级别记录消息。
-  </APIItem>
-  <APIItem name="editor.api.debug.warn" type="(...args: any[]) => void">
-    在 'warn' 级别记录消息。
-  </APIItem>
-  <APIItem name="editor.api.debug.error" type="(...args: any[]) => void">
-    在 'error' 级别记录消息。
-  </APIItem>
-</APIListAPI>
-</API>
-
-### `HtmlPlugin`
-
-<API name="HtmlPlugin">
-<APIListAPI>
-  <APIItem name="editor.api.html.deserialize" type="(options: { element: HTMLElement }) => Descendant[]">
-    将 HTML 内容反序列化为 Plate 节点。
-  </APIItem>
-</APIListAPI>
-</API>
-
-### `ReactPlugin`
-
-<API name="ReactPlugin">
+<API name="Core transactions">
 <APITransforms>
-  <APIItem name="editor.tf.reset" type="() => void">
-    重置编辑器状态，如果编辑器之前有焦点则保持焦点。
+  <APIItem name="editor.update(policy).value.replace(input)" type="(input: SnapshotInput) => void">
+    通过配置后的 Plite update 替换编辑器 value，并可同时设置 selection。
+  </APIItem>
+  <APIItem name="editor.update((tx) => tx.nodes.insert(node, options))" type="(node: Node, options?: InsertNodesOptions) => void">
+    通过 Plite node transaction group 插入一个 node 或 fragment。
+  </APIItem>
+  <APIItem name="editor.update((tx) => tx.nodes.set(props, options))" type="(props: Partial<Node>, options?: SetNodesOptions) => void">
+    通过 Plite node transaction group 更新匹配节点。
+  </APIItem>
+  <APIItem name="editor.update((tx) => tx.marks.toggle(key, value))" type="(key: string, value?: unknown) => void">
+    通过 Plite mark transaction group 切换 inline mark。
+  </APIItem>
+  <APIItem name="editor.update((tx) => tx.selection.select(location))" type="(location: Location) => void">
+    通过 Plite selection transaction group 更新当前 selection。
+  </APIItem>
+  <APIItem name="editor.update((tx) => tx.navigation.clear())" type="() => void">
+    清空 navigation feedback state。
+  </APIItem>
+  <APIItem name="editor.update((tx) => tx.navigation.flashTarget(options))" type="(options: NavigationFlashTargetOptions) => boolean">
+    暂存一个 target，让组件渲染 navigation feedback。
+  </APIItem>
+  <APIItem name="editor.update((tx) => tx.navigation.navigate(options))" type="(options: NavigationNavigateOptions) => boolean">
+    导航到 target，并通过 navigation feedback 插件闪烁目标。
   </APIItem>
 </APITransforms>
-</API>
-
-### `PliteReactExtensionPlugin`
-
-<API name="PliteReactExtensionPlugin">
-<APIListAPI>
-  <APIItem name="editor.api.redecorate" type="() => void">
-    重新装饰编辑器。
-  </APIItem>
-</APIListAPI>
-
-<APITransforms>
-  <APIItem name="editor.tf.setValue" type="(value: Value) => void">
-    替换编辑器值。更多信息请参阅[受控值](/docs/controlled)。
-  </APIItem>
-</APITransforms>
-
-
 </API>

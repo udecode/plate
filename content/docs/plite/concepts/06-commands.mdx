@@ -12,17 +12,9 @@ writes inside `editor.update(...)`.
 For example, here are some of the built-in commands:
 
 ```javascript
-editor.update((tx) => {
-  tx.text.insert("A new string of text to be inserted.");
-});
-
-editor.update((tx) => {
-  tx.text.delete({ reverse: true, unit: "word" });
-});
-
-editor.update((tx) => {
-  tx.nodes.split({ always: true });
-});
+editor.update.text.insert("A new string of text to be inserted.");
+editor.update.text.delete({ reverse: true, unit: "word" });
+editor.update.nodes.split({ always: true });
 ```
 
 Define custom commands for your product domain, such as `formatQuote`,
@@ -42,9 +34,7 @@ When defining custom commands, pass the editor into a function and keep the writ
 import type { Editor } from "@platejs/plite";
 
 function insertParagraph(editor: Editor) {
-  editor.update((tx) => {
-    tx.nodes.insert({ type: "paragraph", children: [{ text: "" }] });
-  });
+  editor.update.nodes.insert({ type: "paragraph", children: [{ text: "" }] });
 }
 ```
 

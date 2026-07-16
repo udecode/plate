@@ -46,9 +46,9 @@ npm install @platejs/combobox
 首先创建一个输入插件，当触发器激活时将被插入：
 
 ```tsx
-import { createEditorPlugin } from 'platejs';
+import { createBasePlugin } from 'platejs';
 
-const TagInputPlugin = createEditorPlugin({
+const TagInputPlugin = createBasePlugin({
   key: 'tag_input',
   editOnly: true,
   node: {
@@ -64,12 +64,12 @@ const TagInputPlugin = createEditorPlugin({
 使用触发器元数据创建主插件：
 
 ```tsx
-import { createEditorPlugin, type PluginConfig } from 'platejs';
+import { createBasePlugin, type PluginConfig } from 'platejs';
 import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 
 type TagConfig = PluginConfig<'tag', TriggerComboboxPluginOptions>;
 
-export const TagPlugin = createEditorPlugin<TagConfig>({
+export const TagPlugin = createBasePlugin<TagConfig>({
   key: 'tag',
   node: { isElement: true, isInline: true, isVoid: true },
   options: {
@@ -128,10 +128,12 @@ export function TagInputElement({ element, ...props }) {
               value={tag.name}
               onClick={() => {
                 // 插入实际标签元素
-                editor.tf.insertNodes({
-                  type: 'tag',
-                  tagId: tag.id,
-                  children: [{ text: tag.name }],
+                editor.update((tx) => {
+                  tx.nodes.insert({
+                    type: 'tag',
+                    tagId: tag.id,
+                    children: [{ text: tag.name }],
+                  });
                 });
               }}
             >
@@ -189,7 +191,7 @@ const editor = createPlateEditor({
       options: {
         triggerQuery: (editor) => {
           // 在代码块中禁用
-          return !editor.api.some({ match: { type: 'code_block' } });
+          return !editor.read.nodes.some({ match: { type: 'code_block' } });
         },
       },
     }).withComponent(TagElement),
@@ -229,7 +231,7 @@ const editor = createPlateEditor({
     匹配触发器前字符的模式。
     - **示例:** `/^\s?$/` 匹配行首或空格
   </APIItem>
-  <APIItem name="triggerQuery" type="(editor: BasePlateEditor) => boolean" optional>
+  <APIItem name="triggerQuery" type="(editor: BaseEditor) => boolean" optional>
     控制触发器何时激活的自定义查询函数。
   </APIItem>
 </APIOptions>

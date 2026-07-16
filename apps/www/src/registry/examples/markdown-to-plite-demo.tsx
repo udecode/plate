@@ -122,7 +122,7 @@ export default function MarkdownDemo() {
           remarkGfm,
           remarkMdx,
           remarkMention,
-          remarkEmoji as any,
+          remarkEmoji,
         ],
       }),
     });

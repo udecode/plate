@@ -6,7 +6,7 @@ import TextareaAutosize, {
 } from 'react-textarea-autosize';
 
 import type { TEquationElement } from 'platejs';
-import type { PlateElementProps } from 'platejs/react';
+import type { PlateEditor, PlateElementProps } from 'platejs/react';
 
 import { useEquationElement, useEquationInput } from '@platejs/math/react';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
@@ -17,8 +17,9 @@ import {
   useEditorRef,
   useEditorSelector,
   useElement,
-  useReadOnly,
-  useSelected,
+  useEditorReadOnly,
+  useElementSelected,
+  usePath,
 } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
@@ -30,8 +31,11 @@ import {
 import { cn } from '@/lib/utils';
 import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 
+const getBlockSelectionApi = (editor: PlateEditor) =>
+  editor.plugin(BlockSelectionPlugin).api;
+
 export function EquationElement(props: PlateElementProps<TEquationElement>) {
-  const selected = useSelected();
+  const selected = useElementSelected();
   const [open, setOpen] = React.useState(selected);
   const katexRef = React.useRef<HTMLDivElement | null>(null);
   const lineBreakBadge = (
@@ -60,7 +64,12 @@ export function EquationElement(props: PlateElementProps<TEquationElement>) {
     <PlateElement className="my-1" {...props}>
       <Popover open={open} onOpenChange={setOpen} modal={false}>
         <PopoverTrigger asChild>
-          <div
+          <button
+            aria-label={
+              props.element.texExpression.length > 0
+                ? 'Edit equation'
+                : 'Add equation'
+            }
             className={cn(
               'group flex cursor-pointer select-none items-center justify-center rounded-sm hover:bg-primary/10 data-[selected=true]:bg-primary/10',
               props.element.texExpression.length === 0
@@ -69,18 +78,18 @@ export function EquationElement(props: PlateElementProps<TEquationElement>) {
             )}
             data-selected={selected}
             contentEditable={false}
-            role="button"
+            type="button"
           >
             {props.element.texExpression.length > 0 ? (
               <span ref={katexRef} />
             ) : (
-              <div className="flex h-7 w-full items-center gap-2 whitespace-nowrap text-muted-foreground text-sm">
+              <span className="flex h-7 w-full items-center gap-2 whitespace-nowrap text-muted-foreground text-sm">
                 <RadicalIcon className="size-6 text-muted-foreground/80" />
-                <div>Add a Tex equation</div>
-              </div>
+                <span>Add a Tex equation</span>
+              </span>
             )}
             {lineBreakBadge}
-          </div>
+          </button>
         </PopoverTrigger>
 
         <EquationPopoverContent
@@ -103,9 +112,9 @@ export function InlineEquationElement(
 ) {
   const { element } = props;
   const katexRef = React.useRef<HTMLDivElement | null>(null);
-  const selected = useSelected();
+  const selected = useElementSelected();
   const isCollapsed = useEditorSelector(
-    (editor) => editor.api.isCollapsed(),
+    (editor) => editor.read.selection.isCollapsed(),
     []
   );
   const [open, setOpen] = React.useState(selected && isCollapsed);
@@ -142,7 +151,12 @@ export function InlineEquationElement(
     >
       <Popover open={open} onOpenChange={setOpen} modal={false}>
         <PopoverTrigger asChild>
-          <div
+          <button
+            aria-label={
+              element.texExpression.length > 0
+                ? 'Edit equation'
+                : 'Add equation'
+            }
             className={cn(
               'after:-top-0.5 after:-left-1 after:absolute after:inset-0 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
               'h-6',
@@ -153,6 +167,7 @@ export function InlineEquationElement(
                 'text-muted-foreground after:bg-neutral-500/10'
             )}
             contentEditable={false}
+            type="button"
           >
             <span
               ref={katexRef}
@@ -167,7 +182,7 @@ export function InlineEquationElement(
                 New equation
               </span>
             )}
-          </div>
+          </button>
         </PopoverTrigger>
 
         <EquationPopoverContent
@@ -184,8 +199,13 @@ export function InlineEquationElement(
   );
 }
 
+const useEquationInputState = (
+  options: Parameters<typeof useEquationInput>[0]
+) => options;
+
 const EquationInput = createPrimitiveComponent(TextareaAutosize)({
   propsHook: useEquationInput,
+  stateHook: useEquationInputState,
 });
 
 const EquationPopoverContent = ({
@@ -200,8 +220,9 @@ const EquationPopoverContent = ({
   setOpen: (open: boolean) => void;
 } & TextareaAutosizeProps) => {
   const editor = useEditorRef();
-  const readOnly = useReadOnly();
+  const readOnly = useEditorReadOnly();
   const element = useElement<TEquationElement>();
+  const path = usePath();
 
   React.useEffect(() => {
     if (isInline && open) {
@@ -215,11 +236,14 @@ const EquationPopoverContent = ({
     setOpen(false);
 
     if (isInline) {
-      editor.tf.select(element, { focus: true, next: true });
+      const nextPoint = editor.read.points.after(path);
+
+      if (nextPoint) {
+        editor.update.selection.set(nextPoint);
+      }
+      editor.api.dom.focus();
     } else {
-      editor
-        .getApi(BlockSelectionPlugin)
-        .blockSelection.set(element.id as string);
+      getBlockSelectionApi(editor).set(element.id as string);
     }
   };
 
@@ -233,7 +257,7 @@ const EquationPopoverContent = ({
     >
       <EquationInput
         className={cn('max-h-[50vh] grow resize-none p-2 text-sm', className)}
-        state={{ isInline, open, onClose }}
+        options={{ isInline, open, onClose }}
         autoFocus
         {...props}
       />

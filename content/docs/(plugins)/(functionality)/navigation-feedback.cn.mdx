@@ -27,9 +27,9 @@ description: 在 TOC、脚注、搜索或自定义跳转之后高亮落点目标
 
 <Steps>
 
-### 核心插件
+### React 插件
 
-`NavigationFeedbackPlugin` 属于 Plate 核心插件的一部分。
+`NavigationFeedbackPlugin` 属于 React 编辑器默认插件的一部分。
 
 如果你使用 `createPlateEditor` 创建编辑器，它会自动启用。你不需要
 为了默认行为单独把它加入 `plugins` 数组。
@@ -57,27 +57,31 @@ const editor = createPlateEditor({
 ### 仅高亮目标
 
 如果跳转本身已经完成，只需要落点确认，用
-`editor.tf.navigation.flashTarget(...)`：
+`editor.update(...)` 中的 `tx.navigation.flashTarget(...)`：
 
 ```tsx
-editor.tf.navigation.flashTarget({
-  target: {
-    path: [12],
-    type: 'node',
-  },
+editor.update((tx) => {
+  tx.navigation.flashTarget({
+    target: {
+      path: [12],
+      type: 'node',
+    },
+  });
 });
 ```
 
 也可以为单次调用覆盖时长或高亮变体：
 
 ```tsx
-editor.tf.navigation.flashTarget({
-  duration: 1500,
-  target: {
-    path: [12],
-    type: 'node',
-  },
-  variant: 'navigated',
+editor.update((tx) => {
+  tx.navigation.flashTarget({
+    duration: 1500,
+    target: {
+      path: [12],
+      type: 'node',
+    },
+    variant: 'navigated',
+  });
 });
 ```
 
@@ -90,37 +94,41 @@ editor.tf.navigation.flashTarget({
 - 滚动到目标
 - 高亮目标
 
-那就使用 `editor.tf.navigation.navigate(...)`：
+那就使用 `tx.navigation.navigate(...)`：
 
 ```tsx
-editor.tf.navigation.navigate({
-  select: {
-    anchor: { offset: 0, path: [12, 0] },
-    focus: { offset: 0, path: [12, 0] },
-  },
-  target: {
-    path: [12],
-    type: 'node',
-  },
+editor.update((tx) => {
+  tx.navigation.navigate({
+    select: {
+      anchor: { offset: 0, path: [12, 0] },
+      focus: { offset: 0, path: [12, 0] },
+    },
+    target: {
+      path: [12],
+      type: 'node',
+    },
+  });
 });
 ```
 
 也可以细调：
 
 ```tsx
-editor.tf.navigation.navigate({
-  flash: {
-    duration: 1200,
-    variant: 'navigated',
-  },
-  focus: true,
-  scroll: true,
-  scrollTarget: { offset: 0, path: [12, 0] },
-  select: { offset: 0, path: [12, 0] },
-  target: {
-    path: [12],
-    type: 'node',
-  },
+editor.update((tx) => {
+  tx.navigation.navigate({
+    flash: {
+      duration: 1200,
+      variant: 'navigated',
+    },
+    focus: true,
+    scroll: true,
+    scrollTarget: { offset: 0, path: [12, 0] },
+    select: { offset: 0, path: [12, 0] },
+    target: {
+      path: [12],
+      type: 'node',
+    },
+  });
 });
 ```
 

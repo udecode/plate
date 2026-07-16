@@ -1,22 +1,5 @@
 import { afterAll, describe, expect, it, mock } from 'bun:test';
-
-mock.module('@platejs/suggestion', () => ({
-  BaseSuggestionPlugin: {
-    configure: (config: any) => config,
-  },
-}));
-
-mock.module('platejs', () => ({
-  KEYS: {
-    date: 'date',
-    inlineEquation: 'inline_equation',
-    link: 'link',
-    mention: 'mention',
-  },
-  TextApi: {
-    isText: (node: any) => typeof node?.text === 'string',
-  },
-}));
+import { createBaseEditor } from 'platejs';
 
 mock.module('@/registry/ui/suggestion-node-static', () => ({
   SuggestionLeafStatic: () => null,
@@ -33,19 +16,11 @@ describe('BaseSuggestionKit', () => {
       `./suggestion-base-kit?test=${Math.random().toString(36).slice(2)}`
     );
 
-    const transformProps = (BaseSuggestionKit[0] as any).inject.nodeProps
-      .transformProps;
-    const editor = {
-      plugin: () => ({
-        api: {
-          dataList: (node: any) =>
-            Object.keys(node)
-              .filter((key) => key.startsWith('suggestion_'))
-              .map((key) => node[key]),
-          suggestionData: (element: any) => element.suggestion,
-        },
-      }),
-    };
+    const editor = createBaseEditor({ plugins: BaseSuggestionKit });
+    const transformProps = editor.getPlugin(BaseSuggestionKit[0]).inject
+      ?.nodeProps?.transformProps;
+
+    if (!transformProps) throw new Error('Missing transformProps');
 
     expect(
       transformProps({

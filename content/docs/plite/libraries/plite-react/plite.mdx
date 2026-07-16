@@ -145,8 +145,8 @@ full document persistence path.
 ```
 
 The `value` argument is a root value, not the full persisted document. Use
-`editor.subscribe(...)` and `editor.read((state) => state.value.get())` when
-you need named roots or persistent state fields.
+`editor.subscribe(...)` and `editor.read.value()` when
+you need named roots or persistent meta fields.
 
 ```tsx
 useEffect(() => {
@@ -157,14 +157,14 @@ useEffect(() => {
       return;
     }
 
-    const documentValue = editor.read((state) => state.value.get());
+    const documentValue = editor.read.value();
 
     localStorage.setItem("plite.document", JSON.stringify(documentValue));
   });
 }, [editor]);
 ```
 
-See [Document State](../../concepts/14-document-state) for the full
+See [Document Meta](../../concepts/14-document-state) for the full
 persistence shape.
 
 ### Selection Changes

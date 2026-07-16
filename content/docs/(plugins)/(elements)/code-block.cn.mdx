@@ -198,7 +198,26 @@ const editor = createPlateEditor({
 </APIOptions>
 </API>
 
-## API
+## 命令
+
+安装 `CodeBlockPlugin` 后，通过命令组修改代码块：
+
+```tsx
+editor.update.code_block.insert();
+editor.update.code_block.toggle();
+editor.update.code_block.tab();
+editor.update.code_block.untab();
+editor.update.code_block.resetBlock();
+editor.update.code_block.selectAll();
+```
+
+- `insert()` 原地转换选中的空块；对于非空或展开选区，在选区末尾块之后插入段落并转换。无选区时不执行操作。
+- `toggle()` 在普通块和代码块之间切换。
+- `tab()` 与 `untab()` 将选中的代码行缩进或减少两个空格。
+- `resetBlock()` 将代码块解包为段落。
+- `selectAll()` 选择当前代码块。
+
+## 查询
 
 ### `isCodeBlockEmpty`
 
@@ -215,67 +234,3 @@ const editor = createPlateEditor({
   判断选区是否位于代码块第一行开头。
 </APIReturns>
 </API>
-
-### `indentCodeLine`
-
-如果选区已展开或光标左侧无非空白字符，则缩进代码行。默认缩进为 2 个空格。
-
-<API name="indentCodeLine">
-<APIOptions type="IndentCodeLineOptions">
-  <APIItem name="codeLine" type="ElementEntry">
-    要缩进的代码行。
-  </APIItem>
-  <APIItem name="indentDepth" type="number">
-    代码行的缩进大小。
-    - **默认值:** `2`
-  </APIItem>
-</APIOptions>
-</API>
-
-### `insertCodeBlock`
-
-通过将节点设为代码行并用代码块包裹来插入代码块。如果光标不在块开头，则在代码块前插入换行。
-
-<API name="insertCodeBlock">
-<APIParameters>
-  <APIItem name="insertNodesOptions" type="Omit<object, 'match'>" optional>
-    插入节点的选项。
-  </APIItem>
-</APIParameters>
-</API>
-
-### `insertCodeLine`
-
-插入以指定缩进深度开头的代码行。
-
-<API name="insertCodeLine">
-<APIParameters>
-  <APIItem name="indentDepth" type="number" optional>
-    代码行的缩进深度。
-    - **默认值:** `0`
-  </APIItem>
-</APIParameters>
-</API>
-
-### `outdentCodeLine`
-
-减少代码行的缩进，如果存在则移除两个空白字符。
-
-<API name="outdentCodeLine">
-<APIOptions type="OutdentCodeLineOptions">
-  <APIItem name="codeLine" type="ElementEntry">
-    要减少缩进的代码行。
-  </APIItem>
-  <APIItem name="codeBlock" type="ElementEntry">
-    包含要减少缩进代码行的代码块。
-  </APIItem>
-</APIOptions>
-</API>
-
-### `toggleCodeBlock`
-
-切换编辑器中的代码块。
-
-### `unwrapCodeBlock`
-
-解除编辑器中的代码块包裹。

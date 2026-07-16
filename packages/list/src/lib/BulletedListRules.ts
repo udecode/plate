@@ -1,8 +1,9 @@
 import type { BaseEditor } from '@platejs/core';
 
-import { createRuleFactory, KEYS } from 'platejs';
+import { createRuleFactory } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
-import { toggleListWithTx } from './transforms';
+import { toggleListWithTx } from './transforms/toggleList';
 
 const isListInputBlocked = (editor: BaseEditor) =>
   editor.read.nodes.some({

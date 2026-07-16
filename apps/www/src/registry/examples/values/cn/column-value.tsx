@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const columnValue: any = (
+export const columnValue = (
   <fragment>
     <hh2>列</hh2>
     <hp>创建列，在查看时边框将被隐藏</hp>

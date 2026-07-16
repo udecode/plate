@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const toggleValue: any = (
+export const toggleValue = (
   <fragment>
     <hh2>折叠</hh2>
     <hp>创建具有多级缩进的折叠内容</hp>

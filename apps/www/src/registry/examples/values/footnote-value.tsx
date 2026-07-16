@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const footnoteValue: any = (
+export const footnoteValue = (
   <fragment>
     <hh2>Footnotes</hh2>
     <hp>Type [^ to open the inline footnote combobox.</hp>

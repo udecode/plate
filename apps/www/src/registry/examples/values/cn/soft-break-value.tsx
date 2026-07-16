@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const softBreakValue: any = (
+export const softBreakValue = (
   <fragment>
     <hh2>软换行</hh2>
     <hp>使用可配置的规则来自定义如何处理软换行（段落内的换行）</hp>

@@ -20,6 +20,7 @@ editor.api.dom.focus();
 
 - [Checks](react-editor#checks)
 - [Focus And Selection](react-editor#focus-and-selection)
+- [DOM Scope](react-editor#dom-scope)
 - [DOM Translation](react-editor#dom-translation)
 - [DOM Environment](react-editor#dom-environment)
 - [DataTransfer](react-editor#datatransfer)
@@ -63,6 +64,21 @@ Focus the editor.
 #### `editor.api.dom.deselect(): void`
 
 Clear the native DOM selection and the Plite selection.
+
+## DOM Scope
+
+#### `editor.api.dom.root(): HTMLElement | null`
+
+Return the mounted editor root element.
+
+#### `editor.api.dom.editable(root?: RootKey): HTMLElement | null`
+
+Return the mounted editable element for a Plite root.
+
+#### `editor.api.dom.scroll(): HTMLElement | null`
+
+Return the element used as the editor scroll container. It falls back to the
+editor root when no custom scroll element is registered.
 
 ## DOM Translation
 
@@ -127,6 +143,12 @@ range is not currently mappable.
 Resolve the bounding rect for a Plite range. Returns `null` when the range is
 not currently mappable to mounted DOM.
 
+#### `editor.api.dom.scrollIntoView(target: Point | Range | DOMRange, options?: ScrollIntoViewOptions): void`
+
+Scroll a Plite point, Plite range, or native DOM range into view. The DOM bridge
+uses the target range rect, so caret scrolling follows the actual selection
+position inside a text leaf.
+
 #### `editor.api.dom.assertPliteNode(domNode: DOMNode): Node`
 
 Assert a Plite node from a native DOM node.
@@ -186,7 +208,8 @@ Check whether a DOM event target is inside a non-read-only void element.
 #### `editor.api.clipboard.insertData(data: DataTransfer): boolean`
 
 Insert data from a `DataTransfer` into the editor. Returns `true` when Plite or
-an extension inserts content.
+an extension inserts content. The call owns one transaction or joins the active
+one; extension handlers receive that transaction as `tx`.
 
 Plite runs typed `clipboard.insertData` extension handlers first. A handler that
 returns `true` stops the default import path. When no handler claims the data,

@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const tocValue: any = (
+export const tocValue = (
   <fragment>
     <hh1>
       <htext>Table of Contents</htext>
@@ -51,7 +51,7 @@ export const tocValue: any = (
   </fragment>
 );
 
-export const tocPlaygroundValue: any = (
+export const tocPlaygroundValue = (
   <fragment>
     <htoc>
       <htext />

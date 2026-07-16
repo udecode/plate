@@ -10,6 +10,7 @@ import type {
 import { useComposedRef } from '@udecode/cn';
 import debounce from 'lodash/debounce.js';
 import { CheckIcon, EraserIcon, PlusIcon } from 'lucide-react';
+import { type Text, TextApi } from 'platejs';
 import {
   type PlateEditor,
   useEditorRef,
@@ -57,14 +58,17 @@ function computeIsBrightColor(hex: string): boolean {
 function getEditorColorMarks(editor: PlateEditor, nodeType: string): string[] {
   const usedColors = new Set<string>();
 
-  for (const [node] of editor.api.nodes({
+  const entries = editor.read.nodes.toArray<Text>({
     at: [],
-    match: (n) =>
-      'text' in n &&
-      typeof (n as Record<string, unknown>)[nodeType] === 'string',
+    match: TextApi.isText,
     mode: 'all',
-  })) {
-    const color = (node as Record<string, unknown>)[nodeType] as string;
+  });
+
+  for (const [node] of entries) {
+    const color = node[nodeType];
+
+    if (typeof color !== 'string') continue;
+
     usedColors.add(normalizeColor(color));
   }
 
@@ -82,12 +86,12 @@ export function FontColorToolbarButton({
   const editor = useEditorRef();
 
   const selectionDefined = useEditorSelector(
-    (editor) => !!editor.selection,
+    (editor) => !!editor.read.selection(),
     []
   );
 
   const color = useEditorSelector(
-    (editor) => editor.api.mark(nodeType) as string,
+    (editor) => editor.read.marks()?.[nodeType] as string,
     [nodeType]
   );
 
@@ -141,9 +145,9 @@ export function FontColorToolbarButton({
       if (!value) {
         setUpdatedColor(undefined);
 
-        if (editor.selection) {
+        if (editor.read.selection()) {
           setTimeout(() => {
-            editor.tf.focus();
+            editor.api.dom.focus();
           }, 100);
         }
       }
@@ -153,13 +157,17 @@ export function FontColorToolbarButton({
 
   const updateColor = React.useCallback(
     (value: string) => {
-      if (editor.selection) {
-        setSelectedColor(value);
-        setUpdatedColor(value);
+      const selection = editor.read.selection();
 
-        editor.tf.select(editor.selection);
-        editor.tf.addMarks({ [nodeType]: value });
-      }
+      if (!selection) return;
+
+      setSelectedColor(value);
+      setUpdatedColor(value);
+
+      editor.update((tx) => {
+        tx.selection.set(selection);
+        tx.marks.add(nodeType, value);
+      });
     },
     [editor, nodeType]
   );
@@ -173,11 +181,15 @@ export function FontColorToolbarButton({
   );
 
   const clearColor = React.useCallback(() => {
-    if (editor.selection) {
-      editor.tf.select(editor.selection);
-      editor.tf.removeMarks(nodeType);
-      onToggle();
-    }
+    const selection = editor.read.selection();
+
+    if (!selection) return;
+
+    editor.update((tx) => {
+      tx.selection.set(selection);
+      tx.marks.remove(nodeType);
+    });
+    onToggle();
   }, [editor, onToggle, nodeType]);
 
   React.useEffect(() => {

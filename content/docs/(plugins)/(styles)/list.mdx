@@ -11,113 +11,55 @@ docs:
 
 ## Features
 
-- **Flexible Block Indentation**: Transform any block type (paragraphs, headings, etc.) into list items through indentation.
-- **Simplified Structure**: Flat DOM structure where each indented block is independent, unlike [List Classic plugin](/docs/list-classic).
-- **List Types**: Support for bulleted lists (unordered) and numbered lists (ordered).
-- **Markdown Shortcuts**: Register the shipped list input rules to create lists from markdown triggers like `-`, `*`, `1.`, and `[]`.
-
-For more information about the underlying indentation system, see the [Indent plugin](/docs/indent).
+- **Flat list model**: Any supported block can become a list item without a nested list-node tree.
+- **Bulleted, numbered, and todo styles**: Use CSS list styles or `KEYS.listTodo`.
+- **Automatic indentation support**: `ListPlugin` installs its required Indent dependency.
+- **Targeted commands**: Toggle, indent, or outdent the selection, a path, a point, or a range.
+- **Input rules**: Register the shipped Markdown rules for `-`, `*`, `1.`, and task-list syntax.
 
 </PackageInfo>
 
 ## Kit Usage
 
-<Steps>
-
-### Installation
-
-The fastest way to add list functionality is with the `ListKit`, which includes pre-configured `ListPlugin`, the shipped list input rules, and the required [Indent plugin](/docs/indent) targeting paragraph, heading, blockquote, code block, and toggle elements.
+`ListKit` configures list rendering, input rules, and the block types that support lists.
 
 <ComponentSource name="list-kit" />
-
-- [`BlockList`](/docs/components/block-list): Renders list wrapper elements with support for todo lists.
-- Includes [`IndentKit`](/docs/indent) for the underlying indentation system.
-- Configures `Paragraph`, `Heading`, `Blockquote`, `CodeBlock`, and `Toggle` elements to support list functionality.
-
-### Add Kit
-
-Add the kit to your plugins:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
 import { ListKit } from '@/components/editor/plugins/list-kit';
 
 const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...ListKit,
-  ],
+  plugins: [...ListKit],
 });
 ```
 
-### Add Toolbar Button
-
-You can add [`ListToolbarButton`](/docs/components/list-toolbar-button) to your [Toolbar](/docs/toolbar) to create and manage lists.
-
-</Steps>
-
-## Turn Into Toolbar Button
-
-You can add these items to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to convert blocks into lists:
-
-```tsx
-{
-  icon: <ListIcon />,
-  label: 'Bulleted list',
-  value: KEYS.ul,
-}
-```
-
-```tsx
-{
-  icon: <ListOrderedIcon />,
-  label: 'Numbered list',
-  value: KEYS.ol,
-}
-```
-
-```tsx
-{
-  icon: <SquareIcon />,
-  label: 'To-do list',
-  value: KEYS.listTodo,
-}
-```
+Add the [`List Toolbar Button`](/docs/components/list-toolbar-button) for bulleted, numbered, and todo controls.
 
 ## Manual Usage
-
-<Steps>
 
 ### Installation
 
 ```bash
-npm install @platejs/list @platejs/indent
+npm install @platejs/list
 ```
 
-### Add Plugins
+### Add the Plugin
 
-Include both `IndentPlugin` and `ListPlugin` in your Plate plugins array when creating the editor. The List plugin depends on the Indent plugin.
+`ListPlugin` includes the default Indent configuration.
 
 ```tsx
-import { IndentPlugin } from '@platejs/indent/react';
 import { ListPlugin } from '@platejs/list/react';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    IndentPlugin,
-    ListPlugin,
-  ],
+  plugins: [ListPlugin],
 });
 ```
 
-### Configure Plugins
-
-You can configure both plugins to target specific elements, customize list behavior, and register the shipped markdown rules.
+### Configure List Rendering and Input Rules
 
 ```tsx
-import { IndentPlugin } from '@platejs/indent/react';
 import {
   BulletedListRules,
   OrderedListRules,
@@ -125,225 +67,113 @@ import {
 } from '@platejs/list';
 import { ListPlugin } from '@platejs/list/react';
 import { KEYS } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
 import { BlockList } from '@/components/ui/block-list';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    IndentPlugin.configure({
-      inject: {
-        targetPlugins: [...KEYS.heading, KEYS.p, KEYS.blockquote, KEYS.codeBlock],
-      },
-    }),
-    ListPlugin.configure({
-      inputRules: [
-        BulletedListRules.markdown({ variant: '-' }),
-        OrderedListRules.markdown({ variant: '.' }),
-        TaskListRules.markdown({ checked: false }),
-      ],
-      inject: {
-        targetPlugins: [...KEYS.heading, KEYS.p, KEYS.blockquote, KEYS.codeBlock],
-      },
-      render: {
-        belowNodes: BlockList,
-      },
-    }),
+const CustomListPlugin = ListPlugin.configure({
+  inputRules: [
+    BulletedListRules.markdown({ variant: '-' }),
+    OrderedListRules.markdown({ variant: '.' }),
+    TaskListRules.markdown({ checked: false }),
   ],
+  inject: {
+    targetPlugins: [...KEYS.heading, KEYS.p, KEYS.blockquote, KEYS.codeBlock],
+  },
+  render: {
+    belowNodes: BlockList,
+  },
 });
 ```
 
-- `inject.targetPlugins`: An array of plugin keys indicating which element types can become list items.
-- `inputRules`: Registers the feature-owned markdown shortcuts for bulleted, ordered, and task lists.
-- `render.belowNodes`: Assigns [`BlockList`](/docs/components/block-list) to render list wrapper elements.
+Add `IndentPlugin.configure(...)` when you need custom targets, offsets, or units. An explicit Indent configuration overrides the dependency defaults and still installs only one Indent runtime plugin.
 
-For the runtime model and other variants, see [Plugin Input Rules](/docs/plugin-input-rules).
+## API Reference
 
-</Steps>
+### Scoped Reads
 
-## Plugins
+Read list state from the List plugin portal:
 
-### `ListPlugin`
+```ts
+const list = editor.plugin(ListPlugin);
 
-Plugin for creating and managing lists. It works with the [Indent plugin](/docs/indent) to provide flexible list functionality where any block can be transformed into a list item through indentation.
+list.api.isActive(ListStyleType.Disc);
+list.api.isActive([ListStyleType.Disc, ListStyleType.Circle]);
+list.api.isActive(KEYS.listTodo);
+```
 
-<API name="ListPlugin">
-<APIOptions>
-  <APIItem name="getSiblingListOptions" type="GetSiblingListOptions<TElement>" optional>
-    Function to determine indent list options for sibling elements.
-  </APIItem>
-  <APIItem name="getListStyleType" type="(element: HTMLElement) => ListStyleType" optional>
-    Function mapping HTML elements to list style types.
-  </APIItem>
-</APIOptions>
-</API>
+`isActive` returns `false` when the editor has no selection.
 
-## API
+### Scoped Updates
 
-### `getNextList`
+List updates run in one Plite transaction and create one undo step:
 
-Gets the next sibling entry with an indent list.
+```ts
+const list = editor.plugin(ListPlugin);
 
-<API name="getNextList">
-<APIParameters>
-  <APIItem name="entry" type="ElementEntryOf">
-    Entry of the current element.
-  </APIItem>
-  <APIItem name="options" type="Partial<GetSiblingListOptions>" optional>
-    Options for getting next indent list.
-  </APIItem>
-</APIParameters>
+list.update.toggle({ listStyleType: ListStyleType.Decimal });
+list.update.indent({ listStyleType: ListStyleType.Disc });
+list.update.outdent();
+```
 
-<APIReturns type="NodeEntry | undefined">
-  Entry of the next sibling with an indent list, or `undefined` if not found.
-</APIReturns>
-</API>
+Pass `at` to target a location without moving the selection:
 
-### `getPreviousList`
+```ts
+list.update.toggle({ at: [2], listStyleType: ListStyleType.Disc });
+list.update.toggle({
+  at: {
+    anchor: { path: [2, 0], offset: 0 },
+    focus: { path: [4, 0], offset: 3 },
+  },
+  listStyleType: ListStyleType.Decimal,
+});
+```
 
-Gets the previous sibling entry with an indent list.
+- No `at`: targets the current selection.
+- `Path` or `Point`: targets one block.
+- `Range`: targets every matching block in the range.
+- Missing, invalid, or root locations do nothing.
 
-<API name="getPreviousList">
-<APIParameters>
-  <APIItem name="entry" type="ElementEntryOf">
-    Entry of the current element.
-  </APIItem>
-  <APIItem name="options" type="Partial<GetSiblingListOptions>" optional>
-    Options for getting previous indent list.
-  </APIItem>
-</APIParameters>
+### Update Options
 
-<APIReturns type="NodeEntry | undefined">
-  Entry of the previous sibling with an indent list, or `undefined` if not found.
-</APIReturns>
-</API>
+```ts
+type ToggleListOptions = {
+  at?: Location;
+  getSiblingListOptions?: GetSiblingListOptions<Element>;
+  listRestart?: number;
+  listRestartPolite?: number;
+  listStyleType: ListStyleType | string;
+};
 
-### `indentList`
+type IndentListOptions = {
+  at?: Location;
+  listStyleType?: ListStyleType | string;
+};
 
-Increases the indentation of the selected blocks.
+type OutdentListOptions = {
+  at?: Location;
+};
+```
 
-<API name="indentList">
-<APIOptions type="ListOptions">
-  <APIItem name="listStyleType" type="ListStyleType | string" optional>
-    List style type to use.
-    - **Default:** `ListStyleType.Disc`
-  </APIItem>
-</APIOptions>
-</API>
+`listRestart` restarts numbering at the target. `listRestartPolite` applies only when the target begins a list sequence.
 
-### `outdentList`
+### Domain Queries
 
-Decreases the indentation of the selected blocks.
+The package exports focused traversal and list-policy queries:
 
-<API name="outdentList">
-<APIOptions type="ListOptions">
-  <APIItem name="listStyleType" type="ListStyleType | string" optional>
-    List style type to use.
-    - **Default:** `ListStyleType.Disc`
-  </APIItem>
-</APIOptions>
-</API>
+- `areEqListStyleType`
+- `expandListItemsWithChildren`
+- `getListAbove`
+- `getListChildren`
+- `getListSiblings` and `GetListSiblingsOptions`
+- `getNextList`
+- `getPreviousList`
+- `getSiblingList` and `GetSiblingListOptions`
+- `getSiblingListStyleType`
+- `isOrderedList`
 
-### `someList`
+### Hooks
 
-Checks if some of the selected blocks have a specific list style type.
+- `useListToolbarButtonState` and `useListToolbarButton`
+- `useTodoListToolbarButtonState` and `useTodoListToolbarButton`
+- `useTodoListElementState` and `useTodoListElement`
 
-<API name="someList">
-<APIParameters>
-  <APIItem name="type" type="string | string[]">
-    List style type to check.
-  </APIItem>
-</APIParameters>
-</API>
-
-### `toggleList`
-
-Toggles the indent list.
-
-<API name="toggleList">
-<APIOptions type="ListOptions">
-  <APIItem name="listStyleType" type="ListStyleType | string" optional>
-    List style type to use.
-  </APIItem>
-
-  <APIItem name="listRestart" type="number" optional>
-    Override the number of the list item.
-  </APIItem>
-
-  <APIItem name="listRestartPolite" type="number" optional>
-    Override the number of the list item, only taking effect if the list item is the first in the list.
-  </APIItem>
-</APIOptions>
-</API>
-
-## Types
-
-### `GetSiblingListOptions`
-
-Used to provide options for getting the sibling indent list in a block of text.
-
-<API name="GetSiblingListOptions">
-<APIOptions>
-  <APIItem name="getPreviousEntry" type="function">
-    This function is used to get the previous sibling entry from a given entry.
-  </APIItem>
-  <APIItem name="getNextEntry" type="function">
-    This function is used to get the next sibling entry from a given entry.
-  </APIItem>
-  <APIItem name="query" type="function">
-    This function is used to validate a sibling node during the lookup process.
-    If it returns false, the next sibling is checked.
-  </APIItem>
-  <APIItem name="eqIndent" type="boolean">
-    Indicates whether to break the lookup when the sibling node has an indent
-    level equal to the current node. If true, the lookup stops when a sibling
-    node with the same indent level is found.
-  </APIItem>
-  <APIItem name="breakQuery" type="(node: TNode) => boolean | undefined">
-    A function that takes a `TNode` and returns a boolean value or undefined.
-    This function is used to specify a condition under which the lookup process
-    should be stopped.
-  </APIItem>
-  <APIItem name="breakOnLowerIndent" type="boolean">
-    Indicates whether to break the lookup when a sibling node with a lower
-    indent level is found. If true, the lookup stops when a sibling node with a
-    lower indent level is found.
-  </APIItem>
-  <APIItem name="breakOnEqIndentNeqListStyleType" type="boolean">
-    Indicates whether to break the lookup when a sibling node with the same
-    indent level but a different list style type is found. If true, the lookup
-    stops when such a sibling node is found.
-  </APIItem>
-</APIOptions>
-</API>
-
-## Hooks
-
-### `useListToolbarButton`
-
-A behavior hook for the indent list toolbar button.
-
-<API name="useListToolbarButton">
-<APIState>
-  <APIItem name="nodeType" type="string">
-    The list style type.
-  </APIItem>
-  <APIItem name="pressed" type="boolean">
-    Whether the button is pressed.
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="props" type="object">
-    Props for the toolbar button.
-     <APISubList>
-      <APISubListItem parent="props" name="pressed" type="boolean">
-        Whether the button is pressed.
-      </APISubListItem>
-      <APISubListItem parent="props" name="onClick" type="function">
-        Callback to handle the click event. Toggles the indent list of the specified node type and focuses the editor.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>
+The toolbar hooks read and update the scoped `ListPlugin` API. The todo element hook resolves the element path when the checkbox changes, so it remains correct after node moves.

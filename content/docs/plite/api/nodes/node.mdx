@@ -176,6 +176,16 @@ Check if a `value` is a list of `Node` objects.
 
 Check if a node is a `Text` object.
 
-#### `NodeApi.matches(root: Node, props: Partial<Node>) => boolean`
+#### `NodeApi.matches(node: Node, match: NodeMatch<Node>, path?: Path) => boolean`
 
-Check if a node matches a set of `props`.
+Check a node with a predicate or shallow property matcher. Array property values
+match any listed value. Predicates receive the node's path and preserve type
+narrowing.
+
+```typescript
+NodeApi.matches(node, { type: ["heading", "paragraph"] })
+
+NodeApi.matches(node, (candidate, path) => {
+  return path.length === 1 && ElementApi.isElement(candidate)
+}, path)
+```

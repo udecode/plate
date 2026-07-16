@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const toggleValue: any = (
+export const toggleValue = (
   <fragment>
     <hh2>Toggle</hh2>
     <hp>Create toggles with multiple levels of indentation</hp>

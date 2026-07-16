@@ -56,7 +56,6 @@
     "[Docs Proof Map](/docs/plite/general/docs-proof-map)",
     "[FAQ](/docs/plite/general/faq)",
     "[Resources](/docs/plite/general/resources)",
-    "[Plite Browser](/docs/plite/libraries/plite-browser)",
     "[Plite DOM](/docs/plite/libraries/plite-dom)",
     "[History Editor API](/docs/plite/libraries/plite-history/history-editor)",
     "[History Extension Setup](/docs/plite/libraries/plite-history/history-extension-setup)",
@@ -107,7 +106,7 @@
     "[TypeScript](/docs/typescript)",
     "[Debugging](/docs/debugging)",
     "[Unit Testing](/docs/unit-testing)",
-    "[Playwright Testing](/docs/playwright)",
+    "[Browser](/docs/browser)",
     "[Troubleshooting](/docs/troubleshooting)",
     "---Plugins---",
     "[Overview](/docs/plugins)",
@@ -416,7 +415,7 @@
                 "createInlineVoidPlugin",
                 "createInsertDataPlugin",
                 "createPlateEditor",
-                "createEditorPlugin",
+                "createBasePlugin",
                 "createPrevSelectionPlugin",
                 "createPlatePlugin",
                 "getPlugin",
@@ -484,11 +483,8 @@
                     "error",
                     "HtmlPlugin",
                     "deserialize",
-                    "ReactPlugin",
-                    "reset",
-                    "PliteReactExtensionPlugin",
-                    "redecorate",
-                    "setValue"
+                    "react",
+                    "refreshDecorations"
                   ],
                   "href": "/docs/api/core/plate-editor",
                   "title": "Plate Editor",
@@ -1663,9 +1659,9 @@
               "titleCn": "单元测试"
             },
             {
-              "href": "/docs/playwright",
-              "title": "Playwright Testing",
-              "titleCn": "Playwright 测试"
+              "href": "/docs/browser",
+              "title": "Browser",
+              "titleCn": "Browser"
             },
             {
               "href": "/docs/troubleshooting",
@@ -2304,9 +2300,9 @@
         "title": "Unit Testing",
         "titleCn": "单元测试"
       },
-      "/docs/playwright": {
-        "title": "Playwright Testing",
-        "titleCn": "Playwright 测试"
+      "/docs/browser": {
+        "title": "Browser",
+        "titleCn": "Browser"
       },
       "/docs/troubleshooting": {
         "keywords": ["depset"],

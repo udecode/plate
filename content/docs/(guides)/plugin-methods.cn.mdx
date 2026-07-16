@@ -317,7 +317,7 @@ editor.update((tx) => tx.insert.mention());
 要将类型化的Plite插件转换为Plate插件，可以使用`toPlatePlugin`：
 
 ```ts
-const CodeBlockPlugin = toPlatePlugin(createEditorPlugin({ key: 'code_block' }), {
+const CodeBlockPlugin = toPlatePlugin(createBasePlugin({ key: 'code_block' }), {
   handlers: {},
   options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
 });

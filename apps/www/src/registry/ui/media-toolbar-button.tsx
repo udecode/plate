@@ -91,7 +91,7 @@ export function MediaToolbarButton({
     accept: currentConfig.accept,
     multiple: true,
     onFilesSelected: ({ plainFiles: updatedFiles }) => {
-      editor.getTransforms(PlaceholderPlugin).insert.media(updatedFiles);
+      editor.plugin(PlaceholderPlugin).update.insertMedia(updatedFiles);
     },
   });
 
@@ -176,7 +176,7 @@ function MediaUrlDialogContent({
     if (!isUrl(url)) return toast.error('Invalid URL');
 
     setOpen(false);
-    editor.tf.insertNodes({
+    editor.update.nodes.insert({
       children: [{ text: '' }],
       name: nodeType === KEYS.file ? url.split('/').pop() : undefined,
       type: nodeType,

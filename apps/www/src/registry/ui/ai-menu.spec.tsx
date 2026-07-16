@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import type { PlateEditor } from 'platejs/react';
 
 const useEditorChatMock = mock();
 const useEditorPluginMock = mock();
@@ -135,52 +136,26 @@ describe('AIMenu', () => {
     useEditorRefMock.mockReset();
     toDOMNodeMock.mockReset();
 
-    globalThis.setTimeout = ((callback: (...args: any[]) => void) => {
-      callback();
+    globalThis.setTimeout = ((callback: TimerHandler) => {
+      if (typeof callback === 'function') callback();
 
-      return 0 as any;
-    }) as typeof setTimeout;
+      return 0 as unknown as ReturnType<typeof setTimeout>;
+    }) as unknown as typeof setTimeout;
 
     useEditorChatMock.mockImplementation(() => {});
     useLastAssistantMessageMock.mockReturnValue(undefined);
     useIsSelectingMock.mockReturnValue(false);
     useFocusedLastMock.mockReturnValue(false);
     useHotkeysMock.mockImplementation(() => {});
-    useEditorRefMock.mockReturnValue({
+    const editor = {
       api: {
-        aiChat: {
-          hide: () => {},
-          reload: () => {},
-          stop: () => {},
-          submit: async () => {},
+        dom: {
+          resolveDOMNode: toDOMNodeMock,
         },
-        marks: () => ({}),
       },
-      getOptions: () => ({
-        aiEditor: null,
-        mode: 'insert',
-        toolName: null,
-      }),
-      selection: null,
-      update: (callback: (tx: any) => void) => {
-        callback({
-          ai: {
-            undo: () => {},
-          },
-          aiChat: {
-            accept: () => {},
-            hide: () => {},
-            replaceSelection: () => {},
-          },
-          marks: {
-            unset: () => {},
-          },
-          selection: {
-            focus: () => {},
-          },
-        });
-      },
-    });
+    } as unknown as PlateEditor;
+
+    useEditorRefMock.mockReturnValue(editor);
 
     usePluginOptionMock.mockImplementation(
       (_plugin: unknown, option: string) => {
@@ -209,11 +184,7 @@ describe('AIMenu', () => {
         stop: () => {},
         submit: async () => {},
       },
-      editor: {
-        api: {
-          toDOMNode: toDOMNodeMock,
-        },
-      },
+      editor,
     });
   });
 

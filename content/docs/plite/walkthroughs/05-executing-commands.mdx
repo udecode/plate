@@ -6,7 +6,8 @@ description: "Extract reusable editor commands without mutating the editor objec
 Formatting logic can live directly inside event handlers, but it gets
 repetitive once the same behavior is used from keyboard shortcuts, toolbar
 buttons, menu items, or tests. A command is reusable editor logic. Keep command
-reads in `editor.read(...)` and command writes in `editor.update(...)`.
+reads in `editor.read.<group>.<method>()` or `editor.read(...)`, and command
+writes in `editor.update.<group>.<method>()` or `editor.update(...)`.
 
 ## Extracting Commands
 
@@ -16,23 +17,19 @@ Start by moving the bold and code-block logic into plain functions:
 import { ElementApi, type Editor } from "@platejs/plite";
 
 const isBoldActive = (editor: Editor) => {
-  return editor.read((state) => state.marks.get()?.bold === true);
+  return editor.read.marks()?.bold === true;
 };
 
 const isCodeBlockActive = (editor: Editor) => {
-  return editor.read((state) => {
-    const match = state.nodes.find({
-      match: (node) => ElementApi.isElement(node) && node.type === "code",
-    });
-
-    return Boolean(match);
+  const match = editor.read.nodes.find({
+    match: (node) => ElementApi.isElement(node) && node.type === "code",
   });
+
+  return Boolean(match);
 };
 
 const toggleBold = (editor: Editor) => {
-  editor.update((tx) => {
-    tx.marks.toggle("bold");
-  });
+  editor.update.marks.toggle("bold");
 };
 
 const toggleCodeBlock = (editor: Editor) => {
@@ -103,7 +100,7 @@ const markdownBlocks = defineEditorExtension({
   name: "markdown-blocks",
   transforms: {
     deleteBackward({ editor, next, unit }) {
-      const selection = editor.read((state) => state.selection.get());
+      const selection = editor.read((state) => state.selection());
 
       if (
         unit === "character" &&
@@ -145,7 +142,7 @@ const markdownBlocks = defineEditorExtension({
       return next({ unit });
     },
     insertBreak({ editor, next }) {
-      const selection = editor.read((state) => state.selection.get());
+      const selection = editor.read((state) => state.selection());
 
       if (selection && RangeApi.isCollapsed(selection)) {
         const blockEntry = editor.read((state) =>

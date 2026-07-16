@@ -34,13 +34,13 @@ const toPlateValue = (blocks: HugeDocumentBlock[]): Value =>
   blocks.map(({ text, type }) => ({
     children: [{ text }],
     type: type === 'heading-one' ? 'h1' : 'p',
-  })) as Value;
+  }));
 
 const toPliteValue = (blocks: HugeDocumentBlock[]): Value =>
   blocks.map(({ text, type }) => ({
     children: [{ text }],
     type,
-  })) as Value;
+  }));
 
 export const getHugeDocumentBlocks = (
   blocks = DEFAULT_HUGE_DOCUMENT_BLOCKS

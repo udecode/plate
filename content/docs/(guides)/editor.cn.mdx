@@ -45,7 +45,7 @@ const editor = createPlateEditor({
 
 ### 异步初始值
 
-如果需要异步获取初始值（例如从API），可以使用`skipInitialization`选项并在数据就绪后调用`editor.tf.init`：
+如果需要异步获取初始值（例如从 API），可以使用 `skipInitialization` 选项，并在数据就绪后用一次 `editor.update(...)` 初始化内容：
 
 ```tsx
 function AsyncEditor() {
@@ -70,7 +70,12 @@ function AsyncEditor() {
 
   React.useEffect(() => {
     if (!loading && initialValue) {
-      editor.tf.init({ value: initialValue });
+      editor.update((tx) => {
+        tx.value.replace({ children: initialValue });
+        const end = tx.points.end([]);
+
+        if (end) tx.selection.set(end);
+      });
     }
   }, [loading, initialValue, editor]);
 
@@ -282,22 +287,6 @@ const editor = createPlateEditor({
 });
 ```
 
-### 根插件
-
-从根插件可以配置任何插件：
-
-```ts
-const editor = createPlateEditor({
-  plugins: [HeadingPlugin],
-  rootPlugin: (plugin) =>
-    plugin.configurePlugin(LengthPlugin, {
-    options: {
-        maxLength: 100,
-      },
-    }),
-});
-```
-
 ## 类型化编辑器
 
 `createPlateEditor`会根据传递的值和插件自动推断编辑器的类型。要显式创建类型，可以使用泛型：
@@ -310,7 +299,9 @@ const editor = createPlateEditor<Value, typeof TablePlugin | typeof LinkPlugin>(
 });
 
 // 使用
-editor.tf.insert.tableRow()
+editor.update((tx) => {
+  tx.insert.tableRow();
+});
 ```
 
 ### 值类型
@@ -319,7 +310,7 @@ editor.tf.insert.tableRow()
 
 ```ts
 import type { Element, Text } from 'platejs';
-import type { TPlateEditor } from 'platejs/react';
+import type { PlateEditor } from 'platejs/react';
 
 // 定义自定义元素类型
 interface ParagraphElement extends Element {
@@ -346,7 +337,7 @@ export type MyRootBlock = ParagraphElement | ImageElement;
 export type MyValue = MyRootBlock[];
 
 // 定义自定义编辑器类型
-export type MyEditor = TPlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>;
+export type MyEditor = PlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>;
 
 export const useMyEditorRef = () => useEditorRef<MyEditor>();
 

@@ -120,7 +120,7 @@ The package owns the mark. The registry owns shortcut configuration and toolbar 
 |----------|--------|
 | Mark key | `KEYS.strikethrough` |
 | Leaf behavior | `node.isLeaf: true` |
-| Toggle transform | `editor.tf.strikethrough.toggle()` calls `editor.tf.toggleMark(type)`. |
+| Toggle command | `tx.strikethrough.toggle()` calls `tx.marks.toggle(type)`. |
 | Selection affinity | `directional` |
 | HTML tags | `s`, `del`, `strike` |
 | HTML styles | `text-decoration: line-through` |
@@ -136,4 +136,4 @@ The package owns the mark. The registry owns shortcut configuration and toolbar 
 | `BaseStrikethroughPlugin` | `@platejs/basic-nodes` | Headless strikethrough plugin. |
 | `StrikethroughPlugin` | `@platejs/basic-nodes/react` | React strikethrough plugin. |
 | `StrikethroughRules.markdown()` | `@platejs/basic-nodes` | Creates the `~~` mark input rule. |
-| `tf.strikethrough.toggle()` | `@platejs/basic-nodes` | Toggles the strikethrough mark at the selection. |
+| `tx.strikethrough.toggle()` | `@platejs/basic-nodes` | Toggles the strikethrough mark at the selection. |

@@ -57,7 +57,7 @@ export const excalidrawInitialData: NodeProps<TExcalidrawElement> = {
   },
 };
 
-export const excalidrawValue: any = (
+export const excalidrawValue = (
   <fragment>
     <hh2>Excalidraw</hh2>
     <hp>

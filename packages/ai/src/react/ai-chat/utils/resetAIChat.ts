@@ -20,7 +20,7 @@ export const resetAIChat = (
   const chat = getOptions().chat;
 
   if (chat?.messages && chat.messages.length > 0) {
-    chat.setMessages?.([]);
+    chat.clear();
   }
 
   setOptions({

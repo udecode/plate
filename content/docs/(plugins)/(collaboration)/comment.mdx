@@ -61,7 +61,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/comment
+npm install @platejs/comment @platejs/plite-dom
 ```
 
 ### Extend Comment Plugin
@@ -69,13 +69,14 @@ npm install @platejs/comment
 Create the comment plugin with extended configuration for state management:
 
 ```tsx
-import { type ExtendConfig, type Path, isSlateString } from 'platejs';
+import { isString } from '@platejs/plite-dom';
+import { TextApi, type ExtendConfig, type Path } from 'platejs';
 import {
   type BaseCommentConfig,
   BaseCommentPlugin,
   getDraftCommentKey,
 } from '@platejs/comment';
-import { toTPlatePlugin } from 'platejs/react';
+import { toPlatePlugin } from 'platejs/react';
 import { CommentLeaf } from '@/components/ui/comment-node';
 
 type CommentConfig = ExtendConfig<
@@ -87,7 +88,7 @@ type CommentConfig = ExtendConfig<
   }
 >;
 
-export const commentPlugin = toTPlatePlugin<CommentConfig>(
+export const commentPlugin = toPlatePlugin<CommentConfig>(
   BaseCommentPlugin,
   ({ editor }) => ({
     options: {
@@ -112,7 +113,7 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
 Add click handling to manage active comment state:
 
 ```tsx
-export const commentPlugin = toTPlatePlugin<CommentConfig>(
+export const commentPlugin = toPlatePlugin<CommentConfig>(
   BaseCommentPlugin,
   ({ editor }) => ({
     handlers: {
@@ -126,10 +127,10 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
           isSet = true;
         };
 
-        if (!isSlateString(leaf)) unsetActiveComment();
+        if (!isString(leaf)) unsetActiveComment();
 
         while (leaf.parentElement) {
-          if (leaf.classList.contains(`slate-${type}`)) {
+          if (leaf.classList.contains(`plite-${type}`)) {
             const commentsEntry = api.comment.node();
 
             if (!commentsEntry) {
@@ -163,33 +164,39 @@ The click handler tracks which comment is currently active:
 
 ### Extend Transforms
 
-Extend the `setDraft` transform for enhanced functionality:
+Extend the `setDraft` transaction command for enhanced functionality:
 
 ```tsx
-export const commentPlugin = toTPlatePlugin<CommentConfig>(
+export const commentPlugin = toPlatePlugin<CommentConfig>(
   BaseCommentPlugin,
   ({ editor }) => ({
     // ... previous configuration
   })
 )
-  .extendTransforms(
-    ({
-      editor,
-      setOption,
-      tf: {
-        comment: { setDraft },
-      },
-    }) => ({
-      setDraft: () => {
+  .extendTx(
+    ({ editor, setOption, type }) => (tx) => ({
+      setDraft: (options = {}) => {
+        const commentingBlock = editor.selection?.focus.path.slice(0, 1) ?? null;
+
         if (editor.api.isCollapsed()) {
-          editor.tf.select(editor.api.block()![1]);
+          const blockEntry = editor.api.block();
+
+          if (blockEntry) {
+            tx.selection.set(blockEntry[1]);
+          }
         }
 
-        setDraft();
+        tx.nodes.set(
+          {
+            [getDraftCommentKey()]: true,
+            [type]: true,
+          },
+          { match: TextApi.isText, split: true, ...options }
+        );
 
-        editor.tf.collapse();
+        tx.selection.collapse();
         setOption('activeId', getDraftCommentKey());
-        setOption('commentingBlock', editor.selection!.focus.path.slice(0, 1));
+        setOption('commentingBlock', commentingBlock);
       },
     })
   )
@@ -290,7 +297,7 @@ Gets a comment node entry.
 
 <API name="node">
   <APIOptions
-    type="EditorNodesOptions & { id?: string; isDraft?: boolean }"
+    type="object & { id?: string; isDraft?: boolean }"
     optional
   >
     Options for finding the node.
@@ -319,7 +326,7 @@ Gets all comment node entries matching the options.
 
 <API name="nodes">
   <APIOptions
-    type="EditorNodesOptions & { id?: string; isDraft?: boolean }"
+    type="object & { id?: string; isDraft?: boolean }"
     optional
   >
     Options for finding the nodes.
@@ -331,23 +338,23 @@ Gets all comment node entries matching the options.
 
 ## Transforms
 
-### `tf.comment.removeMark`
+### `tx.comment.removeMark`
 
 Removes the comment mark from the current selection or a specified location.
 
 <API name="removeMark" />
 
-### `tf.comment.setDraft`
+### `tx.comment.setDraft`
 
 Sets a draft comment mark at the current selection.
 
 <API name="setDraft">
-  <APIOptions type="SetNodesOptions" optional>
+  <APIOptions type="object" optional>
     Options for setting the draft comment.
   </APIOptions>
 </API>
 
-### `tf.comment.unsetMark`
+### `tx.comment.unsetMark`
 
 Unsets comment nodes with the specified ID from the editor.
 
@@ -450,7 +457,7 @@ Checks if a given node is a comment with the specified ID.
 
 <API name="isCommentNodeById">
   <APIParameters>
-    <APIItem name="node" type="TNode">
+    <APIItem name="node" type="Node">
       The node to check.
     </APIItem>
     <APIItem name="id" type="string">

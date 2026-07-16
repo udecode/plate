@@ -25,11 +25,11 @@ styles.
 ## Component Primitives
 
 Use `PlateElement` for element nodes and `PlateLeaf` for mark or leaf nodes.
-Both components merge Slate attributes, Plate node props, `className`, and
+Both components merge Plite attributes, Plate node props, `className`, and
 `style` onto the rendered DOM element.
 
 <Callout type="info" title="Render children">
-  Always render `children`. Slate needs the children in the DOM even when the
+  Always render `children`. Plite needs the children in the DOM even when the
   element is void or the visible UI comes from surrounding controls.
 </Callout>
 
@@ -197,16 +197,16 @@ toolbars, resize handles, or plugin options inside the render tree.
 
 ## Styling
 
-Prefer component-local styles. Plate also adds a `slate-<node-type>` class while
+Prefer component-local styles. Plate also adds a `plite-<node-type>` class while
 rendering plugin nodes, so global CSS can target stable node types when you need
 editor-wide styling.
 
 ```css title="app/globals.css"
-.slate-p {
+.plite-p {
   margin-block: 0.25rem;
 }
 
-.slate-code {
+.plite-code {
   border-radius: 0.375rem;
   font-family: var(--font-mono);
 }

@@ -136,7 +136,9 @@ export function CustomToolbarButton() {
     <ToolbarButton
       onClick={() => {
         // Custom action
-        editor.tf.insertText('Custom text');
+        editor.update((tx) => {
+          tx.text.insert('Custom text');
+        });
       }}
       tooltip="Custom Action"
     >
@@ -247,4 +249,4 @@ Plugin that renders a floating toolbar that appears on text selection.
     Renders the floating toolbar as an overlay after the editor. Contains FloatingToolbarButtons by default.
   </APIItem>
 </APIOptions>
-</API> 
+</API>

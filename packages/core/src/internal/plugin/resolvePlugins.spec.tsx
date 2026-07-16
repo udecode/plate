@@ -351,117 +351,100 @@ describe('resolvePlugins', () => {
 });
 
 describe('resolveAndSortPlugins', () => {
-  it.each([
-    {
-      expected: ['b', 'c', 'a'],
-      name: 'resolve and sort plugins correctly',
-      plugins: () => [
+  it('sorts roots by priority', () => {
+    expect(
+      getSortedKeys([
         createBasePlugin({ key: 'a', priority: 1 }),
         createBasePlugin({ key: 'b', priority: 3 }),
         createBasePlugin({ key: 'c', priority: 2 }),
-      ],
-    },
-    {
-      expected: ['parent', 'child1', 'child2'],
-      name: 'handle nested plugins',
-      plugins: () => [
-        createBasePlugin({
-          key: 'parent',
-          plugins: [
-            createBasePlugin({ key: 'child1', priority: 2 }),
-            createBasePlugin({ key: 'child2', priority: 1 }),
-          ],
-        }),
-      ],
-    },
-    {
-      expected: ['c', 'b', 'a'],
-      name: 'order plugins based on dependencies',
-      plugins: () => [
-        createBasePlugin({ key: 'a', priority: 1 }),
-        createBasePlugin({ key: 'b', dependencies: ['c'], priority: 3 }),
-        createBasePlugin({ key: 'c', priority: 2 }),
-      ],
-    },
-    {
-      expected: ['b', 'c', 'a'],
-      name: 'handle multiple dependencies',
-      plugins: () => [
-        createBasePlugin({ key: 'a', dependencies: ['b', 'c'], priority: 3 }),
-        createBasePlugin({ key: 'b', priority: 2 }),
-        createBasePlugin({ key: 'c', priority: 1 }),
-      ],
-    },
-    {
-      expected: ['c', 'b', 'a'],
-      name: 'handle nested dependencies',
-      plugins: () => [
-        createBasePlugin({ key: 'a', dependencies: ['b'], priority: 3 }),
-        createBasePlugin({ key: 'b', dependencies: ['c'], priority: 2 }),
-        createBasePlugin({ key: 'c', priority: 1 }),
-      ],
-    },
-    {
-      expected: ['a', 'c', 'b'],
-      name: 'maintain priority order when no dependencies conflict',
-      plugins: () => [
-        createBasePlugin({ key: 'a', priority: 3 }),
-        createBasePlugin({ key: 'b', dependencies: ['c'], priority: 2 }),
-        createBasePlugin({ key: 'c', priority: 1 }),
-      ],
-    },
-    {
-      expected: ['parent', 'child2', 'child1'],
-      name: 'handle dependencies with nested plugins',
-      plugins: () => [
-        createBasePlugin({
-          key: 'parent',
-          plugins: [
-            createBasePlugin({ key: 'child1', dependencies: ['child2'] }),
-            createBasePlugin({ key: 'child2' }),
-          ],
-        }),
-      ],
-    },
-  ])('$name', ({ expected, plugins }) => {
-    expect(getSortedKeys(plugins())).toEqual(expected);
+      ])
+    ).toEqual(['b', 'c', 'a']);
   });
 
-  it('handle circular dependencies gracefully', () => {
-    const pluginKeys = getSortedKeys([
-      createBasePlugin({ key: 'a', dependencies: ['b'] }),
-      createBasePlugin({ key: 'b', dependencies: ['a'] }),
-    ]);
+  it('installs direct and transitive dependencies once', () => {
+    const c = createBasePlugin({ key: 'c' });
+    const b = createBasePlugin({ dependencies: [c], key: 'b' });
+    const a = createBasePlugin({ dependencies: [b, c], key: 'a' });
 
-    expect(pluginKeys).toContain('a');
-    expect(pluginKeys).toContain('b');
-    expect(pluginKeys).toHaveLength(2);
+    expect(getSortedKeys([a])).toEqual(['c', 'b', 'a']);
   });
 
-  it('warns when a dependency is missing', () => {
-    const warnLogger = mock();
-    const editor = createBaseEditor({
-      plugins: [
-        DebugPlugin.configure({
-          options: {
-            logger: { warn: warnLogger } as any,
-            throwErrors: false,
-          },
-        }),
-      ],
+  it('keeps independent root priority around dependency ordering', () => {
+    const c = createBasePlugin({ key: 'c', priority: 1 });
+    const b = createBasePlugin({ dependencies: [c], key: 'b', priority: 2 });
+    const a = createBasePlugin({ key: 'a', priority: 3 });
+
+    expect(getSortedKeys([a, b])).toEqual(['a', 'c', 'b']);
+  });
+
+  it('uses explicit root configuration regardless of root position', () => {
+    const dependency = createBasePlugin({
+      key: 'dependency',
+      options: { source: 'implicit' },
+    });
+    const explicitDependency = dependency.configure({
+      options: { source: 'explicit' },
+    });
+    const dependent = createBasePlugin({
+      dependencies: [dependency],
+      key: 'dependent',
+    });
+    const editor = createBaseEditor();
+
+    for (const roots of [
+      [explicitDependency, dependent],
+      [dependent, explicitDependency],
+    ]) {
+      const resolved = resolveAndSortPlugins(editor, roots);
+
+      expect(
+        resolved.find((plugin) => plugin.key === 'dependency')?.options.source
+      ).toBe('explicit');
+    }
+  });
+
+  it('rejects a disabled required dependency after overrides', () => {
+    const dependency = createBasePlugin({ key: 'dependency' });
+    const dependent = createBasePlugin({
+      dependencies: [dependency],
+      key: 'dependent',
+      override: { enabled: { dependency: false } },
     });
 
-    resolveAndSortPlugins(editor, [
-      createBasePlugin({
-        key: 'dependent',
-        dependencies: ['missing'],
-      }),
-    ]);
+    expect(() => getSortedKeys([dependent])).toThrow(
+      'Plugin "dependent" depends on disabled plugin "dependency"'
+    );
+  });
 
-    expect(warnLogger).toHaveBeenCalledWith(
-      'Plugin "dependent" depends on missing plugin "missing"',
-      'PLUGIN_DEPENDENCY_MISSING',
-      undefined
+  it('omits dependencies owned only by a disabled dependent', () => {
+    const dependency = createBasePlugin({ key: 'dependency' });
+    const dependent = createBasePlugin({
+      dependencies: [dependency],
+      enabled: false,
+      key: 'dependent',
+    });
+
+    expect(getSortedKeys([dependent])).toEqual([]);
+  });
+
+  it('rejects named dependency cycles', () => {
+    const a = createBasePlugin({ key: 'a' });
+    const b = createBasePlugin({ dependencies: [a], key: 'b' });
+
+    Object.assign(a, { dependencies: [b] });
+
+    expect(() => getSortedKeys([a])).toThrow(
+      'Circular plugin dependency: a -> b -> a'
+    );
+  });
+
+  it('rejects string dependency keys', () => {
+    const dependent = createBasePlugin({ key: 'dependent' });
+
+    dependent.dependencies = ['missing'] as never;
+
+    expect(() => getSortedKeys([dependent])).toThrow(
+      'Pass the plugin object, not its key.'
     );
   });
 });

@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import type { RenderStaticNodeWrapper, TListElement } from 'platejs';
-import type { SlateRenderElementProps } from 'platejs/static';
+import type { PliteRenderElementProps } from 'platejs/static';
 
 import { isOrderedList } from '@platejs/list';
 import { CheckIcon } from 'lucide-react';
@@ -11,8 +11,8 @@ import { cn } from '@/lib/utils';
 const config: Record<
   string,
   {
-    Li: React.FC<SlateRenderElementProps>;
-    Marker: React.FC<SlateRenderElementProps>;
+    Li: React.FC<PliteRenderElementProps>;
+    Marker: React.FC<PliteRenderElementProps>;
   }
 > = {
   todo: {
@@ -28,7 +28,7 @@ export const BlockListStatic: RenderStaticNodeWrapper = (props) => {
   return (props) => <List {...props} />;
 };
 
-function List(props: SlateRenderElementProps) {
+function List(props: PliteRenderElementProps) {
   const { indent, listStart, listStyleType } = props.element as TListElement & {
     indent?: number;
   };
@@ -50,7 +50,7 @@ function List(props: SlateRenderElementProps) {
   );
 }
 
-function TodoMarkerStatic(props: SlateRenderElementProps) {
+function TodoMarkerStatic(props: PliteRenderElementProps) {
   const checked = props.element.checked as boolean;
 
   return (
@@ -71,7 +71,7 @@ function TodoMarkerStatic(props: SlateRenderElementProps) {
   );
 }
 
-function TodoLiStatic(props: SlateRenderElementProps) {
+function TodoLiStatic(props: PliteRenderElementProps) {
   return (
     <li
       className={cn(

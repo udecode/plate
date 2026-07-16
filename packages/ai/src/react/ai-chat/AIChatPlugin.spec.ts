@@ -7,6 +7,16 @@ import { BaseAIPlugin } from '../../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';
 
 describe('AIChatPlugin', () => {
+  it('installs its AI dependency once', () => {
+    const editor = createPlateEditor({
+      plugins: [AIChatPlugin],
+    });
+    const keys = editor.runtime.pluginList.map((plugin) => plugin.key);
+
+    expect(keys.indexOf('ai')).toBeLessThan(keys.indexOf('aiChat'));
+    expect(keys.filter((key) => key === 'ai')).toHaveLength(1);
+  });
+
   it('clears internal streaming state when stop is called', () => {
     const editor = createPlateEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],

@@ -75,7 +75,8 @@ type BasePluginConfig<
   Tx extends AnyPluginTx = {},
   S = {},
   State = {},
-> = PluginInputConfig<PluginConfig<K, O, A, Tx, S, State>>;
+  D extends readonly unknown[] = readonly [],
+> = PluginInputConfig<PluginConfig<K, O, A, Tx, S, State, D>>;
 
 type TypedBasePluginConfig<C extends AnyPluginConfig = PluginConfig> =
   PluginInputConfig<C>;
@@ -253,13 +254,20 @@ export function createBasePlugin<
   Tx extends AnyPluginTx = {},
   S = {},
   const P extends readonly unknown[] = readonly [],
+  const D extends readonly unknown[] = readonly [],
 >(
-  config: Omit<BasePluginConfig<K, O, A, Tx, S>, 'api' | 'key' | 'plugins'> & {
+  config: Omit<
+    BasePluginConfig<K, O, A, Tx, S>,
+    'api' | 'dependencies' | 'key' | 'plugins'
+  > & {
     api: A;
+    dependencies?: D;
     key: K;
     plugins?: P;
   }
-): BasePlugin<PluginConfig<K, O, A, Tx, S> | InferNestedPluginConfigs<P>>;
+): BasePlugin<
+  PluginConfig<K, O, A, Tx, S, {}, D> | InferNestedPluginConfigs<P>
+>;
 export function createBasePlugin<C extends AnyPluginConfig = never>(
   config:
     | ((editor: BaseEditor) => ExplicitTypedBasePluginConfig<C>)
@@ -272,12 +280,16 @@ export function createBasePlugin<
   Tx extends AnyPluginTx = {},
   S = {},
   const P extends readonly unknown[] = readonly [],
+  const D extends readonly unknown[] = readonly [],
 >(
-  config: BasePluginConfig<K, O, A, Tx, S> & {
+  config: BasePluginConfig<K, O, A, Tx, S, {}, D> & {
+    dependencies?: D;
     key: K;
     plugins?: P;
   }
-): BasePlugin<PluginConfig<K, O, A, Tx, S> | InferNestedPluginConfigs<P>>;
+): BasePlugin<
+  PluginConfig<K, O, A, Tx, S, {}, D> | InferNestedPluginConfigs<P>
+>;
 export function createBasePlugin<
   K extends string = any,
   O = {},

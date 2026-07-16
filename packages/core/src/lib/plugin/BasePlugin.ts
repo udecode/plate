@@ -13,7 +13,6 @@ import type {
   Text,
   Value,
   EditorUpdateContext,
-  EditorUpdateTransaction,
 } from '@platejs/plite';
 import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 
@@ -24,6 +23,10 @@ import type {
   PliteRenderTextProps,
 } from '../../static';
 import type { BaseEditor } from '../editor';
+import type {
+  PlatePluginOwnUpdate,
+  PlatePluginTransaction,
+} from '../editor/pluginRuntimeTypes';
 import type {
   InputRulesConfig,
   InputRulesDefinition,
@@ -41,8 +44,10 @@ import type {
   GetInjectNodePropsOptions,
   GetInjectNodePropsReturnType,
   InferApi,
+  InferDependencies,
   InferOptions,
   InferPluginApi,
+  InferPluginConfigTree,
   InferPluginTx,
   InferSelectors,
   InferState,
@@ -230,8 +235,9 @@ export type PartialBasePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
   node?: Partial<BasePlugin<C>['node']>;
 };
 
-export type RenderStaticNodeWrapper<C extends AnyPluginConfig = PluginConfig> =
-  (props: RenderStaticNodeWrapperProps<C>) => RenderStaticNodeWrapperFunction;
+export type RenderStaticNodeWrapper<
+  C extends AnyPluginConfig = AnyPluginConfig,
+> = (props: RenderStaticNodeWrapperProps<C>) => RenderStaticNodeWrapperFunction;
 
 export type RenderStaticNodeWrapperFunction =
   | ((hocProps: PliteRenderElementProps) => React.ReactNode)
@@ -239,7 +245,7 @@ export type RenderStaticNodeWrapperFunction =
   | undefined;
 
 export interface RenderStaticNodeWrapperProps<
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyPluginConfig = AnyPluginConfig,
 > extends PliteRenderElementProps<Element, C> {
   key: string;
 }
@@ -254,8 +260,11 @@ export type Serializer<C extends AnyPluginConfig = PluginConfig> =
     ) => boolean;
   };
 
-export type PlatePluginTxGroup<TGroup extends object = object> = (
-  transaction: EditorUpdateTransaction,
+export type PlatePluginTxGroup<
+  TGroup extends object = object,
+  C extends AnyPluginConfig = AnyPluginConfig,
+> = (
+  transaction: PlatePluginTransaction<InferPluginConfigTree<C>>,
   editor: BaseEditor,
   context: EditorUpdateContext
 ) => TGroup;
@@ -269,20 +278,20 @@ export type PluginTx<K extends string, Group extends object> = Record<K, Group>;
 
 export type ExtendTx<
   C extends AnyPluginConfig = PluginConfig,
-  TGroup extends PlatePluginTxGroup = PlatePluginTxGroup,
-> = (ctx: BasePluginContext<C>) => TGroup;
+  TGroup extends PlatePluginTxGroup<object, C> = PlatePluginTxGroup<object, C>,
+> = (ctx: BasePluginImplementationContext<C>) => TGroup;
 
 export type ExtendTxGroups<
   C extends AnyPluginConfig = PluginConfig,
   ETx extends PlatePluginTxGroups = PlatePluginTxGroups,
-> = (ctx: BasePluginContext<C>) => ETx;
+> = (ctx: BasePluginImplementationContext<C>) => ETx;
 
 export type PlatePluginTxExtension = ExtendTxGroups<AnyPluginConfig> & {
   __plateOwnTxGroup?: true;
   __plateTxGroupKey?: string;
 };
 
-export type InferTxGroup<TGroup extends PlatePluginTxGroup> =
+export type InferTxGroup<TGroup extends (...args: any[]) => any> =
   ReturnType<TGroup>;
 
 type OwnPluginTx<C extends AnyPluginConfig> =
@@ -299,8 +308,18 @@ type HasOwnPluginTx<C extends AnyPluginConfig> = [OwnPluginTx<C>] extends [
 export type BasePluginContextEditor<C extends AnyPluginConfig = PluginConfig> =
   Omit<BaseEditor, 'api' | 'update'> & {
     readonly api: BaseEditor<Value, never>['api'] & C['api'];
-    update: BaseEditor<Value, C>['update'];
+    update: PlatePluginOwnUpdate<C>;
   };
+
+export type BasePluginImplementationContext<
+  C extends AnyPluginConfig = PluginConfig,
+> = PluginBaseContext<C> & {
+  editor: {
+    readonly api: BaseEditor<Value, InferPluginConfigTree<C>>['api'];
+    update: BaseEditor<Value, InferPluginConfigTree<C>>['update'];
+  } & BasePluginContextEditor<C>;
+  plugin: BasePlugin<C>;
+};
 
 /** Base interface for non-React Plate editor plugins. */
 export type BasePlugin<C extends AnyPluginConfig = PluginConfig> =
@@ -328,7 +347,7 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> =
         ) => HandlerReturnType;
       }>;
       inject: Nullable<{
-        nodeProps?: InjectNodeProps<WithAnyKey<C>>;
+        nodeProps?: InjectNodeProps<C>;
         plugins?: Record<string, PartialBasePlugin<AnyPluginConfig>>;
         targetPluginToInject?: (
           ctx: BasePluginContext<C> & { targetPlugin: string }
@@ -569,7 +588,8 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       EA & InferApi<C>,
       InferTx<C>,
       ES & InferSelectors<C>,
-      InferState<C>
+      InferState<C>,
+      InferDependencies<C>
     >
   >;
   extendExtension<const TExtension>(
@@ -582,7 +602,8 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferApi<C> & ExtensionApiFromArgument<TExtension>,
       InferTx<C> & ExtensionTxFromArgument<TExtension>,
       InferSelectors<C>,
-      InferState<C> & ExtensionStateFromArgument<TExtension>
+      InferState<C> & ExtensionStateFromArgument<TExtension>,
+      InferDependencies<C>
     >
   >;
   extendExtension<const TKey extends string, const TExtension>(
@@ -596,7 +617,8 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferApi<C> & ExtensionApiFromArgument<TExtension>,
       InferTx<C> & ExtensionTxFromArgument<TExtension>,
       InferSelectors<C>,
-      InferState<C> & ExtensionStateFromArgument<TExtension>
+      InferState<C> & ExtensionStateFromArgument<TExtension>,
+      InferDependencies<C>
     >
   >;
   extendApi<
@@ -610,7 +632,8 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferApi<C> & Record<C['key'], EA>,
       InferTx<C>,
       InferSelectors<C>,
-      InferState<C>
+      InferState<C>,
+      InferDependencies<C>
     >
   >;
   extendEditorApi<
@@ -633,7 +656,8 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       },
       InferTx<C>,
       InferSelectors<C>,
-      InferState<C>
+      InferState<C>,
+      InferDependencies<C>
     >
   >;
   extendPlugin<
@@ -660,15 +684,16 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferApi<C>,
       InferTx<C>,
       ES & InferSelectors<C>,
-      InferState<C>
+      InferState<C>,
+      InferDependencies<C>
     >
   >;
   extendTx(
     extension: HasOwnPluginTx<C> extends true
-      ? ExtendTx<C, PlatePluginTxGroup<OwnPluginTx<C>>>
+      ? ExtendTx<C, PlatePluginTxGroup<OwnPluginTx<C>, C>>
       : never
   ): BasePlugin<C>;
-  extendTx<TGroup extends PlatePluginTxGroup>(
+  extendTx<TGroup extends PlatePluginTxGroup<object, C>>(
     extension: ExtendTx<C, TGroup>
   ): BasePlugin<
     PluginConfig<
@@ -677,12 +702,16 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferApi<C>,
       InferTx<C> & PluginTx<C['key'], InferTxGroup<TGroup>>,
       InferSelectors<C>,
-      InferState<C>
+      InferState<C>,
+      InferDependencies<C>
     >
   >;
   extendTxGroup<
     K extends string,
-    TGroup extends PlatePluginTxGroup = PlatePluginTxGroup,
+    TGroup extends PlatePluginTxGroup<object, C> = PlatePluginTxGroup<
+      object,
+      C
+    >,
   >(
     key: K,
     extension: ExtendTx<C, TGroup>
@@ -693,7 +722,8 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferApi<C>,
       InferTx<C> & PluginTx<K, InferTxGroup<TGroup>>,
       InferSelectors<C>,
-      InferState<C>
+      InferState<C>,
+      InferDependencies<C>
     >
   >;
   /** Returns a new instance of the plugin with the component. */

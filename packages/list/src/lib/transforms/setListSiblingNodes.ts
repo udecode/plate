@@ -11,26 +11,6 @@ import type { GetSiblingListOptions } from '../queries/getSiblingList';
 import { getListSiblings } from '../queries/getListSiblings';
 import { ListStyleType } from '../types';
 
-/** Set indent list to entry + siblings. */
-export const setListSiblingNodes = <N extends Element = Element>(
-  editor: BaseEditor,
-  entry: NodeEntry<Element>,
-  {
-    getSiblingListOptions,
-    listStyleType = ListStyleType.Disc,
-  }: {
-    getSiblingListOptions?: GetSiblingListOptions<N>;
-    listStyleType?: string;
-  }
-) => {
-  editor.update((tx) =>
-    setListSiblingNodesWithTx(editor, tx, entry, {
-      getSiblingListOptions,
-      listStyleType,
-    })
-  );
-};
-
 export const setListSiblingNodesWithTx = <N extends Element = Element>(
   editor: BaseEditor,
   tx: Pick<EditorUpdateTransaction, 'nodes'>,

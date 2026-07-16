@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const indentValue: any = (
+export const indentValue = (
   <fragment>
     <hh2>缩进</hh2>
     <hp indent={1}>轻松控制特定块的缩进，以突出显示重要信息并改善视觉结构。</hp>

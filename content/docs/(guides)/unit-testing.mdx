@@ -81,8 +81,9 @@ it('should apply bold formatting', () => {
     selection: input.selection,
   });
 
-  // Apply transform directly
-  editor.tf.toggleMark('bold');
+  editor.update((tx) => {
+    tx.marks.toggle('bold');
+  });
 
   expect(editor.children).toEqual(output.children);
 });
@@ -115,7 +116,9 @@ it('should collapse selection on backspace', () => {
     selection: input.selection,
   });
 
-  editor.tf.deleteBackward();
+  editor.update((tx) => {
+    tx.text.deleteBackward({ unit: 'character' });
+  });
 
   expect(editor.children).toEqual(output.children);
   expect(editor.selection).toEqual(output.selection);
@@ -159,7 +162,7 @@ it('should call the onKeyDown handler', () => {
 
   // Call the handler directly
   editor.plugins.test.handlers.onKeyDown({
-    ...getEditorPlugin(editor, { key: 'test' }),
+    ...getBasePlugin(editor, { key: 'test' }),
     event,
   });
 
@@ -215,8 +218,9 @@ describe('Table plugin', () => {
       plugins: [TablePlugin],
     });
 
-    // Call transform directly
-    editor.tf.insertTable({ rows: 2, columns: 2 });
+    editor.update((tx) => {
+      tx.insert.table({ colCount: 2, rowCount: 2 });
+    });
 
     expect(editor.children).toEqual(output.children);
     expect(editor.selection).toEqual(output.selection);
@@ -261,7 +265,7 @@ describe('when keepSelectedTextOnPaste is disabled', () => {
       value: input,
     });
 
-    editor.tf.insertData({
+    editor.api.clipboard.insertData({
       getData: (type: string) => (type === 'text/plain' ? 'https://google.com' : ''),
     } as any);
 

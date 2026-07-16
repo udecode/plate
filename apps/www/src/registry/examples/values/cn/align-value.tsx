@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const alignValue: any = (
+export const alignValue = (
   <fragment>
     <hh2 align="right">对齐</hh2>
     <hp align="right">在块内对齐文本以创建视觉上吸引人且平衡的布局。</hp>

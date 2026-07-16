@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const linkValue: any = (
+export const linkValue = (
   <fragment>
     <hh2>Link</hh2>
     <hp>

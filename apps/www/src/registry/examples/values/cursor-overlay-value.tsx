@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const cursorOverlayValue: any = (
+export const cursorOverlayValue = (
   <fragment>
     <hh2>Cursor Overlay</hh2>
     <hp>

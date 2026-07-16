@@ -2,11 +2,14 @@ import * as React from 'react';
 
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import type { TCodeBlockElement } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
 const isLangSupportedMock = mock((_lang?: string) => false);
 const useReadOnlyMock = mock(() => true);
 
-let currentElement: any;
+let currentElement: TCodeBlockElement;
+const editor = {} as PlateEditor;
 
 mock.module('@platejs/code-block', () => ({
   formatCodeBlock: mock(),
@@ -29,12 +32,15 @@ mock.module('platejs/react', () => ({
     <span className={className}>{children}</span>
   ),
   useEditorRef: () => ({
-    tf: {
-      setNodes: mock(),
+    update: {
+      nodes: {
+        set: mock(),
+      },
     },
   }),
   useElement: () => currentElement,
   useEditorReadOnly: () => useReadOnlyMock(),
+  usePath: () => [0],
 }));
 
 mock.module('@/components/ui/button', () => ({
@@ -89,7 +95,7 @@ describe('CodeBlockElement', () => {
     const view = render(
       <CodeBlockElement
         attributes={{}}
-        editor={{} as any}
+        editor={editor}
         element={currentElement}
       >
         <span>const value = 1;</span>
@@ -108,7 +114,7 @@ describe('CodeBlockElement', () => {
     const view = render(
       <CodeBlockElement
         attributes={{}}
-        editor={{} as any}
+        editor={editor}
         element={currentElement}
         showLanguageLabel={false}
       >

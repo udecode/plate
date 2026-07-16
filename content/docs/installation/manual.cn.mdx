@@ -136,7 +136,7 @@ export default function App() {
 
 <ComponentPreview name="installation-next-02-marks-demo" height="200px" />
 
-您需要自行实现工具栏来应用这些标记。例如切换加粗效果：`editor.tf.bold.toggle()`。
+您需要自行实现工具栏来应用这些标记。例如切换加粗效果：`editor.update((tx) => tx.bold.toggle())`。
 
 ### 添加基础元素
 
@@ -345,7 +345,9 @@ export default function App() {
       {/* 工具栏放置位置 */}
       <div style={{ padding: '8px 0' }}>
         <button
-          onClick={() => editor.tf.setValue(initialValue)}
+          onClick={() =>
+            editor.update((tx) => tx.value.replace({ children: initialValue }))
+          }
           style={{
             padding: '4px 8px',
             margin: '0 4px',
@@ -375,7 +377,7 @@ export default function App() {
   上例演示了管理编辑器值的基础模式：
   - 通过`usePlateEditor`的`value`选项设置初始值
   - 通过`<Plate>`的`onChange`属性处理变化
-  - 重置按钮使用`editor.tf.setValue()`恢复初始值
+  - 重置按钮使用 `editor.update((tx) => tx.value.replace(...))` 恢复初始值
   - 如需控制值，请参阅[受控值](/docs/controlled)
 </Callout>
 
@@ -389,7 +391,7 @@ export default function App() {
     *   如需快速使用预制组件，考虑使用[Plate UI](/docs/installation/plate-ui)
     *   或继续使用CSS、CSS-in-JS库或您偏好的样式解决方案手动设置样式
 *   **[添加插件](/docs/plugins):** Plate拥有丰富的插件生态（如表单、提及、图片、列表等）。安装对应包（如`@platejs/table`）并添加到`plugins`数组
-*   **[构建工具栏](/docs/toolbar):** 创建使用[编辑器转换](/docs/transforms)应用格式的工具栏按钮组件（如`editor.tf.bold.toggle()`、`editor.tf.h1.toggle()`）。您也可以结合[编辑器API](/docs/api)使用编辑器状态
+*   **[构建工具栏](/docs/toolbar):** 创建使用[编辑器转换](/docs/transforms)应用格式的工具栏按钮组件（如`editor.update((tx) => tx.bold.toggle())`、`editor.update((tx) => tx.h.toggle())`）。您也可以结合[编辑器API](/docs/api)使用编辑器状态
 *   **深入学习：**
     *   [编辑器配置](/docs/editor)
     *   [插件配置](/docs/plugin)

@@ -43,7 +43,8 @@ export const normalizeListStart = (
   editor: BaseEditor,
   tx: Pick<EditorUpdateTransaction, 'nodes'>,
   entry: NodeEntry<Element>,
-  options?: Partial<GetSiblingListOptions<Element>>
+  options?: Partial<GetSiblingListOptions<Element>>,
+  previousEntry?: NodeEntry<Element> | null
 ) => {
   const [node, path] = entry;
   const listStyleType = node[KEYS.listType];
@@ -51,7 +52,11 @@ export const normalizeListStart = (
 
   if (typeof listStyleType !== 'string') return false;
 
-  if ((ULIST_STYLE_TYPES as readonly string[]).includes(listStyleType)) {
+  if (
+    ULIST_STYLE_TYPES.some(
+      (unorderedListStyleType) => unorderedListStyleType === listStyleType
+    )
+  ) {
     if (isDefined(listStart)) {
       tx.nodes.unset(KEYS.listStart, { at: path });
 
@@ -61,14 +66,17 @@ export const normalizeListStart = (
     return;
   }
 
-  const prevEntry = getPreviousList(
-    editor,
-    entry,
-    getListSequenceSiblingOptions(editor, {
-      breakOnEqIndentNeqListStyleType: false,
-      ...options,
-    })
-  );
+  const prevEntry =
+    previousEntry === undefined
+      ? getPreviousList(
+          editor,
+          entry,
+          getListSequenceSiblingOptions(editor, {
+            breakOnEqIndentNeqListStyleType: false,
+            ...options,
+          })
+        )
+      : (previousEntry ?? undefined);
   const expectedListStart = getListExpectedListStart(entry, prevEntry);
 
   if (isDefined(listStart) && expectedListStart === 1) {

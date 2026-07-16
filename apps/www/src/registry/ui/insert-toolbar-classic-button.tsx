@@ -28,7 +28,7 @@ import {
   TableOfContentsIcon,
 } from 'lucide-react';
 import { KEYS } from 'platejs';
-import { useEditorRef } from 'platejs/react';
+import { type PlateEditor, useEditorRef } from 'platejs/react';
 
 import {
   DropdownMenu,
@@ -51,7 +51,7 @@ type Group = {
 type Item = {
   icon: React.ReactNode;
   value: string;
-  onSelect: (editor: any, value: string) => void;
+  onSelect: (editor: PlateEditor, value: string) => void;
   focusEditor?: boolean;
   label?: string;
 };
@@ -242,7 +242,7 @@ export function InsertToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 onSelect={() => {
                   onSelect(editor, value);
-                  editor.tf.focus();
+                  editor.api.dom.focus();
                 }}
               >
                 {icon}

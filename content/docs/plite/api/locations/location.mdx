@@ -13,6 +13,16 @@ instead of requiring only `Path`, `Point`, or `Range`.
 type Location = Path | Point | Range;
 ```
 
+Public read and update methods with an `at` option accept `NodeTarget`, which
+adds live text and element nodes without changing the `Location` type.
+
+```typescript
+type NodeTarget<N extends Descendant = Descendant> = Location | N;
+```
+
+Use `editor.read.nodes.path(node)` when you need to resolve a node target to its
+current path. Pure location utilities continue to accept structural locations.
+
 ## On This Page
 
 - [Static methods](location#static-methods)

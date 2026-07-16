@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const listValue: any = (
+export const listValue = (
   <fragment>
     <hh2>List</hh2>
 

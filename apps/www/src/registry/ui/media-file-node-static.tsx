@@ -2,14 +2,14 @@ import * as React from 'react';
 
 import type { TFileElement } from 'platejs';
 import type { TSuggestionData } from 'platejs';
-import type { SlateElementProps } from 'platejs/static';
+import type { PliteElementProps } from 'platejs/static';
 
 import { FileUp } from 'lucide-react';
-import { SlateElement } from 'platejs/static';
+import { PliteElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
 
-export function FileElementStatic(props: SlateElementProps<TFileElement>) {
+export function FileElementStatic(props: PliteElementProps<TFileElement>) {
   const { name, url } = props.element;
   const suggestionData = (
     props.element as TFileElement & {
@@ -19,7 +19,7 @@ export function FileElementStatic(props: SlateElementProps<TFileElement>) {
   const isRemoveSuggestion = suggestionData?.type === 'remove';
 
   return (
-    <SlateElement className="my-px rounded-sm" {...props}>
+    <PliteElement className="my-px rounded-sm" {...props}>
       <a
         className={cn(
           'group relative m-0 flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted',
@@ -43,6 +43,6 @@ export function FileElementStatic(props: SlateElementProps<TFileElement>) {
         </div>
       </a>
       {props.children}
-    </SlateElement>
+    </PliteElement>
   );
 }

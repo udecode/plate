@@ -1,7 +1,7 @@
-import { useEditorRef, useEditorSelector } from 'platejs/react';
+import { useEditorRef, useEditorSelector } from '@platejs/core/react';
 
-import { ListStyleType, toggleList } from '../../index';
-import { someList } from '../../lib/queries/someList';
+import { ListStyleType } from '../../lib/types';
+import { ListPlugin } from '../ListPlugin';
 
 export const useListToolbarButtonState = ({
   nodeType = ListStyleType.Disc,
@@ -9,7 +9,7 @@ export const useListToolbarButtonState = ({
   nodeType?: string;
 } = {}) => {
   const pressed = useEditorSelector(
-    (editor) => someList(editor, nodeType),
+    (editor) => editor.plugin(ListPlugin).api.isActive(nodeType),
     [nodeType]
   );
 
@@ -29,7 +29,7 @@ export const useListToolbarButton = ({
     props: {
       pressed,
       onClick: () => {
-        toggleList(editor, {
+        editor.plugin(ListPlugin).update.toggle({
           listStyleType: nodeType,
         });
       },

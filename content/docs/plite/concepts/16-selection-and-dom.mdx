@@ -35,7 +35,7 @@ Most editor code should write the model selection and let Plite export the DOM/n
 Read selection through `editor.read(...)`.
 
 ```tsx
-const selection = editor.read((state) => state.selection.get());
+const selection = editor.read((state) => state.selection());
 ```
 
 Write selection inside `editor.update(...)`.
@@ -48,6 +48,26 @@ editor.update((tx) => {
   });
 });
 ```
+
+## Selection Queries
+
+Use explicit predicates instead of rebuilding point and block comparisons in
+feature code.
+
+```tsx
+const inOneText = editor.read.selection.isWithinText();
+const acrossBlocks = editor.read.selection.isAcrossBlocks();
+const atHeadingStart = editor.read.selection.isAtBlockStart({
+  match: { type: "heading" },
+});
+const intersectsIntro = editor.read.selection.intersects([0]);
+const containsRange = editor.read.selection.contains(range);
+const atWordEnd = editor.read.points.isWordEnd(point);
+```
+
+`isWithinBlock`, `isAcrossBlocks`, `isAtBlockStart`, and `isAtBlockEnd` accept
+`at` and `match` options. Omit `at` to inspect the current selection. These
+queries return `false` when the target or current selection does not resolve.
 
 Use [Locations](03-locations) for `Path`, `Point`, `Range`, and refs. Use [Transforms](04-transforms#selection) for transaction selection helpers.
 

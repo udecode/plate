@@ -112,7 +112,7 @@ export const codePlugin = CodePlugin.configure({
 | `CodePlugin` | `@platejs/basic-nodes/react` | React wrapper for the headless code mark. |
 | `CodeRules.markdown` | `@platejs/basic-nodes` | Optional backtick input rule. |
 | `CodeLeaf` | Registry UI | Styled inline code leaf using `PlateLeaf`. |
-| `CodeLeafStatic` | Registry UI | Static rendering version using `SlateLeaf`. |
+| `CodeLeafStatic` | Registry UI | Static rendering version using `PliteLeaf`. |
 | `BasicMarksKit` | Registry | Adds `CodePlugin`, `CodeLeaf`, `CodeRules.markdown()`, and `mod+e`. |
 | `MarkToolbarButton` | Registry UI | Reads active mark state and calls the mark toggle hook. |
 
@@ -124,7 +124,7 @@ The package owns inline code semantics. The registry owns visual styling and too
 |----------|--------|
 | Mark key | `KEYS.code` |
 | Leaf behavior | `node.isLeaf: true` |
-| Toggle transform | `editor.tf.code.toggle()` calls `editor.tf.toggleMark(type)`. |
+| Toggle command | `tx.code.toggle()` calls `tx.marks.toggle(type)`. |
 | Selection affinity | `hard` |
 | HTML tags | `code` |
 | HTML styles | `font-family: Consolas` |
@@ -139,7 +139,6 @@ The package owns inline code semantics. The registry owns visual styling and too
 | `BaseCodePlugin` | `@platejs/basic-nodes` | Headless inline code plugin. |
 | `CodePlugin` | `@platejs/basic-nodes/react` | React inline code plugin. |
 | `CodeRules.markdown()` | `@platejs/basic-nodes` | Creates the backtick mark input rule. |
-| `tf.code.toggle()` | `@platejs/basic-nodes` | Toggles the inline code mark at the selection. |
+| `tx.code.toggle()` | `@platejs/basic-nodes` | Toggles the inline code mark at the selection. |
 | `CodeLeaf` | Registry UI | Styled client inline code leaf. |
 | `CodeLeafStatic` | Registry UI | Styled static inline code leaf. |
-

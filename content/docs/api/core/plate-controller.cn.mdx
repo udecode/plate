@@ -105,9 +105,9 @@ const App = withHoc(PlateController, () => {
 有两种方法可以确定您是否正在使用回退编辑器或真实编辑器：
 
 - **`useEditorMounted`** 如果无法解析到已挂载的编辑器，则返回 **`false`**
-- **`editor.meta.isFallback`** 对于回退编辑器为 **`true`**
+- **`editor.runtime.isFallback`** 对于回退编辑器为 **`true`**
 
-在 **`PlateController`** 内部使用 **`useEditorRef`** 等钩子时，您应该编写防御性代码，以确保在出现回退编辑器时能够适当处理。例如，如果 **`useEditorMounted`** 返回 **`false`**，您可以禁用工具栏按钮，或者如果 **`editor.meta.isFallback`** 为 **`true`**，则可以忽略事件。
+在 **`PlateController`** 内部使用 **`useEditorRef`** 等钩子时，您应该编写防御性代码，以确保在出现回退编辑器时能够适当处理。例如，如果 **`useEditorMounted`** 返回 **`false`**，您可以禁用工具栏按钮，或者如果 **`editor.runtime.isFallback`** 为 **`true`**，则可以忽略事件。
 
 ```tsx
 import { KEYS } from 'platejs';

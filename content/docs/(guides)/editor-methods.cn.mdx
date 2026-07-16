@@ -102,36 +102,53 @@ const Toolbar = () => {
 };
 ```
 
-也可通过`editor.meta.isFallback`检查是否为回退实例。
+也可通过`editor.runtime.isFallback`检查是否为回退实例。
 
-## API方法
+## 编辑器 API 和命令
 
-### findPath
+`editor.api` 用于读取、DOM service 和 host helper。`editor.update` 用于会改变文档、选择、历史或插件状态的命令。
 
-查找节点的路径。默认为`findNodePath`（遍历）。被`withPlate`覆盖为使用`ReactEditor.findPath`（记忆化）。
+```ts title="editor-methods.ts" showLineNumbers
+const selectedText = editor.selection
+  ? editor.api.string(editor.selection)
+  : '';
 
-```ts
-const path = editor.findPath(node);
+const currentBlock = editor.api.block();
+
+if (selectedText && !editor.api.hasMark('bold')) {
+  editor.update((tx) => tx.marks.toggle('bold'));
+}
+
+editor.update((tx) => {
+  tx.nodes.insert({
+    children: [{ text: 'New paragraph' }],
+    type: 'p',
+  });
+});
 ```
 
-### getPluginApi
+| 表面 | 示例 | 用途 |
+| --- | --- | --- |
+| `editor.api` | `string`, `block`, `hasMark`, `isExpanded`, `dom.focus` | 读取编辑器状态、检查 selection、DOM/runtime services。 |
+| `editor.update` | `tx.nodes.insert`, `tx.nodes.set`, `tx.marks.toggle`, `tx.selection.set` | 修改文档或编辑器状态。 |
 
-获取编辑器的类型化API：
+## 插件方法
 
-```ts
-const api = editor.getPluginApi(TablePlugin);
-api.api.create.tableCell(); // 类型安全的API方法
-```
+插件 helper 让 TypeScript 从传入的插件推断 API。插件命令通过 `editor.update` 执行。
 
-### editor.update
+```ts title="table-methods.ts" showLineNumbers
+import { TablePlugin } from '@platejs/table/react';
 
-运行类型化事务命令：
+const cell = editor.api.create.tableCell();
 
-```ts
 editor.update((tx) => tx.insert.tableRow());
 ```
 
-## 插件方法
+| 方法 | 用途 |
+| --- | --- |
+| `editor.getPlugin(plugin)` | 读取已解析插件实例。 |
+| `editor.getType(pluginKey)` | 读取插件 key 注册的节点 type。 |
+| `editor.getInjectProps(plugin)` | 读取已解析 injected node props。 |
 
 ### getPlugin
 
@@ -157,7 +174,7 @@ const paragraphType = editor.getType(KEYS.p);
 获取插件的特定选项值：
 
 ```ts
-const search = editor.getOption(FindReplacePlugin, 'search');
+const search = editor.plugin(FindReplacePlugin).getOption('search');
 ```
 
 要订阅选项变化，可使用`usePluginOption`或`usePluginOptions`钩子。
@@ -167,7 +184,7 @@ const search = editor.getOption(FindReplacePlugin, 'search');
 获取插件的所有选项：
 
 ```ts
-const linkOptions = editor.getOptions(LinkPlugin);
+const linkOptions = editor.plugin(LinkPlugin).getOptions();
 ```
 
 ### setOption
@@ -175,7 +192,7 @@ const linkOptions = editor.getOptions(LinkPlugin);
 设置插件的特定选项值：
 
 ```ts
-editor.setOption(FindReplacePlugin, 'search', 'hello');
+editor.plugin(FindReplacePlugin).setOption('search', 'hello');
 ```
 
 ### setOptions
@@ -183,7 +200,7 @@ editor.setOption(FindReplacePlugin, 'search', 'hello');
 设置插件的多个选项：
 
 ```ts
-editor.setOptions(FindReplacePlugin, {
+editor.plugin(FindReplacePlugin).setOptions({
   search: 'hello',
   caseSensitive: true,
 });
@@ -192,7 +209,7 @@ editor.setOptions(FindReplacePlugin, {
 也可使用Immer函数更新选项：
 
 ```ts
-editor.setOptions(FindReplacePlugin, (draft) => {
+editor.plugin(FindReplacePlugin).setOptions((draft) => {
   draft.search = 'hello';
   draft.caseSensitive = true;
 });

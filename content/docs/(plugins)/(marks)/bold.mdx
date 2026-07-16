@@ -119,7 +119,7 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 |----------|--------|
 | Mark key | `KEYS.bold` |
 | Leaf behavior | `node.isLeaf: true` |
-| Toggle transform | `editor.tf.bold.toggle()` calls `editor.tf.toggleMark(type)`. |
+| Toggle command | `tx.bold.toggle()` calls `tx.marks.toggle(type)`. |
 | Shortcut | `BoldPlugin` registers `mod+b`. |
 | HTML tags | `strong`, `b` |
 | HTML styles | `font-weight: 600`, `700`, or `bold` |
@@ -133,5 +133,4 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 | `BaseBoldPlugin` | `@platejs/basic-nodes` | Headless bold plugin. |
 | `BoldPlugin` | `@platejs/basic-nodes/react` | React bold plugin with shortcut defaults. |
 | `BoldRules.markdown(options)` | `@platejs/basic-nodes` | Creates a bold mark input rule. |
-| `tf.bold.toggle()` | `@platejs/basic-nodes` | Toggles the bold mark at the selection. |
-
+| `tx.bold.toggle()` | `@platejs/basic-nodes` | Toggles the bold mark at the selection. |

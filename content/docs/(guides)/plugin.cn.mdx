@@ -232,7 +232,7 @@ type CustomConfig = PluginConfig<
   { allowDelete: boolean }
 >;
 
-const CustomPlugin = createTPlatePlugin<CustomConfig>({
+const CustomPlugin = createPlatePlugin<CustomConfig>({
   key: 'custom',
   options: { allowDelete: true },
 }).overrideEditor(({ editor, tf: { deleteForward }, getOptions }) => ({
@@ -249,24 +249,35 @@ const CustomPlugin = createTPlatePlugin<CustomConfig>({
 }));
 ```
 
-### 扩展编辑器（高级）
+### 安装 Plite 扩展（高级）
 
-对于复杂功能，您可以直接扩展编辑器。使用`extendEditor`插件选项在创建后直接修改`editor`对象的属性。
+当 Plate 插件需要安装 Plite 底层能力时使用 `extensions`：schema 事实、state 组、tx 组、operation 中间件或运行时服务。
 
-```ts showLineNumbers {20}
-const CustomNormalizerPlugin = createPlatePlugin({
-  key: 'customNormalizer',
-  extendEditor: ({ editor }) => {
-    editor.customState = true;
-    
-    return editor;
+```ts showLineNumbers
+import { defineEditorExtension } from '@platejs/plite';
+import { createPlatePlugin } from 'platejs/react';
+
+const customState = defineEditorExtension({
+  name: 'custom-state',
+  state: {
+    customState() {
+      return {
+        enabled: () => true,
+      };
+    },
   },
+});
+
+const CustomStatePlugin = createPlatePlugin({
+  key: 'customState',
+  extensions: [customState],
 });
 ```
 
-<Callout type="info" title="extendEditor与overrideEditor的区别">
-- 当集成需要直接编辑器变异的传统Plite插件（如`withYjs`）时使用`extendEditor`。每个插件只有一个`extendEditor`。
-- 修改编辑器行为时优先使用`overrideEditor`，因为它具有单一职责和更好的类型安全性。可以多次调用以分层不同的重写。
+<Callout type="info" title="extensions、overrideEditor 和命令">
+- 使用 `extensions` 安装 Plite 底层能力。
+- 只有在包装已有编辑器行为时使用 `overrideEditor`。
+- 使用 `editor.api` 做读取和服务，使用 `editor.update` 或 `tx` 组做变更。
 </Callout>
 
 ## 高级插件配置
@@ -294,13 +305,13 @@ const MyPlugin = createPlatePlugin({
 
 ```ts
 // 获取当前值
-const count = editor.getOption(MyPlugin, 'count');
+const count = editor.plugin(MyPlugin).getOption('count');
 
 // 设置新值
-editor.setOption(MyPlugin, 'count', 5);
+editor.plugin(MyPlugin).setOption('count', 5);
 
 // 基于先前状态更新值
-editor.setOption(MyPlugin, 'count', (prev) => prev + 1);
+editor.plugin(MyPlugin).setOption('count', (prev) => prev + 1);
 ```
 
 在React组件中，可以使用`usePluginOption`或`usePluginOptions`钩子订阅存储变更：
@@ -316,12 +327,12 @@ const MyComponent = () => {
 
 ### 依赖项
 
-使用`dependencies`属性指定插件依赖项，确保当前插件加载前所需插件已加载。
+使用插件对象声明所需依赖项。Plate 会递归安装依赖图，按插件 key 去重，并在依赖插件之后加载当前插件。
 
 ```ts
 const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
-  dependencies: ['paragraphPlugin', 'listPlugin'],
+  dependencies: [ParagraphPlugin, ListPlugin],
 });
 ```
 
@@ -394,11 +405,11 @@ const MyPlugin = createPlatePlugin({
 
 使用上述方法时，插件类型会根据给定配置自动推断。
 
-如果需要显式传递泛型类型，可以使用`createTPlatePlugin`。
+如果需要显式传递泛型类型，可以使用`createPlatePlugin`。
 
-### 使用createTPlatePlugin
+### 使用createPlatePlugin
 
-`createTPlatePlugin`函数允许创建类型化插件：
+`createPlatePlugin`函数允许创建类型化插件：
 
 ```ts
 type CodeBlockConfig = PluginConfig<
@@ -413,19 +424,17 @@ type CodeBlockConfig = PluginConfig<
     };
     toggleSyntax: () => void;
   },
-  // legacy transform slot
-  {},
-  // selectors
-  {},
   // tx
   {
     insert: {
       codeBlock: () => void;
     };
-  }
+  },
+  // selectors
+  {}
 >;
 
-const CodeBlockPlugin = createTPlatePlugin<CodeBlockConfig>({
+const CodeBlockPlugin = createPlatePlugin<CodeBlockConfig>({
   key: 'code_block',
   options: { syntax: true, syntaxPopularFirst: false },
 }).extendEditorApi<CodeBlockConfig['api']>(() => ({
@@ -454,7 +463,7 @@ const editor = createPlateEditor({
 });
 
 // 类型安全的选项访问
-const options = editor.getOptions(ExtendedCodeBlockPlugin);
+const options = editor.plugin(ExtendedCodeBlockPlugin).getOptions();
 options.syntax;
 options.syntaxPopularFirst;
 options.hotkey;

@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const copilotValue: any = (
+export const copilotValue = (
   <fragment>
     <hh2>Copilot</hh2>
     <hp indent={1} listStyleType="decimal">

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { PointRef, TElement } from 'platejs';
+import type { Element, PointRef } from '@platejs/plite';
 
 import {
   type ComboboxItemProps,
@@ -24,7 +24,7 @@ import {
   useHTMLInputCursorState,
 } from '@platejs/combobox/react';
 import { cva } from 'class-variance-authority';
-import { useComposedRef, useEditorRef } from 'platejs/react';
+import { useComposedRef, useEditorRef, useNodePath } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
@@ -43,26 +43,37 @@ type InlineComboboxContextValue = {
   setHasEmpty: (hasEmpty: boolean) => void;
 };
 
-const InlineComboboxContext = React.createContext<InlineComboboxContextValue>(
-  null as unknown as InlineComboboxContextValue
-);
+const InlineComboboxContext =
+  React.createContext<InlineComboboxContextValue | null>(null);
+
+const useInlineComboboxContext = () => {
+  const context = React.useContext(InlineComboboxContext);
+
+  if (!context) {
+    throw new Error('Inline combobox components require InlineCombobox');
+  }
+
+  return context;
+};
 
 const defaultFilter: FilterFn = (
   { group, keywords = [], label, value },
   search
 ) => {
   const uniqueTerms = new Set(
-    [value, ...keywords, group, label].filter(Boolean)
+    [value, ...keywords, group, label].flatMap((term) =>
+      typeof term === 'string' ? [term] : []
+    )
   );
 
   return Array.from(uniqueTerms).some((keyword) =>
-    filterWords(keyword!, search)
+    filterWords(keyword, search)
   );
 };
 
 type InlineComboboxProps = {
   children: React.ReactNode;
-  element: TElement;
+  element: Element;
   trigger: string;
   filter?: FilterFn | false;
   hideWhenNoValue?: boolean;
@@ -82,6 +93,7 @@ const InlineCombobox = ({
   value: valueProp,
 }: InlineComboboxProps) => {
   const editor = useEditorRef();
+  const path = useNodePath(element);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const cursorState = useHTMLInputCursorState(inputRef);
 
@@ -91,14 +103,14 @@ const InlineCombobox = ({
 
   // Check if current user is the creator of this element (for Yjs collaboration)
   const isCreator = React.useMemo(() => {
-    const elementUserId = (element as any).userId;
-    const currentUserId = editor.meta.userId;
+    const elementUserId = element.userId;
+    const currentUserId = editor.runtime.userId;
 
-    // If no userId (backwards compatibility or non-Yjs), allow
+    // Inputs without a collaboration owner stay editable.
     if (!elementUserId) return true;
 
     return elementUserId === currentUserId;
-  }, [editor.meta.userId, element]);
+  }, [editor.runtime.userId, element]);
 
   const setValue = React.useCallback(
     (newValue: string) => {
@@ -121,24 +133,22 @@ const InlineCombobox = ({
     insertPointRef.current?.unref();
     insertPointRef.current = null;
 
-    const path = editor.api.findPath(element);
-
     if (!path) return;
 
-    const point = editor.api.before(path);
+    const point = editor.read.points.before(path);
 
     if (!point) return;
 
-    const pointRef = editor.api.pointRef(point);
-    insertPointRef.current = pointRef;
+    const nextPointRef = editor.update.refs.point(point);
+    insertPointRef.current = nextPointRef;
 
     return () => {
-      if (insertPointRef.current === pointRef) {
+      if (insertPointRef.current === nextPointRef) {
         insertPointRef.current = null;
       }
-      pointRef.unref();
+      nextPointRef.unref();
     };
-  }, [editor, element]);
+  }, [editor, path]);
 
   const { props: inputProps, removeInput } = useComboboxInput({
     cancelInputOnBlur: true,
@@ -146,17 +156,20 @@ const InlineCombobox = ({
     autoFocus: isCreator,
     ref: inputRef,
     onCancelInput: (cause) => {
-      if (cause !== 'backspace') {
-        editor.tf.insertText(trigger + value, {
+      if (cause === 'backspace') return;
+
+      editor.update((tx) => {
+        tx.text.insert(trigger + value, {
           at: insertPointRef.current?.current ?? undefined,
         });
-      }
-      if (cause === 'arrowLeft' || cause === 'arrowRight') {
-        editor.tf.move({
-          distance: 1,
-          reverse: cause === 'arrowLeft',
-        });
-      }
+
+        if (cause === 'arrowLeft' || cause === 'arrowRight') {
+          tx.selection.move({
+            distance: 1,
+            reverse: cause === 'arrowLeft',
+          });
+        }
+      });
     },
   });
 
@@ -229,7 +242,7 @@ const InlineComboboxInput = ({
     inputRef: contextRef,
     showTrigger,
     trigger,
-  } = React.useContext(InlineComboboxContext);
+  } = useInlineComboboxContext();
 
   const store = useComboboxContext()!;
   const value = store.useState('value');
@@ -345,7 +358,7 @@ const InlineComboboxItem = ({
   Required<Pick<ComboboxItemProps, 'value'>>) => {
   const { value } = props;
 
-  const { filter, removeInput } = React.useContext(InlineComboboxContext);
+  const { filter, removeInput } = useInlineComboboxContext();
 
   const store = useComboboxContext()!;
 
@@ -376,7 +389,7 @@ const InlineComboboxEmpty = ({
   children,
   className,
 }: React.HTMLAttributes<HTMLDivElement>) => {
-  const { setHasEmpty } = React.useContext(InlineComboboxContext);
+  const { setHasEmpty } = useInlineComboboxContext();
   const store = useComboboxContext()!;
   const items = store.useState('items');
 

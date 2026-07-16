@@ -5,7 +5,7 @@ import {
   jsxt,
   type TestEditor,
 } from '@platejs/test-utils';
-import { type Descendant, type Element } from 'platejs';
+import type { Descendant, Element } from '@platejs/plite';
 
 import { getListSiblings } from './getListSiblings';
 

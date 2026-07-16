@@ -200,7 +200,28 @@ You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolba
 </APIOptions>
 </API>
 
-## API
+## Commands
+
+Install `CodeBlockPlugin`, then mutate code blocks through its command group.
+
+```tsx
+editor.update.code_block.insert();
+editor.update.code_block.toggle();
+editor.update.code_block.tab();
+editor.update.code_block.untab();
+editor.update.code_block.resetBlock();
+editor.update.code_block.selectAll();
+```
+
+- `insert()` converts an empty selected block in place. For non-empty or
+  expanded selections, it inserts and selects a paragraph after the range-end
+  block, then converts that paragraph. It is a no-op without a selection.
+- `toggle()` converts selected blocks to or from code blocks.
+- `tab()` and `untab()` indent or outdent selected code lines by two spaces.
+- `resetBlock()` unwraps the selected code block into paragraphs.
+- `selectAll()` selects the containing code block.
+
+## Queries
 
 ### `isCodeBlockEmpty`
 
@@ -217,67 +238,3 @@ You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolba
   Whether the selection is at the start of the first code line in a code block.
 </APIReturns>
 </API>
-
-### `indentCodeLine`
-
-Indents the code line if the selection is expanded or there are no non-whitespace characters at left of the cursor. The indentation is 2 spaces by default.
-
-<API name="indentCodeLine">
-<APIOptions type="IndentCodeLineOptions">
-  <APIItem name="codeLine" type="ElementEntry">
-    The code line to be indented.
-  </APIItem>
-  <APIItem name="indentDepth" type="number">
-    The size of indentation for the code line.
-    - **Default:** `2`
-  </APIItem>
-</APIOptions>
-</API>
-
-### `insertCodeBlock`
-
-Inserts a code block by setting the node to code line and wrapping it with a code block. If the cursor is not at the block start, it inserts a break before the code block.
-
-<API name="insertCodeBlock">
-<APIParameters>
-  <APIItem name="insertNodesOptions" type="Omit<InsertNodesOptions, 'match'>" optional>
-    Options for inserting nodes.
-  </APIItem>
-</APIParameters>
-</API>
-
-### `insertCodeLine`
-
-Inserts a code line starting with the specified indentation depth.
-
-<API name="insertCodeLine">
-<APIParameters>
-  <APIItem name="indentDepth" type="number" optional>
-    The depth of indentation for the code line.
-    - **Default:** `0`
-  </APIItem>
-</APIParameters>
-</API>
-
-### `outdentCodeLine`
-
-Outdents a code line, removing two whitespace characters if present.
-
-<API name="outdentCodeLine">
-<APIOptions type="OutdentCodeLineOptions">
-  <APIItem name="codeLine" type="ElementEntry">
-    The code line to be outdented.
-  </APIItem>
-  <APIItem name="codeBlock" type="ElementEntry">
-    The code block containing the code line to be outdented.
-  </APIItem>
-</APIOptions>
-</API>
-
-### `toggleCodeBlock`
-
-Toggles the code block in the editor.
-
-### `unwrapCodeBlock`
-
-Unwraps the code block in the editor. 

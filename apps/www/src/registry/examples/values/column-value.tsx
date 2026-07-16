@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const columnValue: any = (
+export const columnValue = (
   <fragment>
     <hh2>Column</hh2>
     <hp>Create column and the border will hidden when viewing</hp>

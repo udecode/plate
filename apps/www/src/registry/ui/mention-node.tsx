@@ -9,9 +9,9 @@ import { getMentionOnSelectItem } from '@platejs/mention';
 import { IS_APPLE, KEYS } from 'platejs';
 import {
   PlateElement,
-  useFocused,
-  useReadOnly,
-  useSelected,
+  useEditorFocused,
+  useEditorReadOnly,
+  useElementSelected,
 } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
@@ -33,10 +33,10 @@ export function MentionElement(
   }
 ) {
   const { element } = props;
-  const selected = useSelected();
-  const focused = useFocused();
+  const selected = useElementSelected();
+  const focused = useEditorFocused();
   const mounted = useMounted();
-  const readOnly = useReadOnly();
+  const readOnly = useEditorReadOnly();
 
   return (
     <PlateElement
@@ -53,7 +53,7 @@ export function MentionElement(
       attributes={{
         ...props.attributes,
         contentEditable: false,
-        'data-slate-value': element.value,
+        'data-plite-value': element.value,
         draggable: true,
       }}
     >

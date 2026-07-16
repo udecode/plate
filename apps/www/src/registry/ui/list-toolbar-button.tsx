@@ -2,10 +2,11 @@
 
 import * as React from 'react';
 
-import { ListStyleType, someList, toggleList } from '@platejs/list';
+import { ListStyleType } from '@platejs/list';
 import {
-  useIndentTodoToolBarButton,
-  useIndentTodoToolBarButtonState,
+  ListPlugin,
+  useTodoListToolbarButton,
+  useTodoListToolbarButtonState,
 } from '@platejs/list/react';
 import { List, ListOrdered, ListTodoIcon } from 'lucide-react';
 import { useEditorRef, useEditorSelector } from 'platejs/react';
@@ -31,11 +32,13 @@ export function BulletedListToolbarButton() {
 
   const pressed = useEditorSelector(
     (editor) =>
-      someList(editor, [
-        ListStyleType.Disc,
-        ListStyleType.Circle,
-        ListStyleType.Square,
-      ]),
+      editor
+        .plugin(ListPlugin)
+        .api.isActive([
+          ListStyleType.Disc,
+          ListStyleType.Circle,
+          ListStyleType.Square,
+        ]),
     []
   );
 
@@ -44,10 +47,12 @@ export function BulletedListToolbarButton() {
       <ToolbarSplitButtonPrimary
         className="data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
         onClick={() => {
-          toggleList(editor, {
+          editor.plugin(ListPlugin).update.toggle({
             listStyleType: ListStyleType.Disc,
           });
+          editor.api.dom.focus();
         }}
+        onMouseDown={(event) => event.preventDefault()}
         data-state={pressed ? 'on' : 'off'}
       >
         <List className="size-4" />
@@ -62,7 +67,7 @@ export function BulletedListToolbarButton() {
           <DropdownMenuGroup>
             <DropdownMenuItem
               onClick={() =>
-                toggleList(editor, {
+                editor.plugin(ListPlugin).update.toggle({
                   listStyleType: ListStyleType.Disc,
                 })
               }
@@ -74,7 +79,7 @@ export function BulletedListToolbarButton() {
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() =>
-                toggleList(editor, {
+                editor.plugin(ListPlugin).update.toggle({
                   listStyleType: ListStyleType.Circle,
                 })
               }
@@ -86,7 +91,7 @@ export function BulletedListToolbarButton() {
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() =>
-                toggleList(editor, {
+                editor.plugin(ListPlugin).update.toggle({
                   listStyleType: ListStyleType.Square,
                 })
               }
@@ -109,13 +114,15 @@ export function NumberedListToolbarButton() {
 
   const pressed = useEditorSelector(
     (editor) =>
-      someList(editor, [
-        ListStyleType.Decimal,
-        ListStyleType.LowerAlpha,
-        ListStyleType.UpperAlpha,
-        ListStyleType.LowerRoman,
-        ListStyleType.UpperRoman,
-      ]),
+      editor
+        .plugin(ListPlugin)
+        .api.isActive([
+          ListStyleType.Decimal,
+          ListStyleType.LowerAlpha,
+          ListStyleType.UpperAlpha,
+          ListStyleType.LowerRoman,
+          ListStyleType.UpperRoman,
+        ]),
     []
   );
 
@@ -123,11 +130,13 @@ export function NumberedListToolbarButton() {
     <ToolbarSplitButton pressed={open}>
       <ToolbarSplitButtonPrimary
         className="data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
-        onClick={() =>
-          toggleList(editor, {
+        onClick={() => {
+          editor.plugin(ListPlugin).update.toggle({
             listStyleType: ListStyleType.Decimal,
-          })
-        }
+          });
+          editor.api.dom.focus();
+        }}
+        onMouseDown={(event) => event.preventDefault()}
         data-state={pressed ? 'on' : 'off'}
       >
         <ListOrdered className="size-4" />
@@ -142,7 +151,7 @@ export function NumberedListToolbarButton() {
           <DropdownMenuGroup>
             <DropdownMenuItem
               onSelect={() =>
-                toggleList(editor, {
+                editor.plugin(ListPlugin).update.toggle({
                   listStyleType: ListStyleType.Decimal,
                 })
               }
@@ -151,7 +160,7 @@ export function NumberedListToolbarButton() {
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() =>
-                toggleList(editor, {
+                editor.plugin(ListPlugin).update.toggle({
                   listStyleType: ListStyleType.LowerAlpha,
                 })
               }
@@ -160,7 +169,7 @@ export function NumberedListToolbarButton() {
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() =>
-                toggleList(editor, {
+                editor.plugin(ListPlugin).update.toggle({
                   listStyleType: ListStyleType.UpperAlpha,
                 })
               }
@@ -169,7 +178,7 @@ export function NumberedListToolbarButton() {
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() =>
-                toggleList(editor, {
+                editor.plugin(ListPlugin).update.toggle({
                   listStyleType: ListStyleType.LowerRoman,
                 })
               }
@@ -178,7 +187,7 @@ export function NumberedListToolbarButton() {
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() =>
-                toggleList(editor, {
+                editor.plugin(ListPlugin).update.toggle({
                   listStyleType: ListStyleType.UpperRoman,
                 })
               }
@@ -195,8 +204,8 @@ export function NumberedListToolbarButton() {
 export function TodoListToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
 ) {
-  const state = useIndentTodoToolBarButtonState({ nodeType: 'todo' });
-  const { props: buttonProps } = useIndentTodoToolBarButton(state);
+  const state = useTodoListToolbarButtonState();
+  const { props: buttonProps } = useTodoListToolbarButton(state);
 
   return (
     <ToolbarButton {...props} {...buttonProps} tooltip="Todo">

@@ -4,6 +4,7 @@ import { isDefined } from '@udecode/utils';
 
 import type { BaseEditor } from '../../lib/editor';
 import type { BasePlugin, TransformOptions } from '../../lib/plugin/BasePlugin';
+import type { AnyPluginConfig } from '../../lib/plugin/PluginConfig';
 
 import {
   type GetInjectNodePropsOptions,
@@ -27,9 +28,9 @@ const getNodePropClassValue = (value: unknown) =>
  * override `className` with it. If `styleKey` is defined, override `style` with
  * `[styleKey]: value`.
  */
-export const pluginInjectNodeProps = (
+export const pluginInjectNodeProps = <C extends AnyPluginConfig>(
   editor: BaseEditor,
-  plugin: BasePlugin,
+  plugin: BasePlugin<C>,
   nodeProps: GetInjectNodePropsOptions,
   getElementPath: (node: Element | Text) => Path | undefined
 ): GetInjectNodePropsReturnType | undefined => {
@@ -62,7 +63,7 @@ export const pluginInjectNodeProps = (
   const shouldResolvePathForMatch = !!(excludeBelowPlugins || maxLevel);
   const nodeValue = getNodeProp(node, nodeKey);
   const editorPluginContext = getEditorPlugin(editor, plugin);
-  const getTransformOptions = (value?: unknown): TransformOptions => ({
+  const getTransformOptions = (value?: unknown): TransformOptions<C> => ({
     ...nodeProps,
     ...editorPluginContext,
     nodeValue,
@@ -89,9 +90,13 @@ export const pluginInjectNodeProps = (
   }
 
   const queryResult = query?.({
-    ...injectNodeProps,
+    classNames,
+    defaultNodeValue,
     ...editorPluginContext,
+    nodeKey,
     nodeProps,
+    styleKey,
+    validNodeValues,
   });
 
   if (query && !queryResult) {

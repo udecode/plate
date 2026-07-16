@@ -1,10 +1,123 @@
 import { createBaseEditor } from '@platejs/core';
 import ReactDOMServer from 'react-dom/server';
 
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 import { BaseListPlugin } from './BaseListPlugin';
 
+const assertScopedListTypes = () => {
+  const editor = createBaseEditor({ plugins: [BaseListPlugin] });
+  const list = editor.plugin(BaseListPlugin);
+
+  list.api.isActive(['disc', 'circle']);
+  list.update.toggle({ at: [0], listStyleType: 'disc' });
+  list.update.indent({ at: { offset: 0, path: [0, 0] } });
+  list.update.outdent({
+    at: {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [1, 0] },
+    },
+  });
+
+  editor.update((tx) => tx.indent.increase());
+
+  // @ts-expect-error toggle requires a list style
+  list.update.toggle({});
+  // @ts-expect-error Indent methods stay on the Indent portal
+  list.update.increase();
+};
+
+void assertScopedListTypes;
+
 describe('BaseListPlugin', () => {
+  it('installs Indent and exposes scoped list reads and updates', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'Item' }], type: KEYS.p }],
+    });
+    const list = editor.plugin(BaseListPlugin);
+    const pluginKeys = editor.runtime.pluginList.map((plugin) => plugin.key);
+
+    expect(pluginKeys.indexOf(KEYS.indent)).toBeLessThan(
+      pluginKeys.indexOf(KEYS.list)
+    );
+    expect(list.api.isActive('disc')).toBe(false);
+
+    list.update.toggle({ listStyleType: 'disc' });
+
+    expect(list.api.isActive('disc')).toBe(true);
+    expect(editor.read.children()[0]).toMatchObject({
+      indent: 1,
+      listStyleType: 'disc',
+    });
+  });
+
+  it('composes indent and outdent into one undoable update', () => {
+    const value = [{ children: [{ text: 'Item' }], type: KEYS.p }];
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin],
+      value,
+    });
+    const list = editor.plugin(BaseListPlugin);
+
+    list.update.indent({ at: [0], listStyleType: 'circle' });
+
+    expect(editor.read.children()[0]).toMatchObject({
+      indent: 1,
+      listStyleType: 'circle',
+    });
+    expect(editor.read.history.undos()).toHaveLength(1);
+
+    editor.update.history.undo();
+    expect(editor.read.children()).toEqual(value);
+
+    editor.update.history.redo();
+    list.update.outdent({ at: [0] });
+
+    expect(editor.read.children()).toEqual(value);
+  });
+
+  it('replays a frozen list update without replaying local selection or history', () => {
+    const value = [
+      { children: [{ text: 'First' }], type: KEYS.p },
+      { children: [{ text: 'Second' }], type: KEYS.p },
+    ];
+    const source = createBaseEditor({
+      plugins: [BaseListPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 6, path: [1, 0] },
+      },
+      value,
+    });
+
+    source.plugin(BaseListPlugin).update.toggle({ listStyleType: 'decimal' });
+
+    const operations = JSON.parse(
+      JSON.stringify(source.read.lastCommit()?.operations ?? [])
+    );
+    const replaySelection = {
+      anchor: { offset: 2, path: [1, 0] },
+      focus: { offset: 2, path: [1, 0] },
+    };
+    const replay = createBaseEditor({
+      plugins: [BaseListPlugin],
+      selection: replaySelection,
+      value,
+    });
+
+    replay.update({ history: 'skip' }, (tx) =>
+      tx.operations.replay(operations)
+    );
+
+    expect(replay.read.children()).toEqual(source.read.children());
+    expect(replay.read.selection()).toEqual(replaySelection);
+    expect(replay.read.history.undos()).toHaveLength(0);
+  });
+
   it('flattens nested lists, block children, and derives indent metadata from html', () => {
     const transformData = (BaseListPlugin as any).inject.plugins[KEYS.html]
       .parser.transformData;

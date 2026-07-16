@@ -2,18 +2,21 @@
 
 import * as React from 'react';
 
-import type { TFootnoteElement } from '@platejs/footnote';
+import {
+  BaseFootnoteReferencePlugin,
+  type TFootnoteElement,
+} from '@platejs/footnote';
 import { PathApi, type Path } from 'platejs';
-import { FootnoteReferencePlugin } from '@platejs/footnote/react';
 import type { PlateEditor, PlateElementProps } from 'platejs/react';
 
 import {
   PlateElement,
+  useEditorPlugin,
   useEditorSelector,
-  useFocused,
+  useEditorFocused,
   useNavigationHighlight,
   usePath,
-  useSelected,
+  useElementSelected,
 } from 'platejs/react';
 
 import {
@@ -81,12 +84,12 @@ const getReferenceContextLabel = (
   path: Path,
   index: number
 ) => {
-  const parentEntry = editor.api.parent(path);
+  const parentEntry = editor.read.nodes.parent(path);
   const fallback = `Reference ${index + 1}`;
 
   if (!parentEntry) return fallback;
 
-  const text = editor.api.string(parentEntry[1]);
+  const text = editor.read.text.string(parentEntry[1]);
   const normalized = text.replace(/\s+/g, ' ').trim();
 
   if (!normalized) return fallback;
@@ -99,14 +102,14 @@ const getReferenceContextLabel = (
 export function FootnoteReferenceElement(
   props: PlateElementProps<TFootnoteElement>
 ) {
-  const { editor, element } = props;
+  const { element } = props;
+  const {
+    api: { footnote: footnoteApi },
+    editor,
+  } = useEditorPlugin(BaseFootnoteReferencePlugin);
   const identifier = element.identifier ?? '';
-  const footnoteApi = editor.getApi(FootnoteReferencePlugin).footnote;
-  const footnoteTransforms = editor.getTransforms(
-    FootnoteReferencePlugin
-  ).footnote;
   const [hoverOpen, setHoverOpen] = React.useState(false);
-  const focused = useFocused();
+  const focused = useEditorFocused();
   const path = usePath();
   const navigationHighlight = useNavigationHighlight(path);
   const fallbackResolved =
@@ -125,10 +128,10 @@ export function FootnoteReferenceElement(
   }, [hoverOpen, identifier]);
   const isResolved = livePreview?.isResolved ?? fallbackResolved;
   const previewText = livePreview?.previewText ?? fallbackPreviewText;
-  const selected = useSelected();
+  const selected = useElementSelected();
   const isSelectionInsideAtom = useEditorSelector(
     (currentEditor) => {
-      const selection = currentEditor.selection;
+      const selection = currentEditor.read.selection();
 
       if (!path || !selection) return false;
 
@@ -172,12 +175,12 @@ export function FootnoteReferenceElement(
                 event.preventDefault();
                 event.stopPropagation();
                 if (isResolved) {
-                  footnoteTransforms.focusDefinition({ identifier });
+                  editor.update.footnote.focusDefinition({ identifier });
 
                   return;
                 }
 
-                footnoteTransforms.createDefinition({ identifier });
+                editor.update.footnote.createDefinition({ identifier });
               }
             }}
           >
@@ -208,7 +211,7 @@ export function FootnoteReferenceElement(
                   onMouseDown={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
-                    footnoteTransforms.createDefinition({ identifier });
+                    editor.update.footnote.createDefinition({ identifier });
                     setHoverOpen(false);
                   }}
                 >
@@ -226,24 +229,22 @@ export function FootnoteReferenceElement(
 export function FootnoteDefinitionElement(
   props: PlateElementProps<TFootnoteElement>
 ) {
-  const { editor, element } = props;
+  const { element } = props;
+  const {
+    api: { footnote: footnoteApi },
+    editor,
+  } = useEditorPlugin(BaseFootnoteReferencePlugin);
   const identifier = element.identifier ?? '';
-  const footnoteApi = editor.getApi(FootnoteReferencePlugin).footnote;
-  const footnoteTransforms = editor.getTransforms(
-    FootnoteReferencePlugin
-  ).footnote;
   const path = usePath();
   const definitionState = useEditorSelector(() => {
     const isDuplicateDefinition =
       !!path && !!footnoteApi.isDuplicateDefinition?.({ path });
     const referenceItems =
       !isDuplicateDefinition && identifier
-        ? footnoteApi
-            .references({ identifier })
-            .map((entry: any, index: number) => ({
-              index,
-              label: getReferenceContextLabel(editor, entry[1], index),
-            }))
+        ? footnoteApi.references({ identifier }).map((entry, index) => ({
+            index,
+            label: getReferenceContextLabel(editor, entry[1], index),
+          }))
         : [];
 
     return {
@@ -309,7 +310,7 @@ export function FootnoteDefinitionElement(
                     return;
                   }
 
-                  footnoteTransforms.focusReference({ identifier });
+                  editor.update.footnote.focusReference({ identifier });
                 }}
               >
                 {identifier}
@@ -335,7 +336,7 @@ export function FootnoteDefinitionElement(
                             onMouseDown={(event) => event.preventDefault()}
                             onSelect={() => {
                               setReferencePickerOpen(false);
-                              footnoteTransforms.focusReference({
+                              editor.update.footnote.focusReference({
                                 identifier,
                                 index: item.index,
                               });
@@ -375,7 +376,7 @@ export function FootnoteDefinitionElement(
                 onMouseDown={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
-                  footnoteTransforms.normalizeDuplicateDefinition({
+                  editor.update.footnote.normalizeDuplicateDefinition({
                     identifier: duplicateReplacementIdentifier,
                     path,
                   });
@@ -393,10 +394,12 @@ export function FootnoteDefinitionElement(
 }
 
 export function FootnoteInputElement(props: PlateElementProps) {
-  const { editor, element } = props;
+  const { element } = props;
+  const {
+    api: { footnote: footnoteApi },
+    editor,
+  } = useEditorPlugin(BaseFootnoteReferencePlugin);
   const [search, setSearch] = React.useState('');
-  const footnoteApi = editor.getApi(FootnoteReferencePlugin).footnote;
-  const insertTransforms = editor.getTransforms(FootnoteReferencePlugin).insert;
 
   const identifiers = footnoteApi.identifiers?.() ?? [];
   const nextIdentifier = footnoteApi.nextId?.() ?? '1';
@@ -418,22 +421,29 @@ export function FootnoteInputElement(props: PlateElementProps) {
 
   const insertSelectedFootnote = React.useCallback(
     (identifier: string) => {
-      const before = editor.selection && editor.api.before(editor.selection);
+      const selection = editor.read.selection();
+      const before = selection
+        ? editor.read.points.before(selection)
+        : undefined;
+      const range =
+        before && selection
+          ? editor.read.ranges.get(before, selection)
+          : undefined;
+      const shouldDeleteTrigger =
+        !!range && editor.read.text.string(range) === '[';
 
-      if (before) {
-        const range = editor.api.range(before, editor.selection);
-
-        if (range && editor.api.string(range) === '[') {
-          editor.tf.deleteBackward('character');
+      editor.update((tx) => {
+        if (shouldDeleteTrigger) {
+          tx.text.deleteBackward({ unit: 'character' });
         }
-      }
 
-      insertTransforms.footnote({
-        focusDefinition: false,
-        identifier,
+        tx.insert.footnote({
+          focusDefinition: false,
+          identifier,
+        });
       });
     },
-    [editor, insertTransforms]
+    [editor]
   );
 
   return (

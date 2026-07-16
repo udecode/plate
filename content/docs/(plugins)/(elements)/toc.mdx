@@ -127,23 +127,14 @@ You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolba
 ### Scroll Container Setup
 
 - If your scrolling element is [EditorContainer](/docs/components/editor), you can skip this step.
-- If your scrolling element is the editor container, pass `useEditorContainerRef()` as the `ref` prop. For example:
+- If you render a custom scroll container, register it with `useEditorScrollElementRef(editor)`.
 
 ```tsx
-// Below <Plate> component
-function EditorContainer({ children }: { children: React.ReactNode }) {
-  const containerRef = useEditorContainerRef();
+import { useEditorRef, useEditorScrollElementRef } from 'platejs/react';
 
-  return <div ref={containerRef}>{children}</div>;
-}
-```
-
-- If your scrolling element is an ancestor of the editor container, pass `useEditorScrollRef()` as the `ref` prop. For example:
-
-```tsx
-// Below <Plate> component
 function Layout() {
-  const scrollRef = useEditorScrollRef();
+  const editor = useEditorRef();
+  const scrollRef = useEditorScrollElementRef(editor);
 
   return (
     <main ref={scrollRef}>
@@ -177,7 +168,7 @@ Plugin for generating table of contents.
     Top offset when scrolling to heading.
     - **Default:** `80`
   </APIItem>
-  <APIItem name="queryHeading" type="(editor: SlateEditor) => Heading[]" optional>
+  <APIItem name="queryHeading" type="(editor: BaseEditor) => Heading[]" optional>
     Custom function to query headings.
   </APIItem>
 </APIOptions>
@@ -185,12 +176,12 @@ Plugin for generating table of contents.
 
 ## Transforms
 
-### `tf.insertToc`
+### `tx.insertToc`
 
 Insert table of contents element.
 
 <API name="insertToc">
-<APIOptions type="InsertNodesOptions<SlateEditor>">
+<APIOptions type="object<BaseEditor>">
     Node insertion options.
 </APIOptions>
 </API>

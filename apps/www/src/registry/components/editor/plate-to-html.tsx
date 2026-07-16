@@ -3,6 +3,7 @@
 import * as React from 'react';
 
 import { useTheme } from 'next-themes';
+import type { Value } from 'platejs';
 import { Plate, usePlateEditor, usePlateViewEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
@@ -82,7 +83,7 @@ export function HtmlIframe({
   return <iframe title="Preview" srcDoc={content} {...props} />;
 }
 
-export function EditorClient({ value }: { value: any }) {
+export function EditorClient({ value }: { value: Value }) {
   const editor = usePlateEditor({
     override: {
       enabled: {
@@ -101,7 +102,7 @@ export function EditorClient({ value }: { value: any }) {
   );
 }
 
-export const EditorViewClient = ({ value }: { value: any }) => {
+export const EditorViewClient = ({ value }: { value: Value }) => {
   const editor = usePlateViewEditor({
     plugins: BaseEditorKit,
     value,

@@ -3,14 +3,15 @@
 import * as React from 'react';
 
 import { SuggestionPlugin } from '@platejs/suggestion/react';
+import { setEditorReadOnly } from 'platejs';
 import {
   type DropdownMenuProps,
   DropdownMenuItemIndicator,
 } from '@radix-ui/react-dropdown-menu';
 import { CheckIcon, EyeIcon, PencilLineIcon, PenIcon } from 'lucide-react';
 import {
-  useEditorReadOnly,
   useEditorRef,
+  useEditorViewState,
   usePluginOption,
 } from 'platejs/react';
 
@@ -26,7 +27,7 @@ import { ToolbarButton } from './toolbar';
 
 export function ModeToolbarButton(props: DropdownMenuProps) {
   const editor = useEditorRef();
-  const readOnly = useEditorReadOnly();
+  const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
   const [open, setOpen] = React.useState(false);
 
   const isSuggesting = usePluginOption(SuggestionPlugin, 'isSuggesting');
@@ -65,21 +66,21 @@ export function ModeToolbarButton(props: DropdownMenuProps) {
         <DropdownMenuRadioGroup
           onValueChange={(newValue) => {
             if (newValue === 'viewing') {
-              editor.store.setReadOnly(true);
+              setEditorReadOnly(editor, true);
 
               return;
             }
-            editor.store.setReadOnly(false);
+            setEditorReadOnly(editor, false);
 
             if (newValue === 'suggestion') {
-              editor.setOption(SuggestionPlugin, 'isSuggesting', true);
+              editor.plugin(SuggestionPlugin).setOption('isSuggesting', true);
 
               return;
             }
-            editor.setOption(SuggestionPlugin, 'isSuggesting', false);
+            editor.plugin(SuggestionPlugin).setOption('isSuggesting', false);
 
             if (newValue === 'editing') {
-              editor.tf.focus();
+              editor.api.dom.focus();
 
               return;
             }

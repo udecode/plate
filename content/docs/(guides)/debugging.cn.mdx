@@ -104,7 +104,7 @@ try {
 
 ### 1. 使用日志覆盖编辑器方法
 
-你可以使用 `extendEditor` 选项来覆盖编辑器方法并添加日志记录：
+使用 `overrideEditor` 包装编辑器方法并添加日志记录：
 
 ```ts
 const LoggingPlugin = createPlatePlugin({
@@ -201,7 +201,7 @@ Plate 使用几个预定义的错误类型来帮助识别开发过程中的特�
 
 ### USE_CREATE_PLUGIN
 
-当插件不是使用 `createEditorPlugin` 或 `createPlatePlugin` 函数创建时抛出。当插件被添加到编辑器中但未使用指定函数正确创建时，会发生此错误。
+当插件不是使用 `createBasePlugin` 或 `createPlatePlugin` 函数创建时抛出。当插件被添加到编辑器中但未使用指定函数正确创建时，会发生此错误。
 
 ### USE_ELEMENT_CONTEXT
 

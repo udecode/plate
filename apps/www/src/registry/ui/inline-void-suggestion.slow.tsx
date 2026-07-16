@@ -2,6 +2,13 @@ import * as React from 'react';
 
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import type {
+  TDateElement,
+  TEquationElement,
+  TLinkElement,
+  TMentionElement,
+} from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
 const useFocusedMock = mock();
 const useReadOnlyMock = mock();
@@ -14,7 +21,7 @@ const useEquationElementMock = mock();
 const useEditorPluginMock = mock();
 const usePluginOptionMock = mock();
 
-(globalThis as any).React = React;
+Object.assign(globalThis, { React });
 
 mock.module('platejs/react', () => ({
   PlateElement: ({
@@ -52,25 +59,32 @@ mock.module('platejs/react', () => ({
     </span>
   ),
   createPrimitiveComponent: () => () => () => null,
-  useEditorPlugin: (...args: any[]) => useEditorPluginMock(...args),
-  useEditorRef: (...args: any[]) => useEditorRefMock(...args),
-  useEditorSelector: (...args: any[]) => useEditorSelectorMock(...args),
-  useElement: (...args: any[]) => useElementMock(...args),
-  useFocused: (...args: any[]) => useFocusedMock(...args),
-  usePluginOption: (...args: any[]) => usePluginOptionMock(...args),
-  useReadOnly: (...args: any[]) => useReadOnlyMock(...args),
-  useSelected: (...args: any[]) => useSelectedMock(...args),
+  useEditorPlugin: useEditorPluginMock,
+  useEditorRef: useEditorRefMock,
+  useEditorSelector: useEditorSelectorMock,
+  useElement: useElementMock,
+  useEditorFocused: useFocusedMock,
+  usePluginOption: usePluginOptionMock,
+  useEditorReadOnly: useReadOnlyMock,
+  useElementSelected: useSelectedMock,
+  usePath: () => [0],
 }));
 
 mock.module('@platejs/math/react', () => ({
-  useEquationElement: (...args: any[]) => useEquationElementMock(...args),
+  useEquationElement: useEquationElementMock,
   useEquationInput: () => ({}),
 }));
 
 mock.module('@platejs/date', () => ({
   formatDateValue: (date: Date) =>
     `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`,
-  getDateDisplayLabel: ({ date, rawDate }: any) => rawDate ?? date,
+  getDateDisplayLabel: ({
+    date,
+    rawDate,
+  }: {
+    date?: string;
+    rawDate?: string;
+  }) => rawDate ?? date,
   parseCanonicalDateValue: () => new Date(2026, 3, 13),
 }));
 
@@ -116,7 +130,7 @@ mock.module('@/lib/utils', () => ({
 }));
 
 mock.module('@/registry/hooks/use-mounted', () => ({
-  useMounted: (...args: any[]) => useMountedMock(...args),
+  useMounted: useMountedMock,
 }));
 
 mock.module('./inline-combobox', () => ({
@@ -139,21 +153,7 @@ mock.module('./inline-combobox', () => ({
 }));
 
 describe('inline void suggestion styling', () => {
-  const editor = {
-    getPluginApi: () => ({
-      suggestion: {
-        dataList: (node: any) =>
-          Object.keys(node)
-            .filter((key) => key.startsWith('suggestion_'))
-            .map((key) => node[key]),
-        suggestionData: (element: any) => element.suggestion,
-      },
-    }),
-    tf: {
-      select: () => {},
-      setNodes: () => {},
-    },
-  } as any;
+  const editor = {} as PlateEditor;
 
   beforeEach(() => {
     useFocusedMock.mockReset();
@@ -204,7 +204,7 @@ describe('inline void suggestion styling', () => {
             children: [{ text: '' }],
             type: 'mention',
             value: 'Ada',
-          } as any
+          } satisfies TMentionElement
         }
       >
         {null}
@@ -232,7 +232,7 @@ describe('inline void suggestion styling', () => {
             children: [{ text: 'Docs' }],
             type: 'link',
             url: 'https://example.com',
-          } as any
+          } satisfies TLinkElement
         }
       >
         Docs
@@ -260,12 +260,12 @@ describe('inline void suggestion styling', () => {
             children: [{ text: '' }],
             date: '2026-04-13',
             type: 'date',
-          } as any
+          } satisfies TDateElement
         }
       />
     );
 
-    const trigger = view.container.querySelector('span[draggable="true"]');
+    const trigger = view.container.querySelector('button[draggable="true"]');
 
     expect(trigger?.className).toContain(
       'in-data-[inline-suggestion=insert]:bg-emerald-100!'
@@ -274,6 +274,7 @@ describe('inline void suggestion styling', () => {
       'in-data-[inline-suggestion=remove]:bg-red-100!'
     );
     expect(trigger?.getAttribute('draggable')).toBe('true');
+    expect(trigger?.getAttribute('type')).toBe('button');
   });
 
   it('styles inline equation remove suggestions', async () => {
@@ -281,7 +282,7 @@ describe('inline void suggestion styling', () => {
       children: [{ text: '' }],
       texExpression: 'E = mc^2',
       type: 'inline_equation',
-    } as any;
+    } satisfies TEquationElement;
 
     useElementMock.mockReturnValue(element);
 
@@ -299,8 +300,13 @@ describe('inline void suggestion styling', () => {
       </InlineEquationElement>
     );
 
-    expect(
-      view.container.querySelector('div[contenteditable="false"]')?.className
-    ).toContain('in-data-[inline-suggestion=remove]:bg-red-100!');
+    const trigger = view.container.querySelector(
+      'button[aria-label="Edit equation"]'
+    );
+
+    expect(trigger?.className).toContain(
+      'in-data-[inline-suggestion=remove]:bg-red-100!'
+    );
+    expect(trigger?.getAttribute('type')).toBe('button');
   });
 });

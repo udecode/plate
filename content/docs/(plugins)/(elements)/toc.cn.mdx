@@ -126,23 +126,14 @@ const editor = createPlateEditor({
 ### 滚动容器设置
 
 - 若您的滚动元素是 [EditorContainer](/docs/components/editor)，可跳过此步骤
-- 若您的滚动元素是编辑器容器，将 `useEditorContainerRef()` 作为 `ref` 属性传入。例如：
+- 若您渲染自定义滚动容器，使用 `useEditorScrollElementRef(editor)` 注册它。
 
 ```tsx
-// 在 <Plate> 组件下方
-function EditorContainer({ children }: { children: React.ReactNode }) {
-  const containerRef = useEditorContainerRef();
+import { useEditorRef, useEditorScrollElementRef } from 'platejs/react';
 
-  return <div ref={containerRef}>{children}</div>;
-}
-```
-
-- 若您的滚动元素是编辑器容器的祖先元素，将 `useEditorScrollRef()` 作为 `ref` 属性传入。例如：
-
-```tsx
-// 在 <Plate> 组件下方
 function Layout() {
-  const scrollRef = useEditorScrollRef();
+  const editor = useEditorRef();
+  const scrollRef = useEditorScrollElementRef(editor);
 
   return (
     <main ref={scrollRef}>
@@ -176,7 +167,7 @@ function Layout() {
     滚动至标题时的顶部偏移量
     - **默认值:** `80`
   </APIItem>
-  <APIItem name="queryHeading" type="(editor: BasePlateEditor) => Heading[]" optional>
+  <APIItem name="queryHeading" type="(editor: BaseEditor) => Heading[]" optional>
     自定义标题查询函数
   </APIItem>
 </APIOptions>
@@ -189,7 +180,7 @@ function Layout() {
 插入目录元素。
 
 <API name="insertToc">
-<APIOptions type="object<BasePlateEditor>">
+<APIOptions type="object<BaseEditor>">
     节点插入选项
 </APIOptions>
 </API>

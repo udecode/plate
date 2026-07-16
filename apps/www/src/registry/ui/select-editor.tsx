@@ -5,19 +5,18 @@ import * as React from 'react';
 import { isEqualTags } from '@platejs/tag';
 import {
   MultiSelectPlugin,
-  TagPlugin,
   useSelectableItems,
   useSelectEditorCombobox,
 } from '@platejs/tag/react';
 import { Command as CommandPrimitive, useCommandActions } from '@udecode/cmdk';
 import { Fzf } from 'fzf';
 import { PlusIcon } from 'lucide-react';
-import { isHotkey, KEYS } from 'platejs';
+import { isHotkey, KEYS, TextApi } from 'platejs';
 import {
   Plate,
-  useEditorContainerRef,
   useEditorRef,
   usePlateEditor,
+  usePlateValue,
 } from 'platejs/react';
 
 import {
@@ -113,17 +112,14 @@ export function SelectEditorContent({
 
   React.useEffect(() => {
     if (!isEqualTags(editor, value)) {
-      editor.tf.replaceNodes(createEditorValue(value), {
-        at: [],
-        children: true,
-      });
+      editor.update.value.replace({ children: createEditorValue(value) });
     }
   }, [editor, value]);
 
   return (
     <Plate
       onValueChange={({ editor }) => {
-        setSearch(editor.api.string([]));
+        setSearch(editor.read.text.string([]));
       }}
       editor={editor}
     >
@@ -155,7 +151,10 @@ export const SelectEditorInput = ({
         if (isHotkey('enter', e)) {
           e.preventDefault();
           selectCurrentItem();
-          editor.tf.removeNodes({ at: [], empty: false, text: true });
+          editor.update.nodes.remove({
+            at: [],
+            match: (node) => TextApi.isText(node) && node.text.length > 0,
+          });
         }
         if (isHotkey('escape', e) || isHotkey('mod+enter', e)) {
           e.preventDefault();
@@ -170,13 +169,20 @@ export const SelectEditorInput = ({
 
 export function SelectEditorCombobox() {
   const editor = useEditorRef();
-  const containerRef = useEditorContainerRef();
+  const containerRef = usePlateValue('containerRef');
   const { items, open, onValueChange } = useSelectEditorContext();
   const selectableItems = useSelectableItems({
     filter: fzfFilter,
     items,
   });
   const { selectFirstItem } = useCommandActions();
+  const virtualAnchor = React.useMemo(
+    () => ({
+      getBoundingClientRect: () =>
+        containerRef.current?.getBoundingClientRect() ?? new DOMRect(),
+    }),
+    [containerRef]
+  );
 
   useSelectEditorCombobox({ open, selectFirstItem, onValueChange });
 
@@ -184,7 +190,7 @@ export function SelectEditorCombobox() {
 
   return (
     <Popover open={open}>
-      <PopoverAnchor virtualRef={containerRef as any} />
+      <PopoverAnchor virtualRef={{ current: virtualAnchor }} />
       <PopoverContent
         className="p-0 data-[state=open]:animate-none"
         style={{
@@ -205,7 +211,7 @@ export function SelectEditorCombobox() {
                 className="cursor-pointer gap-2"
                 onMouseDown={(e) => e.preventDefault()}
                 onSelect={() => {
-                  editor.getTransforms(TagPlugin).insert.tag(item);
+                  editor.plugin(MultiSelectPlugin).update.insert(item);
                 }}
               >
                 {item.isNew ? (

@@ -257,7 +257,7 @@ CopilotPlugin.configure(({ api }) => ({
         if (!contextEntry) return '';
 
         const prompt = serializeMd(editor, {
-          value: [contextEntry[0] as TElement],
+          value: [contextEntry[0] as Element],
         });
 
         return `Continue the text up to the next punctuation mark:
@@ -447,13 +447,13 @@ Plugin for AI-powered text completion suggestions.
 
 ## Transforms
 
-### `tf.copilot.accept()`
+### `tx.copilot.accept()`
 
 Accepts the current suggestion and applies it to the editor content.
 
 Default Shortcut: `Tab`
 
-### `tf.copilot.acceptNextWord()`
+### `tx.copilot.acceptNextWord()`
 
 Accepts only the next word of the current suggestion, allowing for granular acceptance of suggestions.
 

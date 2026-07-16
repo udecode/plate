@@ -4,8 +4,8 @@ description: Read, mutate, and configure a Plate editor instance.
 ---
 
 The Plate editor exposes two main method surfaces: `editor.api` for reads and
-helpers, and `editor.tf` for transforms that change editor state. In React, pick
-the editor hook by how often the component should re-render.
+services, and `editor.update` for commands that change editor state. In React,
+pick the editor hook by how often the component should re-render.
 
 ## Access the Editor
 
@@ -31,7 +31,7 @@ export function BoldButton() {
   return (
     <Button
       disabled={!hasSelection}
-      onClick={() => editor.tf.toggleMark('bold')}
+      onClick={() => editor.update((tx) => tx.marks.toggle('bold'))}
     >
       Bold
     </Button>
@@ -47,9 +47,11 @@ effects, commands, and reads that should not cause a render.
 ```tsx title="components/insert-paragraph-button.tsx"
 const editor = useEditorRef();
 
-editor.tf.insertNodes({
-  children: [{ text: 'Inserted paragraph' }],
-  type: 'p',
+editor.update((tx) => {
+  tx.nodes.insert({
+    children: [{ text: 'Inserted paragraph' }],
+    type: 'p',
+  });
 });
 ```
 
@@ -101,12 +103,10 @@ function ActiveEditorToolbar() {
   const editor = useEditorRef();
   const mounted = useEditorMounted();
 
-  if (!mounted || editor.meta.isFallback) return null;
+  if (!mounted || editor.runtime.isFallback) return null;
 
   return (
-    <Button onClick={() => editor.tf.focus({ edge: 'end' })}>
-      Focus editor
-    </Button>
+    <Button onClick={() => editor.api.dom.focus()}>Focus editor</Button>
   );
 }
 ```
@@ -114,13 +114,13 @@ function ActiveEditorToolbar() {
 `PlateController` resolves an editor by explicit `id`, focused editor, then
 primary editors. If a controller exists but no editor store is ready, hooks
 return a fallback editor; check `useEditorMounted()` or
-`!editor.meta.isFallback` before running transforms.
+`!editor.runtime.isFallback` before running commands.
 
-## Editor API and Transforms
+## Editor API and Commands
 
-Use `editor.api` for queries and DOM/editor helpers. Use `editor.tf` for
-operations that change the document, selection, history, focus, or plugin state.
-`editor.transforms` is an alias for `editor.tf`.
+Use `editor.api` for queries, DOM services, and host helpers. Use
+`editor.update` for operations that change the document, selection, history, or
+plugin state.
 
 ```ts title="editor-methods.ts" showLineNumbers
 const selectedText = editor.selection
@@ -130,41 +130,37 @@ const selectedText = editor.selection
 const currentBlock = editor.api.block();
 
 if (selectedText && !editor.api.hasMark('bold')) {
-  editor.tf.toggleMark('bold');
+  editor.update((tx) => tx.marks.toggle('bold'));
 }
 
-editor.tf.insertNodes({
-  children: [{ text: 'New paragraph' }],
-  type: 'p',
+editor.update((tx) => {
+  tx.nodes.insert({
+    children: [{ text: 'New paragraph' }],
+    type: 'p',
+  });
 });
 ```
 
 | Surface | Examples | Use for |
 | --- | --- | --- |
-| `editor.api` | `string`, `block`, `findPath`, `hasMark`, `isExpanded` | Reading editor state, resolving paths, checking selection. |
-| `editor.tf` | `insertNodes`, `setNodes`, `toggleMark`, `focus`, `reset` | Mutating document or editor state. |
-| `editor.transforms` | Same as `editor.tf` | Compatibility alias. Prefer `editor.tf` in new code. |
+| `editor.api` | `string`, `block`, `hasMark`, `isExpanded`, `dom.focus` | Reading editor state, checking selection, DOM/runtime services. |
+| `editor.update` | `tx.nodes.insert`, `tx.nodes.set`, `tx.marks.toggle`, `tx.selection.set` | Mutating document or editor state. |
 
 ## Plugin Methods
 
-Plugin helpers let TypeScript infer APIs and transforms from the plugin you
-pass in.
+Plugin helpers let TypeScript infer APIs from the plugin you pass in. Plugin
+commands run through `editor.update`.
 
 ```ts title="table-methods.ts" showLineNumbers
 import { TablePlugin } from '@platejs/table/react';
 
-const api = editor.getApi(TablePlugin);
-const tf = editor.getTransforms(TablePlugin);
+const cell = editor.api.create.tableCell();
 
-const cell = api.create.tableCell();
-
-tf.insert.tableRow();
+editor.update((tx) => tx.insert.tableRow());
 ```
 
 | Method | Use for |
 | --- | --- |
-| `editor.getApi(plugin)` | Typed plugin APIs merged onto `editor.api`. |
-| `editor.getTransforms(plugin)` | Typed plugin transforms merged onto `editor.tf`. |
 | `editor.getPlugin(plugin)` | The resolved plugin instance for a key or plugin object. |
 | `editor.getType(pluginKey)` | The node type registered for a plugin key. |
 | `editor.getInjectProps(plugin)` | Resolved injected node props for a plugin. |
@@ -187,7 +183,7 @@ export function FindReplaceControl() {
     <input
       value={search}
       onChange={(event) => {
-        editor.setOption(FindReplacePlugin, 'search', event.target.value);
+        editor.plugin(FindReplacePlugin).setOption('search', event.target.value);
       }}
     />
   );
@@ -195,24 +191,24 @@ export function FindReplaceControl() {
 ```
 
 ```ts title="plugin-options.ts"
-const options = editor.getOptions(FindReplacePlugin);
+const options = editor.plugin(FindReplacePlugin).getOptions();
 
-editor.setOptions(FindReplacePlugin, {
+editor.plugin(FindReplacePlugin).setOptions({
   search: 'Plate',
 });
 
-editor.setOptions(FindReplacePlugin, (draft) => {
+editor.plugin(FindReplacePlugin).setOptions((draft) => {
   draft.search = draft.search.trim();
 });
 ```
 
 | Method | Use for |
 | --- | --- |
-| `editor.getOption(plugin, key, ...args)` | One option or selector value. |
-| `editor.getOptions(plugin)` | Current option state for a plugin. |
-| `editor.setOption(plugin, key, value)` | One option update. |
-| `editor.setOptions(plugin, partial)` | Merge multiple option fields. |
-| `editor.setOptions(plugin, updater)` | Mutate option state through a draft updater. |
+| `editor.plugin(plugin).getOption(key, ...args)` | One option or selector value. |
+| `editor.plugin(plugin).getOptions()` | Current option state for a plugin. |
+| `editor.plugin(plugin).setOption(key, value)` | One option update. |
+| `editor.plugin(plugin).setOptions(partial)` | Merge multiple option fields. |
+| `editor.plugin(plugin).setOptions(updater)` | Mutate option state through a draft updater. |
 | `editor.getOptionsStore(plugin)` | Low-level access to the plugin options store. |
 
 ## Next Steps
@@ -220,7 +216,7 @@ editor.setOptions(FindReplacePlugin, (draft) => {
 | Task | Guide |
 | --- | --- |
 | Configure editor creation. | [Editor Configuration](/docs/editor) |
-| Add plugin APIs and transforms. | [Plugin Methods](/docs/plugin-methods) |
+| Add plugin APIs and transaction commands. | [Plugin Methods](/docs/plugin-methods) |
 | Read plugin context inside components. | [Plugin Context](/docs/plugin-context) |
-| Browse editor query contracts. | [Editor API](/docs/api/slate/editor-api) |
-| Browse editor transform contracts. | [Editor Transforms](/docs/api/slate/editor-transforms) |
+| Browse editor query contracts. | [Editor API](/docs/api/plite/editor-api) |
+| Browse editor transaction contracts. | [Editor Transactions](/docs/api/plite/editor-transforms) |

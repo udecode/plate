@@ -12,7 +12,7 @@ toc: true
 
 `@platejs/markdown` 提供了强大的 Plate 内容结构与 Markdown 之间的双向转换能力。
 
-<ComponentPreview name="markdown-to-slate-demo" />
+<ComponentPreview name="markdown-to-plite-demo" />
 
 <ComponentPreview name="markdown-demo" />
 
@@ -129,7 +129,7 @@ const editorWithoutPaste = createPlateEditor({
 ```
 
 <Callout type="info">
-  如果未用 `configure` 配置 `MarkdownPlugin`，可直接用 `editor.api.markdown.deserialize` 和 `serialize`，但无法享受默认规则和粘贴功能。
+  如果未用 `configure` 配置 `MarkdownPlugin`，也可以直接使用 `deserializeMd` 和 `serializeMd`，但无法享受插件配置的默认规则和粘贴功能。
 </Callout>
 
 ### Markdown 转 Plate（反序列化）
@@ -138,7 +138,7 @@ const editorWithoutPaste = createPlateEditor({
 
 ```tsx title="components/my-editor.tsx"
 import { createPlateEditor } from 'platejs/react';
-import { MarkdownPlugin } from '@platejs/markdown';
+import { MarkdownPlugin, deserializeMd, serializeMd } from '@platejs/markdown';
 // ...还需引入其它用于渲染的 Plate 插件
 
 const markdownString = '# Hello, *Plate*!';
@@ -150,8 +150,7 @@ const editor = createPlateEditor({
     // ...渲染反序列化元素所需的其它插件（如 HeadingPlugin、ItalicPlugin）
   ],
   // 初始内容通过反序列化生成
-  value: (editor) =>
-    editor.getPluginApi(MarkdownPlugin).markdown.deserialize(markdownString),
+  value: (editor) => deserializeMd(editor, markdownString),
 });
 ```
 
@@ -447,10 +446,12 @@ Visit https://platejs.org
 `;
 
 // 假设 `editor` 是已配置好的 Plate 编辑器实例
-const slateValue = editor.api.markdown.deserialize(markdown);
-// editor.tf.setValue(slateValue); // 可以设置编辑器内容
+const slateValue = deserializeMd(editor, markdown);
+editor.update((tx) => {
+  tx.value.replace({ children: slateValue });
+});
 
-const markdownOutput = editor.api.markdown.serialize();
+const markdownOutput = serializeMd(editor);
 // markdownOutput 将包含 GFM 语法
 ```
 
@@ -475,7 +476,7 @@ import {
   CodeLinePlugin,
   CodeSyntaxPlugin,
 } from '@platejs/code-block/react';
-import { MarkdownPlugin } from '@platejs/markdown';
+import { MarkdownPlugin, deserializeMd } from '@platejs/markdown';
 import { MyCustomCodeBlockElement } from './my-custom-code-block'; // 你的自定义组件
 
 const editor = createPlateEditor({
@@ -729,14 +730,14 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
           |                                                                                            |
           |  +-----------+        +----------------+        +---------------+      +-----------+       |
           |  |           |        |                |        |               |      |           |       |
- markdown-+->+ remark    +-mdast->+ remark plugins +-mdast->+ mdast-to-slate+----->+   nodes   +-plate-+->react elements
+ markdown-+->+ remark    +-mdast->+ remark plugins +-mdast->+ mdast-to-plate+----->+   nodes   +-plate-+->react elements
           |  |           |        |                |        |               |      |           |       |
           |  +-----------+        +----------------+        +---------------+      +-----------+       |
           |       ^                                                                      |             |
           |       |                                                                      v             |
           |  +-----------+        +----------------+        +---------------+      +-----------+       |
           |  |           |        |                |        |               |      |           |       |
-          |  | stringify |<-mdast-+ remark plugins |<-mdast-+ slate-to-mdast+<-----+ serialize |       |
+          |  | stringify |<-mdast-+ remark plugins |<-mdast-+ plate-to-mdast+<-----+ serialize |       |
           |  |           |        |                |        |               |      |           |       |
           |  +-----------+        +----------------+        +---------------+      +-----------+       |
           |                                                                                            |
@@ -748,7 +749,7 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 1.  **解析（反序列化）：**
     - Markdown 字符串 → `remark-parse` → mdast
     - `remarkPlugins` 变换 mdast（如 `remark-gfm`）
-    - `mdast-to-slate` 利用 `rules` 转化为 Plate 节点
+    - `mdast-to-plate` 利用 `rules` 转化为 Plate 节点
     - Plate 组件系统渲染节点
 2.  **序列化：**
     - Plate 节点 → `plite-to-mdast`（用 `rules`）→ mdast
@@ -1025,10 +1026,9 @@ export function PlateMarkdown({
   });
 
   useEffect(() => {
-    editor.tf.reset(); // 清空先前内容
-    editor.tf.setValue(
-      editor.getPluginApi(MarkdownPlugin).markdown.deserialize(children)
-    );
+    editor.update((tx) => {
+      tx.value.replace({ children: deserializeMd(editor, children) });
+    });
   }, [children, editor, remarkPlugins]); // 当 Markdown 内容或插件更改时重新反序列化
 
   return (

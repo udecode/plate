@@ -171,7 +171,9 @@ export function EditorForm() {
 
 如果您希望表单成为单一数据源（完全[受控](/docs/controlled)）：
 ```ts
-editor.tf.setValue(formStateValue);
+editor.update((tx) => {
+  tx.value.replace({ children: formStateValue });
+});
 ```
 但这有已知的缺点：
 - 可能会破坏光标位置和撤销/重做功能
@@ -216,10 +218,12 @@ function MyForm() {
       <button
         type="button"
         onClick={() => {
-          // 重置编辑器
-          editor.tf.reset();
           // 重置表单
           form.reset();
+          // 从重置后的表单状态替换编辑器值
+          editor.update((tx) => {
+            tx.value.replace({ children: form.getValues('content') });
+          });
         }}
       >
         重置
@@ -230,7 +234,7 @@ function MyForm() {
 ```
 
 - **`onChange`** -> 更新表单状态
-- **重置** -> 同时调用 `editor.tf.reset()` 和 `form.reset()` 以保持一致性
+- **重置** -> 重置表单后，用重置后的表单值替换编辑器内容。
 
 ## 从 shadcn Textarea 迁移到 Plate
 
@@ -418,11 +422,11 @@ export function EditorForm() {
 
 - 任何现有的表单验证或错误消息保持不变。
 - 对于默认值，确保 `form.defaultValues.bio` 是一个有效的 Plate 值（节点数组）而不是字符串。
-- 对于受控值，适度使用 `editor.tf.setValue(formStateValue)`。
+- 对于受控值，适度使用 `editor.update(...)` 和 `tx.value.replace(...)`。
 
 ## 最佳实践
 
 1. **使用非受控编辑器**：让 Plate 管理自己的状态，仅在必要时更新表单。  
-2. **最小化替换**：避免过于频繁地调用 `editor.tf.setValue`，这可能会破坏选择、历史记录或降低性能。  
+2. **最小化替换**：避免过于频繁地调用 `tx.value.replace(...)`，这可能会破坏选择、历史记录或降低性能。
 3. **在适当的时机验证**：决定是需要即时验证（输入时）还是在失焦/提交时验证。  
-4. **同时重置**：如果重置表单，调用 `editor.tf.reset()` 以保持同步。
+4. **同时重置**：如果重置表单，从重置后的表单状态替换编辑器值。

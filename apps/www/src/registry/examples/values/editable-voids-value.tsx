@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const editableVoidsValue: any = (
+export const editableVoidsValue = (
   <fragment>
     <hp>
       In addition to nodes that contain editable text, you can insert void

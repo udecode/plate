@@ -1,4 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
+import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 
 import type { TExcalidrawElement } from '../../lib';
 
@@ -61,7 +62,7 @@ describe('useExcalidrawElement', () => {
     const element = {
       children: [{ text: '' }],
       data: {
-        elements: [{ id: 'el-1' }],
+        elements: [{ id: 'el-1' } as OrderedExcalidrawElement],
         state: { viewBackgroundColor: '#fff' },
       },
       id: 'node-1',
@@ -71,12 +72,28 @@ describe('useExcalidrawElement', () => {
     const { result } = renderHook(() => useExcalidrawElement({ element }));
 
     act(() => {
-      result.current.excalidrawProps.onChange?.([{ id: 'el-2' }], {
-        viewBackgroundColor: '#000',
-      });
-      result.current.excalidrawProps.onChange?.([{ id: 'el-2' }], {
-        viewBackgroundColor: '#000',
-      });
+      result.current.excalidrawProps.onChange?.(
+        [
+          {
+            id: 'el-2',
+          } as OrderedExcalidrawElement,
+        ],
+        {
+          viewBackgroundColor: '#000',
+        },
+        {}
+      );
+      result.current.excalidrawProps.onChange?.(
+        [
+          {
+            id: 'el-2',
+          } as OrderedExcalidrawElement,
+        ],
+        {
+          viewBackgroundColor: '#000',
+        },
+        {}
+      );
     });
 
     expect(result.current.excalidrawProps.initialData).toEqual({

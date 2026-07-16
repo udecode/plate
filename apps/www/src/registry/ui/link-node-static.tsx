@@ -1,16 +1,18 @@
 import * as React from 'react';
 
 import type { TLinkElement } from 'platejs';
-import type { SlateElementProps } from 'platejs/static';
+import type { StyledPliteElementProps } from 'platejs/static';
 
-import { getLinkAttributes } from '@platejs/link';
-import { SlateElement } from 'platejs/static';
+import { type BaseLinkConfig, getLinkAttributes } from '@platejs/link';
+import { PliteElement } from 'platejs/static';
 import { cn } from '@/lib/utils';
 import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 
-export function LinkElementStatic(props: SlateElementProps<TLinkElement>) {
+export function LinkElementStatic(
+  props: StyledPliteElementProps<TLinkElement, BaseLinkConfig, 'a'>
+) {
   return (
-    <SlateElement
+    <PliteElement
       {...props}
       as="a"
       className={cn(
@@ -23,6 +25,6 @@ export function LinkElementStatic(props: SlateElementProps<TLinkElement>) {
       }}
     >
       {props.children}
-    </SlateElement>
+    </PliteElement>
   );
 }

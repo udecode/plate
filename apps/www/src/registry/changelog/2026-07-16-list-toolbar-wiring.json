@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-16-list-toolbar-wiring",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-16-list-toolbar-wiring.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-16",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Wire list toolbar controls to ListPlugin",
+  "targets": [
+    {
+      "name": "list-toolbar-button",
+      "files": ["apps/www/src/registry/ui/list-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-16-list-toolbar-wire-controls-listplugin-af98e9a5",
+      "kind": "wiring",
+      "summary": "Wire list toolbar controls to ListPlugin",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["list-toolbar-button"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-16",
+          "entry": "2026-07-16-list-toolbar-wiring",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

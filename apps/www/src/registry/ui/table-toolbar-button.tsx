@@ -18,7 +18,11 @@ import {
   XIcon,
 } from 'lucide-react';
 import { KEYS } from 'platejs';
-import { useEditorPlugin, useEditorSelector } from 'platejs/react';
+import {
+  type PlateEditor,
+  useEditorPlugin,
+  useEditorSelector,
+} from 'platejs/react';
 
 import {
   DropdownMenu,
@@ -34,13 +38,21 @@ import { cn } from '@/lib/utils';
 
 import { ToolbarButton } from './toolbar';
 
+const runTableCommand = (editor: PlateEditor, command: () => void) => {
+  command();
+  editor.api.dom.focus({ retries: 5 });
+};
+
 export function TableToolbarButton(props: DropdownMenuProps) {
   const tableSelected = useEditorSelector(
-    (editor) => editor.api.some({ match: { type: KEYS.table } }),
+    (editor) =>
+      editor.read.nodes.some({
+        match: { type: KEYS.table },
+      }),
     []
   );
 
-  const { editor, tf } = useEditorPlugin(TablePlugin);
+  const { editor } = useEditorPlugin(TablePlugin);
   const [open, setOpen] = React.useState(false);
   const mergeState = useTableMergeState();
 
@@ -80,8 +92,9 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!mergeState.canMerge}
                 onSelect={() => {
-                  tf.table.merge();
-                  editor.tf.focus();
+                  runTableCommand(editor, () => {
+                    editor.plugin(TablePlugin).update.merge();
+                  });
                 }}
               >
                 <Combine />
@@ -91,8 +104,9 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!mergeState.canSplit}
                 onSelect={() => {
-                  tf.table.split();
-                  editor.tf.focus();
+                  runTableCommand(editor, () => {
+                    editor.plugin(TablePlugin).update.split();
+                  });
                 }}
               >
                 <Ungroup />
@@ -114,8 +128,9 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  tf.insert.tableRow({ before: true });
-                  editor.tf.focus();
+                  runTableCommand(editor, () => {
+                    editor.update.insert.tableRow({ before: true });
+                  });
                 }}
               >
                 <ArrowUp />
@@ -125,8 +140,9 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  tf.insert.tableRow();
-                  editor.tf.focus();
+                  runTableCommand(editor, () => {
+                    editor.update.insert.tableRow();
+                  });
                 }}
               >
                 <ArrowDown />
@@ -136,8 +152,9 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  tf.remove.tableRow();
-                  editor.tf.focus();
+                  runTableCommand(editor, () => {
+                    editor.update.remove.tableRow();
+                  });
                 }}
               >
                 <XIcon />
@@ -159,8 +176,9 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  tf.insert.tableColumn({ before: true });
-                  editor.tf.focus();
+                  runTableCommand(editor, () => {
+                    editor.update.insert.tableColumn({ before: true });
+                  });
                 }}
               >
                 <ArrowLeft />
@@ -170,8 +188,9 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  tf.insert.tableColumn();
-                  editor.tf.focus();
+                  runTableCommand(editor, () => {
+                    editor.update.insert.tableColumn();
+                  });
                 }}
               >
                 <ArrowRight />
@@ -181,8 +200,9 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  tf.remove.tableColumn();
-                  editor.tf.focus();
+                  runTableCommand(editor, () => {
+                    editor.update.remove.tableColumn();
+                  });
                 }}
               >
                 <XIcon />
@@ -195,8 +215,9 @@ export function TableToolbarButton(props: DropdownMenuProps) {
             className="min-w-[180px]"
             disabled={!tableSelected}
             onSelect={() => {
-              tf.remove.table();
-              editor.tf.focus();
+              runTableCommand(editor, () => {
+                editor.update.remove.table();
+              });
             }}
           >
             <Trash2Icon />
@@ -209,7 +230,7 @@ export function TableToolbarButton(props: DropdownMenuProps) {
 }
 
 function TablePicker() {
-  const { editor, tf } = useEditorPlugin(TablePlugin);
+  const { editor } = useEditorPlugin(TablePlugin);
 
   const [tablePicker, setTablePicker] = React.useState({
     grid: Array.from({ length: 8 }, () => Array.from({ length: 8 }).fill(0)),
@@ -236,8 +257,11 @@ function TablePicker() {
     <div
       className="flex! m-0 flex-col p-0"
       onClick={() => {
-        tf.insert.table(tablePicker.size, { select: true });
-        editor.tf.focus();
+        runTableCommand(editor, () => {
+          editor.update.insert.table(tablePicker.size, {
+            select: true,
+          });
+        });
       }}
       role="button"
     >

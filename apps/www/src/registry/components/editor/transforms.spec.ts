@@ -1,8 +1,9 @@
-import { SuggestionPlugin } from '@platejs/suggestion/react';
-import { createBaseEditor, KEYS } from 'platejs';
+import { BaseBlockquotePlugin } from '@platejs/basic-nodes';
 import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
+import { type Selection, type Value, KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
-import { BaseBlockquotePlugin } from '../../../../../../packages/basic-nodes/src/lib/BaseBlockquotePlugin';
 import { insertBlock, setBlockType } from './transforms';
 
 const createEditor = ({
@@ -15,20 +16,20 @@ const createEditor = ({
     { children: [{ text: 'two' }], type: 'p' },
   ],
 }: Partial<{
-  selection: any;
-  value: any;
+  selection: Selection;
+  value: Value;
 }> = {}) =>
-  createBaseEditor({
+  createPlateEditor({
     plugins: [BaseBlockquotePlugin, CodeBlockPlugin, SuggestionPlugin],
     selection,
     value,
-  } as any);
+  });
 
 describe('editor block transforms', () => {
   it('keeps selection inside the wrapped paragraph when turning a block into a blockquote', () => {
     const editor = createEditor();
 
-    setBlockType(editor as any, KEYS.blockquote);
+    setBlockType(editor, KEYS.blockquote);
 
     expect(editor.read.children()).toMatchObject([
       { children: [{ text: 'one' }], type: 'p' },
@@ -46,7 +47,7 @@ describe('editor block transforms', () => {
   it('keeps selection inside the wrapped paragraph when turning a path into a blockquote', () => {
     const editor = createEditor();
 
-    setBlockType(editor as any, KEYS.blockquote, { at: [1] });
+    setBlockType(editor, KEYS.blockquote, { at: [1] });
 
     expect(editor.read.children()).toMatchObject([
       { children: [{ text: 'one' }], type: 'p' },
@@ -75,7 +76,7 @@ describe('editor block transforms', () => {
       ],
     });
 
-    setBlockType(editor as any, KEYS.blockquote);
+    setBlockType(editor, KEYS.blockquote);
 
     expect(editor.read.children()).toMatchObject([
       {
@@ -88,7 +89,7 @@ describe('editor block transforms', () => {
   it('turns a paragraph into a list inside the owning update', () => {
     const editor = createEditor();
 
-    setBlockType(editor as any, KEYS.ul);
+    setBlockType(editor, KEYS.ul);
 
     expect(editor.read.children()).toMatchObject([
       { children: [{ text: 'one' }], type: 'p' },
@@ -104,7 +105,7 @@ describe('editor block transforms', () => {
   it('selects the inserted blockquote paragraph instead of the previous block', () => {
     const editor = createEditor();
 
-    insertBlock(editor as any, KEYS.blockquote);
+    insertBlock(editor, KEYS.blockquote);
 
     expect(editor.read.children()).toMatchObject([
       { children: [{ text: 'one' }], type: 'p' },
@@ -132,7 +133,7 @@ describe('editor block transforms', () => {
       ],
     });
 
-    insertBlock(editor as any, KEYS.blockquote);
+    insertBlock(editor, KEYS.blockquote);
 
     expect(editor.read.children()).toMatchObject([
       { children: [{ text: 'one' }], type: 'p' },
@@ -160,7 +161,7 @@ describe('editor block transforms', () => {
     });
     const version = editor.read.lastCommit()?.version ?? 0;
 
-    insertBlock(editor as any, KEYS.h2);
+    insertBlock(editor, KEYS.h2);
 
     expect(editor.read.lastCommit()?.version).toBe(version + 1);
     expect(editor.read.children()).toMatchObject([
@@ -181,7 +182,7 @@ describe('editor block transforms', () => {
       ],
     });
 
-    insertBlock(editor as any, KEYS.codeBlock);
+    insertBlock(editor, KEYS.codeBlock);
 
     expect(editor.read.children()).toMatchObject([
       { children: [{ text: 'one' }], type: 'p' },

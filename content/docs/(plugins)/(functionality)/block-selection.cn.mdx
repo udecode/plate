@@ -108,16 +108,18 @@ BlockSelectionPlugin.configure({
 
 如果您的编辑器位于可滚动容器内，您可能需要配置选择区域的边界和滚动速度。
 
-1.  为滚动容器添加 `id`，例如 `id={editor.meta.uid}`。
+1.  为滚动容器提供稳定选择器。
 2.  在容器上设置 `position: relative`。
 3.  使用 `areaOptions` 配置边界和滚动行为。
 
 ```ts
+const scrollContainer = '.editor-scroll-container';
+
 BlockSelectionPlugin.configure({
   options: {
     areaOptions: {
-      boundaries: `#${editor.meta.uid}`,
-      container: `#${editor.meta.uid}`,
+      boundaries: scrollContainer,
+      container: scrollContainer,
       behaviour: {
         scrolling: {
           // 推荐速度，接近原生体验
@@ -202,9 +204,9 @@ render: {
 
 ```ts
 {
-  boundaries: [`#${editor.meta.uid}`],
-  container: [`#${editor.meta.uid}`],
-  selectables: [`#${editor.meta.uid} .plite-selectable`],
+  boundaries: ['.editor-scroll-container'],
+  container: ['.editor-scroll-container'],
+  selectables: ['.editor-scroll-container .plite-selectable'],
   selectionAreaClass: 'plite-selection-area',
 }
 ```

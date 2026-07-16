@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const deserializeMdValue: any = (
+export const deserializeMdValue = (
   <fragment>
     <hh2>Markdown</hh2>
     <hp>

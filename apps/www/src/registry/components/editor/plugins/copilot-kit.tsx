@@ -1,6 +1,6 @@
 'use client';
 
-import type { TElement } from 'platejs';
+import type { Element } from '@platejs/plite';
 
 import { faker } from '@faker-js/faker';
 import { CopilotPlugin } from '@platejs/ai/react';
@@ -31,14 +31,14 @@ export const CopilotKit = [
         },
         onError: () => {
           // Mock the API response. Remove it when you implement the route /api/ai/copilot
-          api.copilot.setBlockSuggestion({
+          api.setBlockSuggestion({
             text: stripMarkdown(faker.lorem.sentence()),
           });
         },
         onFinish: (_, completion) => {
           if (completion === '0') return;
 
-          api.copilot.setBlockSuggestion({
+          api.setBlockSuggestion({
             text: stripMarkdown(completion),
           });
         },
@@ -46,12 +46,12 @@ export const CopilotKit = [
       debounceDelay: 500,
       renderGhostText: GhostText,
       getPrompt: ({ editor }) => {
-        const contextEntry = editor.api.block({ highest: true });
+        const contextEntry = editor.read.nodes.block();
 
         if (!contextEntry) return '';
 
         const prompt = serializeMd(editor, {
-          value: [contextEntry[0] as TElement],
+          value: [contextEntry[0] as Element],
         });
 
         return `Continue the text up to the next punctuation mark:

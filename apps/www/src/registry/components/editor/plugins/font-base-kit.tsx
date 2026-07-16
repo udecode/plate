@@ -1,4 +1,4 @@
-import type { SlatePluginConfig } from 'platejs';
+import type { BasePluginConfig } from 'platejs';
 
 import {
   BaseFontBackgroundColorPlugin,
@@ -10,7 +10,7 @@ import { KEYS } from 'platejs';
 
 const options = {
   inject: { targetPlugins: [KEYS.p] },
-} satisfies SlatePluginConfig;
+} satisfies BasePluginConfig;
 
 export const BaseFontKit = [
   BaseFontColorPlugin.configure(options),

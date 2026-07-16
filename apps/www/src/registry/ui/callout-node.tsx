@@ -4,7 +4,8 @@ import * as React from 'react';
 
 import { useCalloutEmojiPicker } from '@platejs/callout/react';
 import { useEmojiDropdownMenuState } from '@platejs/emoji/react';
-import { PlateElement } from 'platejs/react';
+import type { TCalloutElement } from 'platejs';
+import { type StyledPlateElementProps, PlateElement } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -16,7 +17,7 @@ export function CalloutElement({
   children,
   className,
   ...props
-}: React.ComponentProps<typeof PlateElement>) {
+}: StyledPlateElementProps<TCalloutElement>) {
   const { emojiPickerState, isOpen, setIsOpen } = useEmojiDropdownMenuState({
     closeOnSelect: true,
   });
@@ -31,7 +32,7 @@ export function CalloutElement({
     <PlateElement
       className={cn('my-1 flex rounded-sm bg-muted p-4 pl-3', className)}
       style={{
-        backgroundColor: props.element.backgroundColor as any,
+        backgroundColor: props.element.backgroundColor,
       }}
       attributes={{
         ...attributes,
@@ -52,7 +53,7 @@ export function CalloutElement({
               }}
               contentEditable={false}
             >
-              {(props.element.icon as any) || '💡'}
+              {props.element.icon || '💡'}
             </Button>
           }
         >

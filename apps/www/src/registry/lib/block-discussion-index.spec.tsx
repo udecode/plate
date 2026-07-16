@@ -1,9 +1,20 @@
 /** @jsx jsxt */
 
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
 import { describe, expect, it } from 'bun:test';
-import { createBaseEditor, createBasePlugin, KEYS } from 'platejs';
+import {
+  type BaseEditor,
+  type Element,
+  type Node,
+  type NodeEntry,
+  type TCommentText,
+  type Text,
+  createBaseEditor,
+  createBasePlugin,
+  ElementApi,
+  KEYS,
+} from 'platejs';
 
 import {
   BLOCK_SUGGESTION_TOKEN,
@@ -19,36 +30,44 @@ const suggestionData = {
   userId: 'u1',
 } as const;
 
-const collectEntries = (editor: any) => {
-  const entries: any[] = [];
+type DiscussionEntry = NodeEntry<Element | TCommentText>;
 
-  const visit = (node: any, path: number[]) => {
+const collectEntries = (children: readonly Element[]) => {
+  const entries: DiscussionEntry[] = [];
+
+  const visit = (node: Element | TCommentText, path: number[]) => {
     entries.push([node, path]);
 
-    if (!node || typeof node !== 'object' || !Array.isArray(node.children)) {
-      return;
-    }
+    if (!ElementApi.isElement(node)) return;
 
-    node.children.forEach((child: any, index: number) => {
+    node.children.forEach((child, index) => {
       visit(child, [...path, index]);
     });
   };
 
-  editor.read.children().forEach((child: any, index: number) => {
+  children.forEach((child, index) => {
     visit(child, [index]);
   });
 
   return entries;
 };
 
-const getSuggestionData = (node: any) => node.suggestion_1;
+const getSuggestionData = (node: Node) =>
+  'suggestion_1' in node
+    ? (node.suggestion_1 as typeof suggestionData | undefined)
+    : undefined;
 
-const getSuggestionDataList = (node: any) =>
+const getSuggestionDataList = (node: Text) =>
   Object.keys(node)
     .filter((key) => key.startsWith('suggestion_'))
-    .map((key) => node[key]);
+    .map((key) => node[key] as typeof suggestionData);
 
-const getSuggestionId = (node: any) => node.suggestion_1?.id;
+const getSuggestionId = (node: Node) => getSuggestionData(node)?.id;
+
+const getBlockSuggestionData = (node: Node) =>
+  ElementApi.isElement(node)
+    ? (node.suggestion as typeof suggestionData | undefined)
+    : undefined;
 
 const MentionPlugin = createBasePlugin({
   key: KEYS.mention,
@@ -60,18 +79,18 @@ const InlineEquationPlugin = createBasePlugin({
   node: { isElement: true, isInline: true, isVoid: true },
 });
 
-const getResolvedSuggestions = (editor: any) => {
+const getResolvedSuggestions = (editor: BaseEditor) => {
   const suggestionApi = editor.plugin(BaseSuggestionPlugin).api;
 
   return (
     buildBlockDiscussionIndex({
       discussions: [],
-      entries: collectEntries(editor),
+      entries: collectEntries(editor.read.children()),
       getCommentId: () => {},
-      getSuggestionData: (node: any) => suggestionApi.suggestionData(node),
-      getSuggestionDataList: (node: any) => suggestionApi.dataList(node),
-      getSuggestionId: (node: any) => suggestionApi.nodeId(node),
-      isBlockSuggestion: (node: any) => suggestionApi.isBlockSuggestion(node),
+      getSuggestionData: (node) => suggestionApi.suggestionData(node),
+      getSuggestionDataList: (node) => suggestionApi.dataList(node),
+      getSuggestionId: (node) => suggestionApi.nodeId(node),
+      isBlockSuggestion: (node) => suggestionApi.isBlockSuggestion(node),
     }).suggestionsByBlock.get('0') ?? []
   );
 };
@@ -104,11 +123,11 @@ describe('buildBlockDiscussionIndex', () => {
           </hinlineequation>
         </hp>
       </editor>
-    ) as any;
+    ) as TestEditorFixture;
 
     const index = buildBlockDiscussionIndex({
       discussions: [],
-      entries: collectEntries(input),
+      entries: collectEntries(input.children),
       getCommentId: () => {},
       getSuggestionData,
       getSuggestionDataList,
@@ -152,11 +171,11 @@ describe('buildBlockDiscussionIndex', () => {
           </htext>
         </hp>
       </editor>
-    ) as any;
+    ) as TestEditorFixture;
 
     const index = buildBlockDiscussionIndex({
       discussions: [],
-      entries: collectEntries(input),
+      entries: collectEntries(input.children),
       getCommentId: () => {},
       getSuggestionData,
       getSuggestionDataList,
@@ -183,11 +202,11 @@ describe('buildBlockDiscussionIndex', () => {
           </ha>
         </hp>
       </editor>
-    ) as any;
+    ) as TestEditorFixture;
 
     const index = buildBlockDiscussionIndex({
       discussions: [],
-      entries: collectEntries(input),
+      entries: collectEntries(input.children),
       getCommentId: () => {},
       getSuggestionData,
       getSuggestionDataList,
@@ -211,16 +230,16 @@ describe('buildBlockDiscussionIndex', () => {
           <htext />
         </hequation>
       </editor>
-    ) as any;
+    ) as TestEditorFixture;
 
     const index = buildBlockDiscussionIndex({
       discussions: [],
-      entries: collectEntries(input),
+      entries: collectEntries(input.children),
       getCommentId: () => {},
-      getSuggestionData: (node: any) => node.suggestion,
+      getSuggestionData: getBlockSuggestionData,
       getSuggestionDataList,
-      getSuggestionId: (node: any) => node.suggestion?.id,
-      isBlockSuggestion: (node: any) => !!node.suggestion,
+      getSuggestionId: (node) => getBlockSuggestionData(node)?.id,
+      isBlockSuggestion: (node) => !!getBlockSuggestionData(node),
     });
 
     const suggestion = index.suggestionsByBlock.get('0')?.[0];
@@ -267,7 +286,7 @@ describe('buildBlockDiscussionIndex', () => {
     expectedText,
     plugins,
   }) => {
-    const input = createValue() as any;
+    const input = createValue() as TestEditorFixture;
 
     const editor = createBaseEditor({
       plugins: [

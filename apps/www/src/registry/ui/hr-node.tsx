@@ -6,17 +6,17 @@ import type { PlateElementProps } from 'platejs/react';
 
 import {
   PlateElement,
-  useFocused,
-  useReadOnly,
-  useSelected,
+  useEditorFocused,
+  useEditorReadOnly,
+  useElementSelected,
 } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
 export function HrElement(props: PlateElementProps) {
-  const readOnly = useReadOnly();
-  const selected = useSelected();
-  const focused = useFocused();
+  const readOnly = useEditorReadOnly();
+  const selected = useElementSelected();
+  const focused = useEditorFocused();
 
   return (
     <PlateElement {...props}>

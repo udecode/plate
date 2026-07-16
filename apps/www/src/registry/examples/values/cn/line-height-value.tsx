@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const lineHeightValue: any = (
+export const lineHeightValue = (
   <fragment>
     <hh2>行高</hh2>
     <hp>控制文本的行高以提高可读性并调整行间距。</hp>

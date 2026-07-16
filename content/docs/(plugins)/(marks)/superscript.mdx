@@ -102,7 +102,7 @@ export const superscriptPlugin = SuperscriptPlugin.configure({
 | `SuperscriptPlugin` | `@platejs/basic-nodes/react` | React wrapper for the headless superscript mark. |
 | `SuperscriptRules.markdown` | `@platejs/basic-nodes` | Optional `^` mark input rule factory. |
 | `BasicMarksKit` | Registry | Adds `SuperscriptPlugin`, the input rule, and `mod+period`. |
-| `MoreToolbarButton` | Registry UI | Calls `editor.tf.toggleMark(KEYS.sup, { remove: KEYS.sub })`. |
+| `MoreToolbarButton` | Registry UI | Calls `tx.superscript.toggle()`. |
 
 The package owns superscript semantics. The registry owns shortcut configuration and toolbar placement.
 
@@ -112,7 +112,7 @@ The package owns superscript semantics. The registry owns shortcut configuration
 |----------|--------|
 | Mark key | `KEYS.sup` (`superscript`) |
 | Leaf behavior | `node.isLeaf: true` |
-| Toggle transform | `editor.tf.superscript.toggle()` calls `editor.tf.toggleMark(type, { remove: editor.getType(KEYS.sub) })`. |
+| Toggle command | `tx.superscript.toggle()` removes subscript and toggles superscript. |
 | Selection affinity | `directional` |
 | HTML tags | `sup` |
 | HTML styles | `vertical-align: super` |
@@ -127,4 +127,4 @@ The package owns superscript semantics. The registry owns shortcut configuration
 | `BaseSuperscriptPlugin` | `@platejs/basic-nodes` | Headless superscript plugin. |
 | `SuperscriptPlugin` | `@platejs/basic-nodes/react` | React superscript plugin. |
 | `SuperscriptRules.markdown()` | `@platejs/basic-nodes` | Creates the `^` mark input rule. |
-| `tf.superscript.toggle()` | `@platejs/basic-nodes` | Toggles superscript and removes subscript. |
+| `tx.superscript.toggle()` | `@platejs/basic-nodes` | Toggles superscript and removes subscript. |

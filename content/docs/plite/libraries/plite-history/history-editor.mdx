@@ -1,14 +1,14 @@
 ---
 title: "History Editor API"
-description: "Read history state, run undo/redo transactions, and control history batching."
+description: "Read history state, run undo/redo transactions, and control history batches."
 ---
 
-History adds read, transaction, and editor API groups instead of mutating the
-root editor object.
+History adds read and transaction groups instead of mutating the root editor
+object.
 
 ## State API
 
-#### `state.history.get(): History`
+#### `state.history(): History`
 
 Read the full history value.
 
@@ -30,31 +30,46 @@ Undo the previous history batch.
 
 Redo the next history batch.
 
-## Editor API
+#### `tx.history.skip(): void`
 
-#### `editor.api.history.withMerging(fn: () => void): void`
+Do not save the current transaction to history.
 
-Run updates that merge into the previous history batch.
+#### `tx.history.merge(): void`
 
-#### `editor.api.history.withNewBatch(fn: () => void): void`
+Merge the current transaction into the previous compatible undo batch.
 
-Run updates where the first operation starts a new history batch.
+#### `tx.history.newBatch(): void`
 
-#### `editor.api.history.withoutMerging(fn: () => void): void`
+Start a fresh undo batch for the current transaction.
 
-Run updates without merging new operations into the previous history batch.
+## Update Policy
 
-#### `editor.api.history.withoutSaving(fn: () => void): void`
+#### `editor.update({ history: "skip" }, fn): void`
 
-Run updates without saving operations to history.
+Run one update without saving it to history.
 
-#### `editor.api.history.isMerging(): boolean | undefined`
+#### `editor.update({ history: "merge" }, fn): void`
 
-Read the current merge flag.
+Run one update that merges into the previous compatible undo batch.
 
-#### `editor.api.history.isSaving(): boolean | undefined`
+#### `editor.update({ history: "new-batch" }, fn): void`
 
-Read the current saving flag.
+Run one update where the first operation starts a fresh history batch, then the
+rest of the callback merges into that batch.
+
+Configure a direct write by calling `editor.update(policy)` first.
+
+```typescript
+editor.update({ history: "skip" }).text.insert("draft");
+```
+
+#### `editor.update.history.undo(): void`
+
+Undo the previous history batch outside a larger transaction.
+
+#### `editor.update.history.redo(): void`
+
+Redo the next history batch outside a larger transaction.
 
 ## Types
 

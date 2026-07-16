@@ -61,7 +61,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/comment
+npm install @platejs/comment @platejs/plite-dom
 ```
 
 ### 扩展评论插件
@@ -69,13 +69,14 @@ npm install @platejs/comment
 创建带有扩展配置的评论插件以进行状态管理:
 
 ```tsx
-import { type ExtendConfig, type Path, isPliteString } from 'platejs';
+import { isString } from '@platejs/plite-dom';
+import { TextApi, type ExtendConfig, type Path } from 'platejs';
 import {
   type BaseCommentConfig,
   BaseCommentPlugin,
   getDraftCommentKey,
 } from '@platejs/comment';
-import { toTPlatePlugin } from 'platejs/react';
+import { toPlatePlugin } from 'platejs/react';
 import { CommentLeaf } from '@/components/ui/comment-node';
 
 type CommentConfig = ExtendConfig<
@@ -87,7 +88,7 @@ type CommentConfig = ExtendConfig<
   }
 >;
 
-export const commentPlugin = toTPlatePlugin<CommentConfig>(
+export const commentPlugin = toPlatePlugin<CommentConfig>(
   BaseCommentPlugin,
   ({ editor }) => ({
     options: {
@@ -112,7 +113,7 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
 添加点击处理来管理激活评论状态:
 
 ```tsx
-export const commentPlugin = toTPlatePlugin<CommentConfig>(
+export const commentPlugin = toPlatePlugin<CommentConfig>(
   BaseCommentPlugin,
   ({ editor }) => ({
     handlers: {
@@ -126,7 +127,7 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
           isSet = true;
         };
 
-        if (!isPliteString(leaf)) unsetActiveComment();
+        if (!isString(leaf)) unsetActiveComment();
 
         while (leaf.parentElement) {
           if (leaf.classList.contains(`plite-${type}`)) {
@@ -166,27 +167,36 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
 扩展 `setDraft` 事务命令以增强功能:
 
 ```tsx
-export const commentPlugin = toTPlatePlugin<CommentConfig>(
+export const commentPlugin = toPlatePlugin<CommentConfig>(
   BaseCommentPlugin,
   ({ editor }) => ({
     // ... previous configuration
   })
 )
   .extendTx(
-    ({
-      editor,
-      setOption,
-    }) => (tx) => ({
-      setDraft: () => {
+    ({ editor, setOption, type }) => (tx) => ({
+      setDraft: (options = {}) => {
+        const commentingBlock = editor.selection?.focus.path.slice(0, 1) ?? null;
+
         if (editor.api.isCollapsed()) {
-          editor.tf.select(editor.api.block()![1]);
+          const blockEntry = editor.api.block();
+
+          if (blockEntry) {
+            tx.selection.set(blockEntry[1]);
+          }
         }
 
-        tx.comment.setDraft();
+        tx.nodes.set(
+          {
+            [getDraftCommentKey()]: true,
+            [type]: true,
+          },
+          { match: TextApi.isText, split: true, ...options }
+        );
 
-        editor.tf.collapse();
+        tx.selection.collapse();
         setOption('activeId', getDraftCommentKey());
-        setOption('commentingBlock', editor.selection!.focus.path.slice(0, 1));
+        setOption('commentingBlock', commentingBlock);
       },
     })
   )

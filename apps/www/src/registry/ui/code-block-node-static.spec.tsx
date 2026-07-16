@@ -2,14 +2,27 @@ import * as React from 'react';
 
 import { render } from '@testing-library/react';
 import { afterAll, describe, expect, it, mock } from 'bun:test';
+import type { TCodeBlockElement } from 'platejs';
+
+const element = {
+  children: [{ text: '' }],
+  lang: 'python',
+  type: 'code_block',
+} satisfies TCodeBlockElement;
 
 mock.module('platejs/static', () => ({
-  PliteElement: ({ children, className, ...props }: any) => (
-    <div className={className} data-testid="plite-element" {...props}>
+  PliteElement: ({
+    attributes,
+    children,
+    className,
+  }: React.ComponentProps<'div'> & {
+    attributes?: React.ComponentProps<'div'>;
+  }) => (
+    <div className={className} data-testid="plite-element" {...attributes}>
       {children}
     </div>
   ),
-  PliteLeaf: ({ children, className }: any) => (
+  PliteLeaf: ({ children, className }: React.ComponentProps<'span'>) => (
     <span className={className}>{children}</span>
   ),
 }));
@@ -25,16 +38,7 @@ describe('CodeBlockElementStatic', () => {
     );
 
     const view = render(
-      <CodeBlockElementStatic
-        attributes={{}}
-        element={
-          {
-            children: [{ text: '' }],
-            lang: 'python',
-            type: 'code_block',
-          } as any
-        }
-      >
+      <CodeBlockElementStatic attributes={{}} element={element}>
         <span>print("hello")</span>
       </CodeBlockElementStatic>
     );
@@ -50,13 +54,7 @@ describe('CodeBlockElementStatic', () => {
     const view = render(
       <CodeBlockElementStatic
         attributes={{}}
-        element={
-          {
-            children: [{ text: '' }],
-            lang: 'python',
-            type: 'code_block',
-          } as any
-        }
+        element={element}
         showLanguageLabel={false}
       >
         <span>print("hello")</span>

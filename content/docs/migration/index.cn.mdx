@@ -64,12 +64,7 @@ title: 主要版本更新
     -   编辑器 DOM 状态属性已移至 `editor.dom` 命名空间下：
         -   `editor.currentKeyboardEvent` 现在为 `editor.dom.currentKeyboardEvent`。
         -   `editor.prevSelection` 现在为 `editor.dom.prevSelection`。
-    -   编辑器元数据属性已移至 `editor.meta` 命名空间下：
-        -   `editor.isFallback` 现在为 `editor.meta.isFallback`
-        -   `editor.key` 现在为 `editor.meta.key`
-        -   `editor.pluginList` 现在为 `editor.meta.pluginList`
-        -   `editor.shortcuts` 现在为 `editor.meta.shortcuts`
-        -   `editor.uid` 现在为 `editor.meta.uid`
+    -   编辑器元数据由 Plite 编辑器身份和 Plate 插件运行时分别负责。
     -   `NodeIdPlugin` 现在作为核心插件默认启用。这会自动为块节点分配唯一ID。
         -   迁移：如果您之前未使用 `NodeIdPlugin` 并希望保持旧行为（不自动生成ID），请在编辑器配置中显式禁用它：
             ```ts
@@ -79,7 +74,7 @@ title: 主要版本更新
             });
             ```
     -   移除了 `serializeHtml` 和 `PlateStatic` 中的 `components` 属性。
-        -   迁移：将 `components` 传递给 `createBasePlateEditor({ components })` 或各个插件。
+        -   迁移：将 `components` 传递给 `createBaseEditor({ components })` 或各个插件。
     -   插件快捷键系统变更：
         -   定义在 `editor.shortcuts` 中的快捷键键现在按插件键命名空间化（例如，`CodePlugin` 的 `code.toggle`）。
         -   快捷键的 `priority` 属性用于解决多个快捷键共享完全相同键组合时的冲突，而非按名称覆盖快捷键。
@@ -107,7 +102,7 @@ title: 主要版本更新
         -   `editor.dom.focused`: 布尔值，如果编辑器当前获得焦点则为 true。
         -   `editor.dom.readOnly`: 布尔值，如果编辑器处于只读模式则为 true。向 `PlateContent` 传递 `readOnly` 属性会将其值同步到此状态和 `useEditorReadOnly` 钩子。
     -   新增编辑器元数据字段：
-        -   `editor.meta.components` - 按键存储插件组件
+        -   `editor.runtime.components` - 按键存储插件组件
     -   新增钩子 `useEditorComposing`：允许在 `PlateContent` 外部订阅编辑器的 composing 状态（`editor.dom.composing`）。
     -   `createPlateEditor` 和 `usePlateEditor` 现在接受 `readOnly` 选项以在初始化时将编辑器设置为只读状态。对于初始化后的动态只读变更，继续使用 `<Plate>` 或 `<PlateContent>` 组件上的 `readOnly` 属性。
     -   新增插件字段：`editOnly`（布尔值或对象）。

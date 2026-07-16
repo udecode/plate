@@ -7,18 +7,18 @@ Plite documents are JSON. Serialization is app code that turns your Plite node
 shape into another format, and deserialization turns external input back into
 your node shape.
 
-Read the full persisted document through `state.value.get()`.
+Read the full persisted document through `editor.read.value()`.
 
 ## Read The Document
 
 ```ts
-const documentValue = editor.read((state) => state.value.get());
+const documentValue = editor.read.value();
 const children = documentValue.children;
 ```
 
 For single-root editors, `<Plite onChange>` gives the current provider root
-value. Use `state.value.get()` when you need extra roots or persistent state
-fields. See [Document State](14-document-state).
+value. Use `editor.read.value()` when you need extra roots or persistent meta
+fields. See [Document Meta](14-document-state).
 
 ## Plain Text
 
@@ -76,10 +76,7 @@ const serializeHtml = (node: Descendant): string => {
   }
 };
 
-const html = editor
-  .read((state) => state.value.root())
-  .map(serializeHtml)
-  .join("");
+const html = editor.read.children().map(serializeHtml).join("");
 ```
 
 Escape text and attribute values before writing HTML strings. Keep sanitizer,
@@ -160,7 +157,7 @@ adapter might preserve links and marks while rejecting layout-only HTML or
 tables. A persistence serializer should preserve the full document value:
 
 ```ts
-const persisted = editor.read((state) => state.value.get());
+const persisted = editor.read.value();
 await saveDocument(JSON.stringify(persisted));
 ```
 

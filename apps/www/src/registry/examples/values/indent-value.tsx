@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const indentValue: any = (
+export const indentValue = (
   <fragment>
     <hh2>Indentation</hh2>
     <hp indent={1}>

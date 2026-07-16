@@ -64,14 +64,14 @@ export const useBlockIdAttributeRef = <T extends HTMLElement>(
 
 export type PlateElementProps<
   N extends Element = Element,
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyPluginConfig = AnyPluginConfig,
 > = PlateNodeProps<C> &
   RenderElementProps<N> & {
     attributes: UnknownObject;
     path: Path;
   };
 
-export type PlateNodeProps<C extends AnyPluginConfig = PluginConfig> =
+export type PlateNodeProps<C extends AnyPluginConfig = AnyPluginConfig> =
   PlatePluginContext<C> & {
     /**
      * Optional ref to be merged with `attributes.ref`

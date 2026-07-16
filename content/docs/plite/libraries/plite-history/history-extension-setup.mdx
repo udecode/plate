@@ -32,8 +32,8 @@ const editor = usePliteEditor({
 });
 ```
 
-Read history through `state.history`, write through `tx.history`, and control
-batching through `editor.api.history`.
+Read history through `state.history`, write through `tx.history`, and use
+an `editor.update({ history })` policy for one controlled update.
 
 ## Runtime API
 
@@ -44,11 +44,7 @@ editor.update((tx) => {
   tx.history.undo();
 });
 
-editor.api.history.withoutSaving(() => {
-  editor.update((tx) => {
-    tx.text.insert("draft");
-  });
-});
+editor.update({ history: "skip" }).text.insert("draft");
 ```
 
 See [History Editor API](./history-editor) for the full API surface.

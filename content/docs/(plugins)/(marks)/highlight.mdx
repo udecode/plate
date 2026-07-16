@@ -115,7 +115,7 @@ export const highlightPlugin = HighlightPlugin.configure({
 | `HighlightPlugin` | `@platejs/basic-nodes/react` | React wrapper for the headless highlight mark. |
 | `HighlightRules.markdown` | `@platejs/basic-nodes` | Optional mark input rule factory. |
 | `HighlightLeaf` | Registry UI | Styled client highlight leaf using `PlateLeaf`. |
-| `HighlightLeafStatic` | Registry UI | Static rendering version using `SlateLeaf`. |
+| `HighlightLeafStatic` | Registry UI | Static rendering version using `PliteLeaf`. |
 | `BasicMarksKit` | Registry | Adds `HighlightPlugin`, `HighlightLeaf`, two input-rule variants, and `mod+shift+h`. |
 | `MarkToolbarButton` | Registry UI | Reads active mark state and calls the mark toggle hook. |
 
@@ -127,7 +127,7 @@ The package owns the mark. The registry owns highlight color and toolbar placeme
 |----------|--------|
 | Mark key | `KEYS.highlight` |
 | Leaf behavior | `node.isLeaf: true` |
-| Toggle transform | `editor.tf.highlight.toggle()` calls `editor.tf.toggleMark(type)`. |
+| Toggle command | `tx.highlight.toggle()` calls `tx.marks.toggle(type)`. |
 | Selection affinity | `directional` |
 | HTML tags | `mark` |
 | Render output | `mark` |
@@ -141,6 +141,6 @@ The package owns the mark. The registry owns highlight color and toolbar placeme
 | `BaseHighlightPlugin` | `@platejs/basic-nodes` | Headless highlight plugin. |
 | `HighlightPlugin` | `@platejs/basic-nodes/react` | React highlight plugin. |
 | `HighlightRules.markdown(options)` | `@platejs/basic-nodes` | Creates a highlight mark input rule. |
-| `tf.highlight.toggle()` | `@platejs/basic-nodes` | Toggles the highlight mark at the selection. |
+| `tx.highlight.toggle()` | `@platejs/basic-nodes` | Toggles the highlight mark at the selection. |
 | `HighlightLeaf` | Registry UI | Styled client highlight leaf. |
 | `HighlightLeafStatic` | Registry UI | Styled static highlight leaf. |

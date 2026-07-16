@@ -31,7 +31,7 @@ export const MyDocumentPlugin = createPlatePlugin({
 // 定义 tx.doc.format()
 .extendTx(({ editor, type }) => (tx) => ({
   format: () => {
-    editor.tf.normalize({ force: true });
+    tx.normalize({ force: true });
   },
 }))
 // 定义 editor.api.doc.format()
@@ -109,7 +109,7 @@ export const CustomLoggerPlugin = createPlatePlugin({
 -   **ItalicPlugin**: `Mod+I`
 -   **UnderlinePlugin**: `Mod+U`
 
-其他插件，如 `CodePlugin`、`StrikethroughPlugin` 等，提供可以轻松链接到快捷键的 transform（例如，`toggle` 快捷键将链接到 `editor.tf.<pluginKey>.toggle()`），但您需要为它们明确定义快捷键 `keys`。
+其他插件，如 `CodePlugin`、`StrikethroughPlugin` 等，可以提供与快捷键同名的 tx 命令（例如，`toggle` 快捷键会运行 `editor.update((tx) => tx.<pluginKey>.toggle())`），但您需要为它们明确定义快捷键 `keys`。
 
 <Callout type="note">
   粗体、斜体和下划线的特定默认按键组合在每个插件的默认配置中定义。您始终可以覆盖这些默认值或为其他插件定义快捷键，如果它们不符合您的需求（参见下面的“覆盖和禁用快捷键”）。
@@ -124,8 +124,8 @@ import { createPlatePlugin, Key } from 'platejs/react';
 
 export const MyFormattingTools = createPlatePlugin({
   key: 'myFormatting',
-  // 假设存在 transform 如 editor.tf.myFormatting.applyHeader
-  // 和 editor.tf.myFormatting.applyCodeStyle。
+  // 假设存在 tx 命令，如 tx.myFormatting.applyHeader
+  // 和 tx.myFormatting.applyCodeStyle。
 })
 .extend({
   shortcuts: {

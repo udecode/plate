@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const basicMarksValue: any = (
+export const basicMarksValue = (
   <fragment>
     <hh2>Text Formatting</hh2>
     <hp>

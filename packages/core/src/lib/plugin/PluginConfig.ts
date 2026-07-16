@@ -10,6 +10,7 @@ export type AnyPluginConfig = {
   key: any;
   options: any;
   api: any;
+  dependencies?: any;
   state?: any;
   tx: any;
   selectors: any;
@@ -87,11 +88,8 @@ export type PluginBase<C extends AnyPluginConfig = PluginConfig> = {
   key: C['key'];
   /** API methods provided by this plugin. */
   api: InferApi<C>;
-  /**
-   * An array of plugin keys that this plugin depends on. These plugins will be
-   * loaded before this plugin.
-   */
-  dependencies: string[];
+  /** Plugins that must be installed before this plugin. */
+  dependencies: NonNullable<C['dependencies']>;
   inject: Nullable<{
     /** Plugin keys of elements to exclude the children from */
     excludeBelowPlugins?: string[];
@@ -552,6 +550,37 @@ export type InferKey<P> = P extends { key: infer K } ? K : never;
 
 export type InferApi<P> = P extends { api: infer A } ? A : never;
 
+export type InferDependencies<P> = P extends {
+  dependencies?: infer D extends readonly unknown[];
+}
+  ? D
+  : readonly [];
+
+type InferDependencyConfig<P> = P extends {
+  readonly __config: infer C extends AnyPluginConfig;
+}
+  ? C
+  : P extends AnyPluginConfig
+    ? P
+    : never;
+
+export type InferDependencyConfigs<
+  C extends AnyPluginConfig,
+  Seen extends PropertyKey = never,
+> = C extends unknown
+  ? C['key'] extends Seen
+    ? never
+    : InferDependencyConfig<InferDependencies<C>[number]> extends infer D
+      ? D extends AnyPluginConfig
+        ? D | InferDependencyConfigs<D, Seen | C['key']>
+        : never
+      : never
+  : never;
+
+export type InferPluginConfigTree<C extends AnyPluginConfig> =
+  | C
+  | InferDependencyConfigs<C>;
+
 export type InferPluginApi<P extends AnyPluginConfig> =
   InferApi<P> extends Record<P['key'], infer TApi> ? TApi : {};
 
@@ -599,7 +628,16 @@ export type PluginConfig<
   Tx extends AnyPluginTx = {},
   S = {},
   State = {},
-> = { key: K; api: A; options: O; selectors: S; state?: State; tx: Tx };
+  D extends readonly unknown[] = readonly [],
+> = {
+  key: K;
+  api: A;
+  dependencies?: D;
+  options: O;
+  selectors: S;
+  state?: State;
+  tx: Tx;
+};
 
 export type WithAnyKey<C extends AnyPluginConfig = PluginConfig> = PluginConfig<
   any,
@@ -607,7 +645,8 @@ export type WithAnyKey<C extends AnyPluginConfig = PluginConfig> = PluginConfig<
   InferApi<C>,
   InferTx<C>,
   InferSelectors<C>,
-  InferState<C>
+  InferState<C>,
+  InferDependencies<C>
 >;
 
 export type WithRequiredKey<P = {}> =

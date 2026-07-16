@@ -3,46 +3,43 @@ title: Plate Editor
 description: API reference for the Plate editor runtime.
 ---
 
-`PlateEditor` is the React editor type returned by `createPlateEditor`, `usePlateEditor`, and `withPlate`. It extends the base Slate editor with plugin registries, typed `api` and `tf` surfaces, DOM state, metadata, and plugin option helpers.
+`PlateEditor` is the React editor type returned by `createPlateEditor`, `usePlateEditor`, and `withPlate`. It extends the base Plite editor with plugin registries, typed `api`, typed `editor.update()` transactions, DOM state, metadata, and plugin option helpers.
 
 ## Ownership
 
 | Surface | Owner | Notes |
 | --- | --- | --- |
-| `PlateEditor` | `@platejs/core/react` | React editor type with Plate plugin APIs, transforms, handlers, renders, and hooks. |
-| `SlateEditor` | `@platejs/core` | Non-React editor type used by server-side and static editor paths. |
-| Slate primitives | `@platejs/slate` | `children`, `selection`, `operations`, core `api`, and core `tf` transforms. |
+| `PlateEditor` | `@platejs/core/react` | React editor type with Plate plugin APIs, transaction groups, handlers, renders, and hooks. |
+| `BaseEditor` | `@platejs/core` | Non-React editor type used by server-side and static editor paths. |
+| Plite primitives | `@platejs/plite` | `children`, `selection`, `operations`, core `api`, and the transaction/update runtime. |
 | Core plugins | `@platejs/core` | Debugging, HTML parsing, parser pipeline, length, node id, history, input rules, and base paragraph behavior. |
 | React core plugins | `@platejs/core/react` | React extension, DOM integration, event editor, navigation feedback, and React paragraph plugin. |
 
-Use `PlateEditor` when a page or component runs inside React. Use `SlateEditor` when you need the headless editor from `createSlateEditor`.
+Use `PlateEditor` when a page or component runs inside React. Use `BaseEditor` when you need the headless editor from `createBaseEditor`.
 
 ## Editor Shape
 
-The editor is still a Slate editor. Plate adds typed plugin access, plugin metadata, DOM state, and option stores on top of that shape.
+The editor is still a Plite editor. Plate adds typed plugin access, plugin metadata, DOM state, and option stores on top of that shape.
 
 <API name="PlateEditor">
 <APIAttributes>
   <APIItem name="id" type="string">
-    Unique editor instance id. `withSlate` uses the provided `id`, an existing editor id, or `nanoid()`.
+    Unique editor instance id. `withPlite` uses the provided `id`, an existing editor id, or `nanoid()`.
   </APIItem>
   <APIItem name="children" type="Value">
     Current document value.
   </APIItem>
-  <APIItem name="selection" type="TRange | null">
-    Current Slate selection.
+  <APIItem name="selection" type="Range | null">
+    Current Plite selection.
   </APIItem>
   <APIItem name="operations" type="Operation[]">
-    Operations applied since Slate last flushed the editor.
+    Operations applied since Plite last flushed the editor.
   </APIItem>
-  <APIItem name="api" type="EditorApi & CorePluginApi">
-    Core Slate APIs plus APIs contributed by resolved Plate plugins.
+  <APIItem name="api" type="PlateEditor['api'] & CorePluginApi">
+    Core Plite APIs plus APIs contributed by resolved Plate plugins.
   </APIItem>
-  <APIItem name="tf" type="EditorTransforms & CorePluginTransforms">
-    Core Slate transforms plus transforms contributed by resolved Plate plugins.
-  </APIItem>
-  <APIItem name="transforms" type="PlateEditor['tf']">
-    Alias for `tf`.
+  <APIItem name="update" type="PlateEditor['update']">
+    Transaction entrypoint for document, selection, history, and plugin commands.
   </APIItem>
   <APIItem name="plugins" type="Record<string, AnyEditorPlatePlugin>">
     Resolved plugin map keyed by plugin key.
@@ -50,7 +47,7 @@ The editor is still a Slate editor. Plate adds typed plugin access, plugin metad
   <APIItem name="dom" type="PlateEditor['dom']">
     Runtime DOM state owned by the editor instance.
   </APIItem>
-  <APIItem name="meta" type="PlateEditor['meta']">
+  <APIItem name="runtime" type="PlateEditor['runtime']">
     Runtime metadata and plugin caches built during plugin resolution.
   </APIItem>
 </APIAttributes>
@@ -58,21 +55,19 @@ The editor is still a Slate editor. Plate adds typed plugin access, plugin metad
 
 ## Runtime State
 
-`editor.dom` is mutable runtime state. It is updated by React integration, event handlers, focus tracking, and read-only setup.
+React and DOM runtime state is read through Plite runtime APIs. Plate keeps plugin metadata on `editor.runtime`.
 
-| Field | Type | Set by |
+| State | Read path | Set by |
 | --- | --- | --- |
-| `composing` | `boolean` | Composition handlers. |
-| `currentKeyboardEvent` | `KeyboardEventLike \| null` | `SlateReactExtensionPlugin` while handling keyboard shortcuts. |
-| `focused` | `boolean` | DOM focus integration. |
-| `prevSelection` | `TRange \| null` | Selection tracking. |
-| `readOnly` | `boolean` | `withSlate({ readOnly })`, then React read-only state. |
+| composition | `editor.api.react.isComposing()` | Plite React composition runtime. |
+| focus | `editor.api.react.isFocused()` | Plite React focus runtime. |
+| read-only | `editor.read.view.isReadOnly()` or `editor.api.react.isReadOnly()` | `createPlateEditor`, `<Plate>`, and `<PlateContent>`. |
 
-`editor.meta` carries plugin resolution output. Most application code reads this indirectly through helpers like `getPlugin`, `getOptions`, and render utilities.
+`editor.runtime` carries plugin resolution output. Most application code reads this indirectly through helpers like `getPlugin`, `getOptions`, and render utilities.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `key` | `string` | Internal editor key. `withSlate` creates one with `nanoid()` when missing. |
+| `key` | `string` | Internal editor key. `withPlite` creates one with `nanoid()` when missing. |
 | `uid` | `string \| undefined` | Stable id used by Plate containers across RSC and client hydration. |
 | `userId` | `string \| null \| undefined` | Collaborative identity passed through editor options. |
 | `components` | `NodeComponents` | Resolved node components keyed by plugin key. |
@@ -84,7 +79,7 @@ The editor is still a Slate editor. Plate adds typed plugin access, plugin metad
 
 ## Plugin Access
 
-Use editor helpers when you need the resolved plugin instance, typed plugin API, typed transforms, or live plugin options.
+Use editor helpers when you need the resolved plugin instance or live plugin options. Read plugin APIs from `editor.api`; run plugin commands through `editor.update`.
 
 ```tsx title="Plugin option access"
 import { ParagraphPlugin, useEditorPlugin } from 'platejs/react';
@@ -99,8 +94,6 @@ export function ParagraphType() {
 | Helper | Type | Use it for |
 | --- | --- | --- |
 | `getPlugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => EditorPlatePlugin<C>` | Read the resolved plugin instance after overrides and configuration. |
-| `getApi(plugin?)` | `<C>(plugin?: WithRequiredKey<C>) => editor.api & InferApi<C>` | Get a typed view of editor APIs. The runtime value is `editor.api`. |
-| `getTransforms(plugin?)` | `<C>(plugin?: WithRequiredKey<C>) => editor.tf & InferTransforms<C>` | Get a typed view of editor transforms. The runtime value is `editor.transforms`. |
 | `getType(pluginKey)` | `(pluginKey: string) => string` | Resolve the node type for a plugin key. |
 | `getInjectProps(plugin)` | `(plugin) => InjectNodeProps` | Read injected node props with default `nodeKey` and `styleKey` filled from the plugin type. |
 | `getOptionsStore(plugin)` | `(plugin) => TStateApi` | Read the plugin option store. |
@@ -111,7 +104,7 @@ export function ParagraphType() {
 
 ## Initialization
 
-`withPlate` wraps `withSlate` with React defaults. It uses `createZustandStore` for plugin option stores and prepends the React core plugins before user plugins.
+`withPlate` wraps `withPlite` with React defaults. It uses `createZustandStore` for plugin option stores and prepends the React core plugins before user plugins.
 
 ```tsx title="Create a typed editor"
 import { usePlateEditor } from 'platejs/react';
@@ -130,16 +123,16 @@ export function useBasicEditor() {
 }
 ```
 
-`withSlate` does the lower-level setup:
+`withPlite` does the lower-level setup:
 
 | Step | Behavior |
 | --- | --- |
-| Editor identity | Sets `editor.id`, `editor.meta.key`, `editor.meta.isFallback`, `editor.meta.userId`, and `editor.dom`. |
-| Helper methods | Installs `getApi`, `getTransforms`, `getPlugin`, `getType`, option helpers, and injection helpers. |
+| Runtime metadata | Preserves Plite `editor.id` and installs Plate plugin runtime state such as `runtime.isFallback`, `runtime.userId`, and plugin caches. |
+| Helper methods | Installs `getPlugin`, `getType`, option helpers, and injection helpers. |
 | Core plugins | Resolves core plugins, replaces core plugins with custom plugins that share the same key, and resolves the root plugin. |
 | Components | Merges `components` into root-plugin component overrides. |
 | Normalization guard | Wraps `normalizeNode` so `editor.api.shouldNormalizeNode(entry)` can skip a normalization pass. |
-| Initial value | Calls `editor.tf.init({ value, selection, autoSelect, shouldNormalizeEditor, onReady })` unless `skipInitialization` is `true`. |
+| Initial value | Initializes the value and selection through the runtime update path unless `skipInitialization` is `true`. |
 
 `value` accepts a Plate value, an HTML string, or a function that returns the value. `onReady` receives `{ editor, isAsync, value }` after initialization completes.
 
@@ -164,8 +157,8 @@ These APIs exist on every Plate editor because core plugins are always resolved 
   <APIItem name="editor.api.html.deserialize" type="(options: { element: HTMLElement | string; collapseWhiteSpace?: boolean; defaultElementPlugin?: WithRequiredKey }) => Descendant[]">
     Deserialize an HTML element into Plate nodes. The HTML parser plugin calls this for `text/html` paste data.
   </APIItem>
-  <APIItem name="editor.api.redecorate" type="() => void">
-    Trigger decoration refresh. The React extension warns through `editor.api.debug.warn` until an integration overrides it.
+  <APIItem name="editor.api.react.refreshDecorations" type="(options?: PliteProjectionStoreRefreshOptions) => void">
+    Refresh React decorations after an external state change.
   </APIItem>
   <APIItem name="editor.api.navigation.activeTarget" type="() => NavigationFeedbackTarget | null">
     Read the current navigation feedback target and clear it if the stored target no longer resolves.
@@ -179,71 +172,68 @@ These APIs exist on every Plate editor because core plugins are always resolved 
 </APIMethods>
 </API>
 
-## Core Transforms
+## Core Transactions
 
-Core transforms live on `editor.tf` and `editor.transforms`. Plugin docs normally show the plugin-specific transform names, but the editor always includes these runtime transforms.
+Mutations run through `editor.update`. Core Plite commands live on the transaction object, and plugin commands are added by `extendTx` or `extendTxGroup`.
 
-<API name="Core transforms">
+<API name="Core transactions">
 <APITransforms>
-  <APIItem name="editor.tf.init" type="(options: InitOptions) => void">
-    Initialize value, selection, optional normalization, optional auto-selection, and `onReady`.
+  <APIItem name="editor.update(policy).value.replace(input)" type="(input: SnapshotInput) => void">
+    Replace the editor value, and optionally the selection, through a configured Plite update.
   </APIItem>
-  <APIItem name="editor.tf.insertExitBreak" type="(options?: InsertExitBreakOptions) => boolean | undefined">
-    Insert an exit break for plugins that route to the core exit-break transform.
+  <APIItem name="editor.update((tx) => tx.nodes.insert(node, options))" type="(node: Node, options?: InsertNodesOptions) => void">
+    Insert a node or fragment through the Plite node transaction group.
   </APIItem>
-  <APIItem name="editor.tf.liftBlock" type="(options?: LiftBlockOptions) => boolean | undefined">
-    Lift the selected block through Plate's block transform wrapper.
+  <APIItem name="editor.update((tx) => tx.nodes.set(props, options))" type="(props: Partial<Node>, options?: SetNodesOptions) => void">
+    Update matching nodes through the Plite node transaction group.
   </APIItem>
-  <APIItem name="editor.tf.resetBlock" type="(options?: { at?: Path }) => boolean | undefined">
-    Reset the selected block to the requested type or default block type.
+  <APIItem name="editor.update((tx) => tx.marks.toggle(key, value))" type="(key: string, value?: unknown) => void">
+    Toggle an inline mark through the Plite mark transaction group.
   </APIItem>
-  <APIItem name="editor.tf.setValue" type="(value?: Value | string) => void">
-    Replace editor children. Use controlled state patterns when React owns the value.
+  <APIItem name="editor.update((tx) => tx.selection.select(location))" type="(location: Location) => void">
+    Update the current selection through the Plite selection transaction group.
   </APIItem>
-  <APIItem name="editor.tf.navigation.clear" type="() => void">
+  <APIItem name="editor.update((tx) => tx.navigation.clear())" type="() => void">
     Clear navigation feedback state.
   </APIItem>
-  <APIItem name="editor.tf.navigation.flashTarget" type="(options: NavigationFlashTargetOptions) => boolean">
+  <APIItem name="editor.update((tx) => tx.navigation.flashTarget(options))" type="(options: NavigationFlashTargetOptions) => boolean">
     Store a target temporarily so components can render navigation feedback.
   </APIItem>
-  <APIItem name="editor.tf.navigation.navigate" type="(options: NavigationNavigateOptions) => boolean">
+  <APIItem name="editor.update((tx) => tx.navigation.navigate(options))" type="(options: NavigationNavigateOptions) => boolean">
     Navigate to a target and flash it through the navigation feedback plugin.
-  </APIItem>
-  <APIItem name="editor.tf.reset" type="(options?: ResetOptions) => void">
-    React extension wrapper. It restores focus to the editor when the editor was focused before reset.
   </APIItem>
 </APITransforms>
 </API>
 
 ## Plugin Pipeline Effects
 
-Some core behavior is exposed by overriding existing Slate transforms rather than by adding named methods.
+Some core behavior is exposed by routing browser/editor events into the Plite transaction runtime rather than by adding public editor methods.
 
 | Plugin | Effect |
 | --- | --- |
-| `ParserPlugin` | Overrides `insertData` and scans plugin parsers in reverse plugin order. Matching parsers transform data, deserialize a fragment, transform the fragment, and insert it. |
-| `LengthPlugin` | Wraps `apply` in `withoutNormalizing` and trims overflow when `maxLength` is configured. |
-| `SlateExtensionPlugin` | Wraps `apply` so `onNodeChange` and `onTextChange` handlers can receive previous and next node or text state. |
-| `SlateReactExtensionPlugin` | Handles line movement, tab, untab, select-all, escape, `currentKeyboardEvent`, focus-preserving reset, and `_memo` cleanup during normalization. |
+| `ParserPlugin` | Handles paste data and scans plugin parsers in reverse plugin order. Matching parsers transform data, deserialize a fragment, transform the fragment, and insert it. |
+| Plite change events | Emits committed node and text change contexts so Plate handlers can receive previous and next node or text state. |
+| Plite React runtime | Handles editable keyboard, composition, focus, read-only, DOM selection export, and decoration refresh behavior. |
+| Editable metadata cleanup | Strips static `_memo` metadata from editable normalized values. |
 | `HtmlPlugin` | Registers the `text/html` parser path and delegates HTML elements to `editor.api.html.deserialize`. |
 | `BaseParagraphPlugin` | Registers the default paragraph element under key `p` and maps HTML `<p>` elements, excluding code-font paragraphs. |
 
 ## Type Helpers
 
-Use `TPlateEditor` when you want an editor typed to a specific value and plugin union.
+Use `PlateEditor` when you want an editor typed to a specific value and plugin union.
 
 ```ts title="Typed editor helper"
-import type { TPlateEditor } from 'platejs/react';
+import type { PlateEditor } from 'platejs/react';
 import type { Value } from 'platejs';
 import { BoldPlugin } from '@platejs/basic-nodes/react';
 
-type BasicEditor = TPlateEditor<Value, typeof BoldPlugin>;
+type BasicEditor = PlateEditor<Value, typeof BoldPlugin>;
 ```
 
 | Type | Purpose |
 | --- | --- |
 | `PlateEditor` | Runtime editor type with the default Plate core plugin surface. |
-| `TPlateEditor<V, P>` | Typed editor for a specific `Value` and plugin union. |
+| `PlateEditor<V, P>` | Typed editor for a specific `Value` and plugin union. |
 | `KeyofPlugins<T>` | String key union for Plate core plugins plus the supplied plugin config union. |
 
 ## Related APIs
@@ -251,4 +241,4 @@ type BasicEditor = TPlateEditor<Value, typeof BoldPlugin>;
 - [Plate components](/docs/api/core/plate-components) covers `Plate`, `PlateContent`, `PlateView`, and component-layer runtime effects.
 - [PlateController](/docs/api/core/plate-controller) covers active, primary, and fallback editor lookup.
 - [Plate plugin](/docs/api/core/plate-plugin) covers plugin configuration, methods, options, handlers, and render hooks.
-- [Controlled Value](/docs/controlled) covers React-owned value patterns around `editor.tf.setValue`.
+- [Controlled Value](/docs/controlled) covers React-owned value patterns around `editor.update`.

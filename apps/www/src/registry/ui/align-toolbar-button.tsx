@@ -69,7 +69,7 @@ export function AlignToolbarButton(props: DropdownMenuProps) {
           value={selectedValue}
           onValueChange={(value) => {
             editor.plugin(TextAlignPlugin).update.set(value as Alignment);
-            editor.api.dom?.focus?.();
+            editor.api.dom.focus();
           }}
         >
           {items.map(({ icon: Icon, value: itemValue }) => (

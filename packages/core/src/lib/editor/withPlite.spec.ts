@@ -94,6 +94,58 @@ describe('extendPlateEditor', () => {
       });
     });
 
+    it('installs plugin dependencies before their dependent', () => {
+      const DependencyPlugin = createBasePlugin({ key: 'dependency' });
+      const DependentPlugin = createBasePlugin({
+        dependencies: [DependencyPlugin],
+        key: 'dependent',
+      });
+      const editor = extendPlateEditor(createEditor(), {
+        plugins: [DependentPlugin],
+      });
+      const pluginKeys = editor.runtime.pluginList.map((plugin) => plugin.key);
+
+      expect(pluginKeys.indexOf('dependency')).toBeLessThan(
+        pluginKeys.indexOf('dependent')
+      );
+      expect(pluginKeys.filter((key) => key === 'dependency')).toHaveLength(1);
+    });
+
+    it('runs shared dependency factories once and keeps distinct extensions', () => {
+      const calls = { api: 0, distinct: 0, selectors: 0, tx: 0 };
+      const DependencyPlugin = createBasePlugin({ key: 'dependency' })
+        .extendApi(() => {
+          calls.api += 1;
+
+          return { shared: () => true };
+        })
+        .extendSelectors(() => {
+          calls.selectors += 1;
+
+          return { shared: () => true };
+        })
+        .extendTx(() => {
+          calls.tx += 1;
+
+          return () => ({ shared: () => undefined });
+        });
+      const ExplicitDependencyPlugin = DependencyPlugin.extendApi(() => {
+        calls.distinct += 1;
+
+        return { distinct: () => true };
+      });
+      const DependentPlugin = createBasePlugin({
+        dependencies: [DependencyPlugin],
+        key: 'dependent',
+      });
+
+      extendPlateEditor(createEditor(), {
+        plugins: [DependentPlugin, ExplicitDependencyPlugin],
+      });
+
+      expect(calls).toEqual({ api: 1, distinct: 1, selectors: 1, tx: 1 });
+    });
+
     it('runs update callbacks through the current Plite runtime', () => {
       const editor = extendPlateEditor(createEditor(), {
         selection: {

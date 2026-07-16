@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { Text } from '@platejs/plite';
+import type { DecoratedRange, Text } from '@platejs/plite';
 import {
   type Decorate,
   type RenderLeafProps,
@@ -10,7 +10,7 @@ import {
   TextApi,
 } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
-import Prism from 'prismjs';
+import Prism, { type TokenStream } from 'prismjs';
 
 import { cn } from '@/lib/utils';
 import { BasicNodesKit } from '@/registry/components/editor/plugins/basic-nodes-kit';
@@ -21,21 +21,24 @@ import 'prismjs/components/prism-markdown.js';
 
 /** Decorate texts with markdown preview. */
 const decoratePreview: Decorate = ({ entry: [node, path] }) => {
-  const ranges: any[] = [];
+  const ranges: DecoratedRange[] = [];
 
   if (!TextApi.isText(node)) {
     return ranges;
   }
 
-  const getLength = (token: any) => {
+  const getLength = (token: TokenStream): number => {
     if (typeof token === 'string') {
       return token.length;
+    }
+    if (Array.isArray(token)) {
+      return token.reduce((length, child) => length + getLength(child), 0);
     }
     if (typeof token.content === 'string') {
       return token.content.length;
     }
 
-    return token.content.reduce((l: any, t: any) => l + getLength(t), 0);
+    return getLength(token.content);
   };
 
   const tokens = Prism.tokenize(node.text, Prism.languages.markdown);

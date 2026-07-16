@@ -171,7 +171,9 @@ This reduces overhead but your form state won't reflect partial updates while th
 
 If you want the form to be the single source of truth (completely [controlled](/docs/controlled)):
 ```ts
-editor.tf.setValue(formStateValue);
+editor.update((tx) => {
+  tx.value.replace({ children: formStateValue });
+});
 ```
 But this has known drawbacks:
 - Potentially breaks cursor position and undo/redo.
@@ -216,10 +218,10 @@ function MyForm() {
       <button
         type="button"
         onClick={() => {
-          // Reset the editor
-          editor.tf.reset();
-          // Reset the form
           form.reset();
+          editor.update((tx) => {
+            tx.value.replace({ children: form.getValues('content') });
+          });
         }}
       >
         Reset
@@ -230,7 +232,8 @@ function MyForm() {
 ```
 
 - **`onChange`** -> updates form state.
-- **Reset** -> calls both `editor.tf.reset()` and `form.reset()` for consistency.
+- **Reset** -> resets the form and replaces the editor value from the reset form
+  state.
 
 ## Migrating from a shadcn Textarea to Plate
 
@@ -418,11 +421,12 @@ export function EditorForm() {
 
 - Any existing form validations or error messages remain the same.
 - For default values, ensure `form.defaultValues.bio` is a valid Plate value (array of nodes) instead of a string.
-- For controlled values, use `editor.tf.setValue(formStateValue)` with moderation.
+- For controlled values, use `editor.update(...)` with `tx.value.replace(...)`
+  with moderation.
 
 ## Best Practices
 
 1. **Use an Uncontrolled Editor**: Let Plate manage its own state, updating the form only when necessary.  
-2. **Minimize Replacements**: Avoid calling `editor.tf.setValue` too often; it can break selection, history, or degrade performance.  
+2. **Minimize Replacements**: Avoid calling `tx.value.replace(...)` too often; it can break selection, history, or degrade performance.
 3. **Validate at the Right Time**: Decide if you need instant validation (typing) or upon blur/submit.  
-4. **Reset Both**: If you reset the form, call `editor.tf.reset()` to keep them in sync.
+4. **Reset Both**: If you reset the form, replace the editor value from the reset form state.

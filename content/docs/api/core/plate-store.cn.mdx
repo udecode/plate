@@ -8,7 +8,7 @@ description: Plate 存储的 API 参考文档。
 ## Plate 存储
 
 <API name="Store">
-`PlateStoreState` 对象存储了 Plate 编辑器的状态。它包含了编辑器的 ID、当前值、插件以及其他设置的信息。
+`PlateStoreState` 对象存储 Plate 编辑器周围的 React 外壳状态：编辑器引用、容器 ref、渲染回调和受控变更处理器。
 
 <APIState>
 <APIItem name="editor" type="PlateEditor">
@@ -17,14 +17,8 @@ Plate 编辑器的引用。
 - **默认值:** `createPlateFallbackEditor()`
 </APIItem>
 
-<APIItem name="id" type="string">
-用作 provider 作用域的唯一 ID。如果在同一个 React 树中有多个 `Plate`，请使用它。
-
-- **默认值:** 随机 ID
-</APIItem>
-
 <APIItem name="containerRef" type="React.RefObject<HTMLDivElement>">
-编辑器容器元素的引用。
+Plate shell 容器元素的引用。
 </APIItem>
 
 <APIItem name="decorate" type="function" optional>
@@ -36,7 +30,7 @@ Plate 编辑器的引用。
 </APIItem>
 
 <APIItem name="isMounted" type="boolean" optional>
-`Editable` 是否已渲染，以便 slate DOM 可解析。
+`Editable` 是否已渲染，以便 Plite DOM 可解析。
 </APIItem>
 
 <APIItem name="onChange" type="function" optional>

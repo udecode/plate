@@ -2,14 +2,15 @@
 
 import { createBaseEditor } from '@platejs/core';
 
-import { createBasePlugin, KEYS } from 'platejs';
+import { createBasePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { listPluginPage } from '../../__tests__/listPluginPage';
+import type { ToggleListOptions } from '../types';
 import { BaseListPlugin } from '../BaseListPlugin';
-import { toggleList } from './toggleList';
 
 jsxt;
 
@@ -60,10 +61,10 @@ const customHeadingListPlugins = [
 const getToggledEditor = ({
   input,
   options,
-  plugins = [BaseListPlugin, BaseIndentPlugin],
+  plugins = [BaseListPlugin],
 }: {
   input: TestEditor;
-  options: Parameters<typeof toggleList>[1];
+  options: ToggleListOptions;
   plugins?: any[];
 }) => {
   const editor = createBaseEditor({
@@ -72,12 +73,123 @@ const getToggledEditor = ({
     value: input.children,
   });
 
-  toggleList(editor, options);
+  editor.plugin(BaseListPlugin).update.toggle(options);
 
   return editor;
 };
 
 describe('toggleList', () => {
+  it('targets one path without moving selection', () => {
+    const selection = {
+      anchor: { offset: 0, path: [1, 0] },
+      focus: { offset: 0, path: [1, 0] },
+    };
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin],
+      selection,
+      value: [
+        { children: [{ text: 'First' }], type: KEYS.p },
+        { children: [{ text: 'Second' }], type: KEYS.p },
+      ],
+    });
+
+    editor
+      .plugin(BaseListPlugin)
+      .update.toggle({ at: [0], listStyleType: 'disc' });
+
+    expect(editor.read.children()[0]).toMatchObject({
+      indent: 1,
+      listStyleType: 'disc',
+    });
+    expect(editor.read.children()[1]).not.toHaveProperty('listStyleType');
+    expect(editor.read.selection()).toEqual(selection);
+  });
+
+  it('targets one point and every block in a range', () => {
+    const value = [
+      { children: [{ text: 'First' }], type: KEYS.p },
+      { children: [{ text: 'Second' }], type: KEYS.p },
+      { children: [{ text: 'Third' }], type: KEYS.p },
+    ];
+    const pointEditor = createBaseEditor({
+      plugins: [BaseListPlugin],
+      value,
+    });
+
+    pointEditor.plugin(BaseListPlugin).update.toggle({
+      at: { offset: 2, path: [1, 0] },
+      listStyleType: 'circle',
+    });
+
+    expect(pointEditor.read.children()[0]).not.toHaveProperty('listStyleType');
+    expect(pointEditor.read.children()[1]).toMatchObject({
+      listStyleType: 'circle',
+    });
+    expect(pointEditor.read.children()[2]).not.toHaveProperty('listStyleType');
+
+    const rangeEditor = createBaseEditor({
+      plugins: [BaseListPlugin],
+      value,
+    });
+
+    rangeEditor.plugin(BaseListPlugin).update.toggle({
+      at: {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [1, 0] },
+      },
+      listStyleType: 'decimal',
+    });
+
+    expect(rangeEditor.read.children()[0]).toMatchObject({
+      listStyleType: 'decimal',
+    });
+    expect(rangeEditor.read.children()[1]).toMatchObject({
+      listStyleType: 'decimal',
+    });
+    expect(rangeEditor.read.children()[2]).not.toHaveProperty('listStyleType');
+  });
+
+  it('does nothing for the root path', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin],
+      value: [{ children: [{ text: 'Item' }], type: KEYS.p }],
+    });
+    const before = editor.read.children();
+
+    editor
+      .plugin(BaseListPlugin)
+      .update.toggle({ at: [], listStyleType: 'disc' });
+
+    expect(editor.read.children()).toEqual(before);
+  });
+
+  it('applies restart metadata to the explicit target', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin],
+      value: [
+        {
+          children: [{ text: 'First' }],
+          indent: 1,
+          listStyleType: 'decimal',
+          type: KEYS.p,
+        },
+        { children: [{ text: 'Second' }], type: KEYS.p },
+      ],
+    });
+
+    editor.plugin(BaseListPlugin).update.toggle({
+      at: [1],
+      listRestart: 4,
+      listStyleType: 'decimal',
+    });
+
+    expect(editor.read.children()[0]).not.toHaveProperty('listRestart');
+    expect(editor.read.children()[1]).toMatchObject({
+      listRestart: 4,
+      listStyleType: 'decimal',
+    });
+  });
+
   describe('when selection is collapsed', () => {
     describe('when listStyleType is not defined', () => {
       it('set listStyleType', async () => {

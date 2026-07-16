@@ -1,14 +1,14 @@
 import * as React from 'react';
 
-import type { SlateElementProps } from 'platejs/static';
+import type { PliteElementProps } from 'platejs/static';
 
-import { SlateElement } from 'platejs/static';
+import { PliteElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
 
-export function HrElementStatic(props: SlateElementProps) {
+export function HrElementStatic(props: PliteElementProps) {
   return (
-    <SlateElement {...props}>
+    <PliteElement {...props}>
       <div className="cursor-text py-6" contentEditable={false}>
         <hr
           className={cn(
@@ -17,6 +17,6 @@ export function HrElementStatic(props: SlateElementProps) {
         />
       </div>
       {props.children}
-    </SlateElement>
+    </PliteElement>
   );
 }

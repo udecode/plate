@@ -17,12 +17,13 @@ type PlatePluginConfig<
   A = {},
   Tx extends AnyPluginTx = {},
   S = {},
+  D extends readonly unknown[] = readonly [],
 > = Omit<
   Partial<
     Modify<
-      PlatePlugin<PluginConfig<K, O, A, Tx, S>>,
+      PlatePlugin<PluginConfig<K, O, A, Tx, S, {}, D>>,
       {
-        node: Partial<PlatePlugin<PluginConfig<K, O, A, Tx, S>>['node']>;
+        node: Partial<PlatePlugin<PluginConfig<K, O, A, Tx, S, {}, D>>['node']>;
       }
     >
   >,
@@ -61,11 +62,12 @@ export function createPlatePlugin<
   A = {},
   Tx extends AnyPluginTx = {},
   S = {},
+  const D extends readonly unknown[] = readonly [],
 >(
   config?:
-    | ((editor: PlateEditor) => PlatePluginConfig<K, O, A, Tx, S>)
-    | PlatePluginConfig<K, O, A, Tx, S>
-): PlatePlugin<PluginConfig<K, O, A, Tx, S>>;
+    | ((editor: PlateEditor) => PlatePluginConfig<K, O, A, Tx, S, D>)
+    | PlatePluginConfig<K, O, A, Tx, S, D>
+): PlatePlugin<PluginConfig<K, O, A, Tx, S, {}, D>>;
 
 export function createPlatePlugin<C extends AnyPluginConfig = PluginConfig>(
   config?:

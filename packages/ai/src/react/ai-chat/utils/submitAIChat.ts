@@ -100,15 +100,10 @@ export const submitAIChat = (
     toolName,
   };
 
-  void chat?.sendMessage?.(
-    {
-      text: promptText,
+  void chat?.sendMessage(promptText, {
+    body: {
+      ctx,
     },
-    {
-      body: {
-        ctx,
-      },
-      ...options,
-    }
-  );
+    ...options,
+  });
 };

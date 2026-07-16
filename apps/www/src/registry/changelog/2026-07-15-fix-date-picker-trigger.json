@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-15-fix-date-picker-trigger",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-15-fix-date-picker-trigger.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-15",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix date picker interaction",
+  "targets": [
+    {
+      "name": "date-node",
+      "files": ["apps/www/src/registry/ui/date-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-15-date-fix-picker-interaction-539c74f6",
+      "kind": "fix",
+      "summary": "Open the date picker reliably inside Plite editors.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["date-node"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-15",
+          "entry": "2026-07-15-fix-date-picker-trigger",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

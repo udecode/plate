@@ -134,7 +134,9 @@ export function CustomToolbarButton() {
     <ToolbarButton
       onClick={() => {
         // 自定义操作
-        editor.tf.insertText('自定义文本');
+        editor.update((tx) => {
+          tx.text.insert('自定义文本');
+        });
       }}
       tooltip="自定义操作"
     >

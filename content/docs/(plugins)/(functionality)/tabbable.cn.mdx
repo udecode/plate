@@ -77,8 +77,8 @@ const editor = createPlateEditor({
       options: {
         query: (event) => {
           // 在列表或代码块中禁用
-          const inList = editor.api.some({ match: { type: KEYS.li } });
-          const inCodeBlock = editor.api.some({ match: { type: KEYS.codeBlock } });
+          const inList = editor.read.nodes.some({ match: { type: KEYS.li } });
+          const inCodeBlock = editor.read.nodes.some({ match: { type: KEYS.codeBlock } });
           return !inList && !inCodeBlock;
         },
         globalEventListener: true,
@@ -110,8 +110,8 @@ Tabbable插件可能会与处理`Tab`键的其他插件产生冲突，例如：
 
 ```tsx
 query: (event) => {
-  const inList = editor.api.some({ match: { type: KEYS.li } });
-  const inCodeBlock = editor.api.some({ match: { type: KEYS.codeBlock } });
+  const inList = editor.read.nodes.some({ match: { type: KEYS.li } });
+  const inCodeBlock = editor.read.nodes.some({ match: { type: KEYS.codeBlock } });
   return !inList && !inCodeBlock;
 },
 ```
@@ -119,7 +119,7 @@ query: (event) => {
 如果使用缩进插件，可以仅在选中特定类型节点(如void节点)时启用Tabbable插件：
 
 ```tsx
-query: (event) => !!editor.api.some({
+query: (event) => !!editor.read.nodes.some({
   match: (node) => editor.api.isVoid(node),
 }),
 ```

@@ -12,7 +12,7 @@ import {
 import {
   type PlateElementProps,
   type RenderNodeWrapper,
-  useReadOnly,
+  useEditorReadOnly,
 } from 'platejs/react';
 
 import { Checkbox } from '@/components/ui/checkbox';
@@ -65,7 +65,7 @@ function List(props: PlateElementProps & { lineBreakBadge?: React.ReactNode }) {
 function TodoMarker(props: PlateElementProps) {
   const state = useTodoListElementState({ element: props.element });
   const { checkboxProps } = useTodoListElement(state);
-  const readOnly = useReadOnly();
+  const readOnly = useEditorReadOnly();
 
   return (
     <div contentEditable={false}>

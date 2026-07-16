@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const slashCommandValue: any = (
+export const slashCommandValue = (
   <fragment>
     <hh2>
       <htext>Slash Command</htext>

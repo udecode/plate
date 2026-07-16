@@ -120,11 +120,11 @@ Plugin for rendering code drawings (PlantUml, Graphviz, Flowchart, Mermaid) with
 
 ## API
 
-### editor.tf.insert.codeDrawing
+### `editor.update.code_drawing.insert`
 
 Inserts a code drawing element at the current selection.
 
-<API name="insert.codeDrawing">
+<API name="editor.update.code_drawing.insert">
 <APIParameters>
 <APIItem name="props" type="NodeProps<TCodeDrawingElement>" optional>
 Props for the code drawing element.
@@ -158,25 +158,10 @@ The code content for the diagram.
 </APISubListItem>
 </APISubList>
 </APIItem>
-<APIItem name="options" type="InsertNodesOptions" optional>
-The options for inserting the code drawing node.
-</APIItem>
-</APIParameters>
-</API>
-
-## Transforms
-
-### `tf.insert.codeDrawing`
-
-Inserts a code drawing element at the current selection.
-
-<API name="insert.codeDrawing">
-<APIParameters>
-<APIItem name="props" type="NodeProps<TCodeDrawingElement>" optional>
-Props for the code drawing element.
-</APIItem>
-<APIItem name="options" type="InsertNodesOptions" optional>
-The options for inserting the code drawing node.
+<APIItem name="options" type="object" optional>
+Use `after?: NodeTarget` to choose a reference block and `select?: boolean` to
+select the drawing. Without a reference or selection, the command appends the
+drawing to the document.
 </APIItem>
 </APIParameters>
 </API>

@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const createTable = (spanning?: boolean): any => (
+export const createTable = (spanning?: boolean) => (
   <fragment>
     <htable colSizes={[100, 100, 100, 100]} marginLeft={20}>
       {spanning ? (
@@ -96,7 +96,7 @@ export const createTable = (spanning?: boolean): any => (
   </fragment>
 );
 
-export const tableValue: any = (
+export const tableValue = (
   <fragment>
     <hh2>表格</hh2>
     <hp>
@@ -106,7 +106,7 @@ export const tableValue: any = (
   </fragment>
 );
 
-export const tableMergeValue: any = (
+export const tableMergeValue = (
   <fragment>
     <hh3>表格合并</hh3>
     <hp>

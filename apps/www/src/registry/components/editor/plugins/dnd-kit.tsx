@@ -14,13 +14,13 @@ export const DndKit = [
       enableScroller: true,
       onDropFiles: ({ dragItem, editor, target }) => {
         editor
-          .getTransforms(PlaceholderPlugin)
-          .insert.media(dragItem.files, { at: target, nextBlock: false });
+          .plugin(PlaceholderPlugin)
+          .update.insertMedia(dragItem.files, { at: target });
       },
     },
     render: {
       aboveNodes: BlockDraggable,
-      aboveSlate: ({ children }) => (
+      abovePlite: ({ children }) => (
         <DndProvider backend={HTML5Backend}>{children}</DndProvider>
       ),
     },

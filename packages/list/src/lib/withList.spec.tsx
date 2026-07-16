@@ -467,6 +467,44 @@ describe('keyboard handling', () => {
 });
 
 describe('apply override', () => {
+  it('coerces ambiguous styles across a batched insert', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin, BaseIndentPlugin],
+      value: [
+        {
+          children: [{ text: 'a' }],
+          indent: 1,
+          listStyleType: 'lower-alpha',
+          type: 'p',
+        },
+      ],
+    } as any);
+
+    editor.update.nodes.insert(
+      [
+        {
+          children: [{ text: 'i' }],
+          indent: 1,
+          listStyleType: 'lower-roman',
+          type: 'p',
+        },
+        {
+          children: [{ text: 'ii' }],
+          indent: 1,
+          listStyleType: 'lower-roman',
+          type: 'p',
+        },
+      ] as any,
+      { at: [1] }
+    );
+
+    expect(editor.read.children()).toMatchObject([
+      { listStyleType: 'lower-alpha' },
+      { listStart: 2, listStyleType: 'lower-alpha' },
+      { listStart: 3, listStyleType: 'lower-alpha' },
+    ]);
+  });
+
   it('coerces lower-roman inserts to lower-alpha when the previous sibling is alpha', () => {
     const editor = createBaseEditor({
       plugins: [BaseListPlugin, BaseIndentPlugin],

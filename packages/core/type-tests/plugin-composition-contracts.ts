@@ -1,5 +1,6 @@
 import type { PluginConfig } from '@platejs/core';
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { createPlateEditor, toPlatePlugin } from '@platejs/core/react';
 
 type ChildMode = 'edit' | 'view';
 type ChildLabel = `${ChildMode}:${1 | 2}`;
@@ -206,4 +207,80 @@ basePlateEditor.api.missingFormat();
 basePlateEditor.update((tx) => {
   // @ts-expect-error invalid merged tx argument
   tx.format.setTone('preview');
+});
+
+const DependencyPlugin = createBasePlugin({
+  key: 'dependency',
+})
+  .extendEditorApi(() => ({
+    dependencyValue: () => 'dependency' as const,
+  }))
+  .extendTx(() => () => ({
+    runDependency: () => undefined,
+  }));
+
+const DependentPlugin = createBasePlugin({
+  dependencies: [DependencyPlugin],
+  key: 'dependent',
+}).extendTx(({ editor }) => (tx) => ({
+  runDependent: () => {
+    const dependencyValue: 'dependency' = editor.api.dependencyValue();
+
+    tx.dependency.runDependency();
+    void dependencyValue;
+  },
+}));
+
+const dependencyEditor = createBaseEditor({ plugins: [DependentPlugin] });
+
+const dependencyValue: 'dependency' = dependencyEditor.api.dependencyValue();
+
+dependencyEditor.update((tx) => {
+  tx.dependency.runDependency();
+  tx.dependent.runDependent();
+});
+
+// @ts-expect-error dependency methods belong to the dependency portal
+dependencyEditor.plugin(DependentPlugin).update.runDependency();
+
+void dependencyValue;
+
+const ReactDependentPlugin = toPlatePlugin(DependentPlugin);
+const dependencyPlateEditor = createPlateEditor({
+  plugins: [ReactDependentPlugin],
+});
+const reactDependencyValue: 'dependency' =
+  dependencyPlateEditor.api.dependencyValue();
+
+dependencyPlateEditor.update((tx) => {
+  tx.dependency.runDependency();
+  tx.dependent.runDependent();
+});
+
+void reactDependencyValue;
+
+const TransitivePlugin = createBasePlugin({
+  dependencies: [DependentPlugin],
+  key: 'transitive',
+});
+const LeftPlugin = createBasePlugin({
+  dependencies: [DependencyPlugin],
+  key: 'left',
+});
+const RightPlugin = createBasePlugin({
+  dependencies: [DependencyPlugin],
+  key: 'right',
+});
+const DiamondPlugin = createBasePlugin({
+  dependencies: [LeftPlugin, RightPlugin],
+  key: 'diamond',
+});
+const compositionEditor = createPlateEditor({
+  plugins: [toPlatePlugin(TransitivePlugin), toPlatePlugin(DiamondPlugin)],
+});
+
+compositionEditor.api.dependencyValue();
+compositionEditor.update((tx) => {
+  tx.dependency.runDependency();
+  tx.dependent.runDependent();
 });

@@ -64,9 +64,7 @@ Use `onKeyDown` and `onDOMBeforeInput` when a handler needs editor context:
   onDOMBeforeInput={(event, { editor, inputType }) => {
     if (inputType !== "formatBold") return false;
 
-    editor.update((tx) => {
-      tx.marks.toggle("bold");
-    });
+    editor.update.marks.toggle("bold");
 
     return true;
   }}

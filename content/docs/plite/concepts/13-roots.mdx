@@ -38,16 +38,16 @@ Each root is a normal Plite block array. Rootless operations, points, and
 selections resolve against the current editor or view root. A root-bound view
 resolves rootless locations against its own root.
 
-Persist roots through the full [Document State](14-document-state) value
+Persist roots through the full [Document Meta](14-document-state) value
 instead of saving only the provider root.
 
 ## Reading And Writing Roots
 
-Read the primary document with `state.value.root()`. Read an extra root by key.
+Read the primary document with `editor.read.children()`. Read an extra root by key.
 
 ```tsx
-const body = editor.read((state) => state.value.root());
-const header = editor.read((state) => state.value.root("header"));
+const body = editor.read.children();
+const header = editor.read.root("header");
 ```
 
 Create, replace, or delete extra roots inside `editor.update`.
@@ -97,7 +97,7 @@ that must run against a specific root.
 Content roots attach an editable child root to an element in another root. The
 element keeps an empty text child as its model anchor. `element.childRoots[slot]`
 stores the root key, and the editable content lives in
-`state.value.root(rootKey)`.
+`editor.read.root(rootKey)`.
 
 ```tsx
 const syncedBlocks = defineEditorExtension({

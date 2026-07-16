@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import type { Element } from 'platejs';
 
 const PlateElementMock = mock(
   ({ children, as: Comp = 'div', attributes, className, ...props }: any) => (
@@ -32,7 +33,7 @@ describe('heading node rendering', () => {
     const view = render(
       <H2Element
         attributes={{ 'data-nav-target': 'true' }}
-        element={{ children: [{ text: '' }] } as any}
+        element={{ children: [{ text: '' }], type: 'h2' } satisfies Element}
       >
         Heading
       </H2Element>

@@ -45,8 +45,8 @@ Add helper groups only when callers need a shared read or write API.
 
 ## Read And Write Helpers
 
-Use `state` for read helpers. Use `tx` for writes that belong inside
-`editor.update(...)`.
+Use `state` for read helpers. Use `tx` for model writes; direct-safe methods are
+also exposed through the matching `editor.update` group.
 
 ```ts
 import { createEditor, defineEditorExtension } from "@platejs/plite";
@@ -57,7 +57,7 @@ const linkTools = defineEditorExtension({
     link(state) {
       return {
         hasSelection() {
-          return state.selection.get() !== null;
+          return state.selection() !== null;
         },
       };
     },
@@ -79,6 +79,8 @@ const editor = createEditor({
 
 const canEditLink = editor.read((state) => state.link.hasSelection());
 
+editor.update.link.setHref("https://example.com");
+
 editor.update((tx) => {
   tx.link.setHref("https://example.com");
 });
@@ -86,9 +88,10 @@ editor.update((tx) => {
 
 This split is the normal authoring path. Reads cannot write by accident, and
 writes can still read transaction-local state after earlier writes in the same
-update. A `tx` helper should exist to perform Plite model writes. If a helper
-only opens UI, reads layout, talks to the network, or coordinates host state,
-keep it out of `tx`.
+update. Wrap a method with `txOnly(...)` when it requires that active state;
+Plite omits it from direct update groups. A `tx` helper should exist to perform
+Plite model writes. If a helper only opens UI, reads layout, talks to the
+network, or coordinates host state, keep it out of `tx`.
 
 ## Extension Order
 
@@ -235,7 +238,7 @@ const table = defineEditorExtension({
   name: "table",
   transforms: {
     deleteBackward({ editor, next, unit }) {
-      const selection = editor.read((state) => state.selection.get());
+      const selection = editor.read((state) => state.selection());
 
       if (selection && RangeApi.isCollapsed(selection)) {
         const cell = editor.read((state) =>
@@ -269,8 +272,9 @@ names such as `deleteBackward`, `deleteForward`, `insertBreak`, and
 ## Clipboard And Fragment Policy
 
 Use `clipboard.insertData` for paste/drop ingress. The handler receives the
-`DataTransfer`, may apply a document update, and returns `true` when it handles
-the payload. Return `next()` to keep Plite's fragment and plain-text fallback.
+`DataTransfer` and the ingress transaction as `tx`. Mutate through that
+transaction and return `true` when the handler owns the payload. Return `next()`
+to keep Plite's fragment and plain-text fallback in the same transaction.
 Use [Clipboard And Paste](17-clipboard-and-paste) for the full clipboard
 pipeline and proof boundary.
 
@@ -291,7 +295,7 @@ the behavior needs that runtime phase.
 | ---------------------- | --------------------------------------------------------------- |
 | `elements`             | element schema specs                                            |
 | `state`                | read helpers available inside `editor.read(...)`                |
-| `tx`                   | write helpers available inside `editor.update(...)`             |
+| `tx`                   | write helpers for atomic and direct `editor.update` calls        |
 | `normalizers`          | named editor or node normalizer entries                         |
 | `transforms`           | middleware for Plite transform behavior                         |
 | `queries`              | middleware for Plite query behavior                             |

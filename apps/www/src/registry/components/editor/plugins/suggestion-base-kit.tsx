@@ -1,9 +1,5 @@
-import type {
-  TElement,
-  TInlineSuggestionData,
-  TSuggestionData,
-  TSuggestionText,
-} from 'platejs';
+import type { Element } from '@platejs/plite';
+import type { BaseEditor } from 'platejs';
 
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { KEYS, TextApi } from 'platejs';
@@ -20,12 +16,9 @@ const INLINE_SUGGESTION_TARGET_PLUGINS = [
   KEYS.mention,
 ];
 
-function getInlineSuggestionData(editor: any, element: TElement) {
-  const suggestionApi = editor.getApi(BaseSuggestionPlugin).suggestion;
-  const data = suggestionApi.suggestionData(element) as
-    | TSuggestionData
-    | TInlineSuggestionData
-    | undefined;
+function getInlineSuggestionData(editor: BaseEditor, element: Element) {
+  const suggestionApi = editor.plugin(BaseSuggestionPlugin).api;
+  const data = suggestionApi.suggestionData(element);
 
   if (data) return data;
   if (typeof suggestionApi.dataList !== 'function') return;
@@ -33,7 +26,7 @@ function getInlineSuggestionData(editor: any, element: TElement) {
   for (const child of element.children) {
     if (!TextApi.isText(child)) continue;
 
-    const childData = suggestionApi.dataList(child as TSuggestionText).at(-1);
+    const childData = suggestionApi.dataList(child).at(-1);
 
     if (childData) return childData;
   }
@@ -63,8 +56,8 @@ export const BaseSuggestionKit = [
       targetPlugins: INLINE_SUGGESTION_TARGET_PLUGINS,
     },
     render: {
-      belowRootNodes: VoidRemoveSuggestionOverlayStatic as any,
-      node: SuggestionLeafStatic as any,
+      belowRootNodes: VoidRemoveSuggestionOverlayStatic,
+      node: SuggestionLeafStatic,
     },
   }),
 ];

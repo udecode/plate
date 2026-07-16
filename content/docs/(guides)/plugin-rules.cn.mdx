@@ -597,48 +597,9 @@ const plugins = [
 ];
 ```
 
-由于列表插件扩展了已有自己的插件配置的现有块（如 `ParagraphPlugin`），使用 `rules.match` 允许您覆盖这些行为。
-
-**段落的列表覆盖：**
-
-```tsx
-import { ListPlugin } from '@platejs/list/react';
-
-const plugins = [
-  // ...其他插件
-  ListPlugin.configure({
-    rules: {
-      match: ({ editor, rule }) => {
-        return rule === 'delete.empty' && isCodeBlockEmpty(editor);
-      },
-    },
-  }),
-];
-```
-
 ## 自定义重置逻辑
 
 某些插件需要超出标准段落转换的特殊重置行为。你可以覆盖已有的 `resetBlock` transform 方法：
-
-**列表插件重置（缩进而非转换为段落）：**
-
-```tsx
-const ListPlugin = createPlatePlugin({
-  key: 'list',
-  // ... 其他配置
-}).overrideEditor(({ editor, tf: { resetBlock } }) => ({
-  tf: {
-    resetBlock(options) {
-      if (editor.api.block(options)?.[0]?.listStyleType) {
-        outdentList();
-        return;
-      }
-      
-      return resetBlock(options);
-    },
-  },
-}));
-```
 
 **代码块重置（解包而非转换）：**
 

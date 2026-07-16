@@ -42,9 +42,11 @@ export function MoreToolbarButton(props: DropdownMenuProps) {
         <DropdownMenuGroup>
           <DropdownMenuItem
             onSelect={() => {
-              editor.tf.toggleMark(KEYS.kbd);
-              editor.tf.collapse({ edge: 'end' });
-              editor.tf.focus();
+              editor.update((tx) => {
+                tx.marks.toggle(KEYS.kbd);
+                tx.selection.collapse({ edge: 'end' });
+              });
+              editor.api.dom.focus();
             }}
           >
             <KeyboardIcon />
@@ -53,10 +55,11 @@ export function MoreToolbarButton(props: DropdownMenuProps) {
 
           <DropdownMenuItem
             onSelect={() => {
-              editor.tf.toggleMark(KEYS.sup, {
-                remove: KEYS.sub,
+              editor.update((tx) => {
+                tx.marks.remove(KEYS.sub);
+                tx.marks.toggle(KEYS.sup);
               });
-              editor.tf.focus();
+              editor.api.dom.focus();
             }}
           >
             <SuperscriptIcon />
@@ -65,10 +68,11 @@ export function MoreToolbarButton(props: DropdownMenuProps) {
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => {
-              editor.tf.toggleMark(KEYS.sub, {
-                remove: KEYS.sup,
+              editor.update((tx) => {
+                tx.marks.remove(KEYS.sup);
+                tx.marks.toggle(KEYS.sub);
               });
-              editor.tf.focus();
+              editor.api.dom.focus();
             }}
           >
             <SubscriptIcon />

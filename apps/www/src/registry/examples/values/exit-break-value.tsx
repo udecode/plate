@@ -6,14 +6,14 @@ import { createTable } from './table-value';
 
 jsx;
 
-export const trailingBlockValue: any = (
+export const trailingBlockValue = (
   <fragment>
     <hh2>Trailing Block</hh2>
     <hp>Always have a trailing paragraph at the end of your editor.</hp>
   </fragment>
 );
 
-export const exitBreakValue: any = (
+export const exitBreakValue = (
   <fragment>
     <hh2>Exit Break</hh2>
     <hp>

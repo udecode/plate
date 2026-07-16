@@ -1,6 +1,13 @@
 {
   "schemaVersion": 1,
   "components": {
+    "list-toolbar-button": ["2026-07-16-list-toolbar-wiring"],
+    "date-node": [
+      "2026-07-15-fix-date-picker-trigger",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-10-17-fix-react-decouple"
+    ],
     "transforms": [
       "2026-07-13-use-installed-block-insert-commands",
       "2026-04-23-redesign-blockquotes-container-blocks",
@@ -84,11 +91,6 @@
       "2026-04-29-codex-fix-discussion-suggestion-regressions",
       "2026-03-25-upgrade-typescript-6",
       "2026-01-28-add-code-drawing-node"
-    ],
-    "date-node": [
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-10-17-fix-react-decouple"
     ],
     "equation-node": [
       "2026-04-29-codex-fix-discussion-suggestion-regressions",

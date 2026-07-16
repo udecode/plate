@@ -3,15 +3,18 @@
 import * as React from 'react';
 
 import type { TLinkElement } from 'platejs';
-import type { PlateElementProps } from 'platejs/react';
+import type { StyledPlateElementProps } from 'platejs/react';
 
 import { getLinkAttributes } from '@platejs/link';
+import type { LinkConfig } from '@platejs/link/react';
 import { PlateElement } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 
-export function LinkElement(props: PlateElementProps<TLinkElement>) {
+export function LinkElement(
+  props: StyledPlateElementProps<TLinkElement, LinkConfig, 'a'>
+) {
   return (
     <PlateElement
       {...props}

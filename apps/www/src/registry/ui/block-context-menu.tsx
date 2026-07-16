@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-
 import { AIChatPlugin } from '@platejs/ai/react';
 import {
   BLOCK_CONTEXT_MENU_ID,
@@ -41,8 +40,8 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
   const handleTurnInto = React.useCallback(
     (type: string) => {
       editor
-        .getApi(BlockSelectionPlugin)
-        .blockSelection.getNodes()
+        .plugin(BlockSelectionPlugin)
+        .api.getNodes()
         .forEach(([, path]) => {
           setBlockType(editor, type, { at: path });
         });
@@ -52,9 +51,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
 
   const handleAlign = React.useCallback(
     (align: 'center' | 'left' | 'right') => {
-      editor
-        .getTransforms(BlockSelectionPlugin)
-        .blockSelection.setNodes({ align });
+      editor.plugin(BlockSelectionPlugin).update.setNodes({ align });
     },
     [editor]
   );
@@ -67,7 +64,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
     <ContextMenu
       onOpenChange={(open) => {
         if (!open) {
-          api.blockMenu.hide();
+          api.hide();
         }
       }}
       modal={false}
@@ -84,7 +81,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
           if (disabled) return event.preventDefault();
 
           setTimeout(() => {
-            api.blockMenu.show(BLOCK_CONTEXT_MENU_ID, {
+            api.show(BLOCK_CONTEXT_MENU_ID, {
               x: event.clientX,
               y: event.clientY,
             });
@@ -98,10 +95,10 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
           className="w-64"
           onCloseAutoFocus={(e) => {
             e.preventDefault();
-            editor.getApi(BlockSelectionPlugin).blockSelection.focus();
+            editor.plugin(BlockSelectionPlugin).api.focus();
 
             if (value === 'askAI') {
-              editor.getApi(AIChatPlugin).aiChat.show();
+              editor.plugin(AIChatPlugin).api.show();
             }
 
             setValue(null);
@@ -117,19 +114,15 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
             </ContextMenuItem>
             <ContextMenuItem
               onClick={() => {
-                editor
-                  .getTransforms(BlockSelectionPlugin)
-                  .blockSelection.removeNodes();
-                editor.tf.focus();
+                editor.plugin(BlockSelectionPlugin).update.removeNodes();
+                editor.api.dom.focus();
               }}
             >
               Delete
             </ContextMenuItem>
             <ContextMenuItem
               onClick={() => {
-                editor
-                  .getTransforms(BlockSelectionPlugin)
-                  .blockSelection.duplicate();
+                editor.plugin(BlockSelectionPlugin).update.duplicate();
               }}
             >
               Duplicate
@@ -168,18 +161,14 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
           <ContextMenuGroup>
             <ContextMenuItem
               onClick={() =>
-                editor
-                  .getTransforms(BlockSelectionPlugin)
-                  .blockSelection.setIndent(1)
+                editor.plugin(BlockSelectionPlugin).update.setIndent(1)
               }
             >
               Indent
             </ContextMenuItem>
             <ContextMenuItem
               onClick={() =>
-                editor
-                  .getTransforms(BlockSelectionPlugin)
-                  .blockSelection.setIndent(-1)
+                editor.plugin(BlockSelectionPlugin).update.setIndent(-1)
               }
             >
               Outdent

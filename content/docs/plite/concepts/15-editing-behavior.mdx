@@ -90,7 +90,7 @@ const shortcuts = defineEditorExtension({
   name: "shortcuts",
   transforms: {
     insertText({ next, text, tx }) {
-      const selection = tx.selection.get();
+      const selection = tx.selection();
 
       if (text === " " && selection && RangeApi.isCollapsed(selection)) {
         tx.nodes.set({ type: "heading-one" });
@@ -110,10 +110,8 @@ Use this for semantic edit names such as `insertText`, `insertBreak`, `deleteBac
 Operations are the replay boundary. Plite records the low-level changes produced by a transaction, then normalizes the affected tree.
 
 ```tsx
-editor.update((tx) => {
-  tx.operations.replay(remoteOperations, {
-    tag: "remote-import",
-  });
+editor.update({ tags: "remote-import" }, (tx) => {
+  tx.operations.replay(remoteOperations);
 });
 ```
 
@@ -126,7 +124,7 @@ A finished update publishes one commit. Runtime subscribers can observe it, hist
 ```tsx
 const unsubscribe = editor.subscribe((_snapshot, change) => {
   if (change?.childrenChanged || change?.dirtyStateKeys.length) {
-    saveDocument(editor.read((state) => state.value.get()));
+    saveDocument(editor.read.value());
   }
 });
 ```

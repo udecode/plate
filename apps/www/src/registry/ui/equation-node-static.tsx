@@ -1,17 +1,17 @@
 import * as React from 'react';
 
 import type { TEquationElement } from 'platejs';
-import type { SlateElementProps } from 'platejs/static';
+import type { PliteElementProps } from 'platejs/static';
 
 import { getEquationHtml } from '@platejs/math';
 import { RadicalIcon } from 'lucide-react';
-import { SlateElement } from 'platejs/static';
+import { PliteElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
 import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 
 export function EquationElementStatic(
-  props: SlateElementProps<TEquationElement>
+  props: PliteElementProps<TEquationElement>
 ) {
   const { element } = props;
 
@@ -31,7 +31,7 @@ export function EquationElementStatic(
   });
 
   return (
-    <SlateElement className="my-1" {...props}>
+    <PliteElement className="my-1" {...props}>
       <div
         className={cn(
           'group flex select-none items-center justify-center rounded-sm hover:bg-primary/10 data-[selected=true]:bg-primary/10',
@@ -52,12 +52,12 @@ export function EquationElementStatic(
         )}
       </div>
       {props.children}
-    </SlateElement>
+    </PliteElement>
   );
 }
 
 export function InlineEquationElementStatic(
-  props: SlateElementProps<TEquationElement>
+  props: PliteElementProps<TEquationElement>
 ) {
   const html = getEquationHtml({
     element: props.element,
@@ -75,7 +75,7 @@ export function InlineEquationElementStatic(
   });
 
   return (
-    <SlateElement
+    <PliteElement
       {...props}
       className="inline-block select-none rounded-sm [&_.katex-display]:my-0"
     >
@@ -97,7 +97,7 @@ export function InlineEquationElementStatic(
         />
       </div>
       {props.children}
-    </SlateElement>
+    </PliteElement>
   );
 }
 
@@ -106,21 +106,21 @@ export function InlineEquationElementStatic(
  * Displays LaTeX source code with styling.
  */
 export function EquationElementDocx(
-  props: SlateElementProps<TEquationElement>
+  props: PliteElementProps<TEquationElement>
 ) {
   const { element } = props;
 
   if (!element.texExpression || element.texExpression.length === 0) {
     return (
-      <SlateElement {...props}>
+      <PliteElement {...props}>
         <p style={{ color: '#888', fontStyle: 'italic' }}>[Empty equation]</p>
         {props.children}
-      </SlateElement>
+      </PliteElement>
     );
   }
 
   return (
-    <SlateElement {...props}>
+    <PliteElement {...props}>
       <p
         style={{
           fontFamily: 'Cambria Math, Consolas, monospace',
@@ -132,7 +132,7 @@ export function EquationElementDocx(
         {element.texExpression}
       </p>
       {props.children}
-    </SlateElement>
+    </PliteElement>
   );
 }
 
@@ -141,21 +141,21 @@ export function EquationElementDocx(
  * Displays LaTeX source code inline.
  */
 export function InlineEquationElementDocx(
-  props: SlateElementProps<TEquationElement>
+  props: PliteElementProps<TEquationElement>
 ) {
   const { element } = props;
 
   if (!element.texExpression || element.texExpression.length === 0) {
     return (
-      <SlateElement {...props} as="span">
+      <PliteElement {...props} as="span">
         <span style={{ color: '#888', fontStyle: 'italic' }}>[equation]</span>
         {props.children}
-      </SlateElement>
+      </PliteElement>
     );
   }
 
   return (
-    <SlateElement {...props} as="span">
+    <PliteElement {...props} as="span">
       <span
         style={{
           fontFamily: 'Cambria Math, Consolas, monospace',
@@ -164,6 +164,6 @@ export function InlineEquationElementDocx(
         {element.texExpression}
       </span>
       {props.children}
-    </SlateElement>
+    </PliteElement>
   );
 }

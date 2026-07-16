@@ -554,7 +554,7 @@ export const uiComponents: Registry['items'] = [
   },
   {
     dependencies: ['@platejs/list'],
-    description: 'A toolbar control for adjusting list indentation.',
+    description: 'Toolbar controls for bulleted, numbered, and todo lists.',
     files: [
       {
         path: 'ui/list-toolbar-button.tsx',

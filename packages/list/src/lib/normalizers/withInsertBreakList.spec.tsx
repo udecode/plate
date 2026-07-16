@@ -4,7 +4,8 @@ import { createBaseEditor } from '@platejs/core';
 
 import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import { BaseParagraphPlugin, KEYS } from 'platejs';
+import { BaseParagraphPlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 

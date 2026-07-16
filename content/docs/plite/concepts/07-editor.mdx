@@ -1,26 +1,35 @@
 ---
 title: "Editor"
-description: "Use the Editor runtime for document state, selection, operations, schema, extensions, and subscriptions."
+description: "Use the Editor runtime for document meta, selection, operations, schema, extensions, and subscriptions."
 ---
 
 The `Editor` object is the runtime for one Plite document. It owns the document value, selection, operations, schema behavior, extensions, and subscriptions.
 
 Most application code touches the editor in three ways:
 
-- read committed state with `editor.read(...)`
-- write through `editor.update((tx) => ...)`
+- read committed state with `editor.read(...)` or `editor.read.<group>.<method>()`
+- write through `editor.update(...)` or `editor.update.<group>.<method>()`
 - install reusable behavior with `editor.extend(...)`
 
 ## Reading State
 
-Use `editor.read(...)` when you need a consistent view of editor state. Plite passes a grouped `state` object into the callback.
+Use direct read methods for one-shot reads:
+
+```javascript
+const selection = editor.read.selection();
+const text = editor.read.text.string([]);
+const value = editor.read.value();
+```
+
+Use the callback form when several reads should share one consistent state
+view. Plite passes a grouped `state` object into the callback.
 
 ```javascript
 const info = editor.read((state) => {
   return {
-    selection: state.selection.get(),
+    selection: state.selection(),
     text: state.text.string([]),
-    value: state.value.get(),
+    value: state.value(),
   };
 });
 ```
@@ -29,7 +38,20 @@ The callback is read-only. Starting a write from inside a read is rejected becau
 
 ## Writing State
 
-Use `editor.update(...)` when you need to change the document or selection. Plite passes a transaction object into the callback.
+Use direct update methods for one-shot writes:
+
+```javascript
+editor.update.text.insert("!");
+editor.update.nodes.set({ type: "heading-one" }, { at: [0] });
+editor.update.selection.set(editor.read.points.get([]));
+editor.update({ history: "skip" }).value.replace({
+  children: [{ type: "paragraph", children: [{ text: "Reset" }] }],
+  selection: "end",
+});
+```
+
+Use the callback form when one command groups related writes into a single
+commit. Plite passes a transaction object into the callback.
 
 ```javascript
 editor.update((tx) => {
@@ -41,6 +63,19 @@ editor.update((tx) => {
 
 All writes in the callback become one commit. That gives history, operation replay, sync adapters, and React rendering one consistent change to observe.
 
+Pass a policy first when the whole update needs history or lifecycle tags:
+
+```javascript
+editor.update({ history: "new-batch", tags: "paste" }, (tx) => {
+  tx.fragment.insert(fragment);
+  tx.selection.collapse({ edge: "end" });
+});
+```
+
+Update callbacks are synchronous. Use the active `tx` for every nested command;
+starting another public `editor.update(...)` inside the callback is rejected and
+rolls back the outer update.
+
 ## Snapshots And Commits
 
 Plite exposes committed state through subscriptions. Most application reads
@@ -50,7 +85,7 @@ extension-owned state.
 ```javascript
 const unsubscribe = editor.subscribe((_snapshot, change) => {
   if (change?.childrenChanged || change?.dirtyStateKeys.length) {
-    const documentValue = editor.read((state) => state.value.get());
+    const documentValue = editor.read.value();
 
     saveDocument(documentValue);
   }
@@ -67,25 +102,28 @@ operation index, and runtime id index.
 const snapshot = editor.read((state) => state.runtime.snapshot());
 ```
 
-## Local Provenance
+## Update Policies
 
-Use update `tag` values for cheap lifecycle labels and `metadata.origin` for
-typed local policy. A paste handler, import tool, or command palette action can
-label the commit without adding provenance fields to document nodes.
+`EditorUpdatePolicy` has two public fields: `history` and `tags`. History modes
+are `"merge"`, `"new-batch"`, and `"skip"`; TypeScript exposes them only when
+the editor has a History transaction group. Tags are ordered lifecycle labels
+recorded on the commit.
 
 ```javascript
-editor.update(
-  (tx) => {
-    tx.text.insert(importedText);
-  },
-  {
-    tag: ["paste", "import"],
-    metadata: {
-      origin: { kind: "clipboard", source: "html" },
-    },
-  }
-);
+editor.update({ tags: ["paste", "import"] }, (tx) => {
+  tx.text.insert(importedText);
+});
 ```
+
+Policy tags are applied in order, then the semantic history mode is applied.
+Only the last history intent survives. Inside an atomic update,
+`tx.tags.add(tag)` can replace that intent or add another label, and
+`tx.tags.has(tag)` inspects the current final set.
+
+Framework and feature packages own presets for their behavior. For example,
+`PliteReactUpdatePolicy.preserveSelection`, `YjsUpdatePolicy.remote`, and
+`SuggestionUpdatePolicy.skip` add the exact tags their runtimes consume. Plite
+core does not know those product policies.
 
 Use `persist: false` state fields for local provenance UI that should follow the
 runtime but stay out of saved document JSON. Runtime ids are useful for local
@@ -98,7 +136,7 @@ Use bookmarks when you need a local range to survive document edits.
 
 ```javascript
 const bookmark = editor.read((state) => {
-  const selection = state.selection.get();
+  const selection = state.selection();
 
   return selection
     ? state.ranges.bookmark(selection, { affinity: "inward" })
@@ -116,9 +154,9 @@ editor.update((tx) => {
 });
 ```
 
-Bookmarks are local runtime anchors. Store shared document state as document
+Bookmarks are local runtime anchors. Store shared document meta as document
 values, operations, and commits.
-Use [Document State](14-document-state) for values that need to persist with
+Use [Document Meta](14-document-state) for values that need to persist with
 the document.
 
 ## Extending The Editor
@@ -165,17 +203,22 @@ const editor = createEditor();
 editor.extend(tables);
 ```
 
-The extension adds helpers to the read and write callbacks, not to the editor object itself.
+The extension adds helpers to grouped reads, atomic updates, and direct update
+methods.
 
 ```javascript
 const rows = editor.read((state) => state.table.rowCount());
+
+editor.update.table.insertRow();
 
 editor.update((tx) => {
   tx.table.insertRow();
 });
 ```
 
-This keeps extension behavior scoped to the runtime phase where it is valid.
+Extension authors can mark a method with `txOnly(...)` when it only makes sense
+inside an active transaction. Those methods stay on `tx` and are omitted from
+the direct update surface.
 
 ## Schema Behavior
 
@@ -186,11 +229,13 @@ For example, image elements can be treated as block voids, and mention elements 
 
 ## Query Groups
 
-The read callback exposes grouped helpers for common reads and queries.
+Direct read methods cover common one-shot queries. The read callback exposes
+the grouped helpers when code needs a custom query or an extension-owned
+namespace.
 
 ```javascript
-const point = editor.read((state) => state.points.start([0, 0]));
-const text = editor.read((state) => state.text.string(range));
+const point = editor.read.points.start([0, 0]);
+const text = editor.read.text.string(range);
 
 for (const [node, path] of editor.read((state) =>
   state.nodes.entries({ at: range })

@@ -1,4 +1,5 @@
-import { type Element, KEYS } from 'platejs';
+import type { Element } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import { getSiblingList } from './getSiblingList';
 

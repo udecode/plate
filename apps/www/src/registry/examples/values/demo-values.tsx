@@ -1,4 +1,5 @@
 import cloneDeep from 'lodash/cloneDeep.js';
+import type { Value } from 'platejs';
 
 import { calloutValue } from '@/registry/examples/values/callout-value';
 import { playgroundValue } from '@/registry/examples/values/playground-value';
@@ -109,7 +110,7 @@ export const DEMO_VALUES = Object.entries(values).reduce(
 
     return acc;
   },
-  {} as Record<string, any>
+  {} as Record<string, Value>
 );
 
 export const createValue = (id: string) => cloneDeep(DEMO_VALUES[id]);

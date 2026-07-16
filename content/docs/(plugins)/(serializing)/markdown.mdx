@@ -6,7 +6,7 @@ toc: true
 
 The `@platejs/markdown` package provides robust, two-way conversion between Markdown and Plate's content structure.
 
-<ComponentPreview name="markdown-to-slate-demo" />
+<ComponentPreview name="markdown-to-plite-demo" />
 
 <ComponentPreview name="markdown-demo" />
 
@@ -132,17 +132,17 @@ const editorWithoutPaste = createPlateEditor({
 
 <Callout type="info">
   If you don't use `MarkdownPlugin` with `configure`, you can still use
-  `editor.api.markdown.deserialize` and `editor.api.markdown.serialize`
+  `deserializeMd` and `serializeMd`
   directly, but without plugin-configured default rules or paste handling.
 </Callout>
 
 ### Markdown to Plate (Deserialization)
 
-Use `editor.api.markdown.deserialize` to convert a Markdown string into a Plate `Value` (an array of nodes). This is often used for the editor's initial content.
+Use `deserializeMd` to convert a Markdown string into a Plate `Value` (an array of nodes). This is often used for the editor's initial content.
 
 ```tsx title="components/my-editor.tsx"
 import { createPlateEditor } from 'platejs/react';
-import { MarkdownPlugin } from '@platejs/markdown';
+import { MarkdownPlugin, deserializeMd, serializeMd } from '@platejs/markdown';
 // ... import other necessary Plate plugins for rendering elements
 
 const markdownString = '# Hello, *Plate*!';
@@ -154,8 +154,7 @@ const editor = createPlateEditor({
     // ... other plugins needed to render the deserialized elements (e.g., HeadingPlugin, ItalicPlugin)
   ],
   // Use deserialize in the value factory for initial content
-  value: (editor) =>
-    editor.getApi(MarkdownPlugin).markdown.deserialize(markdownString),
+  value: (editor) => deserializeMd(editor, markdownString),
 });
 ```
 
@@ -167,13 +166,13 @@ const editor = createPlateEditor({
 
 ### Plate to Markdown (Serialization)
 
-Use `editor.api.markdown.serialize` to convert the current editor content (or a specific array of nodes) into a Markdown string.
+Use `serializeMd` to convert the current editor content (or a specific array of nodes) into a Markdown string.
 
 **Serializing Current Editor Content:**
 
 ```tsx
 // Assuming `editor` is your Plate editor instance with content
-const markdownOutput = editor.api.markdown.serialize();
+const markdownOutput = serializeMd(editor);
 console.info(markdownOutput);
 ```
 
@@ -186,7 +185,7 @@ const specificNodes = [
 ];
 
 // Assuming `editor` is your Plate editor instance
-const partialMarkdownOutput = editor.api.markdown.serialize({
+const partialMarkdownOutput = serializeMd(editor, {
   value: specificNodes,
 });
 console.info(partialMarkdownOutput);
@@ -308,7 +307,7 @@ The core plugin configuration object. Use `MarkdownPlugin.configure({ options: {
 
 ---
 
-### `api.markdown.deserialize`
+### `deserializeMd`
 
 Converts a Markdown string into a Plate `Value` (`Descendant[]`).
 
@@ -365,9 +364,9 @@ Converts a Markdown string into a Plate `Value` (`Descendant[]`).
 
 ---
 
-### `api.markdown.deserializeInline`
+### `deserializeInlineMd`
 
-Converts inline Markdown text into Slate children.
+Converts inline Markdown text into Plite children.
 
 <API name="deserializeInline">
   <APIParameters>
@@ -378,12 +377,12 @@ Converts inline Markdown text into Slate children.
       Options for this call, overriding plugin defaults.
     </APIItem>
   </APIParameters>
-  <APIReturns type="Descendant[]">Slate children for inline content.</APIReturns>
+  <APIReturns type="Descendant[]">Plite children for inline content.</APIReturns>
 </API>
 
 ---
 
-### `api.markdown.serialize`
+### `serializeMd`
 
 Converts a Plate `Value` (`Descendant[]`) into a Markdown string.
 
@@ -515,10 +514,12 @@ Visit https://platejs.org
 `;
 
 // Assuming `editor` is your configured Plate editor instance
-const slateValue = editor.api.markdown.deserialize(markdown);
-// editor.tf.setValue(slateValue); // To set editor content
+const slateValue = deserializeMd(editor, markdown);
+editor.update((tx) => {
+  tx.value.replace({ children: slateValue });
+});
 
-const markdownOutput = editor.api.markdown.serialize();
+const markdownOutput = serializeMd(editor);
 // markdownOutput will contain GFM syntax
 ```
 
@@ -648,10 +649,10 @@ $$
 `;
 
 // Assuming `editor` is your configured Plate editor instance
-const slateValue = editor.api.markdown.deserialize(markdown);
+const slateValue = deserializeMd(editor, markdown);
 // slateValue will contain 'inline_equation' and 'equation' nodes.
 
-const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
+const markdownOutput = serializeMd(editor, { value: slateValue });
 // markdownOutput will contain $...$ and $$...$$ syntax.
 ```
 
@@ -689,10 +690,10 @@ Full name with ID: [Jane Smith](mention:user_123)
 `;
 
 // Assuming `editor` is your configured Plate editor instance
-const slateValue = editor.api.markdown.deserialize(markdown);
+const slateValue = deserializeMd(editor, markdown);
 // Creates mention nodes with appropriate values and display text
 
-const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
+const markdownOutput = serializeMd(editor, { value: slateValue });
 // All mentions use the link format: [Alice](mention:alice), [John Doe](mention:john_doe), etc.
 ```
 
@@ -746,10 +747,10 @@ const markdown = `
 `;
 
 // Assuming `editor` is your configured Plate editor instance
-const slateValue = editor.api.markdown.deserialize(markdown);
+const slateValue = deserializeMd(editor, markdown);
 // Creates column_group with nested column elements
 
-const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
+const markdownOutput = serializeMd(editor, { value: slateValue });
 // Preserves column structure with width attributes
 ```
 
@@ -803,14 +804,14 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
           |                                                                                            |
           |  +-----------+        +----------------+        +---------------+      +-----------+       |
           |  |           |        |                |        |               |      |           |       |
- markdown-+->+ remark    +-mdast->+ remark plugins +-mdast->+ mdast-to-slate+----->+   nodes   +-plate-+->react elements
+ markdown-+->+ remark    +-mdast->+ remark plugins +-mdast->+ mdast-to-plate+----->+   nodes   +-plate-+->react elements
           |  |           |        |                |        |               |      |           |       |
           |  +-----------+        +----------------+        +---------------+      +-----------+       |
           |       ^                                                                      |             |
           |       |                                                                      v             |
           |  +-----------+        +----------------+        +---------------+      +-----------+       |
           |  |           |        |                |        |               |      |           |       |
-          |  | stringify |<-mdast-+ remark plugins |<-mdast-+ slate-to-mdast+<-----+ serialize |       |
+          |  | stringify |<-mdast-+ remark plugins |<-mdast-+ plate-to-mdast+<-----+ serialize |       |
           |  |           |        |                |        |               |      |           |       |
           |  +-----------+        +----------------+        +---------------+      +-----------+       |
           |                                                                                            |
@@ -822,10 +823,10 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 1.  **Parse (Deserialization):**
     - Markdown string → `remark-parse` → mdast.
     - `remarkPlugins` transform mdast (e.g., `remark-gfm`).
-    - `mdast-to-slate` converts mdast to Plate nodes using `rules`.
+    - `mdast-to-plate` converts mdast to Plate nodes using `rules`.
     - Plate renders nodes via its component system.
 2.  **Stringify (Serialization):**
-    - Plate nodes → `slate-to-mdast` (using `rules`) → mdast.
+    - Plate nodes → `plite-to-mdast` (using `rules`) → mdast.
     - `remarkPlugins` transform mdast.
     - `remark-stringify` converts mdast to Markdown string.
 
@@ -856,7 +857,7 @@ Migrating involves mapping `react-markdown` concepts to Plate's architecture.
 
 | `react-markdown` Prop           | `@platejs/markdown` Equivalent/Concept                                                                           | Notes                                                                                  |
 | :------------------------------ | :--------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------- |
-| `children` (string)             | Pass to `editor.api.markdown.deserialize(string)`                                                                | Input for deserialization; often in `createPlateEditor` `value` option.                |
+| `children` (string)             | Pass to `deserializeMd(editor, string)`                                                                | Input for deserialization; often in `createPlateEditor` `value` option.                |
 | `remarkPlugins`                 | `MarkdownPlugin.configure({ options: { remarkPlugins: [...] }})`                                                 | Direct mapping; operates on mdast.                                                     |
 | `rehypePlugins`                 | Not part of `MarkdownPlugin`'s conversion pipeline.                                                              | Run any HTML pipeline before passing Markdown or Plate nodes to Plate.                 |
 | `components={{ h1: MyH1 }}`     | `createPlateEditor({ components: { h1: MyH1 } })`                                                                | Configures Plate rendering component. Key depends on `HeadingPlugin` config.           |
@@ -864,7 +865,7 @@ Migrating involves mapping `react-markdown` concepts to Plate's architecture.
 | `allowedElements`               | `MarkdownPlugin.configure({ options: { allowedNodes: [...] }})`                                                  | Filters nodes during conversion (mdast/Plate types).                                   |
 | `disallowedElements`            | `MarkdownPlugin.configure({ options: { disallowedNodes: [...] }})`                                               | Filters nodes during conversion.                                                       |
 | `unwrapDisallowed`              | No direct equivalent. Filtering removes nodes.                                                                   | Custom `rules` could implement unwrapping.                                             |
-| `skipHtml`                      | Default behavior strips most HTML.                                                                               | Sanitize or convert raw HTML before calling `editor.api.markdown.deserialize`.          |
+| `skipHtml`                      | Default behavior strips most HTML.                                                                               | Sanitize or convert raw HTML before calling `deserializeMd`.          |
 | `urlTransform`                  | Customize via `rules` for `link` (deserialize) or plugin type (serialize).                                       | Handle URL transformations in conversion rules.                                        |
 | `allowElement`                  | `MarkdownPlugin.configure({ options: { allowNode: { ... } } })`                                                  | Function-based filtering during conversion.                                            |
 
@@ -879,7 +880,7 @@ For raw HTML from a trusted source, convert it in your own content pipeline befo
 ```tsx
 const safeMarkdown = await sanitizeMarkdownBeforePlate(untrustedMarkdown);
 
-const value = editor.api.markdown.deserialize(safeMarkdown);
+const value = deserializeMd(editor, safeMarkdown);
 ```
 
 For HTML-like custom nodes that you control, prefer MDX syntax with `remarkMdx` and explicit `rules`. That keeps the conversion in Plate's supported Markdown pipeline.
@@ -1058,10 +1059,9 @@ export function PlateMarkdown({
   });
 
   useEffect(() => {
-    editor.tf.reset(); // Clear previous content
-    editor.tf.setValue(
-      editor.getApi(MarkdownPlugin).markdown.deserialize(children)
-    );
+    editor.update((tx) => {
+      tx.value.replace({ children: deserializeMd(editor, children) });
+    });
   }, [children, editor, remarkPlugins]); // Re-deserialize if markdown or plugins change
 
   return (

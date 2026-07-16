@@ -9,27 +9,34 @@ its path is `[]`. The public editor object is intentionally small.
 ## Public Editor Shape
 
 ```typescript
-interface Editor<TExtensions extends readonly unknown[] = []> {
-  api: Readonly<InstalledApiGroups<TExtensions>>;
+interface BaseEditor<
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+> {
+  readonly api: Readonly<
+    EditorCoreApiGroups & EditorInstalledApiGroups<TExtensions>
+  >;
+  readonly id: string;
+  extend(extension: EditorExtensionInput<any>): () => void;
   getApi(extension: EditorExtension): unknown;
-  read<T>(fn: (state: EditorState) => T): T;
+  read: EditorRead<V, TExtensions>;
   subscribe(listener: SnapshotListener): () => void;
   subscribeCommit(listener: (commit: EditorCommit) => void): () => void;
-  update(
-    fn: (tx: EditorTransaction, context: EditorUpdateContext) => void,
-    options?: EditorUpdateOptions
-  ): void;
-  extend(extension: EditorExtension | EditorExtension[]): () => void;
+  update: EditorUpdate<V, TExtensions>;
 }
+
+type Editor<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> =
+  BaseEditor<V, TExtensions>;
 ```
 
 ## On This Page
 
 - [Creating an editor](editor#creating-an-editor)
 - [Reading state](editor#reading-state)
+- [Locating nodes](editor#locating-nodes)
 - [Updating state](editor#updating-state)
 - [Document roots](editor#document-roots)
-- [Document state](editor#document-state)
+- [Document meta](editor#document-state)
 - [Schema behavior](editor#schema-behavior)
 - [Runtime APIs](editor#runtime-apis)
 - [Subscribing to commits](editor#subscribing-to-commits)
@@ -45,20 +52,52 @@ Create an editor.
 ```javascript
 const editor = createEditor({
   initialValue: [{ type: "paragraph", children: [{ text: "Body" }] }],
+  maxLength: 1000,
 });
 ```
 
 Extensions define schema, normalizers, commit listeners, operation middleware,
 feature namespaces, and optional runtime registration.
 
+`maxLength` limits user-facing text, fragment, and node insertions. Operation
+replay remains raw so imported operation logs keep their original contents.
+
 ## Reading state
+
+#### `editor.read.<group>.<method>()`
+
+Run one committed-state read.
+
+```javascript
+const selection = editor.read.selection();
+const isExpanded = editor.read.selection.isExpanded();
+const spansBlocks = editor.read.selection.isAcrossBlocks();
+const startsBlock = editor.read.selection.isAtBlockStart();
+const containsTitle = editor.read.selection.contains([0]);
+const endsWord = selection
+  ? editor.read.points.isWordEnd(selection.anchor)
+  : false;
+const text = editor.read.text.string([]);
+const isInline = editor.read.schema.isInline(element);
+```
+
+Selection predicates accept explicit targets when a command should inspect a
+location other than the current selection.
+
+```javascript
+const startsHeading = editor.read.selection.isAtBlockStart({
+  at: point,
+  match: { type: "heading" },
+});
+```
 
 #### `editor.read(fn) => T`
 
-Read a coherent snapshot of editor state.
+Read a coherent snapshot of editor state when several reads should share the
+same state view.
 
 ```javascript
-const selection = editor.read((state) => state.selection.get());
+const selection = editor.read((state) => state.selection());
 ```
 
 Use `state` for editor-state queries:
@@ -66,35 +105,87 @@ Use `state` for editor-state queries:
 ```javascript
 editor.read((state) => {
   const children = state.nodes.children();
-  const marks = state.marks.get();
+  const marks = state.marks();
   const first = state.nodes.get([0]);
+  const isCollapsed = state.selection.isCollapsed();
   const start = state.points.start([]);
   const range = state.ranges.get([]);
 
-  return { children, first, marks, range, start };
+  return { children, first, isCollapsed, marks, range, start };
 });
 ```
 
-Schema policy is read through `state.schema`:
+Schema policy is available through direct read methods for common one-shot
+checks and through `state.schema` for grouped reads:
 
 ```javascript
-const isInline = editor.read((state) => state.schema.isInline(element));
+const direct = editor.read.schema.isInline(element);
+const grouped = editor.read((state) => state.schema.isInline(element));
 ```
+
+## Locating nodes
+
+Public read and update methods with an `at` option accept a `NodeTarget`: a
+`Path`, `Point`, `Range`, or live descendant.
+
+```typescript
+type NodeTarget<N extends Descendant = Descendant> = Location | N;
+```
+
+Resolve a node when the path itself matters:
+
+```typescript
+const path = editor.read.nodes.path(element);
+```
+
+The read returns `undefined` for an unresolved node. Resolution is scoped to
+the editor root, so nodes from another editor or another root do not resolve.
+Strict static helpers keep their non-optional contracts and treat a missing
+result from query middleware as an internal invariant failure.
+
+Node queries accept predicates and shallow property objects.
+
+```typescript
+const callout = editor.read.nodes.find({ match: { type: "callout" } });
+const tableNode = editor.read.nodes.find({
+  match: { type: ["table", "table_cell"] },
+});
+```
+
+Property values use exact equality. An array means one-of. Use predicates for
+computed schema policy and static type narrowing.
 
 ## Updating state
 
-#### `editor.update(fn, options?) => void`
+#### `editor.update.<group>.<method>()`
 
-Run a transaction. The callback receives `tx`, which owns command reads and
-writes.
+Run one transaction write with the default policy.
 
 ```javascript
-editor.update((tx) => {
-  tx.marks.toggle("bold");
-});
+editor.update.marks.toggle("bold");
+editor.update.text.insert("Title");
+editor.update.selection.move({ distance: 1 });
+editor.update.nodes.set({ icon: "🔥" }, { at: calloutElement });
 ```
 
-Use transaction groups for document changes:
+#### `editor.update(policy).<group>.<method>()`
+
+Configure one direct write.
+
+```javascript
+editor.update({ history: "skip" }).text.insert("Imported");
+editor.update({ tags: ["paste", "html"] }).fragment.insert(fragment);
+```
+
+The configured facade exposes core and installed extension update methods. A
+method marked with `txOnly(...)` is omitted because it requires an explicit
+transaction. `editor.update(policy)` returns that configured facade; a direct
+method returns the underlying method result.
+
+#### `editor.update(fn) => void`
+
+Run one atomic update with the default policy. The callback receives `tx`, which
+owns reads and writes for the active transaction.
 
 ```javascript
 editor.update((tx) => {
@@ -104,26 +195,33 @@ editor.update((tx) => {
 });
 ```
 
-Replay operations through the transaction boundary:
+#### `editor.update(policy, fn) => void`
+
+Run one atomic update with a semantic policy.
 
 ```javascript
-editor.update(
-  (tx) => {
-    tx.operations.replay(remoteOperations);
-  },
-  {
-    tag: ["collaboration", "remote-import"],
-    metadata: {
-      collab: { origin: "remote", saveToHistory: false },
-      history: { mode: "skip" },
-      selection: { dom: "preserve" },
-    },
-  }
-);
+editor.update({ history: "new-batch", tags: "paste" }, (tx) => {
+  tx.fragment.insert(fragment);
+  tx.selection.collapse({ edge: "end" });
+});
 ```
 
-`tag` is the cheap lifecycle label. `metadata` is the typed policy channel for
-history, collaboration, and model/DOM selection behavior.
+```typescript
+type EditorUpdatePolicy = Readonly<{
+  history?: "merge" | "new-batch" | "skip";
+  tags?: EditorUpdateTag | readonly EditorUpdateTag[];
+}>;
+```
+
+`EditorUpdatePolicyFor<E>` narrows the policy to an editor's installed
+capabilities. `history` is a type error when `E` has no History transaction
+group, and an untyped runtime call fails before mutation. Tags are applied in
+input order before `history`; only the last history intent remains.
+
+Inside the callback, `tx.tags.add(tag)` updates the final tag set and
+`tx.tags.has(tag)` inspects it. History adds `tx.history.skip()`,
+`tx.history.merge()`, and `tx.history.newBatch()` as transaction-only controls
+for decisions made after the update starts.
 
 The update callback also receives a context object for local post-commit hooks:
 
@@ -132,10 +230,14 @@ editor.update((tx, { afterCommit }) => {
   tx.text.insert("Saved");
 
   afterCommit((change) => {
-    analytics.track("editor-change", change.source);
+    analytics.track("editor-change", { tags: change.tags });
   });
 });
 ```
+
+All callback forms return `void`, must finish synchronously, and invalidate
+`tx` when they return. Thenable callbacks and escaped transactions are rejected.
+A public update cannot be nested; pass the active `tx` into helpers instead.
 
 ## Document roots
 
@@ -155,11 +257,11 @@ const editor = createEditor({
 });
 ```
 
-Read the primary document with `state.value.root()`. Read an extra root by key.
+Read the primary document with `editor.read.children()`. Read an extra root by key.
 
 ```javascript
-const body = editor.read((state) => state.value.root());
-const footer = editor.read((state) => state.value.root("footer"));
+const body = editor.read.children();
+const footer = editor.read.root("footer");
 ```
 
 Create, replace, or delete extra roots with `tx.roots`.
@@ -176,23 +278,23 @@ Use normal node and text transforms for the primary document. See
 [Roots](../../concepts/13-roots) for React rendering, root chrome, and
 content roots.
 
-## Document state
+## Document meta
 
-`state.value.get()` returns the persisted document value.
+`editor.read.value()` returns the persisted document value.
 
 ```ts
 type EditorDocumentValue = {
   children: Descendant[];
   roots?: Record<string, Descendant[]>;
-  state?: Record<string, unknown>;
+  meta?: Record<string, unknown>;
 };
 ```
 
 Use it for database persistence because it includes the primary document, extra
-roots, and persistent state fields.
+roots, and persistent meta fields.
 
 ```javascript
-const documentValue = editor.read((state) => state.value.get());
+const documentValue = editor.read.value();
 ```
 
 State fields are registered with `defineStateField` and read through
@@ -213,24 +315,18 @@ editor.update((tx) => {
 State-field writes appear in `commit.statePatches` and
 `commit.dirtyStateKeys`. Collaboration adapters should export only shared
 state-patch keys. Replay remote state patches with `tx.statePatches.replay(...)`.
+Adapter packages own their import policy; `@platejs/yjs` exports
+`YjsUpdatePolicy.remote`.
 
 ```javascript
-editor.update(
-  (tx) => {
-    tx.statePatches.replay(remoteStatePatches);
-  },
-  {
-    metadata: {
-      collab: { origin: "remote", saveToHistory: false },
-      history: { mode: "skip" },
-      selection: { dom: "preserve" },
-    },
-    tag: ["collaboration", "remote-state"],
-  }
-);
+import { YjsUpdatePolicy } from "@platejs/yjs";
+
+editor.update(YjsUpdatePolicy.remote, (tx) => {
+  tx.statePatches.replay(remoteStatePatches);
+});
 ```
 
-See [Document State](../../concepts/14-document-state) for persistence
+See [Document Meta](../../concepts/14-document-state) for persistence
 patterns and comments ownership.
 
 ## Schema behavior
@@ -295,16 +391,11 @@ Extensions expose mounted host and runtime services through `editor.api`.
 ```javascript
 editor.api.dom.focus();
 editor.api.clipboard.insertTextData(dataTransfer);
-editor.api.history.withoutSaving(() => {
-  editor.update((tx) => {
-    tx.text.insert("Imported");
-  });
-});
 ```
 
 Use `api` for services that are not transaction-scoped document mutations:
-DOM/React bridges, clipboard ingress, history batching, mounted overlay handles,
-measurements, or framework adapters. Do not put product editing commands there.
+DOM/React bridges, clipboard ingress, mounted overlay handles, measurements, or
+framework adapters. Do not put product editing commands there.
 If a feature changes Plite model state, expose it as a `tx` group and call it
 inside `editor.update(...)`.
 
@@ -321,7 +412,7 @@ optional change summary.
 ```javascript
 const unsubscribe = editor.subscribe((_snapshot, change) => {
   if (change?.childrenChanged || change?.dirtyStateKeys.length) {
-    const documentValue = editor.read((state) => state.value.get());
+    const documentValue = editor.read.value();
 
     save(documentValue);
   }
@@ -353,14 +444,19 @@ Install an extension and return a cleanup function.
 const removeExtension = editor.extend(myExtension);
 ```
 
-Extensions add typed `state` and `tx` namespaces. They should not add methods to
-the editor object.
+Extensions add typed `state` and `tx` namespaces. Direct-safe transaction
+methods are also available through the matching `editor.update` group.
 
 ```javascript
+editor.update.links.toggle({ href });
+
 editor.update((tx) => {
   tx.links.toggle({ href });
 });
 ```
+
+Wrap a transaction-only extension method with `txOnly(...)`. TypeScript omits
+it from direct update groups, and dynamic direct dispatch rejects it at runtime.
 
 ## Pure node and location helpers
 

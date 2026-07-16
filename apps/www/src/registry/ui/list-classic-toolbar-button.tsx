@@ -55,11 +55,13 @@ export function IndentToolbarButton({
     <ToolbarButton
       {...props}
       onClick={() => {
-        if (reverse) {
-          unindentListItems(editor);
-        } else {
-          indentListItems(editor);
-        }
+        editor.update((tx) => {
+          if (reverse) {
+            unindentListItems(editor, tx);
+          } else {
+            indentListItems(editor, tx);
+          }
+        });
       }}
       tooltip={reverse ? 'Outdent' : 'Indent'}
     >

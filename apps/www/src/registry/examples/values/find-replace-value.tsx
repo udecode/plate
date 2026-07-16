@@ -4,7 +4,7 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-export const findReplaceValue: any = (
+export const findReplaceValue = (
   <fragment>
     <hp>
       This is editable text that you can search. As you search, it looks for

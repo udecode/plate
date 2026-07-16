@@ -26,6 +26,7 @@ type ImportType = 'html' | 'markdown';
 export function ImportToolbarButton(props: DropdownMenuProps) {
   const editor = useEditorRef();
   const [open, setOpen] = React.useState(false);
+  const markdownApi = editor.plugin(MarkdownPlugin).api;
 
   const getFileNodes = (text: string, type: ImportType) => {
     if (type === 'html') {
@@ -38,7 +39,7 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
     }
 
     if (type === 'markdown') {
-      return editor.getApi(MarkdownPlugin).markdown.deserialize(text);
+      return markdownApi.deserialize(text);
     }
 
     return [];
@@ -52,7 +53,7 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
 
       const nodes = getFileNodes(text, 'markdown');
 
-      editor.tf.insertNodes(nodes);
+      editor.update.nodes.insert(nodes);
     },
   });
 
@@ -64,7 +65,7 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
 
       const nodes = getFileNodes(text, 'html');
 
-      editor.tf.insertNodes(nodes);
+      editor.update.nodes.insert(nodes);
     },
   });
 
@@ -75,7 +76,7 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
       const arrayBuffer = await plainFiles[0].arrayBuffer();
       const result = await importDocx(editor, arrayBuffer);
 
-      editor.tf.insertNodes(result.nodes as typeof editor.children);
+      editor.update.nodes.insert(result.nodes);
     },
   });
 

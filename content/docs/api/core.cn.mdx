@@ -31,7 +31,7 @@ description: \@platejs/core 的 API 参考文档。
     - `'start'`: 选中编辑器开头
   </APIItem>
   <APIItem name="maxLength" type="number" optional>
-    指定编辑器中允许的最大字符数。
+    限制用户输入、片段插入和节点插入的最大字符数。
   </APIItem>
   <APIItem name="nodeId" type="object | boolean" optional>
     自动节点 ID 生成和管理的配置。
@@ -99,8 +99,8 @@ description: \@platejs/core 的 API 参考文档。
   <APIItem name="decorate" type="function" optional>
     编辑器的装饰函数。
   </APIItem>
-  <APIItem name="extendEditor" type="function" optional>
-    扩展编辑器的函数。
+  <APIItem name="extensions" type="PluginEditorExtensions" optional>
+    root plugin 安装的 Plite 编辑器扩展。
   </APIItem>
   <APIItem name="handlers" type="object" optional>
     编辑器的事件处理器。
@@ -110,10 +110,6 @@ description: \@platejs/core 的 API 参考文档。
   </APIItem>
   <APIItem name="transformInitialValue" type="function" optional>
     在编辑器准备就绪前转换初始值的函数。
-  </APIItem>
-  <APIItem name="normalizeInitialValue" type="function" optional>
-    `transformInitialValue` 的弃用别名。旧钩子既可以原地修改
-    `value`，也可以返回下一个值。
   </APIItem>
   <APIItem name="options" type="object" optional>
     编辑器的附加选项。
@@ -166,11 +162,11 @@ description: \@platejs/core 的 API 参考文档。
 </APIReturns>
 </API>
 
-### `createTPlatePlugin`
+### `createPlatePlugin`
 
 `createPlatePlugin` 的显式类型版本。
 
-<API name="createTPlatePlugin">
+<API name="createPlatePlugin">
 <APIParameters>
   <APIItem name="config" type="TPlatePluginConfig<C> | ((editor: PlateEditor) => TPlatePluginConfig<C>)">
     插件的配置对象，或返回配置的函数。此版本需要显式类型参数 `C` 扩展 `AnyPluginConfig`。
@@ -186,12 +182,12 @@ description: \@platejs/core 的 API 参考文档。
 
 ### `toPlatePlugin`
 
-扩展 EditorPlugin 以创建 React PlatePlugin。
+扩展 BasePlugin 以创建 React PlatePlugin。
 
 <API name="toPlatePlugin">
 <APIParameters>
-  <APIItem name="basePlugin" type="EditorPlugin">
-    要扩展的基础 EditorPlugin。
+  <APIItem name="basePlugin" type="BasePlugin">
+    要扩展的基础 BasePlugin。
   </APIItem>
   <APIItem name="extendConfig" type="PlatePluginConfig | ((ctx: PlatePluginContext<C>) => PlatePluginConfig)" optional>
     提供扩展配置的函数或对象。如果是函数，它接收插件上下文并应返回部分 PlatePlugin。如果是对象，它应是部分 PlatePlugin 配置。
@@ -199,18 +195,18 @@ description: \@platejs/core 的 API 参考文档。
 </APIParameters>
 
 <APIReturns type="PlatePlugin">
-  一个新的插件实例，结合了基础 EditorPlugin 功能和扩展配置中定义的 React 特定特性。
+  一个新的插件实例，结合了基础 BasePlugin 功能和扩展配置中定义的 React 特定特性。
 </APIReturns>
 </API>
 
-### `toTPlatePlugin`
+### `toPlatePlugin`
 
 `toPlatePlugin` 的显式类型版本。
 
-<API name="toTPlatePlugin">
+<API name="toPlatePlugin">
 <APIParameters>
-  <APIItem name="basePlugin" type="EditorPlugin<TContext>">
-    要扩展的基础 EditorPlugin。
+  <APIItem name="basePlugin" type="BasePlugin<TContext>">
+    要扩展的基础 BasePlugin。
   </APIItem>
   <APIItem name="extendConfig" type="ExtendPluginConfig<C> | ((ctx: PlatePluginContext<TContext>) => ExtendPluginConfig<C>)" optional>
     提供扩展配置的函数或对象。此版本需要为基本插件配置(`TContext`)和扩展配置(`C`)提供显式类型参数。
@@ -222,27 +218,35 @@ description: \@platejs/core 的 API 参考文档。
 </APIReturns>
 </API>
 
-### `useEditorContainerRef`
+### `useEditorRootElement`
 
-<API name="useEditorContainerRef">
-<APIReturns type="React.RefObject<HTMLDivElement>">
-  编辑器容器的 DOM 引用。
+<API name="useEditorRootElement">
+<APIReturns type="HTMLElement | null">
+  已挂载的编辑器根元素。
 </APIReturns>
 </API>
 
-### `useEditorScrollRef`
+### `useEditorEditableElement`
 
-<API name="useEditorScrollRef">
-<APIReturns type="React.RefObject<HTMLDivElement>">
-  编辑器滚动容器的 DOM 引用。
+<API name="useEditorEditableElement">
+<APIReturns type="HTMLElement | null">
+  当前 Plite root 对应的已挂载可编辑元素。
 </APIReturns>
 </API>
 
-### `useScrollRef`
+### `useEditorScrollElement`
 
-<API name="useScrollRef">
-<APIReturns type="React.RefObject<HTMLDivElement>">
-编辑器滚动容器引用。如果存在滚动引用则返回它，否则返回容器引用。
+<API name="useEditorScrollElement">
+<APIReturns type="HTMLElement | null">
+  Plite 用作编辑器滚动容器的元素。
+</APIReturns>
+</API>
+
+### `useEditorScrollElementRef`
+
+<API name="useEditorScrollElementRef">
+<APIReturns type="(element: HTMLElement | null) => void">
+  注册自定义编辑器滚动容器的 callback ref。
 </APIReturns>
 </API>
 
@@ -642,10 +646,10 @@ const state = useEditorPluginOption(editor, plugin, 'state');
 
 查看[调试](/docs/debugging)了解更多详情。
 
-### `PliteExtensionPlugin & PliteReactExtensionPlugin`
-扩展核心 API 并改进默认功能。
+### `ElementStatePlugin`
+在 Plite 之上扩展 Plate 编辑器行为。
 
-`PliteExtensionPlugin` 提供 `editor.api.isElementStateEmpty(element)`。它检查元素自身的属性状态，而不是文本内容。默认只忽略 `type` 和插件通过 `node.isMetadataProp` 声明为空的属性；任何其他属性都表示该元素带有状态。`NodeIdPlugin` 使用 `node.isMetadataProp` 处理配置的 NodeId 键。
+`ElementStatePlugin` 提供 `editor.api.isElementStateEmpty(element)`。它检查元素自身的属性状态，而不是文本内容。默认只忽略 `type` 和插件通过 `node.isMetadataProp` 声明为空的属性；任何其他属性都表示该元素带有状态。`NodeIdPlugin` 使用 `node.isMetadataProp` 处理配置的 NodeId 键。
 
 ```tsx
 editor.api.isElementStateEmpty({
@@ -659,7 +663,7 @@ editor.api.isElementStateEmpty({
   type: 'p',
 }); // false
 
-const CustomMetadataPlugin = createEditorPlugin({
+const CustomMetadataPlugin = createBasePlugin({
   key: 'customMetadata',
   node: {
     isMetadataProp: ({ key }) => key === 'customId',
@@ -667,8 +671,8 @@ const CustomMetadataPlugin = createEditorPlugin({
 });
 ```
 
-### `DOMPlugin & ReactPlugin`
-将 React 特定功能集成到编辑器中。
+### `DOMPlugin`
+为 Plate 提供 DOM helpers，并在 editable surface 上与 Plite React 组合使用。
 
 ### `HistoryPlugin`
 为编辑器启用撤销和重做功能。
@@ -678,9 +682,6 @@ const CustomMetadataPlugin = createEditorPlugin({
 
 ### `ParserPlugin`
 处理编辑器内容的解析。
-
-### `LengthPlugin`
-强制执行编辑器内容的最大长度限制。
 
 ### `HtmlPlugin`
 启用 HTML 序列化和反序列化。

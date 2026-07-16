@@ -4,7 +4,10 @@ import { KEYS } from '@platejs/utils';
 
 import type { ListStyleType } from '../types';
 
-import { type GetListSiblingsOptions, getListSiblings } from './index';
+import {
+  type GetListSiblingsOptions,
+  getListSiblings,
+} from './getListSiblings';
 
 /**
  * Get the first sibling list style type at the given indent. If none, return

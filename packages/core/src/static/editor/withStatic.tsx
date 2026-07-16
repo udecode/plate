@@ -5,7 +5,7 @@ import {
   type BaseEditor,
   type BasePluginInput,
   type CreateBaseEditorOptions,
-  type InferPluginConfig,
+  type InferPlugins,
   extendBaseEditor,
 } from '../../lib/editor';
 import { getStaticPlugins } from '../plugins/getStaticPlugins';
@@ -21,7 +21,7 @@ type StaticPluginInput<P extends readonly BasePluginInput[] = readonly []> =
 
 type StaticEditorPlugins<P extends readonly BasePluginInput[] = readonly []> =
   | CorePluginConfig
-  | InferPluginConfig<StaticPluginInput<P>>;
+  | InferPlugins<StaticPluginInput<P>[]>;
 
 const extendStaticEditor = <
   V extends Value = Value,

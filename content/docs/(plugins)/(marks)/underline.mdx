@@ -116,7 +116,7 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 |----------|--------|
 | Mark key | `KEYS.underline` |
 | Leaf behavior | `node.isLeaf: true` |
-| Toggle transform | `editor.tf.underline.toggle()` calls `editor.tf.toggleMark(type)`. |
+| Toggle command | `tx.underline.toggle()` calls `tx.marks.toggle(type)`. |
 | Shortcut | `UnderlinePlugin` registers `mod+u`. |
 | HTML tags | `u` |
 | HTML styles | `text-decoration: underline` |
@@ -130,4 +130,4 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 | `BaseUnderlinePlugin` | `@platejs/basic-nodes` | Headless underline plugin. |
 | `UnderlinePlugin` | `@platejs/basic-nodes/react` | React underline plugin with shortcut defaults. |
 | `UnderlineRules.markdown()` | `@platejs/basic-nodes` | Creates the underline mark input rule. |
-| `tf.underline.toggle()` | `@platejs/basic-nodes` | Toggles the underline mark at the selection. |
+| `tx.underline.toggle()` | `@platejs/basic-nodes` | Toggles the underline mark at the selection. |

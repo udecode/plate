@@ -23,7 +23,7 @@ const renderElement = (props) => {
 
 ## Toggle A Mark
 
-Use `tx.marks.toggle(...)` inside `editor.update(...)`.
+Use `editor.update.marks.toggle(...)` for a single formatting command.
 
 ```tsx
 import { ElementApi } from "@platejs/plite";
@@ -63,9 +63,7 @@ const App = () => {
 
             case "b": {
               event.preventDefault();
-              editor.update((tx) => {
-                tx.marks.toggle("bold");
-              });
+              editor.update.marks.toggle("bold");
               break;
             }
           }
@@ -76,8 +74,14 @@ const App = () => {
 };
 ```
 
-`tx.marks.toggle('bold')` applies the mark to the selected range. When the
-selection is collapsed, it changes the active mark for text typed next.
+`editor.update.marks.toggle('bold')` applies the mark to the selected range.
+When the selection is collapsed, it changes the active mark for text typed next.
+
+Mutually exclusive marks use `clear`:
+
+```tsx
+editor.update.marks.toggle("subscript", true, { clear: "superscript" });
+```
 
 ## Render Marks
 
@@ -137,9 +141,7 @@ const App = () => {
 
             case "b": {
               event.preventDefault();
-              editor.update((tx) => {
-                tx.marks.toggle("bold");
-              });
+              editor.update.marks.toggle("bold");
               break;
             }
           }

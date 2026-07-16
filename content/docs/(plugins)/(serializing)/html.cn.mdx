@@ -21,11 +21,11 @@ toc: true
 ### 添加套件
 
 ```tsx
-import { createBasePlateEditor } from 'platejs';
+import { createBaseEditor } from 'platejs';
 import { serializeHtml } from 'platejs/static';
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 
-const editor = createBasePlateEditor({
+const editor = createBaseEditor({
   plugins: BaseEditorKit,
   value: [
     { type: 'h1', children: [{ text: 'Hello World' }] },
@@ -54,7 +54,7 @@ const html = await serializeHtml(editor);
 <Callout type="warning" title="关键服务端限制">
   在服务端环境（Node.js, RSC）中使用`serializeHtml`或其他Plate工具时，**不得**从任何`platejs*`包的`/react`子路径导入。始终使用基础导入（例如使用`@platejs/basic-nodes`而非`@platejs/basic-nodes/react`）。
 
-  这意味着服务端编辑器实例应使用`platejs`中的`createBasePlateEditor`，而非`platejs/react`中的`usePlateEditor`或`createPlateEditor`。
+  这意味着服务端编辑器实例应使用`platejs`中的`createBaseEditor`，而非`platejs/react`中的`usePlateEditor`或`createPlateEditor`。
 </Callout>
 
 <Steps>
@@ -64,7 +64,7 @@ const html = await serializeHtml(editor);
 提供服务端编辑器实例并在编辑器创建时配置Plate组件。
 
 ```tsx title="lib/generate-html.ts"
-import { createBasePlateEditor } from 'platejs';
+import { createBaseEditor } from 'platejs';
 import { serializeHtml } from 'platejs/static'; // 静态导入
 // 导入基础插件（不从/react路径导入）
 import { BaseHeadingPlugin } from '@platejs/basic-nodes';
@@ -82,7 +82,7 @@ const components = {
 };
 
 // 创建带组件的服务端编辑器实例
-const editor = createBasePlateEditor({
+const editor = createBaseEditor({
   plugins: [
     BaseHeadingPlugin,   // 标题基础插件
     // ... 添加与内容相关的所有其他基础插件
@@ -191,8 +191,10 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
   });
 
   const handleImport = () => {
-    const slateValue = editor.api.html.deserialize(htmlString);
-    editor.tf.setValue(slateValue);
+    const plateValue = editor.api.html.deserialize({ element: htmlString });
+    editor.update((tx) => {
+      tx.value.replace({ children: plateValue });
+    });
   };
 
   // ... 渲染编辑器及触发handleImport的按钮 ...
@@ -349,7 +351,7 @@ export const ListPluginConfig = {
 <API name="serializeHtml">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    通过 `createBasePlateEditor` 创建的服务端 Plate 编辑器实例，已配置组件。
+    通过 `createBaseEditor` 创建的服务端 Plate 编辑器实例，已配置组件。
   </APIItem>
   <APIItem name="options" type="SerializeHtmlOptions">
     序列化选项。

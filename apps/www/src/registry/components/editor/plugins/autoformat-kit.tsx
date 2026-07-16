@@ -1,18 +1,16 @@
 'use client';
 
-import type { SlateEditor } from 'platejs';
+import type { BaseEditor } from 'platejs';
 
 import {
-  createSlatePlugin,
+  createBasePlugin,
   createTextSubstitutionInputRule,
   KEYS,
 } from 'platejs';
 
-const isTextSubstitutionBlocked = (editor: SlateEditor) =>
-  editor.api.some({
-    match: {
-      type: [editor.getType(KEYS.codeBlock)],
-    },
+const isTextSubstitutionBlocked = (editor: BaseEditor) =>
+  editor.read.nodes.some({
+    match: { type: editor.getType(KEYS.codeBlock) },
   });
 
 const createAutoformatTextSubstitutionRule = ({
@@ -162,7 +160,7 @@ const superscriptSymbolsRule = createAutoformatTextSubstitutionRule({
   ],
 });
 
-const AutoformatShortcutsPlugin = createSlatePlugin({
+const AutoformatShortcutsPlugin = createBasePlugin({
   key: 'autoformatShortcuts',
   inputRules: [
     legalRule,

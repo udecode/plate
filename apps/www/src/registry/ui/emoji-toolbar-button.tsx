@@ -215,15 +215,21 @@ const RowOfButtons = React.memo(function RowOfButtons({
 >) {
   return (
     <div key={row.id} className="flex" data-index={row.id}>
-      {row.elements.map((emojiId, index) => (
-        <EmojiButton
-          key={emojiId}
-          onMouseOver={onMouseOver}
-          onSelect={onSelectEmoji}
-          emoji={emojiLibrary.getEmoji(emojiId)}
-          index={index}
-        />
-      ))}
+      {row.elements.map((emojiId, index) => {
+        const emoji = emojiLibrary.getEmoji(emojiId);
+
+        if (!emoji) return null;
+
+        return (
+          <EmojiButton
+            key={emojiId}
+            onMouseOver={onMouseOver}
+            onSelect={onSelectEmoji}
+            emoji={emoji}
+            index={index}
+          />
+        );
+      })}
     </div>
   );
 });
@@ -253,7 +259,7 @@ function EmojiPickerContent({
   const getRowWidth = settings.perLine.value * settings.buttonSize.value;
 
   const isCategoryVisible = React.useCallback(
-    (categoryId: any) =>
+    (categoryId: EmojiCategoryList) =>
       visibleCategories.has(categoryId)
         ? visibleCategories.get(categoryId)
         : false,
@@ -322,7 +328,7 @@ function EmojiPickerContent({
               key={emoji.id}
               onMouseOver={onMouseOver}
               onSelect={onSelectEmoji}
-              emoji={emojiLibrary.getEmoji(emoji.id)}
+              emoji={emoji}
               index={index}
             />
           ))}

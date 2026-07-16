@@ -349,14 +349,11 @@ HTML React 序列化器配置。
 Plate 用于装饰编辑器范围的属性。
 </APIItem>
 
-<APIItem name="extendEditor" type="ExtendEditor<WithAnyKey<C>>" optional>
-扩展编辑器实例的函数。主要用于集成需要直接编辑器变异的旧版 Plite 插件。每个插件只允许一个 `extendEditor`。
+<APIItem name="extensions" type="PluginEditorExtensions<WithAnyKey<C>>" optional>
+解析此 Plate 插件时安装的 Plite 编辑器扩展。用于 schema、state、tx、operation middleware 或 runtime service 等底层编辑器能力。
 
 ```ts
-extendEditor: ({ editor }) => {
-  // 示例：集成旧版 Plite 插件
-  return withYjs(editor);
-}
+extensions: [history()]
 ```
 </APIItem>
 
@@ -411,7 +408,7 @@ editOnly: { render: false }
 创建一个具有更新选项的新插件实例。
 
 ```ts
-(config: PlatePluginConfig<C['key'], InferOptions<C>, InferApi<C>, InferTransforms<C>> | ((ctx: PlatePluginContext<C>) => PlatePluginConfig<C['key'], InferOptions<C>, InferApi<C>, InferTransforms<C>>)) => PlatePlugin<C>
+(config: PlatePluginConfig<C['key'], InferOptions<C>, InferApi<C>, InferTx<C>> | ((ctx: PlatePluginContext<C>) => PlatePluginConfig<C['key'], InferOptions<C>, InferApi<C>, InferTx<C>>)) => PlatePlugin<C>
 ```
 </APIItem>
 
@@ -551,7 +548,7 @@ type MyPluginConfig = PluginConfig<
   'myPlugin',
   { customOption: boolean },
   { getData: () => string },
-  { customTransform: () => void }
+  { myPlugin: { run: () => void } }
 >;
 
 const MyPlugin = createPlatePlugin<MyPluginConfig>({
