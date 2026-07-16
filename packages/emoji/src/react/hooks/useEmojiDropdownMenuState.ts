@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { usePluginOption } from 'platejs/react';
+import { usePluginOption } from '@platejs/core/react';
 
 import {
   type EmojiSettingsType,

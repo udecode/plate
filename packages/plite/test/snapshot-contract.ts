@@ -38,6 +38,7 @@ import {
   removeMark as editorRemoveMark,
   removeNodes as editorRemoveNodes,
   replace as editorReplaceBase,
+  runTrustedUpdate,
   select as editorSelect,
   setPoint as editorSetPoint,
   setSelection as editorSetSelection,
@@ -69,6 +70,15 @@ const editorReplace = editorReplaceBase as unknown as (
   editor: Parameters<typeof editorReplaceBase>[0],
   input: LegacySnapshotInput
 ) => void;
+
+const editorReplaceRaw = (
+  editor: Parameters<typeof editorReplaceBase>[0],
+  input: LegacySnapshotInput
+) => {
+  runTrustedUpdate(editor, (tx) => {
+    tx.value.replace(input);
+  });
+};
 
 const runEditorTransaction = (
   editor: Parameters<typeof runInternalEditorTransaction>[0],
@@ -651,7 +661,7 @@ it('shouldNormalize runs once per custom normalization pass, not once per entry'
   });
 
   assert.deepEqual(shouldNormalizeCalls, [
-    { explicit: false, iteration: 0, operation: undefined },
+    { iteration: 0, operation: undefined },
   ]);
   assert.equal(normalizedPaths.length, 5);
 });
@@ -699,15 +709,14 @@ it('shouldNormalize can skip a custom normalization pass for the current transac
   });
 
   assert.deepEqual(shouldNormalizeCalls, [
-    { explicit: false, iteration: 0, operation: undefined },
+    { iteration: 0, operation: undefined },
   ]);
   assert.equal(editorGetSnapshot(editor).children.length, 1);
 });
 
-it('editorNormalize marks the custom normalization pass as explicit', () => {
+it('editorNormalize uses the same normalization contract as update closeout', () => {
   const editor = createEditor();
   const shouldNormalizeCalls: Array<{
-    explicit?: boolean;
     iteration: number;
     operation?: unknown;
   }> = [];
@@ -728,7 +737,7 @@ it('editorNormalize marks the custom normalization pass as explicit', () => {
   editorNormalize(editor);
 
   assert.deepEqual(shouldNormalizeCalls, [
-    { explicit: true, iteration: 0, operation: undefined },
+    { iteration: 0, operation: undefined },
   ]);
 });
 
@@ -1320,7 +1329,10 @@ it('normalizeNode flattens a direct block child inserted into an inline-style co
     children: [
       {
         type: 'paragraph',
-        children: [{ text: 'alpha' }, { text: 'gamma' }],
+        children: [
+          { text: 'alpha', bold: true },
+          { text: 'gamma', italic: true },
+        ],
       } as Descendant,
     ],
     selection: null,
@@ -1339,7 +1351,11 @@ it('normalizeNode flattens a direct block child inserted into an inline-style co
   assert.deepEqual(editorGetSnapshot(editor).children, [
     {
       type: 'paragraph',
-      children: [{ text: 'alpha' }, { text: 'beta' }, { text: 'gamma' }],
+      children: [
+        { text: 'alpha', bold: true },
+        { text: 'beta' },
+        { text: 'gamma', italic: true },
+      ],
     },
   ]);
 });
@@ -3103,7 +3119,7 @@ it('preserves runtime ids when moving a node inside the proof subset', () => {
   assert.equal(after.children[1].children[0].text, 'alpha');
 });
 
-it('keeps adjacent compatible text siblings separate after move_node until normalization is explicit', () => {
+it('canonicalizes adjacent compatible text siblings after move_node', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -3130,7 +3146,7 @@ it('keeps adjacent compatible text siblings separate after move_node until norma
     },
     {
       type: 'block',
-      children: [{ text: 'one' }, { text: 'two' }],
+      children: [{ text: 'onetwo' }],
     },
   ]);
 });
@@ -3405,17 +3421,16 @@ it('supports split_node on a text path and keeps the original id on the left bra
   const after = editorGetSnapshot(editor);
   const commit = editorGetLastCommit(editor);
 
-  assert.equal(after.children[0].children[0].text, 'alp');
-  assert.equal(after.children[0].children[1].text, 'ha');
+  assert.equal(after.children[0].children[0].text, 'alpha');
   assert.equal(after.index.pathToId['0.0'], leftId);
-  assert.notEqual(after.index.pathToId['0.1'], leftId);
+  assert.equal(after.index.pathToId['0.1'], undefined);
   assert.equal(commit?.structureChanged, true);
   assert.equal(commit?.textChanged, true);
   assert.deepEqual(commit?.dirtyTextRuntimeIds, [leftId]);
   assert.deepEqual(commit?.textDirtyRuntimeIds, [leftId]);
   assert.deepEqual(after.selection, {
-    anchor: { path: [0, 1], offset: 0 },
-    focus: { path: [0, 1], offset: 0 },
+    anchor: { path: [0, 0], offset: 3 },
+    focus: { path: [0, 0], offset: 3 },
   });
 });
 
@@ -3528,7 +3543,7 @@ it('supports path-based splitNodes helper calls on element nodes with the legacy
 it('supports merge_node on a text path and keeps the left branch id', () => {
   const editor = createEditor();
 
-  editorReplace(editor, {
+  editorReplaceRaw(editor, {
     children: createMergeTextChildren(),
     selection: {
       anchor: { path: [0, 1], offset: 2 },
@@ -3568,7 +3583,7 @@ it('supports merge_node on a text path and keeps the left branch id', () => {
 it('supports path-based mergeNodes helper calls on text nodes and keeps the left branch id', () => {
   const editor = createEditor();
 
-  editorReplace(editor, {
+  editorReplaceRaw(editor, {
     children: createMergeTextChildren(),
     selection: {
       anchor: { path: [0, 1], offset: 1 },
@@ -3628,14 +3643,14 @@ it('supports merge_node on an element path and preserves moved descendant ids', 
 
   assert.equal(after.children.length, 1);
   assert.equal(block.data, true);
-  assert.equal(block.children.length, 4);
+  assert.equal(block.children.length, 3);
   assert.equal(after.index.pathToId['0'], leftId);
-  assert.equal(after.index.pathToId['0.1'], movedSpacerId);
-  assert.equal(after.index.pathToId['0.2'], movedLinkId);
-  assert.equal(after.index.pathToId['0.3'], movedTextId);
+  assert.equal(after.index.pathToId['0.1'], movedLinkId);
+  assert.equal(after.index.pathToId['0.2'], movedTextId);
+  assert.notEqual(after.index.pathToId['0.1'], movedSpacerId);
   assert.deepEqual(after.selection, {
-    anchor: { path: [0, 3], offset: 2 },
-    focus: { path: [0, 3], offset: 2 },
+    anchor: { path: [0, 2], offset: 2 },
+    focus: { path: [0, 2], offset: 2 },
   });
 });
 
@@ -3664,13 +3679,13 @@ it('supports path-based mergeNodes helper calls on element nodes', () => {
 
   assert.equal(after.children.length, 1);
   assert.equal(block.data, true);
-  assert.equal(block.children.length, 4);
+  assert.equal(block.children.length, 3);
   assert.equal(after.index.pathToId['0'], leftId);
-  assert.equal(after.index.pathToId['0.1'], movedSpacerId);
-  assert.equal(after.index.pathToId['0.2'], movedLinkId);
+  assert.equal(after.index.pathToId['0.1'], movedLinkId);
+  assert.notEqual(after.index.pathToId['0.1'], movedSpacerId);
   assert.deepEqual(after.selection, {
-    anchor: { path: [0, 3], offset: 1 },
-    focus: { path: [0, 3], offset: 1 },
+    anchor: { path: [0, 2], offset: 1 },
+    focus: { path: [0, 2], offset: 1 },
   });
 });
 
@@ -6893,8 +6908,8 @@ it('supports delete helper calls with an explicit non-empty range across a fully
 
   const after = editorGetSnapshot(editor);
 
-  assert.equal(after.children[0].children[0].text, 'befo');
-  assert.equal(after.children[0].children[1].text, 'ter');
+  assert.equal(after.children[0].children[0].text, 'befoter');
+  assert.equal(after.children[0].children.length, 1);
   assert.deepEqual(after.selection, {
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 4 },
@@ -7015,8 +7030,8 @@ it('supports delete helper calls with the current non-empty selection across a f
 
   const after = editorGetSnapshot(editor);
 
-  assert.equal(after.children[0].children[0].text, 'before!');
-  assert.equal(after.children[0].children[1].text, 'fter');
+  assert.equal(after.children[0].children[0].text, 'before!fter');
+  assert.equal(after.children[0].children.length, 1);
   assert.deepEqual(after.selection, {
     anchor: { path: [0, 0], offset: 7 },
     focus: { path: [0, 0], offset: 7 },
@@ -7106,8 +7121,8 @@ it('supports delete helper calls with the current collapsed selection across mix
 
   assert.equal(link.children[0].text, 'hyperlin');
   assert.deepEqual(after.selection, {
-    anchor: { path: [0, 2], offset: 0 },
-    focus: { path: [0, 2], offset: 0 },
+    anchor: { path: [0, 1, 0], offset: 8 },
+    focus: { path: [0, 1, 0], offset: 8 },
   });
 });
 

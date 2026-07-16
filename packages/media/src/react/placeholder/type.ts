@@ -1,4 +1,4 @@
-import type { KEYS } from 'platejs';
+import type { KEYS } from '@platejs/utils';
 
 import type { AllowedFileType } from './internal/mimes';
 

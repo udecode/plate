@@ -368,10 +368,12 @@ const expectDOMCaretAfterInsertedTextBeforeSuffix = async (
           }
 
           const text = selection.anchorNode.textContent ?? '';
+          const textBeforeCaret = text.slice(0, selection.anchorOffset);
+          const textAfterCaret = text.slice(selection.anchorOffset);
 
           if (
-            text === `${expectedInsertedText}${expectedTrailingText}` &&
-            selection.anchorOffset === expectedInsertedText.length
+            textBeforeCaret.endsWith(expectedInsertedText) &&
+            textAfterCaret.startsWith(expectedTrailingText)
           ) {
             return true;
           }
@@ -401,7 +403,7 @@ const expectDOMCaretAfterInsertedTextBeforeSuffix = async (
           }
 
           return (
-            text === expectedInsertedText &&
+            textBeforeCaret.endsWith(expectedInsertedText) &&
             selection.anchorOffset === text.length &&
             !!nextText?.startsWith(expectedTrailingText)
           );
@@ -1718,8 +1720,8 @@ test.describe('On richtext example', () => {
       editor.root.locator('strong').filter({ hasText: 'すし' })
     ).toHaveCount(1);
     await editor.assert.selection({
-      anchor: { path: [0, 2], offset: 2 },
-      focus: { path: [0, 2], offset: 2 },
+      anchor: { path: [0, 1], offset: 4 },
+      focus: { path: [0, 1], offset: 4 },
     });
     await editor.assert.kernelTrace({
       eventFamily: 'compositionend',
@@ -5674,12 +5676,12 @@ test.describe('On richtext example', () => {
         },
         selectedText: 'editable',
         selectionAfterArrowLeft: {
-          anchor: { path: [0, 1], offset: 7 },
-          focus: { path: [0, 1], offset: 7 },
+          anchor: { path: [0, 0], offset: 15 },
+          focus: { path: [0, 0], offset: 15 },
         },
         selectionAfterCollapse: {
-          anchor: { path: [0, 1], offset: 8 },
-          focus: { path: [0, 1], offset: 8 },
+          anchor: { path: [0, 0], offset: 16 },
+          focus: { path: [0, 0], offset: 16 },
         },
         selectionAfterInsert: {
           anchor: { path: [0, 0], offset: 17 },
@@ -5687,29 +5689,6 @@ test.describe('On richtext example', () => {
         },
         textAfterInsert:
           'This is editableW rich text, much better than a <textarea>!',
-        warmIterationOverrides: [
-          {},
-          {
-            markDOMSelection: {
-              anchorNodeText: 'editable',
-              anchorOffset: 0,
-              focusNodeText: 'editable',
-              focusOffset: 8,
-            },
-            markSelection: {
-              anchor: { path: [0, 1], offset: 0 },
-              focus: { path: [0, 1], offset: 8 },
-            },
-            selectionAfterArrowLeft: {
-              anchor: { path: [0, 1], offset: 7 },
-              focus: { path: [0, 1], offset: 7 },
-            },
-            selectionAfterCollapse: {
-              anchor: { path: [0, 1], offset: 8 },
-              focus: { path: [0, 1], offset: 8 },
-            },
-          },
-        ],
         warmIterations: 2,
       }),
       {

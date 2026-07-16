@@ -29,11 +29,11 @@ describe('emoji shortcode package surfaces', () => {
   ])('$title', ({ expected, input, output }) => {
     const editor = createTestEditor();
 
-    const value = deserializeMd(editor as any, input);
+    const value = deserializeMd(editor, input);
 
     expect(value).toMatchObject(output);
 
-    const markdown = serializeMd(editor as any, { value: value as any });
+    const markdown = serializeMd(editor, { value });
 
     expect(markdown).toBe(expected);
   });

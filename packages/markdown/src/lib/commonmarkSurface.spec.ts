@@ -47,7 +47,7 @@ describe('commonmark package surfaces', () => {
 
     expect(value).toMatchObject(output);
 
-    const markdown = serializeMd(editor, { value: value as any });
+    const markdown = serializeMd(editor, { value });
 
     expect(markdown).toBe(expected);
     expect(deserializeMd(editor, markdown)).toMatchObject(value);
@@ -114,7 +114,7 @@ describe('commonmark package surfaces', () => {
 
     expect(value).toMatchObject(output);
 
-    const markdown = serializeMd(editor, { value: value as any });
+    const markdown = serializeMd(editor, { value });
 
     expect(markdown).toBe(expected);
     expect(deserializeMd(editor, markdown)).toMatchObject(value);
@@ -169,7 +169,7 @@ describe('commonmark package surfaces', () => {
 
     expect(value).toMatchObject(output);
 
-    const markdown = serializeMd(editor, { value: value as any });
+    const markdown = serializeMd(editor, { value });
 
     expect(markdown).toBe(expected);
     expect(deserializeMd(editor, markdown)).toMatchObject(value);
@@ -189,7 +189,7 @@ describe('commonmark package surfaces', () => {
       },
     ]);
 
-    const markdown = serializeMd(editor, { value: value as any });
+    const markdown = serializeMd(editor, { value });
 
     expect(markdown).toBe(expected);
     expect(deserializeMd(editor, markdown)).toMatchObject(value);
@@ -206,7 +206,7 @@ describe('commonmark package surfaces', () => {
         ],
         type: 'p',
       },
-    ] as any;
+    ];
 
     const markdown = serializeMd(editor, { value });
 
@@ -237,7 +237,7 @@ describe('commonmark package surfaces', () => {
             children: [{ text: 'alpha\n' }],
             type: 'p',
           },
-        ] as any,
+        ],
       })
     ).toBe('alpha\n<br />\n');
   });
@@ -249,7 +249,7 @@ describe('commonmark package surfaces', () => {
         children: [{ text: 'Block quote' }, { text: '\n' }, { text: '\n' }],
         type: 'blockquote',
       },
-    ] as any;
+    ];
 
     expect(serializeMd(editor, { value })).toBe('> Block quote\\ \n> <br />\n');
   });
@@ -278,7 +278,7 @@ describe('commonmark package surfaces', () => {
       },
     ]);
 
-    const markdown = serializeMd(editor, { value: value as any });
+    const markdown = serializeMd(editor, { value });
 
     expect(markdown).toBe(expected);
     expect(deserializeMd(editor, markdown)).toMatchObject(value);

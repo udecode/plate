@@ -1,5 +1,6 @@
 import type { Descendant } from '@platejs/plite';
 
+import type { MdRootContent } from '../mdast';
 import type { SerializeMdOptions } from './serializeMd';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
@@ -39,17 +40,17 @@ describe('convertNodesSerialize', () => {
   const mockParagraphNodeMd = {
     children: [{ type: 'text', value: 'Hello' }],
     type: 'paragraph',
-  };
+  } satisfies MdRootContent;
 
   const mockHeadingNodeMd = {
     children: [{ type: 'text', value: 'Title' }],
     depth: 1,
     type: 'heading',
-  };
+  } satisfies MdRootContent;
 
   const mockThematicBreakNodeMd = {
     type: 'thematicBreak',
-  };
+  } satisfies MdRootContent;
 
   const mockBoldNodeMd = {
     children: [
@@ -57,9 +58,9 @@ describe('convertNodesSerialize', () => {
       { type: 'text', value: 'World' },
     ],
     type: 'paragraph',
-  };
+  } satisfies MdRootContent;
 
-  const mockNodesMd = [
+  const mockNodesMd: MdRootContent[] = [
     mockParagraphNodeMd,
     mockHeadingNodeMd,
     mockThematicBreakNodeMd,
@@ -70,6 +71,9 @@ describe('convertNodesSerialize', () => {
     editor,
     rules: defaultRules,
   };
+
+  const expectMdNodes = (actual: MdRootContent[], expected: MdRootContent[]) =>
+    expect(actual).toEqual(expected);
 
   describe('allowedNodes option', () => {
     it('throws when allowedNodes and disallowedNodes are both configured', () => {
@@ -91,7 +95,7 @@ describe('convertNodesSerialize', () => {
       const result = convertNodesSerialize(mockNodesSlate, options);
 
       expect(result).toHaveLength(1);
-      expect(result).toEqual([mockHeadingNodeMd]);
+      expectMdNodes(result, [mockHeadingNodeMd]);
     });
 
     it('include all nodes when allowedNodes is null or undefined', () => {
@@ -102,7 +106,7 @@ describe('convertNodesSerialize', () => {
 
       const result = convertNodesSerialize(mockNodesSlate, options);
       expect(result).toHaveLength(mockNodesMd.length);
-      expect(result).toEqual(mockNodesMd);
+      expectMdNodes(result, mockNodesMd);
     });
 
     it('include no nodes when allowedNodes is empty', () => {
@@ -123,12 +127,12 @@ describe('convertNodesSerialize', () => {
 
       const result = convertNodesSerialize([mockBoldNodeSlate], options);
 
-      expect(result).toEqual([
+      expectMdNodes(result, [
         {
           children: [{ type: 'text', value: 'World' }],
           type: 'paragraph',
         },
-      ] as any);
+      ]);
     });
   });
 
@@ -140,7 +144,7 @@ describe('convertNodesSerialize', () => {
             children: [{ text: 'Hello' }],
             id: 'block-1',
             type: 'p',
-          } as any,
+          },
         ],
         {
           ...baseOptions,
@@ -149,7 +153,7 @@ describe('convertNodesSerialize', () => {
         true
       );
 
-      expect(result).toEqual([
+      expectMdNodes(result, [
         {
           attributes: [
             {
@@ -170,7 +174,7 @@ describe('convertNodesSerialize', () => {
           name: 'block',
           type: 'mdxJsxFlowElement',
         },
-      ] as any);
+      ]);
     });
 
     it('does not wrap nested block ids when serializing child nodes', () => {
@@ -185,7 +189,7 @@ describe('convertNodesSerialize', () => {
               },
             ],
             type: 'blockquote',
-          } as any,
+          },
         ],
         {
           ...baseOptions,
@@ -194,7 +198,7 @@ describe('convertNodesSerialize', () => {
         true
       );
 
-      expect(result).toEqual([
+      expectMdNodes(result, [
         {
           children: [
             {
@@ -204,7 +208,7 @@ describe('convertNodesSerialize', () => {
           ],
           type: 'blockquote',
         },
-      ] as any);
+      ]);
     });
 
     it('wraps legacy inline blockquote children into a paragraph when serializing', () => {
@@ -213,13 +217,13 @@ describe('convertNodesSerialize', () => {
           {
             children: [{ text: 'Legacy quote' }],
             type: 'blockquote',
-          } as any,
+          },
         ],
         baseOptions,
         true
       );
 
-      expect(result).toEqual([
+      expectMdNodes(result, [
         {
           children: [
             {
@@ -229,7 +233,7 @@ describe('convertNodesSerialize', () => {
           ],
           type: 'blockquote',
         },
-      ] as any);
+      ]);
     });
   });
 
@@ -254,7 +258,7 @@ describe('convertNodesSerialize', () => {
       ['h4', 4],
       ['h5', 5],
       ['h6', 6],
-    ])('normalizes %s plugin keys before selecting the serializer', (type, depth) => {
+    ] as const)('normalizes %s plugin keys before selecting the serializer', (type, depth) => {
       expect(
         buildMdastNode(
           {
@@ -280,7 +284,7 @@ describe('convertNodesSerialize', () => {
 
       const result = convertNodesSerialize(mockNodesSlate, options);
 
-      expect(result).toEqual([
+      expectMdNodes(result, [
         mockParagraphNodeMd,
         mockThematicBreakNodeMd,
         mockBoldNodeMd,
@@ -295,7 +299,7 @@ describe('convertNodesSerialize', () => {
 
       const result = convertNodesSerialize(mockNodesSlate, options);
 
-      expect(result).toEqual([
+      expectMdNodes(result, [
         mockParagraphNodeMd,
         mockHeadingNodeMd,
         mockThematicBreakNodeMd,
@@ -316,7 +320,7 @@ describe('convertNodesSerialize', () => {
 
       const result = convertNodesSerialize(mockNodesSlate, options);
 
-      expect(result).toEqual([
+      expectMdNodes(result, [
         mockParagraphNodeMd,
         mockHeadingNodeMd,
         mockThematicBreakNodeMd,
@@ -343,12 +347,12 @@ describe('convertNodesSerialize', () => {
 
       const result = convertNodesSerialize([mockItalicBoldNodeSlate], options);
 
-      expect(result).toEqual([
+      expectMdNodes(result, [
         {
           children: [{ type: 'text', value: 'BoldItalic normal' }],
           type: 'paragraph',
         },
-      ] as any);
+      ]);
     });
 
     it('only treat specified marks as plain text', () => {
@@ -367,7 +371,7 @@ describe('convertNodesSerialize', () => {
 
       const result = convertNodesSerialize([mockItalicBoldNodeSlate], options);
 
-      expect(result).toEqual([
+      expectMdNodes(result, [
         {
           children: [
             {
@@ -378,7 +382,7 @@ describe('convertNodesSerialize', () => {
           ],
           type: 'paragraph',
         },
-      ] as any);
+      ]);
     });
   });
 
@@ -396,7 +400,7 @@ describe('convertNodesSerialize', () => {
 
       const result = convertNodesSerialize(mockNodesSlate, options);
 
-      expect(result).toEqual([
+      expectMdNodes(result, [
         mockParagraphNodeMd,
         mockHeadingNodeMd,
         mockBoldNodeMd,
@@ -416,7 +420,7 @@ describe('convertNodesSerialize', () => {
 
       const result = convertNodesSerialize(mockNodesSlate, options);
 
-      expect(result).toEqual([
+      expectMdNodes(result, [
         mockParagraphNodeMd,
         mockHeadingNodeMd,
         mockThematicBreakNodeMd,
@@ -448,7 +452,7 @@ describe('convertNodesSerialize', () => {
             listStyleType: 'decimal',
             type: 'p',
           },
-        ] as any,
+        ],
         {
           ...baseOptions,
           withBlockId: true,
@@ -497,7 +501,7 @@ describe('convertNodesSerialize', () => {
 
       const result = convertNodesSerialize(listNodes, baseOptions);
 
-      expect(result).toEqual([
+      expectMdNodes(result, [
         {
           children: [
             {
@@ -555,7 +559,7 @@ describe('convertNodesSerialize', () => {
           start: 1,
           type: 'list',
         },
-      ] as any);
+      ]);
     });
 
     it('split nested sibling lists when style changes at same indent', () => {
@@ -585,7 +589,7 @@ describe('convertNodesSerialize', () => {
 
       const result = convertNodesSerialize(listNodes, baseOptions);
 
-      expect(result).toEqual([
+      expectMdNodes(result, [
         {
           children: [
             {
@@ -643,7 +647,7 @@ describe('convertNodesSerialize', () => {
           start: 1,
           type: 'list',
         },
-      ] as any);
+      ]);
     });
 
     it('split when listStyleType changes across indentation', () => {
@@ -668,12 +672,12 @@ describe('convertNodesSerialize', () => {
           listStart: 1,
           listStyleType: 'decimal',
           type: 'p',
-        } as any,
+        },
       ];
 
       const result = convertNodesSerialize(listNodes, baseOptions);
 
-      expect(result).toEqual([
+      expectMdNodes(result, [
         {
           children: [
             {
@@ -731,7 +735,7 @@ describe('convertNodesSerialize', () => {
           start: 1,
           type: 'list',
         },
-      ] as any);
+      ]);
     });
   });
 });

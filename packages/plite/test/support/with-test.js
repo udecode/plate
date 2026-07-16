@@ -3,6 +3,7 @@ import {
   setEditorRuntime,
 } from '../../src/core/editor-runtime';
 import { getOperations } from '../../src/core/public-state';
+import { normalize } from '../../src/editor/normalize';
 
 const initializedEditors = new WeakSet();
 
@@ -64,7 +65,7 @@ export const createFixtureTransactionApi = (editor, tx) => {
     get children() {
       return tx.children();
     },
-    normalize: tx.normalize,
+    normalize: (options) => normalize(editor, options),
   };
 
   setEditorRuntime(api, runtime);

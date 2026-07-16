@@ -143,7 +143,6 @@ describe('playground rules current contract', () => {
       expect(editor.read.children()).toMatchObject([
         { type: 'hr' },
         { children: [{ text: '' }], type: 'p' },
-        { children: [{ text: '' }], type: 'p' },
       ]);
     });
   });

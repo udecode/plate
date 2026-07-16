@@ -6,4 +6,12 @@ export const streamDeserializeInlineMd = (
   editor: PlateEditor,
   text: string,
   options?: DeserializeMdOptions
-) => editor.plugin(MarkdownPlugin).api.deserializeInline(text, options);
+) => {
+  const deserializeInline = editor.plugin(MarkdownPlugin).api.deserializeInline;
+
+  try {
+    return deserializeInline(text, options);
+  } catch {
+    return deserializeInline(text, { ...options, withoutMdx: true });
+  }
+};

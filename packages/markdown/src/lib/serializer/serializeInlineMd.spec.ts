@@ -1,3 +1,5 @@
+import type { Text } from '@platejs/plite';
+
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { serializeInlineMd } from './serializeInlineMd';
 
@@ -127,7 +129,7 @@ describe('serializeInlineMd', () => {
   });
 
   it('handle empty nodes array', () => {
-    const nodes: any[] = [];
+    const nodes: Text[] = [];
     const result = serializeInlineMd(editor, { value: nodes });
     expect(result).toBe('');
   });

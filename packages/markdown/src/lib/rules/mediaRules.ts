@@ -2,8 +2,10 @@ import type { TMediaElement } from '@platejs/utils';
 
 import type { MdMdxJsxFlowElement } from '../mdast';
 import type { MdRules } from '../types';
+import type { SerializeMdOptions } from '../serializer';
 
 import { convertNodesSerialize } from '../serializer';
+import { isMdFlowContent } from '../serializer/wrapWithBlockId';
 import { parseAttributes, propsToAttributes } from './utils';
 
 function createMediaRule() {
@@ -18,12 +20,20 @@ function createMediaRule() {
         ...props,
       } as TMediaElement;
     },
-    serialize: (node: TMediaElement, options: any) => {
+    serialize: (
+      node: TMediaElement,
+      options: SerializeMdOptions
+    ): MdMdxJsxFlowElement => {
       const { children, type, url, ...rest } = node;
+      const serializedChildren = convertNodesSerialize(children, options);
+
+      if (!serializedChildren.every(isMdFlowContent)) {
+        throw new Error('Media MDX children must be Markdown flow content.');
+      }
 
       return {
         attributes: propsToAttributes({ ...rest, src: url }),
-        children: convertNodesSerialize(children, options) as any,
+        children: serializedChildren,
         name: type,
         type: 'mdxJsxFlowElement',
       };
@@ -31,9 +41,9 @@ function createMediaRule() {
   };
 }
 
-export const mediaRules: MdRules = {
+export const mediaRules = {
   audio: createMediaRule(),
   file: createMediaRule(),
   media_embed: createMediaRule(),
   video: createMediaRule(),
-};
+} satisfies MdRules;

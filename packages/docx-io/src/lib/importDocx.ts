@@ -1,6 +1,6 @@
 import { cleanDocx } from '@platejs/docx';
 import mammoth from 'mammoth';
-import { deserializeHtml } from 'platejs';
+import { deserializeHtml } from '@platejs/core';
 
 import {
   extractComments,

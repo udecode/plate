@@ -10,7 +10,7 @@ import {
   type TResizableElement,
   KEYS,
 } from '@platejs/utils';
-import { useEditorRef, useElement } from 'platejs/react';
+import { useEditorRef, useElement } from '@platejs/core/react';
 
 import { VIDEO_PROVIDERS } from '../../lib/media-embed';
 import {

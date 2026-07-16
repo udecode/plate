@@ -8,11 +8,16 @@ const createDataTransfer = ({
 }: {
   files?: File[];
   html?: string;
-}) =>
-  ({
-    files,
-    getData: (format: string) => (format === 'text/html' ? html : ''),
-  }) as unknown as DataTransfer;
+}) => {
+  const dataTransfer = new DataTransfer();
+
+  if (html) dataTransfer.setData('text/html', html);
+  files.forEach((file) => {
+    dataTransfer.items.add(file);
+  });
+
+  return dataTransfer;
+};
 
 describe('MarkdownPlugin', () => {
   it('exposes default options, bound markdown api, and text parser deserialization', () => {
@@ -35,9 +40,11 @@ describe('MarkdownPlugin', () => {
     expect(plugin.parser.format).toBe('text/plain');
     expect(
       plugin.parser.deserialize?.({
-        api: editor.api.markdown,
+        ...editor.plugin(MarkdownPlugin),
         data: '**bold**',
-      } as any)
+        dataTransfer: createDataTransfer({}),
+        mimeType: 'text/plain',
+      })
     ).toEqual(editor.api.markdown.deserialize('**bold**'));
   });
 
@@ -50,9 +57,11 @@ describe('MarkdownPlugin', () => {
 
     expect(
       query({
+        ...editor.plugin(MarkdownPlugin),
         data: 'plain text',
         dataTransfer: createDataTransfer({ html: '<p>paste me</p>' }),
-      } as any)
+        mimeType: 'text/plain',
+      })
     ).toBe(false);
   });
 
@@ -65,9 +74,11 @@ describe('MarkdownPlugin', () => {
 
     expect(
       query({
+        ...editor.plugin(MarkdownPlugin),
         data: 'https://platejs.org/docs',
         dataTransfer: createDataTransfer({}),
-      } as any)
+        mimeType: 'text/plain',
+      })
     ).toBe(false);
   });
 
@@ -80,9 +91,13 @@ describe('MarkdownPlugin', () => {
 
     expect(
       query({
+        ...editor.plugin(MarkdownPlugin),
         data: 'https://platejs.org/docs',
-        dataTransfer: createDataTransfer({ files: [{} as File] }),
-      } as any)
+        dataTransfer: createDataTransfer({
+          files: [new File([''], 'attachment.txt')],
+        }),
+        mimeType: 'text/plain',
+      })
     ).toBe(true);
   });
 
@@ -95,9 +110,11 @@ describe('MarkdownPlugin', () => {
 
     expect(
       query({
+        ...editor.plugin(MarkdownPlugin),
         data: '**bold**',
         dataTransfer: createDataTransfer({}),
-      } as any)
+        mimeType: 'text/plain',
+      })
     ).toBe(true);
   });
 });

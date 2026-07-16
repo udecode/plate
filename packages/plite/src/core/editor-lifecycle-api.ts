@@ -36,6 +36,7 @@ type RunEditorUpdate<
 
 type EditorUpdateApiOptions = {
   hasTxGroup?: (groupName: string) => boolean;
+  repairValue: () => void;
 };
 
 const assertHistoryCapability = (options: EditorUpdateApiOptions) => {
@@ -291,7 +292,7 @@ export const createEditorUpdateApi = <
   TExtensions extends readonly unknown[],
 >(
   runUpdate: RunEditorUpdate<V, TExtensions>,
-  apiOptions: EditorUpdateApiOptions = {}
+  apiOptions: EditorUpdateApiOptions
 ): EditorUpdate<V, TExtensions> => {
   type UpdateCallback = (
     transaction: EditorUpdateTransaction<V, TExtensions>,
@@ -447,11 +448,6 @@ export const createEditorUpdateApi = <
           value = createGroup(property);
           break;
         }
-        case 'normalize': {
-          value = (...args: Parameters<EditorUpdateMethods<V>['normalize']>) =>
-            invoke((tx) => tx.normalize(...args));
-          break;
-        }
         case 'setField': {
           value = (...args: Parameters<EditorUpdateMethods<V>['setField']>) =>
             invoke((tx) => tx.setField(...args));
@@ -459,6 +455,7 @@ export const createEditorUpdateApi = <
         }
         case 'value': {
           value = Object.freeze({
+            repair: () => apiOptions.repairValue(),
             replace: (
               input: Parameters<EditorUpdateMethods<V>['value']['replace']>[0]
             ) => invoke((tx) => tx.value.replace(input)),

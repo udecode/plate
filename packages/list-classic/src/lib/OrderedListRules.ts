@@ -1,6 +1,7 @@
 import type { BaseEditor } from '@platejs/core';
 
-import { createRuleFactory, KEYS } from 'platejs';
+import { createRuleFactory } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { toggleList } from './transforms';
 

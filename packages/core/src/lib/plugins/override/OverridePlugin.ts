@@ -149,6 +149,33 @@ const executeDeleteRuleAction = (
   return false;
 };
 
+const selectAdjacentBlockVoid = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  adjacent: readonly [unknown, number[]] | undefined,
+  current: readonly [Element, number[]]
+) => {
+  if (
+    !adjacent ||
+    !ElementApi.isElement(adjacent[0]) ||
+    !editor.read.schema.isVoid(adjacent[0])
+  ) {
+    return false;
+  }
+
+  const start = editor.read.points.start(adjacent[1]);
+
+  if (!start) return false;
+
+  tx.selection.set(start);
+
+  if (editor.read.nodes.isEmpty(current[0])) {
+    tx.nodes.remove({ at: current[1] });
+  }
+
+  return true;
+};
+
 const getEffectiveBreakRules = (
   editor: BaseEditor,
   rule: MatchRules,
@@ -426,13 +453,15 @@ export const OverridePlugin = createBasePlugin({
             blockPath
           );
 
-          if (
-            splitResetRules?.splitReset &&
-            !editor.read.points.isStart(selection.anchor, blockPath) &&
-            !editor.read.points.isEnd(selection.anchor, blockPath)
-          ) {
-            tx.break.insert();
-            resetBlock(editor, tx, PathApi.next(blockPath));
+          if (splitResetRules?.splitReset && !tx.selection.isAcrossBlocks()) {
+            const isAtStart = tx.selection.isAtBlockStart();
+
+            next();
+            resetBlock(
+              editor,
+              tx,
+              isAtStart ? blockPath : PathApi.next(blockPath)
+            );
             return true;
           }
 
@@ -468,16 +497,12 @@ export const OverridePlugin = createBasePlugin({
               const previous = editor.read.nodes.previous({ at: blockPath });
 
               if (
-                previous &&
-                ElementApi.isElement(previous[0]) &&
-                editor.read.schema.isVoid(previous[0])
+                selectAdjacentBlockVoid(editor, tx, previous, [
+                  blockNode,
+                  blockPath,
+                ])
               ) {
-                const start = editor.read.points.start(previous[1]);
-
-                if (start) {
-                  tx.selection.set(start);
-                  return true;
-                }
+                return true;
               }
 
               const rules = getEffectiveDeleteRules(
@@ -520,6 +545,30 @@ export const OverridePlugin = createBasePlugin({
             PointApi.equals(selection.anchor, documentStart)
           ) {
             resetBlock(editor, tx, [0]);
+            return true;
+          }
+
+          return next({ unit });
+        },
+        deleteForward({ next, tx, unit }) {
+          const selection = editor.read.selection();
+
+          if (!selection || !editor.read.selection.isCollapsed()) {
+            return next({ unit });
+          }
+
+          const block = editor.read.nodes.block();
+
+          if (
+            block &&
+            editor.read.points.isEnd(selection.anchor, block[1]) &&
+            selectAdjacentBlockVoid(
+              editor,
+              tx,
+              editor.read.nodes.next({ at: block[1] }),
+              block
+            )
+          ) {
             return true;
           }
 

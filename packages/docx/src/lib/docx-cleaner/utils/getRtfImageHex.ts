@@ -1,4 +1,4 @@
-import { SPACE } from 'platejs';
+import { SPACE } from '@platejs/core';
 
 export const getRtfImageHex = (imageData: string): string | null => {
   const [, bliptagData = ''] = imageData.split('bliptag');

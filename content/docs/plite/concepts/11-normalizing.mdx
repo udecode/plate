@@ -122,9 +122,24 @@ function changeBlockType(editor: Editor, type: string) {
 }
 ```
 
-Call `tx.normalize()` only when later code in the same update must read the
-repaired tree before continuing. It is a barrier, not boilerplate for grouped
-writes.
+The callback reads the live draft. Plite repairs dirty paths after the callback
+returns, then publishes one canonical commit. A command that needs a concrete
+node later in the same callback should create that node directly instead of
+depending on normalization timing.
+
+## Repairing A Whole Document
+
+Use `editor.update.value.repair()` when raw initial data or a newly installed
+normalizer may need an all-root maintenance pass.
+
+```ts
+editor.update.value.repair();
+```
+
+Repair starts its own history-skipped update, scans the primary document and
+every named root, and publishes nothing when the value is already canonical.
+It cannot run inside another `editor.update(...)`. Feature commands should rely
+on normal dirty-path closeout instead.
 
 ## Extension Normalizers
 

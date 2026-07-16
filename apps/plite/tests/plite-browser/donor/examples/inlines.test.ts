@@ -454,12 +454,13 @@ test.describe('Inlines example', () => {
       }
 
       runtimeErrors.assertNone();
-      await expect(link).toHaveCount(0);
+      await expect(link).toHaveCount(1);
       await expect(editor.root.locator('br')).toHaveCount(0);
 
       await page.keyboard.type('x');
 
       runtimeErrors.assertNone();
+      await expect(link).toContainText('x');
       await expect(followingLink).not.toContainText('x');
       await expect
         .poll(async () =>
@@ -764,7 +765,7 @@ test.describe('Inlines example', () => {
       .toContain('Here is a hyperTEXTlink, and here is');
   });
 
-  test('keeps typing after a link-boundary Backspace outside the link', async ({
+  test('keeps typing after a link-boundary Backspace inside the link', async ({
     page,
   }, testInfo) => {
     test.skip(
@@ -784,7 +785,7 @@ test.describe('Inlines example', () => {
     await editor.root.press('Backspace');
     await editor.type('tail');
 
-    await expect(link).not.toContainText('tail');
+    await expect(link).toContainText('tail');
     await expect
       .poll(async () =>
         (await editor.get.blockTexts())[0]?.replaceAll('\u00A0', '')

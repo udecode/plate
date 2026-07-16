@@ -19,11 +19,13 @@ describe('footnote registry', () => {
       value: [
         {
           children: [
+            { text: '' },
             {
               children: [{ text: '1' }],
               identifier: '1',
               type: 'footnoteReference',
             },
+            { text: '' },
           ],
           type: KEYS.p,
         },

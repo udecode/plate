@@ -176,7 +176,6 @@ describe('@platejs/yjs split_node collaboration contract', () => {
         type: 'split_node',
       },
     ]);
-
     assert.deepEqual(getPeerTopLevelTexts(peer), ['', 'moved']);
     assert.equal(getVisibleYjsNodeAt(peer, [1, 0]), movedParagraph);
     assert.deepEqual(getYjsTrace(peer), [

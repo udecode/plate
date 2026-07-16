@@ -34,7 +34,7 @@ describe('SingleLinePlugin', () => {
       value: input.children,
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual(output.children);
   });
@@ -60,7 +60,7 @@ describe('SingleLinePlugin', () => {
       value: inputWithLineBreaks.children,
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual(expectedOutput.children);
   });
@@ -131,7 +131,7 @@ describe('SingleLinePlugin', () => {
       value: emptyBlocksInput.children,
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual(expectedOutput.children);
   });

@@ -8,12 +8,12 @@ import {
   ElementApi,
   NodeApi,
   type NodeEntry,
-  type Operation,
   TextApi,
   type Value,
 } from '../interfaces';
 import { getChildren as editorGetChildren } from '../interfaces/editor';
 import type { Editor } from '../interfaces/editor';
+import type { Operation } from '../interfaces/operation';
 import {
   insertNodes,
   mergeNodes,
@@ -23,6 +23,10 @@ import {
 import { getEditorSchema } from './editor-runtime';
 import { getExtensionRegistry } from './extension-registry';
 import { getNormalizerUpdateView } from './public-state';
+
+export type InternalEditorNormalizeNodeOptions = EditorNormalizeNodeOptions & {
+  operation?: Operation;
+};
 
 const resolveFallbackElement = (
   fallbackElement: EditorNormalizeNodeOptions['fallbackElement']
@@ -67,7 +71,7 @@ const collectInlineCompatibleDescendants = (
   );
 };
 
-const normalizeExplicitInlineChildren = (
+const normalizeInlineChildren = (
   editor: Editor,
   node: Editor | Element,
   path: readonly number[]
@@ -194,6 +198,88 @@ const normalizeExplicitInlineChildren = (
   }
 };
 
+const normalizeAffectedInlineChildren = (
+  editor: Editor,
+  node: Editor | Element,
+  path: readonly number[],
+  childIndexes: readonly number[]
+) => {
+  const children = getNodeChildren(editor, node);
+  const affected = new Set(childIndexes);
+
+  for (const index of [...affected].sort((left, right) => right - left)) {
+    const child = children[index];
+
+    if (!child || isTextChild(child) || isInlineChild(editor, child)) {
+      continue;
+    }
+
+    const replacement = collectInlineCompatibleDescendants(editor, child);
+
+    removeNodes(editor, { at: [...path, index], voids: true });
+
+    if (replacement.length > 0) {
+      insertNodes(editor, replacement, { at: [...path, index], voids: true });
+    }
+
+    return true;
+  }
+
+  for (let index = 1; index < children.length; index += 1) {
+    if (!affected.has(index) && !affected.has(index - 1)) continue;
+
+    const child = children[index]!;
+    const previous = children[index - 1]!;
+
+    if (!isTextChild(child) || !isTextChild(previous)) continue;
+
+    if (child.text === '') {
+      removeNodes(editor, { at: [...path, index], voids: true });
+      return true;
+    }
+
+    if (previous.text === '') {
+      removeNodes(editor, { at: [...path, index - 1], voids: true });
+      return true;
+    }
+
+    if (TextApi.equals(child, previous, { loose: true })) {
+      mergeNodes(editor, { at: [...path, index], voids: true });
+      return true;
+    }
+  }
+
+  for (const [index, child] of children.entries()) {
+    if (
+      !isInlineChild(editor, child) ||
+      (!affected.has(index) &&
+        !affected.has(index - 1) &&
+        !affected.has(index + 1))
+    ) {
+      continue;
+    }
+
+    const previous = children[index - 1];
+    const next = children[index + 1];
+
+    if (!previous || !isTextChild(previous)) {
+      insertNodes(editor, { text: '' }, { at: [...path, index], voids: true });
+      return true;
+    }
+
+    if (!next || !isTextChild(next)) {
+      insertNodes(
+        editor,
+        { text: '' },
+        { at: [...path, index + 1], voids: true }
+      );
+      return true;
+    }
+  }
+
+  return false;
+};
+
 const isDirectChildPath = (
   parentPath: readonly number[],
   childPath: readonly number[]
@@ -201,7 +287,7 @@ const isDirectChildPath = (
   childPath.length === parentPath.length + 1 &&
   parentPath.every((segment, index) => segment === childPath[index]);
 
-const getBlockOnlyChildIndexesToValidate = (
+const getDirectChildIndexesToValidate = (
   path: readonly number[],
   operation?: Operation
 ) => {
@@ -210,13 +296,25 @@ const getBlockOnlyChildIndexesToValidate = (
   }
 
   switch (operation.type) {
-    case 'set_node':
     case 'insert_node':
+    case 'insert_text':
+    case 'remove_text':
+    case 'set_node':
       return isDirectChildPath(path, operation.path)
         ? [operation.path[path.length]]
         : null;
     case 'remove_node':
-      return isDirectChildPath(path, operation.path) ? [] : null;
+      return isDirectChildPath(path, operation.path)
+        ? [operation.path[path.length]]
+        : null;
+    case 'split_node':
+      return isDirectChildPath(path, operation.path)
+        ? [operation.path[path.length], operation.path[path.length] + 1]
+        : null;
+    case 'merge_node':
+      return isDirectChildPath(path, operation.path)
+        ? [Math.max(0, operation.path[path.length] - 1)]
+        : null;
     case 'move_node': {
       const removesFromParent = isDirectChildPath(path, operation.path);
       const insertsIntoParent = isDirectChildPath(path, operation.newPath);
@@ -225,11 +323,10 @@ const getBlockOnlyChildIndexesToValidate = (
         return null;
       }
 
-      if (removesFromParent && insertsIntoParent) {
-        return [];
-      }
-
-      return insertsIntoParent ? [operation.newPath[path.length]] : [];
+      return [
+        ...(removesFromParent ? [operation.path[path.length]] : []),
+        ...(insertsIntoParent ? [operation.newPath[path.length]] : []),
+      ];
     }
     default:
       return null;
@@ -239,7 +336,7 @@ const getBlockOnlyChildIndexesToValidate = (
 const normalizeNodeDefault = (
   editor: Editor,
   entry: NodeEntry,
-  options: EditorNormalizeNodeOptions = {}
+  options: InternalEditorNormalizeNodeOptions = {}
 ) => {
   const { fallbackElement } = options;
   const [node, path] = entry;
@@ -253,7 +350,7 @@ const normalizeNodeDefault = (
     return;
   }
 
-  const directChildIndexes = getBlockOnlyChildIndexesToValidate(
+  const directChildIndexes = getDirectChildIndexesToValidate(
     path,
     options.operation
   );
@@ -262,114 +359,11 @@ const normalizeNodeDefault = (
   const nodeChildren = getNodeChildren(editor, node);
 
   if (shouldHaveInlineChildren(editor, node)) {
-    if (
-      options.explicit &&
-      normalizeExplicitInlineChildren(editor, node, path)
-    ) {
-      return;
+    if (directChildIndexes) {
+      normalizeAffectedInlineChildren(editor, node, path, directChildIndexes);
+    } else {
+      normalizeInlineChildren(editor, node, path);
     }
-
-    for (const [index, child] of nodeChildren.entries()) {
-      const prev = nodeChildren[index - 1];
-      const next = nodeChildren[index + 1];
-      const touchesDirectChildCleanup =
-        !options.explicit &&
-        Array.isArray(directChildIndexes) &&
-        (directChildIndexes.includes(index) ||
-          directChildIndexes.includes(index - 1));
-      const shouldCanonicalizeImplicitAdjacentText =
-        !options.explicit && options.operation?.type === 'insert_text';
-      const canCanonicalizeAdjacentText =
-        (options.explicit && !touchesDirectChildCleanup) ||
-        shouldCanonicalizeImplicitAdjacentText;
-
-      if (TextApi.isText(child) && TextApi.isText(prev)) {
-        if (
-          canCanonicalizeAdjacentText &&
-          child.text === '' &&
-          (!next || TextApi.isText(next))
-        ) {
-          removeNodes(editor, { at: [...path, index], voids: true });
-          return;
-        }
-
-        if (
-          canCanonicalizeAdjacentText &&
-          prev.text === '' &&
-          (!nodeChildren[index - 2] || TextApi.isText(nodeChildren[index - 2]!))
-        ) {
-          removeNodes(editor, { at: [...path, index - 1], voids: true });
-          return;
-        }
-
-        if (
-          canCanonicalizeAdjacentText &&
-          TextApi.equals(child, prev, { loose: true })
-        ) {
-          mergeNodes(editor, { at: [...path, index], voids: true });
-          return;
-        }
-      }
-
-      if (
-        touchesDirectChildCleanup &&
-        TextApi.isText(child) &&
-        TextApi.isText(prev)
-      ) {
-        if (child.text === '') {
-          removeNodes(editor, { at: [...path, index], voids: true });
-          return;
-        }
-
-        if (prev.text === '') {
-          removeNodes(editor, { at: [...path, index - 1], voids: true });
-          return;
-        }
-      }
-
-      if (
-        Array.isArray(directChildIndexes) &&
-        directChildIndexes.includes(index) &&
-        !TextApi.isText(child) &&
-        !isInlineChild(editor, child)
-      ) {
-        const replacement = collectInlineCompatibleDescendants(editor, child);
-
-        removeNodes(editor, { at: [...path, index], voids: true });
-
-        if (replacement.length > 0) {
-          insertNodes(editor, replacement, {
-            at: [...path, index],
-            voids: true,
-          });
-        }
-
-        return;
-      }
-
-      if (!isInlineChild(editor, child)) {
-        continue;
-      }
-
-      if (!prev || !TextApi.isText(prev)) {
-        insertNodes(
-          editor,
-          { text: '' },
-          { at: [...path, index], voids: true }
-        );
-        return;
-      }
-
-      if (!next || !TextApi.isText(next)) {
-        insertNodes(
-          editor,
-          { text: '' },
-          { at: [...path, index + 1], voids: true }
-        );
-        return;
-      }
-    }
-
     return;
   }
 
@@ -438,7 +432,7 @@ const normalizeNodeDefault = (
 export const normalizeNode = <V extends Value>(
   editor: Editor<V>,
   entry: NodeEntry,
-  options: EditorNormalizeNodeOptions<V> = {}
+  options: InternalEditorNormalizeNodeOptions = {}
 ) => {
   const normalizers = [...getExtensionRegistry(editor).normalizers.values()];
 
@@ -457,7 +451,10 @@ export const normalizeNode = <V extends Value>(
     if (!normalizer) {
       const { entry, ...nextOptions } = currentArgs;
 
-      normalizeNodeDefault(editor, entry, nextOptions);
+      normalizeNodeDefault(editor, entry, {
+        ...nextOptions,
+        operation: options.operation,
+      });
       return;
     }
 
@@ -481,5 +478,5 @@ export const normalizeNode = <V extends Value>(
     });
   };
 
-  run(0, { ...options, entry });
+  run(0, { entry, fallbackElement: options.fallbackElement });
 };

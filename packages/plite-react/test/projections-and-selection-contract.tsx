@@ -212,7 +212,10 @@ describe('plite-react projections and selection contract', () => {
     editorReplace(editor, {
       children: [
         {
-          children: [{ text: 'Hello' }, { text: 'world' }],
+          children: [
+            { fixtureLeaf: 'hello', text: 'Hello' },
+            { fixtureLeaf: 'world', text: 'world' },
+          ],
         },
       ],
       selection: null,
@@ -608,7 +611,11 @@ describe('plite-react projections and selection contract', () => {
       editor,
       [
         {
-          children: [{ text: '0.0' }, { text: '0.1' }, { text: '0.2' }],
+          children: [
+            { fixtureLeaf: '0', text: '0.0' },
+            { fixtureLeaf: '1', text: '0.1' },
+            { fixtureLeaf: '2', text: '0.2' },
+          ],
         },
         {
           children: [{ text: '1.0' }],

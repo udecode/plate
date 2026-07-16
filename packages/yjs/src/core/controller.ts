@@ -313,6 +313,7 @@ export class YjsController {
         if (this.shouldImportAfterLocalFallback(trace)) {
           rejectedLocalOperations[rejectedLocalOperationCount] = operation;
           rejectedLocalOperationCount++;
+          break;
         }
         operationIndex++;
       }

@@ -3,7 +3,7 @@ import { act, renderHook } from '@testing-library/react';
 const useEditorRefMock = mock();
 const useEmojiPickerStateMock = mock();
 
-mock.module('platejs/react', () => ({
+mock.module('@platejs/core/react', () => ({
   useEditorRef: useEditorRefMock,
 }));
 

@@ -8,14 +8,14 @@ import {
   BaseBasicMarksPlugin,
 } from '@platejs/basic-nodes';
 import { cleanDocx } from '@platejs/docx';
-import type { BasePlugin, BasePlugins } from 'platejs';
+import type { BasePlugin, BasePlugins } from '@platejs/core';
 import {
   createBaseEditor,
   createBasePlugin,
   deserializeHtml,
-  KEYS,
-} from 'platejs';
+} from '@platejs/core';
 import { jsx, type TestEditor } from '@platejs/test-utils';
+import { KEYS } from '@platejs/utils';
 import mammoth from 'mammoth';
 
 import { preprocessMammothHtml } from '../preprocessMammothHtml';

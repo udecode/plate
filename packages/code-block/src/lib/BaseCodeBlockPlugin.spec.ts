@@ -98,7 +98,7 @@ describe('BaseCodeBlockPlugin', () => {
     expect(decorate([{ children: [], type: 'p' }, [1]])).toEqual([]);
   });
 
-  it('clears cached decorations when the language changes without React', () => {
+  it('refreshes cached decorations when the language changes without React', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseCodeBlockPlugin.configure({
@@ -118,13 +118,18 @@ describe('BaseCodeBlockPlugin', () => {
     assert(codeLineEntry);
     const [codeLine] = codeLineEntry;
 
-    decorationsModule.CODE_LINE_TO_DECORATIONS.set(codeLine, []);
+    decorationsModule.CODE_LINE_TO_DECORATIONS.set(codeLine, [
+      {
+        anchor: { offset: 0, path: [0, 0, 0] },
+        focus: { offset: 1, path: [0, 0, 0] },
+      },
+    ]);
 
     editor.update.nodes.set({ lang: 'typescript' }, { at: [0] });
 
-    expect(
-      decorationsModule.CODE_LINE_TO_DECORATIONS.get(codeLine)
-    ).toBeUndefined();
+    expect(decorationsModule.CODE_LINE_TO_DECORATIONS.get(codeLine)).toEqual(
+      []
+    );
     expect(editor.read.nodes.get([0])?.[0]).toMatchObject({
       lang: 'typescript',
     });

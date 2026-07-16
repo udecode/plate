@@ -1,5 +1,5 @@
 import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test';
-import { createBaseEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 const cleanDocxMock = mock((html: string) => html);
 const convertToHtmlMock = mock();

@@ -5,8 +5,10 @@ import {
   getHistoryDirectionFromNativeEvent,
   type HistoryDirection,
 } from '../editable/history-keyboard';
-import { failInvariant } from '../editable/runtime-editor-api';
-import { getEditorRuntime } from '../editable/runtime-editor-api';
+import {
+  failInvariant,
+  runTrustedUpdate,
+} from '../editable/runtime-editor-api';
 import {
   getOperationRoot,
   MAIN_ROOT_KEY,
@@ -195,7 +197,8 @@ export function usePliteHistory({
 
       writePliteViewSelection(editor, viewSelectionAfterHistory ?? null);
       try {
-        getEditorRuntime(editor).update(
+        runTrustedUpdate(
+          editor,
           (tx) => {
             if (!hasHistoryCommands(tx)) {
               return;
@@ -205,7 +208,6 @@ export function usePliteHistory({
             applied = true;
           },
           {
-            skipNormalize: true,
             tags:
               focusPolicy === 'preserve'
                 ? PLITE_REACT_PRESERVE_SELECTION_TAGS

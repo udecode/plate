@@ -1,13 +1,11 @@
 # Plate Slate v2 Migration Inventory
 
-Generated from 5207 scanned files.
+Generated from 5192 scanned files.
 
 ## Top Owners
 
 | Owner | Package | Score | Legacy files | Bare Slate files | T* files | Proof |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
-| `packages/plite` | `@platejs/plite` | 120 | 0 | 0 | 0 | `pnpm turbo typecheck --filter=./packages/plite && pnpm --filter @platejs/plite test && pnpm --filter @platejs/plite build` |
-| `content/docs` | `` | 20 | 0 | 0 | 2 | `N/A` |
 
 ## Files
 

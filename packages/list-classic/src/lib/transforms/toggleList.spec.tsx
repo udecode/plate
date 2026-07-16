@@ -4,7 +4,7 @@ import { createBaseEditor } from '@platejs/core';
 
 import { BaseImagePlugin } from '@platejs/media';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 import { toggleList, toggleTaskList } from './toggleList';

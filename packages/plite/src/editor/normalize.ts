@@ -65,12 +65,7 @@ export const normalize: EditorStaticApi['normalize'] = (
   editor,
   options = {}
 ) => {
-  const {
-    explicit = true,
-    force = explicit,
-    operation,
-  } = options as {
-    explicit?: boolean;
+  const { force = true, operation } = options as {
     force?: boolean;
     operation?: Operation;
   };
@@ -83,7 +78,6 @@ export const normalize: EditorStaticApi['normalize'] = (
 
   const canSkipDefaultTextNormalization = () => {
     if (
-      explicit ||
       force ||
       !operation ||
       (operation.type !== 'insert_text' && operation.type !== 'remove_text') ||
@@ -206,6 +200,7 @@ export const normalize: EditorStaticApi['normalize'] = (
       let iteration = 0;
 
       while (true) {
+        const operationHint = iteration === 0 ? operation : undefined;
         const entries = force
           ? collectNormalizeEntries()
           : collectDirtyNormalizeEntries();
@@ -215,7 +210,7 @@ export const normalize: EditorStaticApi['normalize'] = (
           return;
         }
 
-        const signature = createPassSignature(entries);
+        const signature = `${operationHint ? 'hinted' : 'broad'}:${createPassSignature(entries)}`;
 
         if (seenSignatures.has(signature)) {
           throw new Error(
@@ -227,9 +222,8 @@ export const normalize: EditorStaticApi['normalize'] = (
 
         if (
           !getEditorRuntime(editor).shouldNormalize({
-            explicit,
             iteration,
-            operation,
+            operation: operationHint,
           })
         ) {
           return;
@@ -239,8 +233,7 @@ export const normalize: EditorStaticApi['normalize'] = (
         for (const entry of entries) {
           const beforeMutation = getMutationVersion(editor);
           getEditorRuntime(editor).normalizeNode(entry, {
-            explicit,
-            operation,
+            operation: operationHint,
           });
           const afterMutation = getMutationVersion(editor);
 
@@ -248,6 +241,11 @@ export const normalize: EditorStaticApi['normalize'] = (
             changed = true;
             break;
           }
+        }
+
+        if (!changed && operationHint) {
+          iteration += 1;
+          continue;
         }
 
         if (!changed) {
@@ -272,7 +270,7 @@ export const normalize: EditorStaticApi['normalize'] = (
       withEditorOperationRootChildren(editor, root, fn)
     );
 
-  if (explicit && !isInTransaction(editor)) {
+  if (!isInTransaction(editor)) {
     runEditorTransaction(
       editor,
       () => {

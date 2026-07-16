@@ -1,5 +1,5 @@
 import type { BaseEditor } from '@platejs/core';
-import { ElementApi, PathApi, TextApi } from '@platejs/plite';
+import { ElementApi, NodeApi, PathApi, TextApi } from '@platejs/plite';
 import {
   type TSuggestionElement,
   type TSuggestionText,
@@ -94,6 +94,25 @@ export const acceptSuggestion = (
       }
     );
 
+    const emptyInlineEntries = editor.read.nodes.toArray({
+      at: [],
+      match: (node) =>
+        ElementApi.isElement(node) &&
+        editor.read.schema.isInline(node) &&
+        Array.from(NodeApi.texts(node)).every(([text]) => {
+          const suggestionData = getInlineSuggestionData(text);
+
+          return (
+            suggestionData?.type === 'remove' &&
+            suggestionData.id === description.suggestionId
+          );
+        }),
+    });
+
+    emptyInlineEntries.reverse().forEach(([, path]) => {
+      tx.nodes.remove({ at: path });
+    });
+
     tx.nodes.remove({
       at: [],
       mode: 'all',
@@ -133,7 +152,5 @@ export const acceptSuggestion = (
         return false;
       },
     });
-
-    tx.normalize({ force: false });
   });
 };

@@ -1,4 +1,10 @@
-import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
+import type {
+  MdxJsxAttribute,
+  MdxJsxExpressionAttribute,
+  MdxJsxFlowElement,
+  MdxJsxTextElement,
+} from 'mdast-util-mdx';
+import type { Node as UnistNode } from 'unist';
 
 import { getPluginKey, getPluginType } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
@@ -14,29 +20,37 @@ const MDX_ATTR_NAME_TO_HTML_ATTR: Record<string, string> = {
   htmlFor: 'for',
 };
 
-const serializeUnknownMdxChild = (child: any): string => {
-  if (
-    child?.type === 'mdxJsxTextElement' ||
-    child?.type === 'mdxJsxFlowElement'
-  ) {
+const isMdxJsxNode = (
+  node: UnistNode
+): node is MdxJsxFlowElement | MdxJsxTextElement =>
+  node.type === 'mdxJsxTextElement' || node.type === 'mdxJsxFlowElement';
+
+const serializeUnknownMdxChild = (child: UnistNode): string => {
+  if (isMdxJsxNode(child)) {
     return serializeUnknownMdxNode(child);
   }
 
-  if ('value' in (child ?? {})) {
-    return child.value ?? '';
+  if ('value' in child && typeof child.value === 'string') {
+    return child.value;
   }
 
-  if (Array.isArray(child?.children)) {
+  if ('children' in child && Array.isArray(child.children)) {
     return child.children.map(serializeUnknownMdxChild).join('');
   }
 
   return '';
 };
 
-const serializeUnknownMdxAttributes = (attributes?: any[]) => {
+const serializeUnknownMdxAttributes = (
+  attributes?: (MdxJsxAttribute | MdxJsxExpressionAttribute)[]
+) => {
   if (!attributes?.length) return '';
 
   const serialized = attributes.map((attribute) => {
+    if (attribute.type === 'mdxJsxExpressionAttribute') {
+      return `{${attribute.value}}`;
+    }
+
     const name = MDX_ATTR_NAME_TO_HTML_ATTR[attribute.name] ?? attribute.name;
 
     if (attribute.value === undefined || attribute.value === null) {
@@ -45,7 +59,7 @@ const serializeUnknownMdxAttributes = (attributes?: any[]) => {
 
     if (
       typeof attribute.value === 'object' &&
-      attribute.value?.type === 'mdxJsxAttributeValueExpression'
+      attribute.value.type === 'mdxJsxAttributeValueExpression'
     ) {
       return `${name}={${attribute.value.value}}`;
     }
@@ -59,7 +73,7 @@ const serializeUnknownMdxAttributes = (attributes?: any[]) => {
 const serializeUnknownMdxNode = (
   mdastNode: MdxJsxFlowElement | MdxJsxTextElement
 ) => {
-  const attrs = serializeUnknownMdxAttributes(mdastNode.attributes as any[]);
+  const attrs = serializeUnknownMdxAttributes(mdastNode.attributes);
   const openTag = `<${mdastNode.name}${attrs}`;
 
   if (!mdastNode.children?.length) {
@@ -84,17 +98,19 @@ export const customMdxDeserialize = (
 ) => {
   const customJsxElementKey = mdastNode.name;
 
-  const key =
-    getPluginKey(options.editor!, customJsxElementKey as any) ?? mdastNode.name;
+  const key = customJsxElementKey
+    ? (getPluginKey(options.editor!, customJsxElementKey) ??
+      customJsxElementKey)
+    : null;
 
   if (key) {
     const nodeParserDeserialize = getDeserializerByKey(
-      mdastToPlate(options.editor!, key as any),
+      mdastToPlate(options.editor!, key),
       options
     );
 
     if (nodeParserDeserialize)
-      return nodeParserDeserialize(mdastNode, deco, options) as any;
+      return nodeParserDeserialize(mdastNode, deco, options);
   } else {
     console.warn(
       'This MDX node does not have a parser for deserialization',
@@ -123,4 +139,6 @@ export const customMdxDeserialize = (
       },
     ];
   }
+
+  throw new Error('Unsupported MDX node type.');
 };

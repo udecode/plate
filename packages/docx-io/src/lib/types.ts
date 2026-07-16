@@ -1,4 +1,4 @@
-import type { Descendant } from 'platejs';
+import type { Descendant } from '@platejs/plite';
 
 /** Comment extracted from DOCX file */
 export type DocxComment = {

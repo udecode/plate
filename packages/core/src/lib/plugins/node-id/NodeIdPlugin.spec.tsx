@@ -626,8 +626,7 @@ describe('NodeIdPlugin', () => {
     ]);
 
     expect((editor.read.children()[0] as any).children).toEqual([
-      { text: 'he' },
-      { text: 'llo' },
+      { text: 'hello' },
     ]);
   });
 });

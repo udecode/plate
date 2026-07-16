@@ -1,8 +1,7 @@
 import React from 'react';
 
-import type { TResizableElement } from 'platejs';
-
-import { useEditorRef, useElement, usePath } from 'platejs/react';
+import { useEditorRef, useElement, usePath } from '@platejs/core/react';
+import type { TResizableElement } from '@platejs/utils';
 
 import type { ResizeEvent, ResizeLength } from '../types';
 

@@ -407,6 +407,34 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
       },
     })
   )
+  .extend(({ editor, getOptions }) => ({
+    shortcuts: {
+      selectAll: {
+        keys: 'mod+a',
+        priority: 0,
+        handler: () => {
+          if (getOptions().disableSelectAll) return false;
+
+          const selection = editor.read.selection();
+          const block = editor.read.nodes.block({ mode: 'highest' });
+
+          if (!selection || !block) return false;
+
+          if (
+            !editor.read.selection.isWithinBlock() ||
+            (editor.read.selection.isAtBlockStart() &&
+              editor.read.selection.isAtBlockEnd())
+          ) {
+            editor.plugin(BlockSelectionPlugin).api.selectAll();
+            return true;
+          }
+
+          editor.update.selection.set(block[1]);
+          return true;
+        },
+      },
+    },
+  }))
   .extendExtension(({ api, editor, getOptions }) => {
     let applyingBlockSelectionTransform = false;
     const withBlockSelection = (

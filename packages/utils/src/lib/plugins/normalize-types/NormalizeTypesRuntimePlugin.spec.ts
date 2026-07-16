@@ -19,7 +19,7 @@ describe('NormalizeTypesPlugin Plite runtime', () => {
       value: [{ children: [], type: 'element' }],
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
       {
@@ -44,7 +44,7 @@ describe('NormalizeTypesPlugin Plite runtime', () => {
       value: [{ children: [{ text: 'title' }], type: 'h2' }],
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'title' }], type: 'h1' },
@@ -67,6 +67,8 @@ describe('NormalizeTypesPlugin Plite runtime', () => {
       ],
       value: [{ children: [{ text: 'x' }], type: 'p' }],
     });
+
+    editor.update.value.repair();
 
     expect(errors).toHaveLength(1);
     expect(editor.read.children()).toEqual([

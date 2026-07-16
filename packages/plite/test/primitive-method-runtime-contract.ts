@@ -11,6 +11,7 @@ import {
   insertText as editorInsertText,
   range as editorRange,
   replace as editorReplace,
+  runTrustedUpdate,
   string as editorString,
 } from '@platejs/plite/internal';
 import { createEditor, type Element, NodeApi } from '@platejs/plite';
@@ -86,17 +87,19 @@ const setupThreeBlockEditor = () => {
 const setupSplitTextEditor = () => {
   const editor = createEditor();
 
-  editorReplace(editor, {
-    children: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'one' }, { text: 'two' }],
+  runTrustedUpdate(editor, (tx) => {
+    tx.value.replace({
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'one' }, { text: 'two' }],
+        },
+      ],
+      selection: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
       },
-    ],
-    selection: {
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 0 },
-    },
+    });
   });
 
   return editor;
@@ -656,7 +659,7 @@ describe('primitive method runtime contract', () => {
       paragraph('one'),
       {
         type: 'paragraph',
-        children: [{ text: 't' }, { text: 'X' }, { text: 'wo' }],
+        children: [{ text: 'tXwo' }],
       },
     ]);
   });

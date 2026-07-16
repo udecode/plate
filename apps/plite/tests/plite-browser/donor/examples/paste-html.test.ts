@@ -403,7 +403,7 @@ test.describe('paste html example', () => {
     }
 
     await editor.assert.blockTexts(['123']);
-    await expect(editor.root.locator('strong')).toHaveText(['1', '2', '3']);
+    await expect(editor.root.locator('strong')).toHaveText(['123']);
   });
 
   test('does not leak nested pasted bold marks into following blocks', async ({
@@ -1763,8 +1763,12 @@ test.describe('paste html example', () => {
     await expect(editor.root.locator('li').nth(1)).toContainText('A');
     await expect(editor.root.locator('li').nth(1)).toContainText('B');
     await expect(editor.root.locator('li').nth(1)).toContainText('C');
-    await expect(editor.root.locator('li').nth(0).locator('p')).toHaveText('2');
-    await expect(editor.root.locator('li').nth(1).locator('p')).toHaveText('B');
+    await expect(
+      editor.root.locator('li').nth(0).locator('p').filter({ hasText: /^2$/ })
+    ).toHaveCount(1);
+    await expect(
+      editor.root.locator('li').nth(1).locator('p').filter({ hasText: /^B$/ })
+    ).toHaveCount(1);
   });
 
   test('imports mixed nested ordered and unordered lists from rich HTML paste', async ({

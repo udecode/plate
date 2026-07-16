@@ -151,7 +151,7 @@ describe('collab bookmark position contract', () => {
     assertLastRemoteCommit(editor);
     assert.deepEqual(resolved, {
       anchor: { path: [0, 0], offset: 1 },
-      focus: { path: [0, 1], offset: 2 },
+      focus: { path: [0, 0], offset: 4 },
     });
     assert.equal(editorString(editor, resolved!), 'lph');
     assert.deepEqual(bookmark.unref(), resolved);
@@ -177,8 +177,8 @@ describe('collab bookmark position contract', () => {
 
     assertLastRemoteCommit(editor);
     assert.deepEqual(resolved, {
-      anchor: { path: [0, 1], offset: 1 },
-      focus: { path: [0, 1], offset: 3 },
+      anchor: { path: [0, 0], offset: 6 },
+      focus: { path: [0, 0], offset: 8 },
     });
     assert.equal(editorString(editor, resolved!), 'et');
     assert.deepEqual(bookmark.unref(), resolved);

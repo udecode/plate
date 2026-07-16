@@ -1,11 +1,5 @@
 import type { BaseEditor } from '@platejs/core';
-import {
-  type Element,
-  ElementApi,
-  NodeApi,
-  PathApi,
-  RangeApi,
-} from '@platejs/plite';
+import { type Element, ElementApi, NodeApi, RangeApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import type { ListConfig, ListTransaction } from '../BaseListPlugin';
@@ -26,12 +20,11 @@ const _toggleList = (
   const { validLiChildrenTypes } = editor
     .plugin<ListConfig>(KEYS.listClassic)
     .getOptions();
-  const startBlock = editor.read.nodes.block({ at: RangeApi.start(selection) });
-  const endBlock = editor.read.nodes.block({ at: RangeApi.end(selection) });
-  const acrossBlocks =
-    startBlock && endBlock && !PathApi.equals(startBlock[1], endBlock[1]);
 
-  if (editor.read.selection.isCollapsed() || !acrossBlocks) {
+  if (
+    editor.read.selection.isCollapsed() ||
+    !editor.read.selection.isAcrossBlocks()
+  ) {
     const res = getListItemEntry(editor);
 
     if (res) {

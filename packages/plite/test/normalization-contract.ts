@@ -15,6 +15,71 @@ import { getEditorRuntime } from '@platejs/plite/internal';
 import { createEditor, type Descendant, type Element } from '@platejs/plite';
 
 describe('plite normalization contract', () => {
+  it('repairs an invalid initial value through the maintenance API', () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'block', children: [] } as Element],
+    });
+
+    assert.deepEqual(editor.read.children(), [{ type: 'block', children: [] }]);
+
+    editor.update.value.repair();
+
+    assert.deepEqual(editor.read.children(), [
+      { type: 'block', children: [{ text: '' }] },
+    ]);
+  });
+
+  it('repairs every root in stable maintenance scope', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [{ type: 'block', children: [] } as Element],
+        roots: {
+          footer: [{ type: 'block', children: [] } as Element],
+          header: [{ type: 'block', children: [] } as Element],
+        },
+      },
+    });
+
+    editor.update.value.repair();
+
+    assert.deepEqual(editor.read.children(), [
+      { type: 'block', children: [{ text: '' }] },
+    ]);
+    assert.deepEqual(editor.read.root('footer'), [
+      { type: 'block', children: [{ text: '' }] },
+    ]);
+    assert.deepEqual(editor.read.root('header'), [
+      { type: 'block', children: [{ text: '' }] },
+    ]);
+  });
+
+  it('rejects repair inside an active update', () => {
+    const editor = createEditor();
+
+    assert.throws(
+      () =>
+        editor.update(() => {
+          editor.update.value.repair();
+        }),
+      /editor\.update cannot be nested/
+    );
+  });
+
+  it('does not publish a commit when repair finds no work', () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'paragraph', children: [{ text: 'alpha' }] }],
+    });
+    let commits = 0;
+
+    editor.subscribeCommit(() => {
+      commits += 1;
+    });
+    editor.update.value.repair();
+
+    assert.equal(commits, 0);
+    assert.equal(editor.read.lastCommit(), null);
+  });
+
   it('repairs an empty block with an empty text child', () => {
     const editor = createEditor();
 
@@ -72,6 +137,58 @@ describe('plite normalization contract', () => {
       { type: 'block', children: [{ text: '' }] },
     ]);
     assert.deepEqual(seen.slice(0, 2), ['first', 'second']);
+  });
+
+  it('runs extension normalizers during automatic update closeout', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          type: 'paragraph',
+          invalid: false,
+          children: [{ text: 'alpha' }],
+        },
+      ],
+    });
+
+    editor.extend({
+      name: 'automatic-closeout-normalizer',
+      normalizers: {
+        node({ entry, tx }) {
+          const [node, path] = entry;
+
+          if ('invalid' in node && node.invalid === true) {
+            tx.nodes.set({ invalid: false }, { at: path });
+          }
+        },
+      },
+    });
+
+    editor.update.nodes.set({ invalid: true }, { at: [0] });
+
+    assert.equal(editor.read.children()[0]?.invalid, false);
+  });
+
+  it('canonicalizes adjacent text during automatic update closeout', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'al', bold: true },
+            { text: 'pha', bold: false },
+          ],
+        },
+      ],
+    });
+
+    editor.update.nodes.set({ bold: true }, { at: [0, 1] });
+
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'paragraph',
+        children: [{ text: 'alpha', bold: true }],
+      },
+    ]);
   });
 
   it('does not normalize halfway through a multi-node unwrap', () => {
@@ -432,7 +549,10 @@ describe('plite normalization contract', () => {
       children: [
         {
           type: 'paragraph',
-          children: [{ text: 'alpha' }, { text: 'gamma' }],
+          children: [
+            { text: 'alpha', bold: true },
+            { text: 'gamma', italic: true },
+          ],
         },
       ] as Element[],
       selection: null,
@@ -452,7 +572,11 @@ describe('plite normalization contract', () => {
     assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'paragraph',
-        children: [{ text: 'alpha' }, { text: 'beta' }, { text: 'gamma' }],
+        children: [
+          { text: 'alpha', bold: true },
+          { text: 'beta' },
+          { text: 'gamma', italic: true },
+        ],
       },
     ]);
   });

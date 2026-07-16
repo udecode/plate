@@ -495,6 +495,7 @@ const internalBridgeRuntimeExportExpectations = {
     'replaceChildren',
     'replace',
     'reset',
+    'runTrustedUpdate',
     'select',
     'setEditorChildren',
     'setEditorComposing',

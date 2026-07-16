@@ -181,10 +181,10 @@ Mutations run through `editor.update`. Core Plite commands live on the transacti
   <APIItem name="editor.update(policy).value.replace(input)" type="(input: SnapshotInput) => void">
     Replace the editor value, and optionally the selection, through a configured Plite update.
   </APIItem>
-  <APIItem name="editor.update((tx) => tx.nodes.insert(node, options))" type="(node: Node, options?: InsertNodesOptions) => void">
+  <APIItem name="editor.update((tx) => tx.nodes.insert(node, options))" type="(node: Node, options?: NodeInsertNodesOptions) => void">
     Insert a node or fragment through the Plite node transaction group.
   </APIItem>
-  <APIItem name="editor.update((tx) => tx.nodes.set(props, options))" type="(props: Partial<Node>, options?: SetNodesOptions) => void">
+  <APIItem name="editor.update((tx) => tx.nodes.set(props, options))" type="(props: Partial<Node>, options?: NodeSetNodesOptions) => void">
     Update matching nodes through the Plite node transaction group.
   </APIItem>
   <APIItem name="editor.update((tx) => tx.marks.toggle(key, value))" type="(key: string, value?: unknown) => void">

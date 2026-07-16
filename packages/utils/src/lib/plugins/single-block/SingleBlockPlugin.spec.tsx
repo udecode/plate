@@ -36,7 +36,7 @@ describe('SingleBlockPlugin', () => {
       value: input.children,
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual(output.children);
   });
@@ -75,7 +75,7 @@ describe('SingleBlockPlugin', () => {
       value: singleBlockInput.children,
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual(singleBlockInput.children);
   });
@@ -101,7 +101,7 @@ describe('SingleBlockPlugin', () => {
       value: inputWithLineBreaks.children,
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual(expectedOutput.children);
   });
@@ -129,7 +129,7 @@ describe('SingleBlockPlugin', () => {
       value: emptyBlocksInput.children,
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual(expectedOutput.children);
   });

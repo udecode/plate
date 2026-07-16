@@ -1,5 +1,5 @@
 import { ElementApi, type Element } from '@platejs/plite';
-import type { PlateEditor } from 'platejs/react';
+import type { PlateEditor } from '@platejs/core/react';
 
 export const updateUploadHistory = (editor: PlateEditor, node: Element) => {
   const undos = editor.read.history.undos();

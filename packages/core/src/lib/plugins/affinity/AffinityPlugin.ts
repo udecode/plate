@@ -40,7 +40,11 @@ export const AffinityPlugin = createBasePlugin({
       const didDelete = next();
       const edgeNodes = getEdgeNodes(editor);
 
-      if (edgeNodes && isNodesAffinity(editor, edgeNodes, 'directional')) {
+      if (
+        edgeNodes &&
+        isNodesAffinity(editor, edgeNodes, 'directional') &&
+        !hasElement(edgeNodes)
+      ) {
         const affinity =
           startText && startText.length > 1 ? 'backward' : 'forward';
         setAffinitySelection(editor, edgeNodes, affinity, tx);

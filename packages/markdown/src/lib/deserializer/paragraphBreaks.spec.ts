@@ -42,7 +42,7 @@ describe('paragraph breaks preservation', () => {
     ];
 
     // Serialize to markdown
-    const serialized = serializeMd(editor as any, { value: originalValue });
+    const serialized = serializeMd(editor, { value: originalValue });
 
     // Check that zero-width space is used in serialization
     expect(serialized).toContain('\u200B');
@@ -82,7 +82,7 @@ describe('paragraph breaks preservation', () => {
       },
     ];
 
-    const serialized = serializeMd(editor as any, { value: originalValue });
+    const serialized = serializeMd(editor, { value: originalValue });
     const deserialized = deserializeMd(editor, serialized);
 
     expect(deserialized).toHaveLength(4);
@@ -118,7 +118,7 @@ describe('paragraph breaks preservation', () => {
       },
     ];
 
-    const serialized = serializeMd(editor as any, { value: originalValue });
+    const serialized = serializeMd(editor, { value: originalValue });
     const deserialized = deserializeMd(editor, serialized);
 
     expect(deserialized).toHaveLength(6);
@@ -152,7 +152,7 @@ describe('paragraph breaks preservation', () => {
       },
     ];
 
-    const serialized = serializeMd(editor as any, { value: originalValue });
+    const serialized = serializeMd(editor, { value: originalValue });
     const deserialized = deserializeMd(editor, serialized);
 
     expect(deserialized).toHaveLength(3);
@@ -175,7 +175,7 @@ describe('paragraph breaks preservation', () => {
       },
     ];
 
-    const serialized = serializeMd(editor as any, { value: originalValue });
+    const serialized = serializeMd(editor, { value: originalValue });
     const deserialized = deserializeMd(editor, serialized);
 
     // The zero-width space in actual text content should be preserved

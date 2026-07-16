@@ -32,10 +32,14 @@
 
 'use client';
 
-import type { BasePlugins, NodeComponents, PluginConfig, Value } from 'platejs';
-import { createBaseEditor, createBasePlugin } from 'platejs';
-import type { PlateStaticProps, SerializeHtmlOptions } from 'platejs/static';
-import { serializeHtml } from 'platejs/static';
+import type { BasePlugins, NodeComponents, PluginConfig } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import type { Value } from '@platejs/plite';
+import type {
+  PlateStaticProps,
+  SerializeHtmlOptions,
+} from '@platejs/core/static';
+import { serializeHtml } from '@platejs/core/static';
 
 import juice from 'juice';
 

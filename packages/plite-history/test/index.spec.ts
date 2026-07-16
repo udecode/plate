@@ -55,9 +55,35 @@ const runFixtureTree = (
 };
 
 const withTest = (editor: any) => {
-  editor.extend(history());
+  editor.extend([
+    history(),
+    {
+      name: 'history-fixture-schema',
+      elements: [
+        {
+          type: 'fixture-inline-flag',
+          inline: true,
+          match: (element: any) => element.inline === true,
+        },
+        {
+          type: 'fixture-void-flag',
+          void: 'block',
+          match: (element: any) => element.void === true,
+        },
+        {
+          type: 'fixture-read-only-flag',
+          readOnly: true,
+          match: (element: any) => element.readOnly === true,
+        },
+        {
+          type: 'fixture-non-selectable-flag',
+          selectable: false,
+          match: (element: any) => element.nonSelectable === true,
+        },
+      ],
+    },
+  ]);
 
-  const { isInline, isVoid, isElementReadOnly, isSelectable } = editor;
   const transforms = () => getEditorTransformRegistry(editor);
 
   Object.defineProperties(editor, {
@@ -93,18 +119,6 @@ const withTest = (editor: any) => {
         }),
     },
   });
-
-  editor.isInline = (element: any) =>
-    element.inline === true ? true : isInline(element);
-
-  editor.isVoid = (element: any) =>
-    element.void === true ? true : isVoid(element);
-
-  editor.isElementReadOnly = (element: any) =>
-    element.readOnly === true ? true : isElementReadOnly(element);
-
-  editor.isSelectable = (element: any) =>
-    element.nonSelectable === true ? false : isSelectable(element);
 
   return editor;
 };

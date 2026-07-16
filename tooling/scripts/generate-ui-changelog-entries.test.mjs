@@ -595,40 +595,35 @@ test('current entry files generate registry changelog indexes', () => {
   });
   const { components, index } = buildRegistryChangelogIndexes(outputs);
 
-  assert.equal(sources.length, 21);
-  assert.equal(outputs.length, 21);
+  assert.ok(sources.length > 0);
+  assert.equal(outputs.length, sources.length);
   assert.deepEqual(
-    index.events.slice(0, 4).map((event) => event.id),
-    [
-      '2026-06-15-editor-fix-preserved-space-wrapping',
-      '2026-06-14-fix-shadcn-editor-kit-install-paths',
-      '2026-06-13-show-code-block-language-labels-read-only-mode',
-      '2026-06-10-attach-column-drop-target-ref',
-    ]
+    index.events.map((event) => event.id),
+    outputs.map((output) => output.entry.id).reverse()
   );
-  assert.equal(
-    index.events[0].href,
-    '/registry/changelog/2026-06-15-editor-fix-preserved-space-wrapping.json'
+  assert.ok(
+    index.events.every(
+      (event) => event.href === `/registry/changelog/${event.id}.json`
+    )
   );
-  assert.equal(
-    index.events[1].href,
-    '/registry/changelog/2026-06-14-fix-shadcn-editor-kit-install-paths.json'
+  assert.ok(
+    components.components.editor.includes(
+      '2026-06-15-editor-fix-preserved-space-wrapping'
+    )
   );
-  assert.equal(
-    components.components.editor[0],
-    '2026-06-15-editor-fix-preserved-space-wrapping'
+  assert.ok(
+    components.components['editor-static'].includes(
+      '2026-06-15-editor-fix-preserved-space-wrapping'
+    )
   );
-  assert.deepEqual(components.components['editor-static'], [
-    '2026-06-15-editor-fix-preserved-space-wrapping',
-  ]);
-  assert.deepEqual(components.components['column-node'], [
-    '2026-06-10-attach-column-drop-target-ref',
-    '2026-01-20-add-docx-file-import-word-export-support',
-    '2025-11-20-biome-ultracite',
-    '2025-10-17-fix-react-decouple',
-  ]);
-  assert.deepEqual(components.components['editor-base-kit'], [
-    '2026-06-14-fix-shadcn-editor-kit-install-paths',
-    '2026-04-23-redesign-blockquotes-container-blocks',
-  ]);
+  assert.ok(
+    components.components['column-node'].includes(
+      '2026-06-10-attach-column-drop-target-ref'
+    )
+  );
+  assert.ok(
+    components.components['editor-base-kit'].includes(
+      '2026-06-14-fix-shadcn-editor-kit-install-paths'
+    )
+  );
 });

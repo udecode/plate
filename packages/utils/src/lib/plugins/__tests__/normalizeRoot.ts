@@ -17,13 +17,11 @@ export const normalizeRoot = ({
     ...(value.length > 0 ? { value } : {}),
   });
 
-  editor.update((tx) => {
-    if (value.length === 0) {
-      tx.value.replace({ children: [] });
-    }
+  if (value.length === 0) {
+    editor.update.value.replace({ children: [] });
+  }
 
-    tx.normalize({ force: true });
-  });
+  editor.update.value.repair();
 
   return {
     children: editor.read.children(),

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 
-import { isHotkey } from 'platejs';
-import { useEditorRef } from 'platejs/react';
+import { isHotkey } from '@platejs/core';
+import { useEditorRef } from '@platejs/core/react';
 
 import type { PreviewItem } from './ImagePreviewStore';
 import { ImagePreviewStore, useImagePreviewValue } from './ImagePreviewStore';

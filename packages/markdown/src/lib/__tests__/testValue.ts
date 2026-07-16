@@ -566,7 +566,12 @@ export const testValue = [
   {
     children: [
       {
-        text: 'callout',
+        children: [
+          {
+            text: 'callout',
+          },
+        ],
+        type: 'p',
       },
     ],
     icon: '💡',

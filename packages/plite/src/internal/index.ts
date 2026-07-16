@@ -134,6 +134,7 @@ export {
   getOperationCount,
   getSnapshotVersion,
   markInternalOwnedReplayOperation,
+  runTrustedUpdate,
   setChildren as setEditorChildren,
   setEditorComposing,
   setEditorDefaultBlockType,

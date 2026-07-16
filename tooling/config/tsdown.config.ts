@@ -6,6 +6,8 @@ import { convertPathToPattern } from 'tinyglobby';
 import { defineConfig } from 'tsdown';
 
 const PACKAGE_ROOT_PATH = process.cwd();
+const TS_FILE_RE = /\.ts$/;
+const TSX_FILE_RE = /\.tsx$/;
 
 const INPUT_TS_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.ts');
 const INPUT_TSX_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.tsx');
@@ -111,10 +113,22 @@ export default defineConfig((opts) => [
       pluginBabel({
         babelHelpers: 'bundled',
         exclude: '**/static/**',
-        parserOpts: {
-          sourceType: 'module',
-          plugins: ['jsx', 'typescript'],
-        },
+        overrides: [
+          {
+            parserOpts: {
+              plugins: ['typescript'],
+              sourceType: 'module',
+            },
+            test: TS_FILE_RE,
+          },
+          {
+            parserOpts: {
+              plugins: [['typescript', { isTSX: true }], 'jsx'],
+              sourceType: 'module',
+            },
+            test: TSX_FILE_RE,
+          },
+        ],
         plugins: [['babel-plugin-react-compiler', { target: '18' }]],
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
       }),

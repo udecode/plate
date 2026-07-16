@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
-import * as actualPlatejs from 'platejs';
-import * as actualPlatejsReact from 'platejs/react';
+import * as actualPlatejsReact from '@platejs/core/react';
+import * as actualUtils from '@platejs/utils';
 
 import { parseVideoUrl } from '../../lib/media-embed/parseVideoUrl';
 import {
@@ -20,7 +20,7 @@ mock.module('@platejs/plite-react', () => ({
   useElementSelected: useElementSelectedMock,
 }));
 
-mock.module('platejs/react', () => ({
+mock.module('@platejs/core/react', () => ({
   ...actualPlatejsReact,
   useEditorRef: useEditorRefMock,
   useElement: useElementMock,
@@ -130,7 +130,7 @@ describe('useMediaState', () => {
       children: [{ text: '' }],
       provider: 'vimeo',
       sourceUrl: 'https://vimeo.com/1',
-      type: actualPlatejs.KEYS.mediaEmbed,
+      type: actualUtils.KEYS.mediaEmbed,
       url: "javascript:parent.postMessage('plate-media-xss','*')",
     });
 
@@ -144,7 +144,7 @@ describe('useMediaState', () => {
       id: 'attacker-controlled',
       provider: 'youtube',
       sourceUrl: 'https://vimeo.com/1',
-      type: actualPlatejs.KEYS.mediaEmbed,
+      type: actualUtils.KEYS.mediaEmbed,
       url: 'https://player.vimeo.com/video/76979871',
     });
 

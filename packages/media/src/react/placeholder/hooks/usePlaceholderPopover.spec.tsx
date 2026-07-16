@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import * as actualCoreReact from '@platejs/core/react';
-import * as actualPlatejs from 'platejs';
+import * as actualUtils from '@platejs/utils';
 
 const useEditorRefMock = mock();
 const useEditorSelectorMock = mock();
@@ -11,9 +11,9 @@ const useElementSelectedMock = mock();
 const usePlaceholderSetMock = mock();
 const usePlaceholderValueMock = mock();
 
-mock.module('platejs', () => ({
-  ...actualPlatejs,
-  KEYS: { ...actualPlatejs.KEYS, placeholder: 'placeholder' },
+mock.module('@platejs/utils', () => ({
+  ...actualUtils,
+  KEYS: { ...actualUtils.KEYS, placeholder: 'placeholder' },
 }));
 
 mock.module('@platejs/plite-react', () => ({

@@ -1,5 +1,5 @@
 import type { BaseEditor } from '@platejs/core';
-import type { ElementEntry, Path, Point, Element, Range } from 'platejs';
+import type { Element, ElementEntry, Path, Point, Range } from '@platejs/plite';
 
 import { getListTypes } from './getListTypes';
 

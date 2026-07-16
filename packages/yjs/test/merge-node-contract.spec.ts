@@ -43,7 +43,7 @@ const incompatibleMergeValue = (): Descendant[] => [
 const textMergeValue = (): Descendant[] => [
   {
     type: 'paragraph',
-    children: [{ text: 'alpha' }, { text: 'beta' }],
+    children: [{ text: 'alpha' }, { text: 'beta', source: 'right' }],
   },
 ];
 
@@ -67,7 +67,7 @@ const mergeRightText = (peer: Peer): void => {
     {
       path: [0, 1],
       position: 'alpha'.length,
-      properties: {},
+      properties: { source: 'right' },
       type: 'merge_node',
     },
   ]);
@@ -127,6 +127,11 @@ describe('@platejs/yjs merge_node collaboration contract', () => {
     assert.deepEqual(getYjsTrace(peer), [
       {
         fallback: 'virtual-merge-ref',
+        mode: 'traceable-fallback',
+        operationType: 'merge_node',
+      },
+      {
+        fallback: 'text-merge-preserve-yjs-boundary',
         mode: 'traceable-fallback',
         operationType: 'merge_node',
       },

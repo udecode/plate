@@ -11,7 +11,7 @@ import {
   type Text,
   TextApi,
 } from '@platejs/plite';
-import { setEditorChildren } from '@platejs/plite/internal';
+import { setEditorChildren, setEditorSelection } from '@platejs/plite/internal';
 import {
   AnchorToken,
   addAnchorToken,
@@ -311,17 +311,8 @@ export const createEditor =
     const editor = makeEditor();
     Object.assign(editor, attributes);
 
-    if (fixture.selection) {
-      editor.update((tx) => {
-        tx.value.replace({
-          children: fixture.children,
-          selection: fixture.selection,
-          marks: null,
-        });
-      });
-    } else {
-      setEditorChildren(editor, fixture.children);
-    }
+    setEditorChildren(editor, fixture.children);
+    setEditorSelection(editor, fixture.selection);
 
     return editor;
   };

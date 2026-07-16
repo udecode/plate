@@ -31,7 +31,7 @@ export const MyDocumentPlugin = createPlatePlugin({
 // 定义 tx.doc.format()
 .extendTx(({ editor, type }) => (tx) => ({
   format: () => {
-    tx.normalize({ force: true });
+    tx.marks.toggle('bold');
   },
 }))
 // 定义 editor.api.doc.format()

@@ -18,7 +18,7 @@ describe('single-block runtime plugins', () => {
       ],
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'first\nsecond\nthird' }], type: 'p' },
@@ -44,7 +44,7 @@ describe('single-block runtime plugins', () => {
       ],
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'firstsecondthird' }], type: 'p' },

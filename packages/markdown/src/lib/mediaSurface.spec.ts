@@ -73,7 +73,7 @@ describe('media package surfaces', () => {
 
     expect(value).toMatchObject(output);
 
-    const markdown = serializeMd(editor, { value: value as any });
+    const markdown = serializeMd(editor, { value });
 
     expect(markdown).toBe(expected);
     expect(deserializeMd(editor, markdown)).toMatchObject(value);

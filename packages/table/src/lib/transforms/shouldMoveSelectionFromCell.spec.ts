@@ -1,6 +1,12 @@
 import type { BaseEditor } from '@platejs/core';
+import { createPlateEditor } from '@platejs/core/react';
+import type { Value } from '@platejs/plite';
 
-import { shouldMoveSelectionFromCell } from './shouldMoveSelectionFromCell';
+import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
+import {
+  getTableMoveSelectionContext,
+  shouldMoveSelectionFromCell,
+} from './shouldMoveSelectionFromCell';
 
 type RectInit = Pick<DOMRect, 'bottom' | 'height' | 'top'>;
 
@@ -134,5 +140,37 @@ describe('shouldMoveSelectionFromCell', () => {
     expect(
       shouldMoveSelectionFromCell(editor, { blockPath, point, reverse: false })
     ).toBe(true);
+  });
+
+  it('does not resolve a cell context for a selection spanning cells', () => {
+    const editor = createPlateEditor<Value>({
+      plugins: getTestTablePlugins(),
+      selection: {
+        anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
+        focus: { offset: 3, path: [0, 0, 1, 0, 0] },
+      },
+      value: [
+        {
+          type: 'table',
+          children: [
+            {
+              type: 'tr',
+              children: [
+                {
+                  type: 'td',
+                  children: [{ type: 'p', children: [{ text: 'one' }] }],
+                },
+                {
+                  type: 'td',
+                  children: [{ type: 'p', children: [{ text: 'two' }] }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(getTableMoveSelectionContext(editor)).toBeUndefined();
   });
 });

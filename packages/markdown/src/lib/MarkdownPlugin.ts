@@ -1,7 +1,9 @@
 import type { Options as RemarkStringifyOptions } from 'remark-stringify';
 import type { Pluggable } from 'unified';
+import type { Node as UnistNode } from 'unist';
 
 import { type PluginConfig, createBasePlugin } from '@platejs/core';
+import type { Descendant } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 import { type OmitFirst, bindFirst, isUrl } from '@udecode/utils';
 
@@ -12,9 +14,9 @@ import { serializeMd } from './serializer';
 
 export type AllowNodeConfig = {
   /** Custom filter function for nodes during deserialization */
-  deserialize?: (node: any) => boolean;
+  deserialize?: (node: UnistNode & { type: PlateType }) => boolean;
   /** Custom filter function for nodes during serialization */
-  serialize?: (node: any) => boolean;
+  serialize?: (node: Descendant) => boolean;
 };
 
 export type MarkdownConfig = PluginConfig<

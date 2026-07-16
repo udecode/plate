@@ -186,7 +186,5 @@ export const rejectSuggestion = (
         at: path,
       });
     });
-
-    tx.normalize({ force: false });
   });
 };

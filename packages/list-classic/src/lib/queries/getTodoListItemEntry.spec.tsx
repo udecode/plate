@@ -1,5 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
 import { getTodoListItemEntry } from './getTodoListItemEntry';
 

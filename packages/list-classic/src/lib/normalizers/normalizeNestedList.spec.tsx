@@ -3,7 +3,7 @@
 import { createBaseEditor } from '@platejs/core';
 
 import { jsxt } from '@platejs/test-utils';
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 import { normalizeNestedList } from './normalizeNestedList';

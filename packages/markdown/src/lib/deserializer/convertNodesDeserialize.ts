@@ -1,4 +1,6 @@
 import type { Descendant } from '@platejs/plite';
+import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
+import type { Node as UnistNode } from 'unist';
 
 import type { MdRootContent } from '../mdast';
 import type { MdDecoration } from '../types';
@@ -23,15 +25,12 @@ export const convertNodesDeserialize = (
 };
 
 export const buildSlateNode = (
-  mdastNode: MdRootContent,
+  mdastNode: UnistNode,
   deco: MdDecoration,
   options: DeserializeMdOptions
 ): Descendant[] => {
   /** Handle custom mdx nodes */
-  if (
-    mdastNode.type === 'mdxJsxTextElement' ||
-    mdastNode.type === 'mdxJsxFlowElement'
-  ) {
+  if (isMdxJsxNode(mdastNode)) {
     const result = customMdxDeserialize(mdastNode, deco, options);
     return Array.isArray(result) ? result : [result];
   }
@@ -41,11 +40,16 @@ export const buildSlateNode = (
   const nodeParser = getDeserializerByKey(type, options);
 
   if (nodeParser) {
-    const result = nodeParser(mdastNode as any, deco, options);
+    const result = nodeParser(mdastNode, deco, options);
     return Array.isArray(result) ? result : [result];
   }
   return [];
 };
+
+const isMdxJsxNode = (
+  node: UnistNode
+): node is MdxJsxFlowElement | MdxJsxTextElement =>
+  node.type === 'mdxJsxTextElement' || node.type === 'mdxJsxFlowElement';
 
 const shouldIncludeNode = (
   node: MdRootContent,

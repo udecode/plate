@@ -20,6 +20,7 @@ export {
   hasEditorTransformMiddleware,
   markInternalOwnedReplayOperation,
   projectRangeInSnapshot,
+  runTrustedUpdate,
   setEditorMarks,
   setEditorComposing,
   setEditorFocused,

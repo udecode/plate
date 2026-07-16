@@ -6,6 +6,7 @@ import {
   pathRef as editorPathRef,
   pointRef as editorPointRef,
   replace as editorReplace,
+  runTrustedUpdate,
 } from '@platejs/plite/internal';
 import {
   createEditor,
@@ -632,20 +633,23 @@ describe('plite operations contract', () => {
       marks: null,
     });
 
-    applyOperation(editor, {
-      type: 'split_node',
-      path: [0, 0],
-      position: 5,
-      properties: {
-        bold: true,
-      },
-    });
-
-    applyOperation(editor, {
-      type: 'split_node',
-      path: [0],
-      position: 1,
-      properties: {},
+    editor.update((tx) => {
+      tx.operations.replay([
+        {
+          type: 'split_node',
+          path: [0, 0],
+          position: 5,
+          properties: {
+            bold: true,
+          },
+        },
+        {
+          type: 'split_node',
+          path: [0],
+          position: 1,
+          properties: {},
+        },
+      ]);
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -851,15 +855,17 @@ describe('plite operations contract', () => {
   it('rebases selection to the next text when remove_node deletes the selected leading empty text', () => {
     const editor = createEditor();
 
-    editorReplace(editor, {
-      children: [
-        {
-          type: 'element',
-          children: [{ text: '' }, { text: 'b' }],
-        },
-      ],
-      selection: collapsedSelection([0, 0], 0),
-      marks: null,
+    runTrustedUpdate(editor, (tx) => {
+      tx.value.replace({
+        children: [
+          {
+            type: 'element',
+            children: [{ text: '' }, { text: 'b' }],
+          },
+        ],
+        selection: collapsedSelection([0, 0], 0),
+        marks: null,
+      });
     });
 
     applyOperation(editor, {
@@ -882,15 +888,17 @@ describe('plite operations contract', () => {
   it('rebases selection to the previous text end when remove_node deletes the selected trailing empty text', () => {
     const editor = createEditor();
 
-    editorReplace(editor, {
-      children: [
-        {
-          type: 'element',
-          children: [{ text: 'a' }, { text: '' }],
-        },
-      ],
-      selection: collapsedSelection([0, 1], 0),
-      marks: null,
+    runTrustedUpdate(editor, (tx) => {
+      tx.value.replace({
+        children: [
+          {
+            type: 'element',
+            children: [{ text: 'a' }, { text: '' }],
+          },
+        ],
+        selection: collapsedSelection([0, 1], 0),
+        marks: null,
+      });
     });
 
     applyOperation(editor, {

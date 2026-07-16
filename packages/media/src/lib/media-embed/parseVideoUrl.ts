@@ -1,4 +1,4 @@
-import { isUrl } from 'platejs';
+import { isUrl } from '@udecode/utils';
 
 import type { EmbedUrlData } from '../media';
 

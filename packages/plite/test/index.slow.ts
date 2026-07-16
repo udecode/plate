@@ -20,13 +20,11 @@ import {
   isEditor as editorIsEditor,
   normalize as editorNormalize,
   replace as editorReplace,
+  runTrustedUpdate,
 } from '@platejs/plite/internal';
 import { getEditorRuntime } from '@platejs/plite/internal';
 import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
-import {
-  IMPLICIT_CANONICALIZATION_CUT_REASON,
-  isExplicitCutFixture,
-} from './fixture-claim-overrides.js';
+import { isExplicitCutFixture } from './fixture-claim-overrides.js';
 import { createFixtureTransactionApi, withTest } from './support/with-test.js';
 
 const runEditorTransaction = (
@@ -48,7 +46,7 @@ const isFixtureFile = (file: string) =>
   !file.endsWith('type-guards.ts') &&
   !file.startsWith('.') &&
   file !== 'index.js' &&
-  file !== 'index.spec.ts';
+  file !== 'index.slow.ts';
 
 const getFixtureName = (file: string) => file.replace(/\.(tsx|ts|js)$/u, '');
 
@@ -87,13 +85,6 @@ const runFixtureTree = (
           pathToFileURL(fixturePath).href
         )) as Record<string, any>;
 
-        if (process.env.PLITE_FIXTURE_DEBUG === '1') {
-          console.log('[fixture]', fixturePath);
-          if (isExplicitCut) {
-            console.log('[cut]', IMPLICIT_CANONICALIZATION_CUT_REASON);
-          }
-        }
-
         runFixture(module, fixturePath);
       });
     }
@@ -124,16 +115,6 @@ describe('@platejs/plite', () => {
     }
 
     const actual = test(input);
-
-    if (process.env.PLITE_FIXTURE_DEBUG === '1') {
-      console.log('[actual]', JSON.stringify(actual));
-      console.log('[expected]', JSON.stringify(output));
-      if (editorIsEditor(input)) {
-        const snapshot = editorGetSnapshot(input);
-        console.log('[selection]', JSON.stringify(snapshot.selection));
-        console.log('[children]', JSON.stringify(snapshot.children));
-      }
-    }
 
     assert.deepEqual(actual, output, fixturePath);
   });
@@ -289,10 +270,12 @@ describe('@platejs/plite', () => {
         const input2 = createEditor();
         const snapshot = editorGetSnapshot(input);
 
-        editorReplace(input2, {
-          children: cloneDeep(snapshot.children),
-          selection: cloneDeep(snapshot.selection),
-          marks: cloneDeep(snapshot.marks),
+        runTrustedUpdate(input2, (tx) => {
+          tx.value.replace({
+            children: cloneDeep(snapshot.children),
+            selection: cloneDeep(snapshot.selection),
+            marks: cloneDeep(snapshot.marks),
+          });
         });
 
         const dirties1: string[] = [];

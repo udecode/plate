@@ -3,7 +3,7 @@ import type { PlateEditor } from '@platejs/core/react';
 import { type DeserializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
 import { getPluginType } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
-import { TextApi } from '@platejs/plite';
+import { type Value, TextApi } from '@platejs/plite';
 
 import { AIChatPlugin } from '../AIChatPlugin';
 import { getChunkTrimmed } from './utils';
@@ -22,10 +22,22 @@ export const streamDeserializeMd = (
 
   if (Array.isArray(value)) return value;
 
-  const blocks = editor.plugin(MarkdownPlugin).api.deserialize(input, {
+  const deserializeOptions = {
     ...options,
     preserveEmptyParagraphs: false,
-  });
+  };
+  let blocks: Value;
+
+  try {
+    blocks = editor
+      .plugin(MarkdownPlugin)
+      .api.deserialize(input, deserializeOptions);
+  } catch {
+    blocks = editor.plugin(MarkdownPlugin).api.deserialize(input, {
+      ...deserializeOptions,
+      withoutMdx: true,
+    });
+  }
 
   const trimmedData = getChunkTrimmed(data);
 

@@ -84,7 +84,7 @@ describe('serializeMd list', () => {
         listStyleType: 'disc',
         type: 'p',
       },
-    ] as any;
+    ];
 
     const expected = '* parent\n  * child\n';
 
@@ -107,7 +107,7 @@ describe('serializeMd list', () => {
         listStyleType: 'decimal',
         type: 'p',
       },
-    ] as any;
+    ];
 
     const expected = '1. parent\n   1. child\n';
 
@@ -137,7 +137,7 @@ describe('serializeMd list', () => {
         listStyleType: 'disc',
         type: 'p',
       },
-    ] as any;
+    ];
 
     const expected = '* parent\n  * child\n    * grandchild\n';
 
@@ -167,7 +167,7 @@ describe('serializeMd list', () => {
         listStyleType: 'disc',
         type: 'p',
       },
-    ] as any;
+    ];
 
     const expected = '* parent\n  1. ordered child\n  * bullet child\n';
 
@@ -197,7 +197,7 @@ describe('serializeMd list', () => {
         listStyleType: 'disc',
         type: 'p',
       },
-    ] as any;
+    ];
 
     const expected = '* parent\n  * child\n* sibling\n';
 
@@ -255,7 +255,7 @@ describe('serializeMd list', () => {
         listStyleType: 'decimal',
         type: 'p',
       },
-    ] as any;
+    ];
 
     const expected =
       '1. First list item\n\nBreak between lists.\n\n2. Second list item\n3. Third list item\n';

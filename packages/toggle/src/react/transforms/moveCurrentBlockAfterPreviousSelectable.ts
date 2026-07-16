@@ -19,7 +19,7 @@ export const moveCurrentBlockAfterPreviousSelectable = (
   const aboveBlock = tx.nodes.block();
 
   if (!aboveBlock) return;
-  if (!tx.points.isStart(selection.anchor, aboveBlock[1])) return;
+  if (!tx.selection.isAtBlockStart()) return;
 
   const blockIndex = aboveBlock[1].at(-1);
 

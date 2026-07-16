@@ -257,6 +257,41 @@ const normalizeInlineChildren = (children: DeserializedChild[]) =>
     typeof child === 'string' ? jsx('text', {}, child) : child
   );
 
+const normalizeMixedBlockChildren = (children: DeserializedChild[]) => {
+  if (!children.some(isTopLevelBlock)) {
+    return children;
+  }
+
+  const result: DeserializedChild[] = [];
+  let inlineChildren: DeserializedChild[] = [];
+  const flushInlineChildren = () => {
+    const meaningfulChildren = getMeaningfulChildren(inlineChildren);
+
+    if (meaningfulChildren.length > 0) {
+      result.push(
+        jsx(
+          'element',
+          { type: 'paragraph' },
+          normalizeInlineChildren(meaningfulChildren)
+        )
+      );
+    }
+    inlineChildren = [];
+  };
+
+  for (const child of children) {
+    if (isTopLevelBlock(child)) {
+      flushInlineChildren();
+      result.push(child);
+    } else {
+      inlineChildren.push(child);
+    }
+  }
+  flushInlineChildren();
+
+  return result;
+};
+
 const getGitHubCodeLineElements = (el: HTMLElement) =>
   Array.from(el.querySelectorAll<HTMLElement>('.blob-code-inner.js-file-line'));
 
@@ -623,6 +658,10 @@ export const deserialize = (
 
     if (children.length === 0) {
       children = [{ text: '' }];
+    }
+
+    if (nodeName === 'LI') {
+      children = normalizeMixedBlockChildren(children);
     }
   }
 

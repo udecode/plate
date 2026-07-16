@@ -337,6 +337,18 @@ editor.update((tx) => {
   void beforeInsert;
   void afterInsert;
 });
+
+const _assertNormalizationApisStayPrivate = () => {
+  editor.update((tx) => {
+    // @ts-expect-error normalization scheduling is not a transaction API
+    tx.normalize();
+  });
+
+  // @ts-expect-error full repair lives at editor.update.value.repair
+  editor.update.normalize();
+};
+
+editor.update.value.repair();
 editor.update.table.insertRow();
 editor.update.link.setHref('https://example.com');
 editor.update.media.insertImage('image.png');

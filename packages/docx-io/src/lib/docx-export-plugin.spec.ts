@@ -1,4 +1,4 @@
-import { createBaseEditor } from 'platejs';
+import { createBaseEditor } from '@platejs/core';
 
 import { DocxExportPlugin } from './docx-export-plugin';
 

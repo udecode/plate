@@ -20,7 +20,14 @@ export const getTableMoveSelectionContext = (
   editor: BaseEditor,
   point = editor.read.selection()?.anchor
 ): TableMoveSelectionContext | undefined => {
-  if (!point) return;
+  if (
+    !point ||
+    !editor.read.selection.isWithinBlock({
+      match: { type: getCellTypes(editor) },
+    })
+  ) {
+    return;
+  }
 
   const cellEntry = editor.read.nodes.above({
     at: point,

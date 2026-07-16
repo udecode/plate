@@ -30,6 +30,15 @@ const createProjectedSelection = () => {
   });
 };
 
+const createCollapsedProjectedSelection = () => {
+  const graph = createPliteProjectionGraph([{ path: [0], root: 'main' }]);
+
+  return createPliteViewSelection(graph, {
+    anchor: { point: { path: [0, 0], offset: 1 } },
+    focus: { point: { path: [0, 0], offset: 1 } },
+  });
+};
+
 const createFocusableEditor = () => {
   const element = document.createElement('div');
 
@@ -73,6 +82,17 @@ describe('focusPliteEditable', () => {
     focusPliteEditable(editor);
 
     expect(focus).not.toHaveBeenCalled();
+    expect(element.ownerDocument.activeElement).toBe(element);
+  });
+
+  it('restores the DOM focus path for a collapsed projected view selection', () => {
+    const { editor, element, focus } = createFocusableEditor();
+
+    writePliteViewSelection(editor, createCollapsedProjectedSelection());
+
+    focusPliteEditable(editor);
+
+    expect(focus).toHaveBeenCalledTimes(1);
     expect(element.ownerDocument.activeElement).toBe(element);
   });
 

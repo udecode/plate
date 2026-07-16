@@ -9,18 +9,12 @@ export const TabbableKit = TabbablePlugin.configure(({ editor }) => ({
   },
   options: {
     query: () => {
-      const isAtEditorEdge = editor.read((state) => {
-        const selection = state.selection();
-
-        if (!selection) return false;
-
-        return (
-          state.points.isStart(selection.focus, []) ||
-          state.points.isEnd(selection.focus, [])
-        );
-      });
-
-      if (isAtEditorEdge) return false;
+      if (
+        editor.read.selection.isAtBlockStart() ||
+        editor.read.selection.isAtBlockEnd()
+      ) {
+        return false;
+      }
 
       return !editor.read.nodes.some({
         match: (n) =>

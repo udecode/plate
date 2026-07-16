@@ -24,7 +24,7 @@ describe('markdown date element', () => {
       },
     ]);
 
-    const markdown = serializeMd(editor, { value: value as any });
+    const markdown = serializeMd(editor, { value });
 
     expect(markdown).toBe(expected);
     expect(deserializeMd(editor, markdown)).toMatchObject(value);
@@ -35,7 +35,7 @@ describe('markdown date element', () => {
     const input = 'Date: <date value="2024-01-01" />';
 
     const value = deserializeMd(editor, input);
-    const markdown = serializeMd(editor, { value: value as any });
+    const markdown = serializeMd(editor, { value });
 
     expect(value).toMatchObject([
       {
@@ -58,7 +58,7 @@ describe('markdown date element', () => {
     const input = 'Date: <date>sometime next week</date>';
 
     const value = deserializeMd(editor, input);
-    const markdown = serializeMd(editor, { value: value as any });
+    const markdown = serializeMd(editor, { value });
 
     expect(value).toMatchObject([
       {
@@ -81,7 +81,7 @@ describe('markdown date element', () => {
     const input = 'Date: <date>Mon Mar 23 2026</date>';
 
     const value = deserializeMd(editor, input);
-    const markdown = serializeMd(editor, { value: value as any });
+    const markdown = serializeMd(editor, { value });
 
     expect(value).toMatchObject([
       {

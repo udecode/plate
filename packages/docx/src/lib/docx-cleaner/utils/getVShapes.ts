@@ -1,4 +1,4 @@
-import { getHtmlComments } from 'platejs';
+import { getHtmlComments } from '@platejs/core';
 
 const V_SHAPE_OPEN_TAG = /<v:shape\b[^>]*>/gi;
 const V_SHAPE_ID = /\bid="([^"]+)"/i;

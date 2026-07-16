@@ -40,6 +40,7 @@ import {
   getSnapshot,
   initializePublicState,
   readEditor,
+  repairEditorValue,
   setBaseApply,
   subscribe,
   subscribeCommit,
@@ -210,7 +211,7 @@ export function createEditor<
   const transformRuntime = {
     normalizeNode: (entry, options) => normalizeNode(editor, entry, options),
     shouldNormalize: (options) => shouldNormalize(editor, options),
-  } satisfies InternalEditorTransformRuntime<V>;
+  } satisfies InternalEditorTransformRuntime;
 
   const createResolvedClipboardApi = () => {
     const capabilities =
@@ -312,6 +313,10 @@ export function createEditor<
     {
       hasTxGroup: (groupName) =>
         getExtensionRegistry(editor).txGroups.has(groupName),
+      repairValue: () =>
+        updateEditor(editor, () => repairEditorValue(editor), {
+          tags: ['history-skip'],
+        }),
     }
   );
 

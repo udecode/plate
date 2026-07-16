@@ -903,44 +903,6 @@ const normalizeFinalDeletePoint = (
     return point;
   }
 
-  if (
-    editorHasPath(editor, point.path as Path) &&
-    point.path.length >= 2 &&
-    isTextNode(getCurrentNode(editor, point.path as Path)) &&
-    (() => {
-      const parentPath = point.path.slice(0, -1) as Path;
-
-      if (!editorHasPath(editor, parentPath) || parentPath.at(-1) === 0) {
-        return false;
-      }
-
-      const parent = getCurrentNode(editor, parentPath);
-
-      return (
-        NodeApi.isElement(parent) &&
-        !(
-          getEditorSchema(editor).isInline(parent) &&
-          !getEditorSchema(editor).isVoid(parent) &&
-          NodeApi.string(parent) === ''
-        ) &&
-        parentPath.length > 1 &&
-        PointApi.equals(point, editorPoint(editor, parentPath, { edge: 'end' }))
-      );
-    })()
-  ) {
-    const parentPath = point.path.slice(0, -1) as Path;
-    const nextSiblingPath =
-      parentPath.at(-1) == null ? null : PathApi.next(parentPath);
-
-    if (nextSiblingPath && editorHasPath(editor, nextSiblingPath)) {
-      const nextSibling = getCurrentNode(editor, nextSiblingPath);
-
-      if (isTextNode(nextSibling) && nextSibling.text.length > 0) {
-        return editorPoint(editor, nextSiblingPath, { edge: 'start' });
-      }
-    }
-  }
-
   if (point.offset !== 0 || point.path.length < 2) {
     if (point.offset !== 0 || point.path.length === 0) {
       return point;

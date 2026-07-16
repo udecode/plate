@@ -41,12 +41,15 @@ The core transaction groups are:
 - `tx.marks` for changing text marks
 - `tx.value` and `tx.roots` for whole-root or whole-document replacement
 - `tx.setField` and `tx.statePatches` for persistent meta fields
-- `tx.normalize` for an explicit normalization barrier
 - `tx.operations` for replaying operation batches
 
 Commands should stay inside one update when the changes belong to one user
 action. Plite records the operations and publishes one commit when the update
 finishes.
+
+Use `editor.update.value.repair()` only for an intentional all-root maintenance
+pass over raw data or newly installed normalizers. Normal commands do not
+schedule normalization themselves.
 
 See [Transforms API](../api/transforms) for method options and the complete
 transaction reference.

@@ -22,10 +22,7 @@ describe('removeAIMarks', () => {
 
     expect(editor.read.children()).toEqual([
       {
-        children: [
-          { bold: true, text: 'one' },
-          { bold: true, text: ' two' },
-        ],
+        children: [{ bold: true, text: 'one two' }],
         type: 'p',
       },
     ]);

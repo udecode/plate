@@ -175,6 +175,7 @@ describe('@platejs/yjs remove_node collaboration contract', () => {
         mode: 'traceable-fallback',
         operationType: 'remove_node',
       },
+      { mode: 'operation', operationType: 'insert_node' },
     ]);
   });
 

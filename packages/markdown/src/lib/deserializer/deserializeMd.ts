@@ -79,12 +79,10 @@ export const markdownToSlateNodes = (
           };
         }
 
-        return toSlateProcessor
-          .processSync(token.raw)
-          .result.map((result: any) => ({
-            _memo: token.raw,
-            ...result,
-          }));
+        return toSlateProcessor.processSync(token.raw).result.map((result) => ({
+          _memo: token.raw,
+          ...result,
+        }));
       }
     );
   }

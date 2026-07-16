@@ -1,7 +1,6 @@
 import type { BaseEditor } from '@platejs/core';
-import type { Path, Element } from 'platejs';
-
-import { KEYS } from 'platejs';
+import type { Element, Path } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 /** Is the list nested, i.e. its parent is a list item. */
 export const isListNested = (editor: BaseEditor, listPath: Path) => {

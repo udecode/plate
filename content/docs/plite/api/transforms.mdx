@@ -435,11 +435,12 @@ Filter remote or collaborative patches before replaying them.
 
 ## Normalization methods
 
-#### `tx.normalize(options?)`
+#### `editor.update.value.repair()`
 
-Run an explicit normalization barrier inside the active transaction. Normal
-grouped updates already normalize before commit; use this only when subsequent
-transaction logic must read the repaired tree.
+Repair every document root with the installed normalizers. This maintenance
+method starts a history-skipped update, cannot run inside another update, and
+publishes no commit when the value is already canonical. Ordinary grouped
+updates normalize their dirty paths automatically.
 
 ## Operation methods
 

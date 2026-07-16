@@ -7,7 +7,7 @@ import {
   copyBlockMarksToSpanChild,
   postCleanHtml,
   preCleanHtml,
-} from 'platejs';
+} from '@platejs/core';
 
 import {
   cleanDocxBrComments,

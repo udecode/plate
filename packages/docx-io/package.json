@@ -44,6 +44,9 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
+    "@platejs/core": "workspace:^",
+    "@platejs/plite": "workspace:^",
+    "@platejs/utils": "workspace:^",
     "color-name": "^2.0.0",
     "html-entities": "^2.5.2",
     "html-to-vdom": "^0.7.0",
@@ -60,12 +63,10 @@
     "@plate/scripts": "workspace:*",
     "@platejs/basic-nodes": "workspace:*",
     "@platejs/docx": "workspace:*",
-    "@platejs/test-utils": "workspace:^",
-    "platejs": "workspace:^"
+    "@platejs/test-utils": "workspace:^"
   },
   "peerDependencies": {
     "@platejs/docx": ">=54.0.0-beta.0",
-    "platejs": ">=54.0.0-beta.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

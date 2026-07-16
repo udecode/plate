@@ -20,24 +20,26 @@ export function EditorHotkeysEffect({
     <>
       {Object.entries(
         editor.runtime.shortcuts as Record<string, Shortcut | null | undefined>
-      ).map(([hotkeyString, hotkeyConfig]) => {
-        if (
-          !hotkeyConfig ||
-          !isDefined(hotkeyConfig.keys) ||
-          !hotkeyConfig.handler
-        ) {
-          return null;
-        }
+      )
+        .sort(([, a], [, b]) => (b?.priority ?? 0) - (a?.priority ?? 0))
+        .map(([hotkeyString, hotkeyConfig]) => {
+          if (
+            !hotkeyConfig ||
+            !isDefined(hotkeyConfig.keys) ||
+            !hotkeyConfig.handler
+          ) {
+            return null;
+          }
 
-        return (
-          <HotkeyEffect
-            id={id}
-            key={hotkeyString}
-            editableRef={editableRef}
-            hotkeyConfig={hotkeyConfig}
-          />
-        );
-      })}
+          return (
+            <HotkeyEffect
+              id={id}
+              key={hotkeyString}
+              editableRef={editableRef}
+              hotkeyConfig={hotkeyConfig}
+            />
+          );
+        })}
     </>
   );
 }
@@ -52,7 +54,7 @@ function HotkeyEffect({
   id?: string;
 }) {
   const editor = useEditorRef(id);
-  const { keys, handler, ...options } = hotkeyConfig;
+  const { keys, handler, priority: _priority, ...options } = hotkeyConfig;
 
   const setHotkeyRef = useHotkeys<HTMLDivElement>(
     keys!,

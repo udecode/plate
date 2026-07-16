@@ -19,7 +19,7 @@ export const moveNextSelectableAfterCurrentBlock = (
   const aboveBlock = tx.nodes.block();
 
   if (!aboveBlock) return;
-  if (!tx.points.isEnd(selection.anchor, aboveBlock[1])) return;
+  if (!tx.selection.isAtBlockEnd()) return;
 
   const blockAfter = tx.nodes.get(PathApi.next(aboveBlock[1]));
 

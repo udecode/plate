@@ -108,6 +108,7 @@ describe('suggestion link integration', () => {
               t
             </htext>
           </ha>
+          <htext />
         </hp>
       </editor>
     ) as TestEditorFixture;

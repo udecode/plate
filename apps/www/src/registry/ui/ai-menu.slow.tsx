@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 import type { PlateEditor } from 'platejs/react';
 
@@ -13,6 +13,8 @@ const useHotkeysMock = mock();
 const usePluginOptionMock = mock();
 const useEditorRefMock = mock();
 const toDOMNodeMock = mock();
+const setBlockSelectionMock = mock();
+const isAtBlockEndMock = mock();
 
 const Icon = () => <div />;
 
@@ -74,7 +76,8 @@ mock.module('lucide-react', () => ({
 
 mock.module('platejs', () => ({
   ElementApi: {
-    isElement: () => false,
+    isElement: (node: unknown) =>
+      !!node && typeof node === 'object' && 'children' in node,
   },
   KEYS: {},
   NodeApi: {},
@@ -122,7 +125,7 @@ mock.module('./ai-chat-editor', () => ({
   AIChatEditor: () => <div />,
 }));
 
-describe('AIMenu', () => {
+describe('AIMenu slow contracts', () => {
   const originalSetTimeout = globalThis.setTimeout;
 
   beforeEach(() => {
@@ -135,6 +138,8 @@ describe('AIMenu', () => {
     usePluginOptionMock.mockReset();
     useEditorRefMock.mockReset();
     toDOMNodeMock.mockReset();
+    setBlockSelectionMock.mockReset();
+    isAtBlockEndMock.mockReset();
 
     globalThis.setTimeout = ((callback: TimerHandler) => {
       if (typeof callback === 'function') callback();
@@ -151,6 +156,19 @@ describe('AIMenu', () => {
       api: {
         dom: {
           resolveDOMNode: toDOMNodeMock,
+        },
+      },
+      plugin: () => ({ api: { set: setBlockSelectionMock } }),
+      read: {
+        nodes: {
+          block: () => [
+            { id: 'block', children: [{ text: 'text' }], type: 'p' },
+            [0],
+          ],
+          isEmpty: () => false,
+        },
+        selection: {
+          isAtBlockEnd: isAtBlockEndMock,
         },
       },
     } as unknown as PlateEditor;
@@ -200,5 +218,31 @@ describe('AIMenu', () => {
 
     expect(() => render(<AIMenu />)).not.toThrow();
     expect(toDOMNodeMock).not.toHaveBeenCalled();
+  });
+
+  it('selects the current non-empty block when the cursor is not at its end', async () => {
+    isAtBlockEndMock.mockReturnValue(false);
+    toDOMNodeMock.mockReturnValue(document.createElement('div'));
+    const { AIMenu } = await import(
+      `./ai-menu?test=${Math.random().toString(36).slice(2)}`
+    );
+
+    render(<AIMenu />);
+    act(() => useEditorChatMock.mock.calls[0][0].onOpenCursor());
+
+    expect(setBlockSelectionMock).toHaveBeenCalledWith('block');
+  });
+
+  it('keeps block selection clear when the cursor is at its block end', async () => {
+    isAtBlockEndMock.mockReturnValue(true);
+    toDOMNodeMock.mockReturnValue(document.createElement('div'));
+    const { AIMenu } = await import(
+      `./ai-menu?test=${Math.random().toString(36).slice(2)}`
+    );
+
+    render(<AIMenu />);
+    act(() => useEditorChatMock.mock.calls[0][0].onOpenCursor());
+
+    expect(setBlockSelectionMock).not.toHaveBeenCalled();
   });
 });

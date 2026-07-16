@@ -215,6 +215,7 @@ describe('plite clipboard contract', () => {
 
   it('extracts a mixed inline fragment from a single top-level block selection', () => {
     const editor = createEditor();
+    extendTestSchema(editor, { type: 'chip', inline: true });
 
     editorReplace(editor, {
       children: [

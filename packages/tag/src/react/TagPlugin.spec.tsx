@@ -21,7 +21,7 @@ describe('MultiSelectPlugin', () => {
       ],
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
     pipeOnChange(editor, [...editor.read.children()]);
 
     const children = editor.read.children()[0].children;
@@ -60,7 +60,7 @@ describe('MultiSelectPlugin', () => {
       if (at) tx.text.insert('!', { at });
     });
     pipeOnChange(editor, [...editor.read.children()]);
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'query!' }], type: 'p' },

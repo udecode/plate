@@ -132,7 +132,6 @@ export type {
   EditorTransactionTagsApi,
   EditorTransactionTextApi,
   EditorTransactionValueApi,
-  EditorTransformApi,
   EditorTransformMiddlewareArgs,
   EditorTransformMiddlewareContext,
   EditorTransformMiddlewareMap,

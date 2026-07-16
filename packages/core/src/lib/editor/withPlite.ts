@@ -7,7 +7,7 @@ import {
   type Value,
 } from '@platejs/plite';
 import {
-  replace as replaceEditorSnapshot,
+  runTrustedUpdate,
   setEditorDefaultBlockType,
   setEditorMaxLength,
   setEditorReadOnly,
@@ -109,9 +109,11 @@ const initializeBaseEditor = <V extends Value>(
 
     editor.runtime.isNormalizing = true;
     try {
-      replaceEditorSnapshot(editor, {
-        children: nextValue,
-        selection: selectionInput,
+      runTrustedUpdate(editor, (tx) => {
+        tx.value.replace({
+          children: nextValue,
+          selection: selectionInput,
+        });
       });
     } finally {
       editor.runtime.isNormalizing = wasInitializing;
@@ -120,7 +122,7 @@ const initializeBaseEditor = <V extends Value>(
     pipeTransformInitialValue(editor);
 
     if (shouldNormalizeEditor) {
-      editor.update.normalize({ force: true });
+      editor.update.value.repair();
     }
 
     onReady?.({

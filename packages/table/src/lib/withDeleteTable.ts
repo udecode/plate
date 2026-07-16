@@ -78,7 +78,7 @@ export const withDeleteTable: ExtendPlateEditorExtension<TableConfig> = ({
       return next({ unit });
     },
     deleteFragment({ next, options, tx }) {
-      if (editor.read.nodes.above({ match: { type } })) {
+      if (tx.selection.isWithinBlock({ match: { type } })) {
         const cellEntries = getTableGridAbove(editor, { format: 'cell' });
 
         if (cellEntries.length > 1) {

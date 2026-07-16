@@ -206,6 +206,7 @@ import {
   applyEditorUpdateTags,
   type InternalEditorUpdateOptions,
 } from './update-policy';
+import { clearDirtyPathsForRoot } from './update-dirty-paths';
 
 export {
   getCachedFullRootReplaceTopLevelRuntimeIds,
@@ -420,6 +421,7 @@ export const canUseTextFastPath = (editor: Editor) => {
   const runtime = getEditorRuntime(editor);
 
   return (
+    getExtensionRegistry(editor).normalizers.size === 0 &&
     runtime.normalizeNode === DEFAULT_NORMALIZE_NODE.get(editor) &&
     runtime.shouldNormalize === DEFAULT_SHOULD_NORMALIZE.get(editor) &&
     runtime.isNormalizing === DEFAULT_IS_NORMALIZING.get(editor)
@@ -1809,7 +1811,17 @@ export const isSelectionAtBlockEnd = (
 
   if (!range || !endBlock) return false;
 
-  return state.points.isEnd(RangeApi.end(range), endBlock[1]);
+  const endPoint = RangeApi.end(range);
+
+  if (state.points.isEnd(endPoint, endBlock[1])) return true;
+  if (!state.points.isEnd(endPoint, endPoint.path)) return false;
+
+  const pointAfter = state.points.after(endPoint, { unit: 'offset' });
+  const nextBlock = pointAfter
+    ? state.nodes.block({ at: pointAfter, match: options.match })
+    : undefined;
+
+  return !!nextBlock && !PathApi.equals(endBlock[1], nextBlock[1]);
 };
 
 export const doesSelectionIntersect = (
@@ -3109,7 +3121,6 @@ const getUpdateView = <
           transforms.wrapNodes(element, resolvedOptions)
         ),
     }),
-    normalize: (options = {}) => runActive(() => transforms.normalize(options)),
     operations: Object.freeze({
       replay: (operations) =>
         runActive(() => {
@@ -3460,6 +3471,33 @@ export const updateEditor = <
   );
 };
 
+export const runTrustedUpdate = <
+  V extends Value,
+  TExtensions extends readonly unknown[] = readonly [],
+>(
+  editor: Editor<V, TExtensions>,
+  fn: (
+    transaction: EditorUpdateTransaction<V, TExtensions>,
+    context: EditorUpdateContext<Editor<V, TExtensions>>
+  ) => void,
+  options: Pick<InternalEditorUpdateOptions, 'tags'> = {}
+) =>
+  getEditorRuntime(editor).update(
+    (transaction, context) => {
+      fn(
+        transaction as EditorUpdateTransaction<V, TExtensions>,
+        context as EditorUpdateContext<Editor<V, TExtensions>>
+      );
+
+      const owner = getEditorRuntimeOwner(editor);
+
+      for (const root of Object.keys(getEditorDocumentRoots(owner))) {
+        clearDirtyPathsForRoot(owner, root);
+      }
+    },
+    { ...options, skipNormalize: true }
+  );
+
 export const withEditorRootChildren = <T>(
   editor: Editor,
   root: string,
@@ -3592,6 +3630,27 @@ export const withEditorOperationRootChildren = <T>(
     return fn();
   } finally {
     restoreRootChildren();
+  }
+};
+
+export const repairEditorValue = (editor: Editor) => {
+  const roots = Object.keys(getEditorDocumentRoots(editor)).sort(
+    (left, right) =>
+      left === MAIN_ROOT_KEY
+        ? -1
+        : right === MAIN_ROOT_KEY
+          ? 1
+          : left.localeCompare(right)
+  );
+
+  for (const root of roots) {
+    withEditorOperationRoot(editor, root, () =>
+      withEditorOperationRootChildren(editor, root, () =>
+        getEditorTransformRegistry(editor).normalize({
+          force: true,
+        })
+      )
+    );
   }
 };
 
@@ -4848,10 +4907,7 @@ const canSkipDefaultTopLevelStructuralNormalize = (
     }
 
     if (operation.type === 'set_node') {
-      if (operation.path.length < 1) {
-        return false;
-      }
-      continue;
+      return false;
     }
 
     if (operation.type === 'move_node') {
@@ -5131,7 +5187,6 @@ export const runEditorTransaction = (
         const normalize = () =>
           profileCoreDuration('transaction-normalize', () =>
             getEditorTransformRegistry(editor).normalize({
-              explicit: false,
               force: getOperationCount(editor) === 0,
               operation,
             })

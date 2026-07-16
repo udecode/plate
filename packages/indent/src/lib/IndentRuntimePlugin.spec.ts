@@ -20,7 +20,7 @@ describe('BaseIndentPlugin Plite runtime', () => {
       value,
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'One' }], indent: 2, type: 'p' },
@@ -37,7 +37,7 @@ describe('BaseIndentPlugin Plite runtime', () => {
       value,
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'One' }], type: 'quote' },

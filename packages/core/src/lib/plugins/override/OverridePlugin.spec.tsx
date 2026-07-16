@@ -86,6 +86,29 @@ describe('OverridePlugin', () => {
     ]);
   });
 
+  it('resets the empty block inserted at the start of a splitReset block', () => {
+    const CalloutPlugin = createBasePlugin({
+      key: 'callout',
+      node: { isElement: true, type: 'callout' },
+      rules: { break: { splitReset: true } },
+    });
+    const editor = createBaseEditor({
+      plugins: [CalloutPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'foo' }], type: 'callout' }],
+    });
+
+    editor.update.break.insert();
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '' }], type: 'p' },
+      { children: [{ text: 'foo' }], type: 'callout' },
+    ]);
+  });
+
   it('preserves an empty merge target when its plugin disables removal', () => {
     const CalloutPlugin = createBasePlugin({
       key: 'callout',

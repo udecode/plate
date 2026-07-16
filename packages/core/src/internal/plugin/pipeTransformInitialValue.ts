@@ -1,5 +1,5 @@
 import type { BaseEditor } from '../../lib/editor';
-import { replace as replaceEditorSnapshot } from '@platejs/plite/internal';
+import { runTrustedUpdate } from '@platejs/plite/internal';
 
 import { getEditorPlugin } from '../../lib/plugin';
 import { isEditOnly } from './isEditOnlyDisabled';
@@ -35,9 +35,11 @@ export const pipeTransformInitialValue = (editor: BaseEditor) => {
         );
       }
 
-      replaceEditorSnapshot(editor, {
-        children: nextValue,
-        selection: editor.read.selection(),
+      runTrustedUpdate(editor, (tx) => {
+        tx.value.replace({
+          children: nextValue,
+          selection: editor.read.selection(),
+        });
       });
     }
   });

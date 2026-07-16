@@ -26,8 +26,7 @@ export const withApplyTable: ExtendPlateEditorExtension<TableConfig> = ({
 
         if (
           RangeApi.isRange(nextSelection) &&
-          RangeApi.isExpanded(nextSelection) &&
-          editor.read.nodes.some({
+          editor.read.selection.isAcrossBlocks({
             at: nextSelection,
             match: { type: tableType },
           })

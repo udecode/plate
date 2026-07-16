@@ -23,7 +23,7 @@ describe('customMdxDeserialize', () => {
         ],
         name: 'column',
         type: 'mdxJsxFlowElement',
-      } as any,
+      },
       {},
       { editor }
     );
@@ -46,10 +46,11 @@ describe('customMdxDeserialize', () => {
 
     const result = customMdxDeserialize(
       {
+        attributes: [],
         children: [{ type: 'text', value: 'New' }],
         name: 'Badge',
         type: 'mdxJsxTextElement',
-      } as any,
+      },
       {},
       { editor }
     );
@@ -68,7 +69,7 @@ describe('customMdxDeserialize', () => {
         children: [{ type: 'text', value: 'Email' }],
         name: 'label',
         type: 'mdxJsxTextElement',
-      } as any,
+      },
       {},
       { editor }
     );
@@ -82,10 +83,11 @@ describe('customMdxDeserialize', () => {
 
     const result = customMdxDeserialize(
       {
+        attributes: [],
         children: [{ type: 'text', value: 'New' }],
         name: '',
         type: 'mdxJsxTextElement',
-      } as any,
+      },
       {},
       { editor }
     );
@@ -105,10 +107,11 @@ describe('customMdxDeserialize', () => {
 
     const result = customMdxDeserialize(
       {
+        attributes: [],
         children: [],
         name: 'Widget',
         type: 'mdxJsxFlowElement',
-      } as any,
+      },
       {},
       { editor }
     );
@@ -141,7 +144,7 @@ describe('customMdxDeserialize', () => {
         ],
         name: 'figure',
         type: 'mdxJsxFlowElement',
-      } as any,
+      },
       {},
       { editor }
     );

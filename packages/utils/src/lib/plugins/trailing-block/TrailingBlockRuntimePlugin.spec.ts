@@ -20,7 +20,7 @@ describe('TrailingBlockPlugin Plite runtime', () => {
       ],
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'one' }], type: 'h1' },
@@ -47,7 +47,7 @@ describe('TrailingBlockPlugin Plite runtime', () => {
       ],
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
       {
@@ -75,7 +75,7 @@ describe('TrailingBlockPlugin Plite runtime', () => {
       value: [{ children: [{ text: 'one' }], type: 'h1' }],
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'one' }], type: 'h1' },
@@ -100,7 +100,7 @@ describe('TrailingBlockPlugin Plite runtime', () => {
       value: [{ children: [{ text: 'one' }], type: 'h1' }],
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(calls).toEqual([{ at: [1], type: 'p' }]);
     expect(editor.read.children()).toEqual([

@@ -1,8 +1,9 @@
 import React from 'react';
 
-import type { TMediaElement } from 'platejs';
+import type { TMediaElement } from '@platejs/utils';
 
-import { createPrimitiveComponent, useElement } from 'platejs/react';
+import { useElement } from '@platejs/core/react';
+import { createPrimitiveComponent } from '@udecode/react-utils';
 
 import { FloatingMediaStore } from './FloatingMediaStore';
 

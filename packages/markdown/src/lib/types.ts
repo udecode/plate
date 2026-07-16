@@ -1,10 +1,11 @@
 export type * as unistLib from 'unist';
 
 import type { StrictExtract } from 'ts-essentials';
+import type { Node as UnistNode } from 'unist';
 
 import { type BaseEditor, getPluginKey } from '@platejs/core';
-import type { Element, Text } from '@platejs/plite';
-import type { NodeKey, NodeMap } from '@platejs/utils';
+import type { Descendant, Element, Text } from '@platejs/plite';
+import type { NodeKey, NodeMap, TListElement } from '@platejs/utils';
 import type { Nullable } from '@udecode/utils';
 
 import type { DeserializeMdOptions } from './deserializer';
@@ -27,6 +28,8 @@ import type {
   MdLinkReference,
   MdList,
   MdMath,
+  MdMdxJsxFlowElement,
+  MdMdxJsxTextElement,
   MdParagraph,
   MdRootContent,
   MdStrong,
@@ -38,6 +41,7 @@ import type {
   MdYaml,
 } from './mdast';
 import type { SerializeMdOptions } from './serializer';
+import type { MentionNode } from './plugins/remarkMention';
 
 import 'mdast-util-mdx';
 
@@ -48,25 +52,31 @@ export type MdRules = Partial<{
 
 export type MdNodeParser<K extends keyof PlateNodeMap> = {
   mark?: boolean;
-  deserialize?: (
+  deserialize?(
     mdastNode: MdNodeMap[K],
     deco: MdDecoration,
     options: DeserializeMdOptions
-  ) => PlateNodeMap[K];
-  serialize?: (
+  ): Descendant | Descendant[];
+  serialize?(
     slateNode: PlateNodeMap[K],
     options: SerializeMdOptions
-  ) => MdNodeMap[K];
+  ): MdRootContent;
 };
+
+type BivariantCallback<TArgs extends readonly unknown[], TResult> = {
+  bivarianceHack(...args: TArgs): TResult;
+}['bivarianceHack'];
 
 type AnyNodeParser = {
   mark?: boolean;
-  deserialize?: (
-    mdastNode: any,
-    deco: MdDecoration,
-    options: DeserializeMdOptions
-  ) => any;
-  serialize?: (slateNode: any, options: SerializeMdOptions) => any;
+  deserialize?: BivariantCallback<
+    [UnistNode, MdDecoration, DeserializeMdOptions],
+    Descendant | Descendant[]
+  >;
+  serialize?: BivariantCallback<
+    [Descendant, SerializeMdOptions],
+    MdRootContent
+  >;
 };
 
 type StrictMdType = MdGFM | MdRootContent['type'] | MdStyle;
@@ -82,7 +92,13 @@ type MdStyle =
   | 'fontSize'
   | 'fontWeight';
 
-export type MdMark = MdDelete | MdEmphasis | MdInlineCode | MdStrong | MdText;
+export type MdMark =
+  | MdDelete
+  | MdEmphasis
+  | MdInlineCode
+  | MdMdxJsxTextElement
+  | MdStrong
+  | MdText;
 
 export type MdDecoration = Readonly<
   Partial<
@@ -172,16 +188,22 @@ type PlateNodeMap = Pick<
 > & {
   /** Markdown only */
   text: Text;
-  list: any;
+  list: Element | TListElement;
   heading: Element;
-  footnoteReference: any;
-  definition: any;
-  footnoteDefinition: any;
-  break: any;
-  yaml: any;
-  imageReference: any;
-  linkReference: any;
-  html: any;
+  footnoteReference: Element & { identifier?: string };
+  definition: Descendant;
+  footnoteDefinition: Element & { identifier: string };
+  break: Text;
+  yaml: Descendant;
+  imageReference: Descendant;
+  linkReference: Descendant;
+  html: Descendant;
+  br: Text;
+  del: Text;
+  highlight: NodeMap['highlight'];
+  kbd: NodeMap['kbd'];
+  listItem: Element;
+  span: Text;
 };
 
 type MdNodeMap = {
@@ -192,7 +214,7 @@ type MdNodeMap = {
   equation: MdMath;
   heading: MdHeading;
   hr: MdThematicBreak;
-  img: MdImage;
+  img: MdImage & Pick<Partial<MdMdxJsxFlowElement>, 'attributes'>;
   inline_equation: MdInlineMath;
   p: MdParagraph;
   table: MdTable;
@@ -217,23 +239,29 @@ type MdNodeMap = {
   imageReference: MdImageReference;
   linkReference: MdLinkReference;
   html: MdHtml;
+  br: MdBreak;
+  del: MdMdxJsxTextElement;
+  highlight: MdMdxJsxTextElement;
+  kbd: MdMdxJsxTextElement;
+  listItem: import('./mdast').MdListItem;
+  span: MdMdxJsxTextElement;
 
   /** Plate only */
-  column_group: any;
-  column: any;
-  toc: any;
-  callout: any;
-  toggle: any;
-  mention: any;
-  date: any;
-  underline: any;
-  comment: any;
-  superscript: any;
-  subscript: any;
-  suggestion: any;
-  file: any;
-  video: any;
-  audio: any;
+  column_group: MdMdxJsxFlowElement;
+  column: MdMdxJsxFlowElement;
+  toc: MdMdxJsxFlowElement;
+  callout: MdMdxJsxFlowElement;
+  toggle: MdMdxJsxFlowElement;
+  mention: MentionNode;
+  date: MdMdxJsxTextElement;
+  underline: MdMdxJsxTextElement;
+  comment: MdMdxJsxTextElement;
+  superscript: MdMdxJsxTextElement;
+  subscript: MdMdxJsxTextElement;
+  suggestion: MdMdxJsxTextElement;
+  file: MdMdxJsxFlowElement;
+  video: MdMdxJsxFlowElement;
+  audio: MdMdxJsxFlowElement;
 };
 
 const PLATE_TO_MDAST = {
@@ -299,6 +327,7 @@ const MDAST_TO_PLATE = {
   listItem: 'li',
   mark: 'highlight',
   math: 'equation',
+  mention: 'mention',
   mdxFlowExpression: 'mdxFlowExpression',
   mdxjsEsm: 'mdxjsEsm',
   mdxJsxFlowElement: 'mdxJsxFlowElement',
@@ -316,18 +345,19 @@ const MDAST_TO_PLATE = {
   u: 'underline',
   yaml: 'yaml',
 } as const satisfies Record<StrictMdType, PlateType>;
+const MDAST_TO_PLATE_MAP = new Map<string, PlateType>(
+  Object.entries(MDAST_TO_PLATE)
+);
 
 /**
  * Get plate node type from mdast node type if the mdast is mdast only return
  * the mdast type itself.
  */
-export const mdastToPlate = <T extends StrictMdType>(
-  editor: BaseEditor,
-  mdastType: T
-) => {
-  const plateKey = MDAST_TO_PLATE[mdastType];
+export const mdastToPlate = (editor: BaseEditor, mdastType: string) => {
+  const plateKey = MDAST_TO_PLATE_MAP.get(mdastType);
+  const pluginKey = plateKey ? getPluginKey(editor, plateKey) : undefined;
 
-  return getPluginKey(editor, plateKey) ?? plateKey ?? mdastType;
+  return pluginKey ?? plateKey ?? mdastType;
 };
 
 /**

@@ -1,7 +1,7 @@
 import { createYjsExtension, type YjsAwarenessChange } from '@platejs/yjs';
 import { useYjsRemoteCursors } from '@platejs/yjs/react';
 import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   createEditor,
   type Descendant,
@@ -73,11 +73,13 @@ type ExamplePeer = PeerDefinition & {
 type ExampleNetwork = {
   notify: () => void;
   peers: ExamplePeer[];
+  registerPeerEditor: (peer: ExamplePeer, editor: YjsEditor) => () => void;
   recordLocalChange: (
     peer: ExamplePeer,
     operations: readonly Operation[]
   ) => void;
   runWithoutLocalHistory: (fn: () => void) => void;
+  subscribeNotify: (notify: () => void) => () => void;
   syncAll: () => void;
   syncAwareness: () => void;
   syncing: boolean;
@@ -277,6 +279,15 @@ const createExampleNetwork = (): ExampleNetwork => {
   const network: ExampleNetwork = {
     notify: () => {},
     peers,
+    registerPeerEditor(peer, editor) {
+      peer.editor = editor;
+
+      return () => {
+        if (peer.editor === editor) {
+          peer.editor = undefined;
+        }
+      };
+    },
     recordLocalChange(peer, operations) {
       if (network.syncing) {
         return;
@@ -298,6 +309,15 @@ const createExampleNetwork = (): ExampleNetwork => {
       } finally {
         network.syncing = wasSyncing;
       }
+    },
+    subscribeNotify(notify) {
+      network.notify = notify;
+
+      return () => {
+        if (network.notify === notify) {
+          network.notify = () => {};
+        }
+      };
     },
     syncAll() {
       if (network.syncing) {
@@ -1469,7 +1489,10 @@ const PeerPanel = ({
   const connected = peer.connected;
   const label = `Peer ${peer.id.toUpperCase()}`;
 
-  peer.editor = editor;
+  useEffect(
+    () => network.registerPeerEditor(peer, editor),
+    [editor, network, peer]
+  );
 
   return (
     <Plite
@@ -1754,9 +1777,13 @@ const YjsCollaborationExample = () => {
   const network = useMemo(() => createExampleNetwork(), []);
   const [version, setVersion] = useState(0);
 
-  network.notify = () => {
-    setVersion((current) => current + 1);
-  };
+  useEffect(
+    () =>
+      network.subscribeNotify(() => {
+        setVersion((current) => current + 1);
+      }),
+    [network]
+  );
 
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-5 text-slate-950">

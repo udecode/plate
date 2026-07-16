@@ -209,7 +209,7 @@ describe('@platejs/yjs move_node collaboration contract', () => {
     disconnectAndClearYjsTrace(peer);
     peer.editor.update.nodes.move({ at: [1], to: [0, 0] });
 
-    assert.deepEqual(nestedTexts(peer), [['before', 'moved', '']]);
+    assert.deepEqual(nestedTexts(peer), [['before', 'moved']]);
     assert.equal(getVisibleYjsNodeAt(peer, [0, 0]), before);
     assert.equal(getVisibleYjsNodeAt(peer, [0, 1]), moved);
     assert.deepEqual(getYjsTrace(peer), [

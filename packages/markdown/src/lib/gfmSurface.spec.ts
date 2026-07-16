@@ -47,7 +47,7 @@ describe('gfm package surfaces', () => {
 
     expect(value).toMatchObject(output);
 
-    const markdown = serializeMd(editor, { value: value as any });
+    const markdown = serializeMd(editor, { value });
 
     expect(markdown).toBe(expected);
     expect(deserializeMd(editor, markdown)).toMatchObject(value);
@@ -71,7 +71,7 @@ describe('gfm package surfaces', () => {
     expect(
       serializeMd(editor, {
         remarkStringifyOptions: { resourceLink: true },
-        value: value as any,
+        value,
       })
     ).toBe('[https://platejs.org](https://platejs.org)\n');
   });
@@ -106,7 +106,7 @@ describe('gfm package surfaces', () => {
       },
     ]);
 
-    const markdown = serializeMd(editor, { value: value as any });
+    const markdown = serializeMd(editor, { value });
 
     expect(markdown).toBe(expected);
     expect(deserializeMd(editor, markdown)).toMatchObject(value);

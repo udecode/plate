@@ -47,6 +47,4 @@ export const insertTextSuggestion = (
       }
     );
   });
-
-  tx.normalize({ force: false });
 };

@@ -2,8 +2,8 @@ import {
   type BasePlugin,
   type HtmlDeserializer,
   createBasePlugin,
-  KEYS,
-} from 'platejs';
+} from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { cleanDocx } from './docx-cleaner/cleanDocx';
 import {

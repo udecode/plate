@@ -1,4 +1,5 @@
-import { createBaseEditor, getEditorPlugin, KEYS } from 'platejs';
+import { createBaseEditor, getEditorPlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { DocxPlugin } from './DocxPlugin';
 import { cleanDocx } from './docx-cleaner/cleanDocx';

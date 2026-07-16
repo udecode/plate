@@ -7,7 +7,7 @@ import {
 import type { TPlaceholderElement } from '@platejs/utils';
 import { nanoid } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
-import type { PlateEditor } from 'platejs/react';
+import type { PlateEditor } from '@platejs/core/react';
 
 import { PlaceholderPlugin } from '../PlaceholderPlugin';
 import { UploadErrorCode } from '../type';

@@ -37,6 +37,7 @@ const ignoredRelativePrefixes = [
 const hitOverridePath = path.join(outDir, 'hit-overrides.json');
 const slateSubstrateOwners = new Set([
   'packages/browser',
+  'packages/plite',
   'packages/slate',
   'packages/slate-dom',
   'packages/slate-history',

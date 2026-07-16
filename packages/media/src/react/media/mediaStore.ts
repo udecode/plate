@@ -1,4 +1,4 @@
-import { createAtomStore } from 'platejs/react';
+import { createAtomStore } from '@platejs/core/react';
 
 type MediaStore = {
   showCaption: boolean;

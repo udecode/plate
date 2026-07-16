@@ -70,7 +70,7 @@ describe('submitAIChat', () => {
     ).toEqual(['b1', 'b2']);
     expect(editor.plugin(AIChatPlugin).getOption('chatSelection')).toBeNull();
     expect(sendMessage).toHaveBeenCalledWith(
-      { text: 'draft' },
+      'draft',
       expect.objectContaining({
         body: expect.objectContaining({
           ctx: expect.objectContaining({

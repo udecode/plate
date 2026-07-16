@@ -12,8 +12,8 @@ describe('mdastToSlate', () => {
             {
               children: [{ type: 'text', value: 'first' }],
               position: {
-                end: { line: 1 },
-                start: { line: 1 },
+                end: { column: 1, line: 1 },
+                start: { column: 1, line: 1 },
               },
               type: 'paragraph',
             },
@@ -23,15 +23,15 @@ describe('mdastToSlate', () => {
             },
           ],
           position: {
-            end: { line: 2 },
-            start: { line: 1 },
+            end: { column: 1, line: 2 },
+            start: { column: 1, line: 1 },
           },
           type: 'root',
-        } as any,
+        },
         {
           editor,
           splitLineBreaks: true,
-        } as any
+        }
       )
     ).toEqual([
       {

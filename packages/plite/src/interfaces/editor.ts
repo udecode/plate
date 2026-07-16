@@ -207,6 +207,13 @@ export type EditorTransactionValueApi<V extends Value = Value> =
 
 export type EditorUpdateValueApi<V extends Value = Value> =
   EditorStateValueApi<V> & {
+    /**
+     * Repair every document root with the installed normalizers.
+     *
+     * This maintenance operation starts its own history-skipped update and
+     * cannot run inside another update.
+     */
+    repair: () => void;
     replace: (input: SnapshotInput<V>) => void;
   };
 
@@ -722,7 +729,6 @@ export type EditorCoreUpdateTransaction<V extends Value = Value> = Omit<
   fragment: EditorTransactionFragmentApi<V>;
   marks: EditorTransactionMarksApi<V>;
   nodes: EditorTransactionNodesApi<V>;
-  normalize: (options?: EditorNormalizeOptions) => void;
   operations: EditorTransactionOperationsApi<V>;
   refs: EditorTransactionRefsApi;
   roots: EditorTransactionRootsApi<V>;
@@ -787,7 +793,6 @@ export type EditorCoreUpdateMethods<V extends Value = Value> = {
     >
   > &
     Pick<EditorTransactionNodesApi<V>, 'set'>;
-  normalize: BivariantFunction<EditorCoreUpdateTransaction<V>['normalize']>;
   operations: EditorBivariantMethods<EditorTransactionOperationsApi<V>>;
   refs: EditorBivariantMethods<EditorTransactionRefsApi>;
   roots: EditorBivariantMethods<EditorTransactionRootsApi<V>>;
@@ -805,7 +810,9 @@ export type EditorCoreUpdateMethods<V extends Value = Value> = {
       'delete' | 'deleteBackward' | 'deleteForward' | 'insert'
     >
   >;
-  value: EditorBivariantMethods<Pick<EditorUpdateValueApi<V>, 'replace'>>;
+  value: EditorBivariantMethods<
+    Pick<EditorUpdateValueApi<V>, 'repair' | 'replace'>
+  >;
 };
 
 type EditorExtensionUpdateMethods<TGroups> = {
@@ -1597,10 +1604,7 @@ export type EditorOperationMiddleware<
 ) => void;
 
 export type EditorNormalizeNodeOptions<_V extends Value = Value> = {
-  explicit?: boolean;
   fallbackElement?: Element | (() => Element);
-  force?: boolean;
-  operation?: Operation;
 };
 
 export type EditorNodeNormalizerArgs<V extends Value = Value> =
@@ -2285,7 +2289,6 @@ export interface EditorNodesOptions<T extends Node> {
 }
 
 export interface EditorNormalizeOptions {
-  explicit?: boolean;
   force?: boolean;
   operation?: Operation;
 }

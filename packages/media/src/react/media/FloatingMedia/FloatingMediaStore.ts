@@ -1,4 +1,4 @@
-import { createZustandStore } from 'platejs/react';
+import { createZustandStore } from '@platejs/core/react';
 
 export const FloatingMediaStore = createZustandStore(
   {

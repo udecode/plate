@@ -5,9 +5,9 @@ import {
   type Text,
   TextApi,
 } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { KEYS, type TListElement } from '@platejs/utils';
 
-import type { unistLib } from '../types';
+import type { MdRootContent } from '../mdast';
 import type { SerializeMdOptions } from './serializeMd';
 
 import { convertTextsSerialize } from './convertTextsSerialize';
@@ -20,45 +20,39 @@ export const convertNodesSerialize = (
   nodes: Descendant[],
   options: SerializeMdOptions,
   isBlock = false
-): unistLib.Node[] => {
-  const mdastNodes: unistLib.Node[] = [];
+): MdRootContent[] => {
+  const mdastNodes: MdRootContent[] = [];
   let textQueue: Text[] = [];
 
-  const listBlock: Element[] = [];
+  const listBlock: TListElement[] = [];
 
   for (let i = 0; i <= nodes.length; i++) {
-    const n = nodes[i] as any;
+    const node = nodes[i];
 
-    if (n && TextApi.isText(n)) {
+    if (node && TextApi.isText(node)) {
       // Only add text nodes that pass the filtering
-      if (shouldIncludeText(n, options)) {
-        textQueue.push(n);
+      if (shouldIncludeText(node, options)) {
+        textQueue.push(node);
       }
     } else {
       if (textQueue.length > 0) {
-        mdastNodes.push(
-          ...(convertTextsSerialize(
-            textQueue,
-            options
-          ) as any as unistLib.Node[])
-        );
+        mdastNodes.push(...convertTextsSerialize(textQueue, options));
       }
       textQueue = [];
-      if (!n) continue;
+      if (!node) continue;
 
       // Skip this node if it doesn't pass the filtering
-      if (!shouldIncludeNode(n, options)) {
+      if (!shouldIncludeNode(node, options)) {
         continue;
       }
 
       const pType = getPluginType(options.editor!, KEYS.p) ?? KEYS.p;
 
-      if (n?.type === pType && 'listStyleType' in n) {
-        listBlock.push(n);
+      if (isListElement(node, pType)) {
+        listBlock.push(node);
 
-        const next = nodes[i + 1] as Element;
-        const isNextIndent =
-          next && next.type === pType && 'listStyleType' in next;
+        const next = nodes[i + 1];
+        const isNextIndent = isListElement(next, pType);
         const firstList = listBlock.at(0);
         const hasDifferentListStyle =
           isNextIndent &&
@@ -69,7 +63,7 @@ export const convertNodesSerialize = (
         if (!isNextIndent || hasDifferentListStyle) {
           // Pass the original nodes and isBlock flag to listToMdastTree
           // so it can handle wrapping individual items with block IDs
-          const result = listToMdastTree(listBlock as any, options, isBlock);
+          const result = listToMdastTree(listBlock, options, isBlock);
 
           // Handle fragment type (used when list items have IDs)
           if (result.type === 'fragment') {
@@ -81,10 +75,10 @@ export const convertNodesSerialize = (
           listBlock.length = 0;
         }
       } else {
-        const node = buildMdastNode(n, options, isBlock);
+        const mdastNode = buildMdastNode(node, options, isBlock);
 
-        if (node) {
-          mdastNodes.push(node as unistLib.Node);
+        if (mdastNode) {
+          mdastNodes.push(mdastNode);
         }
       }
     }
@@ -94,7 +88,7 @@ export const convertNodesSerialize = (
 };
 
 export const buildMdastNode = (
-  node: any,
+  node: Element,
   options: SerializeMdOptions,
   isBlock = false
 ) => {
@@ -117,7 +111,7 @@ export const buildMdastNode = (
 
     // If withBlockId is enabled and the node has an ID, wrap it
     // But only wrap if isBlock is true (top-level elements only)
-    if (options.withBlockId && node.id && isBlock) {
+    if (options.withBlockId && typeof node.id === 'string' && isBlock) {
       return wrapWithBlockId(mdastNode, node.id);
     }
 
@@ -126,6 +120,16 @@ export const buildMdastNode = (
 
   unreachable(node);
 };
+
+const isListElement = (
+  node: Descendant | undefined,
+  paragraphType: string
+): node is TListElement =>
+  !!node &&
+  !TextApi.isText(node) &&
+  node.type === paragraphType &&
+  typeof node.listStyleType === 'string' &&
+  typeof node.indent === 'number';
 
 const shouldIncludeText = (
   text: Text,

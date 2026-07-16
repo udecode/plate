@@ -1,4 +1,4 @@
-import { useEditorRef } from 'platejs/react';
+import { useEditorRef } from '@platejs/core/react';
 
 import { insertMedia } from '../../lib/media/insertMedia';
 

@@ -86,12 +86,8 @@ const getBlockEntries = (
 const getNodeEntry = (editor: BaseEditor, options?: EditorNodesOptions<Node>) =>
   editor.read.nodes.find(options);
 
-const isSelectionAtEditorEnd = (editor: BaseEditor) =>
-  editor.read((state) => {
-    const selection = state.selection();
-
-    return selection ? state.points.isEnd(selection.focus, []) : false;
-  });
+const isSelectionAtBlockEnd = (editor: BaseEditor) =>
+  editor.read.selection.isAtBlockEnd();
 
 const isElementEmpty = (editor: BaseEditor, element: Node) =>
   ElementApi.isElement(element) && editor.read.nodes.isEmpty(element);
@@ -171,7 +167,7 @@ export function AIMenu() {
       const [ancestor] = ancestorEntry;
 
       if (
-        !isSelectionAtEditorEnd(editor) &&
+        !isSelectionAtBlockEnd(editor) &&
         ElementApi.isElement(ancestor) &&
         !isElementEmpty(editor, ancestor)
       ) {

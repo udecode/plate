@@ -1,16 +1,37 @@
 import type { TListElement } from '@platejs/utils';
 
-import type { MdList, MdListItem, MdParagraph } from '../mdast';
+import type { MdList, MdListItem, MdRootContent } from '../mdast';
 import type { SerializeMdOptions } from './serializeMd';
 
 import { convertNodesSerialize } from './convertNodesSerialize';
 import { wrapWithBlockId } from './wrapWithBlockId';
+import { isMdPhrasingContent } from './wrapWithBlockId';
+
+export type MdListFragment = {
+  children: MdRootContent[];
+  type: 'fragment';
+};
 
 export function listToMdastTree(
   nodes: TListElement[],
   options: SerializeMdOptions,
+  isBlock?: false
+): MdList;
+export function listToMdastTree(
+  nodes: TListElement[],
+  options: SerializeMdOptions,
+  isBlock: true
+): MdList | MdListFragment;
+export function listToMdastTree(
+  nodes: TListElement[],
+  options: SerializeMdOptions,
+  isBlock?: boolean
+): MdList | MdListFragment;
+export function listToMdastTree(
+  nodes: TListElement[],
+  options: SerializeMdOptions,
   isBlock = false
-): any {
+): MdList | MdListFragment {
   if (nodes.length === 0) {
     throw new Error('Cannot create a list from empty nodes');
   }
@@ -95,16 +116,15 @@ export function listToMdastTree(
       checked: null,
       children: [
         {
-          children: convertNodesSerialize(
-            node.children,
-            options
-          ) as MdParagraph['children'],
+          children: convertNodesSerialize(node.children, options).filter(
+            isMdPhrasingContent
+          ),
           type: 'paragraph',
         },
       ],
       spread: options.spread ?? false,
       type: 'listItem',
-    } as any;
+    };
 
     // Add checked property for todo lists
     if (node.listStyleType === 'todo' && node.checked !== undefined) {
@@ -149,8 +169,8 @@ export function listToMdastTree(
 function processListWithBlockIds(
   nodes: TListElement[],
   options: SerializeMdOptions
-): { children: any[]; type: string } {
-  const fragments: any[] = [];
+): MdListFragment {
+  const fragments: MdRootContent[] = [];
 
   // Process each node individually
   for (let i = 0; i < nodes.length; i++) {
@@ -171,16 +191,15 @@ function processListWithBlockIds(
       checked: null,
       children: [
         {
-          children: convertNodesSerialize(
-            node.children,
-            options
-          ) as MdParagraph['children'],
+          children: convertNodesSerialize(node.children, options).filter(
+            isMdPhrasingContent
+          ),
           type: 'paragraph',
         },
       ],
       spread: options.spread ?? false,
       type: 'listItem',
-    } as any;
+    };
 
     // Add checked property for todo lists
     if (node.listStyleType === 'todo' && node.checked !== undefined) {

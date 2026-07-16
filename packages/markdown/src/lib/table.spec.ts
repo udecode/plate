@@ -61,7 +61,7 @@ describe('markdown tables', () => {
       },
     ]);
 
-    const markdown = serializeMd(editor, { value: value as any });
+    const markdown = serializeMd(editor, { value });
 
     expect(markdown).toBe(expected);
     expect(deserializeMd(editor, markdown)).toMatchObject(value);
@@ -321,7 +321,7 @@ describe('markdown tables', () => {
           },
         ],
       },
-    ] as any;
+    ];
     const expected =
       '| Name           | Value |\n| -------------- | ----- |\n| Alpha<br/>Beta | Gamma |\n';
 

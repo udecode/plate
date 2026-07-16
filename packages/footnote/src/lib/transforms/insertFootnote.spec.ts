@@ -353,6 +353,7 @@ describe('insertFootnote', () => {
               identifier: '1',
               type: 'footnoteReference',
             },
+            { text: '' },
           ],
           type: KEYS.p,
         },

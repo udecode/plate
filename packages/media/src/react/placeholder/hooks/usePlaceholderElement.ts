@@ -5,7 +5,7 @@ import {
 } from '@platejs/plite-react';
 import type { TPlaceholderElement } from '@platejs/utils';
 import { KEYS } from '@platejs/utils';
-import { useEditorRef, useElement } from 'platejs/react';
+import { useEditorRef, useElement } from '@platejs/core/react';
 
 import { usePlaceholderSet, usePlaceholderValue } from '../placeholderStore';
 

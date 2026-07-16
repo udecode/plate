@@ -10,7 +10,7 @@ describe('deserializeMd', () => {
     const editor = createTestEditor();
     const onError = mock();
 
-    expect(deserializeMd(editor, '<u>', { onError: onError as any })).toEqual([
+    expect(deserializeMd(editor, '<u>', { onError })).toEqual([
       {
         children: [{ text: '<u>' }],
         type: 'p',
@@ -25,7 +25,7 @@ describe('deserializeMd', () => {
 
     expect(
       deserializeMd(editor, String.raw`</ph\><`, {
-        onError: onError as any,
+        onError,
       })
     ).toEqual([
       {
@@ -45,7 +45,7 @@ describe('deserializeMd', () => {
           p: {
             deserialize: () => ({ text: 'wrapped' }),
           },
-        } as any,
+        },
       })
     ).toEqual([
       {
@@ -58,20 +58,20 @@ describe('deserializeMd', () => {
   it('returns an empty result and calls onError when withoutMdx is true and parsing fails', () => {
     const editor = createTestEditor();
     const onError = mock();
-    const brokenRemarkPlugin = (() => {
+    const brokenRemarkPlugin = () => {
       throw new Error('boom');
-    }) as any;
+    };
 
     expect(
       deserializeMd(editor, '**bold**', {
-        onError: onError as any,
+        onError,
         remarkPlugins: [brokenRemarkPlugin],
         withoutMdx: true,
       })
     ).toEqual([]);
     expect(onError).toHaveBeenCalledTimes(1);
-    expect((onError as any).mock.calls[0]?.[0]).toBeInstanceOf(Error);
-    expect((onError as any).mock.calls[0]?.[0].message).toBe('boom');
+    expect(onError.mock.calls[0]?.[0]).toBeInstanceOf(Error);
+    expect(onError.mock.calls[0]?.[0].message).toBe('boom');
   });
 
   it('deserializes blockquotes as container blocks with nested list content', () => {

@@ -651,7 +651,7 @@ const assertDocumentHasTextBoundary = (peers: readonly Peer[]): void => {
   }
 };
 
-describe('@platejs/yjs structural soak contract', () => {
+describe('@platejs/yjs structural soak contracts', () => {
   it('keeps random-control seed 10 prefix from nesting paragraphs', () => {
     const peers = createPeers();
 

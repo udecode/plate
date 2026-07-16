@@ -353,6 +353,14 @@ export const applyPliteOperationToYjs = (
       return operationTrace(operation);
     }
     case 'remove_node': {
+      if (
+        getYjsNodeIf(root, operation.path) === null &&
+        'text' in operation.node &&
+        operation.node.text === ''
+      ) {
+        return traceableFallback(operation, 'empty-text-remove-elided');
+      }
+
       const { index, parent } = getYjsParent(root, operation.path);
       const removalMode = removeYjsChild(root, parent, index, operation.node);
 

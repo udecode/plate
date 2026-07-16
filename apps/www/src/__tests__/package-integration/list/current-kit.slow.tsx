@@ -6,6 +6,7 @@ import { ListKit } from '@/registry/components/editor/plugins/list-kit';
 describe('ListKit current contract', () => {
   it('promotes `- ` into a list item and moves selection into the empty item', () => {
     const editor = createPlateEditor({
+      nodeId: true,
       plugins: [BaseParagraphPlugin, ...ListKit],
       value: [{ children: [{ text: '-' }], type: 'p' }],
     });

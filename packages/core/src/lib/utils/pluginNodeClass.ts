@@ -1,6 +1,5 @@
 /** Return the CSS class used to mark Plate plugin-rendered nodes in HTML. */
-export const getPluginNodeClass = (type?: string) =>
-  type ? `plite-${type}` : '';
+export const getPluginNodeClass = (type?: string) => `plite-${type ?? ''}`;
 
 /** Return true when the element carries the plugin node class. */
 export const isPluginNodeClass = (element: HTMLElement, pluginKey: string) =>

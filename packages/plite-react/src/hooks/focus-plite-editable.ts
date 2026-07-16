@@ -5,8 +5,11 @@ import { IS_FOCUSED } from '@platejs/plite-dom/internal';
 import { readModelSelectionDOMPreference } from '../editable/model-selection-dom-preference';
 import { setEditorFocused } from '../editable/runtime-editor-api';
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
-import type { ReactRuntimeEditor } from '../plugin/react-editor';
-import { readPliteViewSelection } from '../view-selection';
+import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import {
+  isPliteViewSelectionCollapsed,
+  readPliteViewSelection,
+} from '../view-selection';
 import { schedulePliteReactFocus } from './focus-scheduler';
 
 const syncPreferredModelSelectionToDOM = <
@@ -25,11 +28,12 @@ const syncPreferredModelSelectionToDOM = <
       return false;
     }
 
-    const domRange = readModelSelectionDOMPreference({
-      editor,
-      editorElement: element,
-      selection,
-    });
+    const domRange =
+      readModelSelectionDOMPreference({
+        editor,
+        editorElement: element,
+        selection,
+      }) ?? ReactEditor.resolveDOMRange(editor, selection);
 
     if (!domRange) {
       return false;
@@ -82,7 +86,9 @@ export const focusPliteEditable = <
     // The DOM editor focus path still handles unmounted or dirty node maps.
   }
 
-  if (readPliteViewSelection(editor)) {
+  const viewSelection = readPliteViewSelection(editor);
+
+  if (viewSelection && !isPliteViewSelectionCollapsed(viewSelection)) {
     if (element) {
       IS_FOCUSED.set(editor as Parameters<typeof IS_FOCUSED.set>[0], true);
       setEditorFocused(editor, true);

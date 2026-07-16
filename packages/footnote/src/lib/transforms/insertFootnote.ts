@@ -65,11 +65,9 @@ export const insertFootnote = (
   }
 
   if (referencePath) {
-    // The caret target exists only after Plite repairs the trailing text
-    // required beside an inline void.
-    tx.normalize({ force: false });
-
     const point = { offset: 0, path: PathApi.next(referencePath) };
+
+    tx.nodes.insert({ text: '' }, { at: point.path });
 
     tx.selection.set({
       anchor: point,

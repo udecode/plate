@@ -1,16 +1,5 @@
-import {
-  type BaseEditor,
-  type ExtendPlateEditorExtension,
-  nanoid,
-} from '@platejs/core';
-import {
-  type Element,
-  ElementApi,
-  type Range,
-  PathApi,
-  type Text,
-  TextApi,
-} from '@platejs/plite';
+import { type ExtendPlateEditorExtension, nanoid } from '@platejs/core';
+import { type Element, ElementApi, type Text, TextApi } from '@platejs/plite';
 import { type TSuggestionElement, KEYS } from '@platejs/utils';
 
 import {
@@ -27,15 +16,6 @@ import { removeMarkSuggestion } from './transforms/removeMarkSuggestion';
 import { removeNodesSuggestionWithTx } from './transforms/removeNodesSuggestion';
 import { SUGGESTION_SKIP_TAG } from './update-policy';
 import { getInlineSuggestionData, getSuggestionKeyId } from './utils/index';
-
-const isRangeAcrossBlocks = (editor: BaseEditor, range: Range) => {
-  const anchorBlock = editor.read.nodes.block({ at: range.anchor });
-  const focusBlock = editor.read.nodes.block({ at: range.focus });
-
-  if (!anchorBlock || !focusBlock) return false;
-
-  return !PathApi.equals(anchorBlock[1], focusBlock[1]);
-};
 
 export const withSuggestion: ExtendPlateEditorExtension<
   BaseSuggestionConfig
@@ -139,9 +119,11 @@ export const withSuggestion: ExtendPlateEditorExtension<
 
       if (
         pointTarget &&
-        isRangeAcrossBlocks(editor, {
-          anchor: selection.anchor,
-          focus: pointTarget,
+        tx.selection.isAcrossBlocks({
+          at: {
+            anchor: selection.anchor,
+            focus: pointTarget,
+          },
         })
       ) {
         tx.nodes.unset([KEYS.suggestion], {

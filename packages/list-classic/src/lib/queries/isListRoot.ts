@@ -1,5 +1,5 @@
 import type { BaseEditor } from '@platejs/core';
-import { type Descendant, ElementApi } from 'platejs';
+import { type Descendant, ElementApi } from '@platejs/plite';
 
 import { getListTypes } from './getListTypes';
 

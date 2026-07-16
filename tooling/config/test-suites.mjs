@@ -17,6 +17,7 @@ export const TEST_IGNORE_PATTERNS = [
   '**/coverage/**',
   '**/dist/**',
   '**/node_modules/**',
+  '**/tests/plite-browser/**',
   '.next/**',
   '**/__deferred__/**',
 ];

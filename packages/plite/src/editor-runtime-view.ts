@@ -1051,6 +1051,13 @@ export const createEditorView = <
     {
       hasTxGroup: (groupName) =>
         getExtensionRegistry(runtime.editor).txGroups.has(groupName),
+      repairValue: () => {
+        if (viewState.readOnly) {
+          throw new Error('Cannot update a read-only editor view.');
+        }
+
+        runtime.editor.update.value.repair();
+      },
     }
   );
 

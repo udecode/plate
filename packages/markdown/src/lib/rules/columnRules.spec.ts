@@ -18,22 +18,24 @@ describe('columnRules', () => {
             type: 'paragraph',
           },
         ],
-      } as any,
+        name: 'column',
+        type: 'mdxJsxFlowElement',
+      },
       {},
       { editor }
     );
 
-    expect(result as any).toEqual({
+    expect(result).toMatchObject({
       children: [
         {
           children: [{ text: 'A' }],
           type: 'p',
         },
       ],
-      sticky: true,
       type: 'column',
-      width: 50,
     });
+    expect('sticky' in result ? result.sticky : undefined).toBe(true);
+    expect('width' in result ? result.width : undefined).toBe(50);
   });
 
   it('serializes column_group props without leaking id', () => {
@@ -42,12 +44,12 @@ describe('columnRules', () => {
 
     const result = columnGroupRule.serialize!(
       {
-        children: [{ children: [{ text: 'B' }], type: 'p' }],
+        children: [],
         count: 2,
         id: 'ignore-me',
         type: 'column_group',
-      } as any,
-      { editor, rules: {} as any }
+      },
+      { editor, rules: {} }
     );
 
     expect(result).toEqual({
@@ -58,12 +60,7 @@ describe('columnRules', () => {
           value: '2',
         },
       ],
-      children: [
-        {
-          children: [{ type: 'text', value: 'B' }],
-          type: 'paragraph',
-        },
-      ],
+      children: [],
       name: 'column_group',
       type: 'mdxJsxFlowElement',
     });

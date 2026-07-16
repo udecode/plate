@@ -17,3 +17,7 @@ Expose explicit selection and point predicates for text scope, block scope, bloc
 Centralize pure predicate and property matching in `NodeApi.matches`, including path-aware predicates and one-of property values.
 
 Add `tx.blocks.insertAfter` and `editor.update.blocks.insertAfter` for block-relative insertion from locations or live nodes.
+
+Close every update with installed normalizers and expose `editor.update.value.repair()` for explicit all-root maintenance.
+
+Make `OperationApi.root(operation)` resolve rootless operations to the main Plite document root for collaboration and history adapters.

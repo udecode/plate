@@ -21,6 +21,51 @@ const createTableEditor = (input: TestEditor) =>
   });
 
 describe('withApplyTable', () => {
+  it('preserves a selection that spans cells within the same table', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                <cursor />
+                one
+              </hp>
+            </htd>
+            <htd>
+              <hp>two</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const requested = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                <anchor />
+                one
+              </hp>
+            </htd>
+            <htd>
+              <hp>
+                two
+                <focus />
+              </hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const editor = createTableEditor(input);
+
+    editor.update.selection.set(requested.selection!);
+
+    expect(editor.read.selection()).toEqual(requested.selection!);
+  });
+
   it('clamps selection focus to the end of the table when dragging from inside the table to a block after it', () => {
     const input = (
       <editor>

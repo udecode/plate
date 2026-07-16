@@ -33,7 +33,7 @@ describe('serializeMd', () => {
             type: 'p',
           },
         ],
-      } as any)
+      })
     ).toBe('+ Item\n');
   });
 });

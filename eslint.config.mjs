@@ -1,4 +1,4 @@
-import tsParser from '@typescript-eslint/parser';
+import babelParser from '@babel/eslint-parser';
 import { defineConfig } from 'eslint/config';
 import reactHooks from 'eslint-plugin-react-hooks';
 
@@ -27,13 +27,37 @@ export default defineConfig([
   // React Hooks config for apps/www (React 19 with React Compiler)
   {
     ...reactHooks.configs.flat.recommended,
-    files: [
-      'apps/www/src/**/*.tsx',
-      'apps/www/src/**/use*.ts',
-      'packages/**/src/**/*.tsx',
-      'packages/**/src/**/use*.ts',
-    ],
-    languageOptions: { parser: tsParser },
+    files: ['apps/www/src/**/*.tsx', 'packages/**/src/**/*.tsx'],
+    languageOptions: {
+      parser: babelParser,
+      parserOptions: {
+        babelOptions: {
+          babelrc: false,
+          configFile: false,
+          parserOpts: {
+            plugins: [['typescript', { isTSX: true }], 'jsx'],
+          },
+        },
+        requireConfigFile: false,
+      },
+    },
+  },
+  {
+    ...reactHooks.configs.flat.recommended,
+    files: ['apps/www/src/**/use*.ts', 'packages/**/src/**/use*.ts'],
+    languageOptions: {
+      parser: babelParser,
+      parserOptions: {
+        babelOptions: {
+          babelrc: false,
+          configFile: false,
+          parserOpts: {
+            plugins: ['typescript'],
+          },
+        },
+        requireConfigFile: false,
+      },
+    },
   },
   // Disable React Compiler rules for packages (React 18 compatibility)
   {

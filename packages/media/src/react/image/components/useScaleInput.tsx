@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { isHotkey } from 'platejs';
+import { isHotkey } from '@platejs/core';
 
 import { ImagePreviewStore, useImagePreviewValue } from '../ImagePreviewStore';
 

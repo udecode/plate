@@ -1,4 +1,4 @@
-import { traverseHtmlElements } from 'platejs';
+import { traverseHtmlElements } from '@platejs/core';
 
 import { cleanDocxSpacerun } from './cleanDocxSpacerun';
 import { cleanDocxTabCount } from './cleanDocxTabCount';

@@ -16,7 +16,7 @@ describe('tagRemarkPlugin', () => {
 
     expect(wrapped.call(context, 'ok')).toBe('value:ok');
     expect(context.calls).toBe(1);
-    expect((wrapped as any).__pluginTag).toBe(REMARK_MDX_TAG);
+    expect(wrapped.__pluginTag).toBe(REMARK_MDX_TAG);
   });
 });
 
@@ -26,8 +26,9 @@ describe('getRemarkPluginsWithoutMdx', () => {
     const keepB = () => {};
     const remove = tagRemarkPlugin(() => {}, REMARK_MDX_TAG);
 
-    expect(
-      getRemarkPluginsWithoutMdx([keepA as any, remove as any, keepB as any])
-    ).toEqual([keepA, keepB]);
+    expect(getRemarkPluginsWithoutMdx([keepA, remove, keepB])).toEqual([
+      keepA,
+      keepB,
+    ]);
   });
 });

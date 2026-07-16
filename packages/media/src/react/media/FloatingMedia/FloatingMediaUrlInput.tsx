@@ -2,13 +2,10 @@ import React from 'react';
 
 import type { WithRequiredKey } from '@platejs/core';
 import type { TMediaElement } from '@platejs/utils';
+import { useHotkeys } from '@udecode/react-hotkeys';
+import { createPrimitiveComponent } from '@udecode/react-utils';
 
-import {
-  createPrimitiveComponent,
-  useEditorRef,
-  useElement,
-  useHotkeys,
-} from 'platejs/react';
+import { useEditorRef, useElement } from '@platejs/core/react';
 
 import type { MediaPluginConfig } from '../../../lib/media/types';
 

@@ -1,4 +1,7 @@
-import { removeHtmlNodesBetweenComments, traverseHtmlElements } from 'platejs';
+import {
+  removeHtmlNodesBetweenComments,
+  traverseHtmlElements,
+} from '@platejs/core';
 
 export const getDocxListContentHtml = (rootElement: Element): string => {
   const clonedElement = rootElement.cloneNode(true) as Element;

@@ -15,6 +15,7 @@ import type {
   MdImage,
   MdLink,
   MdList,
+  MdListItem,
   MdMdxJsxFlowElement,
   MdMdxJsxTextElement,
   MdParagraph,
@@ -25,6 +26,7 @@ import type {
 } from '../mdast';
 import type { MentionNode } from '../plugins/remarkMention';
 import type { MdRules } from '../types';
+import type { DeserializeMdOptions } from '../deserializer';
 
 import {
   buildSlateNode,
@@ -33,6 +35,10 @@ import {
   convertTextsDeserialize,
 } from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
+import {
+  isMdFlowContent,
+  isMdPhrasingContent,
+} from '../serializer/wrapWithBlockId';
 import { columnRules } from './columnRules';
 import { fontRules } from './fontRules';
 import { mediaRules } from './mediaRules';
@@ -42,7 +48,7 @@ import { parseAttributes, propsToAttributes } from './utils';
 
 const LEADING_NEWLINE_REGEX = /^\n/;
 
-function isBoolean(value: any) {
+function isBoolean(value: unknown) {
   return (
     value === true ||
     value === false ||
@@ -62,8 +68,8 @@ const createClassicListItemContent = (
 
 const deserializeClassicListItemChildren = (
   mdastChildren: MdRootContent[],
-  deco: any,
-  options: { editor?: BaseEditor } & Record<string, any>
+  deco: import('../types').MdDecoration,
+  options: DeserializeMdOptions
 ) => {
   const licType = getPluginType(options.editor!, KEYS.lic);
   const children = mdastChildren
@@ -98,9 +104,9 @@ const groupInlineChildrenIntoParagraphs = (
     if (inlineNodes.length === 0) return;
 
     elements.push({
-      children: inlineNodes as any,
+      children: inlineNodes,
       type: paragraphType,
-    } as Element);
+    });
     inlineNodes = [];
   };
 
@@ -129,7 +135,7 @@ const groupInlineChildrenIntoParagraphs = (
     {
       children: [{ text: '' }],
       type: paragraphType,
-    } as Element,
+    },
   ];
 };
 
@@ -172,14 +178,14 @@ const normalizeParagraphLineBreaks = (
   });
 };
 
-export const defaultRules: MdRules = {
+export const defaultRules = {
   a: {
     deserialize: (mdastNode, deco, options) => ({
       children: convertChildrenDeserialize(mdastNode.children, deco, options),
       type: getPluginType(options.editor!, KEYS.a),
       url: mdastNode.url,
     }),
-    serialize: (node, options): any => {
+    serialize: (node, options) => {
       const children = convertNodesSerialize(
         node.children,
         options
@@ -250,9 +256,15 @@ export const defaultRules: MdRules = {
     },
     serialize(slateNode, options): MdMdxJsxFlowElement {
       const { children, type, ...rest } = slateNode;
+      const serializedChildren = convertNodesSerialize(children, options);
+
+      if (!serializedChildren.every(isMdFlowContent)) {
+        throw new Error('Callout children must be Markdown flow content.');
+      }
+
       return {
         attributes: propsToAttributes(rest),
-        children: convertNodesSerialize(children, options) as any,
+        children: serializedChildren,
         name: 'callout',
         type: 'mdxJsxFlowElement',
       };
@@ -272,17 +284,21 @@ export const defaultRules: MdRules = {
         children: [{ text: line } as Text],
         type: getPluginType(options.editor!, KEYS.codeLine),
       })),
-      lang: mdastNode.lang ?? undefined,
+      ...(mdastNode.lang ? { lang: mdastNode.lang } : {}),
       type: getPluginType(options.editor!, KEYS.codeBlock),
     }),
     serialize: (node) => ({
       lang: node.lang,
       type: 'code',
       value: node.children
-        .map((child: any) =>
-          child?.children === undefined
+        .map((child) =>
+          TextApi.isText(child)
             ? child.text
-            : child.children.map((c: any) => c.text).join('')
+            : child.children
+                .map((nestedChild) =>
+                  TextApi.isText(nestedChild) ? nestedChild.text : ''
+                )
+                .join('')
         )
         .join('\n'),
     }),
@@ -299,7 +315,7 @@ export const defaultRules: MdRules = {
           // ...props,
         },
         options
-      ) as any;
+      );
     },
     serialize(slateNode): MdMdxJsxTextElement {
       // const { text, comment, ...rest } = slateNode;
@@ -314,11 +330,14 @@ export const defaultRules: MdRules = {
   },
   date: {
     deserialize(mdastNode, _deco, options) {
-      const props = parseAttributes((mdastNode as any).attributes);
+      const props = parseAttributes(mdastNode.attributes);
+      const firstChild = mdastNode.children[0];
       const dateValue =
         typeof props.value === 'string'
           ? props.value
-          : (mdastNode.children?.[0] as any)?.value || '';
+          : firstChild?.type === 'text'
+            ? firstChild.value
+            : '';
 
       return {
         children: [{ text: '' }],
@@ -351,7 +370,7 @@ export const defaultRules: MdRules = {
         mdastNode.children,
         { [getPluginType(options.editor!, KEYS.strikethrough)]: true, ...deco },
         options
-      ) as any,
+      ),
     // no serialize because it's mdx <del /> only
   },
   equation: {
@@ -373,8 +392,8 @@ export const defaultRules: MdRules = {
         deco,
         options
       );
-      const blocks = children.map((child: any) =>
-        child.type === paragraphType
+      const blocks = children.map((child) =>
+        !TextApi.isText(child) && child.type === paragraphType
           ? child
           : {
               children: [child],
@@ -382,7 +401,7 @@ export const defaultRules: MdRules = {
             }
       );
 
-      const identifier = (mdastNode as any).identifier;
+      const identifier = mdastNode.identifier;
       if (blocks.length === 0) {
         return {
           children: [
@@ -402,15 +421,25 @@ export const defaultRules: MdRules = {
         type: getPluginType(options.editor!, 'footnoteDefinition'),
       };
     },
-    serialize: (node, options) => ({
-      children: convertNodesSerialize(node.children, options) as any,
-      identifier: node.identifier,
-      type: 'footnoteDefinition',
-    }),
+    serialize: (node, options) => {
+      const children = convertNodesSerialize(node.children, options);
+
+      if (!children.every(isMdFlowContent)) {
+        throw new Error(
+          'Footnote definitions must contain Markdown flow content.'
+        );
+      }
+
+      return {
+        children,
+        identifier: node.identifier,
+        type: 'footnoteDefinition',
+      };
+    },
   },
   footnoteReference: {
     deserialize: (mdastNode, _deco, options) => {
-      const identifier = (mdastNode as any).identifier ?? '';
+      const identifier = mdastNode.identifier ?? '';
 
       return {
         children: [{ text: '' }],
@@ -421,7 +450,9 @@ export const defaultRules: MdRules = {
     serialize: (node) => ({
       identifier:
         node.identifier ??
-        node.children?.map((child: any) => child.text ?? '').join('') ??
+        node.children
+          ?.map((child) => (TextApi.isText(child) ? child.text : ''))
+          .join('') ??
         '',
       type: 'footnoteReference',
     }),
@@ -448,7 +479,7 @@ export const defaultRules: MdRules = {
     },
     serialize: (node, options) => {
       const key = getPluginKey(options.editor!, node.type) ?? node.type;
-      const depthMap = {
+      const depthMap: Partial<Record<string, MdHeading['depth']>> = {
         h1: 1,
         h2: 2,
         h3: 3,
@@ -457,12 +488,18 @@ export const defaultRules: MdRules = {
         h6: 6,
       };
 
+      const depth = depthMap[key];
+
+      if (!depth) {
+        throw new Error(`Unsupported heading type: ${key}`);
+      }
+
       return {
         children: convertNodesSerialize(
           node.children,
           options
         ) as MdHeading['children'],
-        depth: depthMap[key as keyof typeof depthMap] as any,
+        depth,
         type: 'heading',
       };
     },
@@ -474,7 +511,7 @@ export const defaultRules: MdRules = {
         mdastNode.children,
         { [getPluginType(options.editor!, KEYS.highlight)]: true, ...deco },
         options
-      ) as any,
+      ),
     serialize(slateNode): MdMdxJsxTextElement {
       return {
         attributes: [],
@@ -498,32 +535,38 @@ export const defaultRules: MdRules = {
   },
   img: {
     deserialize: (mdastNode, _deco, options) => {
-      const { alt, attributes, title, url } = mdastNode as any;
+      const { alt, attributes, title, url } = mdastNode;
       const {
         alt: altAttr,
         src,
         ...rest
-      } = attributes ? parseAttributes(attributes) : ({} as any);
+      } = attributes ? parseAttributes(attributes) : {};
 
       return {
-        caption: [{ text: altAttr || alt || '' } as Text],
+        caption: [
+          { text: typeof altAttr === 'string' ? altAttr : (alt ?? '') } as Text,
+        ],
         children: [{ text: '' } as Text],
         ...(title && { title }),
         type: getPluginType(options.editor!, KEYS.img),
-        url: src || url,
+        url: typeof src === 'string' ? src : url,
         ...rest,
       };
     },
     serialize: ({ caption, title, url }) => {
       const image: MdImage = {
-        alt: caption ? caption.map((c) => (c as any).text).join('') : undefined,
+        alt: caption
+          ? caption
+              .map((child) => (TextApi.isText(child) ? child.text : ''))
+              .join('')
+          : undefined,
         title: typeof title === 'string' ? title : undefined,
         type: 'image',
         url,
       };
 
       // since plate is using block image so we need to wrap it in a paragraph
-      return { children: [image], type: 'paragraph' } as any;
+      return { children: [image], type: 'paragraph' };
     },
   },
   inline_equation: {
@@ -551,7 +594,7 @@ export const defaultRules: MdRules = {
         mdastNode.children,
         { [getPluginType(options.editor!, KEYS.kbd)]: true, ...deco },
         options
-      ) as any,
+      ),
     serialize(slateNode): MdMdxJsxTextElement {
       return {
         attributes: [],
@@ -592,7 +635,7 @@ export const defaultRules: MdRules = {
       }
 
       const parseListItems = (listNode: MdList, indent = 1, startIndex = 1) => {
-        const items: any[] = [];
+        const items: Element[] = [];
         const isOrdered = !!listNode.ordered;
         let listStyleType = isOrdered
           ? getPluginType(options.editor!, KEYS.ol)
@@ -610,29 +653,33 @@ export const defaultRules: MdRules = {
           const [paragraph, ...subLists] = listItem.children || [];
 
           // Create list item from paragraph content
-          const result = paragraph
+          const itemNodes: Descendant[] = paragraph
             ? buildSlateNode(paragraph, deco, options)
-            : {
-                children: [{ text: '' }],
-                type: getPluginType(options.editor!, KEYS.p),
-              };
-
-          // Convert result to array if it's not already
-          const itemNodes = Array.isArray(result) ? result : [result];
+            : [
+                {
+                  children: [{ text: '' }],
+                  type: getPluginType(options.editor!, KEYS.p),
+                },
+              ];
 
           // Add list properties to each node
-          itemNodes.forEach((node: any, nodeIndex: number) => {
+          itemNodes.forEach((node, nodeIndex) => {
+            const element = TextApi.isText(node)
+              ? {
+                  children: [node],
+                  type: getPluginType(options.editor!, KEYS.p),
+                }
+              : node;
             const itemContent: TListElement = {
-              ...node,
+              ...element,
               indent,
+              listStyleType,
               type:
-                node.type === getPluginType(options.editor!, KEYS.img)
-                  ? node.type
+                element.type === getPluginType(options.editor!, KEYS.img)
+                  ? element.type
                   : getPluginType(options.editor!, KEYS.p),
             };
 
-            // Only add listStyleType and listStart for appropriate cases
-            itemContent.listStyleType = listStyleType;
             if (isTodoList) {
               itemContent.checked = listItem.checked!;
             }
@@ -650,7 +697,7 @@ export const defaultRules: MdRules = {
           subLists.forEach((subNode) => {
             if (subNode.type === 'list') {
               // Recursively process nested lists
-              const subListStart = (subNode as any).start || 1;
+              const subListStart = subNode.start || 1;
               const nestedItems = parseListItems(
                 subNode,
                 indent + 1,
@@ -661,20 +708,14 @@ export const defaultRules: MdRules = {
               // Transform any other node type using buildSlateNode
               const result = buildSlateNode(subNode, deco, options);
 
-              // Handle both array and single node results
-              if (Array.isArray(result)) {
-                items.push(
-                  ...result.map((item) => ({
+              items.push(
+                ...result
+                  .filter((item): item is Element => !TextApi.isText(item))
+                  .map((item) => ({
                     ...item,
                     indent: indent + 1,
                   }))
-                );
-              } else {
-                items.push({
-                  ...(result as any),
-                  indent: indent + 1,
-                });
-              }
+              );
             }
           });
         });
@@ -682,18 +723,20 @@ export const defaultRules: MdRules = {
         return items;
       };
 
-      const startIndex = (mdastNode as any).start || 1;
+      const startIndex = mdastNode.start || 1;
       return parseListItems(mdastNode, 1, startIndex);
     },
-    serialize: (node: { type: 'ol' | 'ul' } & Element, options): MdList => {
+    serialize: (node, options): MdList => {
       const editor = options.editor!;
       const isOrdered = getPluginKey(editor, node.type) === KEYS.olClassic;
 
-      const serializeListItems = (children: any[]): any[] => {
-        const items: any[] = [];
-        let currentItem: any = null;
+      const serializeListItems = (children: Descendant[]): MdListItem[] => {
+        const items: MdListItem[] = [];
+        let currentItem: MdListItem | null = null;
 
         for (const child of children) {
+          if (TextApi.isText(child)) continue;
+
           if (getPluginKey(editor, child.type) === 'li') {
             if (currentItem) {
               items.push(currentItem);
@@ -705,9 +748,14 @@ export const defaultRules: MdRules = {
             };
 
             for (const liChild of child.children) {
+              if (TextApi.isText(liChild)) continue;
+
               if (getPluginKey(editor, liChild.type) === 'lic') {
                 currentItem.children.push({
-                  children: convertNodesSerialize(liChild.children, options),
+                  children: convertNodesSerialize(
+                    liChild.children,
+                    options
+                  ).filter(isMdPhrasingContent),
                   type: 'paragraph',
                 });
               } else if (
@@ -750,7 +798,10 @@ export const defaultRules: MdRules = {
       type: getPluginType(options.editor!, KEYS.li),
     }),
     serialize: (node, options) => ({
-      children: convertNodesSerialize(node.children, options),
+      children: convertNodesSerialize(node.children, options).filter(
+        (child): child is import('../mdast').MdListItem['children'][number] =>
+          child.type !== 'definition' && child.type !== 'footnoteDefinition'
+      ),
       type: 'listItem',
     }),
   },
@@ -783,8 +834,8 @@ export const defaultRules: MdRules = {
       const children = convertChildrenDeserialize(node.children, deco, options);
       const splitBlockTypes = new Set(['img']);
 
-      const elements: any[] = [];
-      let inlineNodes: any[] = [];
+      const elements: Descendant[] = [];
+      let inlineNodes: Descendant[] = [];
 
       const flushInlineNodes = () => {
         if (inlineNodes.length > 0) {
@@ -898,7 +949,7 @@ export const defaultRules: MdRules = {
         mdastNode.children,
         { [getPluginType(options.editor!, KEYS.sub)]: true, ...deco },
         options
-      ) as any,
+      ),
     serialize(slateNode, _options): MdMdxJsxTextElement {
       return {
         attributes: [],
@@ -921,7 +972,7 @@ export const defaultRules: MdRules = {
           // ...props,
         },
         options
-      ) as any;
+      );
     },
     serialize(slateNode): MdMdxJsxTextElement {
       // const { text, suggestion, ...rest } = slateNode;
@@ -942,7 +993,7 @@ export const defaultRules: MdRules = {
         mdastNode.children,
         { [getPluginType(options.editor!, KEYS.sup)]: true, ...deco },
         options
-      ) as any,
+      ),
     serialize(slateNode, _options): MdMdxJsxTextElement {
       return {
         attributes: [],
@@ -966,12 +1017,15 @@ export const defaultRules: MdRules = {
                 deco,
                 options
               );
-              const groupedChildren: any[] = [];
-              let currentParagraphChildren: any[] = [];
+              const groupedChildren: Descendant[] = [];
+              let currentParagraphChildren: Descendant[] = [];
 
               for (const child of cellChildren) {
                 // Text nodes or inline elements should be grouped into paragraphs
-                if (!child.type || child.type === KEYS.inlineEquation) {
+                if (
+                  TextApi.isText(child) ||
+                  child.type === KEYS.inlineEquation
+                ) {
                   currentParagraphChildren.push(child);
                 } else {
                   // Block-level elements should end the current paragraph and be added directly
@@ -1034,7 +1088,7 @@ export const defaultRules: MdRules = {
           result.push(children[i]);
 
           if (i < children.length - 1) {
-            result.push({ type: 'html', value: '<br/>' } as any);
+            result.push({ type: 'html', value: '<br/>' });
           }
         }
 
@@ -1066,7 +1120,7 @@ export const defaultRules: MdRules = {
           result.push(children[i]);
 
           if (i < children.length - 1) {
-            result.push({ type: 'html', value: '<br/>' } as any);
+            result.push({ type: 'html', value: '<br/>' });
           }
         }
 
@@ -1081,12 +1135,22 @@ export const defaultRules: MdRules = {
       children: convertChildrenDeserialize(mdastNode.children, deco, options),
       type: getPluginType(options.editor!, KEYS.toc),
     }),
-    serialize: (node, options): MdMdxJsxFlowElement => ({
-      attributes: [],
-      children: convertNodesSerialize(node.children, options) as any,
-      name: 'toc',
-      type: 'mdxJsxFlowElement',
-    }),
+    serialize: (node, options): MdMdxJsxFlowElement => {
+      const children = convertNodesSerialize(node.children, options);
+
+      if (!children.every(isMdFlowContent)) {
+        throw new Error(
+          'Table of contents must contain Markdown flow content.'
+        );
+      }
+
+      return {
+        attributes: [],
+        children,
+        name: 'toc',
+        type: 'mdxJsxFlowElement',
+      };
+    },
   },
   tr: {
     serialize: (node, options) => ({
@@ -1104,7 +1168,7 @@ export const defaultRules: MdRules = {
         mdastNode.children,
         { [getPluginType(options.editor!, KEYS.underline)]: true, ...deco },
         options
-      ) as any,
+      ),
     serialize(slateNode, _options): MdMdxJsxTextElement {
       return {
         attributes: [],
@@ -1117,15 +1181,14 @@ export const defaultRules: MdRules = {
   ...fontRules,
   ...mediaRules,
   ...columnRules,
-};
+} satisfies MdRules;
 
 export const buildRules = (editor: BaseEditor) => {
-  const keys = Object.keys(defaultRules);
+  const newRules: MdRules = {};
 
-  const newRules: Record<string, any> = {};
-  keys.forEach((key) => {
+  Object.entries(defaultRules).forEach(([key, rule]) => {
     const pluginKey = getPluginKey(editor, key);
-    newRules[pluginKey ?? key] = defaultRules[key];
+    newRules[pluginKey ?? key] = rule;
   });
 
   return newRules;

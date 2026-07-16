@@ -101,6 +101,7 @@ export type YjsTraceMode =
 
 export type YjsTraceFallback =
   | 'empty-text-merge-elided'
+  | 'empty-text-remove-elided'
   | 'incompatible-structural-merge-elided'
   | 'missing-move-destination-elided'
   | 'missing-move-source-elided'

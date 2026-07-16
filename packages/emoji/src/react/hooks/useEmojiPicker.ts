@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { Emoji } from '@emoji-mart/data';
 
-import { useEditorRef } from 'platejs/react';
+import { useEditorRef } from '@platejs/core/react';
 
 import {
   type AIndexSearch,

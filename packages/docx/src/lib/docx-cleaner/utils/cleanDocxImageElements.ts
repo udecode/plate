@@ -1,4 +1,4 @@
-import { traverseHtmlElements } from 'platejs';
+import { traverseHtmlElements } from '@platejs/core';
 import validator from 'validator';
 
 import { getRtfImagesMap } from './getRtfImagesMap';

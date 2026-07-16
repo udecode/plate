@@ -5,8 +5,7 @@ import {
   readPliteViewSelectionHistoryEntry,
   writePliteViewSelection,
 } from '../view-selection';
-import type { Editor } from './runtime-editor-api';
-import { getEditorRuntime } from './runtime-editor-api';
+import { type Editor, runTrustedUpdate } from './runtime-editor-api';
 
 const EDITOR_TO_HISTORY_FOCUS_ROOT = new WeakMap<Editor, RootKey | null>();
 
@@ -64,26 +63,23 @@ export const applyModelOwnedHistoryIntent = ({
 
   writePliteViewSelection(editor, viewSelectionAfterHistory ?? null);
   try {
-    getEditorRuntime(editor).update(
-      (tx) => {
-        const history = (
-          tx as {
-            history?: {
-              redo?: () => void;
-              undo?: () => void;
-            };
-          }
-        ).history;
-        const fn = history?.[direction];
-
-        if (typeof fn !== 'function') {
-          throw new Error(`Editor history API does not expose ${direction}.`);
+    runTrustedUpdate(editor, (tx) => {
+      const history = (
+        tx as {
+          history?: {
+            redo?: () => void;
+            undo?: () => void;
+          };
         }
+      ).history;
+      const fn = history?.[direction];
 
-        fn();
-      },
-      { skipNormalize: true }
-    );
+      if (typeof fn !== 'function') {
+        throw new Error(`Editor history API does not expose ${direction}.`);
+      }
+
+      fn();
+    });
   } catch (error) {
     writePliteViewSelection(editor, previousViewSelection);
     throw error;

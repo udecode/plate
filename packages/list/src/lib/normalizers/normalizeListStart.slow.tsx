@@ -5,7 +5,7 @@ import {
   createBaseEditor,
   createBasePlugin,
 } from '@platejs/core';
-import type { Element, Value } from '@platejs/plite';
+import type { Value } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { BaseIndentPlugin } from '@platejs/indent';
@@ -94,11 +94,6 @@ const createItem = (
   </hp>
 );
 
-const withTextLeaves = (element: Element, texts: string[]): Element => ({
-  ...element,
-  children: texts.map((text) => ({ text })),
-});
-
 const createHeadingItem = (
   text: string,
   options: {
@@ -147,7 +142,7 @@ const createBlockquoteItem = (
 
 const expectAlreadyNormalized = (editor: BaseEditor) => {
   const before = editor.read.children();
-  editor.update.normalize({ force: true });
+  editor.update.value.repair();
   expect(editor.read.children()).toBe(before);
 };
 
@@ -1036,7 +1031,7 @@ describe('normalizeListStart', () => {
 
         const output = [
           createItem('1'),
-          withTextLeaves(createItem('23', { listStart: 2 }), ['2', '3']),
+          createItem('23', { listStart: 2 }),
           createItem('4', { listStart: 3 }),
         ];
 
@@ -1075,7 +1070,7 @@ describe('normalizeListStart', () => {
         ];
 
         const output = [
-          withTextLeaves(<hp>01</hp>, ['0', '1']),
+          <hp>01</hp>,
           createItem('2'),
           createItem('3', { listStart: 2 }),
           createItem('4', { listStart: 3 }),
@@ -1103,7 +1098,7 @@ describe('normalizeListStart', () => {
 
         const output = [
           createItem('1'),
-          withTextLeaves(createItem('2-', { listStart: 2 }), ['2', '-']),
+          createItem('2-', { listStart: 2 }),
           createItem('3', { listStart: 3 }),
           createItem('4', { listStart: 4 }),
         ];

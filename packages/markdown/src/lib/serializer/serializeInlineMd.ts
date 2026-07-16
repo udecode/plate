@@ -1,4 +1,5 @@
 import type { BaseEditor } from '@platejs/core';
+import type { Text } from '@platejs/plite';
 
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
@@ -10,7 +11,7 @@ import { getMergedOptionsSerialize } from './utils';
 
 export const serializeInlineMd = (
   editor: BaseEditor,
-  options?: SerializeMdOptions
+  options?: Omit<SerializeMdOptions, 'value'> & { value?: Text[] }
 ) => {
   const mergedOptions = getMergedOptionsSerialize(editor, options);
 
@@ -23,7 +24,8 @@ export const serializeInlineMd = (
 
   if (options?.value?.length === 0) return '';
 
-  const convertedTexts = convertTextsSerialize(mergedOptions.value as any, {
+  const convertedTexts = convertTextsSerialize(options?.value ?? [], {
+    ...mergedOptions,
     editor,
   });
 

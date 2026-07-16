@@ -1,7 +1,41 @@
+import type { MdList, MdListItem, MdParagraph, MdText } from '../mdast';
+
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { listToMdastTree } from './listToMdastTree';
 
 const editor = createTestEditor();
+
+const getList = (parent: MdListItem, index: number): MdList => {
+  const node = parent.children[index];
+
+  if (node?.type !== 'list') throw new Error('Expected nested list');
+
+  return node;
+};
+
+const getListItem = (list: MdList, index: number): MdListItem => {
+  const node = list.children[index];
+
+  if (!node) throw new Error('Expected list item');
+
+  return node;
+};
+
+const getParagraph = (item: MdListItem, index: number): MdParagraph => {
+  const node = item.children[index];
+
+  if (node?.type !== 'paragraph') throw new Error('Expected paragraph');
+
+  return node;
+};
+
+const getText = (paragraph: MdParagraph, index: number): MdText => {
+  const node = paragraph.children[index];
+
+  if (node?.type !== 'text') throw new Error('Expected text');
+
+  return node;
+};
 
 describe('listToMdastTree', () => {
   it('convert a flat list correctly', () => {
@@ -22,7 +56,7 @@ describe('listToMdastTree', () => {
       },
     ];
 
-    const result = listToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes, {
       editor,
     });
 
@@ -83,7 +117,7 @@ describe('listToMdastTree', () => {
       },
     ];
 
-    const result = listToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes, {
       editor,
     });
 
@@ -156,7 +190,7 @@ describe('listToMdastTree', () => {
       },
     ];
 
-    const result = listToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes, {
       editor,
     });
 
@@ -231,14 +265,14 @@ describe('listToMdastTree', () => {
       },
     ];
 
-    const result = listToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes, {
       editor,
-    }) as any;
+    });
 
     // The structure should correctly represent the indentation levels
     expect(result.children).toHaveLength(2); // Two top-level items
     expect(result.children[0].children).toHaveLength(2); // First item has paragraph and nested list
-    expect(result.children[0].children[1].children).toHaveLength(2); // Nested list has two items
+    expect(getList(result.children[0], 1).children).toHaveLength(2); // Nested list has two items
   });
 
   it('throw error for empty nodes', () => {
@@ -279,15 +313,15 @@ describe('listToMdastTree', () => {
       },
     ];
 
-    const result = listToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes, {
       editor,
-    }) as any;
+    });
 
     expect(result.ordered).toBe(false);
-    expect(result.children[0].children[1].ordered).toBe(true);
-    expect(result.children[0].children[1].children[1].children[1].ordered).toBe(
-      false
-    );
+    const orderedList = getList(result.children[0], 1);
+
+    expect(orderedList.ordered).toBe(true);
+    expect(getList(getListItem(orderedList, 1), 1).ordered).toBe(false);
   });
 
   it('split sibling nested lists when style changes at same indent', () => {
@@ -315,13 +349,13 @@ describe('listToMdastTree', () => {
       },
     ];
 
-    const result = listToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes, {
       editor,
-    }) as any;
+    });
 
     expect(result.ordered).toBe(false);
-    expect(result.children[0].children[1].ordered).toBe(true);
-    expect(result.children[0].children[2].ordered).toBe(false);
+    expect(getList(result.children[0], 1).ordered).toBe(true);
+    expect(getList(result.children[0], 2).ordered).toBe(false);
   });
 
   it('handle ordered lists with different start numbers', () => {
@@ -342,13 +376,13 @@ describe('listToMdastTree', () => {
       },
     ];
 
-    const result = listToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes, {
       editor,
-    }) as any;
+    });
 
     expect(result.ordered).toBe(true);
     expect(result.start).toBe(3);
-    expect(result.children[0].children[1].start).toBe(5);
+    expect(getList(result.children[0], 1).start).toBe(5);
   });
 
   it('handle deep nesting followed by shallow items', () => {
@@ -390,16 +424,17 @@ describe('listToMdastTree', () => {
       },
     ];
 
-    const result = listToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes, {
       editor,
-    }) as any;
+    });
 
     expect(result.children).toHaveLength(2);
-    expect(
-      result.children[0].children[1].children[0].children[1].children[0]
-        .children[0].children[0].value
-    ).toBe('level 3');
-    expect(result.children[1].children[0].children[0].value).toBe(
+    const level2List = getList(result.children[0], 1);
+    const level3List = getList(getListItem(level2List, 0), 1);
+    const level3Paragraph = getParagraph(getListItem(level3List, 0), 0);
+
+    expect(getText(level3Paragraph, 0).value).toBe('level 3');
+    expect(getText(getParagraph(result.children[1], 0), 0).value).toBe(
       'back to level 1'
     );
   });
@@ -434,20 +469,21 @@ describe('listToMdastTree', () => {
       },
     ];
 
-    const result = listToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes, {
       editor,
-    }) as any;
+    });
 
-    const firstItem = result.children[0].children[0].children;
+    const firstItem = getParagraph(result.children[0], 0).children;
 
     expect(firstItem).toHaveLength(4);
     expect(JSON.stringify(firstItem[1])).toContain('strong');
     expect(JSON.stringify(firstItem[3])).toContain('emphasis');
 
-    const nestedItem = result.children[0].children[1].children;
+    const nestedList = getList(result.children[0], 1);
+    const nestedItem = getParagraph(getListItem(nestedList, 0), 0).children;
 
-    expect(JSON.stringify(nestedItem[0])).toContain('link');
-    expect(JSON.stringify(nestedItem[0])).toContain('https://example.com');
+    expect(JSON.stringify(nestedItem)).toContain('link');
+    expect(JSON.stringify(nestedItem)).toContain('https://example.com');
   });
 
   it('handle todo lists correctly', () => {
@@ -470,9 +506,9 @@ describe('listToMdastTree', () => {
       },
     ];
 
-    const result = listToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes, {
       editor,
-    }) as any;
+    });
 
     expect(result).toMatchSnapshot();
   });
@@ -496,14 +532,14 @@ describe('listToMdastTree', () => {
     ];
 
     // Test with spread: false (default)
-    const resultNoSpread = listToMdastTree(nodes as any, {
+    const resultNoSpread = listToMdastTree(nodes, {
       editor,
     });
 
     expect(resultNoSpread.spread).toBe(false);
 
     // Test with spread: true
-    const resultWithSpread = listToMdastTree(nodes as any, {
+    const resultWithSpread = listToMdastTree(nodes, {
       editor,
       spread: true,
     });
@@ -536,7 +572,7 @@ describe('listToMdastTree', () => {
       },
     ];
 
-    const result = listToMdastTree(nodes as any, { editor }) as any;
+    const result = listToMdastTree(nodes, { editor });
     const nestedChildren = result.children[0].children.slice(1);
 
     expect(nestedChildren).toEqual([
@@ -610,10 +646,10 @@ describe('listToMdastTree', () => {
     ];
 
     const result = listToMdastTree(
-      nodes as any,
+      nodes,
       { editor, spread: true, withBlockId: true },
       true
-    ) as any;
+    );
 
     expect(result).toEqual({
       children: [

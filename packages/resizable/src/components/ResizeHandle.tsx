@@ -1,9 +1,9 @@
 import React from 'react';
 
-import type { Nullable } from 'platejs';
-
-import { createAtomStore, createPrimitiveComponent } from 'platejs/react';
+import { createAtomStore } from '@platejs/core/react';
 import { useEditorReadOnly } from '@platejs/plite-react';
+import { createPrimitiveComponent } from '@udecode/react-utils';
+import type { Nullable } from '@udecode/utils';
 
 import type { ResizeDirection, ResizeEvent } from '../types';
 

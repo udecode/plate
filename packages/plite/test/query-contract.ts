@@ -34,6 +34,7 @@ import {
   previous as editorPrevious,
   range as editorRange,
   replace as editorReplaceBase,
+  runTrustedUpdate,
   select as editorSelect,
   string as editorString,
   unhangRange as editorUnhangRange,
@@ -59,6 +60,15 @@ const editorReplace = editorReplaceBase as unknown as (
   editor: Parameters<typeof editorReplaceBase>[0],
   input: LegacySnapshotInput
 ) => void;
+
+const editorReplaceTrusted = (
+  editor: Parameters<typeof editorReplaceBase>[0],
+  input: LegacySnapshotInput
+) => {
+  runTrustedUpdate(editor, (tx) => {
+    tx.value.replace(input);
+  });
+};
 
 let extensionIndex = 0;
 
@@ -961,7 +971,7 @@ it('mirrors the legacy string oracle rows', () => {
     void: 'block',
   });
 
-  editorReplace(editor, {
+  editorReplaceTrusted(editor, {
     children: [
       {
         type: 'block',
@@ -2129,7 +2139,7 @@ it('nodes covers sibling and range traversal for nested inline documents', () =>
 it('nodes expose ancestry, sibling order, and common ancestor relationships', () => {
   const editor = createEditor();
 
-  editorReplace(editor, {
+  editorReplaceTrusted(editor, {
     children: [
       {
         type: 'paragraph',
@@ -2287,7 +2297,7 @@ it('resolves nested list ancestry and terminal list-item paths', () => {
 it('nodes exposes nested text leaves and text content for element queries', () => {
   const editor = createEditor();
 
-  editorReplace(editor, {
+  editorReplaceTrusted(editor, {
     children: [
       {
         type: 'block',
@@ -2322,7 +2332,7 @@ it('nodes exposes nested text leaves and text content for element queries', () =
 it('nodes reverse returns the exact inverse of forward matches', () => {
   const editor = createEditor();
 
-  editorReplace(editor, {
+  editorReplaceTrusted(editor, {
     children: [
       {
         type: 'paragraph',
@@ -2369,6 +2379,7 @@ it('nodes reverse returns the exact inverse of forward matches', () => {
 it('positions exposes selectable voids atomically and enters void content only when enabled', () => {
   const editor = createEditor();
   defineElement(editor, { type: 'mention', void: 'block' });
+  defineElement(editor, { type: 'chip', inline: true });
 
   editorReplace(editor, {
     children: [
@@ -3396,7 +3407,7 @@ it('supports editorBefore and editorAfter with voids: true on range and split-vo
   const editor = createEditor();
   defineVoidFlag(editor);
 
-  editorReplace(editor, {
+  editorReplaceTrusted(editor, {
     children: createVoidSplitChildren(),
     selection: null,
     marks: null,

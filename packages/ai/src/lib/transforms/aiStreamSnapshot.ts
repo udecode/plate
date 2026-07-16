@@ -218,6 +218,16 @@ export const acceptAIPreview = (editor: BaseEditor, _value?: Value) => {
           count: preview.originalBlocks.length,
           index: range.start,
         });
+
+        if (acceptedBlocks.length > 0) {
+          const focusPoint = tx.points.end([
+            range.start + acceptedBlocks.length - 1,
+          ]);
+
+          if (focusPoint) {
+            tx.selection.set({ anchor: focusPoint, focus: focusPoint });
+          }
+        }
       },
       { split: true }
     );

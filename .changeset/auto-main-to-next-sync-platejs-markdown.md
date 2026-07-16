@@ -2,4 +2,4 @@
 "@platejs/markdown": patch
 ---
 
-Synced latest changes from `main` into the beta lane.
+Preserve exact node inference for built-in Markdown rules while keeping custom rule keys type-safe and open.

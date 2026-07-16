@@ -1,5 +1,6 @@
 import type { BaseEditor } from '@platejs/core';
-import { type Element, KEYS } from 'platejs';
+import type { Element } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 export type GetPropsIfTaskListLiNodeOptions = {
   liNode: Element;

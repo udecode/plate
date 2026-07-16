@@ -202,8 +202,7 @@ describe('extendPlateEditor', () => {
         children: [
           { text: 'he' },
           { children: [{ text: '' }], type: 'mention' },
-          { text: ' ' },
-          { text: 'llo' },
+          { text: ' llo' },
         ],
         type: 'p',
       });

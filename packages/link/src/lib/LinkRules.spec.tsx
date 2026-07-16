@@ -263,7 +263,7 @@ describe('LinkRules', () => {
     const zeroWidthEditor = createLinkEditor('\u200B');
 
     emptyEditor.update.fragment.delete();
-    zeroWidthEditor.update.normalize({ force: true });
+    zeroWidthEditor.update.value.repair();
 
     expect(findLink(emptyEditor)).toBeUndefined();
     expect(findLink(zeroWidthEditor)).toBeDefined();

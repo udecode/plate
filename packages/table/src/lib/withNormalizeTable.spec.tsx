@@ -28,7 +28,7 @@ describe('withNormalizeTable', () => {
         ) as Value,
       });
 
-      editor.update.normalize({ force: true });
+      editor.update.value.repair();
 
       expect(editor.read.children()).toEqual([]);
     });
@@ -78,9 +78,7 @@ describe('withNormalizeTable', () => {
         value: input,
       });
 
-      editor.update.normalize({
-        force: true,
-      });
+      editor.update.value.repair();
       expect(editor.read.children()).toMatchObject(output);
     });
   });
@@ -165,9 +163,7 @@ describe('withNormalizeTable', () => {
         value: input,
       });
 
-      editor.update.normalize({
-        force: true,
-      });
+      editor.update.value.repair();
       expect(editor.read.children()).toMatchObject(output);
     });
   });
@@ -252,9 +248,7 @@ describe('withNormalizeTable', () => {
         value: input,
       });
 
-      editor.update.normalize({
-        force: true,
-      });
+      editor.update.value.repair();
       expect(editor.read.children()).toMatchObject(output);
     });
   });
@@ -341,9 +335,7 @@ describe('withNormalizeTable', () => {
         value: input,
       });
 
-      editor.update.normalize({
-        force: true,
-      });
+      editor.update.value.repair();
       expect(editor.read.children()).toMatchObject(output);
     });
   });
@@ -374,7 +366,7 @@ describe('withNormalizeTable', () => {
         ) as Value,
       });
 
-      editor.update.normalize({ force: true });
+      editor.update.value.repair();
 
       expect(editor.read.children()).toMatchObject(
         (
@@ -442,9 +434,7 @@ describe('withNormalizeTable', () => {
         value: input,
       });
 
-      editor.update.normalize({
-        force: true,
-      });
+      editor.update.value.repair();
       expect(editor.read.children()).toMatchObject(output);
     });
   });

@@ -608,6 +608,16 @@ details > summary {
   .plite-document-state-top-bar {
     grid-template-columns: 1fr;
   }
+
+  .plite-document-state-controls {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .plite-document-state-controls > button {
+    width: 100%;
+    white-space: normal;
+  }
 }
 
 .plite-document-state-title-label {

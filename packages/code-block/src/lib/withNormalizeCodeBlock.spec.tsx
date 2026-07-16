@@ -33,7 +33,7 @@ describe('clean up code block', () => {
       value: input.children,
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual(output.children);
   });

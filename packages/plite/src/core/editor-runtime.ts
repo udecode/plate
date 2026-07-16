@@ -19,7 +19,6 @@ import type {
   EditorLeafOptions,
   EditorLevelsOptions,
   EditorNextOptions,
-  EditorNormalizeNodeOptions,
   EditorOperationDirtinessOptions,
   EditorPointOptions,
   EditorPreviousOptions,
@@ -34,6 +33,7 @@ import type {
   SnapshotListener,
   Value,
 } from '../interfaces/editor';
+import type { InternalEditorNormalizeNodeOptions } from './normalize-node';
 import type { InternalEditorUpdateOptions } from './update-policy';
 
 type BindEditorMethod<T> = T extends (
@@ -128,13 +128,12 @@ export type InternalEditorTransactionRuntime<V extends Value = Value> = {
   ) => void;
 };
 
-export type InternalEditorTransformRuntime<V extends Value = Value> = {
+export type InternalEditorTransformRuntime = {
   normalizeNode: (
     entry: NodeEntry,
-    options?: EditorNormalizeNodeOptions<V>
+    options?: InternalEditorNormalizeNodeOptions
   ) => void;
   shouldNormalize: (options: {
-    explicit?: boolean;
     iteration: number;
     operation?: Operation;
   }) => boolean;
@@ -151,7 +150,7 @@ export type InternalEditorRuntime<V extends Value = Value> =
     InternalEditorRefRuntime &
     InternalEditorSnapshotRuntime<V> &
     InternalEditorTransactionRuntime<V> &
-    InternalEditorTransformRuntime<V>;
+    InternalEditorTransformRuntime;
 
 const EDITOR_RUNTIME = new WeakMap<Editor, InternalEditorRuntime>();
 const EDITOR_RUNTIME_OWNER = new WeakMap<Editor, Editor>();

@@ -49,7 +49,7 @@ describe('column package surfaces', () => {
       },
     ]);
 
-    const markdown = serializeMd(editor, { value: value as any });
+    const markdown = serializeMd(editor, { value });
 
     expect(markdown).toBe(input);
     expect(deserializeMd(editor, markdown)).toMatchObject(value);

@@ -5,6 +5,7 @@ import {
   insertNodes as editorInsertNodes,
   removeNodes as editorRemoveNodes,
   replace as editorReplace,
+  runTrustedUpdate,
   splitNodes as editorSplitNodes,
 } from '@platejs/plite/internal';
 
@@ -745,19 +746,21 @@ describe('plite transforms contract', () => {
   it('setNodes with split does not include the next text when a range ends at offset zero', () => {
     const editor = createEditor();
 
-    editorReplace(editor, {
-      children: [
-        {
-          type: 'paragraph',
-          children: [
-            { text: 'PingCode ' },
-            { text: 'Wiki' },
-            { text: ' & Worktile' },
-          ],
-        } as Descendant,
-      ],
-      selection: null,
-      marks: null,
+    runTrustedUpdate(editor, (tx) => {
+      tx.value.replace({
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              { text: 'PingCode ' },
+              { text: 'Wiki' },
+              { text: ' & Worktile' },
+            ],
+          } as Descendant,
+        ],
+        selection: null,
+        marks: null,
+      });
     });
 
     editor.update((tx) => {

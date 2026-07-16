@@ -41,14 +41,14 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
+    "@platejs/core": "workspace:^",
+    "@platejs/utils": "workspace:^",
     "validator": "^13.15.15"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:*",
-    "platejs": "workspace:^"
+    "@plate/scripts": "workspace:*"
   },
   "peerDependencies": {
-    "platejs": ">=54.0.0-beta.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

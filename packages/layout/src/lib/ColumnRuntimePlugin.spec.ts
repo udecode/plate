@@ -33,7 +33,7 @@ describe('BaseColumnPlugin Plite runtime', () => {
       ],
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'Only' }], type: 'p' },
@@ -61,7 +61,7 @@ describe('BaseColumnPlugin Plite runtime', () => {
       ],
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
       {
@@ -95,7 +95,7 @@ describe('BaseColumnPlugin Plite runtime', () => {
       ],
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'A' }], type: 'p' },
@@ -124,7 +124,7 @@ describe('BaseColumnPlugin Plite runtime', () => {
       ],
     });
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'A' }], type: 'p' },

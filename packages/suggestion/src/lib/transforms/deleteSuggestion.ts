@@ -21,15 +21,6 @@ import {
 } from '../utils';
 import { setSuggestionNodesWithTx } from './setSuggestionNodes';
 
-const isRangeAcrossBlocks = (editor: BaseEditor, range: Range) => {
-  const anchorBlock = editor.read.nodes.block({ at: range.anchor });
-  const focusBlock = editor.read.nodes.block({ at: range.focus });
-
-  if (!anchorBlock || !focusBlock) return false;
-
-  return !PathApi.equals(anchorBlock[1], focusBlock[1]);
-};
-
 const isEmptyCurrentUserInsertBlock = (
   editor: BaseEditor,
   entry: [Element, number[]]
@@ -168,9 +159,11 @@ export const deleteSuggestionWithTx = (
     if (PointApi.equals(pointCurrent, pointTarget)) break;
     // don't delete across blocks
     if (
-      !isRangeAcrossBlocks(editor, {
-        anchor: pointCurrent,
-        focus: pointTarget,
+      !tx.selection.isAcrossBlocks({
+        at: {
+          anchor: pointCurrent,
+          focus: pointTarget,
+        },
       })
     ) {
       const inlineRange = reverse
@@ -311,7 +304,7 @@ export const deleteSuggestionWithTx = (
       continue;
     }
     // if the range is across blocks, delete the line break
-    if (isRangeAcrossBlocks(editor, range)) {
+    if (tx.selection.isAcrossBlocks({ at: range })) {
       const previousAboveNode = editor.read.nodes.above({ at: range.anchor });
 
       if (previousAboveNode && ElementApi.isElement(previousAboveNode[0])) {
@@ -407,8 +400,5 @@ export const deleteSuggestionWithTx = (
 
     if (unit !== 'character') break;
   }
-
-  tx.normalize({ force: false });
-
   return id;
 };

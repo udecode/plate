@@ -2,6 +2,7 @@ import { getPluginType } from '@platejs/core';
 import type { Text } from '@platejs/plite';
 
 import type { MdMark } from '../types';
+import type { MdRootContent } from '../mdast';
 import type { SerializeMdOptions } from './serializeMd';
 
 import { getCustomMark } from './utils';
@@ -99,11 +100,14 @@ export const convertTextsSerialize = (
           const nodeParser = getSerializerByKey(k, options);
 
           if (nodeParser) {
-            const node = nodeParser(cur, options) as any;
-            res = {
-              ...node,
-              children: [res],
-            };
+            const node = nodeParser(cur, options);
+
+            if (isMdMarkContainer(node)) {
+              res = {
+                ...node,
+                children: [res],
+              };
+            }
           }
 
           switch (k) {
@@ -178,6 +182,14 @@ export const convertTextsSerialize = (
 
   return flattenedEmptyNodes;
 };
+
+const isMdMarkContainer = (
+  node: MdRootContent
+): node is Exclude<MdMark, { type: 'inlineCode' | 'text' }> =>
+  node.type === 'delete' ||
+  node.type === 'emphasis' ||
+  node.type === 'mdxJsxTextElement' ||
+  node.type === 'strong';
 
 const hasContent = (node: MdMark): boolean => {
   if (node.type === 'inlineCode') {

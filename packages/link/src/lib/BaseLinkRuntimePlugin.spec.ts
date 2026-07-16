@@ -29,7 +29,7 @@ describe('BaseLinkPlugin Plite runtime', () => {
       },
     ]);
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
     editor.update.text.insert('x');
 
     expect(editor.read.children()).toEqual([
@@ -68,7 +68,7 @@ describe('BaseLinkPlugin Plite runtime', () => {
       },
     ]);
 
-    editor.update.normalize({ force: true });
+    editor.update.value.repair();
     editor.update.text.insert('x');
 
     expect(editor.read.text.string([0])).toBe('Before linkx after');

@@ -144,16 +144,15 @@ const selectionIsInAListHandler = (
       ? editor.read.nodes.get<Element>([...nextItem.listItem[1], 1])
       : undefined;
 
-    if (
-      nextItem &&
-      nextContent &&
-      nextSublist &&
-      !PathApi.equals(list[1], nextItem.list[1])
-    ) {
+    if (nextItem && nextContent && !PathApi.equals(list[1], nextItem.list[1])) {
       mergeContent(nextContent[0], currentContent);
-      tx.nodes.insert(nextSublist[0].children as Element[], {
-        at: [...list[1], listItem[1].at(-1)! + 1],
-      });
+
+      if (nextSublist) {
+        tx.nodes.insert(nextSublist[0].children as Element[], {
+          at: [...list[1], listItem[1].at(-1)! + 1],
+        });
+      }
+
       tx.nodes.remove({ at: nextItem.listItem[1] });
 
       return true;

@@ -1,7 +1,10 @@
 import kebabCase from 'lodash/kebabCase.js';
+import type { Text } from '@platejs/plite';
 
 import type { MdMdxJsxTextElement } from '../mdast';
 import type { MdRules } from '../types';
+import type { MdDecoration } from '../types';
+import type { DeserializeMdOptions } from '../deserializer';
 
 import { convertChildrenDeserialize, getStyleValue } from '../deserializer';
 
@@ -10,12 +13,12 @@ function createFontRule(propName: string) {
 
   return {
     mark: true,
-    serialize: (slateNode: any): MdMdxJsxTextElement => ({
+    serialize: (slateNode: Text): MdMdxJsxTextElement => ({
       attributes: [
         {
           name: 'style',
           type: 'mdxJsxAttribute',
-          value: `${styleName}: ${slateNode[propName]};`,
+          value: `${styleName}: ${String(slateNode[propName])};`,
         },
       ],
       children: [{ type: 'text', value: slateNode.text }],
@@ -25,7 +28,7 @@ function createFontRule(propName: string) {
   };
 }
 
-export const fontRules: MdRules = {
+export const fontRules = {
   backgroundColor: createFontRule('backgroundColor'),
   color: createFontRule('color'),
   fontFamily: createFontRule('fontFamily'),
@@ -33,7 +36,11 @@ export const fontRules: MdRules = {
   fontWeight: createFontRule('fontWeight'),
   span: {
     mark: true,
-    deserialize: (mdastNode: MdMdxJsxTextElement, deco: any, options: any) => {
+    deserialize: (
+      mdastNode: MdMdxJsxTextElement,
+      deco: MdDecoration,
+      options: DeserializeMdOptions
+    ) => {
       const fontFamily = getStyleValue(mdastNode, 'font-family');
       const fontSize = getStyleValue(mdastNode, 'font-size');
       const fontWeight = getStyleValue(mdastNode, 'font-weight');
@@ -51,7 +58,7 @@ export const fontRules: MdRules = {
           fontWeight,
         },
         options
-      ) as any;
+      );
     },
   },
-};
+} satisfies MdRules;

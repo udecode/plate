@@ -1,17 +1,20 @@
-import type { Node, Parent, RootContent, Text } from 'mdast';
+import type { Link, Node, Parent, Text } from 'mdast';
 import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-export type MentionNode = {
-  children: { type: 'text'; value: string }[];
+export type MentionNode = Parent & {
+  children: Text[];
   type: 'mention';
   username: string;
   displayText?: string;
 };
 
 declare module 'mdast' {
-  interface StaticPhrasingContentMap {
+  interface PhrasingContentMap {
+    mention: MentionNode;
+  }
+  interface RootContentMap {
     mention: MentionNode;
   }
 }
@@ -32,7 +35,7 @@ export const remarkMention: Plugin = () => (tree: Node) => {
   visit(
     tree,
     'link',
-    (node: any, index: number, parent: Parent | undefined) => {
+    (node: Link, index: number | undefined, parent: Parent | undefined) => {
       if (!parent || typeof index !== 'number') return;
 
       // Check if this is a mention link
@@ -40,7 +43,9 @@ export const remarkMention: Plugin = () => (tree: Node) => {
         let username = node.url.slice('mention:'.length);
         // Decode URL-encoded spaces and special characters
         username = decodeURIComponent(username);
-        const displayText = node.children?.[0]?.value || username;
+        const firstChild = node.children[0];
+        const displayText =
+          firstChild?.type === 'text' ? firstChild.value : username;
 
         const mentionNode: MentionNode = {
           children: [{ type: 'text', value: displayText }],
@@ -49,7 +54,7 @@ export const remarkMention: Plugin = () => (tree: Node) => {
           username,
         };
 
-        parent.children[index] = mentionNode as any;
+        parent.children[index] = mentionNode;
       }
     }
   );
@@ -124,7 +129,7 @@ export const remarkMention: Plugin = () => (tree: Node) => {
       }
 
       if (parts.length > 0) {
-        parent.children.splice(index, 1, ...(parts as RootContent[]));
+        parent.children.splice(index, 1, ...parts);
       }
     }
   );

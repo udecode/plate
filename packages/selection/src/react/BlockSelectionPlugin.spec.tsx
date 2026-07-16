@@ -20,7 +20,49 @@ const createBlockSelectionEditor = () =>
     ],
   });
 
+const runSelectAllShortcut = (editor: ReturnType<typeof createPlateEditor>) =>
+  editor.runtime.shortcuts['blockSelection.selectAll']?.handler?.({
+    editor,
+    event: new KeyboardEvent('keydown'),
+    eventDetails: {},
+  });
+
 describe('BlockSelectionPlugin', () => {
+  it('progresses from the current block to every selectable block', () => {
+    const editor = createBlockSelectionEditor();
+
+    editor.update.selection.set({
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
+    });
+
+    expect(runSelectAllShortcut(editor)).toBe(true);
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
+    });
+    expect(runSelectAllShortcut(editor)).toBe(true);
+    expect([
+      ...editor.plugin(BlockSelectionPlugin).getOption('selectedIds')!,
+    ]).toEqual(['block1', 'block2']);
+  });
+
+  it('leaves select-all to the browser when custom handling is disabled', () => {
+    const editor = createBlockSelectionEditor();
+
+    editor.plugin(BlockSelectionPlugin).setOption('disableSelectAll', true);
+    editor.update.selection.set({
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
+    });
+
+    expect(runSelectAllShortcut(editor)).toBe(false);
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
+    });
+  });
+
   it('applies generic mark transforms to selected blocks', () => {
     const editor = createBlockSelectionEditor();
 

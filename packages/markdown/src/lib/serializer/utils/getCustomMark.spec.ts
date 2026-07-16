@@ -5,10 +5,10 @@ describe('getCustomMark', () => {
     expect(
       getCustomMark({
         rules: {
-          bold: { mark: true } as any,
-          callout: {} as any,
-          comment: { mark: true } as any,
-          mention: { mark: false } as any,
+          bold: { mark: true },
+          callout: {},
+          comment: { mark: true },
+          mention: { mark: false },
         },
       })
     ).toEqual(['bold', 'comment']);

@@ -209,7 +209,7 @@ describe('convertNodesDeserialize', () => {
       buildSlateNode(
         {
           type: 'mysteryNode',
-        } as any,
+        },
         {},
         baseOptions
       )

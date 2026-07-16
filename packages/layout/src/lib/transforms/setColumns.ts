@@ -80,5 +80,4 @@ export const setColumns = (
       tx.nodes.set<TColumnElement>({ width }, { at: path.concat([i]) });
     });
   }
-  tx.normalize({ force: false });
 };

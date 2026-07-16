@@ -149,10 +149,10 @@ const runPackageTests = (target) => {
   const toRelativeTestPath = (file) =>
     `./${toPosixPath(relative(target.dir, file))}`;
   const sharedFiles = target.files
-    .filter((file) => !hasModuleMock(file))
+    .filter((file) => !hasModuleMock(file) && !CONTRACT_FILE_RE.test(file))
     .map(toRelativeTestPath);
   const isolatedFiles = target.files
-    .filter(hasModuleMock)
+    .filter((file) => hasModuleMock(file) || CONTRACT_FILE_RE.test(file))
     .map(toRelativeTestPath);
   const batchSize = getTestBatchSize(sharedFiles.length || 1);
   const batches = [];
@@ -178,7 +178,7 @@ const runPackageTests = (target) => {
     `\n[check:core] ${target.name} tests (${files.length} files, ${getTestBatchLabel(
       sharedFiles.length,
       batchSize
-    )}, ${isolatedFiles.length} module-mock files isolated)`
+    )}, ${isolatedFiles.length} contract or module-mock files isolated)`
   );
 
   for (const [index, batch] of batches.entries()) {

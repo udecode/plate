@@ -169,6 +169,29 @@ describe('state query contract', () => {
     assert.equal(editor.read.selection.isAtBlockEnd(), true);
   });
 
+  it('treats the boundary before a nested block as the current block end', () => {
+    const editor = createEditor({
+      initialSelection: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      },
+      initialValue: [
+        {
+          children: [
+            { text: '' },
+            {
+              children: [{ children: [{ text: 'next' }], type: 'paragraph' }],
+              type: 'nested',
+            },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    assert.equal(editor.read.selection.isAtBlockEnd(), true);
+  });
+
   it('finds a node path by object identity', () => {
     const editor = createEditor({
       initialValue: [paragraph('one'), paragraph('two')],

@@ -75,6 +75,32 @@ describe('EditorHotkeysEffect', () => {
     );
   });
 
+  it('registers higher-priority shortcuts first', () => {
+    const fallback = mock();
+    const specific = mock();
+
+    editor.runtime.shortcuts = {
+      fallback: {
+        keys: 'mod+a',
+        handler: fallback,
+        priority: 0,
+      },
+      specific: {
+        keys: 'mod+a',
+        handler: specific,
+        priority: 100,
+      },
+    };
+
+    render(<SimpleComponent />);
+
+    useHotkeysSpy.mock.calls[0][1]({ preventDefault: mock() }, {} as any);
+
+    expect(specific).toHaveBeenCalledTimes(1);
+    expect(fallback).not.toHaveBeenCalled();
+    expect(useHotkeysSpy.mock.calls[0][2]).not.toHaveProperty('priority');
+  });
+
   it('call the hotkey callback when triggered', async () => {
     render(<SimpleComponent />);
 

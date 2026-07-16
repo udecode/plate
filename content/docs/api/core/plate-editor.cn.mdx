@@ -181,10 +181,10 @@ mutation 通过 `editor.update` 执行。Core Plite 命令在 transaction 对象
   <APIItem name="editor.update(policy).value.replace(input)" type="(input: SnapshotInput) => void">
     通过配置后的 Plite update 替换编辑器 value，并可同时设置 selection。
   </APIItem>
-  <APIItem name="editor.update((tx) => tx.nodes.insert(node, options))" type="(node: Node, options?: InsertNodesOptions) => void">
+  <APIItem name="editor.update((tx) => tx.nodes.insert(node, options))" type="(node: Node, options?: NodeInsertNodesOptions) => void">
     通过 Plite node transaction group 插入一个 node 或 fragment。
   </APIItem>
-  <APIItem name="editor.update((tx) => tx.nodes.set(props, options))" type="(props: Partial<Node>, options?: SetNodesOptions) => void">
+  <APIItem name="editor.update((tx) => tx.nodes.set(props, options))" type="(props: Partial<Node>, options?: NodeSetNodesOptions) => void">
     通过 Plite node transaction group 更新匹配节点。
   </APIItem>
   <APIItem name="editor.update((tx) => tx.marks.toggle(key, value))" type="(key: string, value?: unknown) => void">
